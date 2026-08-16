@@ -594,23 +594,23 @@
     "clear_filters": "Glan an cuardach agus na scagairí"
   },
   "changelog_page": {
-    "title": "Loga athrú",
+    "title": "Loga Athruithe",
     "meta_title": "Changelog - Tionscadal NEXUS",
-    "meta_description": "Gach athrú suntasach seolta i Project NEXUS, i bhformáid Keep-a-Changelog, tar éis Leagan Séimeantach. Foinsithe ó CHANGELOG.md sa stór foinsí poiblí.",
-    "heading": "Loga athrú",
-    "subheading": "Gach athrú suntasach ar Project NEXUS, i bhformáid Keep-a-Changelog. Leanann an t-ardán Leagan Séimeantach.",
-    "view_on_github": "Amharc ar GitHub",
+    "meta_description": "Gach athrú suntasach a seoladh in Project NEXUS, i bhformáid Keep a Changelog agus de réir Leaganú Séimeantach. Faightear é ó CHANGELOG.md sa stór cód foinseach poiblí.",
+    "heading": "Loga Athruithe",
+    "subheading": "Gach athrú suntasach ar Project NEXUS, i bhformáid Keep a Changelog. Úsáideann an t-ardán Leaganú Séimeantach.",
+    "view_on_github": "Féach air ar GitHub",
     "loading": "Loga athruithe á lódáil...",
     "error": "Níorbh fhéidir an loga athraithe a lódáil. Is féidir leat é a léamh go díreach ar GitHub."
   },
   "home": {
     "meta_title": "Ardán Bainc Ama Pobail",
-    "meta_description": "Scileanna malartaithe ag úsáid creidmheasanna ama — cuirtear an luach céanna ar gach uair an chloig. Glac páirt i bpobal ina roinneann comharsana cabhair, cothaíonn muinín agus neartaíonn siad naisc áitiúla.",
+    "meta_description": "Malartaigh scileanna trí chreidmheasanna ama a úsáid — cuirtear an luach céanna ar gach uair an chloig. Glac páirt i bpobal ina roinneann comharsana cabhair, ina gcothaíonn siad muinín agus ina neartaíonn siad naisc áitiúla.",
     "meta_keywords": "baincéireacht ama, malartú scileanna, pobal, obair dheonach, creidmheasanna ama",
     "badge": "Todhchaí na Baincéireachta Ama",
     "headline_1": "Malartaigh Scileanna,",
     "headline_2": "Tóg Pobal",
-    "subheadline": "Is ardán nua-aimseartha baincéireachta ama é {{name}} ina bhfuil gach uair an chloig seirbhíse ar comhluach. Malartaigh do chuid scileanna, tuill creidmheasanna ama, agus ceangail le do phobal.",
+    "subheadline": "Is ardán nua-aimseartha baincéireachta ama é {{name}}, ina gcuirtear an luach céanna ar gach uair seirbhíse. Malartaigh do chuid scileanna, tuill creidmheasanna ama agus déan teagmháil le do phobal.",
     "cta_dashboard": "Téigh chuig an Deais",
     "cta_feed": "Téigh chuig an bhFotha",
     "cta_get_started": "Tosaigh Saor in Aisce",
@@ -626,7 +626,7 @@
       },
       "2": {
         "title": "Láithreach",
-        "description": "Idirbhearta tapa agus réidh"
+      "description": "Idirbhearta tapa gan dua"
       }
     },
     "stats": {
@@ -650,7 +650,7 @@
           "cta": "Brabhsáil Liostálacha"
         },
         "partner": {
-          "title": "Comhpháirtigh nó mol",
+          "title": "Téigh i gcomhpháirtíocht nó déan atreorú",
           "description": "Do eagraíochtaí, maoinitheoirí, agus gairmithe a thacaíonn lenár mbaill.",
           "cta": "Foghlaim níos mó"
         }
@@ -662,7 +662,7 @@
       "steps": {
         "0": {
           "title": "Cláraigh Saor in Aisce",
-          "description": "Cruthaigh do phróifíl i nóiméid agus liostáil na scileanna is féidir leat a thairiscint."
+          "description": "Cruthaigh do phróifíl i gceann cúpla nóiméad agus luaigh na scileanna is féidir leat a thairiscint."
         },
         "1": {
           "title": "Brabhsáil agus Ceangail",
@@ -684,7 +684,7 @@
       "values": {
         "0": {
           "title": "Comhluach",
-          "description": "Tá gach uair an chloig ar an luach céanna. Cibé an bhfuil tú ag múineadh pianó nó ag baint féir, tá comhluach ar d'am."
+          "description": "Tá an luach céanna le gach uair an chloig. Cibé acu atá tú ag múineadh pianó nó ag baint féir, cuirtear an luach céanna ar do chuid ama."
         },
         "1": {
           "title": "Tóg Muinín",
@@ -704,16 +704,16 @@
   },
   "about": {
     "meta_title": "Maidir le {{name}}",
-    "meta_description": "Foghlaim conas a thugann {{name}} comharsana le chéile chun scileanna a roinnt ag baint úsáide as creidmheasanna ama. Tuilleann gach uair a thugtar uair an chloig ar ais - bealach níos cothroime chun tacú lena chéile.",
+    "meta_description": "Foghlaim conas a thugann {{name}} comharsana le chéile chun scileanna a roinnt trí chreidmheasanna ama. As gach uair a thugann tú, tuilleann tú uair ar ais — bealach níos cothroime chun tacú lena chéile.",
     "hero_title": "Maidir le {{name}}",
-    "hero_description": "Is ardán nua-aimseartha baincéireachta ama é {{name}} ina bhfuil gach uair an chloig seirbhíse ar comhluach. Cabhraímid le pobail scileanna a mhalartú, muinín a thógáil, agus geilleagar áitiúil níos cothroime a chruthú — uair amháin san am.",
+    "hero_description": "Is ardán nua-aimseartha baincéireachta ama é {{name}}, ina gcuirtear an luach céanna ar gach uair seirbhíse. Cabhraímid le pobail scileanna a mhalartú, muinín a chothú agus geilleagar áitiúil níos cothroime a chruthú — uair i ndiaidh uaire.",
     "how_it_works": {
       "title": "Conas a Oibríonn Sé",
       "subtitle": "Is simplí tosú. Ceithre chéim le dul isteach agus tosú ag malartú scileanna i do phobal.",
       "steps": {
         "0": {
           "title": "Cruthaigh Do Phróifíl",
-          "description": "Cláraigh saor in aisce agus liostáil na scileanna is féidir leat a thairiscint do do phobal."
+          "description": "Cláraigh saor in aisce agus luaigh na scileanna is féidir leat a thairiscint do do phobal."
         },
         "1": {
           "title": "Aimsigh a bhFuil Uait",
@@ -761,8 +761,8 @@
       "title": "Cumhachtaithe ag Project NEXUS",
       "subtitle": "Ardán pobail foinse oscailte cruthaithe ag Jasper Ford. Ceadúnaithe faoi AGPL v3.",
       "creator": "Cruthaitheoir",
-      "founders_heading": "Bunathóirí hOUR Timebank CLG",
-      "contributors": "Rannpháirtithe",
+      "founders_heading": "Bunaitheoirí hOUR Timebank CLG",
+      "contributors": "Rannchuiditheoirí",
       "research_heading": "Bunús Taighde",
       "research_description": "Bunaithe ar staidéar tionchair shóisialta a choimisiúnaigh {{name}}.",
       "acknowledgements": "Buíochas",
@@ -794,7 +794,7 @@
       "email_label": "Ríomhphost",
       "email_placeholder": "you@example.com",
       "subject_label": "Ábhar",
-      "subject_placeholder": "Cad é seo faoi?",
+      "subject_placeholder": "Cén t-ábhar atá i gceist?",
       "subjects": {
         "general": "Fiosrúchán Ginearálta",
         "account": "Cabhair le Cuntas",
@@ -807,7 +807,7 @@
       "submit": "Seol Teachtaireacht",
       "login_prompt_before": "An bhfuil cuntas agat cheana?",
       "login_link": "Logáil isteach",
-      "login_prompt_after": "le haghaidh tacaíocht níos tapúla."
+      "login_prompt_after": "chun tacaíocht níos tapa a fháil."
     },
     "turnstile_error": "Níorbh fhéidir seiceáil slándála a lódáil. Athnuaigh an leathanach chun triail eile a bhaint as."
   },
@@ -827,13 +827,13 @@
       "getting_started": {
         "title": "Ag Tosú",
         "q1": {
-          "question": "Cad é baincéireacht ama?",
-          "answer_p1": "Is córas malartaithe pobail é baincéireacht ama ina bhfuil uair amháin cabhrach cothrom le creidmheas ama amháin, beag beann ar an tseirbhís a chuirtear ar fáil. Cibé an bhfuil tú ag múineadh teanga, ag cabhrú le garraíodóireacht, nó ag soláthar tacaíocht theicniúil, tá comhluach ar d'am.",
+          "question": "Cad is baincéireacht ama ann?",
+          "answer_p1": "Is córas malartaithe pobail í an bhaincéireacht ama ina bhfuil uair an chloig cabhrach cothrom le creidmheas ama amháin, beag beann ar an tseirbhís a chuirtear ar fáil. Cibé acu atá tú ag múineadh teanga, ag cabhrú le garraíodóireacht nó ag cur tacaíocht theicniúil ar fáil, cuirtear an luach céanna ar do chuid ama.",
           "answer_p2": "Is bealach é chun naisc phobail a thógáil agus scileanna agus seirbhísí a mhalartú gan airgead traidisiúnta."
         },
         "q2": {
           "question": "An bhfuil sé saor in aisce dul isteach?",
-          "answer_p1": "Sea! Tá ballraíocht saor in aisce ar fad. Is iad creidmheasanna ama an t-aon airgeadra a úsáidtear, a thuilleann tú trí chabhrú le daoine eile sa phobal.",
+          "answer_p1": "Tá! Tá an bhallraíocht go hiomlán saor in aisce. Is iad creidmheasanna ama an t-aon airgeadra a úsáidtear, agus tuilleann tú iad trí chabhrú le daoine eile sa phobal.",
           "answer_p2": "Faigheann baill nua líon beag creidmheasanna tosaigh go minic chun cabhrú leo tosú."
         },
         "q3": {
@@ -842,9 +842,9 @@
           "step1_bold": "Comhlánaigh do phróifíl",
           "step1_text": "Cuir grianghraf, beathaisnéis agus do scileanna leis",
           "step2_bold": "Brabhsáil an margadh",
-          "step2_text": "Féach cad iad na seirbhísí atá á dtairiscint agus ag teastáil",
+          "step2_text": "Féach cé na seirbhísí atá á dtairiscint agus cé na cinn atá de dhíth",
           "step3_bold": "Cuir tairiscint suas",
-          "step3_text": "Roinn an méid is féidir leat cabhrú le daoine eile",
+          "step3_text": "Luaigh na rudaí ar féidir leat cabhrú le daoine eile leo",
           "step4_bold": "Cruthaigh iarraidh",
           "step4_text": "Iarr rud éigin a theastaíonn uait",
           "step5_bold": "Ceangail le baill",
@@ -854,11 +854,11 @@
           "question": "Cad iad na scileanna is féidir liom a thairiscint?",
           "answer_intro": "Beagnach rud ar bith! I measc na dtairiscintí coitianta tá:",
           "skill1": "Cabhair sa bhaile (garraíodóireacht, glanadh, miondeisiúcháin)",
-          "skill2": "Tacaíocht theicniúil (cabhair ríomhaire, socrú fóin)",
-          "skill3": "Teagasc (teangacha, ceol, ábhair acadúla)",
+          "skill2": "Tacaíocht theicniúil (cabhair le ríomhairí, fón a shocrú)",
+          "skill3": "Múineadh (teangacha, ceol, ábhair acadúla)",
           "skill4": "Seirbhísí cruthaitheacha (dearadh, grianghrafadóireacht, scríbhneoireacht)",
-          "skill5": "Iompar (turais, turais ghnó)",
-          "skill6": "Compánachas (siúlóidí, cuairteanna, comhrá)",
+          "skill5": "Iompar (síobanna, teachtaireachtaí)",
+          "skill6": "Comhluadar (siúlóidí, cuairteanna, comhrá)",
           "skill7": "Scileanna gairmiúla (cuntasaíocht, comhairle dlí, srl.)",
           "answer_outro": "Tá rud éigin luachmhar le tairiscint ag gach duine!"
         }
@@ -867,7 +867,7 @@
         "title": "Creidmheasanna Ama",
         "q1": {
           "question": "Cad é creidmheas ama?",
-          "answer_p1": "Is ionann creidmheas ama amháin agus uair amháin seirbhíse. Is é airgeadra ár bpobail é.",
+          "answer_p1": "Is ionann creidmheas ama amháin agus uair an chloig de sheirbhís. Is é sin airgeadra ár bpobail.",
           "answer_p2": "Is féidir leat uaireanta páirteacha a mhalartú freisin: 30 nóiméad = 0.5 creidmheas, 15 nóiméad = 0.25 creidmheas."
         },
         "q2": {
@@ -875,7 +875,7 @@
           "answer_intro": "Tuilleann tú creidmheasanna trí:",
           "way1_bold": "Seirbhísí a sholáthar",
           "way1_text": "do bhaill eile",
-          "way2_bold": "Uaireanta deonacha a logáil",
+          "way2_bold": "Uaireanta oibre deonaí a thaifeadadh",
           "way2_text": "le heagraíochtaí ceadaithe",
           "way3_bold": "Síntiúis a fháil",
           "way3_text": "ó bhaill eile",
@@ -893,13 +893,13 @@
         },
         "q4": {
           "question": "An féidir le m'iarmhéid dul diúltach?",
-          "answer": "Ceadaíonn roinnt pobal iarmhéideanna diúltacha teoranta chun cabhrú le baill nua tosú sula mbíonn deis acu creidmheasanna a thuilleamh. Seiceáil le comhordaitheoir do phobail le haghaidh na rialacha sonracha i do bhanc ama."
+          "answer": "Ceadaíonn roinnt pobal iarmhéid teoranta faoi bhun náid chun cabhrú le baill nua tosú sula mbíonn deis acu creidmheasanna a thuilleamh. Fiafraigh de chomhordaitheoir do phobail faoi rialacha sonracha do bhainc ama."
         },
         "q5": {
           "question": "Cad a tharlaíonn má sheol mé creidmheasanna chuig an duine mícheart?",
           "answer_intro": "Ní féidir idirbhearta a chúlghairm go huathoibríoch. Má rinne tú botún:",
           "step1": "Déan teagmháil leis an bhfaighteoir agus iarr orthu na creidmheasanna a sheoladh ar ais",
-          "step2": "Mura féidir leat é a réiteach, déan teagmháil le tacaíocht le haghaidh cúnamh",
+          "step2": "Mura féidir leat é a réiteach, déan teagmháil leis an bhfoireann tacaíochta chun cabhair a fháil",
           "answer_outro": "Seiceáil an faighteoir i gcónaí sula ndeimhníonn tú aistriú."
         }
       },
@@ -910,7 +910,7 @@
           "answer_intro": "Is é an gnáthphróiseas ná:",
           "step1": "Aimsigh tairiscint nó iarraidh a bhfuil suim agat inti",
           "step2": "Seol teachtaireacht chuig an mball chun sonraí a phlé",
-          "step3": "Aontaigh ar cathain, cá háit, agus am measta",
+          "step3": "Aontaigh cathain agus cá háit a tharlóidh sé, agus cá fhad a mhairfidh sé",
           "step4": "Buail le chéile agus comhlánaigh an malartú",
           "step5": "Seolann an duine a fuair cabhair creidmheasanna ama",
           "step6": "Fág athbhreithniú dá chéile"
@@ -923,15 +923,15 @@
           "tip3": "Inis do dhuine éigin cá bhfuil tú ag dul",
           "tip4": "Bíodh muinín agat as d'instinní — má bhraitheann tú rud éigin mícheart, fág",
           "tip5": "Tosaigh le malartuithe beaga, ísealriosca",
-          "answer_outro": "Tuairiscigh aon iompar imníoch dár bhfoireann tacaíochta."
+          "answer_outro": "Tuairiscigh aon iompar a chuireann imní ort dár bhfoireann tacaíochta."
         },
         "q3": {
           "question": "Cad a tharlaíonn mura dtaispeánann duine éigin nó mura gcomhlánaíonn siad an tseirbhís?",
-          "answer_intro": "Is é an chumarsáid an eochair. Má tá fadhb ann:",
+          "answer_intro": "Tá cumarsáid ríthábhachtach. Má bhíonn fadhb ann:",
           "step1": "Seol teachtaireacht chuig an mball chun a phlé cad a tharla",
           "step2": "Déan iarracht réiteach a aimsiú le chéile",
           "step3": "Mura féidir leat é a réiteach, déan teagmháil le tacaíocht",
-          "answer_outro": "D'fhéadfadh srianta cuntais a bheith mar thoradh ar neamhláithreachtaí athfhillteacha nó iompar bocht."
+          "answer_outro": "D'fhéadfadh srianta cuntais a bheith mar thoradh ar mhainneachtain arís agus arís eile teacht i láthair, nó ar dhrochiompar."
         },
         "q4": {
           "question": "An bhfuil na seirbhísí árachaithe?",
@@ -944,30 +944,30 @@
           "question": "Cad iad suaitheantais agus XP?",
           "answer_intro": "Tugann ár gcóras cluichíochta aitheantas do rannpháirtíocht phobail:",
           "item1_bold": "XP (Pointí Taithí)",
-          "item1_text": "Tuillte as gníomhaíochtaí éagsúla, ag cabhrú leat leibhéal a ardú",
+          "item1_text": "Tuilltear iad as gníomhaíochtaí éagsúla agus cabhraíonn siad leat dul suas leibhéal",
           "item2_bold": "Suaitheantais",
           "item2_text": "Éachtaí as clocha míle a bhaint amach (60+ le bailiú!)",
           "item3_bold": "Leibhéil",
-          "item3_text": "Dul chun cinn ó Nuatheachtaí go Finscéal Banc Ama",
-          "item4_bold": "Sraitheanna",
-          "item4_text": "Duaiseanna as rannpháirtíocht laethúil"
+          "item3_text": "Dul chun cinn ó Núíosach go Finscéal Baincéireachta Ama",
+          "item4_bold": "Stráicí",
+          "item4_text": "Duaiseanna as rannpháirtíocht gach lá as a chéile"
         },
         "q2": {
           "question": "Conas a thuilim XP?",
           "answer_intro": "Tuilleann tú XP as go leor gníomhaíochtaí:",
           "activity1": "Creidmheasanna ama a sheoladh/a fháil",
-          "activity2": "Liostaí a chruthú",
-          "activity3": "Uaireanta deonacha a logáil",
+          "activity2": "Liostálacha a chruthú",
+          "activity3": "Uaireanta oibre deonaí a thaifeadadh",
           "activity4": "Freastal ar imeachtaí",
           "activity5": "Naisc a dhéanamh",
-          "activity6": "Logáil isteach laethúil",
+          "activity6": "Síniú isteach gach lá",
           "activity7": "Suaitheantais a thuilleamh"
         },
         "q3": {
-          "question": "An féidir liom rogha an diúltaithe a fháil ó chláir ceannairí?",
-          "answer_before_link": "Is féidir! Más fearr leat príobháideacht, is féidir leat rogha an diúltaithe a dhéanamh ó bheith le feiceáil ar chláir ceannairí poiblí i do ",
+          "question": "An féidir liom gan a bheith ar na cláir cheannairí?",
+          "answer_before_link": "Is féidir! Más fearr leat príobháideacht, is féidir leat roghnú gan a bheith le feiceáil ar chláir cheannairí phoiblí i do ",
           "settings_link": "Socruithe",
-          "answer_after_link": ". Tuillfidh tú XP agus suaitheantais fós, ní bheidh siad le feiceáil ag daoine eile ar na ranguithe."
+          "answer_after_link": ". Tuillfidh tú XP agus suaitheantais fós, ach ní bheidh do thorthaí le feiceáil ag daoine eile sna ranguithe."
         }
       },
       "account_privacy": {
@@ -980,10 +980,10 @@
         },
         "q2": {
           "question": "Cé atá in ann mo phróifíl a fheiceáil?",
-          "answer_intro": "De réir réamhshocraithe, tá do phróifíl le feiceáil ag baill eile an phobail. Is féidir leat smacht a fháil ar:",
+          "answer_intro": "De réir réamhshocraithe, tá do phróifíl le feiceáil ag baill eile an phobail. Is féidir leat na rudaí seo a rialú:",
           "item1": "Cad iad na sonraí teagmhála a thaispeántar",
           "item2": "An mbíonn tú le feiceáil ar chláir ceannairí",
-          "item3": "Infheictheacht do shuímh ghinearálta",
+          "item3": "Cé chomh beacht is a thaispeántar do shuíomh ginearálta",
           "answer_link_before": "Coigeartaigh iad seo i do ",
           "settings_link": "Socruithe",
           "answer_link_after": "."
@@ -992,7 +992,7 @@
           "question": "Conas a scriosann mé mo chuntas?",
           "answer_intro": "Más mian leat an pobal a fhágáil:",
           "step1": "Téigh chuig Socruithe > Cuntas",
-          "step2": "Cliceáil \"Scrios Cuntas\"",
+          "step2": "Roghnaigh \"Scrios Cuntas\"",
           "step3": "Deimhnigh do chinneadh",
           "answer_outro": "Nóta: Coinneofar do stair idirbheart le haghaidh taifid, ach bainfear d'fhaisnéis phearsanta."
         },
@@ -1010,14 +1010,14 @@
   "maintenance": {
     "title": "Beimid ar ais go luath!",
     "description": "tá cothabháil sceidealaithe ar siúl faoi láthair chun do thaithí a fheabhsú.",
-    "apology": "Gabh ár leithscéal as aon mhíchaoithiúlacht. Seiceáil ar ais i gceann tamaillín le do thoil.",
+    "apology": "Gabh ár leithscéal as aon mhíchaoithiúlacht. Fill ar an leathanach seo i gceann tamaillín, le do thoil.",
     "thanks": "Go raibh maith agat as d'fhoighne!",
     "admin_login": "Logáil Isteach Riaracháin",
     "deploy_notice": "Tá an t-ardán seo fós á thógáil go gníomhach, mar sin d'fhéadfadh tréimhsí imscartha tapa a bheith ann. Le linn na dtréimhsí sin, téann an freastalaí isteach i mód cothabhála go huathoibríoch. De ghnáth ní mhaireann sé seo ach timpeall cúig nóiméad agus athruithe nua á gcur i bhfeidhm."
   },
   "kb": {
     "title": "Bonn Eolais",
-    "description": "Faigh freagraí, treoir, agus acmhainní cabhrach",
+    "description": "Faigh freagraí, treoracha agus acmhainní cabhracha",
     "search_placeholder": "Cuardaigh an bonn eolais..."
   },
   "page_meta": {
@@ -1029,86 +1029,86 @@
     }
   },
   "install_app": {
-    "page_title": "Faigh an app",
-    "meta_description": "Conas {{name}} a chur le do ghuthán, táibléad nó ríomhaire - le nóta macánta faoi na gléasanna a oibríonn inniu.",
-    "heading": "Faigh an app",
-    "subheading": "Is féidir leat {{name}} a úsáid in aon bhrabhsálaí gréasáin, nó é a chur le do ghléas ionas go n-osclaítear é mar ghnáthfheidhmchlár. Seo é a oibríonn inniu, mínithe go simplí.",
-    "status_title": "Cá seasann rudaí faoi láthair",
+    "page_title": "Faigh an Aip",
+    "meta_description": "Conas {{name}} a chur le do ghuthán, do tháibléad nó do ríomhaire — agus míniú macánta ar na gléasanna a n-oibríonn sé orthu faoi láthair.",
+    "heading": "Faigh an Aip",
+    "subheading": "Is féidir leat {{name}} a úsáid in aon bhrabhsálaí gréasáin, nó é a chur le do ghléas ionas go n-osclóidh sé mar ghnáth-aip. Seo míniú simplí ar na roghanna a oibríonn faoi láthair.",
+    "status_title": "An Staid Faoi Láthair",
     "status_working_label": "Ar fáil anois",
-    "status_working_android": "Fóin Android agus táibléad, ag baint úsáide as Chrome",
-    "status_working_windows": "Ríomhairí Windows, ag baint úsáide as Chrome nó Edge",
+    "status_working_android": "Fóin agus táibléid Android a úsáideann Chrome",
+    "status_working_windows": "Ríomhairí Windows a úsáideann Chrome nó Edge",
     "status_issues_label": "Gan oibriú i gceart fós",
-    "status_issues_apple": "iPhone, iPad agus Mac. Ní oibríonn sábháil {{name}} ar ghléas Apple i gceart faoi láthair. Tá a fhios againn faoi, táimid ag obair air, agus déanfaimid an leathanach seo a nuashonrú chomh luath agus a bheidh sé curtha in eagar.",
-    "status_meanwhile": "Idir an dá linn oibríonn {{name}} de ghnáth i Safari agus i ngach brabhsálaí eile ar ghléasanna Apple. Ní féidir leat é a shábháil go hiontaofa mar dheilbhín app fós.",
+    "status_issues_apple": "iPhone, iPad agus Mac. Ní oibríonn sábháil {{name}} mar aip i gceart ar ghléas Apple faoi láthair. Táimid ar an eolas faoin bhfadhb agus ag obair uirthi; déanfaimid an leathanach seo a nuashonrú a luaithe a bheidh sí réitithe.",
+    "status_meanwhile": "Idir an dá linn, oibríonn {{name}} mar is gnách in Safari agus i mbrabhsálaithe eile ar ghléasanna Apple. Ní féidir é a shábháil go hiontaofa mar dheilbhín aipe fós.",
     "status_updates": "Coinneoimid an leathanach seo cothrom le dáta de réir mar a bheidh gach rogha ar fáil.",
-    "apple_why_title": "Cén fáth go bhfuil sé níos deacra ar fheistí Apple?",
-    "apple_why_intro": "Is rialacha Apple féin den chuid is mó seachas aon rud neamhghnách faoi {{name}}. Tá trí cinn acu, agus le chéile míníonn siad an fhadhb iomlán:",
+    "apple_why_title": "Cén fáth a bhfuil sé níos deacra ar ghléasanna Apple?",
+    "apple_why_intro": "Rialacha Apple féin is cúis leis den chuid is mó, seachas aon rud neamhghnách faoi {{name}}. Tá trí riail i gceist agus míníonn siad an fhadhb iomlán eatarthu:",
     "apple_why_1": "Ní féidir é a shuiteáil le tapáil amháin. Ar Android agus Windows is féidir leis an mbrabhsálaí cnaipe a thairiscint a dhéanann an obair duit. Níor cheadaigh Apple é sin riamh, mar sin ní mór duit é a dhéanamh de láimh tríd an roghchlár Comhroinn ar ghléas Apple.",
-    "apple_why_2": "Ar iPhone nó iPad ní oibríonn sé ach i Safari. Ní féidir le Chrome agus Firefox ar ghléasanna Apple suíomh Gréasáin a shábháil mar aip ar chor ar bith - ní ligeann Apple iad. Ar Mac beidh Safari 17 nó níos nuaí uait.",
+    "apple_why_2": "Ar iPhone nó iPad, ní oibríonn sé ach in Safari. Ní ligeann Apple do Chrome ná Firefox suíomh gréasáin a shábháil mar aip ar na gléasanna sin. Ar Mac, teastaíonn Safari 17 nó leagan níos nuaí.",
     "apple_why_3": "Fiú nuair a oibríonn sé, caitheann Apple leis an aip shábháilte mar chlár ar leith ó Safari agus coimeádann sé a cuid sonraí scartha. Mar sin osclaíonn an aip agus tú sínithe amach, agus caithfidh tú síniú isteach arís inti; tá sé intuigthe go gceapfá go bhfuil rud éigin briste.",
-    "apple_why_outcome": "Ní bhaineann aon cheann de sin leis an app ceart a thuairiscítear thíos - ar fheistí Apple is é sin an freagra fíor, agus tá sé beagnach críochnaithe.",
+    "apple_why_outcome": "Ní bhaineann aon cheann de sin leis an aip dhúchasach a mhínítear thíos — is í sin an réiteach ceart ar ghléasanna Apple, agus tá sí beagnach críochnaithe.",
     "install_now": "Suiteáil é anois",
     "install_now_hint": "Is féidir le do bhrabhsálaí é seo a dhéanamh le tapáil amháin — ní gá siopa aipeanna a úsáid.",
-    "already_installed_title": "Tá tú ag baint úsáide as an app suiteáilte cheana féin",
-    "already_installed_body": "Níl aon rud níos mó le déanamh ar an ngléas seo. Tá na céimeanna thíos le haghaidh do ghutháin, táibléad agus ríomhairí eile.",
-    "types_title": "An dá chineál app, mínithe go simplí",
-    "types_intro": "Deir daoine “app” le haghaidh dhá rud an-difriúil, agus is fiú a fháil amach cé acu. I mbeagán focal: tá an leagan scáileáin baile anseo inniu agus tá an aip chuí beagnach críochnaithe.",
+    "already_installed_title": "Tá an aip shuiteáilte in úsáid agat cheana féin",
+    "already_installed_body": "Níl aon rud eile le déanamh ar an ngléas seo. Baineann na céimeanna thíos le do ghutháin, táibléid agus ríomhairí eile.",
+    "types_title": "Míniú simplí ar an dá chineál aipe",
+    "types_intro": "Úsáideann daoine an focal “aip” le haghaidh dhá rud an-difriúil, agus is fiú an difríocht a thuiscint. Go hachomair: tá leagan an scáileáin baile ar fáil anois agus tá an aip dhúchasach beagnach críochnaithe.",
     "type_browser_title": "Bain úsáid as do bhrabhsálaí",
     "type_browser_tag": "Oibríonn i ngach áit",
     "type_browser_body": "Níl aon rud le suiteáil agus gan aon rud le híoslódáil. Oscail an suíomh Gréasáin i Chrome, Safari, Edge nó Firefox agus oibríonn gach rud. Seo mar a úsáideann formhór na mball {{name}}.",
-    "type_browser_point_1": "Ní dhéanfaidh aon ní a chur ar bun",
-    "type_browser_point_2": "I gcónaí an leagan is déanaí",
-    "type_browser_point_3": "Níl aon deilbhín app ar do scáileán baile",
-    "type_pwa_title": "Sábháladh an suíomh Gréasáin ar do scáileán baile",
+    "type_browser_point_1": "Ní gá aon rud a shocrú",
+    "type_browser_point_2": "An leagan is déanaí i gcónaí",
+    "type_browser_point_3": "Gan deilbhín aipe ar do scáileán baile",
+    "type_pwa_title": "An Suíomh Gréasáin Sábháilte ar do Scáileán Baile",
     "type_pwa_tag": "Ar fáil anois",
-    "type_pwa_body": "Ní clár ar leith é seo - is é an suíomh Gréasáin céanna é, a shábháiltear ar do ghléas mar a dheilbhín féin. Tapáil an deilbhín agus osclaíonn {{name}} lánscáileán gan aon bharra seoltaí, mar sin tá cuma agus mothaíonn sé mar aip. Ní thógann sé beagnach aon stóráil agus nuashonraíonn sé é féin, mar sin níl aon rud le híoslódáil a choinneáil. Is é an t-ainm ceart dó ná PWA, gearr do Progressive Web App, agus is é an rogha a oibríonn inniu.",
-    "type_pwa_point_1": "A deilbhín féin ar do scáileán baile nó deasc",
-    "type_pwa_point_2": "Osclaíonn sé scáileán iomlán agus tosaíonn sé níos tapúla",
-    "type_pwa_point_3": "Fanann sé ag obair nuair a thiteann do chomhartha amach",
-    "type_pwa_point_4": "Níl siopa app nó cuntas breise ag teastáil",
-    "type_pwa_point_5": "Oibríonn sé inniu ar Android agus Windows; awkward ar Apple",
+    "type_pwa_body": "Ní clár ar leith é seo — is é an suíomh gréasáin céanna é, sábháilte ar do ghléas faoina dheilbhín féin. Tapáil an deilbhín agus osclóidh {{name}} ar lánscáileán gan barra seoltaí, mar sin beidh cuma agus mothú aipe air. Ní úsáideann sé mórán stórála agus nuashonraíonn sé é féin, mar sin ní gá nuashonruithe a íoslódáil arís agus arís eile. PWA, giorrúchán ar Progressive Web App, an t-ainm ceart air, agus is é seo an rogha a oibríonn faoi láthair.",
+    "type_pwa_point_1": "A dheilbhín féin ar do scáileán baile nó ar do dheasc",
+    "type_pwa_point_2": "Osclaíonn sé ar lánscáileán agus tosaíonn sé níos tapa",
+    "type_pwa_point_3": "Leanann sé ag obair má chailleann tú an comhartha",
+    "type_pwa_point_4": "Ní gá siopa aipeanna ná cuntas breise",
+    "type_pwa_point_5": "Oibríonn sé anois ar Android agus Windows; tá deacrachtaí leis ar Apple",
     "type_pwa_cta": "Taispeáin dom conas",
-    "type_native_title": "An app ceart, ón siopa app",
+    "type_native_title": "An Aip Dhúchasach ón Siopa Aipeanna",
     "type_native_tag": "Beagnach críochnaithe",
-    "type_native_body": "Aip fíor, ar leith - an cineál a fhaigheann tú ó Google Play nó Apple's App Store agus a shuíonn taobh le d'aipeanna eile. Tugann forbróirí aip dhúchasach air seo, rud a chiallaíonn go bhfuil sé tógtha le huirlisí an ghutháin féin seachas a bheith ina shuíomh Gréasáin faoi cheilt. Is é sin a ligeann dó mothú níos tapúla, bain úsáid as do cheamara agus grianghraif i gceart, agus fógraí a sheachadadh go hiontaofa fiú nuair a bhíonn sé dúnta. Tá ceann tógtha againn, tá sé beagnach críochnaithe, agus tá sé ag teacht go han-luath.",
-    "type_native_point_1": "Suiteáilte ón siopa app cosúil le haon app eile",
+    "type_native_body": "Aip cheart ar leith í seo — an cineál a fhaigheann tú ó Google Play nó ó App Store Apple agus a bhíonn taobh le d'aipeanna eile. Tugann forbróirí aip dhúchasach uirthi, mar go dtógtar í le huirlisí an ghutháin féin seachas mar shuíomh gréasáin faoi cheilt. Dá bharr sin bíonn sí níos tapa, úsáideann sí do cheamara agus do ghrianghraif i gceart, agus seolann sí fógraí go hiontaofa fiú nuair a bhíonn sí dúnta. Tá an aip tógtha againn, tá sí beagnach críochnaithe agus beidh sí ar fáil go han-luath.",
+    "type_native_point_1": "Suiteáilte ón siopa aipeanna ar nós aon aipe eile",
     "type_native_point_2": "Níos tapa, agus scrollú agus tapáil níos míne",
     "type_native_point_3": "Fógraí a thagann go hiontaofa",
     "type_native_point_4": "Aip amháin le haghaidh Android agus iPhone nó iPad",
-    "type_native_status": "A bheith macánta faoin ordú: tá Android is gaire, toisc go bhfuil gach rud is gá chun é a scaoileadh ar bun cheana féin. Tá an leagan iPhone agus iPad tógtha ón aip chéanna, ach tá cuntas forbróra ag teastáil ó Apple agus déanann sé athbhreithniú ar gach aip sular féidir é a fhoilsiú, mar sin beidh sé ina dhiaidh sin go luath ina dhiaidh sin. Níl aon nasc íoslódála anseo fós - cuirfimid ceann ar an leathanach seo nuair a bheidh rud éigin fiú le híoslódáil.",
+    "type_native_status": "Le bheith ionraic faoin ord: is é Android is gaire don eisiúint, mar tá gach rud is gá chun é a sheoladh socraithe cheana féin. Tógtar an leagan iPhone agus iPad ón aip chéanna, ach éilíonn Apple cuntas forbróra agus déanann sé athbhreithniú ar gach aip sula bhfoilsítear í, mar sin tiocfaidh an leagan sin beagán níos déanaí. Níl nasc íoslódála ann fós — cuirfimid leis an leathanach seo é a luaithe a bheidh leagan fiúntach réidh.",
     "steps_title": "Conas é a chur le do scáileán baile",
-    "steps_intro": "Roghnaigh do gléas thíos. Tá an ceann is cosúil go bhfuil tú in úsáid roghnaithe againn.",
+    "steps_intro": "Roghnaigh do ghléas thíos. Tá an gléas is dócha atá in úsáid agat roghnaithe againn.",
     "steps_tab_android": "Android",
     "steps_tab_iphone": "iPhone nó iPad",
     "steps_tab_windows": "Windows",
     "steps_tab_mac": "Mac",
-    "steps_android_title": "Fón Android nó táibléad",
-    "steps_android_1": "Oscail an leathanach seo i Chrome ar do ghuthán Android nó táibléad.",
+    "steps_android_title": "Fón nó Táibléad Android",
+    "steps_android_1": "Oscail an leathanach seo in Chrome ar d'fhón nó ar do tháibléad Android.",
     "steps_android_2": "Tapáil an roghchlár trí phonc sa chúinne uachtarach ar dheis.",
-    "steps_android_3": "Beartaíonn \"Suiteáil app\", nó \"Cuir leis an scáileán Baile\" más é sin a fheiceann tú.",
+    "steps_android_3": "Tapáil \"Suiteáil aip\", nó \"Cuir leis an Scáileán Baile\" más é sin an rogha a fheiceann tú.",
     "steps_android_4": "Deimhnigh. Tá an deilbhín le feiceáil le d'aipeanna eile - oscail é as seo amach.",
-    "steps_android_note": "Ag baint úsáide as Samsung Internet in ionad Chrome? Beartaíonn an roghchlár ag bun an scáileáin, ansin \"Cuir leathanach le\", ansin \"Scáileán Baile\".",
+    "steps_android_note": "An bhfuil Samsung Internet in úsáid agat in ionad Chrome? Tapáil an roghchlár ag bun an scáileáin, ansin \"Cuir leathanach le\", agus ansin \"Scáileán Baile\".",
     "steps_iphone_title": "iPhone nó iPad",
     "steps_iphone_1": "Oscail an leathanach seo i Safari. Ní oibríonn sé seo i Chrome nó Firefox ar iPhone nó iPad - ní cheadaíonn Apple é ach i Safari.",
     "steps_iphone_2": "Tapáil an cnaipe Comhroinn: cearnóg le saighead ag díriú amach as.",
     "steps_iphone_3": "Scrollaigh síos an liosta agus tapáil \"Cuir leis an Scáileán Baile\".",
-    "steps_iphone_4": "Beartaíonn \"Add\". Tá an deilbhín le feiceáil ar do scáileán baile.",
-    "steps_mac_title": "Mac ríomhaire",
+    "steps_iphone_4": "Tapáil \"Cuir Leis\". Beidh an deilbhín le feiceáil ar do scáileán baile.",
+    "steps_mac_title": "Ríomhaire Mac",
     "steps_mac_1": "Oscail an leathanach seo i Safari 17 nó níos nuaí.",
     "steps_mac_2": "Cliceáil ar an gcnaipe Comhroinn sa bharra uirlisí Safari.",
     "steps_mac_3": "Roghnaigh \"Cuir le Duga\".",
-    "steps_mac_4": "Seiceáil an t-ainm, ansin cliceáil \"Add\". Tá sé le feiceáil i do Duga.",
+    "steps_mac_4": "Seiceáil an t-ainm agus ansin cliceáil \"Cuir Leis\". Beidh sé le feiceáil i do Dhuga.",
     "steps_mac_note": "Ag baint úsáide as Chrome nó Edge ar do Mac? Cuardaigh an deilbhín suiteála beag ar thaobh na láimhe deise den bharra seoltaí ina ionad sin.",
-    "steps_windows_title": "Windows ríomhaire",
+    "steps_windows_title": "Ríomhaire Windows",
     "steps_windows_1": "Oscail an leathanach seo in Chrome nó Edge.",
     "steps_windows_2": "Féach ar thaobh na láimhe deise den bharra seoltaí don deilbhín suiteála: scáileán beag le saighead ag díriú anuas air.",
-    "steps_windows_3": "Gan íocón ann? Oscail an roghchlár trí phonc. I Chrome roghnaigh \"Cast, sábháil agus roinnt\", ansin \"Suiteáil leathanach mar app\". In Edge roghnaigh \"Apps\", ansin \"Suiteáil an suíomh seo mar aip\".",
+    "steps_windows_3": "Nach bhfuil deilbhín ann? Oscail an roghchlár trí phonc. In Chrome roghnaigh \"Craol, sábháil agus comhroinn\", ansin \"Suiteáil an leathanach mar aip\". In Edge roghnaigh \"Aipeanna\", ansin \"Suiteáil an suíomh seo mar aip\".",
     "steps_windows_4": "Cliceáil \"Suiteáil\". Osclaíonn sé ina fhuinneog féin agus feictear i do roghchlár Tosaigh.",
-    "steps_apple_warning": "Is é seo an cosán atá neamhiontaofa ar fheistí Apple faoi láthair. Bain triail as - ar roinnt leaganacha oibríonn sé go breá - ach má tá an rogha in easnamh, nó má osclaíonn an app go aisteach, is é sin an fhadhb atá á réiteach againn.",
+    "steps_apple_warning": "Níl an bealach seo iontaofa ar ghléasanna Apple faoi láthair. Bain triail as — oibríonn sé i gceart ar roinnt leaganacha — ach má tá an rogha ar iarraidh nó má osclaíonn an aip ar bhealach ait, sin í an fhadhb atá á réiteach againn.",
     "steps_missing_title": "Ní féidir an rogha a aimsiú?",
     "steps_missing_body": "De ghnáth ciallaíonn sé sin ceann de thrí rud: tá an aip suiteáilte cheana féin ar an ngléas seo, tá do bhrabhsálaí as dáta, nó ní thacaíonn do bhrabhsálaí leis. Réitíonn sé an chuid is mó den am nuair a dhéanann tú do bhrabhsálaí a nuashonrú go dtí an leagan is déanaí.",
-    "help_title": "Fós bhfostú?",
-    "help_body": "Inis dúinn cén gléas agus brabhsálaí atá in úsáid agat agus siúlfaimid tríd tú.",
+    "help_title": "An Bhfuil Tú Fós i Sáinn?",
+    "help_body": "Inis dúinn cén gléas agus cén brabhsálaí atá in úsáid agat agus treoróimid tríd an bpróiseas thú.",
     "help_cta": "Déan teagmháil linn",
     "help_secondary_cta": "Tabhair cuairt ar an ionad cabhrach"
   },
