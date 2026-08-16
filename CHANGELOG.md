@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's Terms and Privacy summaries no longer fall back to English in Irish.** Sixteen legal-summary headings and paragraphs now use context-aware Irish while continuing to identify the full web terms and privacy policy as canonical. A focused test protects both summaries.
+
 - **The native app's Irish support hub, About summary and Contact guidance no longer display English.** Forty navigation labels, policy descriptions and member-support paragraphs now use context-aware Irish, including urgent-harm guidance and the AGPL source-availability summary. This pass also catches a stale English description that differed from the current source and therefore escaped exact-match counting; a focused test protects the reviewed legal-support slice.
 
 - **The native app's entire 325-string Groups catalogue is now reviewed for Irish.** The final 40 English fallbacks in group analytics now cover membership, engagement, retention, comparisons and activity breakdowns in context-aware Irish. A whole-catalog test verifies every key and permits only the two deliberately unchanged latitude and longitude examples.

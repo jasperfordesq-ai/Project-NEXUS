@@ -218,24 +218,24 @@
         "section3Body": "Má bhaineann ábhar imní le díobháil láithreach nó le gníomhaíocht neamhdhleathach, déan teagmháil ar dtús leis an tseirbhís éigeandála áitiúil nó leis an údarás dlíthiúil ábhartha; ansin tuairiscigh tríd an ardán é."
       },
       "terms": {
-        "title": "Terms of use summary",
-        "summary": "These points summarise expected platform use. The web terms remain the canonical legal text.",
-        "section1Title": "Use the platform responsibly",
-        "section1Body": "Members are expected to provide accurate information, respect other users, and use timebanking, marketplace, messaging, and group tools lawfully.",
-        "section2Title": "Community rules",
-        "section2Body": "Tenant and group rules may add workflow-specific expectations, especially for exchanges, volunteering, events, safeguarding, and marketplace activity.",
-        "section3Title": "Canonical terms",
-        "section3Body": "Open the web version for the full, current terms, including legal notices, attribution, liability, and licence information."
+        "title": "Achoimre ar théarmaí úsáide",
+        "summary": "Déanann na pointí seo achoimre ar úsáid ionchasach an ardáin. Is iad téarmaí an ghréasáin an téacs dlíthiúil canónach i gcónaí.",
+        "section1Title": "Úsáid an t-ardán go freagrach",
+        "section1Body": "Táthar ag súil go gcuirfidh baill eolas cruinn ar fáil, go léireoidh siad meas ar úsáideoirí eile agus go n-úsáidfidh siad uirlisí baincéireachta ama, áit mhargaidh, teachtaireachtaí agus grúpaí de réir an dlí.",
+        "section2Title": "Rialacha pobail",
+        "section2Body": "Féadfaidh rialacha an tionónta agus an ghrúpa ionchais a bhaineann go sonrach le sreafaí oibre a chur leis, go háirithe maidir le malartuithe, obair dheonach, imeachtaí, cosaint agus gníomhaíocht áit mhargaidh.",
+        "section3Title": "Téarmaí canónacha",
+        "section3Body": "Oscail an leagan gréasáin chun na téarmaí iomlána reatha a léamh, lena n-áirítear fógraí dlíthiúla, aitheantas, dliteanas agus eolas ceadúnais."
       },
       "privacy": {
-        "title": "Privacy summary",
-        "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Data you provide",
-        "section1Body": "Profile details, messages, listings, events, applications, transactions, and settings are used to operate the features you choose to use.",
-        "section2Title": "Controls",
-        "section2Body": "Mobile settings include privacy, notification, blocked-user, translation, and data export workflows where supported by the account and tenant.",
-        "section3Title": "Full policy",
-        "section3Body": "Open the web privacy policy for the complete legal basis, retention, processor, rights, and contact information."
+        "title": "Achoimre ar phríobháideachas",
+        "summary": "Próiseálann Tionscadal NEXUS sonraí cuntais, pobail, sreafa oibre agus slándála chun an tseirbhís a chur ar fáil.",
+        "section1Title": "Sonraí a sholáthraíonn tú",
+        "section1Body": "Úsáidtear sonraí próifíle, teachtaireachtaí, liostuithe, imeachtaí, iarratais, idirbhearta agus socruithe chun na gnéithe a roghnaíonn tú a úsáid a oibriú.",
+        "section2Title": "Rialuithe",
+        "section2Body": "Áirítear i socruithe móibíleacha sreafaí oibre maidir le príobháideachas, fógraí, úsáideoirí blocáilte, aistriúchán agus easpórtáil sonraí, nuair a thacaíonn an cuntas agus an tionónta leo.",
+        "section3Title": "An beartas iomlán",
+        "section3Body": "Oscail beartas príobháideachais an ghréasáin chun eolas iomlán a fháil ar an mbunús dlíthiúil, coinneáil, próiseálaithe, cearta agus sonraí teagmhála."
       },
       "cookies": {
         "title": "Cookies and storage summary",
