@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The settings pages now say "we could not load this" instead of showing empty or default settings when the server is down.** On the main settings page and the linked-accounts, appearance and availability pages, a backend hiccup used to make it look as though you had no linked accounts, no saved availability, or default preferences — which could mislead you into thinking your settings had been lost or reset. Each now shows a clear "could not load" notice at the top when a section fails to load, so you know it's a temporary problem rather than your real settings. Sign-in problems still send you to log in. Covered by tests for each page.
+
 - **Deleting a marketplace listing or a podcast episode now asks you to confirm first.** Both used to delete immediately on a single click, with no way back. They now take you to a short "Delete this listing? / Delete this episode? — this is permanent and cannot be undone" page with a clear "Yes, delete" button and a Cancel link, so a stray click can't wipe a listing or episode. The confirmation is a shared page reused by both, translated into every language, and its delete button is also guarded against a double-click.
 
 - **If your session expires while opening a volunteering page, you're now sent to log in instead of a "service unavailable" or "couldn't load" page.** On the volunteering list and a volunteering opportunity's detail page, an expired or revoked sign-in used to show a dead-end error page rather than the login screen every other page sends you to. Both now redirect to login, so you can sign back in and carry on. Covered by a test for each page.

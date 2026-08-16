@@ -435,6 +435,7 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
 
   let children = [];
   let parents = [];
+  let loadError = false;
 
   try {
     children = normalizeRelationships(payloadFrom(await callSettings(token, 'GET', '/sub-accounts')), [
@@ -452,6 +453,7 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
     ], res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
@@ -459,6 +461,7 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
   return res.render('settings/linked-accounts', {
     title: res.locals.t('govuk_alpha_settings.linked.title'),
     activeNav: 'account',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     status,
     // 🔴 The three safeguarding statuses rendered the ENGLISH SETTINGS_STATUS_MESSAGES
     // value in all eleven languages. They map exactly to already-translated
@@ -503,10 +506,12 @@ router.get('/appearance', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   let currentTheme = 'system';
+  let loadError = false;
   try {
     currentTheme = themeFromSettingsData(dataFrom(await callSettings(token, 'GET', '')));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
@@ -514,6 +519,7 @@ router.get('/appearance', asyncRoute(async (req, res) => {
   return res.render('settings/appearance', {
     title: res.locals.t('govuk_alpha_settings.appearance.title'),
     activeNav: 'account',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     status,
     statusMessage: SETTINGS_STATUS_MESSAGES[status]
       ? res.locals.t(`govuk_alpha_settings.states.${status}`)
@@ -555,10 +561,12 @@ router.get('/availability', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   let availabilityByDay = {};
+  let loadError = false;
   try {
     availabilityByDay = availabilityByDayFromData(dataFrom(await callSettings(token, 'GET', '/availability')));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
@@ -566,6 +574,7 @@ router.get('/availability', asyncRoute(async (req, res) => {
   return res.render('settings/availability', {
     title: res.locals.t('govuk_alpha_settings.availability.title'),
     activeNav: 'account',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     status,
     statusMessage: SETTINGS_STATUS_MESSAGES[status]
       ? res.locals.t(`govuk_alpha_settings.states.${status}`)
@@ -657,6 +666,7 @@ router.get('/insurance', asyncRoute(async (req, res) => {
   if (!insuranceEnabledForRequest(req)) return renderNotFound(res);
 
   let certificates = [];
+  let loadError = false;
   try {
     certificates = normalizeInsuranceCertificates(
       payloadFrom(await callSettings(token, 'GET', '/insurance')),
@@ -664,6 +674,7 @@ router.get('/insurance', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
@@ -671,6 +682,7 @@ router.get('/insurance', asyncRoute(async (req, res) => {
   return res.render('settings/insurance', {
     title: res.locals.t('govuk_alpha_settings.insurance.title'),
     activeNav: 'account',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     status,
     statusMessage: SETTINGS_STATUS_MESSAGES[status]
       ? res.locals.t(`govuk_alpha_settings.states.${status}`)

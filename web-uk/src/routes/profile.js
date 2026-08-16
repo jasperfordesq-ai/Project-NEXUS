@@ -1093,6 +1093,7 @@ router.get('/settings', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
+  let loadFailed = false;
   const data = {
     profile: {},
     account: {},
@@ -1110,12 +1111,14 @@ router.get('/settings', asyncRoute(async (req, res) => {
     data.profile = normalizeProfilePayload(await getRequestProfile(req, token));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.account = payloadFrom(await callUserSettings(token, 'GET', ''));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
@@ -1124,6 +1127,7 @@ router.get('/settings', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
@@ -1132,6 +1136,7 @@ router.get('/settings', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
@@ -1139,30 +1144,35 @@ router.get('/settings', asyncRoute(async (req, res) => {
     data.notificationPrefs.digest_frequency = digestFrequencyFrom(digestSettings);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.matchPrefs = normalizeMatchPrefs(payloadFrom(await callUserSettings(token, 'GET', '/match-preferences')));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.skills = normalizeSkills(payloadFrom(await callUserSettings(token, 'GET', '/skills')));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.passkeys = normalizePasskeys(payloadFrom(await callWebAuthn(token, 'GET', '/credentials')), req);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.sessions = normalizeSessions(payloadFrom(await callProfile(token, 'GET', '/users/me/sessions')), req);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
@@ -1171,15 +1181,17 @@ router.get('/settings', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
   try {
     data.vettingStatus = payloadFrom(await callProfile(token, 'GET', '/safeguarding/my-vetting-status'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadFailed = true;
   }
 
-  return res.render('profile/settings', buildProfileSettingsViewModel(req, data));
+  return res.render('profile/settings', { ...buildProfileSettingsViewModel(req, data), loadError: loadFailed ? res.locals.t('states.load_error') : '' });
 }));
 
 router.post('/settings', asyncRoute(async (req, res) => {

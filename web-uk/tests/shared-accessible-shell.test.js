@@ -4042,6 +4042,33 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it.each([
+    ['/settings/appearance'],
+    ['/settings/availability'],
+    ['/settings/linked-accounts']
+  ])('shows a "we could not load this" banner on %s when the settings API fails', async (settingsPath) => {
+    const api = require('../src/lib/api');
+    api.callUserSettingsApi.mockRejectedValueOnce(new api.ApiError('Settings unavailable', 503));
+
+    const response = await request(app).get(settingsPath).set('Cookie', signedCookieHeader());
+
+    // A failed section load is announced, not shown as empty/default settings.
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it('shows a "we could not load this" banner on the profile settings hub when a section fails', async () => {
+    const api = require('../src/lib/api');
+    api.callUserSettingsApi.mockRejectedValueOnce(new api.ApiError('Settings unavailable', 503));
+
+    const response = await request(app).get('/profile/settings').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
   it('renders the Laravel-style availability settings page', async () => {
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
