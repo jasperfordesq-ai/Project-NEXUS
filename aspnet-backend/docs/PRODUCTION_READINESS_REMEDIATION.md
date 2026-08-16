@@ -165,6 +165,77 @@ that `tenant/bootstrap` returns `contact.email`, `contact.phone` and
 `contact.address` as `null` where the client's schema expects strings. Harmless
 in dev, but it is a real shape divergence.
 
+## R-25 `ASSESSED, NOT STARTED` — group conversations do not exist here
+
+Assessed 2026-08-16. This is the largest remaining threat to "two frontends
+switch by configuration alone", because it is a **data-model** difference, not a
+missing endpoint.
+
+### What Laravel has
+
+```
+conversations            id, tenant_id, is_group, group_name, group_avatar_url, created_by, ...
+conversation_participants id, tenant_id, conversation_id, user_id,
+                          role enum('admin','member'), joined_at, left_at, muted_until
+                          UNIQUE (tenant_id, conversation_id, user_id)
+```
+
+Any number of participants, each with a role, able to join, leave, and mute.
+
+### What ASP.NET has
+
+`Conversation.Participant1Id` / `Participant2Id`, with a **unique index on the
+pair** (`MessagingConfiguration.cs:29-31`). Exactly two people, no roles, no
+join/leave, no mute. A group conversation cannot be represented at all.
+
+### What that does to the live clients — verified against the running backend
+
+The React app has a **working group-creation UI**
+(`pages/messages/components/CreateGroupModal.tsx`), which posts
+`{name, member_ids:[…]}` and requires at least two members.
+
+| Request | Result |
+| --- | --- |
+| `POST /v2/conversations/groups` with the real client payload | **400 `participant_id is required`** — the handler reads `participant_id`, which the client never sends |
+| `POST /v2/conversations/{id}/participants` | **200 success, does nothing** (stub) |
+| `DELETE /v2/conversations/{id}/participants/{userId}` | **200 success, does nothing** (stub) |
+| `PATCH /v2/conversations/{id}/group` (rename) | **200 success, does nothing** (stub) |
+| `GET /v2/conversations/groups` | returns **all** conversations as pairs, not groups |
+
+So a member fills in the group form, picks people, and gets an error; and every
+management action reports success while changing nothing.
+
+### Shape of the fix
+
+1. **Migration**: add `conversation_participants` (with the Laravel columns and
+   unique key) plus `is_group`, `group_name`, `group_avatar_url`, `created_by` on
+   `conversations`.
+2. **Backfill**: every existing conversation becomes two participant rows from
+   `Participant1Id`/`Participant2Id`, `is_group = false`. Must be idempotent.
+3. **Keep the pair columns during transition.** Dropping them immediately breaks
+   every existing query (`MessagingConfiguration`, `MessageAttachmentsController`,
+   `MemberParityController` voice send, the conversation list, unread counts).
+   Write to both, read from participants, and remove the columns in a later
+   migration once nothing reads them.
+4. **Rework the queries** that assume two parties — the unique pair index must go,
+   and "the other participant" logic becomes "participants except me".
+5. **Implement the five endpoints** above for real, including role and left_at
+   semantics.
+6. **Message authorisation** currently checks `Participant1Id == me ||
+   Participant2Id == me` in several places; it becomes a participants lookup.
+   🔴 Getting this wrong exposes private messages, so each site needs a test.
+
+### Cost and risk
+
+Comparable to the tenant-hierarchy work but riskier, because it touches private
+messaging and its authorisation rather than an admin surface. Roughly a full
+session: migration + backfill, query rework, five endpoints, and authorisation
+tests at every site that currently assumes a pair.
+
+**Recommendation: do it as its own piece of work, not folded into a stub batch.**
+The failure mode of a half-done migration here is either broken messaging or
+leaked messages.
+
 ## 🔴 A second invisible defect class: tables the model believes in
 
 Found 2026-08-15 while implementing `GET /v2/volunteering/training` for real.
