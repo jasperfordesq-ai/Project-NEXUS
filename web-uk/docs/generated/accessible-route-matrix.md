@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-14T12:14:24.840Z
-Laravel commit SHA: `d3dff1fa0ecf21c214d8e321074b78c1506ba70a`
-Web UK repository commit SHA: `d3dff1fa0ecf21c214d8e321074b78c1506ba70a`
+Generated: 2026-08-16T20:08:44.836Z
+Laravel commit SHA: `75c06cb5cad3e5781fb11fb08ccffa7d9667fb67`
+Web UK repository commit SHA: `75c06cb5cad3e5781fb11fb08ccffa7d9667fb67`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 723 |
+| web-uk routes | 725 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 13 |
+| Extra web-uk routes | 15 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -62,7 +62,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | listings | 19 | 0 | 1 | 0 |
 | login | 7 | 0 | 0 | 0 |
 | logout | 1 | 0 | 0 | 0 |
-| marketplace | 50 | 0 | 0 | 0 |
+| marketplace | 50 | 0 | 1 | 0 |
 | matches | 4 | 0 | 0 | 0 |
 | me | 6 | 0 | 0 | 0 |
 | members | 11 | 0 | 1 | 0 |
@@ -73,7 +73,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | onboarding | 4 | 0 | 0 | 0 |
 | organisations | 9 | 0 | 0 | 0 |
 | password | 2 | 0 | 0 | 0 |
-| podcasts | 14 | 0 | 0 | 0 |
+| podcasts | 14 | 0 | 1 | 0 |
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
@@ -117,7 +117,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/legal/{param}/versions/{param}` | legal | legal/version | web-uk/src/routes/legal.js |
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
+| GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| GET | `/podcasts/studio/{param}/episodes/{param}/delete` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |

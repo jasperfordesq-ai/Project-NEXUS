@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-14T12:14:24.840Z",
+  "generatedAt": "2026-08-16T20:08:44.836Z",
   "provenance": {
-    "generatedAt": "2026-08-14T12:14:24.840Z",
+    "generatedAt": "2026-08-16T20:08:44.836Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "d3dff1fa0ecf21c214d8e321074b78c1506ba70a",
+    "laravelCommitSha": "75c06cb5cad3e5781fb11fb08ccffa7d9667fb67",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "d3dff1fa0ecf21c214d8e321074b78c1506ba70a",
+    "webUkRepositoryCommitSha": "75c06cb5cad3e5781fb11fb08ccffa7d9667fb67",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-14T12:14:24.840Z",
+    "generatedAt": "2026-08-16T20:08:44.836Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 723,
+    "webUkRoutes": 725,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 13,
+    "extraWebUkRoutes": 15,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "cookie-consent": {
@@ -52,8 +52,20 @@
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
+      "marketplace": {
+        "matched": 50,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
       "members": {
         "matched": 11,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "podcasts": {
+        "matched": 14,
         "missing": 0,
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
@@ -304,12 +316,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "marketplace": {
-        "matched": 50,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "matches": {
         "matched": 4,
         "missing": 0,
@@ -360,12 +366,6 @@
       },
       "password": {
         "matched": 2,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "podcasts": {
-        "matched": 14,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -665,6 +665,27 @@
       "webUkRouteKind": ""
     },
     {
+      "method": "GET",
+      "path": "/marketplace/{param}/delete",
+      "family": "marketplace",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/marketplace/{param}/delete",
+      "webUkView": "confirm-delete",
+      "webUkFile": "web-uk/src/routes/marketplace-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
       "method": "POST",
       "path": "/members/{param}/connect",
       "family": "members",
@@ -683,6 +704,27 @@
       "webUkPath": "/members/{param}/connect",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/podcasts/studio/{param}/episodes/{param}/delete",
+      "family": "podcasts",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/podcasts/studio/{param}/episodes/{param}/delete",
+      "webUkView": "confirm-delete",
+      "webUkFile": "web-uk/src/routes/podcast-actions.js",
       "webUkRouteKind": ""
     },
     {
