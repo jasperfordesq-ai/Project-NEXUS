@@ -150,7 +150,7 @@
             {% if deleteConfirmationRequired %}
               <p id="confirm-delete-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span>
-                Confirm that you understand the group will be permanently deleted.
+                {{ t("groups.delete.confirm_error") }}
               </p>
             {% endif %}
             <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">

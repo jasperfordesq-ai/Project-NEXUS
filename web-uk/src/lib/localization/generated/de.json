@@ -1904,6 +1904,13 @@
             "messages": {
                 "empty_conversation": "Noch keine Nachrichten in dieser Konversation.",
                 "your_message_label": "Ihre Nachricht",
+                "unknown_member": "Unbekannt",
+                "regarding": "Betreff:",
+                "listing_fallback": "Angebot",
+                "messages_region": "Unterhaltungsnachrichten",
+                "sender_you": "Sie",
+                "attachments_heading": "Anhänge",
+                "attachments_hint": "Laden Sie Bilder oder Dokumente hoch. Sie können eine Nachricht auch nur mit Anhängen senden.",
                 "search_label": "Person suchen, der Sie eine Nachricht senden möchten",
                 "search_hint": "Nach Mitglieds- oder Organisationsname suchen.",
                 "search_empty": "Keine Mitglieder gefunden. Versuchen Sie einen anderen Namen oder durchsuchen Sie das Verzeichnis.",
@@ -3161,6 +3168,7 @@
                     "title": "Gruppe löschen",
                     "warning": "Das Löschen dieser Gruppe ist dauerhaft. Alle Mitglieder, Diskussionen und Antworten werden entfernt und dies kann nicht rückgängig gemacht werden.",
                     "confirm_label": "Ich verstehe, dass die Gruppe dadurch dauerhaft gelöscht wird",
+                    "confirm_error": "Bestätigen Sie, dass Ihnen bewusst ist, dass die Gruppe dauerhaft gelöscht wird.",
                     "submit": "Diese Gruppe löschen",
                     "failed": "Die Gruppe konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
                 },

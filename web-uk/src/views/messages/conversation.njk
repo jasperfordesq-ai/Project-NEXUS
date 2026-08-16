@@ -33,7 +33,7 @@
       {% endif %}
 
       <div class="govuk-!-margin-bottom-6" style="display: flex; align-items: center; gap: 20px;">
-        {% set otherUserName = conversation.otherUser.name or conversation.other_user_name or conversation.otherUserName or "Unknown" %}
+        {% set otherUserName = conversation.otherUser.name or conversation.other_user_name or conversation.otherUserName or t("messages.unknown_member") %}
         {% set nameParts = otherUserName.split(' ') %}
         {% set user = { firstName: nameParts[0] or '', lastName: nameParts[1] or '' } %}
         {% set size = 'large' %}
@@ -45,11 +45,11 @@
 
       {% if listing %}
         <p class="govuk-body-s govuk-!-margin-bottom-6">
-          Regarding: <a href="{{ urlFor('/listings/' + (listing.id | string)) }}" class="govuk-link">{{ listing.title or listing.name or "Listing" }}</a>
+          {{ t("messages.regarding") }} <a href="{{ urlFor('/listings/' + (listing.id | string)) }}" class="govuk-link">{{ listing.title or listing.name or t("messages.listing_fallback") }}</a>
         </p>
       {% endif %}
 
-      <div class="app-messages-container" role="log" aria-live="polite" aria-label="Conversation messages">
+      <div class="app-messages-container" role="log" aria-live="polite" aria-label="{{ t('messages.messages_region') }}">
         {% if messages and messages.length > 0 %}
           {% for message in messages %}
             <div class="app-message{% if message.is_own %} app-message--own{% endif %}">
@@ -66,7 +66,7 @@
                   {% include "partials/avatar.njk" %}
                   <strong class="govuk-!-font-weight-bold govuk-body-s">
                     {% if message.is_own %}
-                      You
+                      {{ t("messages.sender_you") }}
                     {% else %}
                       {{ message.sender_name or message.senderName or "User" }}
                     {% endif %}
@@ -166,10 +166,10 @@
 
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="attachments">
-            Attachments
+            {{ t("messages.attachments_heading") }}
           </label>
           <div id="attachments-hint" class="govuk-hint">
-            Upload images or documents. You can send a message with only attachments.
+            {{ t("messages.attachments_hint") }}
           </div>
           <input class="govuk-file-upload" id="attachments" name="attachments[]" type="file" multiple aria-describedby="attachments-hint" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx">
         </div>

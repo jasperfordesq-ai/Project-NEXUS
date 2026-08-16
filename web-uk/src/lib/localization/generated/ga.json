@@ -1904,6 +1904,13 @@
             "messages": {
                 "empty_conversation": "Níl aon teachtaireacht sa chomhrá seo fós.",
                 "your_message_label": "Do theachtaireacht",
+                "unknown_member": "Unknown",
+                "regarding": "Regarding:",
+                "listing_fallback": "Listing",
+                "messages_region": "Conversation messages",
+                "sender_you": "You",
+                "attachments_heading": "Attachments",
+                "attachments_hint": "Upload images or documents. You can send a message with only attachments.",
                 "search_label": "Cuardaigh duine le teachtaireacht a sheoladh chuige",
                 "search_hint": "Cuardaigh de réir ainm comhalta nó eagraíochta.",
                 "search_empty": "Níor aimsíodh aon chomhaltaí. Bain triail as ainm difriúil nó brabhsáil an t-eolaire.",
@@ -3161,6 +3168,7 @@
                     "title": "Scrios grúpa",
                     "warning": "Tá scriosadh an ghrúpa seo buan. Bainfear na comhaltaí, na plé agus na freagraí go léir agus ní féidir é seo a chur ar ceal.",
                     "confirm_label": "Tuigim go scriosfar an grúpa go buan",
+                    "confirm_error": "Confirm that you understand the group will be permanently deleted.",
                     "submit": "Scrios an grúpa seo",
                     "failed": "Níorbh fhéidir an grúpa a scriosadh. Déan iarracht arís le do thoil."
                 },

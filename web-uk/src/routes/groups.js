@@ -1553,7 +1553,7 @@ router.post('/:id(\\d+)/delete', requireAuth, audit.groupDelete(), asyncRoute(as
       group,
       myMembership,
       isOwner: true,
-      errors: [{ text: 'Confirm that you understand the group will be permanently deleted.', href: '#confirm-delete' }],
+      errors: [{ text: res.locals.t('groups.delete.confirm_error'), href: '#confirm-delete' }],
       deleteConfirmationRequired: true,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
