@@ -74,10 +74,10 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260816095308_AddVolunteerMemberRecords",
-            "the chain currently ends with the three volunteer member-record tables "
-            + "(accessibility needs, credentials, reviews) — each had a client screen and no "
-            + "table, so each returned an empty list indistinguishable from 'you have none'; "
+        migrations.Last().Should().Be("20260816113813_AddVolunteerSafeguardingIncidents",
+            "the chain currently ends with vol_safeguarding_incidents — a volunteer could "
+            + "report a safeguarding concern, be told 'Incident recorded', and have it written "
+            + "to a tenant-config blob that no member or admin surface ever read; "
             + "adding a migration is fine but must be deliberate — update this pin in the same commit. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
             + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "

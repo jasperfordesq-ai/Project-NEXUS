@@ -1243,11 +1243,12 @@ public class VolunteeringParityController : ControllerBase
         });
     }
 
-    [HttpGet("incidents")]
-    public IActionResult Incidents() => Ok(new { data = Array.Empty<object>() });
-
-    [HttpGet("incidents/{incidentId:int}")]
-    public IActionResult Incident(int incidentId) => Ok(new { data = new { id = incidentId, status = "open" } });
+    // 🔴 Incidents moved to VolunteerSafeguardingIncidentsController on
+    // 2026-08-16 (R-27), once vol_safeguarding_incidents existed. Both handlers
+    // are deleted rather than left: the list returned an empty array, so a
+    // volunteer never saw a concern they had raised, and the single-incident
+    // one fabricated {id, status:"open"} for ANY id — reporting a safeguarding
+    // case as open when no such case existed.
 
     // ──────────────────────────────────────────────────────────────────────
     // Volunteer emergency alerts.

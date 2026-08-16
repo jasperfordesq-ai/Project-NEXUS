@@ -389,7 +389,10 @@ public class AdminExplicitParityController : ControllerBase
     [HttpGet("/api/v2/admin/volunteering/giving-days")]
     [HttpGet("/api/v2/admin/volunteering/giving-days/{id}/donors")]
     [HttpGet("/api/v2/admin/volunteering/giving-days/{id}/trends")]
-    [HttpGet("/api/v2/admin/volunteering/incidents")]
+    // 🔴 /api/v2/admin/volunteering/incidents is owned by
+    // VolunteerSafeguardingIncidentsController since 2026-08-16 (R-27). This
+    // catch-all had no branch for it, so the safeguarding queue fell through to
+    // the default and no admin ever saw a reported concern.
     [HttpGet("/api/admin/volunteering/organizations")]
     [HttpGet("/api/v2/admin/volunteering/organizations")]
     [HttpGet("/api/v2/admin/volunteering/organizations/{id}/members")]
@@ -1219,7 +1222,8 @@ public class AdminExplicitParityController : ControllerBase
     [HttpPut("/api/v2/admin/volunteering/expenses/{id}")]
     [HttpPut("/api/v2/admin/volunteering/expenses/policies")]
     [HttpPut("/api/v2/admin/volunteering/giving-days/{id}")]
-    [HttpPut("/api/v2/admin/volunteering/incidents/{id}")]
+    // 🔴 Triage (PUT .../incidents/{id}) likewise moved to
+    // VolunteerSafeguardingIncidentsController (R-27).
     [HttpPut("/api/v2/admin/volunteering/organizations/{id}")]
     [HttpPut("/api/v2/admin/volunteering/organizations/{id}/dlp")]
     [HttpPut("/api/v2/admin/volunteering/organizations/{id}/status")]

@@ -1,7 +1,7 @@
 ﻿{
     "_comment":  "Shrink-only. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower this in the SAME commit that removes stubs; never raise it.",
     "generated_at":  "2026-08-16",
-    "total":  323,
+    "total":  321,
     "by_file":  [
                     {
                         "file":  "MiscParityController.cs",
@@ -32,20 +32,20 @@
                         "count":  11
                     },
                     {
-                        "file":  "CompatibilityAliasController.cs",
-                        "count":  10
-                    },
-                    {
-                        "file":  "VolunteeringParityController.cs",
-                        "count":  10
-                    },
-                    {
                         "file":  "AuthParityController.cs",
+                        "count":  10
+                    },
+                    {
+                        "file":  "CompatibilityAliasController.cs",
                         "count":  10
                     },
                     {
                         "file":  "V15SocialCompatibilityController.cs",
                         "count":  9
+                    },
+                    {
+                        "file":  "VolunteeringParityController.cs",
+                        "count":  8
                     },
                     {
                         "file":  "V15MemberParityController.cs",
@@ -56,11 +56,11 @@
                         "count":  4
                     },
                     {
-                        "file":  "StoriesController.cs",
+                        "file":  "UsersParityController.cs",
                         "count":  3
                     },
                     {
-                        "file":  "UsersParityController.cs",
+                        "file":  "StoriesController.cs",
                         "count":  3
                     },
                     {
@@ -76,7 +76,15 @@
                         "count":  2
                     },
                     {
+                        "file":  "AdminEmailDeliverabilityController.cs",
+                        "count":  1
+                    },
+                    {
                         "file":  "PerformanceMonitorController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "RegistrationPolicyController.cs",
                         "count":  1
                     },
                     {
@@ -88,35 +96,7 @@
                         "count":  1
                     },
                     {
-                        "file":  "RegistrationPolicyController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "NotificationPollingController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "EventRecurrenceController.cs",
-                        "count":  1
-                    },
-                    {
                         "file":  "HealthController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "AuthController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "CompatibilityController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "AdminToolsController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "AdminEmailDeliverabilityController.cs",
                         "count":  1
                     },
                     {
@@ -124,7 +104,27 @@
                         "count":  1
                     },
                     {
+                        "file":  "EventRecurrenceController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AuthController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AdminToolsController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "NotificationPollingController.cs",
+                        "count":  1
+                    },
+                    {
                         "file":  "LaravelReactUtilityCompatibilityController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "CompatibilityController.cs",
                         "count":  1
                     }
                 ]

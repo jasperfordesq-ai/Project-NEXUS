@@ -2366,12 +2366,13 @@ public class CompatibilityAliasController : ControllerBase
             "Volunteer hour submission is unavailable until the reviewed hours ledger is implemented.");
     }
 
-    /// <summary>
-    /// POST /api/volunteering/incidents — Report incident.
-    /// </summary>
-    [HttpPost("api/volunteering/incidents")]
-    public async Task<IActionResult> ReportIncident([FromBody] object? request = null) =>
-        await PersistVolunteerCompatibilityRecord(VolunteerIncidentKeyPrefix, "volunteer_incident", request, "Incident recorded");
+    // 🔴 POST /api/volunteering/incidents moved to
+    // VolunteerSafeguardingIncidentsController on 2026-08-16 (R-27). It wrote
+    // the report as an opaque blob into tenant config under
+    // "compat:vol-incident:" and answered "Incident recorded" — while the
+    // member's list, the single-incident endpoint and every admin surface read
+    // nothing. A volunteer could raise a safeguarding concern, be told it was
+    // recorded, and no safeguarding lead would ever see it.
 
     /// <summary>
     /// POST /api/volunteering/training — Record training.

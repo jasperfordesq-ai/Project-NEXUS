@@ -10,7 +10,7 @@ namespace Nexus.Api.Data.Configurations;
 
 /// <summary>
 /// Volunteer records that belong to a member rather than to an organisation:
-/// accessibility needs, credentials, and reviews (R-27).
+/// accessibility needs, credentials, reviews, and safeguarding incidents (R-27).
 ///
 /// 🔴 All three had client screens and no table, so each returned an empty list
 /// that was indistinguishable from "you have none". Table names mirror
@@ -90,6 +90,52 @@ public class VolunteerMemberRecordsConfiguration : TenantScopedConfiguration
             // credential must not delete the credential. The record of who
             // cleared someone is a safeguarding artefact.
             entity.HasOne(e => e.Verifier).WithMany().HasForeignKey(e => e.VerifiedBy).OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
+        modelBuilder.Entity<VolunteerSafeguardingIncident>(entity =>
+        {
+            entity.ToTable("vol_safeguarding_incidents");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            entity.Property(e => e.ShiftId).HasColumnName("shift_id");
+            entity.Property(e => e.OpportunityId).HasColumnName("opportunity_id");
+            entity.Property(e => e.OrganizationId).HasColumnName("organization_id");
+            entity.Property(e => e.ReportedBy).HasColumnName("reported_by");
+            entity.Property(e => e.Title).HasColumnName("title");
+            entity.Property(e => e.SubjectUserId).HasColumnName("subject_user_id");
+            entity.Property(e => e.InvolvedUserId).HasColumnName("involved_user_id");
+            entity.Property(e => e.IncidentType).HasColumnName("incident_type");
+            entity.Property(e => e.Category).HasColumnName("category");
+            entity.Property(e => e.Severity).HasColumnName("severity");
+            entity.Property(e => e.IncidentDate).HasColumnName("incident_date");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ActionTaken).HasColumnName("action_taken");
+            entity.Property(e => e.DlpUserId).HasColumnName("dlp_user_id");
+            entity.Property(e => e.DlpNotifiedAt).HasColumnName("dlp_notified_at");
+            entity.Property(e => e.AssignedTo).HasColumnName("assigned_to");
+            entity.Property(e => e.AuthorityNotified).HasColumnName("authority_notified");
+            entity.Property(e => e.AuthorityReference).HasColumnName("authority_reference");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.ResolvedAt).HasColumnName("resolved_at");
+            entity.Property(e => e.ResolutionNotes).HasColumnName("resolution_notes");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ShiftId });
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+            entity.HasIndex(e => new { e.TenantId, e.Severity });
+
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+
+            // 🔴 Restrict, not Cascade. Deleting the member who raised a
+            // safeguarding concern must not delete the concern — the report
+            // outlives the account, and the reporter is usually the only
+            // witness.
+            entity.HasOne(e => e.Reporter).WithMany().HasForeignKey(e => e.ReportedBy).OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
         });

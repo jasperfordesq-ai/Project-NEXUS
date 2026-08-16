@@ -654,7 +654,6 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
             ("/api/volunteering/certificates", new { name = "Safeguarding cert" }),
             ("/api/volunteering/donations", new { amount = 12.50m, currency = "EUR" }),
             ("/api/volunteering/expenses", new { amount = 4.25m, category = "travel" }),
-            ("/api/volunteering/incidents", new { summary = "Minor incident" }),
             ("/api/volunteering/training", new { course = "First aid" }),
             ("/api/volunteering/wellbeing/checkin", new { mood = "ok" })
         };
@@ -686,7 +685,12 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-cert:")).Should().BeTrue();
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-donation:")).Should().BeTrue();
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-expense:")).Should().BeTrue();
-        db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-incident:")).Should().BeTrue();
+        // 🔴 Incidents moved out of the config-blob store into
+        // vol_safeguarding_incidents on 2026-08-16 (R-27). This used to assert
+        // the blob existed — pinning a write that no member or admin surface
+        // ever read, so a reported safeguarding concern reached nobody. The
+        // real path is covered by VolunteerSafeguardingIncidentTests, which
+        // asserts the report reaches the staff queue.
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-training:")).Should().BeTrue();
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-wellbeing:")).Should().BeTrue();
         db.Set<VolunteerAccessibilityNeed>().IgnoreQueryFilters()
