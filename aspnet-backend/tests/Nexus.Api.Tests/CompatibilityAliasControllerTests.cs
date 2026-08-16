@@ -677,8 +677,15 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
-        db.TenantConfigs.Single(c => c.Key == $"compat:vol-support:{projectId}:{TestData.MemberUser.Id}")
-            .Value.Should().Contain("\"supported\":false");
+        // 🔴 Backing a project moved onto vol_community_project_supporters on
+        // 2026-08-16 (R-28). This asserted the config blob recorded
+        // "supported":false — a write nothing read, while the project list
+        // carried no supporter_count at all, so the whole feature was cosmetic.
+        // Withdrawing support now removes the row; covered end to end by
+        // VolunteerProjectSupportTests.
+        db.Set<VolunteerProjectSupporter>().IgnoreQueryFilters()
+            .Any(sp => sp.ProjectId == projectId && sp.UserId == TestData.MemberUser.Id)
+            .Should().BeFalse("support was added and then withdrawn above");
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-cert:")).Should().BeTrue();
         // 🔴 Donations moved out of the config-blob store onto money_donations
         // on 2026-08-16 (R-27) — the store the admin donations screen already

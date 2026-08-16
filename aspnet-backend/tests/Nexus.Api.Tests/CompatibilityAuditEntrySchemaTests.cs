@@ -74,10 +74,10 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260816124207_AddVolunteerDonationFields",
-            "the chain currently ends with the volunteering donation fields on money_donations "
-            + "— the member-facing donation POST wrote to a config blob while the admin screen "
-            + "read money_donations, so no member donation ever reached staff; "
+        migrations.Last().Should().Be("20260816144805_AddVolunteerProjectSupporters",
+            "the chain currently ends with vol_community_project_supporters — backing a "
+            + "project wrote to a config blob and the project list carried no supporter_count, "
+            + "so the whole feature was cosmetic; "
             + "adding a migration is fine but must be deliberate — update this pin in the same commit. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
             + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "

@@ -604,8 +604,55 @@ public class VolunteeringParityController : ControllerBase
     [HttpGet("custom-fields")]
     public IActionResult CustomFields() => Ok(new { data = Array.Empty<object>() });
 
+    /// <summary>
+    /// GET community-projects — with the two fields the screen actually shows.
+    ///
+    /// 🔴 This returned raw records carrying neither supporter_count nor
+    /// has_supported (R-28), so the client incremented an undefined number and
+    /// every project showed no supporters after a reload. Both are computed
+    /// here now; has_supported is per caller, which is why it cannot be cached
+    /// across members.
+    /// </summary>
     [HttpGet("community-projects")]
-    public async Task<IActionResult> CommunityProjects() => Ok(new { data = await _db.VolunteerOpportunities.OrderByDescending(o => o.CreatedAt).Take(50).ToListAsync() });
+    public async Task<IActionResult> CommunityProjects()
+    {
+        var ct = HttpContext.RequestAborted;
+        var userId = User.GetUserId();
+
+        var projects = await _db.VolunteerOpportunities
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(50)
+            .ToListAsync(ct);
+
+        var ids = projects.Select(p => p.Id).ToList();
+
+        var counts = await _db.VolunteerProjectSupporters
+            .Where(sp => ids.Contains(sp.ProjectId))
+            .GroupBy(sp => sp.ProjectId)
+            .Select(g => new { ProjectId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.ProjectId, g => g.Count, ct);
+
+        var mine = userId is null
+            ? new HashSet<int>()
+            : (await _db.VolunteerProjectSupporters
+                .Where(sp => ids.Contains(sp.ProjectId) && sp.UserId == userId.Value)
+                .Select(sp => sp.ProjectId)
+                .ToListAsync(ct)).ToHashSet();
+
+        var data = projects.Select(p => new
+        {
+            p.Id,
+            p.Title,
+            p.Description,
+            p.Status,
+            p.CreatedAt,
+            p.UpdatedAt,
+            supporter_count = counts.TryGetValue(p.Id, out var count) ? count : 0,
+            has_supported = mine.Contains(p.Id),
+        });
+
+        return Ok(new { data });
+    }
 
     [HttpGet("community-projects/{projectId:int}")]
     public async Task<IActionResult> CommunityProject(int projectId)

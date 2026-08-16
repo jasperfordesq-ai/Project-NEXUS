@@ -337,6 +337,7 @@ public class NexusDbContext : DbContext
     public DbSet<VolunteerCredential> VolunteerCredentials => Set<VolunteerCredential>();
     public DbSet<VolunteerReview> VolunteerReviews => Set<VolunteerReview>();
     public DbSet<VolunteerSafeguardingIncident> VolunteerSafeguardingIncidents => Set<VolunteerSafeguardingIncident>();
+    public DbSet<VolunteerProjectSupporter> VolunteerProjectSupporters => Set<VolunteerProjectSupporter>();
     public DbSet<VolunteerTrainingCompletion> VolunteerTrainingCompletions => Set<VolunteerTrainingCompletion>();
     public DbSet<VolunteerGuardianConsent> VolunteerGuardianConsents => Set<VolunteerGuardianConsent>();
     public DbSet<VolunteerTenantPolicy> VolunteerTenantPolicies => Set<VolunteerTenantPolicy>();

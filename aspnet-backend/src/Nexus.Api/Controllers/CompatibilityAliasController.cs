@@ -31,7 +31,6 @@ public class CompatibilityAliasController : ControllerBase
     private const string GroupTaskKeyPrefix = "compat:group-task:";
     private const string FederationMessageReadKeyPrefix = "compat:fed-msg-read:";
     private const string VolunteerCertificateKeyPrefix = "compat:vol-cert:";
-    private const string VolunteerSupportKeyPrefix = "compat:vol-support:";
     private const string VolunteerDonationKeyPrefix = "compat:vol-donation:";
     private const string VolunteerExpenseKeyPrefix = "compat:vol-expense:";
     private const string VolunteerIncidentKeyPrefix = "compat:vol-incident:";
@@ -3056,32 +3055,61 @@ public class CompatibilityAliasController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Back a community project, or withdraw that backing.
+    ///
+    /// 🔴 Until 2026-08-16 this wrote an opaque blob into tenant config under
+    /// "compat:vol-support:", and the project list returned raw records with
+    /// neither supporter_count nor has_supported — the two fields the screen
+    /// shows. So the feature was entirely cosmetic: the tap nudged a number the
+    /// client had invented, the server filed the fact where nothing read it, and
+    /// the next page load showed no supporters at all.
+    /// </summary>
     private async Task<IActionResult> SetProjectSupport(int id, bool supported)
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var projectExists = await _db.VolunteerOpportunities.AnyAsync(o => o.Id == id);
+        var ct = HttpContext.RequestAborted;
+
+        var projectExists = await _db.VolunteerOpportunities.AnyAsync(o => o.Id == id, ct);
         if (!projectExists) return NotFound(new { error = "Community project not found" });
 
-        var config = await UpsertTenantConfigValue(
-            $"{VolunteerSupportKeyPrefix}{id}:{userId.Value}",
-            new
+        var existing = await _db.VolunteerProjectSupporters
+            .FirstOrDefaultAsync(sp => sp.ProjectId == id && sp.UserId == userId.Value, ct);
+
+        if (supported && existing == null)
+        {
+            _db.VolunteerProjectSupporters.Add(new VolunteerProjectSupporter
             {
-                kind = "volunteer_project_support",
-                project_id = id,
-                user_id = userId.Value,
-                supported,
-                updated_at = DateTime.UtcNow
+                TenantId = _tenantContext.GetTenantIdOrThrow(),
+                ProjectId = id,
+                UserId = userId.Value,
+                CreatedAt = DateTime.UtcNow,
             });
+        }
+        else if (!supported && existing != null)
+        {
+            _db.VolunteerProjectSupporters.Remove(existing);
+        }
+
+        // Supporting twice, or withdrawing when not supporting, is a no-op
+        // rather than an error: the screen updates optimistically and a double
+        // tap on a slow connection must not read as a failure.
+        await _db.SaveChangesAsync(ct);
+
+        var supporterCount = await _db.VolunteerProjectSupporters
+            .CountAsync(sp => sp.ProjectId == id, ct);
 
         return Ok(new
         {
             success = true,
-            id = config.Id,
-            project_id = id,
-            supported,
-            message = supported ? "Project supported" : "Project support removed"
+            data = new
+            {
+                project_id = id,
+                has_supported = supported,
+                supporter_count = supporterCount,
+            },
         });
     }
 

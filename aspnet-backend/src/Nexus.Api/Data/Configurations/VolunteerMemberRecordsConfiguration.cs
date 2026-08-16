@@ -94,6 +94,29 @@ public class VolunteerMemberRecordsConfiguration : TenantScopedConfiguration
             entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
         });
 
+        modelBuilder.Entity<VolunteerProjectSupporter>(entity =>
+        {
+            entity.ToTable("vol_community_project_supporters");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ProjectId });
+
+            // One row per member per project. Without this a double tap on a
+            // slow connection counts twice, and the supporter count is the
+            // whole point of the feature.
+            entity.HasIndex(e => new { e.TenantId, e.ProjectId, e.UserId }).IsUnique();
+
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
         modelBuilder.Entity<VolunteerSafeguardingIncident>(entity =>
         {
             entity.ToTable("vol_safeguarding_incidents");
