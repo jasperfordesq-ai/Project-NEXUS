@@ -131,15 +131,15 @@
         }
       },
       "member_experience": {
-        "title": "Eispéireas baill",
+        "title": "Eispéireas na mBall",
         "items": {
           "service_listings": {
-            "title": "Fógraí seirbhísí",
+            "title": "Liostálacha Seirbhísí",
             "description": "Foilsigh tairiscintí agus iarrataí, brabhsáil liostálacha agus meaitseáil iad go cliste."
           },
           "marketplace": {
             "title": "Margadh",
-            "description": "Modúl aicmithe ar leith d’earraí agus do sheirbhísí íoctha: próifílí díoltóirí agus ionduchtú, orduithe agus díolacháin, íocaíochtaí Stripe Connect, rannóg saor in aisce agus bronntanas, cnuasaigh, amharc mapa, sliotáin bhailithe le scanadh QR, roghanna loingseoireachta, cúpóin díoltóirí, láimhseáil cásanna do dhíospóidí, agus freagraí molta ag an intleacht shaorga."
+            "description": "Modúl fógraí rangaithe ar leith d’earraí agus do sheirbhísí íoctha: próifílí agus ionduchtú díoltóirí, orduithe agus díolacháin, eisíocaíochtaí Stripe Connect, rannóg d’earraí saor in aisce agus bronntanais, cnuasaigh, amharc mapa, sliotáin bhailithe le scanadh QR, roghanna loingseoireachta, cúpóin díoltóirí, láimhseáil díospóidí agus freagraí molta ag an intleacht shaorga."
           },
           "donations": {
             "title": "Síntiúis",
@@ -147,7 +147,7 @@
           },
           "identity_verification": {
             "title": "Fíorú aitheantais",
-            "description": "Sreabhadh roghnach Stripe Identity (cáipéis + féinphic + meaitseáil ainm/dáta breithe) le suaitheantas baill fíoraithe."
+            "description": "Sreabhadh roghnach Stripe Identity (doiciméad, féinín agus meaitseáil ainm agus dáta breithe) le suaitheantas ball fíoraithe."
           },
           "exchange_workflow": {
             "title": "Sreabhadh oibre malartaithe",
@@ -155,7 +155,7 @@
           },
           "group_exchanges": {
             "title": "Malartuithe grúpa",
-            "description": "Mórmhalartuithe pobail seirbhíse thar bhaill iomadúla."
+            "description": "Malartuithe seirbhíse pobail ar an mórchóir idir roinnt ball."
           },
           "social_feed": {
             "title": "Fotha sóisialta",
@@ -163,7 +163,7 @@
           },
           "stories": {
             "title": "Scéalta",
-            "description": "Scéalta gearrshaolacha grianghraf agus físeáin 24 uair an chloig le freagairtí, pobalbhreitheanna agus buaicphointí."
+            "description": "Scéalta neamhbhuana grianghraf agus físeáin a mhaireann 24 uair, le frithghníomhartha, pobalbhreitheanna agus buaicphointí."
           },
           "presence_system": {
             "title": "Córas láithreachta",
@@ -175,7 +175,7 @@
           },
           "connections": {
             "title": "Naisc",
-            "description": "Lean agus nasc le baill eile den phobal."
+            "description": "Lean baill eile den phobal agus déan nasc leo."
           },
           "members_directory": {
             "title": "Eolaire ball",
@@ -183,11 +183,11 @@
           },
           "gamification": {
             "title": "Cluichíocht",
-            "description": "Suaitheantais fíoraithe, turais, XP, cláir cheannairí, éachtaí, dúshláin, sraitheanna, luaíochtaí siopa XP, painéal pobail agus comórtais shéasúracha."
+            "description": "Suaitheantais fíoraithe, aistir, XP, cláir cheannairí, éachtaí, dúshláin, stráicí, duaiseanna ón siopa XP, painéal pobail agus comórtais shéasúracha."
           },
           "goals_and_impact": {
             "title": "Spriocanna agus tionchar",
-            "description": "Lean spriocanna pearsanta agus tionchar pobail le meantóireacht agus rianú soláthartha."
+            "description": "Rianaigh spriocanna pearsanta agus tionchar pobail, le meantóireacht agus rianú táirgí insoláthartha."
           },
           "ideation_challenges": {
             "title": "Dúshláin smaointeoireachta",
@@ -195,22 +195,22 @@
           },
           "volunteering": {
             "title": "Obair dheonach",
-            "description": "Deiseanna oibre deonaí, rianú uaireanta, seiceáil isteach, costais, teastais, monatóireacht folláine, foláirimh éigeandála agus sparán eagraíochta oibre deonaí a íocann creidmheasanna ama ar uaireanta ceadaithe."
+            "description": "Deiseanna oibre deonaí, rianú uaireanta, seiceáil isteach, costais, teastais, monatóireacht folláine, foláirimh éigeandála agus sparán d’eagraíochtaí deonacha a íocann creidmheasanna ama as uaireanta ceadaithe."
           },
           "job_vacancies": {
             "title": "Folúntais Poist",
-            "description": "Modúl earcaíochta iomlán: folúntais agus iarratais, píblíne fostaíochta tarraing-agus-scaoil, cuardach tallainne, próifílí agus branda fostóirí, ionduchtú fostóirí, foláirimh phost sábháilte, anailísíocht in aghaidh an fholúntais, agus fotha RSS agus JSON poiblí ionas gur féidir le comhbhailitheoirí post na fógraí a phiocadh suas."
+            "description": "Modúl earcaíochta iomlán: folúntais agus iarratais, píblíne earcaíochta tarraing-agus-scaoil, cuardach tallainne, próifílí agus brandáil fostóirí, ionduchtú fostóirí, foláirimh maidir le folúntais a shábháiltear, anailísíocht do gach folúntas, agus fothaí poiblí RSS agus JSON chun gur féidir le comhbhailitheoirí post na fógraí a bhailiú."
           },
           "organisations": {
             "title": "Eagraíochtaí",
-            "description": "Próifílí cuideachta agus fostóra le foghníomhartha agus sparán tiomnaithe eagraíochta."
+            "description": "Próifílí cuideachtaí agus fostóirí le fochuntais agus sparán ar leith don eagraíocht."
           },
           "sub_accounts_family_accounts": {
-            "title": "Foghníomhartha / Cuntais teaghlaigh",
+            "title": "Fochuntais / Cuntais Teaghlaigh",
             "description": "Caidrimh chuntais tuismitheoir–leanbh do bhainistíocht líon tí agus teaghlaigh."
           },
           "reviews_and_ratings": {
-            "title": "Athbhreithnithe agus rátálacha",
+            "title": "Léirmheasanna agus Rátálacha",
             "description": "Tóg muinín trí aiseolas struchtúrtha ó bhaill."
           },
           "endorsements": {
@@ -223,15 +223,15 @@
           },
           "skills_browse": {
             "title": "Brabhsáil scileanna",
-            "description": "Iniúch tacsanomaíocht na scileanna agus aimsigh saineolas."
+            "description": "Scrúdaigh tacsanomaíocht na scileanna agus aimsigh daoine a bhfuil saineolas acu."
           },
           "availability_scheduling": {
             "title": "Sceidealú infhaighteachta",
-            "description": "Sceidealú sliotán ama atá feasach ar chriosanna ama do mheaitseáil chliste agus áirithintí."
+            "description": "Sceidealú sliotán a chuireann criosanna ama san áireamh le haghaidh meaitseáil chliste agus áirithintí."
           },
           "courses": {
             "title": "Cúrsaí",
-            "description": "Foghlaim chomhphobail: reáchtálann baill cúrsaí le ceachtanna agus tráthanna na gceist, cláraíonn baill eile agus oibríonn siad tríothu, agus is féidir le teagascóirí obair a ghrádú, feiceáil conas atá cúrsa ag éirí, agus teastas a eisiúint ag an deireadh."
+            "description": "Foghlaim phobail: reáchtálann baill cúrsaí ina bhfuil ceachtanna agus tráth na gceist, cláraíonn baill eile agus déanann siad dul chun cinn tríothu, agus is féidir le teagascóirí obair a ghrádú, monatóireacht a dhéanamh ar dhul chun cinn an chúrsa agus teastas a eisiúint ag an deireadh."
           },
           "podcasts": {
             "title": "Podchraoltaí agus Fuaim Chomhphobail",
@@ -243,40 +243,40 @@
           },
           "public_events": {
             "title": "Imeachtaí Poiblí",
-            "description": "Lig do dhaoine gan cuntas imeachtaí foilsithe a bhrabhsáil agus a léamh. Teastaíonn logáil isteach fós chun clárú do cheann."
+            "description": "Lig do dhaoine nach bhfuil cuntas acu imeachtaí foilsithe a bhrabhsáil agus a léamh. Ní mór síniú isteach fós chun clárú d’imeacht."
           },
           "event_attendance_credits": {
             "title": "Luaíochtaí Freastail",
-            "description": "Bronn creidmheasanna ama ar sheiceáil isteach fhíoraithe ag imeacht, á gcruthú in aghaidh an chomhphobail seachas á mbaint ón óstach, mar sin ní bhíonn costas pearsanta riamh ar imeacht a reáchtáil.",
-            "note": "Múchta de réir réamhshocraithe, agus ní féidir leis an lasc amháin creidmheasanna a bhogadh: caithfidh oibreoir cruthú státchiste a chumasú freisin agus méid in aghaidh an imeachta a shocrú."
+            "description": "Bronn creidmheasanna ama nuair a fhíoraítear seiceáil isteach ag imeacht. Eisítear iad ó chuntas an phobail seachas iad a bhaint den óstach, mar sin ní ghearrtar costas pearsanta ar an té a reáchtálann an t-imeacht.",
+            "note": "Múchta de réir réamhshocraithe, agus ní féidir leis an lasc amháin creidmheasanna a aistriú: ní mór d’oibreoir eisiúint creidmheasanna ón gciste a chumasú agus méid a shocrú do gach imeacht freisin."
           },
           "partner_venues": {
-            "title": "Ionaid Pháirtí",
-            "description": "Taifead cuairteanna ball ag ionaid pháirtí áitiúla trí chód QR pas an bhaill a scanadh. Taifeadann sé an chuairt amháin — ní eisíonn an t-ardán cúpón ar bith agus ní chuireann sé lascaine i bhfeidhm."
+            "title": "Ionaid Chomhpháirtíochta",
+            "description": "Taifead cuairteanna ball ar ionaid chomhpháirtíochta áitiúla trí chód QR phas an bhaill a scanadh. Ní thaifeadtar ach an chuairt — ní eisíonn an t-ardán cúpón ná ní chuireann sé lascaine i bhfeidhm."
           },
           "collections_and_bookmarks": {
             "title": "Cnuasaigh agus Míreanna Sábháilte",
-            "description": "Sábháil liostuithe, baill agus postálacha, agus cuir le chéile i gcnuasaigh is féidir leat a roinnt le baill eile."
+            "description": "Sábháil liostálacha, baill agus postálacha, agus grúpáil iad i gcnuasaigh is féidir leat a roinnt le baill eile."
           },
           "guardian_consent": {
             "title": "Toiliú Caomhnóra",
-            "description": "Sruthanna toilithe do bhaill faoi 18 atá páirteach in imeachtaí agus in obair dheonach, ag baint úsáide as naisc toilithe aon-uaire, sonraí caomhnóra criptithe, agus stair toilithe nach féidir ach cur léi, riamh a athrú."
+            "description": "Próisis toilithe do bhaill faoi 18 atá páirteach in imeachtaí agus in obair dheonach, le naisc toilithe aonúsáide, sonraí caomhnóra criptithe agus stair toilithe nach féidir a leasú ná a scriosadh, ach cur léi."
           },
           "member_premium": {
             "title": "Síntiúis agus Tacaíocht",
-            "description": "Is féidir le baill síntiús aon-uaire a thabhairt, nó ceann rialta a shocrú, chun tacú leis an gcomhphobal a reáchtálann a mbanc ama, agus é a bhainistiú nó a stopadh iad féin ag am ar bith. Tugtar aitheantas do lucht tacaíochta as — ní sraith íoctha é seo, agus ní chuirtear aon chuid den ardán taobh thiar d’íocaíocht riamh."
+            "description": "Is féidir le baill síntiús aonuaire a thabhairt nó síntiús rialta a shocrú chun tacú leis an bpobal a reáchtálann a mbanc ama, agus is féidir leo é a bhainistiú nó a stopadh am ar bith. Tugtar aitheantas dá lucht tacaíochta — ní leibhéal íoctha é seo, agus ní chuirtear aon chuid den ardán faoi ghlas taobh thiar de bhalla íocaíochta."
           },
           "event_operations": {
             "title": "Oibríochtaí Imeachtaí",
             "description": "Gach rud atá riachtanach chun imeacht a reáchtáil i ndáiríre: ticéadú agus clárú, liostaí feithimh, treoirphleananna d’imeachtaí athfhillteacha, clár oibre le cainteoirí, seiceáil isteach QR a leanann ag obair nuair a thiteann an comhartha, sonraí inrochtaineachta, nótaí sábháilteachta, teachtaireachtaí chuig lucht freastail, teimpléid inathúsáidte, anailísíocht in aghaidh an imeachta, agus stair iomlán gach athraithe."
           },
           "merchant_coupons": {
-            "title": "Cúpóin Cheannaithe",
-            "description": "Cúpóin lascaine eisithe ag ceannaithe an mhargaidh. Coinnithe d’aon ghnó ar leithligh ó chaitheamh creidmheasanna ama, agus teastaíonn an Margadh a bheith casta air freisin."
+            "title": "Cúpóin Trádálaithe",
+            "description": "Cúpóin lascaine a eisíonn trádálaithe an mhargaidh. Coinnítear iad d’aon ghnó ar leithligh ó chreidmheasanna ama a chaitheamh, agus ní mór an Margadh a bheith cumasaithe freisin."
           },
           "hiring_bias_audit": {
             "title": "Iniúchadh Claontachta Earcaíochta",
-            "description": "Anailísíocht próisis a nochtann claontacht fhéideartha in earcaíocht an chomhphobail féin: conas a théann iarrthóirí trí gach céim, rátaí diúltaithe agus an meán-am in aghaidh na céime, cé chomh láidir a thuarann meaitseáil scileanna an toradh i ndáiríre, agus cé na foinsí iarratais a n-éiríonn leo."
+            "description": "Anailísíocht phróisis a nochtann claontacht fhéideartha in earcaíocht an phobail féin: conas a théann iarrthóirí trí gach céim, rátaí diúltaithe agus an meán-am i ngach céim, cé chomh cruinn is a thuarann meaitseáil scileanna an toradh, agus cé na foinsí iarratas is rathúla."
           }
         }
       },

@@ -86,7 +86,7 @@ test('every non-feature Public value is reviewed, translated or language-neutral
   assert.doesNotMatch(journeyText, /Beartaíonn|sconna|"Add"|Suiteáil app|siopa app/u);
 });
 
-test('reviewed Public feature overview, core platform and federation values are complete', () => {
+test('reviewed Public feature overview, core, federation and member values are complete', () => {
   const featureSlice = (catalogue) => {
     const { groups, ...overview } = catalogue.features_page;
     return {
@@ -94,6 +94,7 @@ test('reviewed Public feature overview, core platform and federation values are 
       groups: {
         core_platform: groups.core_platform,
         federation: groups.federation,
+        member_experience: groups.member_experience,
       },
     };
   };
@@ -108,7 +109,7 @@ test('reviewed Public feature overview, core platform and federation values are 
   ]);
   const spacedFragments = new Set(['security_body_before', 'security_body_after']);
 
-  assert.equal(englishFlat.size, 97);
+  assert.equal(englishFlat.size, 171);
   for (const [path, englishValue] of englishFlat) {
     assert.ok(irishFlat.has(path), `Missing Irish Public feature key: ${path}`);
     if (invariants.has(path)) {
@@ -130,4 +131,7 @@ test('reviewed Public feature overview, core platform and federation values are 
   assert.doesNotMatch(text, /próifílí a thógáil|iompar ar iompar|prótacal sreangach|ar bhonn rogha/u);
   assert.doesNotMatch(text, /comhtháthú nithiúil ar an tábla|cónascadh a dhéanamh linn|níl aon rud ar siúl/u);
   assert.doesNotMatch(text, /Tógtha, tástáladh|casta air do do chomhphobal|Ná taispeáin ach/u);
+  assert.doesNotMatch(text, /Eispéireas baill|Fógraí seirbhísí|Modúl aicmithe|Mórmhalartuithe/u);
+  assert.doesNotMatch(text, /foláirimh phost sábháilte|foghníomhartha|Foghníomhartha|Cúpóin Cheannaithe/u);
+  assert.doesNotMatch(text, /clárú do cheann|á gcruthú in aghaidh an chomhphobail|cruthú státchiste/u);
 });
