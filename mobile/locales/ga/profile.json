@@ -151,71 +151,71 @@
   "organisations": "Organisations",
   "blog": "Blog",
   "support": {
-    "title": "Support & legal",
-    "heading": "Help, resources, and policies",
-    "description": "Read key policy summaries in the app or open the canonical web pages for the full current text.",
-    "open": "Open page",
+    "title": "Tacaíocht agus cúrsaí dlí",
+    "heading": "Cabhair, acmhainní agus beartais",
+    "description": "Léigh achoimrí ar na príomhbheartais san aip, nó oscail na leathanaigh chanónacha ar an ngréasán chun an téacs iomlán reatha a léamh.",
+    "open": "Oscail an leathanach",
     "items": {
       "help": {
-        "title": "Help center",
-        "description": "Guides and answers for common platform tasks."
+        "title": "Ionad cabhrach",
+        "description": "Treoracha agus freagraí do ghnáth-thascanna an ardáin."
       },
       "resources": {
-        "title": "Resources",
-        "description": "Community documents, links, and useful reference materials."
+        "title": "Acmhainní",
+        "description": "Cáipéisí pobail, naisc agus ábhar tagartha úsáideach."
       },
       "about": {
-        "title": "About Project NEXUS",
-        "description": "Learn about the platform, mission, and open-source project."
+        "title": "Maidir le Tionscadal NEXUS",
+        "description": "Faigh eolas faoin ardán, faoin misean agus faoin tionscadal foinse oscailte."
       },
       "contact": {
-        "title": "Contact",
-        "description": "Find the right support route for questions and feedback."
+        "title": "Teagmháil",
+        "description": "Aimsigh an bealach tacaíochta ceart do cheisteanna agus d'aiseolas."
       },
       "terms": {
-        "title": "Terms",
-        "description": "Read the terms that apply to platform use."
+        "title": "Téarmaí",
+        "description": "Léigh na téarmaí a bhaineann le húsáid an ardáin."
       },
       "privacy": {
-        "title": "Privacy",
-        "description": "Review how personal data is handled."
+        "title": "Príobháideachas",
+        "description": "Féach conas a láimhseáiltear sonraí pearsanta."
       },
       "cookies": {
-        "title": "Cookies",
-        "description": "Understand cookie and local storage use."
+        "title": "Fianáin",
+        "description": "Tuig conas a úsáidtear fianáin agus stóráil áitiúil."
       },
       "accessibility": {
-        "title": "Accessibility",
-        "description": "Review accessibility commitments and support options."
+        "title": "Inrochtaineacht",
+        "description": "Féach ar ghealltanais inrochtaineachta agus ar roghanna tacaíochta."
       },
       "trust": {
-        "title": "Trust & safety",
-        "description": "Review safety, moderation, and community protection guidance."
+        "title": "Muinín agus sábháilteacht",
+        "description": "Léigh treoir maidir le sábháilteacht, modhnóireacht agus cosaint an phobail."
       }
     },
-    "openWeb": "Open web",
-    "readInApp": "Read in app",
-    "closeDocument": "Back to support",
+    "openWeb": "Oscail ar an ngréasán",
+    "readInApp": "Léigh san aip",
+    "closeDocument": "Ar ais chuig tacaíocht",
     "docs": {
       "about": {
-        "title": "About Project NEXUS",
-        "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "What it does",
-        "section1Body": "The platform helps members share time, skills, opportunities, resources, events, messages, groups, and community marketplace activity.",
-        "section2Title": "Open source",
-        "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Native app scope",
-        "section3Body": "The mobile app focuses on member workflows. Administrative, broker, and developer operations remain on the web where larger screens fit the work better."
+        "title": "Maidir le Tionscadal NEXUS",
+        "summary": "Is ardán iltionónta foinse oscailte é Tionscadal NEXUS do shreafaí oibre pobail, do bhaincéireacht ama agus do thacaíocht fhrithpháirteach.",
+        "section1Title": "An méid a dhéanann sé",
+        "section1Body": "Cuidíonn an t-ardán le baill am, scileanna, deiseanna, acmhainní, imeachtaí, teachtaireachtaí agus gníomhaíocht i ngrúpaí agus in áit mhargaidh an phobail a roinnt.",
+        "section2Title": "Foinse oscailte",
+        "section2Body": "Eisítear Tionscadal NEXUS faoi cheadúnas AGPL-3.0-or-later, lena mbaineann ceanglais maidir le haitheantas agus infhaighteacht an chóid foinse.",
+        "section3Title": "Raon feidhme na haipe dúchasaí",
+        "section3Body": "Díríonn an aip mhóibíleach ar shreafaí oibre na mball. Fanann oibríochtaí riaracháin, bróicéireachta agus forbróra ar an ngréasán, áit a n-oireann scáileáin níos mó don obair níos fearr."
       },
       "contact": {
-        "title": "Contact and support",
-        "summary": "Use the support routes that match your question, account issue, or tenant/community request.",
-        "section1Title": "Account help",
-        "section1Body": "For sign-in, profile, notification, privacy, or safety issues, include enough detail for the support team to identify the affected account and tenant.",
-        "section2Title": "Community requests",
-        "section2Body": "Community organisers should use the canonical contact page for tenant-level questions, feature requests, and operational support.",
-        "section3Title": "Urgent concerns",
-        "section3Body": "If a concern involves immediate harm or unlawful activity, contact the relevant local emergency or legal authority first, then report it through the platform."
+        "title": "Teagmháil agus tacaíocht",
+        "summary": "Úsáid an bealach tacaíochta a oireann do do cheist, d'fhadhb cuntais nó d'iarratas tionónta nó pobail.",
+        "section1Title": "Cabhair le cuntas",
+        "section1Body": "I gcás fadhbanna le síniú isteach, próifíl, fógraí, príobháideachas nó sábháilteacht, cuir dóthain sonraí ar fáil chun gur féidir leis an bhfoireann tacaíochta an cuntas agus an tionónta lena mbaineann a aithint.",
+        "section2Title": "Iarratais phobail",
+        "section2Body": "Ba cheart d'eagraithe pobail an leathanach teagmhála canónach a úsáid le haghaidh ceisteanna ar leibhéal an tionónta, iarratais ar ghnéithe agus tacaíocht oibríochtúil.",
+        "section3Title": "Ábhair imní phráinneacha",
+        "section3Body": "Má bhaineann ábhar imní le díobháil láithreach nó le gníomhaíocht neamhdhleathach, déan teagmháil ar dtús leis an tseirbhís éigeandála áitiúil nó leis an údarás dlíthiúil ábhartha; ansin tuairiscigh tríd an ardán é."
       },
       "terms": {
         "title": "Terms of use summary",
