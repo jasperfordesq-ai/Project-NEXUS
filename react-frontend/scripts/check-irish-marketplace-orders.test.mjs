@@ -145,3 +145,24 @@ test('Irish Marketplace collections, saved searches and promotions preserve thei
   assert.equal(irish.promotions.featured, 'Liostú roghnaithe');
   assert.equal(irish.promotions.homepage_carousel, 'Timpeallán an leathanaigh baile');
 });
+
+test('Irish Marketplace delivery, pickup and inventory wording preserves fulfilment meaning', () => {
+  const journey = JSON.stringify({
+    communityDelivery: irish.community_delivery,
+    pickup: irish.pickup,
+    inventory: irish.inventory,
+  });
+
+  assert.doesNotMatch(journey, /ceannaitheoir\/díoltóir|Tairg Seachadadh|Mo bhailiúcháin/u);
+  assert.doesNotMatch(journey, /Fuinneog bhailithe|sliotán bailiúcháin|Lean stoc agus cosc/u);
+  assert.doesNotMatch(journey, /Stoc: \{\{count\}\} \(Íseal\)|~\{\{count\}\} nóim(?!\.)/u);
+
+  assert.match(irish.community_delivery.tooltip, /mar mhalairt ar chreidmheasanna ama/u);
+  assert.equal(irish.community_delivery.offer_to_deliver, 'Tairg an t-earra a sheachadadh');
+  assert.equal(irish.community_delivery.offer_modal_description, 'Tairg an t-earra seo a sheachadadh agus creidmheasanna ama a thuilleamh. Déanfaidh an ceannaitheoir nó an díoltóir athbhreithniú ar do thairiscint.');
+  assert.equal(irish.pickup.my_pickups_title, 'Na hearraí atá le bailiú agam');
+  assert.equal(irish.pickup.choose_slot, 'Roghnaigh tréimhse bhailithe');
+  assert.equal(irish.pickup.reservation_failed, 'Níorbh fhéidir an tréimhse bhailithe sin a chur in áirithe. Roghnaigh tréimhse eile.');
+  assert.equal(irish.inventory.section_subtitle, 'Coinnigh súil ar an stoc agus seachain níos mó earraí a dhíol ná mar atá ar fáil.');
+  assert.equal(irish.inventory.low_chip, 'Stoc: {{count}} (beagán fágtha)');
+});
