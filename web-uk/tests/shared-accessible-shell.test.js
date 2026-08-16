@@ -6814,6 +6814,34 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('class="govuk-link" href="/wallet?filter=earned#transactions">Earned');
   });
 
+  it('re-fills the amount and note on the matching recipient when a transfer fails', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // An over-limit amount fails validation ('too-large') before any API call.
+    const post = await agent.post('/wallet/transfer').set('Cookie', signedCookieHeader()).type('form').send({
+      _csrf: csrf, recipient_id: '77', idempotency_key: 'idem-key-transfer-x', amount: '5000', note: 'Thanks for the help', recipient_q: 'alex'
+    });
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toContain('status=transfer-failed');
+    expect(post.headers.location).toContain('recipient_q=alex');
+
+    api.getBalance.mockResolvedValueOnce({ data: { balance: 8 } });
+    api.getTransactions.mockResolvedValueOnce({ data: [], meta: {} });
+    api.callWalletApi.mockImplementation((token, method, path) =>
+      String(path).startsWith('/user-search')
+        ? { data: { users: [{ id: 77, name: 'Alex Helper', location: 'Derry', created_at: '2025-01-15T10:00:00Z' }] } }
+        : { data: {} });
+
+    const page = await agent.get('/wallet?recipient_q=alex&status=transfer-failed&error=too-large').set('Cookie', signedCookieHeader());
+    expect(page.status).toBe(200);
+    // The member's typed amount and note are echoed back into recipient 77's form.
+    expect(page.text).toMatch(/id="amount-77"[^>]*value="5000"/);
+    expect(page.text).toContain('Thanks for the help');
+  });
+
   it('renders the messages hub without the legacy bare compose route', async () => {
     const api = require('../src/lib/api');
     api.getConversations.mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });

@@ -199,8 +199,25 @@ function transferPayload(body = {}) {
   };
 }
 
-function transferFailurePath(error) {
-  return `/wallet?status=transfer-failed&error=${encodeURIComponent(error)}#transfer`;
+function transferFailurePath(error, recipientQ) {
+  const q = String(recipientQ || '').trim();
+  // recipient_q is carried so the search re-runs and the chosen recipient's form
+  // reappears on the error page; the amount and note are NEVER put in the URL (they are
+  // financial input) — they ride the session store below and are echoed back there.
+  const qs = q ? `&recipient_q=${encodeURIComponent(q)}` : '';
+  return `/wallet?status=transfer-failed&error=${encodeURIComponent(error)}${qs}#transfer`;
+}
+
+// Stash the just-submitted transfer so the error re-render can pre-fill it, mirroring the
+// events recurring-edit form-preservation pattern. No money is stored — only the echoed
+// input. Consumed (and deleted) once by GET /wallet.
+function storeTransferForm(req) {
+  if (!req.session) return;
+  req.session.walletTransferForm = {
+    recipientId: String(req.body.recipient_id || '').trim(),
+    amount: String(req.body.amount || '').trim(),
+    note: String(req.body.note || req.body.description || '').trim().slice(0, 255)
+  };
 }
 
 function walletSearchQuery(query) {
@@ -225,6 +242,10 @@ function redirectTo(res, pathname) {
 
 // Wallet overview
 router.get('/', requireAuth, asyncRoute(async (req, res) => {
+  // Consume (once) any transfer the member just submitted that failed, so its amount and
+  // note can be echoed back into the matching recipient's form rather than lost.
+  const transferForm = req.session && req.session.walletTransferForm ? req.session.walletTransferForm : null;
+  if (req.session) delete req.session.walletTransferForm;
   const txFilter = ['earned', 'spent', 'pending'].includes(String(req.query.filter || ''))
     ? String(req.query.filter)
     : 'all';
@@ -269,6 +290,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     txNextCursor: txMeta.has_more && txMeta.cursor ? String(txMeta.cursor) : '',
     status: typeof req.query.status === 'string' ? req.query.status : '',
     transferError: typeof req.query.error === 'string' ? req.query.error : '',
+    transferForm,
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
@@ -338,7 +360,8 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
 router.post('/transfer', requireAuth, audit.walletTransfer(), asyncRoute(async (req, res) => {
   const normalized = transferPayload(req.body);
   if (normalized.error) {
-    return redirectTo(res, transferFailurePath(normalized.error));
+    storeTransferForm(req);
+    return redirectTo(res, transferFailurePath(normalized.error, req.body.recipient_q));
   }
 
   try {
@@ -355,7 +378,8 @@ router.post('/transfer', requireAuth, audit.walletTransfer(), asyncRoute(async (
     if (error.status === 403 && code === 'ONBOARDING_REQUIRED') {
       return redirectTo(res, '/onboarding');
     }
-    return redirectTo(res, transferFailurePath(transferFailureKey(error)));
+    storeTransferForm(req);
+    return redirectTo(res, transferFailurePath(transferFailureKey(error), req.body.recipient_q));
   }
 }));
 
