@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -43,8 +43,13 @@ public class MarketplaceController : ControllerBase
         _configuration = configuration;
     }
 
+    /// 🔴 Authenticated, matching Laravel, which answers 401 on every
+    /// tenant. This was [AllowAnonymous] until 2026-08-16; it returned an empty
+    /// list here only because the demo seed has no listings, so it read as
+    /// harmless while being the same disclosure as the resources endpoint.
+    /// Found by scripts/compare-live-responses.mjs.
     [HttpGet("listings")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> ListListings(
         [FromQuery] int page = 1,
         [FromQuery] int limit = 20,

@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using System.Net;
 using System.Net.Http.Headers;
@@ -49,7 +49,15 @@ public class ResourcesControllerTests : IntegrationTestBase
         uploadData.GetProperty("file_size").GetInt64().Should().Be(fileBytes.Length);
         uploadData.GetProperty("created_at").GetString().Should().NotBeNullOrWhiteSpace();
 
-        ClearAuthToken();
+        // 🔴 Authenticated, not anonymous. This test was named "...Anonymous
+        // CursorContract" and cleared the token, asserting a Laravel contract
+        // Laravel does not have: GET /v2/resources sits inside the
+        // auth:sanctum group (routes/api.php:201-1592) and answers 401 to a
+        // signed-out caller on every tenant. ASP.NET served it anonymously with
+        // real content until 2026-08-16. The cursor and ordering assertions below
+        // are still worth having, so the test authenticates instead of being
+        // deleted.
+        await AuthenticateAsMemberAsync();
         using var listRequest = new HttpRequestMessage(
             HttpMethod.Get,
             $"/api/v2/resources?search=Laravel%20React%20upload%20{marker}");
@@ -69,7 +77,15 @@ public class ResourcesControllerTests : IntegrationTestBase
         downloadResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
         (await downloadResponse.Content.ReadAsByteArrayAsync()).Should().Equal(fileBytes);
 
-        ClearAuthToken();
+        // 🔴 Authenticated, not anonymous. This test was named "...Anonymous
+        // CursorContract" and cleared the token, asserting a Laravel contract
+        // Laravel does not have: GET /v2/resources sits inside the
+        // auth:sanctum group (routes/api.php:201-1592) and answers 401 to a
+        // signed-out caller on every tenant. ASP.NET served it anonymously with
+        // real content until 2026-08-16. The cursor and ordering assertions below
+        // are still worth having, so the test authenticates instead of being
+        // deleted.
+        await AuthenticateAsMemberAsync();
         using var afterDownloadRequest = new HttpRequestMessage(
             HttpMethod.Get,
             $"/api/v2/resources?search=Laravel%20React%20upload%20{marker}");
@@ -147,7 +163,15 @@ public class ResourcesControllerTests : IntegrationTestBase
             await db.SaveChangesAsync();
         }
 
-        ClearAuthToken();
+        // 🔴 Authenticated, not anonymous. This test was named "...Anonymous
+        // CursorContract" and cleared the token, asserting a Laravel contract
+        // Laravel does not have: GET /v2/resources sits inside the
+        // auth:sanctum group (routes/api.php:201-1592) and answers 401 to a
+        // signed-out caller on every tenant. ASP.NET served it anonymously with
+        // real content until 2026-08-16. The cursor and ordering assertions below
+        // are still worth having, so the test authenticates instead of being
+        // deleted.
+        await AuthenticateAsMemberAsync();
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
             $"/api/v2/resources?search=Sort%20order%20marker%20{marker}");
@@ -225,7 +249,15 @@ public class ResourcesControllerTests : IntegrationTestBase
             targetResourceId = targetResource.Id;
         }
 
-        ClearAuthToken();
+        // 🔴 Authenticated, not anonymous. This test was named "...Anonymous
+        // CursorContract" and cleared the token, asserting a Laravel contract
+        // Laravel does not have: GET /v2/resources sits inside the
+        // auth:sanctum group (routes/api.php:201-1592) and answers 401 to a
+        // signed-out caller on every tenant. ASP.NET served it anonymously with
+        // real content until 2026-08-16. The cursor and ordering assertions below
+        // are still worth having, so the test authenticates instead of being
+        // deleted.
+        await AuthenticateAsMemberAsync();
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
             $"/api/v2/resources?per_page=1&search=Needle%20public&category_id={category.Id}");
@@ -286,6 +318,9 @@ public class ResourcesControllerTests : IntegrationTestBase
     [Fact]
     public async Task List_WithoutAuth_ReturnsUnauthorized()
     {
+        // Deliberately signed out: this test asserts the 401 that the resources
+        // list must give an anonymous caller, matching Laravel. It is the one
+        // place in this file where clearing the token is the point.
         ClearAuthToken();
         var r = await Client.GetAsync("/api/resources");
         r.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

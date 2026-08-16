@@ -966,8 +966,11 @@ public class CompatibilityController : ControllerBase
     /// <summary>
     /// GET /api/volunteering/organisations - List organisations (alias).
     /// </summary>
+    /// 🔴 Authenticated, matching Laravel (401 on every tenant). Was
+    /// [AllowAnonymous] until 2026-08-16 -- empty here only because the demo
+    /// seed has no organisations. Found by scripts/compare-live-responses.mjs.
     [HttpGet("api/volunteering/organisations")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> GetVolunteeringOrganisations(
         [FromQuery] int page = 1,
         [FromQuery] int limit = 20,

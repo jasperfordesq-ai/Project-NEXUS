@@ -67,8 +67,14 @@ public class ReactFrontendCompatibilityController : ControllerBase
             : StatusCode(503, new { status = "unhealthy", checks = new { database = "unhealthy" }, timestamp = DateTime.UtcNow });
     }
 
+    /// 🔴 Anonymous, matching Laravel, which serves /v2/categories
+    /// publicly on every tenant. This required a login until 2026-08-16, so a
+    /// signed-out visitor lost a page that works on the production backend --
+    /// the mirror image of the resources leak, and just as invisible to a
+    /// route-existence check. Categories are a public taxonomy, not member
+    /// data. Found by scripts/compare-live-responses.mjs.
     [HttpGet("api/categories")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> ListCategories()
     {
         var categories = await _db.Categories

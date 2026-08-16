@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -47,8 +47,17 @@ public class ResourcesV2Controller : ControllerBase
         _configuration = configuration;
     }
 
+    /// 🔴 Authenticated, matching Laravel. This was [AllowAnonymous] until
+    /// 2026-08-16 and returned real community resources — titles, descriptions,
+    /// files — to a caller with no credentials, while Laravel answers 401 on
+    /// every tenant. Found by the differential response harness
+    /// (scripts/compare-live-responses.mjs); no route- or schema-comparison
+    /// tool could see it, because both backends "have" the route.
+    ///
+    /// The resource CATEGORIES endpoints below stay anonymous: Laravel serves
+    /// those publicly, and matching means matching in both directions.
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> List(
         [FromQuery(Name = "per_page")] int perPage = 20,
         [FromQuery] string? cursor = null,

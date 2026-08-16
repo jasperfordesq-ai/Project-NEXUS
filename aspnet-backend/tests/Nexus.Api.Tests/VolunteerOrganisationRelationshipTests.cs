@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -655,7 +655,14 @@ public sealed class VolunteerOrganisationRelationshipTests : IntegrationTestBase
             pendingId = pending.Id;
         }
 
-        ClearAuthToken();
+        // 🔴 Authenticated, not anonymous. GET /v2/volunteering/organisations
+        // sits inside Laravel's auth:sanctum group (routes/api.php:201-1592) and
+        // answers 401 to a signed-out caller on every tenant; ASP.NET served it
+        // anonymously until 2026-08-16. What this test really checks -- that only
+        // approved, active organisations appear and internal fields stay hidden --
+        // is unaffected by who is asking, so it authenticates rather than being
+        // deleted.
+        await AuthenticateAsMemberAsync();
         using var listRequest = new HttpRequestMessage(
             HttpMethod.Get,
             "/api/v2/volunteering/organisations");
