@@ -666,11 +666,14 @@ public class CompatibilityController : ControllerBase
     /// <summary>
     /// GET /api/skills/categories - Get skill categories (distinct categories that have skills).
     /// </summary>
+    // 🔴 Anonymous, matching Laravel: routes/api.php:790 carries an explicit
+    // ->withoutMiddleware('auth:sanctum'). The skill taxonomy is a public
+    // vocabulary, not member data, and a signed-out visitor browsing what a
+    // community offers needs it.
+    [AllowAnonymous]
     [HttpGet("api/skills/categories")]
     public async Task<IActionResult> GetSkillCategories()
     {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
         // Return categories that have at least one skill linked to them
         var categories = await _db.Categories

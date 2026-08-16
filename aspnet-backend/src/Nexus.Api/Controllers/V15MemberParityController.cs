@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -408,6 +408,12 @@ public class V15MemberParityController : ControllerBase
         return Ok(new { success = true, data = tags });
     }
 
+    // 🔴 Anonymous, matching Laravel. popularTags carries an explicit
+    // ->withoutMiddleware('auth:sanctum') at routes/api.php:556 -- somebody
+    // deliberately opted it out of the auth group, which is about as clear an
+    // intent signal as the routing file offers. Autocomplete keeps the
+    // controller's default, since Laravel exposes only popular publicly.
+    [AllowAnonymous]
     [HttpGet("api/v2/listings/tags/popular")]
     [HttpGet("api/v2/listings/tags/autocomplete")]
     public async Task<IActionResult> V2ListingTags([FromQuery] string? q = null)

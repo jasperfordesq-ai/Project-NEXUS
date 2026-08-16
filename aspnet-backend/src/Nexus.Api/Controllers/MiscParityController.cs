@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -481,8 +481,13 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult MoveBookmark(int id, [FromBody] JsonElement body) => Ok(new { data = new { id, collection_id = Int(body, "collection_id") } });
 
+    // 🔴 Anonymous, matching Laravel: /v2/clubs is declared at
+    // routes/api.php:74, BEFORE the auth:sanctum group opens at 201, so it is
+    // public. Requiring a login here meant a signed-out visitor could not see a
+    // community's clubs at all -- a working page on the production backend,
+    // blank on this one. Found by measuring the accessible frontend.
     [HttpGet("clubs")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> Clubs() => Ok(new { data = await _db.Groups.Where(g => g.TenantId == TenantId()).ToListAsync() });
 
     [HttpGet("community/stats")]

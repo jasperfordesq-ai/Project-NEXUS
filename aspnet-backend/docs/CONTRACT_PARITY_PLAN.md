@@ -245,6 +245,29 @@ frontend caught an error in the fix for the first.**
 so signed-out visitors lose working pages. `public/events` is 200 vs 403, a
 feature-gate difference.
 
+**Fixed since (2026-08-16, same day): 43 -> 44/118.** The three reverse cases —
+`clubs`, `listings/tags/popular`, `skills/categories` — are public on Laravel and
+were 401 here, so signed-out visitors lost working pages. Two of the three carry
+an explicit `->withoutMiddleware('auth:sanctum')` in `routes/api.php`, which is
+about as clear an intent signal as that file offers. They now match on status;
+two moved into SHAPE_DIFFERS, which is progress, not a win.
+
+### 🔴 One unexplained anomaly, guarded but not diagnosed
+
+`/api/jobs` returned 401 while its auto-generated `/api/v2/jobs` alias returned
+**200 to an anonymous caller**, both routed to the same
+`JobsController.List`, whose controller already carries `[Authorize]`.
+
+Sibling aliases (`/api/v2/jobs/recommended`, `/api/v2/jobs/saved-profile`) were
+correctly protected, so this is **not** a blanket failure of
+`AdminV2RouteAliasConvention` — and that is exactly why it is worth recording.
+An action-level `[Authorize]` closes it and is verified, but **the mechanism is
+unexplained**.
+
+**Do not remove that attribute on the grounds that the class already has one.**
+If the cause is ever found, re-check every aliased route before concluding this
+was the only one: I proved it is not systemic, not that it is unique.
+
 **Next:** point web-uk's API base at ASP.NET and walk its pages, which tests
 what a path list cannot — redirects, forms, session handling.
 

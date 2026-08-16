@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -35,7 +35,22 @@ public class JobsController : ControllerBase
     /// <summary>
     /// List active jobs with pagination and optional filters.
     /// </summary>
+    /// <remarks>
+    /// 🔴 [Authorize] is repeated here even though the controller carries it.
+    /// The class attribute protected /api/jobs (401) but NOT the /api/v2/jobs
+    /// alias that AdminV2RouteAliasConvention generates for this same action,
+    /// which answered 200 to an anonymous caller while Laravel answers 401.
+    /// Sibling aliases (/api/v2/jobs/recommended, /saved-profile) were correctly
+    /// protected, so this is not a blanket convention failure and the mechanism
+    /// is not yet explained -- the action-level attribute is a deliberate belt
+    /// and braces, not a diagnosis.
+    ///
+    /// Do not remove it on the grounds that the class already has one, and if
+    /// the root cause is ever found, check every other aliased route before
+    /// concluding this one was the only affected endpoint.
+    /// </remarks>
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
         [FromQuery] int limit = 20,
