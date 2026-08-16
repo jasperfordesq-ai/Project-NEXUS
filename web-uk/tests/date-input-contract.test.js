@@ -301,8 +301,9 @@ describe('native date input ceiling', () => {
   // strings that used to block this now existing. Then 15 -> 14: podcast episode
   // scheduled_for converted (idPrefix added so the doubled add/edit partial keeps unique
   // ids). Then 14 -> 13: events/communications scheduled_at (per-broadcast loop, idPrefix
-  // schedule-{id}). Keep lowering as more convert.
-  const CEILING = { 'datetime-local': 13, date: 1, time: 2 };
+  // schedule-{id}). Then 13 -> 11: registration campaign expires_at + scheduled_for
+  // (_registration-organizer-workflows, idPrefix campaign-*-{id}). Keep lowering.
+  const CEILING = { 'datetime-local': 11, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

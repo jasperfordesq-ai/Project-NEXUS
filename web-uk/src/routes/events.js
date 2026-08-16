@@ -2864,8 +2864,11 @@ router.post('/:id(\\d+)/registration/campaigns/preview', requireAuth, asyncRoute
 
 async function mutateRegistrationCampaign(req, res, action) {
   const id = Number(req.params.id); const campaignId = positiveInteger(req.params.campaignId); const revision = positiveInteger(req.body.expected_revision); const key = trimmed(req.body.idempotency_key, 191); const payload = { expected_revision: revision };
-  if (action === 'issue') payload.expires_at = trimmed(req.body.expires_at);
-  if (action === 'schedule') payload.scheduled_for = trimmed(req.body.scheduled_for);
+  // GOV.UK date+time fields recombine to the same YYYY-MM-DDTHH:MM the native input
+  // posted (readDateTime also accepts a single value); both are required, so an empty or
+  // partly/invalidly typed datetime yields '' and is caught by the required check below.
+  if (action === 'issue') payload.expires_at = readDateTime(req.body, 'expires_at').value || '';
+  if (action === 'schedule') payload.scheduled_for = readDateTime(req.body, 'scheduled_for').value || '';
   if (action === 'cancel') payload.reason = trimmed(req.body.reason, 2000);
   if (!campaignId || !revision || !key || (action === 'issue' && !payload.expires_at) || (action === 'schedule' && !payload.scheduled_for) || (action === 'cancel' && !payload.reason)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try {

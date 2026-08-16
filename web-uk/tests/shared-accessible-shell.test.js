@@ -25206,6 +25206,18 @@ describe('shared accessible frontend shell', () => {
     }
   });
 
+  it('recombines the GOV.UK date+time campaign fields into the same expires_at payload', async () => {
+    const api = require('../src/lib/api'); const agent = request.agent(app); const shell = await agent.get('/contact').set('Cookie', signedCookieHeader()); const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    api.callEventApi.mockResolvedValueOnce({ data: { changed: true } });
+    // The issue form now posts four fields instead of one native datetime-local.
+    const response = await agent.post('/events/42/registration/campaigns/61/issue').set('Cookie', signedCookieHeader()).type('form').send({
+      _csrf: csrf, idempotency_key: 'campaign-issue-parts', expected_revision: '2',
+      'expires_at-day': '30', 'expires_at-month': '8', 'expires_at-year': '2026', 'expires_at-time': '5:00pm'
+    });
+    expect(response.headers.location).toBe('/events/42/registration?status=campaign-issued');
+    expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/registration-product/campaigns/61/issue', { expected_revision: 2, expires_at: '2026-08-30T17:00' }, { headers: { 'Idempotency-Key': 'campaign-issue-parts' } });
+  });
+
   it('previews Laravel retention and requires destructive confirmation before apply', async () => {
     const api = require('../src/lib/api'); const agent = request.agent(app); const shell = await agent.get('/contact').set('Cookie', signedCookieHeader()); const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
     api.callEventApi
