@@ -646,7 +646,9 @@ function suggestedExchangeHours(listing) {
 
 function oneDecimal(value) {
   const number = Number(value);
-  return Number.isFinite(number) ? number.toFixed(1) : '';
+  return Number.isFinite(number)
+    ? number.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+    : '';
 }
 
 function exchangeRequestStatus(status, t) {

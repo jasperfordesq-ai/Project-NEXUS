@@ -7,6 +7,7 @@ const express = require('express');
 const { callGroupExchangeApi, searchUsers } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ function numberValue(value) {
 }
 
 function formatHours(value) {
-  return numberValue(value).toFixed(2);
+  return numberValue(value).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function dataFrom(result) {

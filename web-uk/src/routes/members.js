@@ -279,7 +279,7 @@ function normalizeDiscoverMember(member, t) {
     location: String(member.location || '').trim(),
     hoursGivenLabel: t('members.hours_given', { count: given }),
     hoursReceivedLabel: t('members.hours_received', { count: received }),
-    ratingLabel: Number.isFinite(rating) && rating > 0 ? t('members.rating', { rating: rating.toFixed(1) }) : '',
+    ratingLabel: Number.isFinite(rating) && rating > 0 ? t('members.rating', { rating: rating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }) : '',
     isVerified: !!(member.is_verified || member.identity_verified),
     level,
     levelLabel: level > 0 ? t('polish_members.member_level_label', { n: level }) : '',

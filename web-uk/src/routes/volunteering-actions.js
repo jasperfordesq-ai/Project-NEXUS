@@ -420,8 +420,8 @@ function dateTimeLabel(value) {
 }
 
 function hoursLabel(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number.toFixed(1) : '0.0';
+  const number = Number.isFinite(Number(value)) ? Number(value) : 0;
+  return number.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 function monthLabel(value) {
@@ -911,8 +911,8 @@ function normalizeWellbeingDashboard(result, t = null) {
 }
 
 function moneyLabel(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number.toFixed(2) : '0.00';
+  const number = Number.isFinite(Number(value)) ? Number(value) : 0;
+  return number.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function percentageLabel(value, total) {
@@ -1456,7 +1456,7 @@ function normalizeOrgVolunteer(row, t = null) {
     id: positiveInteger(volunteer.id),
     name: trimmed(volunteer.name) || (typeof t === 'function' ? t('members.unknown_member') : 'Unknown member'),
     email: trimmed(volunteer.email),
-    totalHoursLabel: Number.isFinite(totalHours) ? totalHours.toFixed(2) : '0.00',
+    totalHoursLabel: (Number.isFinite(totalHours) ? totalHours : 0).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     applicationsCount: Number(volunteer.applications_count ?? volunteer.applicationsCount) || 0,
     appliedAtLabel: dateLabel(appliedAt),
     appliedAtIso: isoDateTime(appliedAt)

@@ -245,7 +245,7 @@ function costMeta(course) {
   const cost = Number(course.credit_cost || 0);
   const normalized = Number.isFinite(cost) ? Math.max(0, cost) : 0;
   const label = normalized > 0
-    ? `${String(normalized.toFixed(2)).replace(/\.?0+$/, '')} time credits`
+    ? `${normalized.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })} time credits`
     : 'Free';
   return {
     creditCost: normalized,
@@ -289,7 +289,7 @@ function normalizeCourse(course) {
     authorName: trimmed(course.author && course.author.name) || trimmed(course.author_name),
     isEnrolled: !!course.is_enrolled,
     ratingAvg: Number(course.rating_avg || 0),
-    ratingAvgLabel: Number(course.rating_avg || 0).toFixed(1),
+    ratingAvgLabel: Number(course.rating_avg || 0).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     ratingStars: stars(course.rating_avg),
     ratingCount: Number(course.rating_count || 0),
     status: trimmed(course.status) || 'draft',

@@ -54,7 +54,7 @@ function positiveInteger(value) {
 function formatNumber(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return '';
-  return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return Number.isInteger(number) ? String(number) : number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 });
 }
 
 function discountLabel(coupon, t) {

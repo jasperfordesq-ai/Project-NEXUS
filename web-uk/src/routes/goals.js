@@ -273,7 +273,7 @@ function statusClass(status) {
 function formatNumber(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return '0';
-  return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return Number.isInteger(number) ? String(number) : number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 });
 }
 
 function progressPercent(goal) {
