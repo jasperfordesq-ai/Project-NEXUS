@@ -42,3 +42,26 @@ test('Irish credential and shift-swap journeys preserve verification, global sco
   assert.match(irish.swaps.accept_failed, /Bain triail eile as/u);
   assert.match(irish.swaps.reject_failed, /Bain triail eile as/u);
 });
+
+test('Irish waitlist and volunteer-wellbeing journeys have complete translated coverage', () => {
+  for (const section of ['waitlist', 'wellbeing']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Community ${section} key: ${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+  }
+});
+
+test('Irish waitlist and wellbeing copy preserves queue position, burnout, and self-care meaning', () => {
+  const reviewed = [...flatten(irish.waitlist).values(), ...flatten(irish.wellbeing).values()].join('\n');
+  assert.doesNotMatch(reviewed, /Gan iontrálacha liosta feithimh|Folláine Oibrí Dheonaigh|Féinchuirim|Rabhadh Tuirse|Cláraigh Conas Atá Mé|má tá tú sáraithe/u);
+  assert.match(irish.waitlist.no_entries_desc, /cuirfear ar an eolas thú nuair a bheidh áit ar fáil/u);
+  assert.match(irish.waitlist.leave_confirm, /Caillfidh tú d'áit/u);
+  assert.match(irish.waitlist.leave_failed, /Bain triail eile as/u);
+  assert.equal(irish.wellbeing.burnout_warning, 'Rabhadh Ídithe');
+  assert.match(irish.wellbeing.checkin_desc, /sos a bheith de dhíth ort/u);
+  assert.equal(irish.wellbeing.hide_tips, 'Folaigh Leideanna Féinchúraim');
+  assert.match(irish.wellbeing.tip_reduce, /má bhraitheann tú faoi léigear/u);
+});
