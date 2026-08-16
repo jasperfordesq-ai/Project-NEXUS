@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Group files and media in the native app no longer switch to English for Irish users.** All 32 labels, empty states, permission prompts, upload/download actions and deletion confirmations now use context-aware Irish while preserving filenames such as `{{name}}`. A focused test protects both detail sections.
+
 - **Core group pages in the native app now stay in Irish.** The group overview, discussions, announcements, upcoming events, owner tools and twelve detail tabs no longer display their 57 English fallbacks. Counts and interpolation placeholders are preserved, and a focused test protects this member-facing slice.
 
 - **Creating and editing groups in the native app no longer falls back to English in Irish.** The 43 user-facing fields, hints, validation messages, image errors and save states in the group form now use context-aware Irish, together with the Groups landing-page description, statistics and post count. Coordinate examples remain unchanged as functional numeric values, and a focused test protects the reviewed slice.
