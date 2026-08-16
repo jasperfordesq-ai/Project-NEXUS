@@ -739,8 +739,10 @@ function agendaSessionPayload(body) {
     description: trimmed(body.description, 4000) || null,
     session_type: selectedValue(body.session_type, ['session', 'keynote', 'workshop', 'panel', 'break', 'networking', 'other'], 'session'),
     visibility: selectedValue(body.visibility, ['public', 'registered', 'staff'], 'public'),
-    start_at: trimmed(body.start_at),
-    end_at: trimmed(body.end_at),
+    // GOV.UK date+time fields recombine to the same local YYYY-MM-DDTHH:MM the native input
+    // posted (API does the timezone; readDateTime also accepts a single value).
+    start_at: readDateTime(body, 'start_at').value || '',
+    end_at: readDateTime(body, 'end_at').value || '',
     timezone: trimmed(body.timezone, 64) || 'UTC',
     track_name: trimmed(body.track_name, 160) || null,
     room_name: trimmed(body.room_name, 160) || null,
@@ -1916,6 +1918,8 @@ router.get('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
       resourceRows: [...resources, ...Array.from({ length: Math.max(0, 3 - resources.length) }, () => ({}))],
       start_at_local: dateTimeLocalInZone(session.start_at, timezone),
       end_at_local: dateTimeLocalInZone(session.end_at, timezone),
+      start_at_parts: splitDateTime(dateTimeLocalInZone(session.start_at, timezone)),
+      end_at_parts: splitDateTime(dateTimeLocalInZone(session.end_at, timezone)),
       startLabel: agendaDateLabel(session.start_at, timezone, formatDate),
       endLabel: agendaDateLabel(session.end_at, timezone, formatDate)
     };
@@ -1935,6 +1939,8 @@ router.get('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
     visibility: 'public',
     start_at_local: dateTimeLocalInZone(startDate, timezone),
     end_at_local: defaultEnd ? dateTimeLocalInZone(defaultEnd, timezone) : '',
+    start_at_parts: splitDateTime(dateTimeLocalInZone(startDate, timezone)),
+    end_at_parts: splitDateTime(defaultEnd ? dateTimeLocalInZone(defaultEnd, timezone) : ''),
     speakers: [],
     resources: [],
     speakerRows: Array.from({ length: 5 }, () => ({})),

@@ -24531,8 +24531,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Move Closing session later');
     expect(response.text).toContain('Move Opening workshop later');
     expect(response.text).toContain('Move Closing session earlier');
-    expect(response.text.match(/id="agenda-create-start"[^>]*value="([^"]*)"/)[1]).toBe('2026-08-10T10:00');
-    expect(response.text.match(/id="agenda-create-end"[^>]*value="([^"]*)"/)[1]).toBe('2026-08-10T11:00');
+    // agenda session start/end are now the GOV.UK date + single-time pattern.
+    expect(response.text).toMatch(/id="agenda-create-start-year"[^>]*value="2026"/);
+    expect(response.text).toMatch(/id="agenda-create-start-time"[^>]*value="10:00"/);
+    expect(response.text).toMatch(/id="agenda-create-end-time"[^>]*value="11:00"/);
     expect(response.text).toContain('name="action" value="create"');
     expect(response.text).toContain('name="action" value="update"');
     expect(response.text).toContain('name="action" value="cancel"');

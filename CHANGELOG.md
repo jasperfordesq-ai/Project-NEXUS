@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Volunteer shifts and certificates in the native app now stay in Irish.** Twenty-nine labels, actions, empty states and errors now use context-aware Irish, including approved-hour certificates and accessible action labels. Three language-neutral date and time formats remain unchanged, and the existing software-style translation of “My applications” is corrected to member-facing Irish. A focused test protects the reviewed slice.
+
 - **The native app's entire 300-string Profile catalogue is now reviewed for Irish.** The final 31 English descriptions for balances, messages, recommendations, marketplace tasks, jobs, events, ideas, volunteering and federation now use context-aware Irish. A whole-catalogue test verifies every key and rejects any exact-English fallback.
 
 - **Profile navigation and photo updates in the native app now stay in Irish.** Forty-one section labels, marketplace shortcuts, account headings, permission prompts and upload states now use context-aware Irish, including the distinction between a member's profile image and a generic avatar. A focused test protects this navigation slice.
@@ -58,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **A blocking check that counts backend endpoints which report success while doing no work, and only lets that number shrink.** The audit's central finding was that 351 endpoints in the development-only ASP.NET backend answer with convincing "success" responses while performing no work at all. That class of fault is invisible to route comparisons and to the existing tests, which only check that a web address exists and responds — which a do-nothing endpoint satisfies. The new check reads what each endpoint actually does, and fails the build if the count rises (or if it falls without the recorded figure being updated in the same change). It was verified by deliberately adding a do-nothing endpoint and confirming the check caught it. Full findings and the remediation order are recorded in `aspnet-backend/docs/PRODUCTION_READINESS_REMEDIATION.md`.
+
+- **Event agenda session times now use the accessible GOV.UK date-and-time fields, completing the changeover.** Every session's start and end time on an event's agenda is now the date boxes plus a "Time" box. With this, **every date-and-time picker on the accessible site** — wallet slots, podcasts, event messages, registration campaigns and settings, event create/edit, recurring edits, and now the agenda — has moved off the browser's built-in widget to the GOV.UK Design System pattern the standards recommend. Two inputs are deliberately left as-is and recorded: a poll's closing date (its browser minimum is the only guard against a poll closing in the past) and the availability slots' plain time boxes (GOV.UK has no component there). Saved values are unchanged throughout; all covered by tests, with the main event-create form additionally checked end-to-end against a live backend.
 
 - **Editing a repeating event's times now uses the accessible GOV.UK date-and-time fields** (eighth conversion). Same saved value, same timezone handling; covered by tests.
 

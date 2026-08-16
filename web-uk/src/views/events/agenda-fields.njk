@@ -3,6 +3,8 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
 {% macro agendaFields(prefix, session, timezone) %}
   <input type="hidden" name="timezone" value="{{ timezone }}">
 
@@ -35,8 +37,8 @@
   </div>
 
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-start">{{ t("govuk_alpha.events.agenda.fields.start") }}</label><input class="govuk-input" id="{{ prefix }}-start" name="start_at" type="datetime-local" value="{{ session.start_at_local or '' }}" required></div></div>
-    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-end">{{ t("govuk_alpha.events.agenda.fields.end") }}</label><input class="govuk-input" id="{{ prefix }}-end" name="end_at" type="datetime-local" value="{{ session.end_at_local or '' }}" required></div></div>
+    <div class="govuk-grid-column-one-half">{{ nexusDateTimeInput({ name: "start_at", idPrefix: prefix + "-start", legend: t("govuk_alpha.events.agenda.fields.start"), value: session.start_at_parts }, t) }}</div>
+    <div class="govuk-grid-column-one-half">{{ nexusDateTimeInput({ name: "end_at", idPrefix: prefix + "-end", legend: t("govuk_alpha.events.agenda.fields.end"), value: session.end_at_parts }, t) }}</div>
   </div>
   <p class="govuk-hint">{{ t("govuk_alpha.events.agenda.timezone_hint", { timezone: timezone }) }}</p>
 

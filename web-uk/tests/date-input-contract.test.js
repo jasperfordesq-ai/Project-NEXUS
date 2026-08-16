@@ -310,8 +310,12 @@ describe('native date input ceiling', () => {
   // govuk error-summary JS focuses the first field inside the date-input fieldset). Then
   // 4 -> 2: events/recurring-edit start_time + end_time (recombined at the top of the POST
   // so eventScopedPayload/recurringRevisionPatch/storeRecurringForm are unchanged). The
-  // remaining 2 are agenda-fields start_at/end_at (per-session loop). Keep lowering.
-  const CEILING = { 'datetime-local': 2, date: 1, time: 2 };
+  // remaining 2 are agenda-fields start_at/end_at (per-session loop). Then 2 -> 0: agenda
+  // converted. ALL native datetime-local inputs are now the GOV.UK date + single-time
+  // pattern. What remains is deliberate: 1 native `date` (polls/create.njk — its browser
+  // `min` is the only guard against a past expiry) and 2 `time` (settings/availability
+  // slots grid, where GOV.UK has no component and its guidance is far weaker).
+  const CEILING = { 'datetime-local': 0, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;
