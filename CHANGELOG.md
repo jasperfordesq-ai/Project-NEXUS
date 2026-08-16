@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's entire 32-string marketplace map workflow is now reviewed for Irish.** Search-area guidance, coordinate states, radius and nearby-result labels now use context-aware Irish; broken markup, placeholder copy, a malformed latitude example and marketplace grammar were repaired. A whole-section test permits only five reviewed coordinate and distance formats to remain language-neutral.
+
 - **Marketplace order, seller and promotion terminology in the native app has received a contextual Irish repair.** Fourteen mistranslated or English labels now correctly describe parcel tracking, order ratings, delivery methods, seller messaging, average ratings and promotion placement. A focused test guards against the previously misleading words for “song,” “September,” and property listings returning.
 
 - **The native app's entire 77-string Ideation catalogue is now reviewed for Irish.** The final eighteen challenge filters, lifecycle states, idea outcomes and sorting labels now use context-aware Irish, and a stray space was removed from the date-time example. A whole-catalogue test verifies every key and permits only that reviewed date-time format to remain language-neutral.
