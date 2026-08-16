@@ -33,3 +33,33 @@ test('Irish Broker dashboard describes pending work, failures, and activity natu
   assert.equal(irish.dashboard.links.messages_desc, 'Déan athbhreithniú ar chóipeanna bróicéara de chomhráite ar cuireadh bratach orthu.');
   assert.equal(irish.dashboard.time_hours_ago_other, '{{count}} uair ó shin');
 });
+
+test('Irish Broker member controls preserve approval, suspension, and onboarding meaning', () => {
+  const members = JSON.stringify(irish.members);
+
+  assert.doesNotMatch(members, /Ná logáil isteach riamh|Sár-riarachán|Ball\(í\)/u);
+  assert.doesNotMatch(members, /Faomhadh roghnaithe|Roghnú soiléir|Gheobhaidh siad/u);
+  assert.doesNotMatch(members, /Inbhordáil|\{\{count\}\} [nul] ó shin/u);
+
+  assert.equal(irish.members.tab_never_logged_in, 'Níor logáil isteach riamh');
+  assert.equal(irish.members.bulk_approve, 'Faomh na cinn roghnaithe');
+  assert.equal(irish.members.confirm_approve_message, 'An bhfuil tú cinnte gur mhaith leat an ball seo a fhaomhadh? Gheobhaidh an ball rochtain iomlán ar an ardán.');
+  assert.equal(irish.members.approved_success, 'Faomhadh an ball.');
+  assert.equal(irish.members.stat_total, 'Líon iomlán na mball');
+  assert.equal(irish.members.empty_onboarding_incomplete_title, 'Chríochnaigh gach duine an t-ionduchtú');
+});
+
+test('Irish Broker onboarding and safeguarding wording preserves member progress and recorded arrangements', () => {
+  const journey = JSON.stringify({ onboarding: irish.onboarding, safeguarding: irish.safeguarding });
+
+  assert.doesNotMatch(journey, /Inbhordáil|Liostú Ar an gcéad uair|Úsáideoir Athfhillte/u);
+  assert.doesNotMatch(journey, /Ceaduithe ar feitheamh|An titim is mó|Gan titim/u);
+  assert.doesNotMatch(journey, /Teachtaireachtaí le Bratach|Sannadh Caomhnóirí|logs an bhróicéara/u);
+
+  assert.equal(irish.onboarding.title, 'Ionduchtú');
+  assert.equal(irish.onboarding.stage_first_listing, 'An chéad liostú');
+  assert.equal(irish.onboarding.pending_approvals, 'Faomhuithe ar feitheamh');
+  assert.equal(irish.safeguarding.tab_guardians, 'Sannacháin caomhnóra');
+  assert.equal(irish.safeguarding.mark_reviewed, 'Marcáil mar athbhreithnithe');
+  assert.equal(irish.safeguarding.no_assignments, 'Níl aon sannachán caomhnóra ann.');
+});
