@@ -30,3 +30,26 @@ test('Irish Federation hub and partner discovery preserve network and community 
   assert.equal(irish.partners.permission_listings, 'Liostuithe');
   assert.equal(irish.partners.view_details, 'Féach ar na sonraí');
 });
+
+test('Irish Federation connection and onboarding wording preserves consent and status meaning', () => {
+  const journey = JSON.stringify({
+    connections: irish.connections,
+    partnerDetail: irish.partner_detail,
+    onboarding: irish.onboarding,
+  });
+
+  assert.doesNotMatch(journey, /Uimh Iarratais|\bMeath\b|Ceangal dhiúltaigh/u);
+  assert.doesNotMatch(journey, /Sroicheann Seirbhíse|cianda OK|Beidh taisteal/u);
+  assert.doesNotMatch(journey, /Faigh Tosaigh|Seirbhísí Malartú|Socrú Cónaidhm/u);
+
+  assert.equal(irish.connections.title, 'Naisc na Cónaidhme');
+  assert.equal(irish.connections.decline, 'Diúltaigh');
+  assert.equal(irish.connections.rejected_success, 'Diúltaíodh don nasc');
+  assert.equal(irish.partner_detail.not_found_heading, 'Níor aimsíodh an comhpháirtí');
+  assert.equal(irish.partner_detail.browse_listings, 'Brabhsáil liostuithe');
+  assert.equal(irish.onboarding.profile_visibility_description, 'Rialaigh cén fhaisnéis a roinntear le pobail chomhpháirtíochta.');
+  assert.equal(irish.onboarding.service_reach, 'Raon seirbhíse');
+  assert.equal(irish.onboarding.reach_travel_ok, 'Sásta taisteal');
+  assert.equal(irish.onboarding.on, 'Casta air');
+  assert.equal(irish.onboarding.off, 'Casta as');
+});
