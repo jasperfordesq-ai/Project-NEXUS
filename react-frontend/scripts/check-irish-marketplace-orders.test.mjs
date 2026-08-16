@@ -59,3 +59,44 @@ test('Irish Marketplace listing and offer wording preserves listing and negotiat
   assert.equal(irish.offer.counter, 'Déan friththairiscint');
   assert.equal(irish.offer.pay_accepted, 'Íoc as an tairiscint ar glacadh léi');
 });
+
+test('Irish Marketplace creation and discovery wording preserves commerce and filter meaning', () => {
+  const journey = JSON.stringify({
+    breadcrumb: irish.breadcrumb,
+    metaDescription: irish.meta_description,
+    hub: irish.hub,
+    featureGate: irish.hub_feature_gate,
+    create: irish.create,
+    search: irish.search,
+    category: irish.category,
+    common: irish.common,
+    condition: irish.condition,
+    priceType: irish.price_type,
+    deliveryMethod: irish.delivery_method,
+    sort: irish.sort,
+    timeAgo: irish.time_ago,
+    filters: irish.filters,
+    gallery: irish.gallery,
+    price: irish.price,
+    empty: irish.empty,
+  });
+
+  assert.doesNotMatch(journey, /\bBreadcrumb\b|Liostaí Cleiteacha|Sainráite|Inchaibidle/u);
+  assert.doesNotMatch(journey, /\bliosta(?:í)?\b|Loingseoireacht|Dífhostaigh|Lódáil/u);
+  assert.doesNotMatch(journey, /Postáilte Laistigh de|Na \d+ Lá Seo Caite|Tosaigh ag Díol/u);
+  assert.doesNotMatch(journey, /\{\{count\}\}(?:n|u|l) ó shin/u);
+
+  assert.equal(irish.breadcrumb, 'Conair nascleanúna');
+  assert.equal(irish.hub.featured_listings, 'Liostuithe roghnaithe');
+  assert.equal(irish.create.subtitle, 'Cruthaigh liostú nua sa mhargadh');
+  assert.equal(irish.create.publish, 'Foilsigh an liostú');
+  assert.equal(irish.create.description_generate_failed, 'Níorbh fhéidir an cur síos a ghiniúint');
+  assert.equal(irish.search.delivery_shipping, 'Seoladh amháin');
+  assert.equal(irish.search.last_30_days, 'Le 30 lá anuas');
+  assert.equal(irish.category.listings_count_few, '{{count}} liostú');
+  assert.equal(irish.common.dismiss, 'Dún');
+  assert.equal(irish.price_type.negotiable, 'Soshannta');
+  assert.equal(irish.delivery_method.pickup, 'Bailiú amháin');
+  assert.equal(irish.time_ago.hours_ago, '{{count}} uair ó shin');
+  assert.equal(irish.filters.apply, 'Cuir na scagairí i bhfeidhm');
+});
