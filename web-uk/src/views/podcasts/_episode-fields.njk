@@ -3,6 +3,8 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
 {% macro episodeTextFields(ep, suffix, edit) %}
   <div class="govuk-form-group">
     <label class="govuk-label{% if not edit %} govuk-label--s{% endif %}" for="episode_summary{{ suffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_summary_label") }}{% if not edit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
@@ -90,11 +92,16 @@
   </div>
 </div>
 
-<div class="govuk-form-group">
-  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="scheduled_for{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.scheduled_for_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
-  {% if not episodeFieldEdit %}<div id="scheduled_for-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.scheduled_for_hint") }}</div>{% endif %}
-  <input class="govuk-input" id="scheduled_for{{ episodeFieldSuffix }}" name="scheduled_for" type="datetime-local" value="{{ episodeField.scheduledFor }}"{% if not episodeFieldEdit %} aria-describedby="scheduled_for-hint"{% endif %}>
-</div>
+{% set scheduledForLegend = t("govuk_alpha_commerce.podcast_studio.scheduled_for_label") %}
+{% if not episodeFieldEdit %}{% set scheduledForLegend = scheduledForLegend + " (" + t("govuk_alpha_commerce.common.optional") + ")" %}{% endif %}
+{{ nexusDateTimeInput({
+  name: "scheduled_for",
+  idPrefix: "scheduled_for" + episodeFieldSuffix,
+  legend: scheduledForLegend,
+  legendClasses: "govuk-fieldset__legend--s",
+  hint: t("govuk_alpha_commerce.podcast_studio.scheduled_for_hint"),
+  value: episodeField.scheduledForParts
+}, t) }}
 
 {% if transcriptsEnabled %}
   <div class="govuk-form-group">

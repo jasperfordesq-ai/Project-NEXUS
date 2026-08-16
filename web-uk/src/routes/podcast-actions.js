@@ -14,6 +14,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDateTime } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -156,7 +157,9 @@ function episodePayload(body, options = {}) {
   const audioMime = trimmed(body.audio_mime, 120);
   if (audioMime !== '') payload.audio_mime = audioMime;
 
-  const scheduledFor = trimmed(body.scheduled_for);
+  // GOV.UK date+time fields (scheduled_for-day/-month/-year/-time) recombine to the same
+  // YYYY-MM-DDTHH:MM the native input posted; readDateTime also accepts a single value.
+  const scheduledFor = readDateTime(body, 'scheduled_for').value || '';
   if (scheduledFor !== '') payload.scheduled_for = scheduledFor;
   else if (options.update) payload.scheduled_for = null;
 
@@ -520,3 +523,5 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/delete', asyncRoute(asy
 }));
 
 module.exports = router;
+// Exposed for unit tests; require() still returns the mountable router unchanged.
+module.exports.episodePayload = episodePayload;

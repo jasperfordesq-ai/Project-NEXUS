@@ -9,6 +9,7 @@ const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
+const { splitDateTime } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -298,6 +299,7 @@ function decorateEpisode(episode, showId = null, t = null) {
       ...(trimmed(chapter.url) ? { url: trimmed(chapter.url) } : {})
     })), null, 2) : '',
     scheduledFor: trimmed(row.scheduled_for).slice(0, 16),
+    scheduledForParts: splitDateTime(trimmed(row.scheduled_for).slice(0, 16)),
     status,
     statusLabel: t && Object.hasOwn(EPISODE_STATUS_LABELS, status)
       ? t(`govuk_alpha_commerce.podcast_studio.episode_status_${status}`)

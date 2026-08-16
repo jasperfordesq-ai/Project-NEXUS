@@ -245,6 +245,16 @@ describe('datetime input markup (date fields + one time field)', () => {
     expect(renderDateTime('de')).toContain('Zeit');
     expect(renderDateTime('ar')).toContain('وقت');
   });
+
+  it('idPrefix gives unique element ids while the posted names stay put (for doubled forms)', () => {
+    const html = renderDateTime('en', { idPrefix: 'starts-42' });
+    // ids are prefixed (so two forms on one page do not clash)...
+    expect(html).toContain('id="starts-42-day"');
+    expect(html).toContain('id="starts-42-time"');
+    // ...but the POSTED names are unchanged, so the route reads the same fields.
+    expect(html).toContain('name="starts-day"');
+    expect(html).toContain('name="starts-time"');
+  });
 });
 
 describe('native date input ceiling', () => {
@@ -288,8 +298,10 @@ describe('native date input ceiling', () => {
   // includes both spellings, so the true total (13 HTML + 4 macro) is measured.
   // 🔴 Lowered 17 -> 15 on 2026-08-14: marketplace pickup-slot start/end converted to
   // the GOV.UK date + single-time pattern (nexusDateTimeInput), the translated time
-  // strings that used to block this now existing. Keep lowering as more convert.
-  const CEILING = { 'datetime-local': 15, date: 1, time: 2 };
+  // strings that used to block this now existing. Then 15 -> 14: podcast episode
+  // scheduled_for converted (idPrefix added so the doubled add/edit partial keeps unique
+  // ids). Keep lowering as more convert.
+  const CEILING = { 'datetime-local': 14, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

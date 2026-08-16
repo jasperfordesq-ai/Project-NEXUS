@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {#
   The GOV.UK three-field date pattern, with this service's translations applied.
@@ -55,8 +56,11 @@
 #}
 {% macro nexusDateInput(params, t) %}
 {% set errorFields = params.errorFields or [] %}
+{# `idPrefix` lets the same posted field name appear more than once on a page (a partial
+   included in both an add and an edit form) with unique element ids; `namePrefix` — and
+   therefore the posted `name` — stays put so the route reads the same fields. #}
 {{ govukDateInput({
-  id: params.name,
+  id: params.idPrefix or params.name,
   namePrefix: params.name,
   fieldset: {
     legend: {
@@ -92,5 +96,61 @@
       inputmode: "numeric"
     }
   ]
+}) }}
+{% endmacro %}
+
+{#
+  Date AND time, for a field that used to be a native combined date-and-time input.
+  🔴 That native type is deliberately NOT spelled out here: the shrink-only counter in
+  this file's contract test greps the views tree, so writing the literal attribute in a
+  comment counts as an unconverted field and inflates the ceiling by one (the same trap
+  the date macro's comment above avoids).
+  It is the three-field date pattern above plus GOV.UK's "asking for times" pattern: ONE
+  free-text time field ("Let users enter the time in a way they're familiar with"), not
+  hour/minute spinners.
+
+  The four inputs post as `{name}-day/-month/-year/-time`. Recombine them server-side with
+  `readDateTime(req.body, name)` from `src/lib/date-input.js`, which returns the same
+  `YYYY-MM-DDTHH:MM` string the native input posted, so nothing downstream changes.
+
+      {% from "_date-input.njk" import nexusDateTimeInput %}
+      {{ nexusDateTimeInput({
+        name: "scheduled_for",
+        legend: "<a translated legend>",
+        value: scheduledForParts,       (from splitDateTime; has day, month, year, time)
+        errorMessage: dtError,
+        errorFields: dtErrorFields
+      }, t) }}
+
+  🔴 `composeDateTime` returns EITHER a date error (day/month/year in errorFields) OR a
+  time error ('time' in errorFields), never both — so the message is routed to whichever
+  sub-field owns it: the date-input shows a date error, the time input shows a time error.
+#}
+{% macro nexusDateTimeInput(params, t) %}
+{% set errorFields = params.errorFields or [] %}
+{% set timeError = params.errorMessage if ("time" in errorFields) else undefined %}
+{% set dateError = params.errorMessage if (params.errorMessage and not ("time" in errorFields)) else undefined %}
+{{ nexusDateInput({
+  name: params.name,
+  idPrefix: params.idPrefix,
+  legend: params.legend,
+  legendClasses: params.legendClasses,
+  hint: params.hint,
+  value: params.value,
+  errorMessage: dateError,
+  errorFields: errorFields
+}, t) }}
+{{ govukInput({
+  id: (params.idPrefix or params.name) + "-time",
+  name: params.name + "-time",
+  label: { text: t("web_uk.date_input.time_label"), classes: "govuk-label--s" },
+  hint: { text: t("web_uk.date_input.time_hint") },
+  value: (params.value.time if params.value else ""),
+  classes: "govuk-input--width-5" + (" govuk-input--error" if "time" in errorFields else ""),
+  autocomplete: "off",
+  errorMessage: {
+    text: timeError,
+    visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim
+  } if timeError else undefined
 }) }}
 {% endmacro %}
