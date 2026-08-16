@@ -155,52 +155,52 @@
       "revisionFallback": "Leagan"
     },
     "tasks": {
-      "title": "Group tasks",
-      "subtitle": "Organise shared work and keep track of progress.",
-      "newTask": "New task",
-      "titlePlaceholder": "Task title",
-      "descriptionPlaceholder": "Add task details...",
-      "dueDatePlaceholder": "Due date, for example 2026-06-30",
-      "priorityLabel": "Priority",
-      "assigneeLabel": "Assign to",
-      "quickPriority": "Priority",
-      "quickAssignee": "Assignee",
-      "unassigned": "Unassigned",
-      "create": "Create task",
-      "validation": "Add a task title before saving.",
-      "loadError": "Could not load group tasks.",
-      "createError": "Could not create the task.",
-      "updateError": "Could not update the task.",
-      "deleteError": "Could not delete the task.",
-      "empty": "No tasks have been created yet.",
-      "joinToView": "Join this group to view tasks.",
-      "delete": "Delete",
-      "deleteTitle": "Delete task",
-      "deleteMessage": "Delete {{title}} from this group?",
-      "dueDate": "Due {{date}}",
+      "title": "Tascanna an ghrúpa",
+      "subtitle": "Eagraigh obair chomhroinnte agus coinnigh súil ar dhul chun cinn.",
+      "newTask": "Tasc nua",
+      "titlePlaceholder": "Teideal an taisc",
+      "descriptionPlaceholder": "Cuir sonraí an taisc leis...",
+      "dueDatePlaceholder": "Spriocdháta, mar shampla 2026-06-30",
+      "priorityLabel": "Tosaíocht",
+      "assigneeLabel": "Sann do",
+      "quickPriority": "Tosaíocht",
+      "quickAssignee": "Sannaí",
+      "unassigned": "Gan sannadh",
+      "create": "Cruthaigh tasc",
+      "validation": "Cuir teideal an taisc leis roimh shábháil.",
+      "loadError": "Níorbh fhéidir tascanna an ghrúpa a luchtú.",
+      "createError": "Níorbh fhéidir an tasc a chruthú.",
+      "updateError": "Níorbh fhéidir an tasc a nuashonrú.",
+      "deleteError": "Níorbh fhéidir an tasc a scriosadh.",
+      "empty": "Níl aon tasc cruthaithe fós.",
+      "joinToView": "Glac páirt sa ghrúpa seo chun na tascanna a fheiceáil.",
+      "delete": "Scrios",
+      "deleteTitle": "Scrios an tasc",
+      "deleteMessage": "An bhfuil fonn ort {{title}} a scriosadh ón ngrúpa seo?",
+      "dueDate": "Spriocdháta: {{date}}",
       "filters": {
-        "all": "All",
-        "todo": "To do",
-        "in_progress": "In progress",
-        "done": "Done"
+        "all": "Gach ceann",
+        "todo": "Le déanamh",
+        "in_progress": "Ar siúl",
+        "done": "Déanta"
       },
       "status": {
-        "todo": "To do",
-        "in_progress": "In progress",
-        "done": "Done"
+        "todo": "Le déanamh",
+        "in_progress": "Ar siúl",
+        "done": "Déanta"
       },
       "priority": {
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High",
-        "urgent": "Urgent"
+        "low": "Íseal",
+        "medium": "Meánach",
+        "high": "Ard",
+        "urgent": "Práinneach"
       },
       "stats": {
-        "total": "{{count}} total",
-        "todo": "{{count}} to do",
-        "in_progress": "{{count}} in progress",
-        "done": "{{count}} done",
-        "overdue": "{{count}} overdue"
+        "total": "{{count}} san iomlán",
+        "todo": "{{count}} le déanamh",
+        "in_progress": "{{count}} ar siúl",
+        "done": "{{count}} déanta",
+        "overdue": "{{count}} thar téarma"
       }
     },
     "analytics": {
@@ -287,25 +287,25 @@
     "eventOnline": "Ar líne",
     "eventDateFallback": "Dáta le deimhniú",
     "marketplace": {
-      "title": "Group marketplace",
-      "subtitle": "Browse listings from members of this group.",
-      "active": "{{count}} active",
-      "total": "{{count}} listed",
-      "sellers": "{{count}} sellers",
-      "sellToGroup": "Sell to group",
-      "joinToView": "Join this group to view group marketplace listings.",
-      "empty": "No marketplace listings from this group yet.",
-      "loadFailed": "Could not load group marketplace listings.",
-      "loadMoreFailed": "Could not load more group marketplace listings."
+      "title": "Áit mhargaidh an ghrúpa",
+      "subtitle": "Brabhsáil liostuithe ó bhaill an ghrúpa seo.",
+      "active": "{{count}} gníomhach",
+      "total": "{{count}} liostaithe",
+      "sellers": "{{count}} díoltóir",
+      "sellToGroup": "Díol leis an ngrúpa",
+      "joinToView": "Glac páirt sa ghrúpa seo chun liostuithe áit mhargaidh an ghrúpa a fheiceáil.",
+      "empty": "Níl aon liostú áit mhargaidh ón ngrúpa seo fós.",
+      "loadFailed": "Níorbh fhéidir liostuithe áit mhargaidh an ghrúpa a luchtú.",
+      "loadMoreFailed": "Níorbh fhéidir tuilleadh liostuithe áit mhargaidh an ghrúpa a luchtú."
     },
     "roles": {
-      "owner": "Owner",
-      "admin": "Admin",
-      "member": "Member"
+      "owner": "Úinéir",
+      "admin": "Riarthóir",
+      "member": "Ball"
     },
     "stats": {
-      "members": "Members",
-      "posts": "Posts"
+      "members": "Baill",
+      "posts": "Postálacha"
     },
     "ownerTools": "Uirlisí grúpa",
     "edit": "Cuir an grúpa in eagar"

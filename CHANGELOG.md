@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Group tasks and marketplace tools in the native app now stay in Irish.** The task board's 39 labels, statuses, priorities, due dates and errors, plus the group marketplace, member roles and detail statistics, now use context-aware Irish with dates, titles and counts preserved. A focused test protects all four reviewed sections.
+
 - **Group questions, answers and wiki pages in the native app are now fully Irish.** All 59 labels, prompts, voting actions, answer states, wiki editing controls, version-history messages and errors now use context-aware Irish with count and title placeholders intact. A focused test prevents either knowledge-sharing section from reverting to English.
 
 - **Group files and media in the native app no longer switch to English for Irish users.** All 32 labels, empty states, permission prompts, upload/download actions and deletion confirmations now use context-aware Irish while preserving filenames such as `{{name}}`. A focused test protects both detail sections.
