@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -62,10 +62,21 @@ public class GroupExchangeControllerTests : IntegrationTestBase
         var unauthorized = await Client.SendAsync(unauthorizedRequest);
         unauthorized.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var unauthorizedJson = await JsonAsync(unauthorized);
+        // 🔴 Corrected 2026-08-16 after asking the running Laravel instead of
+        // assuming. This asserted {success,error,code} and explicitly required
+        // `errors` to be ABSENT -- the opposite of what Laravel sends. Laravel
+        // answers GET /api/v2/group-exchanges with
+        // {"errors":[{"code":"auth_required",...}],"success":false}, the same
+        // envelope as every other authenticated endpoint checked.
+        //
+        // Third test today named for Laravel parity that pinned a contract
+        // Laravel does not have. Naming a test after the source of truth does not
+        // make it agree with the source of truth.
         unauthorizedJson.GetProperty("success").GetBoolean().Should().BeFalse();
-        unauthorizedJson.GetProperty("error").GetString().Should().Be("Authentication required");
-        unauthorizedJson.GetProperty("code").GetString().Should().Be("AUTH_REQUIRED");
-        unauthorizedJson.TryGetProperty("errors", out _).Should().BeFalse();
+        var authErrors = unauthorizedJson.GetProperty("errors");
+        authErrors.GetArrayLength().Should().Be(1);
+        authErrors[0].GetProperty("code").GetString().Should().Be("auth_required");
+        authErrors[0].GetProperty("message").GetString().Should().Be("Authentication required");
 
         await AuthenticateAsAdminAsync();
         var phpEmptyTitle = await Client.PostAsJsonAsync("/api/v2/group-exchanges", new

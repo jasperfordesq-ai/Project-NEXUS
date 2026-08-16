@@ -165,7 +165,42 @@ the endpoint simply is not implemented on one side.
 
 ## 4. Error shapes
 
-**Status: unmeasured beyond 404s.**
+**Status: the 401 envelope is now uniform. 44 -> 51/118 on web-uk.**
+
+🔴 This backend had **three different 401 bodies** depending on how each endpoint
+happened to be protected:
+
+| Produced by | Body |
+| --- | --- |
+| A policy (`NexusAuthorizationResultHandler`) | `{"errors":[{code,message}],"success":false}` — correct |
+| A bare `Unauthorized()` | RFC ProblemDetails: `{"type","title","status","traceId"}` |
+| `Unauthorized(new { error = "..." })` | a third shape again |
+
+Laravel sends the first for every authenticated endpoint checked, including
+`group-exchanges`. Fixed centrally by `Filters/LaravelAuthEnvelopeFilter`, an
+always-run result filter that rewrites any non-conforming 401 — chosen over
+middleware because rewriting a response body after the fact is what made
+`SurnamePrivacyMiddleware` quietly rename groups. It deliberately leaves a 401
+that already has an `errors` array alone, so the policy handler's richer
+messages survive.
+
+A `JwtBearerEvents.OnChallenge` handler covers the other path — an endpoint with
+`[Authorize]` and no policy — so a future bare `[Authorize]` cannot reintroduce
+ProblemDetails.
+
+🔴 **Two tests pinned envelopes Laravel does not send**, and both were named for
+parity. `CanonicalRoutes_RequireAuthentication_AndReturnLaravelEnvelopes`
+asserted `{success,error,code}` and explicitly required `errors` to be **absent**
+— the opposite of what Laravel returns for that exact path. `MemberAuthGate`
+asserted that the public skill taxonomy rejects anonymous callers. Both were
+corrected against the running Laravel rather than against belief. That is now
+**three** parity-named tests in one day asserting the opposite of the source of
+truth.
+
+**Still unmeasured:** 422 validation bodies, which need a POST and therefore a
+disposable Laravel — the local one is a production-derived snapshot.
+
+**Superseded note:**
 
 Laravel has three distinct error envelopes and they are not interchangeable:
 domain `{"errors":[{code,message,field?}]}`, auth `{success:false,error,code}`,

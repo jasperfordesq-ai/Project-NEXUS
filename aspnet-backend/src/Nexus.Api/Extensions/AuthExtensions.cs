@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -78,6 +78,42 @@ public static class AuthExtensions
 
                 options.Events = new JwtBearerEvents
                 {
+                    // 🔴 Laravel's auth envelope, for every challenge.
+                    //
+                    // Without this, an endpoint carrying a bare [Authorize] (no
+                    // policy) fell through to ASP.NET's default and answered
+                    // {"type","title","status","traceId"} -- RFC ProblemDetails,
+                    // nothing like Laravel's
+                    // {"errors":[{"code","message"}],"success":false}. Endpoints
+                    // using a policy were fine, because
+                    // NexusAuthorizationResultHandler already wrote the right
+                    // shape, so the backend had THREE different 401 bodies
+                    // depending on how each endpoint happened to be protected.
+                    //
+                    // A client that branches on the error envelope -- and the
+                    // React client does, reading errors[0].code -- cannot treat
+                    // those as the same failure. Found by diffing the accessible
+                    // frontend's paths against both backends.
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+
+                        if (context.Response.HasStarted)
+                        {
+                            return;
+                        }
+
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.Headers["API-Version"] = "2.0";
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            errors = new[]
+                            {
+                                new { code = "auth_required", message = "Authentication required" },
+                            },
+                            success = false,
+                        });
+                    },
                     OnMessageReceived = context =>
                     {
                         var accessToken = context.Request.Query["access_token"];

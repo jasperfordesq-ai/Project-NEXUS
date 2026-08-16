@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -104,6 +104,10 @@ if (!builder.Environment.IsDevelopment()
 builder.Services.AddControllers(opt =>
 {
     opt.Conventions.Add(new AdminV2RouteAliasConvention());
+
+    // Every 401 gets Laravel's envelope, whatever produced it. See the filter
+    // for why three different shapes existed.
+    opt.Filters.Add<Nexus.Api.Filters.LaravelAuthEnvelopeFilter>();
 });
 
 // Global request body size limit (5MB) to prevent abuse

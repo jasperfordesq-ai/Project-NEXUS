@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -21,9 +21,19 @@ public class CompatibilityControllerAuthTests : IntegrationTestBase
 
     private const string Path = "/api/skills/categories";
 
+    /// <summary>
+    /// 🔴 Corrected 2026-08-16. This asserted that /api/skills/categories rejects
+    /// an anonymous caller with 401. Laravel does the opposite: the route carries
+    /// an explicit ->withoutMiddleware('auth:sanctum') at routes/api.php:790, so
+    /// the skill taxonomy is public — it is a vocabulary, not member data, and a
+    /// signed-out visitor browsing what a community offers needs it.
+    ///
+    /// The endpoint was changed to match Laravel, which left this test pinning
+    /// the old behaviour. An anonymous caller now needs tenant context instead of
+    /// credentials, so the request carries X-Tenant-ID and expects 200.
+    /// </summary>
     [Theory]
-    [InlineData("anonymous", (int)HttpStatusCode.Unauthorized)]
-
+    [InlineData("anonymous", 200)]
     [InlineData("member", 200)]
     public async Task MemberAuthGate(string role, int expectedStatus)
     {
@@ -38,7 +48,16 @@ public class CompatibilityControllerAuthTests : IntegrationTestBase
             SetAuthToken(token);
         }
 
-        var resp = await Client.GetAsync(Path);
+        using var request = new HttpRequestMessage(HttpMethod.Get, Path);
+        if (role == "anonymous")
+        {
+            // Public, but still tenant-scoped: without a community there is no
+            // taxonomy to return, and the backend answers 400 rather than
+            // guessing which community was meant.
+            request.Headers.Add("X-Tenant-ID", TestData.Tenant1.Id.ToString());
+        }
+
+        var resp = await Client.SendAsync(request);
 
         if (role == "member")
         {
