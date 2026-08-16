@@ -28,30 +28,30 @@
   "noIdeasTitle": "Níl aon smaoineamh ann fós",
   "noIdeasSubtitle": "Bí ar an gcéad duine a chuirfidh togra isteach.",
   "filters": {
-    "all": "All",
-    "open": "Open",
-    "voting": "Voting",
-    "evaluating": "Evaluating",
-    "closed": "Closed"
+    "all": "Gach ceann",
+    "open": "Oscailte",
+    "voting": "Vótáil",
+    "evaluating": "Á measúnú",
+    "closed": "Dúnta"
   },
   "status": {
-    "draft": "Draft",
-    "open": "Open",
-    "voting": "Voting",
-    "evaluating": "Evaluating",
-    "closed": "Closed",
-    "archived": "Archived"
+    "draft": "Dréacht",
+    "open": "Oscailte",
+    "voting": "Vótáil",
+    "evaluating": "Á measúnú",
+    "closed": "Dúnta",
+    "archived": "Cartlannaithe"
   },
   "ideaStatus": {
-    "draft": "Draft",
-    "submitted": "Submitted",
-    "shortlisted": "Shortlisted",
-    "winner": "Winner",
-    "withdrawn": "Withdrawn"
+    "draft": "Dréacht",
+    "submitted": "Curtha isteach",
+    "shortlisted": "Ar an ngearrliosta",
+    "winner": "Buaiteoir",
+    "withdrawn": "Tarraingthe siar"
   },
   "sort": {
-    "votes": "Top voted",
-    "newest": "Newest"
+    "votes": "Is mó vótaí",
+    "newest": "Is nuaí"
   },
   "create": {
     "eyebrow": "Dúshlán nua",
@@ -70,7 +70,7 @@
     },
     "submissionDeadlineLabel": "Spriocdháta aighneachta",
     "votingDeadlineLabel": "Spriocdháta vótála",
-    "deadlinePlaceholder": " 2026-06-30 17:00",
+    "deadlinePlaceholder": "2026-06-30 17:00",
     "maxIdeasLabel": " Uasmhéid smaointe in aghaidh an bhaill",
     "maxIdeasPlaceholder": "Roghnach",
     "prizeLabel": "Duais nó aitheantas",

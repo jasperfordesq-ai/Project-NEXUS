@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's entire 77-string Ideation catalogue is now reviewed for Irish.** The final eighteen challenge filters, lifecycle states, idea outcomes and sorting labels now use context-aware Irish, and a stray space was removed from the date-time example. A whole-catalogue test verifies every key and permits only that reviewed date-time format to remain language-neutral.
+
 - **Idea proposals and voting in the native app now stay in Irish.** Thirteen proposal-form labels, submission outcomes, vote controls and empty states now use context-aware Irish. A focused test protects the complete member-contribution slice.
 
 - **Ideation challenge discovery in the native app now stays in Irish.** Fifteen challenge-search, category, count, disabled, empty and error strings now use context-aware Irish while preserving dynamic counts. A focused test protects the complete discovery slice.
