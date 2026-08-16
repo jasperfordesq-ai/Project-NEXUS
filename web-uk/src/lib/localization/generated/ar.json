@@ -6769,6 +6769,7 @@
                 "episode_number_short": "الحلقة :number",
                 "episode_action_publish": "نشر",
                 "episode_action_delete": "يمسح",
+                "episode_delete_confirm_heading": "هل تريد حذف هذه الحلقة؟",
                 "episode_delete_warning": "يؤدي حذف الحلقة إلى إزالتها نهائيًا. لا يمكن التراجع عن هذا.",
                 "add_episode_heading": "أضف حلقة",
                 "episode_title_label": "عنوان الحلقة",

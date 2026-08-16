@@ -102,10 +102,7 @@
               <button class="govuk-button govuk-button--secondary govuk-button--small" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_publish") }}</button>
               </form>
             {% endif %}
-            <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}" class="govuk-!-display-inline">
-              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button class="govuk-button govuk-button--warning govuk-button--small" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</button>
-            </form>
+            <a class="govuk-button govuk-button--warning govuk-button--small" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</a>
           </div>
           <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/update') }}" enctype="multipart/form-data" class="govuk-!-margin-top-4" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -152,6 +149,6 @@
   </div>
   <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/delete') }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</button>
+    <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</button>
   </form>
 {% endblock %}

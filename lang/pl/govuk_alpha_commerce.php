@@ -757,6 +757,7 @@ return [
         'episode_number_short' => 'Odcinek :number',
         'episode_action_publish' => 'Publikować',
         'episode_action_delete' => 'Usuwać',
+        'episode_delete_confirm_heading' => 'Usunąć ten odcinek?',
         'episode_delete_warning' => 'Usunięcie odcinka powoduje jego trwałe usunięcie. Tego nie można cofnąć.',
         'add_episode_heading' => 'Dodaj odcinek',
         'episode_title_label' => 'Tytuł odcinka',

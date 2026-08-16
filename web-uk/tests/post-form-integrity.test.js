@@ -72,8 +72,11 @@ describe('POST form integrity (whole-app ratchets)', () => {
       'achievements/shop.njk',
       'marketplace/offer.njk',
       'premium/index.njk',
-      'marketplace/manage.njk',
       'podcasts/manage.njk',
+      // The listing/episode deletes moved off the manage pages to a shared
+      // "are you sure?" interstitial (2026-08-16); its confirm button carries
+      // the guard. marketplace/manage.njk no longer holds a destructive submit.
+      'confirm-delete.njk',
     ];
 
     it.each(REQUIRED)('%s guards its submit against double activation', (tpl) => {

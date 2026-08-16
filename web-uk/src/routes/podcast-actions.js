@@ -505,6 +505,26 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/publish', asyncRoute(as
   return redirectTo(res, studioRedirect(id, status));
 }));
 
+// "Are you sure?" interstitial for the permanent episode delete (GDS pattern);
+// the studio page links here rather than POSTing directly.
+router.get('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const episodeId = Number(req.params.episodeId);
+  const t = res.locals.t;
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_commerce.podcast_studio.episode_delete_confirm_heading'),
+    activeNav: 'explore',
+    confirmHeading: t('govuk_alpha_commerce.podcast_studio.episode_delete_confirm_heading'),
+    confirmWarning: t('govuk_alpha_commerce.podcast_studio.episode_delete_warning'),
+    confirmButton: t('ux.confirm_delete_button'),
+    confirmAction: `/podcasts/studio/${id}/episodes/${episodeId}/delete`,
+    cancelHref: `/podcasts/studio/${id}`,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
 router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/delete', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());

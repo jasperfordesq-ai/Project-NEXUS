@@ -501,6 +501,26 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   }
 }));
 
+// "Are you sure?" interstitial for the permanent listing delete (GDS pattern);
+// the manage page links here rather than POSTing directly, so a stray click no
+// longer deletes a listing outright.
+router.get('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const t = res.locals.t;
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_commerce.my_listings.delete_confirm_heading'),
+    activeNav: 'explore',
+    confirmHeading: t('govuk_alpha_commerce.my_listings.delete_confirm_heading'),
+    confirmWarning: t('govuk_alpha_commerce.my_listings.delete_warning'),
+    confirmButton: t('ux.confirm_delete_button'),
+    confirmAction: `/marketplace/${id}/delete`,
+    cancelHref: '/marketplace/mine',
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
 router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   return runAction(

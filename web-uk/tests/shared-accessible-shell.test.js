@@ -32203,6 +32203,28 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('GBP 15.50');
   });
 
+  it('shows an "are you sure?" confirmation before deleting a marketplace listing', async () => {
+    const response = await request(app).get('/marketplace/42/delete').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('Delete this listing?');
+    expect(response.text).toContain('Deleting a listing removes it permanently. This cannot be undone.');
+    // The actual delete is a POST from this confirm page, guarded against double-click.
+    expect(response.text).toMatch(/<form method="post" action="\/marketplace\/42\/delete"/);
+    expect(response.text).toContain('data-prevent-double-click="true"');
+    expect(response.text).toContain('href="/marketplace/mine"');
+  });
+
+  it('shows an "are you sure?" confirmation before deleting a podcast episode', async () => {
+    const response = await request(app).get('/podcasts/studio/5/episodes/9/delete').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('Delete this episode?');
+    expect(response.text).toMatch(/<form method="post" action="\/podcasts\/studio\/5\/episodes\/9\/delete"/);
+    expect(response.text).toContain('data-prevent-double-click="true"');
+    expect(response.text).toContain('href="/podcasts/studio/5"');
+  });
+
   it('hides studio creation and rejects the create form when the show limit is reached', async () => {
     const api = require('../src/lib/api');
     api.callPodcastApi.mockResolvedValue({

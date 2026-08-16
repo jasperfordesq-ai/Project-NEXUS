@@ -757,6 +757,7 @@ return [
         'episode_number_short' => 'Episódio :number',
         'episode_action_publish' => 'Publicar',
         'episode_action_delete' => 'Excluir',
+        'episode_delete_confirm_heading' => 'Excluir este episódio?',
         'episode_delete_warning' => 'Excluir um episódio o remove permanentemente. Isto não pode ser desfeito.',
         'add_episode_heading' => 'Adicionar um episódio',
         'episode_title_label' => 'Título do episódio',

@@ -6769,6 +6769,7 @@
                 "episode_number_short": "Episodio :number",
                 "episode_action_publish": "Pubblicare",
                 "episode_action_delete": "Eliminare",
+                "episode_delete_confirm_heading": "Eliminare questo episodio?",
                 "episode_delete_warning": "L'eliminazione di un episodio lo rimuove definitivamente. Questa operazione non può essere annullata.",
                 "add_episode_heading": "Aggiungi un episodio",
                 "episode_title_label": "Titolo dell'episodio",

@@ -757,6 +757,7 @@ return [
         'episode_number_short' => 'Eipeasóid :number',
         'episode_action_publish' => 'Foilsigh',
         'episode_action_delete' => 'Scrios',
+        'episode_delete_confirm_heading' => 'Delete this episode?',
         'episode_delete_warning' => 'Má scriostar eipeasóid, baintear é go buan. Ní féidir é seo a chealú.',
         'add_episode_heading' => 'Cuir eipeasóid leis',
         'episode_title_label' => 'Teideal na heachtra',

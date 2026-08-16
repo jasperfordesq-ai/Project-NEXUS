@@ -784,6 +784,7 @@ return [
         'episode_number_short' => 'Episode :number',
         'episode_action_publish' => 'Publish',
         'episode_action_delete' => 'Delete',
+        'episode_delete_confirm_heading' => 'Delete this episode?',
         'episode_delete_warning' => 'Deleting an episode removes it permanently. This cannot be undone.',
         'add_episode_heading' => 'Add an episode',
         'episode_title_label' => 'Episode title',

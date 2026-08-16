@@ -6769,6 +6769,7 @@
                 "episode_number_short": "エピソード :number",
                 "episode_action_publish": "公開",
                 "episode_action_delete": "消去",
+                "episode_delete_confirm_heading": "このエピソードを削除しますか?",
                 "episode_delete_warning": "エピソードを削除すると、そのエピソードは完全に削除されます。これを元に戻すことはできません。",
                 "add_episode_heading": "エピソードを追加する",
                 "episode_title_label": "エピソードのタイトル",

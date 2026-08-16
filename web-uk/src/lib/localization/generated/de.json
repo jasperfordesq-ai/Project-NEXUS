@@ -6769,6 +6769,7 @@
                 "episode_number_short": "Folge :number",
                 "episode_action_publish": "Veröffentlichen",
                 "episode_action_delete": "Löschen",
+                "episode_delete_confirm_heading": "Diese Folge löschen?",
                 "episode_delete_warning": "Durch das Löschen einer Episode wird diese dauerhaft entfernt. Dies kann nicht rückgängig gemacht werden.",
                 "add_episode_heading": "Fügen Sie eine Episode hinzu",
                 "episode_title_label": "Episodentitel",

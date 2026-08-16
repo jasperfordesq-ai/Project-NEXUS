@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Deleting a marketplace listing or a podcast episode now asks you to confirm first.** Both used to delete immediately on a single click, with no way back. They now take you to a short "Delete this listing? / Delete this episode? — this is permanent and cannot be undone" page with a clear "Yes, delete" button and a Cancel link, so a stray click can't wipe a listing or episode. The confirmation is a shared page reused by both, translated into every language, and its delete button is also guarded against a double-click.
+
 - **If your session expires while opening a volunteering page, you're now sent to log in instead of a "service unavailable" or "couldn't load" page.** On the volunteering list and a volunteering opportunity's detail page, an expired or revoked sign-in used to show a dead-end error page rather than the login screen every other page sends you to. Both now redirect to login, so you can sign back in and carry on. Covered by a test for each page.
 
 - **Uploading a too-large file now shows a clear "the file is too large" message instead of a blank error page.** On the accessible site's ~21 upload forms (photos, documents, resources, event and listing images, and so on), attaching a file over the size limit produced a generic "problem with the service" page. It now shows a proper "the file is too large — go back and choose a smaller file" page, translated into every language. (Re-filling the rest of the form automatically after an over-size upload is a separate, larger change and is not part of this fix.)

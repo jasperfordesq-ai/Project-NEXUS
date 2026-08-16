@@ -6769,6 +6769,7 @@
                 "episode_number_short": "Aflevering :number",
                 "episode_action_publish": "Publiceren",
                 "episode_action_delete": "Verwijderen",
+                "episode_delete_confirm_heading": "Deze aflevering verwijderen?",
                 "episode_delete_warning": "Als u een aflevering verwijdert, wordt deze definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
                 "add_episode_heading": "Voeg een aflevering toe",
                 "episode_title_label": "Titel van de aflevering",
