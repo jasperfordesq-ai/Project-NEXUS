@@ -399,7 +399,7 @@ function formatMoney(amount, currency = '') {
   if (!Number.isFinite(number)) return '';
   const code = trimmed(currency, 3).toUpperCase();
   const precision = ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 2;
-  const formatted = new Intl.NumberFormat('en-US', {
+  const formatted = new Intl.NumberFormat(getRequestIntlLocale(), {
     minimumFractionDigits: precision,
     maximumFractionDigits: precision,
     useGrouping: true
@@ -410,13 +410,13 @@ function formatMoney(amount, currency = '') {
 function formatCredits(amount) {
   const number = Number(amount);
   if (!Number.isFinite(number)) return '';
-  return `${number.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')} time credits`;
+  return `${number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })} time credits`;
 }
 
 function formatCompactNumber(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return '';
-  return number.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  return number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 });
 }
 
 function dateTimeInput(value) {
@@ -611,7 +611,9 @@ function decorateSeller(seller, translate = fallbackTranslator) {
   const totalSales = positiveInteger(row.total_sales) || 0;
   const createdAt = formatMonthYearLabel(row.member_since || row.created_at || user.created_at);
   const verified = booleanValue(row.identity_verified || row.id_verified);
-  const averageRatingLabel = Number.isFinite(averageRating) ? averageRating.toFixed(1) : '0.0';
+  const averageRatingLabel = Number.isFinite(averageRating)
+    ? averageRating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+    : (0).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
   return {
     ...row,

@@ -14,6 +14,7 @@ const {
   ApiOfflineError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
 
@@ -109,7 +110,7 @@ function priceFromCents(value, currency) {
     USD: '$',
     GBP: '\u00a3'
   }[currency] || `${currency} `;
-  return `${prefix}${(cents / 100).toFixed(2)}`;
+  return `${prefix}${(cents / 100).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function normalizeTier(tier, t, currency) {

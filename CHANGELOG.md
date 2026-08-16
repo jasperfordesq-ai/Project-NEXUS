@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Marketplace and premium prices now use each language's own number format.** Prices, offers, order totals and subscription costs on the accessible site were always formatted the US way — a full stop for the decimal and a comma for thousands (for example "USD 1,234.50"). On a site serving eleven languages that is wrong for readers who expect the opposite (German and French write "1.234,50"). Prices now follow the reader's chosen language, and time-credit amounts and seller ratings do the same. English is unchanged. Proven by a test that renders a price in German and checks it uses a comma decimal.
+
 - **Irish marketplace text no longer contains accidental leading spaces.** Thirty-three labels, hints, placeholders and states across forms, offers, orders, coupons, seller tools, search, shipping and Stripe onboarding were normalized, with several adjacent malformed phrases repaired. A catalogue-wide whitespace test prevents the formatting defect from returning.
 
 - **The native app's entire 32-string marketplace map workflow is now reviewed for Irish.** Search-area guidance, coordinate states, radius and nearby-result labels now use context-aware Irish; broken markup, placeholder copy, a malformed latitude example and marketplace grammar were repaired. A whole-section test permits only five reviewed coordinate and distance formats to remain language-neutral.

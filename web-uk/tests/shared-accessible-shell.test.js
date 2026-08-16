@@ -32110,6 +32110,31 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Laravel Blade route');
   });
 
+  it('formats a marketplace price with the request locale (comma decimal under German)', async () => {
+    const api = require('../src/lib/api');
+    api.callMarketplaceApi.mockResolvedValueOnce({
+      data: {
+        id: 42,
+        title: 'Community bike',
+        price: 15.5,
+        price_currency: 'GBP',
+        price_type: 'fixed',
+        status: 'active',
+        user: { id: 77, name: 'Aisha Khan' }
+      }
+    });
+
+    const response = await request(app)
+      .get('/marketplace/42?locale=de')
+      .set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    // The money formatter now follows the request locale: German uses a comma
+    // decimal separator, not the previous hardcoded en-US full stop.
+    expect(response.text).toContain('GBP 15,50');
+    expect(response.text).not.toContain('GBP 15.50');
+  });
+
   it('hides studio creation and rejects the create form when the show limit is reached', async () => {
     const api = require('../src/lib/api');
     api.callPodcastApi.mockResolvedValue({
