@@ -8,6 +8,26 @@
  * Used to reduce redundant API calls for frequently-accessed data
  */
 
+const crypto = require('crypto');
+
+/**
+ * Derive a per-user cache-key prefix from an auth token.
+ *
+ * 🔴 This MUST be unique per user. The tokens are HS256 JWTs whose first ~40
+ * characters (`base64url(header) + "." + "eyJ"`) are BYTE-IDENTICAL for every
+ * user on every tenant, so the old `token.substring(0, 40)` collapsed the whole
+ * platform onto one shared key — one member's cached unread counts were served
+ * to the next member (any tenant) for the cache TTL, and invalidation wiped
+ * everyone's entries. A full-token SHA-256 is unique per session and changes on
+ * refresh (a harmless cache miss).
+ *
+ * @param {string} token
+ * @returns {string} hex digest, safe as a cache-key prefix
+ */
+function userCacheId(token) {
+  return crypto.createHash('sha256').update(String(token || '')).digest('hex');
+}
+
 class SimpleCache {
   constructor(maxSize = 1000) {
     this.cache = new Map();
@@ -151,13 +171,12 @@ function withCache(fn, keyFn, ttl = 30000) {
  */
 function invalidateUserCache(token) {
   if (!token) return;
-  // Create a short hash of the token for the cache key prefix
-  const prefix = token.substring(0, 40);
-  cache.deletePattern(prefix);
+  cache.deletePattern(userCacheId(token));
 }
 
 module.exports = {
   cache,
   withCache,
-  invalidateUserCache
+  invalidateUserCache,
+  userCacheId
 };

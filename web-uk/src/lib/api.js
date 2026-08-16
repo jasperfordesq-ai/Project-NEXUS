@@ -5,7 +5,7 @@
 
 const TENANT_ID = process.env.TENANT_ID || '';
 const ACCESSIBLE_TENANT_SLUG = process.env.ACCESSIBLE_TENANT_SLUG || '';
-const { cache } = require('./cache');
+const { cache, userCacheId } = require('./cache');
 const { getApiBaseUrl } = require('./backend-contract');
 const { getRequestLocale } = require('./request-locale-context');
 const { getRequestTenantSlug, normalizeTenantSlug } = require('./request-tenant-context');
@@ -23,8 +23,10 @@ const CACHE_TTL = {
 
 // Helper to create a cache key from token
 function cacheKey(token, suffix) {
-  // Use first 40 chars of token as user identifier to avoid collisions
-  return `${token.substring(0, 40)}:${suffix}`;
+  // 🔴 Must be unique per user. token.substring(0,40) is IDENTICAL for every
+  // HS256-JWT user (shared header + "eyJ" payload prefix), which leaked one
+  // member's cached counts to the next. userCacheId hashes the whole token.
+  return `${userCacheId(token)}:${suffix}`;
 }
 
 class ApiError extends Error {
@@ -3577,7 +3579,8 @@ async function toggleReaction(token, data) {
 
 // Helper to invalidate all cached data for a user (e.g., on logout)
 function invalidateUserCache(token) {
-  const prefix = token.substring(0, 40);
+  if (!token) return;
+  const prefix = userCacheId(token);
   for (const key of cache.cache.keys()) {
     if (key.startsWith(prefix)) {
       cache.delete(key);
