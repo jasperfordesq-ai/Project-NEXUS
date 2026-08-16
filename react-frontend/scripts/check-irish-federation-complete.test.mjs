@@ -8,6 +8,19 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const irish = JSON.parse(await readFile(new URL('../public/locales/ga/federation.json', import.meta.url)));
+const english = JSON.parse(await readFile(new URL('../public/locales/en/federation.json', import.meta.url)));
+
+function flatten(value, prefix = '', result = {}) {
+  for (const [key, child] of Object.entries(value)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (child && typeof child === 'object' && !Array.isArray(child)) {
+      flatten(child, path, result);
+    } else {
+      result[path] = child;
+    }
+  }
+  return result;
+}
 
 test('Irish Federation hub and partner discovery preserve network and community meaning', () => {
   const journey = JSON.stringify({
@@ -105,4 +118,37 @@ test('Irish Federation events, groups, and member profiles preserve counts and t
   assert.equal(irish.member_profile.tx_summary, '{{amount}} uair an chloig á seoladh chuig {{name}}');
   assert.equal(irish.member_profile.tx_success_detail, 'Seoladh {{amount}} uair an chloig chuig {{name}}');
   assert.equal(irish.member_profile.transactions_disabled_tooltip, 'Ní ghlacann an ball seo le haistrithe creidmheasa Cónaidhme.');
+});
+
+test('Irish Federation reputation, reviews, and opt-in notices preserve trust and consent meaning', () => {
+  const journey = JSON.stringify({ reputation: irish.reputation, reviews: irish.reviews, notice: irish.optin_notice });
+
+  assert.doesNotMatch(journey, /comhpháirtíochta \{\{count\}\}|athbhreithnithe \{\{count\}\}/u);
+  assert.doesNotMatch(journey, /comhalta cónasctha|Cónaidhm rogha an diúltaithe|rogha an chónaidhm/u);
+  assert.doesNotMatch(journey, /Bunú Cónaidhm/u);
+
+  assert.equal(irish.reputation.tooltip_federated_many, 'Clú comhiomlánaithe ó {{count}} bpobal comhpháirtíochta');
+  assert.equal(irish.reputation.tooltip_local_one, 'Bunaithe ar {{count}} léirmheas sa phobal seo');
+  assert.equal(irish.reputation.aria_label, 'Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas');
+  assert.equal(irish.reviews.unavailable, 'Níl léirmheasanna ar fáil don bhall Cónaidhme seo go fóill');
+  assert.equal(irish.reviews.rating_label, 'Rátáil {{rating}} as 5');
+  assert.equal(irish.optin_notice.cta, 'Socraigh an Chónaidhm');
+  assert.match(irish.optin_notice.description, /rogha a dhéanamh páirt a ghlacadh/u);
+});
+
+test('the complete Irish Federation catalogue retains only documented functional invariants', () => {
+  const englishValues = flatten(english);
+  const irishValues = flatten(irish);
+  const exactMatches = Object.keys(englishValues)
+    .filter((key) => typeof englishValues[key] === 'string' && irishValues[key] === englishValues[key])
+    .sort();
+
+  assert.deepEqual(exactMatches, [
+    'listings.hours_estimated',
+    'onboarding.kilometers_short',
+    'reputation.chip_label',
+    'reputation.chip_label_one',
+    'reputation.chip_label_other',
+    'settings.kilometers_short',
+  ]);
 });

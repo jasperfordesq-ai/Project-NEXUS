@@ -613,44 +613,44 @@
     "reviews": "Léirmheasanna"
   },
   "reputation": {
-    "tooltip_federated": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_local": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
+    "tooltip_federated": "Clú comhiomlánaithe ó {{count}} pobal comhpháirtíochta",
+    "tooltip_local": "Bunaithe ar {{count}} léirmheas sa phobal seo",
     "chip_label": "{{score}} ({{count}})",
-    "aria_label": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}",
-    "tooltip_federated_few": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_federated_many": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_federated_one": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_federated_other": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_federated_two": "Clú comhiomlánaithe ar fud na bpobal comhpháirtíochta {{count}}",
-    "tooltip_local_few": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
-    "tooltip_local_many": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
-    "tooltip_local_one": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
-    "tooltip_local_other": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
-    "tooltip_local_two": "Bunaithe ar athbhreithnithe {{count}} sa phobal seo",
+    "aria_label": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas",
+    "tooltip_federated_few": "Clú comhiomlánaithe ó {{count}} phobal comhpháirtíochta",
+    "tooltip_federated_many": "Clú comhiomlánaithe ó {{count}} bpobal comhpháirtíochta",
+    "tooltip_federated_one": "Clú comhiomlánaithe ó {{count}} phobal comhpháirtíochta",
+    "tooltip_federated_other": "Clú comhiomlánaithe ó {{count}} pobal comhpháirtíochta",
+    "tooltip_federated_two": "Clú comhiomlánaithe ó {{count}} phobal comhpháirtíochta",
+    "tooltip_local_few": "Bunaithe ar {{count}} léirmheas sa phobal seo",
+    "tooltip_local_many": "Bunaithe ar {{count}} léirmheas sa phobal seo",
+    "tooltip_local_one": "Bunaithe ar {{count}} léirmheas sa phobal seo",
+    "tooltip_local_other": "Bunaithe ar {{count}} léirmheas sa phobal seo",
+    "tooltip_local_two": "Bunaithe ar {{count}} léirmheas sa phobal seo",
     "chip_label_few": "{{score}} ({{count}})",
     "chip_label_many": "{{score}} ({{count}})",
     "chip_label_one": "{{score}} ({{count}})",
     "chip_label_other": "{{score}} ({{count}})",
     "chip_label_two": "{{score}} ({{count}})",
-    "aria_label_few": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}",
-    "aria_label_many": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}",
-    "aria_label_one": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}",
-    "aria_label_other": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}",
-    "aria_label_two": "Cáil chónaidhme {{score}} ó athbhreithnithe {{count}}"
+    "aria_label_few": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas",
+    "aria_label_many": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas",
+    "aria_label_one": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas",
+    "aria_label_other": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas",
+    "aria_label_two": "Clú Cónaidhme {{score}}, bunaithe ar {{count}} léirmheas"
   },
   "reviews": {
-    "unavailable": "Níl léirmheasanna ar fáil go fóill don chomhalta cónasctha seo",
+    "unavailable": "Níl léirmheasanna ar fáil don bhall Cónaidhme seo go fóill",
     "anonymous": "Gan ainm",
-    "rating_label": "Rátáilte {{rating}} as 5",
+    "rating_label": "Rátáil {{rating}} as 5",
     "from_partner": "trí {{partner}}",
     "title": "Léirmheasanna",
     "empty": "Níl aon léirmheasanna ag an mball seo fós.",
     "load_error": "Níorbh fhéidir na léirmheasanna a luchtú. Bain triail eile as.",
-    "verified": "Fíoraithe"
+    "verified": "Deimhnithe"
   },
   "optin_notice": {
-    "title": "Cónaidhm rogha an diúltaithe ag teastáil",
-    "description": "Ní mór duit rogha an chónaidhm a ghlacadh chun ábhar ó chomhphobail chomhpháirtíochta a fheiceáil.",
-    "cta": "Bunú Cónaidhm"
+    "title": "Ní mór rogha a dhéanamh páirt a ghlacadh sa Chónaidhm",
+    "description": "Ní mór duit rogha a dhéanamh páirt a ghlacadh sa Chónaidhm chun ábhar ó phobail chomhpháirtíochta a fheiceáil.",
+    "cta": "Socraigh an Chónaidhm"
   }
 }
