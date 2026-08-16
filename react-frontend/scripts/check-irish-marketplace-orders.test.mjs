@@ -34,3 +34,28 @@ test('Irish Marketplace checkout, shipping and order wording preserves buyer and
   assert.equal(irish.orders.seller.shipping_method_express, 'Luasphost / Cúiréir');
   assert.equal(irish.orders.rating.submit, 'Seol an rátáil');
 });
+
+test('Irish Marketplace listing and offer wording preserves listing and negotiation meaning', () => {
+  const journey = JSON.stringify({
+    listing: irish.listing,
+    offer: irish.offer,
+  });
+
+  assert.doesNotMatch(journey, /Liosta Gan Aimsiú|Inchaibidle|Cleiteach|Féach ar an nGach/u);
+  assert.doesNotMatch(journey, /Físeán liosta|gclib físe|Tuairiscigh an Liostáil|Bain ó shábháilte/u);
+  assert.doesNotMatch(journey, /0\. 00|Frithsheasta|Frith: \{\{amount\}\}|Tairiscint íoctha/u);
+
+  assert.equal(irish.listing.not_found_title, 'Níor aimsíodh an liostú');
+  assert.equal(irish.listing.negotiable, 'Soshannta');
+  assert.equal(irish.listing.featured, 'Roghnaithe');
+  assert.equal(irish.listing.listings_count, '{{count}} liostú');
+  assert.equal(irish.listing.view_all, 'Féach orthu uile');
+  assert.equal(irish.listing.video_unsupported, 'Ní thacaíonn do bhrabhsálaí leis an bhfíseán seo.');
+  assert.equal(irish.listing.report_submitted, 'Cuireadh an tuairisc isteach. Go raibh maith agat.');
+  assert.equal(irish.listing.save, 'Sábháil an liostú');
+  assert.equal(irish.listing.unsave, 'Bain de na míreanna sábháilte é');
+  assert.equal(irish.offer.amount_placeholder, '0.00');
+  assert.equal(irish.offer.status.countered, 'Friththairiscint déanta');
+  assert.equal(irish.offer.counter, 'Déan friththairiscint');
+  assert.equal(irish.offer.pay_accepted, 'Íoc as an tairiscint ar glacadh léi');
+});
