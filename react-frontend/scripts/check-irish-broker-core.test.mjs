@@ -109,3 +109,32 @@ test('Irish Broker exchange controls preserve approval, rejection, status, and t
   assert.equal(irish.exchanges.detail_hours_value, '{{hours}} uair an chloig');
   assert.equal(irish.exchanges.empty_pending_hint, 'Láimhseáladh gach malartú a raibh athbhreithniú bróicéara de dhíth air.');
 });
+
+test('Irish Broker message review distinguishes flags, review decisions, and archived records', () => {
+  const messages = JSON.stringify(irish.messages);
+
+  assert.doesNotMatch(messages, /comhráite marcáilte|Cúis mharcála|Liostáil ardriosca/u);
+  assert.doesNotMatch(messages, /Cartlannaigh taifead|Formheas agus cartlannaigh|Teachtaireacht formheasta/u);
+  assert.doesNotMatch(messages, /Rónna marcáilte|Níl aon chóipeanna teachtaireachtaí/u);
+
+  assert.equal(irish.messages.flag_action, 'Cuir bratach uirthi');
+  assert.equal(irish.messages.flag_success, 'Cuireadh bratach ar an teachtaireacht.');
+  assert.equal(irish.messages.detail_reviewed_at, 'Athbhreithnithe ar');
+  assert.equal(irish.messages.detail_archive_record, 'Taifead cartlainne');
+  assert.equal(irish.messages.detail_approve_archive, 'Faomh agus cuir sa chartlann');
+  assert.equal(irish.messages.copy_reason_high_risk_listing, 'Liostú ardriosca');
+  assert.equal(irish.messages.detail_none, '—');
+});
+
+test('Irish Broker monitoring wording identifies tracked members and messaging restrictions clearly', () => {
+  const monitoring = JSON.stringify(irish.monitoring);
+
+  assert.doesNotMatch(monitoring, /úsáideoirí monatóireachta|a g\(h\)níomhaíocht/u);
+  assert.doesNotMatch(monitoring, /Níl aon úsáideoirí|Chuaigh rud éigin mícheart|Triail arís/u);
+
+  assert.equal(irish.monitoring.page_description, 'Coinnigh súil ar bhaill atá faoi mhaoirseacht an bhróicéara.');
+  assert.equal(irish.monitoring.current_expiry, 'Dáta éaga reatha: {{date}}');
+  assert.equal(irish.monitoring.empty_description, 'Cuir ball leis chun tosú ag déanamh monatóireachta ar ghníomhaíocht an bhaill.');
+  assert.equal(irish.monitoring.status_messaging_off, 'Tá teachtaireachtaí díchumasaithe');
+  assert.equal(irish.monitoring.retry_button, 'Bain triail eile as');
+});
