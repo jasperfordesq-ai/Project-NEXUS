@@ -8,7 +8,7 @@
   "percent": "{{percent}}%",
   "momentumOn": "Foirgneamh",
   "momentumEmpty": "Réidh",
-  "buddy": "Buddy: {{name}}",
+  "buddy": "Compánach: {{name}}",
   "visibility": {
     "public": "Poiblí"
   },
@@ -82,23 +82,23 @@
     "disableReminder": "Díchumasaigh",
     "reminderError": "Níorbh fhéidir an meabhrúchán a nuashonrú. Bain triail eile as.",
     "nextReminder": "An chéad mheabhrúchán eile: {{date}}",
-    "milestones": "Milestones",
-    "noMilestones": "No milestones have been generated yet.",
-    "completedOn": "Completed {{date}}",
-    "pendingMilestone": "Pending",
-    "history": "Progress history",
-    "noHistory": "No progress history yet.",
+    "milestones": "Garspriocanna",
+    "noMilestones": "Níor gineadh aon gharsprioc fós.",
+    "completedOn": "Críochnaithe {{date}}",
+    "pendingMilestone": "Ar feitheamh",
+    "history": "Stair an dul chun cinn",
+    "noHistory": "Níl aon stair ar dhul chun cinn ann fós.",
     "summary": {
-      "progress": "Progress",
-      "checkins": "Check-ins",
-      "streak": "Streak",
-      "milestones": "Milestones"
+      "progress": "Dul chun cinn",
+      "checkins": "Cláruithe isteach",
+      "streak": "Sraith",
+      "milestones": "Garspriocanna"
     },
     "frequency": {
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "biweekly": "Every 2 weeks",
-      "monthly": "Monthly"
+      "daily": "Go laethúil",
+      "weekly": "Go seachtainiúil",
+      "biweekly": "Gach coicís",
+      "monthly": "Go míosúil"
     }
   }
 }
