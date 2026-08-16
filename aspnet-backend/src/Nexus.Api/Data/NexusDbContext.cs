@@ -333,6 +333,9 @@ public class NexusDbContext : DbContext
     public DbSet<VolunteerCertificate> VolunteerCertificates => Set<VolunteerCertificate>();
     public DbSet<VolunteerEmergencyAlert> VolunteerEmergencyAlerts => Set<VolunteerEmergencyAlert>();
     public DbSet<VolunteerTrainingCourse> VolunteerTrainingCourses => Set<VolunteerTrainingCourse>();
+    public DbSet<VolunteerAccessibilityNeed> VolunteerAccessibilityNeeds => Set<VolunteerAccessibilityNeed>();
+    public DbSet<VolunteerCredential> VolunteerCredentials => Set<VolunteerCredential>();
+    public DbSet<VolunteerReview> VolunteerReviews => Set<VolunteerReview>();
     public DbSet<VolunteerTrainingCompletion> VolunteerTrainingCompletions => Set<VolunteerTrainingCompletion>();
     public DbSet<VolunteerGuardianConsent> VolunteerGuardianConsents => Set<VolunteerGuardianConsent>();
     public DbSet<VolunteerTenantPolicy> VolunteerTenantPolicies => Set<VolunteerTenantPolicy>();
@@ -679,6 +682,7 @@ public class NexusDbContext : DbContext
             new VolunteerConfiguration(_tenantContext),
             new VolunteerLongTailConfiguration(_tenantContext),
             new VolunteerAdminConfiguration(_tenantContext),
+            new VolunteerMemberRecordsConfiguration(_tenantContext),
             new FederationProtocolsConfiguration(_tenantContext),
             new Phase72Configuration(_tenantContext),
             new MatchingConfiguration(_tenantContext),

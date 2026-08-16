@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -527,14 +527,16 @@ public class VolunteeringParityController : ControllerBase
     [HttpGet("certificates/verify/{code}")]
     public IActionResult VerifyCertificate(string code) => Ok(new { data = new { code, valid = true } });
 
-    [HttpGet("credentials")]
-    public IActionResult Credentials() => Ok(new { data = Array.Empty<object>() });
-
-    [HttpGet("credentials/{credentialId:int}/download")]
-    public IActionResult DownloadCredential(int credentialId) => File(Encoding.UTF8.GetBytes($"Credential {credentialId}"), "text/plain", $"credential-{credentialId}.txt");
-
-    [HttpDelete("credentials/{credentialId:int}")]
-    public IActionResult DeleteCredential(int credentialId) => NoContent();
+    // 🔴 Credentials moved to VolunteerCredentialsController on 2026-08-16
+    // (R-27), once the vol_credentials table existed. All three handlers here
+    // were stubs and are deleted rather than left in place, because two
+    // handlers for one route is an ambiguous match at runtime.
+    //
+    // What they did: the list returned an empty array, so a volunteer who had
+    // uploaded a certificate saw nothing; the delete returned 204 and removed
+    // nothing; and the download FABRICATED a text file containing the words
+    // "Credential {id}" and served it as the member's document. A coordinator
+    // checking someone's first-aid certificate would have downloaded that.
 
     [HttpGet("expenses")]
     // 🔴 Both of these were stubs over a real store. The list returned an empty

@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -74,10 +74,10 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260816052752_AddConversationParticipants",
-            "the chain currently ends with the group-conversation participants table, which "
-            + "also backfills every existing one-to-one thread — without that backfill the new "
-            + "membership lookups would lock members out of their own message history; "
+        migrations.Last().Should().Be("20260816095308_AddVolunteerMemberRecords",
+            "the chain currently ends with the three volunteer member-record tables "
+            + "(accessibility needs, credentials, reviews) — each had a client screen and no "
+            + "table, so each returned an empty list indistinguishable from 'you have none'; "
             + "adding a migration is fine but must be deliberate — update this pin in the same commit. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
             + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "

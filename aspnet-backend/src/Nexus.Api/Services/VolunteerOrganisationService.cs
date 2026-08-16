@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -688,6 +688,14 @@ public sealed partial class VolunteerOrganisationService
         int organisationId,
         CancellationToken ct)
     {
+        // 🔴 The snake_case column names below are deliberate and load-bearing.
+        // They match Laravel's vol_reviews, and OrganisationAggregates_Remain-
+        // AvailableWhenQuarantinedVolLogsTableIsAbsent creates a Laravel-shaped
+        // table to prove this still reads it. When vol_reviews was finally
+        // created here (R-27) it was first given EF's default PascalCase
+        // columns, which broke every organisation listing with
+        // `column "rating" does not exist` — the table is now created with these
+        // names instead. Do not "tidy" either side into PascalCase alone.
         if (!await TableExistsAsync("vol_reviews", ct))
         {
             return new(0, 0m);

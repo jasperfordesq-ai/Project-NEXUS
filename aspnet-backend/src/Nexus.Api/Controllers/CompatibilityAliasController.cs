@@ -813,26 +813,12 @@ public class CompatibilityAliasController : ControllerBase
         return Ok(new { success = true, file_url = fileUrl, url = fileUrl, file_id = upload?.Id });
     }
 
-    /// <summary>
-    /// POST /api/volunteering/credentials — Upload volunteering credential.
-    /// </summary>
-    [HttpPost("api/volunteering/credentials")]
-    public async Task<IActionResult> UploadVolunteeringCredential(IFormFile? file = null)
-    {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
-
-        if (file == null || file.Length == 0)
-            return BadRequest(new { error = "No file provided" });
-
-        var (upload, error) = await _fileService.UploadAsync(
-            file.OpenReadStream(), file.FileName, file.ContentType, file.Length,
-            userId.Value, _tenantContext.GetTenantIdOrThrow(), FileCategory.Document);
-        if (error != null) return BadRequest(new { error });
-
-        var fileUrl = BuildUploadUrl(upload);
-        return Ok(new { success = true, file_url = fileUrl, url = fileUrl, file_id = upload?.Id });
-    }
+    // 🔴 POST /api/volunteering/credentials moved to VolunteerCredentialsController
+    // on 2026-08-16 (R-27). The handler here stored the file and recorded
+    // nothing about it, because there was no credentials table — so the
+    // volunteer's list stayed empty for ever. It is deleted rather than
+    // commented out: two handlers for one route is an ambiguous match at
+    // runtime, and the new one also enforces the prohibited-document rule.
 
     // ──────────────────────────────────────────────
     // Events waitlist & check-in
