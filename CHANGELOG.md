@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the accessible frontend, the "cancel this session" reason box on an event agenda now has a working character counter.** A template typo meant the little "you have N characters remaining" counter was wired to the wrong element, so it did not work and could trip the counter's script. It now works, and a new check across every page prevents the same typo class from recurring.
+
 - **On the accessible frontend, a "Back" link on the placeholder pages can no longer be pointed at another website.** Those pages read a "return" address from the web link used to reach them and put it straight into their "Back" link. A crafted link could set that to an outside address (an "open redirect", useful for phishing) — and, in theory, to a script link, though the site's security policy already blocks that from running. The address is now checked and only accepted if it's an ordinary link back into this site, exactly as every other page already does. Covered by a test.
 
 - **On the accessible frontend, five more create forms now keep what you typed if the submission is rejected.** When a new idea, campaign, course, volunteering opportunity, goal or poll was rejected (for a validation problem or a backend hiccup), the form came back blank and everything had to be retyped. All of these now re-display with your entered text — title, description, options, dates and the rest — so you can fix the one problem and resubmit. This matches the behaviour the wallet, jobs and events forms already had. Covered by tests.

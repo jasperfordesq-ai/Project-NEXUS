@@ -188,4 +188,29 @@ describe('the converted fields', () => {
     walk(viewsDirectory);
     expect(attached).toBeGreaterThanOrEqual(59);
   });
+
+  it('never passes a {{ }}-interpolated string literal as the characterCount id', () => {
+    // 🔴 Nunjucks does NOT interpolate {{ }} inside a string literal passed to a
+    // macro, so `characterCount(500, msgs, "x-{{ id }}-reason")` emits an element
+    // id with LITERAL braces — a broken aria-describedby target, duplicate ids
+    // across a loop, and a govuk-frontend ElementError. Build the id with `{% set %}`
+    // + string concatenation and pass the variable (see events/agenda.njk). This
+    // ratchet keeps the whole class shut.
+    const offenders = [];
+    const walk = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(entry.parentPath ?? dir, entry.name);
+        if (entry.isDirectory()) { walk(full); continue; }
+        if (!entry.name.endsWith('.njk')) continue;
+        const src = fs.readFileSync(full, 'utf8');
+        // A characterCount( call whose argument list contains a quoted string
+        // literal with {{ inside it.
+        if (/characterCount\([^)]*"[^"]*\{\{/.test(src)) {
+          offenders.push(path.relative(viewsDirectory, full));
+        }
+      }
+    };
+    walk(viewsDirectory);
+    expect(offenders).toEqual([]);
+  });
 });
