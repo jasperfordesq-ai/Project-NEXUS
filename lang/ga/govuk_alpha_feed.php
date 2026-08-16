@@ -30,7 +30,7 @@ return [
         'clear_search' => 'Glan cuardach agus taispeáin treochtáil',
         'trending_heading' => 'Hashtags treochta',
         'results_heading' => 'Torthaí cuardaigh',
-        'post_count' => '{0} No posts|{1} 1 post|[2,*] :count posts',
+        'post_count' => '{0} Gan postáil ar bith|{1} 1 phostáil|[2,*] :count postáil',
         'view_tag' => 'Féach ar phoist a bhfuil clib orthu :tag',
         'empty_trending' => 'Níl aon hashtags treochta ann fós.',
         'empty_search' => 'Ní mheaitseálann hashtags :query.',
@@ -38,7 +38,7 @@ return [
     'hashtag' => [
         'caption' => 'Postálacha a bhfuil clib orthu ag :community',
         'back_to_hashtags' => 'Ar ais go hashtags',
-        'total_posts' => '{0} No posts|{1} 1 post|[2,*] :count posts',
+        'total_posts' => '{0} Gan postáil ar bith|{1} 1 phostáil|[2,*] :count postáil',
         'empty_title' => 'Níor aimsíodh aon phostáil',
         'empty_body' => 'Níl aon phostálacha a bhfuil clib :tag orthu a fheiceann tú.',
         'show_more' => 'Taispeáin tuilleadh postálacha',
@@ -74,8 +74,8 @@ return [
         'image_alt' => 'Íomhá ceangailte leis an bhfotha seo',
     ],
     'engagement' => [
-        'likes' => '{0} 0 likes|{1} 1 like|[2,*] :count likes',
-        'comments' => '{0} 0 comments|{1} 1 comment|[2,*] :count comments',
+        'likes' => '{0} Níor thaitin sé le haon duine|{1} Taitníonn sé le 1 duine|[2,*] Taitníonn sé le :count duine',
+        'comments' => '{0} Gan trácht ar bith|{1} 1 trácht|[2,*] :count trácht',
         'like' => 'Cosúil',
         'unlike' => 'Bain cosúil le',
         'like_for' => 'Cosúil leis an mír seo',
@@ -86,7 +86,7 @@ return [
         'item_type' => 'Cineál',
     ],
     'item_types' => [
-        'post' => 'Post',
+        'post' => 'Postáil',
         'listing' => 'Liostú',
         'event' => 'Imeacht',
         'poll' => 'Vótaíocht',

@@ -33,10 +33,10 @@ return [
         'tab_groups' => 'Grúpaí',
         'empty_title' => 'Níl tú in aon chomhrá grúpa',
         'empty_body' => 'Nuair a thosaíonn tú nó nuair a chuirtear le comhrá grúpa tú, beidh sé le feiceáil anseo.',
-        'members_count' => '{1} 1 member|[2,*] :count members',
+        'members_count' => '{1} 1 bhall|[2,*] :count ball',
         'last_message_label' => 'is déanaí',
         'no_messages_yet' => 'Níl aon teachtaireachtaí fós',
-        'unread_count' => '{1} 1 unread message|[2,*] :count unread messages',
+        'unread_count' => '{1} 1 teachtaireacht neamhléite|[2,*] :count teachtaireacht neamhléite',
         'open_conversation' => 'Oscail comhrá',
     ],
     'create' => [

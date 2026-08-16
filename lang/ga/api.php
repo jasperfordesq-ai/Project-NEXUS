@@ -2147,7 +2147,7 @@ return [
     'municipal_pdf_coop_tandems' => 'Caidreamh gníomhach tandem: :count',
     'municipal_pdf_coop_load' => 'Ualach an chomhordaitheora: :avg ar feitheamh athbhreithnithe an ceann (:pending ar feitheamh / :coordinators comhordaitheoirí)',
     'municipal_pdf_coop_pool' => 'Comhthiomsú iarmhéid creidmheasa cúram todhchaí: :value uair an chloig',
-    'municipal_pdf_value_na' => 'n/a',
+    'municipal_pdf_value_na' => 'ní bhaineann le hábhar',
     'municipal_pdf_footer' => 'Ginte ag Tionscadal NEXUS ar :date - ailt: :sections',
     'invalid_file_type' => 'Cineál comhaid neamhbhailí.',
     'invalid_date' => 'Dáta neamhbhailí.',

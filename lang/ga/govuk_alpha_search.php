@@ -69,7 +69,7 @@ return [
         'featured' => 'Réadmhaoin',
         'hours_estimate' => ':hours uair an chloig',
         'hours_unknown' => 'Am le haontú',
-        'members_count' => '{0} No members|{1} 1 member|[2,*] :count members',
+        'members_count' => '{0} Gan ball ar bith|{1} 1 bhall|[2,*] :count ball',
         'image_alt' => 'Íomhá le haghaidh :title',
         'view_listing' => 'Féach ar an liostú',
         'view_member' => 'Féach ar bhall',
@@ -93,7 +93,7 @@ return [
     ],
     'saved' => [
         'heading' => 'Cuardach sábháilte',
-        'count' => '{0} No saved searches|{1} 1 saved search|[2,*] :count saved searches',
+        'count' => '{0} Gan cuardach sábháilte ar bith|{1} 1 chuardach sábháilte|[2,*] :count cuardach sábháilte',
         'save_this' => 'Sábháil an cuardach seo',
         'name_label' => 'Ainmnigh an cuardach seo',
         'name_hint' => 'Tabhair ainm dó ionas gur féidir leat é a aithint níos déanaí.',

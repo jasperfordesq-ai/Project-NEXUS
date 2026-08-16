@@ -47,7 +47,7 @@ return [
     'ideation_email_idea_status_subtitle' => 'Marcáladh do smaoineamh mar :status',
     'ideation_email_view_challenge' => 'Dúshlán Amharc',
     'ideation_email_view_idea' => 'Amharc ar Smaoineamh',
-    'content_type_post' => 'post',
+    'content_type_post' => 'postáil',
     'content_type_listing' => 'liostú',
     'content_type_event' => 'imeacht',
     'content_type_goal' => 'sprioc',

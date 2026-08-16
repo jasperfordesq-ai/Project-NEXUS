@@ -31,7 +31,7 @@ return [
         'timeline_title' => 'Gníomhaíocht le déanaí',
         'timeline_empty_title' => 'Níl aon ghníomhaíocht fós',
         'timeline_empty' => 'Nuair a thosaíonn tú ag tabhairt agus ag fáil cabhrach, ag postáil agus ag nascadh, beidh do ghníomhaíocht le feiceáil anseo.',
-        'type_post' => 'Post',
+        'type_post' => 'Postáil',
         'type_gave_hours' => 'Thug uaireanta',
         'type_received_hours' => 'Uaireanta faighte',
         'type_comment' => 'Trácht',

@@ -81,7 +81,7 @@ return [
     'subgroups' => [
         'heading' => 'Foghrúpaí',
         'intro' => 'Grúpaí níos lú a shuíonn laistigh den ghrúpa seo.',
-        'members_count' => '{0} No members|{1} 1 member|[2,*] :count members',
+        'members_count' => '{0} Gan ball ar bith|{1} 1 bhall|[2,*] :count ball',
         'visibility_public' => 'Poiblí',
         'visibility_private' => 'Príobháideach',
         'view_link' => 'Féach ar an bhfoghrúpa',

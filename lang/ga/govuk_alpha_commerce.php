@@ -533,7 +533,7 @@ return [
     'category' => [
         'title' => 'Catagóir',
         'caption' => 'Ag brabhsáil :community',
-        'count' => '{0} No items in this category|{1} 1 item|[2,*] :count items',
+        'count' => '{0} Gan mír sa chatagóir seo|{1} 1 mhír|[2,*] :count mír',
         'empty' => 'Níl aon mhíreanna sa chatagóir seo faoi láthair.',
         'search_label' => 'Cuardaigh laistigh den chatagóir seo',
         'search_hint' => 'Aimsigh mír de réir ainm nó eochairfhocail.',
