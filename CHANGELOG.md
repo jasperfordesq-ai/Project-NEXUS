@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Core group pages in the native app now stay in Irish.** The group overview, discussions, announcements, upcoming events, owner tools and twelve detail tabs no longer display their 57 English fallbacks. Counts and interpolation placeholders are preserved, and a focused test protects this member-facing slice.
+
 - **Creating and editing groups in the native app no longer falls back to English in Irish.** The 43 user-facing fields, hints, validation messages, image errors and save states in the group form now use context-aware Irish, together with the Groups landing-page description, statistics and post count. Coordinate examples remain unchanged as functional numeric values, and a focused test protects the reviewed slice.
 
 - **The native app's Irish Explore screen is now fully translated.** All 64 discovery labels and descriptions now use context-aware Irish, including recommendations, popular and nearby listings, community statistics, upcoming events, groups, people, volunteering, organisations, jobs, polls and resources. A focused catalog test prevents the whole screen from silently reverting to English.
