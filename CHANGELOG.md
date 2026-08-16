@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The entire 946-value React Jobs catalogue has now received a contextual Irish review.** Vacancy discovery, applications, employer tools, pipeline automation, analytics, interviews, hiring teams, moderation, talent search, AI assistance and onboarding now use natural job-specific language instead of malformed day suffixes, software-application terminology, inconsistent AI initials, missing accents, literal flag nouns, mistranslated hiring language or broken page metadata. A whole-catalogue test permits only 25 reviewed currencies, formats, brands, URLs and placeholders to remain language-neutral and rejects known corruption, whitespace and invisible characters.
+
 - **The entire 230-value React Podcasts catalogue is now contextually reviewed for Irish.** Podcast Studio, publishing readiness, media states, show lifecycle messages, episode metadata, visibility and moderation labels now use natural Irish instead of English fallbacks, verbal “display” mistranslations, malformed archive actions or incident terminology. A whole-catalogue test permits only the reviewed A–Z and playback-speed formats to remain language-neutral and rejects whitespace and invisible-character corruption.
 
 - **The React podcast listening experience has received a contextual Irish repair.** Browsing, show following, episode counts, transcripts, chapters, reactions, episode types and player errors now use natural Irish instead of English fallbacks or misleading words for display actions and incidents. A listener-catalogue test permits only the reviewed A–Z and playback-speed formats to remain language-neutral.

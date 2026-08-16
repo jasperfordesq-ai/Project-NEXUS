@@ -1,11 +1,11 @@
 {
-  "title": "Foluntais Poist",
+  "title": "Folúntais Poist",
   "page_title": "Folúntais Poist",
   "page_description": "Brabhsáil deiseanna oibre, róil dheonacha agus poist bhainc ama arna dtairiscint ag baill an phobail agus ag eagraíochtaí comhpháirtíochta gar duit.",
   "subtitle": "Aimsigh deiseanna i do phobal",
   "loading": "Folúntais á lódáil...",
-  "create_vacancy": "Postail Foluntas",
-  "edit_vacancy": "Cuir Foluntas in Eagar",
+  "create_vacancy": "Foilsigh Folúntas",
+  "edit_vacancy": "Cuir Folúntas in Eagar",
   "my_postings": {
     "title": "Mo Fhógraí",
     "empty_title": "Níl aon fhógraí fós",
@@ -13,11 +13,11 @@
     "view_applicants": "Féach ar iarratasóirí",
     "edit": "Cuir in eagar"
   },
-  "search_placeholder": "Cuardaigh foluntais...",
-  "search_aria": "Cuardaigh foluntais poist",
-  "filter_aria": "Scag de reir catagoire",
-  "filter_by_commitment": "Scag de reir tiomantais",
-  "filter_any": "ar bith",
+  "search_placeholder": "Cuardaigh folúntais...",
+  "search_aria": "Cuardaigh folúntais poist",
+  "filter_aria": "Scag de réir catagóire",
+  "filter_by_commitment": "Scag de réir tiomantais",
+  "filter_any": "Aon cheann",
   "type": {
     "all": "Gach Cineál",
     "paid": "Íoctha",
@@ -60,7 +60,7 @@
   "load_more": "Luchtaigh Tuilleadh",
   "try_again": "Bain Triail Eile As",
   "cancel": "Cealaigh",
-  "featured": "Molta",
+  "featured": "Faoi thrácht",
   "empty_title": "Níor aimsíodh aon fholúntas",
   "empty_description": "Níl aon fholúntais poist ag freagairt do do chritéir",
   "empty_search": "Níl aon fholúntas ag freagairt do do chuardach",
@@ -71,10 +71,10 @@
     "empty_title": "Gan poist shábháilte",
     "empty_description": "Beidh poist a chuireann tú leabharmharc orthu le feiceáil anseo",
     "save": "Sábháil",
-    "unsave": "Díshábháil",
+    "unsave": "Bain ó na Poist Shábháilte",
     "saved": "Sábháilte",
     "save_success": "Post sábháilte",
-    "unsave_success": "Post bainte ó shábháilte",
+    "unsave_success": "Baineadh an post de na poist shábháilte",
     "save_error": "Theip ar shábháil an phoist"
   },
   "match": {
@@ -88,10 +88,10 @@
     "missing": "Scileanna in Easnamh",
     "no_skills_required": "Níl aon scileanna sonracha ag teastáil",
     "no_user_skills": "Cuir scileanna le do phróifíl chun do mheaitseáil a fheiceáil",
-    "why_you_match": "Cén fáth a meaitseálann tú",
+    "why_you_match": "Cén fáth a n-oireann an post duit",
     "you_have": "Tá agat:",
     "to_develop": "Scileanna le forbairt:",
-    "ai_summary_label": "Measúnú IS"
+    "ai_summary_label": "Measúnú AI"
   },
   "qualified": {
     "title": "An bhfuil mé cáilithe?",
@@ -101,7 +101,7 @@
     "level_good": "Is iarrthóir maith tú don ról seo",
     "level_moderate": "Tá roinnt scileanna ábhartha agat",
     "level_low": "B'fhéidir gur mhaith leat tuilleadh scileanna a fhorbairt don ról seo",
-    "check_button": "Seiceáil Cáilíocht"
+    "check_button": "Seiceáil mo Cháilíochtaí"
   },
   "pipeline": {
     "title": "Píblíne Iarratas",
@@ -123,26 +123,26 @@
     "action_move_stage": "Bog céim",
     "action_auto_reject": "Uathdhiúltú",
     "action_notify_me": "Cuir ar an eolas mé",
-    "generated_name": "{{stage}} go {{target}} tar éis {{count}}l",
-    "rule_summary": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "rule_summary_with_target": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
+    "generated_name": "{{stage}} go {{target}} tar éis {{count}} lá",
+    "rule_summary": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "rule_summary_with_target": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
     "rules_title": "Rialacha Uathoibrithe",
     "reviewed": "Athbhreithnithe",
-    "rule_summary_with_target_one": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
-    "rule_summary_with_target_other": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
-    "rule_summary_one": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "rule_summary_other": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "generated_name_one": "{{stage}} go {{target}} tar éis {{count}}l",
-    "generated_name_other": "{{stage}} go {{target}} tar éis {{count}}l",
-    "rule_summary_with_target_few": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
-    "rule_summary_with_target_many": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
-    "rule_summary_with_target_two": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}} -> {{target}}",
-    "rule_summary_few": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "rule_summary_many": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "rule_summary_two": "Má tá i \"{{stage}}\" ar feadh {{count}}l -> {{action}}",
-    "generated_name_few": "{{stage}} go {{target}} tar éis {{count}}l",
-    "generated_name_many": "{{stage}} go {{target}} tar éis {{count}}l",
-    "generated_name_two": "{{stage}} go {{target}} tar éis {{count}}l"
+    "rule_summary_with_target_one": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
+    "rule_summary_with_target_other": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
+    "rule_summary_one": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "rule_summary_other": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "generated_name_one": "{{stage}} go {{target}} tar éis {{count}} lá",
+    "generated_name_other": "{{stage}} go {{target}} tar éis {{count}} lá",
+    "rule_summary_with_target_few": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
+    "rule_summary_with_target_many": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
+    "rule_summary_with_target_two": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}} -> {{target}}",
+    "rule_summary_few": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "rule_summary_many": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "rule_summary_two": "Má fhanann iarratas ag \"{{stage}}\" ar feadh {{count}} lá -> {{action}}",
+    "generated_name_few": "{{stage}} go {{target}} tar éis {{count}} lá",
+    "generated_name_many": "{{stage}} go {{target}} tar éis {{count}} lá",
+    "generated_name_two": "{{stage}} go {{target}} tar éis {{count}} lá"
   },
   "employer": {
     "page_title": "Próifíl Fostóra",
@@ -199,10 +199,10 @@
   },
   "bulk": {
     "select_action": "Bog chuig céim...",
-    "apply": "Cuir Isteach",
+    "apply": "Cuir i bhFeidhm",
     "clear": "Glan roghnú",
     "success": "Iarratais nuashonraithe",
-    "error": "Theip ar nuashonrú builc",
+    "error": "Theip ar na hiarratais roghnaithe a nuashonrú",
     "selected_count": "{{count}} roghnaithe",
     "selected_count_one": "{{count}} roghnaithe",
     "selected_count_other": "{{count}} roghnaithe",
@@ -229,7 +229,7 @@
     "type_label": "Cineál Poist",
     "commitment_label": "Leibhéal Tiomantais",
     "location_label": "Suíomh",
-    "location_placeholder": "m.sh. Baile Átha Cliath",
+    "location_placeholder": "m.sh. Londain",
     "remote_only": "Poist chianda amháin",
     "any": "Aon cheann",
     "create_success": "Foláireamh cruthaithe go rathúil",
@@ -269,15 +269,15 @@
     "unique_viewers": "Féachóirí Uathúla",
     "total_applications": "Iarratais",
     "conversion_rate": "Ráta Tiontaithe",
-    "avg_time_to_apply": "Meán-Am le hIarratas",
-    "time_to_fill": "Am le Líonadh",
+    "avg_time_to_apply": "Meán-am sula ndéantar iarratas",
+    "time_to_fill": "Am leis an bPost a Líonadh",
     "hours": "uaireanta",
     "days": "laethanta",
     "views_over_time": "Amhairc Thar Am",
     "applications_by_stage": "Iarratais de réir Céime",
     "no_data": "Gan sonraí anailísíochta fós",
     "load_error": "Theip ar lódáil na hanailísíochta",
-    "weekly_trend": "Iarratais Sheachtainiúla",
+    "weekly_trend": "Iarratais sheachtainiúla (na 8 seachtaine seo caite)",
     "referral_shares": "Roinntí Iomlána",
     "referral_apps": "Iarratais Atreoraithe",
     "referral_conversion": "Tiontú Atreoraithe",
@@ -286,7 +286,7 @@
     "views_tooltip": "{{date}}: {{count}} amharc",
     "applications_tooltip": "{{week}}: {{count}} iarratas",
     "stage_progress_aria": "Dul chun cinn na céime iarratais {{stage}}",
-    "predictions": "Tuartha IS",
+    "predictions": "Tuartha AI",
     "based_on": "Bunaithe ar {{count}} post den chineál céanna",
     "no_predictions": "Sonraí easnamhacha le haghaidh tuartha.",
     "expected_apps": "Iarratais Mheasta",
@@ -298,7 +298,7 @@
     "yours": "Do cheannsa",
     "versus": "vs",
     "market_avg": "Meán an Mhargaidh",
-    "ai_insights": "Léargais IS",
+    "ai_insights": "Léargais AI",
     "days_short_value": "{{count}} lá",
     "not_available": "N/B",
     "views_tooltip_one": "{{date}}: {{count}} amharc",
@@ -327,7 +327,7 @@
     "range": "{{min}} - {{max}}",
     "min_only": "Ó {{min}}",
     "max_only": "Suas le {{max}}",
-    "negotiable": "Inshocraithe",
+    "negotiable": "Soshannta",
     "hourly": "in aghaidh na huaire",
     "annual": "in aghaidh na bliana",
     "time_credits": "creidmheasanna ama",
@@ -336,7 +336,7 @@
     "form_type_label": "Cineál Íocaíochta",
     "form_currency_label": "Airgeadra",
     "form_currency_placeholder": "m.sh. USD, EUR, GBP",
-    "form_negotiable_label": "Tá an tuarastal inshocraithe",
+    "form_negotiable_label": "Tá an tuarastal soshannta",
     "currency_eur": "EUR",
     "currency_gbp": "GBP",
     "currency_usd": "USD",
@@ -352,11 +352,11 @@
     "load_error": "Theip ar iarratais a lódáil",
     "withdraw_error": "Theip ar iarratas a tharraingt siar.",
     "deadline_today": "Spriocdháta inniu",
-    "days_left": "{{count}}l fágtha",
+    "days_left": "{{count}} lá fágtha",
     "applied_date": "Curtha isteach: {{date}}",
     "updated_date": "Nuashonraithe: {{date}}",
-    "hide_cover_message": "Folaigh teachtaireacht clúdaigh",
-    "show_cover_message": "Taispeáin teachtaireacht clúdaigh",
+    "hide_cover_message": "Folaigh an teachtaireacht tionlacain",
+    "show_cover_message": "Taispeáin an teachtaireacht tionlacain",
     "filter_aria": "Scagaire iarratais",
     "tab_all": "Gach",
     "tab_active": "Gníomhach",
@@ -365,11 +365,11 @@
     "empty_all": "Níl iarratas curtha isteach agat ar aon phost fós.",
     "empty_filtered": "Níor aimsíodh iarratais {{filter}}.",
     "browse_jobs": "Brabhsáil Poist",
-    "days_left_one": "{{count}}l fágtha",
-    "days_left_other": "{{count}}l fágtha",
-    "days_left_few": "{{count}}l fágtha",
-    "days_left_many": "{{count}}l fágtha",
-    "days_left_two": "{{count}}l fágtha"
+    "days_left_one": "{{count}} lá fágtha",
+    "days_left_other": "{{count}} lá fágtha",
+    "days_left_few": "{{count}} lá fágtha",
+    "days_left_many": "{{count}} lá fágtha",
+    "days_left_two": "{{count}} lá fágtha"
   },
   "withdraw": {
     "confirm_title": "Tarraingt siar an iarratas?",
@@ -379,7 +379,7 @@
     "cancel": "Cealaigh"
   },
   "interview_inline": "Agallamh: {{date}} ({{type}})",
-  "interview_join": "Bí Páirteach",
+  "interview_join": "Glac Páirt sa Chruinniú",
   "offer_inline": "Tairiscint: {{salary}}",
   "offer_start_date": "Tosú: {{date}}",
   "download_cv": "Íoslódáil CV",
@@ -430,9 +430,9 @@
     "ai_score": "AI: {{score}}/100",
     "download_cv": "Íoslódáil CV",
     "drop_here": "Scaoil anseo",
-    "ai_rank": "Rangú IS",
-    "ai_ranked": "Iarrthóirí rangaithe ag IS",
-    "ai_rank_failed": "Theip ar rangú IS",
+    "ai_rank": "Rangú AI",
+    "ai_ranked": "Iarrthóirí rangaithe ag AI",
+    "ai_rank_failed": "Theip ar rangú AI",
     "tab_pipeline": "Píblíne",
     "tab_activity": "Loga Gníomhaíochta",
     "no_activity": "Gan ghníomhaíocht go fóill",
@@ -529,7 +529,7 @@
     "analytics": "Anailísíocht",
     "check_qualification": "An bhfuil mé cáilithe?",
     "owner_banner_title": "Phostáil tú an folúntas seo",
-    "owner_has_applicants": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
+    "owner_has_applicants": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
     "owner_no_applicants": "Níl iarratasóirí ann fós — roinn an liostú seo le tuilleadh infheictheachta a fháil",
     "close_vacancy": "Dún Folúntas",
     "reopen_vacancy": "Athoscail",
@@ -538,30 +538,30 @@
     "kanban_board": "Clár Kanban",
     "cv_download_error": "Theip ar CV a íoslódáil",
     "confirm_close_title": "Dún an folúntas seo?",
-    "confirm_close": "Cuireann sé seo stop le feidhmchláir nua ó theacht isteach. Is féidir leat é a oscailt arís am ar bith.",
+    "confirm_close": "Ní ghlacfar le hiarratais nua nuair a dhúnfar an folúntas. Is féidir leat é a athoscailt am ar bith.",
     "confirm_reopen_title": "An folúntas seo a athoscailt?",
-    "confirm_reopen": "Fágann athoscailt an folúntas arís agus ligeann sé do dhaoine iarratas a dhéanamh.",
-    "owner_has_applicants_one": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
-    "owner_has_applicants_other": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
+    "confirm_reopen": "Nuair a athosclaítear é, beidh an folúntas le feiceáil arís agus beidh daoine in ann iarratas a dhéanamh.",
+    "owner_has_applicants_one": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
+    "owner_has_applicants_other": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
     "views_one": "{{count}} amharc",
     "views_other": "{{count}} amharc",
-    "owner_has_applicants_few": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
-    "owner_has_applicants_many": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
-    "owner_has_applicants_two": "{{count}} iarratasóir(í) — scrollaigh síos chun athbhreithniú",
+    "owner_has_applicants_few": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
+    "owner_has_applicants_many": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
+    "owner_has_applicants_two": "{{count}} iarratasóir — scrollaigh síos chun athbhreithniú a dhéanamh",
     "views_few": "{{count}} amharc",
     "views_many": "{{count}} amharc",
     "views_two": "{{count}} amharc"
   },
   "interview": {
-    "schedule": "Sceideal Agallamh",
+    "schedule": "Sceidealaigh Agallamh",
     "type_video": "Glao Físeáin",
     "type_phone": "Glao Gutháin",
     "type_in_person": "Go Pearsanta",
     "duration": "Fad",
     "datetime": "Dáta & Am",
-    "location": "Nasc Cruinnithe / Suíomh",
+    "location": "Nasc / Suíomh an Chruinnithe",
     "join_call": "Glac páirt sa Ghlao Físe",
-    "add_to_calendar": "Cuir leis an gClár",
+    "add_to_calendar": "Cuir leis an bhFéilire",
     "calendar_google": "Google",
     "calendar_outlook": "Outlook",
     "calendar_ics": ".ics",
@@ -572,7 +572,7 @@
     "accept": "Glac",
     "decline": "Diúltaigh",
     "minutes": "nóim",
-    "download_ics": "Íosluchtaigh ics"
+    "download_ics": "Íoslódáil .ics"
   },
   "offer": {
     "title": "Fuair tú tairiscint!",
@@ -589,7 +589,7 @@
     "job_openings": "Folúntais"
   },
   "cv": {
-    "parse": "Bainfear scileanna as tar éis curtha isteach",
+    "parse": "Bainfear na scileanna as do CV tar éis duit an t-iarratas a chur isteach",
     "parsing": "CV á anailísiú...",
     "detected": "Scileanna aimsithe ó CV",
     "parsed_toast": "Iarratas curtha isteach! {{count}} scil aimsithe ó do CV."
@@ -601,7 +601,7 @@
     "video_label": "URL Físeán Cultúir",
     "video_placeholder": "https://www.youtube.com/watch?v=...",
     "size_label": "Méid na Cuideachta",
-    "benefits_label": "Sochair & Buntáistí",
+    "benefits_label": "Sochair agus Buntáistí",
     "benefits_placeholder": "Clóscríobh sochar agus brúigh Iontráil",
     "about_company": "Faoin gCuideachta"
   },
@@ -631,8 +631,8 @@
     "cv_label": "CV Sábháilte: {{filename}}"
   },
   "team": {
-    "section": "Foireann Fostaithe",
-    "title": "Foireann Fostaithe",
+    "section": "Foireann Earcaíochta",
+    "title": "Foireann Earcaíochta",
     "add_reviewer": "Cuir Athbhreithneoir Leis",
     "add": "Cuir Leis",
     "add_member": "Cuir Ball Leis",
@@ -642,7 +642,7 @@
     "role": "Ról",
     "role_reviewer": "Athbhreithneoir",
     "role_interviewer": "Agallóir",
-    "role_hiring_manager": "Bainisteoir Fostaithe",
+    "role_hiring_manager": "Bainisteoir Earcaíochta",
     "role_manager": "Bainisteoir",
     "added": "Ball foirne curtha leis",
     "removed": "Ball foirne bainte",
@@ -687,7 +687,7 @@
     "save_error": "Theip ar theimpléad a shábháil"
   },
   "benchmark": {
-    "market_rate": "Ráta margaidh do \"{{role}}\": {{currency}}{{min}} – {{currency}}{{max}} / {{type}} (meánach: {{currency}}{{median}})"
+    "market_rate": "Ráta margaidh do \"{{role}}\": {{currency}}{{min}} – {{currency}}{{max}} / {{type}} (airmheán: {{currency}}{{median}})"
   },
   "form": {
     "create_title": "Postáil Folúntas Poist",
@@ -722,8 +722,8 @@
     "salary_type_label": "Cineál Íocaíochta",
     "salary_currency_label": "Airgeadra",
     "salary_currency_placeholder": "m.sh. USD, EUR, GBP",
-    "salary_negotiable_label": "Tá an tuarastal inshocraithe",
-    "salary_transparency_hint": "Riachtanach faoi Threoir Trédhearcacht Pá an AE (Meitheamh 2026)",
+    "salary_negotiable_label": "Tá an tuarastal soshannta",
+    "salary_transparency_hint": "Riachtanach faoi Threoir an AE maidir le Trédhearcacht Pá (Meitheamh 2026)",
     "submit_create": "Postáil Folúntas",
     "submit_update": "Sábháil Athruithe",
     "save_draft": "Sábháil mar Dhréacht",
@@ -739,31 +739,31 @@
       "title_required": "Tá teideal ag teastáil",
       "description_required": "Tá cur síos ag teastáil",
       "deadline_past": "Ní mór don spriocdháta a bheith sa todhchaí",
-      "salary_required": "Raon tuarastail riachtanach. Is féidir leat 'Tuarastal insocraithe' a sheiceáil le fágáil as.",
+      "salary_required": "Tá raon tuarastail ag teastáil. Is féidir ‘Tá an tuarastal soshannta’ a roghnú ina ionad.",
       "salary_range_invalid": "Ní féidir leis an íostuarastal an t-uastuarastal a shárú"
     }
   },
   "ai_generate": {
-    "button": "Gin le IS",
+    "button": "Gin le AI",
     "button_loading": "Á ghiniúint...",
     "success": "Cur síos ginte go rathúil",
     "error": "Theip ar chur síos a ghiniúint. Bain triail eile as le do thoil.",
-    "tooltip": "Gin cur síos poist le IS bunaithe ar do theideal, scileanna, agus cineál poist"
+    "tooltip": "Gin cur síos poist le AI bunaithe ar theideal, scileanna agus cineál an phoist"
   },
   "duplicate": {
     "warning": "Folúntas comhchosúil aimsithe: {{title}} ({{status}})",
     "dismiss": "Díbhe"
   },
   "moderation": {
-    "title": "Ciú Modhnóireachta",
+    "title": "Scuaine Modhnóireachta",
     "description": "Athbhreithnigh agus ceadaigh postálacha poist sula dtéann siad beo",
     "pending": "Athbhreithniú ar Feitheamh",
     "approved": "Ceadaithe",
     "rejected": "Diúltaithe",
-    "flagged": "Bratacha",
+    "flagged": "Marcáilte",
     "approve": "Ceadaigh",
     "reject": "Diúltaigh",
-    "flag": "Bratach le hAthbhreithniú",
+    "flag": "Marcáil lena Athbhreithniú",
     "approve_success": "Post ceadaithe agus foilsithe",
     "reject_success": "Post diúltaithe",
     "flag_success": "Post marcáilte le hathbhreithniú",
@@ -781,14 +781,14 @@
       "pending_count": "Ar Feitheamh",
       "approved_today": "Ceadaithe Inniu",
       "rejected_today": "Diúltaithe Inniu",
-      "flagged_count": "Bratacha",
+      "flagged_count": "Marcáilte",
       "total_reviewed": "Iomlán Athbhreithnithe"
     },
     "status": {
       "pending_review": "Athbhreithniú ar Feitheamh",
       "approved": "Ceadaithe",
       "rejected": "Diúltaithe",
-      "flagged": "Bratacha"
+      "flagged": "Marcáilte"
     },
     "confirm_approve": "An gceadaíonn tú an phostáil poist seo? Foilseofar láithreach í.",
     "confirm_reject": "An bhfuil tú cinnte gur mhaith leat an phostáil poist seo a dhiúltú?",
@@ -796,14 +796,14 @@
     "posted_by": "Postáilte ag {{name}}",
     "submitted": "Curtha isteach {{date}}",
     "spam_score": "Scór Turscair: {{score}}",
-    "spam_flags_label": "Bratacha Braite",
+    "spam_flags_label": "Marcóirí Braite",
     "refresh": "Athnuaigh",
     "loading": "Á lódáil...",
     "load_error": "Theip ar lódáil na scuaine maoirseachta",
     "cancel": "Cealaigh",
     "no_description": "Gan cur síos",
     "no_flags": "Gan bratacha",
-    "flags_tooltip": "Bratacha: {{flags}}",
+    "flags_tooltip": "Marcóirí: {{flags}}",
     "user_fallback": "Úsáideoir #{{id}}",
     "pagination_label": "Leathanaigh scuaine maoirseachta"
   },
@@ -812,9 +812,9 @@
     "description": "Staitisticí braite turscair agus calaoise uathoibrithe",
     "total_analyzed": "Iomlán Anailísithe",
     "blocked_count": "Blocáilte",
-    "flagged_count": "Bratacha",
+    "flagged_count": "Marcáilte",
     "avg_score": "Meánscór Turscair",
-    "top_flags": "Barrbratacha Braite",
+    "top_flags": "Na Marcóirí Braite is Coitianta",
     "flag_labels": {
       "duplicate_content": "Ábhar Dúblach",
       "suspicious_links": "Naisc Amhrasacha",
@@ -825,17 +825,17 @@
   },
   "talent_search": {
     "title": "Cuardach Tallainne",
-    "subtitle": "Cuardaigh baill phobail a roghnaigh a bheith aimsíthe ag fostóirí",
+    "subtitle": "Cuardaigh baill den phobal a roghnaigh go bhféadfadh fostóirí iad a aimsiú",
     "search_placeholder": "Cuardaigh de réir ainm, scileanna, nó eochairfhocail...",
     "skills_filter": "Scag de réir Scileanna",
     "skills_placeholder": "m.sh. garraíodóireacht, múinteoireacht, riarachán",
     "location_filter": "Suíomh",
-    "location_placeholder": "m.sh. Baile Átha Cliath, Gaillimh",
-    "search_button": "Cuardach",
+    "location_placeholder": "m.sh. Londain, Nua-Eabhrac",
+    "search_button": "Cuardaigh",
     "clear_filters": "Glan Scagairí",
     "results_count": "{{count}} iarrthóir(í) aimsithe",
     "no_results_title": "Níor aimsíodh iarrthóirí",
-    "no_results_description": "Bain triail as do chritéir chuardaigh a choigeartú nó seiceáil ar ais níos déanaí",
+    "no_results_description": "Bain triail as na critéir chuardaigh a athrú, nó fill ar an leathanach níos déanaí",
     "last_active": "Gníomhach go deireanach",
     "member_since": "Ball ó",
     "view_profile": "Féach ar Phróifíl",
@@ -873,22 +873,22 @@
     "error": "Theip ar infheictheacht a nuashonrú"
   },
   "blind_hiring": {
-    "label": "Cumasaigh fostú dall",
-    "description": "Cuir ainmneacha agus grianghraif iarrthóirí i bhfolach le linn an phróisis athbhreithnithe chun laofacht a laghdú",
-    "tooltip": "Nuair a chumasaítear é, bíonn ainmneacha agus grianghraif iarratasóirí i bhfolach ón athbhreithneoir. Ní thaispeántar ach scileanna, taithí, agus ábhar an litir chlúdaigh.",
-    "enabled_badge": "Fostú Dall Cumasaithe",
+    "label": "Cumasaigh earcaíocht gan ainm",
+    "description": "Cuir ainmneacha agus grianghraif iarrthóirí i bhfolach le linn an athbhreithnithe chun laofacht a laghdú",
+    "tooltip": "Nuair a chumasaítear é, bíonn ainmneacha agus grianghraif iarratasóirí i bhfolach ón athbhreithneoir. Ní thaispeántar ach scileanna, taithí agus ábhar na litreach tionlacain.",
+    "enabled_badge": "Earcaíocht gan Ainm Cumasaithe",
     "candidate_label": "Iarrthóir #{{number}}",
-    "info_banner": "Tá fostú dall gníomhach. Tá aitheantais iarrthóirí i bhfolach chun laofacht neamh-chomhfhiosach a laghdú."
+    "info_banner": "Tá earcaíocht gan ainm gníomhach. Tá aitheantais iarrthóirí i bhfolach chun laofacht neamh-chomhfhiosach a laghdú."
   },
   "feed": {
     "rss_title": "Fotha RSS",
-    "rss_description": "Liostáil lenár bhfotha RSS folúntas poist le haghaidh na ndeiseanna is déanaí",
+    "rss_description": "Liostáil lenár bhfotha RSS d’fholúntais poist chun na deiseanna is déanaí a fháil",
     "json_title": "Fotha JSON",
     "json_description": "Fotha sonraí struchtúrtha do Google Jobs agus comhbhailitheoirí eile"
   },
   "bias_audit": {
-    "title": "Iniúchadh Laofachta Fostaithe",
-    "subtitle": "Anailísíocht próisis chun patrúin laofachta fostaithe a aithint",
+    "title": "Iniúchadh ar Laofacht Earcaíochta",
+    "subtitle": "Anailís ar an bpróiseas chun patrúin fhéideartha laofachta san earcaíocht a aithint",
     "total_applications": "Iarratais Iomlána",
     "hiring_velocity": "Meán-Am chun Líonadh",
     "acceptance_rate": "Ráta Glactha",
@@ -904,7 +904,7 @@
     "time_in_stage_title": "Meán-Am sa Chéim",
     "time_in_stage_description": "Meánlíon na laethanta a chaitheann iarrthóirí i ngach céim píblíne",
     "skills_match_title": "Comhghaolú Meaitseála Scileanna",
-    "skills_match_description": "Conas a bhaineann ailíniú scileanna le torthaí fostaithe",
+    "skills_match_description": "An bhaint atá idir oiriúnacht scileanna agus torthaí earcaíochta",
     "source_title": "Éifeachtacht Foinse",
     "source_description": "Foinsí iarratais agus a rátaí ratha",
     "stage": {
@@ -925,7 +925,7 @@
     "applications": "Iarratais",
     "rate": "Ráta",
     "date_from": "Ó",
-    "date_to": "Chuig",
+    "date_to": "Go dtí",
     "filter_by_job": "Scag de réir Poist",
     "all_jobs": "Gach Post",
     "search_jobs": "Cuardaigh poist",
@@ -960,7 +960,7 @@
     "create_error": "Theip ar shliotáin agallaimh a chruthú",
     "date_range": "Raon Dátaí",
     "date_from": "Ó",
-    "date_to": "Chuig",
+    "date_to": "Go dtí",
     "duration": "Fad an Sliotáin",
     "duration_30": "30 nóiméad",
     "duration_45": "45 nóiméad",
@@ -982,18 +982,18 @@
     "candidate_pick": "Roghnaigh sliotán ama do d'agallamh"
   },
   "onboarding": {
-    "title": "Iontráil Fostóra",
+    "title": "Fostóir a Chur ar Bord",
     "step_welcome": "Fáilte",
     "step_organization": "Eagraíocht",
     "step_first_job": "Postáil Post",
     "step_success": "Críochnaithe!",
     "welcome_title": "Fáilte chuig Postáil Poist!",
-    "welcome_desc": "Postáil folúntais poist chun na daoine cearta a aimsiú i do phobal. Cibé an bhfuil foireann íoctha, oibrithe deonacha, nó cúntóirí banc ama uait, déanaimid é éasca ceangal le baill tallainneacha.",
+    "welcome_desc": "Foilsigh folúntais chun na daoine cearta a aimsiú i do phobal. Cibé acu baill foirne íoctha, oibrithe deonacha nó cúntóirí bainc ama atá uait, cabhróimid leat dul i dteagmháil le baill chumasacha.",
     "get_started": "Tosaigh",
     "org_title": "D'Eagraíocht",
     "org_desc": "Inis dúinn faoi d'eagraíocht. Beidh an fhaisnéis seo le feiceáil ar do liostuithe poist.",
     "org_name": "Ainm na hEagraíochta",
-    "org_name_placeholder": "m.sh. Comhar-oibriú Gairdín Pobail",
+    "org_name_placeholder": "m.sh. Comharchumann Gairdín Pobail",
     "org_tagline": "Mana",
     "org_tagline_placeholder": "Cur síos gearr ar an méid a dhéanann tú",
     "org_size": "Méid na Cuideachta",
@@ -1010,7 +1010,7 @@
     "skip": "Scipeáil go fóill",
     "job_title": "Postáil do Chéad Phost",
     "job_desc": "Líon isteach na sonraí bunúsacha chun do chéad liostú poist a chruthú.",
-    "salary_hint": "Trédhearcacht Pá an AE: Feabhsaíonn raonta tuarastail cáilíocht iarrthóirí",
+    "salary_hint": "Trédhearcacht Pá an AE: meallann raonta tuarastail iarrthóirí níos oiriúnaí",
     "post_job": "Postáil Post",
     "posting": "Ag Postáil...",
     "success_title": "Tá do phost postáilte!",
@@ -1025,9 +1025,9 @@
     "tip_4": "Roinn do liostú ar chainéil phobail",
     "go_to_jobs": "Téigh chuig Poist",
     "first_time_banner": "An chéad uair ag postáil?",
-    "first_time_desc": "Treorófar tú ag ár ndraoi iontráil tríd an gcéad phost a phostáil.",
-    "start_wizard": "Tosaigh Draoi",
-    "aria_progress": "Dul chun cinn ionchorprú"
+    "first_time_desc": "Treoróidh ár dtreoraí céim ar chéim tú agus do chéad fholúntas á fhoilsiú agat.",
+    "start_wizard": "Tosaigh an Treoraí",
+    "aria_progress": "Dul chun cinn an phróisis ionduchtúcháin"
   },
   "preview": {
     "title": "Réamhamharc Poist",
@@ -1076,17 +1076,17 @@
   },
   "sort": {
     "label": "Sórtáil de réir",
-    "newest": "Is Nuaí",
+    "newest": "Is nuaí",
     "deadline": "Ag Dúnadh go Luath",
-    "salary": "Tuarastal is Airde"
+    "salary": "Tuarastal is airde"
   },
   "salary_display": "{{min}} – {{max}}",
-  "salary_negotiable": "Insocraithe",
+  "salary_negotiable": "Soshannta",
   "deadline_closed": "Dúnta",
   "remote_only": "Cianda Amháin",
   "match_badge": "{{count}}% meaitseáil",
-  "feature_not_available": "Poist Níl ar Fáil",
-  "feature_not_available_desc": "Níl gné na bpost cumasaithe don phobal seo. Déan teagmháil le riarthóir do bhanc ama chun tuilleadh a fhoghlaim.",
+  "feature_not_available": "Níl Poist ar Fáil",
+  "feature_not_available_desc": "Níl gné na bpost cumasaithe don phobal seo. Déan teagmháil le riarthóir do bhainc ama chun tuilleadh eolais a fháil.",
   "unknown": "Anaithnid",
   "nav": {
     "jobs": "Poist"
@@ -1101,7 +1101,7 @@
     "close": "Dún comhrá AI",
     "send": "Seol",
     "title": "Cúntóir Poist AI",
-    "hint": "Cuir ceist ar bith orm faoin bpost seo - cáilíochtaí, tuarastal, conas iarratas a dhéanamh, leideanna agallaimh ...",
+    "hint": "Cuir ceist ar bith orm faoin bpost seo — cáilíochtaí, tuarastal, conas iarratas a dhéanamh, leideanna agallaimh...",
     "placeholder": "Cuir ceist faoin bpost seo...",
     "error_response": "Tá brón orm, ní raibh mé in ann do iarratas a phróiseáil.",
     "error_generic": "Tá brón orm, tharla rud éigin mícheart."
@@ -1111,7 +1111,7 @@
       "title": "Iniúchadh Laofachta"
     },
     "create": {
-      "title": "Post a Post",
+      "title": "Foilsigh Post",
       "description": "Cruthaigh folúntas poist, oibre deonaí nó bainc ama do do phobal."
     },
     "edit": {
@@ -1119,14 +1119,14 @@
       "description": "Nuashonraigh sonraí an fholúntais, luach saothair, socruithe foirne agus roghanna foilsithe."
     },
     "talent_search": {
-      "title": "Cuardach Talent"
+      "title": "Cuardach Tallainne"
     },
     "my_applications": {
       "title": "Mo Iarratais",
       "description": "Lean iarratais ar phost, ar obair dheonach agus ar bhanc ama ó dheais príobháideach amháin."
     },
     "analytics": {
-      "title": "Anailísí Poist"
+      "title": "Anailísíocht Poist"
     },
     "kanban": {
       "title": "Iarratais Poist"
