@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The React donation journey now stays a donation journey in Irish.** Support levels, recurring and one-off donations, checkout returns, payment recovery, cancellation and supporter recognition no longer describe a paid “premium” subscription or promise extra paid features that the English source explicitly says are not being sold. The shared-catalogue test now protects that distinction.
+
 - **Irish support journeys in the shared React catalogue now use clear, people-centred wording.** Asking for help by voice, gifting or transferring banked hours, viewing support relationships and future-care balances, recording an informal favour, and accepting an invitation no longer use gender-slashed recipient text, cheque terminology for a check-in, literal URL-slug or logging jargon, or misleading machine translations for reciprocity and care. Focused assertions protect the repaired wording while the wider `common` catalogue remains under semantic review.
 
 - **The settings pages now say "we could not load this" instead of showing empty or default settings when the server is down.** On the main settings page and the linked-accounts, appearance and availability pages, a backend hiccup used to make it look as though you had no linked accounts, no saved availability, or default preferences — which could mislead you into thinking your settings had been lost or reset. Each now shows a clear "could not load" notice at the top when a section fails to load, so you know it's a temporary problem rather than your real settings. Sign-in problems still send you to log in. Covered by tests for each page.

@@ -109,6 +109,7 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /air\/uirthi|sé\/sí|An chéad seic eile|Siopadóireacht & Teachtaireachtaí/u);
   assert.doesNotMatch(allIrish, /cúram ar féidir leat glaoch air|An slug don chomharchumann|Bhog mé teach|Stair na n-aistrithe agat/u);
   assert.doesNotMatch(allIrish, /Níl uaireanta go leor|Uaireanta a logáladh|uaireanta logáilte|Cuireadh úsáidte cheana/u);
+  assert.doesNotMatch(allIrish, /sraitheanna préimhe|sraith préimhe|Gné phréimhe|Féach Praghsáil|Athraigh plean/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -144,4 +145,10 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.reciprocity.title, 'Do Chomhardú Cómhalartachta');
   assert.equal(irish.offer_favour.form.categories.shopping, 'Siopadóireacht agus Gnóthaí Beaga');
   assert.match(irish.invite.expired.body, /do chomhordaitheoir/u);
+  assert.equal(irish.premium.pricing_title, 'Tabhair Síntiús');
+  assert.equal(irish.premium.pricing_subtitle, 'Tacaigh leis an bpobal seo');
+  assert.equal(irish.premium.subscribe_cta, 'Tabhair síntiús rialta');
+  assert.equal(irish.premium.gate_title, 'Aitheantas do lucht tacaíochta');
+  assert.match(irish.premium.gate_body, /ní chun gnéithe breise íoctha/u);
+  assert.equal(irish.premium.view_pricing_cta, 'Féach ar na leibhéil tacaíochta');
 });
