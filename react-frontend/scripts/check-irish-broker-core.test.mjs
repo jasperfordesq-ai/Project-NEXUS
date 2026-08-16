@@ -8,6 +8,19 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const irish = JSON.parse(await readFile(new URL('../public/locales/ga/broker.json', import.meta.url)));
+const english = JSON.parse(await readFile(new URL('../public/locales/en/broker.json', import.meta.url)));
+
+function flatten(value, prefix = '', result = {}) {
+  for (const [key, child] of Object.entries(value)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (child && typeof child === 'object' && !Array.isArray(child)) {
+      flatten(child, path, result);
+    } else {
+      result[path] = child;
+    }
+  }
+  return result;
+}
 
 test('Irish Broker navigation uses safeguarding, moderation, and approval terminology accurately', () => {
   const shell = JSON.stringify({ sidebar: irish.sidebar, nav: irish.nav, breadcrumbs: irish.breadcrumbs });
@@ -233,4 +246,39 @@ test('Irish Broker status and moderation wording describes published content act
   assert.equal(irish.moderation_queue.description, 'Déan athbhreithniú ar ábhar atá ar feitheamh le modhnóireacht sula bhfoilsítear é.');
   assert.match(irish.moderation_reviews.description, /cuir bratach orthu agus déan iad a mhodhnú/u);
   assert.equal(irish.safeguarding_options.title, 'Roghanna cosanta');
+});
+
+test('Irish Broker help preserves safeguarding privacy, jurisdiction, and fail-closed boundaries', () => {
+  const help = JSON.stringify(irish.help);
+
+  assert.doesNotMatch(help, /Gabhann taifead fíoraithe|Contact Fianuithe/u);
+  assert.doesNotMatch(help, /<code>dearbhaithe<\/code>|<code>cúlghairm<\/code>|Teiptear ar shonraí/u);
+  assert.doesNotMatch(help, /Scóip reatha|stampa ama gar|forfheidhmiú dlí/u);
+
+  assert.match(irish.help.vetting.intro, /Ní stórálann an leathanach seo ach cinneadh cosanta an phobail/u);
+  assert.match(irish.help.vetting.intro, /Ná huaslódáil ná cóipeáil teastais/u);
+  assert.match(irish.help.vetting.workflow_confirm, /<code>confirmed<\/code>/u);
+  assert.match(irish.help.vetting.workflow_revoke, /<code>revoked<\/code>/u);
+  assert.match(irish.help.vetting.messaging, /Fanann an geata dúnta/u);
+  assert.match(irish.help.legal.data_minimisation, /Ní ceadmhach teastais/u);
+  assert.match(irish.help.data.guardian_assignments, /Cúlghairm bhog atá ann/u);
+  assert.match(irish.help.contacts.criminality, /déan teagmháil leis na póilíní/u);
+});
+
+test('the complete Irish Broker catalogue retains only documented functional invariants', () => {
+  const englishValues = flatten(english);
+  const irishValues = flatten(irish);
+  const exactMatches = Object.keys(englishValues)
+    .filter((key) => typeof englishValues[key] === 'string' && irishValues[key] === englishValues[key])
+    .sort();
+
+  assert.deepEqual(exactMatches, [
+    'configuration.field_broker_contact_email_placeholder',
+    'header.search_shortcut',
+    'matching.distance_km',
+    'messages.detail_none',
+    'palette.close_key',
+    'risk_tags.id_label',
+    'vetting.attestation_access_ni',
+  ]);
 });
