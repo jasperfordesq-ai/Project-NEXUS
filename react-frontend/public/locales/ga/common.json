@@ -366,7 +366,7 @@
     "sort_rated": "Rátáilte is Airde",
     "sort_active": "Is Gníomhaí",
     "sort_by": "Sórtáil de réir",
-    "unable_to_load": "Ní féidir Baill a Luchtú",
+    "unable_to_load": "Ní Féidir Baill a Lódáil",
     "try_again": "Triail Arís",
     "no_members": "Gan baill le fáil",
     "no_members_search": "Bain triail as téarma cuardaigh eile",
@@ -374,7 +374,7 @@
     "empty_tip_profiles": "Brabhsáil próifílí iomlána",
     "empty_tip_skills": "Cuardaigh de réir scile",
     "empty_tip_location": "Bain triail as baill in aice láimhe",
-    "load_more": "Luchtaigh Tuilleadh",
+    "load_more": "Lódáil Tuilleadh",
     "results_matching": "{{shown}} as {{total}} ball ag meaitseáil \"{{query}}\"",
     "results_count": "{{count}} ball á dtaispeáint",
     "no_location": "Gan baill le sonraí suíomh",
@@ -390,8 +390,8 @@
     "rating_aria": "Rátáil: {{rating}} as 5",
     "hours_exchanged_aria": "{{count}} uair malartaithe",
     "hours_short": "{{count}} u",
-    "load_failed": "Theip ar luchtú ball",
-    "load_more_failed": "Theip ar luchtú tuilleadh ball",
+    "load_failed": "Theip ar bhaill a lódáil",
+    "load_more_failed": "Theip ar thuilleadh ball a lódáil",
     "my_profile": "Mo Phróifíl",
     "load_more_count": "Lódáil tuilleadh ({{remaining}} fágtha)",
     "results_count_one": "{{count}} ball á dtaispeáint",
@@ -799,7 +799,7 @@
     "no_recent_logs": "Níl aon uaireanta logáilte go fóill",
     "back": "Ar ais go dtí Mol an Phobail",
     "errors": {
-      "load_failed": "Níorbh fhéidir do chaidrimh tacaíochta a luchtú."
+      "load_failed": "Níorbh fhéidir do chaidrimh tacaíochta a lódáil."
     }
   },
   "future_care_fund": {
@@ -858,7 +858,7 @@
   },
   "gif": {
     "search_placeholder": "Cuardaigh GIFanna...",
-    "trending": "Ag Treáil",
+    "trending": "I mBéal an Phobail",
     "no_results": "Níor aimsíodh GIFanna",
     "powered_by": "Cumhachtaithe ag GIPHY",
     "button_label": "Cuir GIF leis",
@@ -875,13 +875,13 @@
     "grid_view": "Amharc greille",
     "list_view": "Amharc liosta",
     "map_view": "Amharc léarscáile",
-    "loading_members": "Baill á luchtú",
+    "loading_members": "Baill á lódáil",
     "bold": "Trom",
     "italic": "Iodálach",
     "underline": "Folíne",
     "bullet_list": "Liosta Urchar",
     "numbered_list": "Liosta Uimhrithe",
-    "loading_community": "Pobal á luchtú",
+    "loading_community": "Pobal á lódáil",
     "partner_communities_navigation": "Nascleanúint pobail chomhpháirtíochta",
     "link_url": "URL naisc",
     "confirm_link": "Deimhnigh nasc",
@@ -890,22 +890,22 @@
     "drag_to_reorder": "Tarraing chun athordú",
     "click_or_drag_to_upload": "Cliceáil nó tarraing chun íomhánna a uaslódáil",
     "add_more_photos": "Cuir tuilleadh grianghraf leis",
-    "main_navigation": "Príomhnascléanúint",
-    "timebanking_navigation": "Nascléanúint baincéireachta ama",
-    "community_navigation": "Nascléanúint phobail",
+    "main_navigation": "Príomhnascleanúint",
+    "timebanking_navigation": "Nascleanúint baincéireachta ama",
+    "community_navigation": "Nascleanúint phobail",
     "tenant_switcher_navigation": "Roghnóir pobail",
     "create_actions": "Gníomhartha cruthúcháin",
     "user_actions": "Gníomhartha úsáideora",
     "close_menu": "Dún roghchlár",
     "open_search": "Oscail cuardach",
-    "mobile_navigation": "Nascléanúint mhóibileáin",
-    "engage_navigation": "Nascléanúint rannpháirtíochta",
-    "explore_navigation": "Nascléanúint aimsigh",
-    "federation_navigation": "Nascléanúint chónaidhme",
-    "about_navigation": "Nascléanúint faoi",
-    "legal_navigation": "Nascléanúint dhlíthiúil",
-    "more_navigation": "Nascléanúint tuilleadh",
-    "cookie_settings": "Socruití fianán",
+    "mobile_navigation": "Nascleanúint mhóibíleach",
+    "engage_navigation": "Nascleanúint rannpháirtíochta",
+    "explore_navigation": "Nascleanúint aimsithe",
+    "federation_navigation": "Nascleanúint chónaidhme",
+    "about_navigation": "Nascleanúint eolais",
+    "legal_navigation": "Nascleanúint dhlíthiúil",
+    "more_navigation": "Tuilleadh nascleanúna",
+    "cookie_settings": "Socruithe fianán",
     "clear": "Glan",
     "scroll_left": "Scrolláigh ar chlé",
     "scroll_right": "Scrolláigh ar dheas",
@@ -920,7 +920,7 @@
     "user_menu_trigger": "Roghchlár úsáideora le haghaidh {{name}}",
     "feed_sidebar": "Taobh-bharra pobail",
     "filter_panel": "Painéal scagaire",
-    "remove": "Remove",
+    "remove": "Bain",
     "location_results_one": "{{count}} moltaí seoltaí ar fáil",
     "location_results_other": "{{count}} moltaí seoltaí ar fáil",
     "search_results_one": "Tá {{count}} toradh ar fáil",
@@ -959,10 +959,10 @@
     "no_skills_yet": "Níl scileanna liostaithe sa chatagóir seo fós.",
     "members_with": "Baill le \"{{skill}}\"",
     "offers": "Tairiscintí",
-    "wants": "Miantaí",
+    "wants": "Iarratais",
     "no_members": "Níor aimsíodh baill leis an scil seo.",
     "proficiency": {
-      "beginner": "Tosaíoch",
+      "beginner": "Tosaitheoir",
       "intermediate": "Meánach",
       "advanced": "Ardleibhéal",
       "expert": "Saineolaí"
@@ -1031,11 +1031,11 @@
   "checking_authentication": "Á sheiceáil go bhfuil tú fíordheimhnithe...",
   "verification_status": "Stádas Fíoraithe",
   "verify_identity": "Fíoraigh Aitheantas",
-  "level_short": "Lv. {{level}}",
+  "level_short": "Lbh. {{level}}",
   "cancel": "Cealaigh",
-  "confirm": "Confirm",
+  "confirm": "Deimhnigh",
   "save": "Sábháil",
-  "delete": "Delete",
+  "delete": "Scrios",
   "offer_favour": {
     "meta": {
       "title": "Tairg Gar",
@@ -1121,10 +1121,10 @@
       "marketplace": "Níl aon earraí ná seirbhísí liostaithe."
     },
     "marketplace_unavailable": "Níl an margadh áitiúil cumasaithe don phobal seo.",
-    "load_more": "Luchtaigh tuilleadh",
+    "load_more": "Lódáil tuilleadh",
     "retry": "Bain triail eile as",
     "errors": {
-      "load_failed": "Níorbh fhéidir an Marktplatz a luchtú. Bain triail eile as."
+      "load_failed": "Níorbh fhéidir an Marktplatz a lódáil. Bain triail eile as."
     }
   },
   "proximity": {
@@ -1220,7 +1220,7 @@
         "body": "Nuair a úsáidfidh tú do chreidmheasanna ama ag ceannaí áitiúil, taispeánfar an fhuascailt anseo."
       },
       "errors": {
-        "load_failed": "Theip ar an stair dílseachta a luchtú"
+        "load_failed": "Theip ar an stair dílseachta a lódáil"
       }
     }
   },
@@ -1328,7 +1328,7 @@
     },
     "back": "Ar ais go dtí an Mol Pobail",
     "errors": {
-      "load_failed": "Theip ar luchtú na dtuairiscí"
+      "load_failed": "Theip ar na tuairiscí a lódáil"
     }
   },
   "feed_ad": {
@@ -1453,14 +1453,14 @@
       "body": "Cruthaigh do chéad fheachtas push chun teagmháil a dhéanamh le baill an phobail a roghnaigh isteach."
     },
     "errors": {
-      "load_failed": "Níorbh fhéidir na feachtais a luchtú. Bain triail eile as.",
+      "load_failed": "Níorbh fhéidir na feachtais a lódáil. Bain triail eile as.",
       "create_failed": "Níorbh fhéidir an feachtas a chruthú. Bain triail eile as.",
       "estimate_failed": "Níorbh fhéidir an lucht féachana a mheas."
     },
     "page_title": "Mo Fheachtais Push",
     "page_subtitle": "Seol fógraí push spriocdhírithe chuig baill an phobail a roghnaigh isteach.",
     "create_campaign": "Feachtas push nua",
-    "load_error": "Níorbh fhéidir na feachtais a luchtú. Bain triail eile as.",
+    "load_error": "Níorbh fhéidir na feachtais a lódáil. Bain triail eile as.",
     "retry": "Bain triail eile as",
     "create_first": "Cruthaigh do chéad fheachtas push",
     "table_aria": "Feachtais brúfhógraí",
@@ -1632,7 +1632,7 @@
       "table_aria": "Gníomhaíocht phointí réigiúnacha"
     },
     "errors": {
-      "load_failed": "Theip ar luchtú na bpointí réigiúnacha",
+      "load_failed": "Theip ar na pointí réigiúnacha a lódáil",
       "transfer_failed": "Theip ar an aistriú"
     }
   },
@@ -2105,7 +2105,7 @@
     "share_event_submit": "Roinn",
     "share_event_done": "Roinneadh {{shared}} imeacht; scipeáladh {{skipped}}.",
     "share_event_failed": "Níorbh fhéidir imeacht a roinnt.",
-    "load_failed": "Níorbh fhéidir sonraí cónaidhme a luchtú.",
+    "load_failed": "Níorbh fhéidir sonraí cónaidhme a lódáil.",
     "invite_to_verein_button": "Tabhair cuireadh chuig {{name}}",
     "invite_modal_title": "Cuireadh idirchumainn",
     "invite_modal_subtitle": "Tabhair cuireadh don duine seo páirt a ghlacadh i gceann de na cumainn cónasctha freisin.",
@@ -2142,7 +2142,7 @@
       "next": "Ar aghaidh",
       "today": "Inniu",
       "from_label": "Ó",
-      "load_failed": "Níorbh fhéidir an féilire a luchtú."
+      "load_failed": "Níorbh fhéidir an féilire a lódáil."
     },
     "char_count_one": "{{count}}/500",
     "char_count_other": "{{count}}/500",
@@ -2172,7 +2172,7 @@
       "subtitle": "Sínigh isteach níos tapúla trí do chuntas Google, Apple, nó Facebook a cheangal."
     },
     "connect_modal": {
-      "confirm": "Is é seo an t-aon mhodh síniú isteach atá fágtha agat. Má dhícheanglaíonn tú é, cuirfidh sé glas ort mura socraíonn tú pasfhocal nó mura gcuireann tú eochair phasála leis ar dtús. Lean ar aghaidh?"
+      "confirm": "Is é seo an t-aon mhodh sínithe isteach atá fágtha agat. Má dhícheanglaíonn tú é, cuirfear glas ar do chuntas mura socraíonn tú pasfhocal nó mura gcuireann tú paseochair leis ar dtús. Lean ar aghaidh?"
     },
     "sign_in_with_provider": "Sínigh isteach le {{name}}"
   },
@@ -2246,7 +2246,7 @@
       "sent": "Seolta"
     },
     "errors": {
-      "load_failed": "Theip ar luchtú na dtáillí ballraíochta.",
+      "load_failed": "Theip ar na táillí ballraíochta a lódáil.",
       "start_payment_failed": "Níorbh fhéidir an íocaíocht a thosú. Bain triail eile as.",
       "save_failed": "Theip ar shábháil chumraíocht na dtáillí.",
       "generate_failed": "Theip ar an nginiúint.",
@@ -2428,16 +2428,16 @@
   "level_named": "Leibhéal {{level}} - {{name}}",
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Dul chun cinn leibhéal {{level}}: {{percentage}}%",
-  "user_fallback": "User",
+  "user_fallback": "Úsáideoir",
   "release_stage": "Ar Fáil go Ginearálta (v1.6.0)",
   "theme_picker": {
-    "title": "Appearance",
-    "subtitle": "Fonn scéim dathanna, blas, agus dlús.",
+    "title": "Cuma",
+    "subtitle": "Roghnaigh scéim dathanna, dath béime agus dlús.",
     "open_label": "Oscail roghnóir téamaí",
     "color_scheme": "Scéim dathanna",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "Geal",
+    "scheme_dark": "Dorcha",
+    "scheme_system": "Córas"
   },
   "alpha_badge": "Alfa",
   "wellbeing": {
@@ -2463,10 +2463,10 @@
   "submitting": "Á chur isteach…",
   "submit": "Cuir isteach",
   "caregiver": {
-    "hours_short": "{{hours}}h",
-    "burnout_high": "Ualach cúramóra ard:{{hours}}uaireanta an tseachtain seo",
-    "burnout_moderate": "Ualach measartha:{{hours}}uaireanta an tseachtain seo",
-    "burnout_warning": "Tá go leor uaireanta an chloig logáilte agat an tseachtain seo - déan cinnte scíth a ligean",
+    "hours_short": "{{hours}} u",
+    "burnout_high": "Ualach ard cúraim: {{hours}} uair an chloig an tseachtain seo",
+    "burnout_moderate": "Ualach measartha cúraim: {{hours}} uair an chloig an tseachtain seo",
+    "burnout_warning": "Tá cuid mhór uaireanta cúraim taifeadta agat an tseachtain seo — déan cinnte go bhfaigheann tú sos",
     "upcoming_care": "Cúram atá le teacht",
     "no_upcoming_care": "Níl aon tacaíocht sceidealaithe fós",
     "recent_care": "Cúram le déanaí",
@@ -2477,7 +2477,7 @@
   "dismiss_reasons": {
     "not_interested": "Níl suim acu ann",
     "too_far": "I bhfad ar shiúl",
-    "not_my_skills": "Ní mo scileanna"
+    "not_my_skills": "Ní oireann sé do mo scileanna"
   },
   "under_25": "Faoi 25",
   "25_34": "25–34",
@@ -2519,7 +2519,7 @@
   "time_credits_short_other": "{{count}}u creidmheasa",
   "question_required": "Riachtanach",
   "yes": "Tá",
-  "no": "No",
+  "no": "Níl",
   "likert_options": {
     "1": "Míshásfa go mór",
     "2": "Míshásfa",
@@ -2541,9 +2541,9 @@
     "filter_verein": "Cumainn",
     "filter_volunteer": "Oibrithe Deonacha",
     "verified_badge": "Fíoraithe",
-    "call_aria": "Cuir glaoch ar sholáthraí ag{{phone}}",
-    "email_aria": "Soláthraí ríomhphoist ag{{email}}",
-    "website_aria": "Tabhair cuairt ar láithreán gréasáin an tsoláthraí{{url}}",
+    "call_aria": "Cuir glaoch ar an soláthraí ag {{phone}}",
+    "email_aria": "Seol ríomhphost chuig an soláthraí ag {{email}}",
+    "website_aria": "Tabhair cuairt ar shuíomh gréasáin an tsoláthraí: {{url}}",
     "website": "Suíomh Gréasáin"
   },
   "cover": {
@@ -2570,33 +2570,33 @@
   "biometric": {
     "label_builtin": "Fíordheimhnitheoir ionsuite",
     "label_external": "Fíordheimhnitheoir seachtrach",
-    "label_passkey": "pasfhocal",
-    "platform_windows_title": "Suiteáil ar Windows",
-    "platform_windows_step1": "Cliceáil \"An ríomhaire seo\" chun pasfhocal atá stóráilte ar an ríomhaire seo a chruthú. Deimhneoidh tú le do PIN Windows Hello, méarloirg, nó aghaidh.",
+    "label_passkey": "Paseochair",
+    "platform_windows_title": "Socrú ar Windows",
+    "platform_windows_step1": "Cliceáil \"An ríomhaire seo\" chun paseochair atá stóráilte ar an ríomhaire seo a chruthú. Deimhneoidh tú í le do PIN Windows Hello, do mhéarlorg nó d'aghaidh.",
     "platform_windows_step2": "Riachtanas: Ní mór duit Windows Hello a bheith socraithe ar dtús. Téigh go Socruithe Windows > Cuntais > Roghanna sínithe isteach > PIN chun é a shocrú.",
     "platform_windows_step3": "Nó cliceáil ar \"Fón, táibléad, nó eochair shlándála\" chun cód QR a scanadh le do ghuthán ina ionad sin.",
-    "platform_windows_step4": "Chun pasfhocail a shocrú ar do ghuthán freisin, oscail an leathanach seo ar do ghuthán agus tapáil \"An gléas seo\".",
+    "platform_windows_step4": "Chun paseochracha a shocrú ar do ghuthán freisin, oscail an leathanach seo ar do ghuthán agus tapáil \"An gléas seo\".",
     "platform_mac_title": "Socrú ar Mac",
     "platform_mac_step1": "Cliceáil \"An Mac seo\" - spreagfaidh do bhrabhsálaí Touch ID nó do phasfhocal Mac.",
-    "platform_mac_step2": "Sioncrónaíonn an pasfhocal trí iCloud Keychain le do iPhone, iPad, agus Macanna eile go huathoibríoch.",
+    "platform_mac_step2": "Sioncrónaíonn an paseochair trí iCloud Keychain le do iPhone, iPad agus Macanna eile go huathoibríoch.",
     "platform_mac_step3": "Nó cliceáil \"Fón, táibléad, nó eochair shlándála\" chun gléas eile a chlárú.",
     "platform_iphone_title": "Socrú ar an iPhone",
-    "platform_iphone_step1": "Tapáil \"An gléas seo\" chun pasfhocal a chruthú ag baint úsáide as Face ID nó Touch ID.",
-    "platform_iphone_step2": "Sábháiltear an eochair pas chuig iCloud Keychain agus oibríonn sé ar do chuid feistí Apple go léir.",
+    "platform_iphone_step1": "Tapáil \"An gléas seo\" chun paseochair a chruthú le Face ID nó Touch ID.",
+    "platform_iphone_step2": "Sábháiltear an paseochair in iCloud Keychain agus oibríonn sí ar do ghléasanna Apple go léir.",
     "platform_iphone_step3": "Is féidir leat \"Guthán, táibléad, nó eochair shlándála\" a thapáil freisin chun eochair shlándála a chlárú.",
-    "platform_ipad_title": "Shuiteáil ar iPad",
-    "platform_ipad_step1": "Tapáil \"An gléas seo\" chun pasfhocal a chruthú ag baint úsáide as Face ID nó Touch ID.",
-    "platform_ipad_step2": "Sábháiltear an eochair pas chuig iCloud Keychain agus oibríonn sé ar do chuid feistí Apple go léir.",
+    "platform_ipad_title": "Socrú ar iPad",
+    "platform_ipad_step1": "Tapáil \"An gléas seo\" chun paseochair a chruthú le Face ID nó Touch ID.",
+    "platform_ipad_step2": "Sábháiltear an paseochair in iCloud Keychain agus oibríonn sí ar do ghléasanna Apple go léir.",
     "platform_ipad_step3": "Is féidir leat \"Guthán, táibléad, nó eochair shlándála\" a thapáil freisin chun eochair shlándála a chlárú.",
     "platform_android_title": "Socrú ar Android",
-    "platform_android_step1": "Tapáil \"An gléas seo\" chun pasfhocal a chruthú ag baint úsáide as do mhéarloirg, aghaidh nó glas scáileáin.",
-    "platform_android_step2": "Sábháiltear an pasfhocal chuig Bainisteoir Pasfhocal Google agus oibríonn sé ar do ghléasanna Android agus do bhrabhsálaithe Chrome go léir.",
+    "platform_android_step1": "Tapáil \"An gléas seo\" chun paseochair a chruthú le do mhéarlorg, d'aghaidh nó glas do scáileáin.",
+    "platform_android_step2": "Sábháiltear an paseochair i mBainisteoir Pasfhocal Google agus oibríonn sí ar do ghléasanna Android agus i do bhrabhsálaithe Chrome go léir.",
     "platform_android_step3": "Is féidir leat \"Guthán, táibléad, nó eochair shlándála\" a thapáil freisin chun eochair shlándála a chlárú.",
-    "platform_linux_title": "Suiteáil ar Linux",
-    "platform_linux_step1": "Cliceáil \"An gléas\" - úsáidfidh do bhrabhsálaí a bhainisteoir paseochair ionsuite.",
+    "platform_linux_title": "Socrú ar Linux",
+    "platform_linux_step1": "Cliceáil \"An gléas seo\" — úsáidfidh do bhrabhsálaí a bhainisteoir paseochracha ionsuite.",
     "platform_linux_step2": "Nó cliceáil \"Fón, táibléad, nó eochair shlándála\" chun eochair shlándála USB a úsáid nó cód QR a scanadh le do ghuthán.",
-    "platform_unknown_title": "Pas eochair a shocrú",
-    "platform_unknown_step1": "Cliceáil \"An gléas seo\" chun pasfhocal a chruthú ar an ngléas atá in úsáid agat anois.",
+    "platform_unknown_title": "Paseochair a shocrú",
+    "platform_unknown_step1": "Cliceáil \"An gléas seo\" chun paseochair a chruthú ar an ngléas atá in úsáid agat anois.",
     "platform_unknown_step2": "Nó cliceáil \"Fón, táibléad, nó eochair shlándála\" chun gléas eile a chlárú."
   },
   "discussion": {
@@ -2671,55 +2671,55 @@
   "max_characters_other": "uas. {{count}} carachtar",
   "volunteering": {
     "time_just_now": "Díreach anois",
-    "time_minutes_ago_one": "{{count}}nóiméad ó shin",
-    "time_minutes_ago_other": "{{count}}nóiméad ó shin",
-    "time_hours_ago_one": "{{count}}uair an chloig ó shin",
-    "time_hours_ago_other": "{{count}}uair an chloig ó shin",
-    "time_days_ago_one": "{{count}}lá ó shin",
-    "time_days_ago_other": "{{count}}lá ó shin",
+    "time_minutes_ago_one": "{{count}} nóiméad ó shin",
+    "time_minutes_ago_other": "{{count}} nóiméad ó shin",
+    "time_hours_ago_one": "{{count}} uair an chloig ó shin",
+    "time_hours_ago_other": "{{count}} uair an chloig ó shin",
+    "time_days_ago_one": "{{count}} lá ó shin",
+    "time_days_ago_other": "{{count}} lá ó shin",
     "wellbeing_user_number": "Oibrí deonach #{{id}}",
     "wellbeing_unknown_user": "Oibrí deonach anaithnid",
     "wellbeing_unknown_type": "Ábhar imní folláine",
-    "time_minutes_ago_few": "{{count}}nóiméad ó shin",
-    "time_minutes_ago_many": "{{count}}nóiméad ó shin",
-    "time_minutes_ago_two": "{{count}}nóiméad ó shin",
-    "time_hours_ago_few": "{{count}}uair an chloig ó shin",
-    "time_hours_ago_many": "{{count}}uair an chloig ó shin",
-    "time_hours_ago_two": "{{count}}uair an chloig ó shin",
-    "time_days_ago_few": "{{count}}lá ó shin",
-    "time_days_ago_many": "{{count}}lá ó shin",
-    "time_days_ago_two": "{{count}}lá ó shin"
+    "time_minutes_ago_few": "{{count}} nóiméad ó shin",
+    "time_minutes_ago_many": "{{count}} nóiméad ó shin",
+    "time_minutes_ago_two": "{{count}} nóiméad ó shin",
+    "time_hours_ago_few": "{{count}} uair an chloig ó shin",
+    "time_hours_ago_many": "{{count}} uair an chloig ó shin",
+    "time_hours_ago_two": "{{count}} uair an chloig ó shin",
+    "time_days_ago_few": "{{count}} lá ó shin",
+    "time_days_ago_many": "{{count}} lá ó shin",
+    "time_days_ago_two": "{{count}} lá ó shin"
   },
   "users": {
     "action_edit": "Cuir in eagar",
-    "action_approve": "Cheadaigh",
-    "action_suspend": "Fionraí",
-    "action_ban": "Cosc",
+    "action_approve": "Ceadaigh",
+    "action_suspend": "Cuir ar Fionraí",
+    "action_ban": "Cuir Cosc Air",
     "action_reactivate": "Athghníomhachtaigh",
     "action_reset_2fa": "Athshocraigh 2FA",
     "action_permissions": "Ceadanna",
-    "action_impersonate": "Déan aithris",
+    "action_impersonate": "Logáil isteach mar Úsáideoir",
     "action_delete": "Scrios",
     "actions_menu": "Roghchlár Gníomhartha"
   },
   "system": {
     "never": "Riamh",
     "just_now": "Díreach anois",
-    "minutes_ago_one": "{{count}}m ó shin",
-    "minutes_ago_other": "{{count}}m ó shin",
-    "hours_ago_one": "{{count}}h ó shin",
-    "hours_ago_other": "{{count}}h ó shin",
-    "days_ago_one": "{{count}}d ó shin",
-    "days_ago_other": "{{count}}d ó shin",
-    "minutes_ago_few": "{{count}}m ó shin",
-    "minutes_ago_many": "{{count}}m ó shin",
-    "minutes_ago_two": "{{count}}m ó shin",
-    "hours_ago_few": "{{count}}h ó shin",
-    "hours_ago_many": "{{count}}h ó shin",
-    "hours_ago_two": "{{count}}h ó shin",
-    "days_ago_few": "{{count}}d ó shin",
-    "days_ago_many": "{{count}}d ó shin",
-    "days_ago_two": "{{count}}d ó shin"
+    "minutes_ago_one": "{{count}}n ó shin",
+    "minutes_ago_other": "{{count}}n ó shin",
+    "hours_ago_one": "{{count}}u ó shin",
+    "hours_ago_other": "{{count}}u ó shin",
+    "days_ago_one": "{{count}}l ó shin",
+    "days_ago_other": "{{count}}l ó shin",
+    "minutes_ago_few": "{{count}}n ó shin",
+    "minutes_ago_many": "{{count}}n ó shin",
+    "minutes_ago_two": "{{count}}n ó shin",
+    "hours_ago_few": "{{count}}u ó shin",
+    "hours_ago_many": "{{count}}u ó shin",
+    "hours_ago_two": "{{count}}u ó shin",
+    "days_ago_few": "{{count}}l ó shin",
+    "days_ago_many": "{{count}}l ó shin",
+    "days_ago_two": "{{count}}l ó shin"
   },
   "super": {
     "tenant_actions": "Gníomhartha Tionóntaí",
@@ -2728,8 +2728,8 @@
     "enable_hub": "Cumasaigh Mol",
     "deactivate": "Díghníomhachtaigh",
     "reactivate": "Athghníomhachtaigh",
-    "status_active_label": "Active Label",
-    "status_inactive_label": "Inactive Label",
+    "status_active_label": "Gníomhach",
+    "status_inactive_label": "Neamhghníomhach",
     "hub": "Mol"
   },
   "help_faqs": {
@@ -2839,7 +2839,7 @@
     "config_max_file_upload_mb": "Uasmhéid uaslódála (MB)",
     "config_max_file_upload_mb_desc": "Teorainn méide in aghaidh an chomhaid. Diúltaítear comhaid níos mó ag an bhfreastalaí.",
     "validation_required": "Ag teastáil",
-    "validation_email": "Cuir isteach seoladh ríomhphoist bailí (e.g., name@example.com)",
+    "validation_email": "Cuir isteach seoladh ríomhphoist bailí (m.sh., name@example.com)",
     "validation_url": "Cuir isteach URL bailí a thosaíonn le http:// nó https://",
     "validation_number": "Caithfidh gur uimhir é",
     "validation_min": "Caithfidh sé a bheith {{value}} nó níos mó",
@@ -2857,7 +2857,7 @@
     "gdpr_sla_days_left_two": "{{count}} lá fágtha"
   },
   "crm": {
-    "just_now": "Just Now",
+    "just_now": "Díreach anois",
     "minutes_ago_one": "{{count}} nóiméad ó shin",
     "minutes_ago_other": "{{count}} nóiméad ó shin",
     "hours_ago_one": "{{count}} uair ó shin",
@@ -2968,12 +2968,12 @@
     "surveys": {
       "analytics": {
         "total_responses": "Freagraí iomlána",
-        "answer_count_one": "Freagra{{count}}",
-        "answer_count_other": "Freagraí{{count}}",
+        "answer_count_one": "Líon freagraí: {{count}}",
+        "answer_count_other": "Líon freagraí: {{count}}",
         "no_open_text": "Níl freagraí téacs oscailte ar bith fós.",
-        "answer_count_few": "Freagraí{{count}}",
-        "answer_count_many": "Freagraí{{count}}",
-        "answer_count_two": "Freagraí{{count}}"
+        "answer_count_few": "Líon freagraí: {{count}}",
+        "answer_count_many": "Líon freagraí: {{count}}",
+        "answer_count_two": "Líon freagraí: {{count}}"
       }
     }
   },

@@ -1,0 +1,109 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const english = JSON.parse(await readFile(new URL('../public/locales/en/common.json', import.meta.url)));
+const irish = JSON.parse(await readFile(new URL('../public/locales/ga/common.json', import.meta.url)));
+
+function flatten(value, prefix = '', result = new Map()) {
+  for (const [key, item] of Object.entries(value)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (item && typeof item === 'object' && !Array.isArray(item)) {
+      flatten(item, path, result);
+    } else if (typeof item === 'string') {
+      result.set(path, item);
+    }
+  }
+  return result;
+}
+
+test('Irish shared UI has only reviewed functional matches with English', () => {
+  const englishFlat = flatten(english);
+  const irishFlat = flatten(irish);
+  const invariants = new Set([
+    '25_34',
+    '35_44',
+    '45_54',
+    '55_64',
+    '65_plus',
+    'advertise.col_ctr',
+    'advertise.stats.ctr',
+    'analytics.regional.age_groups.25_34',
+    'analytics.regional.age_groups.35_44',
+    'analytics.regional.age_groups.45_54',
+    'analytics.regional.age_groups.55_64',
+    'analytics.regional.age_groups.65_plus',
+    'analytics.regional.empty.infinity',
+    'analytics.regional.empty_value',
+    'caring_community.actions.markt',
+    'caring_community.modules.markt',
+    'caring_workflow.empty.value',
+    'commercial_boundary.empty.value',
+    'compose.placeholder_hours',
+    'compose.placeholder_url',
+    'empty_dash',
+    'install.ios_step_2_after',
+    'keyboard.command_symbol',
+    'keyboard.k_key',
+    'markt.meta.title',
+    'members.distance_km',
+    'members.location_distance',
+    'menu_builder.route_faq',
+    'municipal_copilot.empty.value',
+    'nexus_score.tier_threshold',
+    'oauth.provider_facebook',
+    'oauth.provider_google',
+    'partner_analytics.suppressed_short',
+    'providers.filter_spitex',
+    'proximity.radius_option',
+    'push_campaign.radius_km',
+    'radius_5',
+    'radius_10',
+    'radius_25',
+    'radius_50',
+    'radius_100',
+    'regional_analytics.tiers.pro.label',
+    'safeguarding_reports.submit.form.evidence_placeholder',
+    'salary.currency_eur',
+    'salary_display',
+    'verein_dues.unnamed_verein',
+    'verein_federation.char_count',
+    'verein_federation.char_count_one',
+    'verein_federation.char_count_other',
+    'xp_progress',
+  ]);
+
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish common key: ${path}`);
+    if (invariants.has(path)) {
+      assert.equal(irishFlat.get(path), englishValue, path);
+    } else {
+      assert.notEqual(irishFlat.get(path), englishValue, path);
+    }
+  }
+
+  for (const [path, value] of irishFlat) {
+    assert.equal(value, value.trim(), `Whitespace defect: ${path}`);
+    assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${path}`);
+  }
+
+  const allIrish = [...irishFlat.values()].join('\n');
+  assert.doesNotMatch(allIrish, /Ag Treáil|Nascléanúint|Socruití|Miantaí|Just Now|Active Label|Inactive Label/u);
+  assert.doesNotMatch(allIrish, /Baill á luchtú|Pobal á luchtú|Luchtaigh|e\.g\.,/u);
+  assert.doesNotMatch(allIrish, /Ualach cúramóra ard:\{\{hours\}\}uaireanta|Soláthraí ríomhphoist ag\{\{email\}\}/u);
+  assert.doesNotMatch(allIrish, /\{\{count\}\}(?:nóiméad|uair an chloig|lá|m ó shin|h ó shin|d ó shin|Freagra)/u);
+
+  assert.equal(irish.aria.remove, 'Bain');
+  assert.equal(irish.confirm, 'Deimhnigh');
+  assert.equal(irish.delete, 'Scrios');
+  assert.equal(irish.user_fallback, 'Úsáideoir');
+  assert.equal(irish.theme_picker.title, 'Cuma');
+  assert.equal(irish.biometric.label_passkey, 'Paseochair');
+  assert.match(irish.biometric.platform_windows_step1, /paseochair/u);
+  assert.doesNotMatch(irish.biometric.platform_windows_step1, /pasfhocal/u);
+});
