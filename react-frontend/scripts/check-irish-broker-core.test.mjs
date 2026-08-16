@@ -63,3 +63,20 @@ test('Irish Broker onboarding and safeguarding wording preserves member progress
   assert.equal(irish.safeguarding.mark_reviewed, 'Marcáil mar athbhreithnithe');
   assert.equal(irish.safeguarding.no_assignments, 'Níl aon sannachán caomhnóra ann.');
 });
+
+test('Irish Broker vetting wording keeps evidence out of NEXUS and records only community decisions', () => {
+  const vetting = JSON.stringify(irish.vetting);
+
+  assert.doesNotMatch(vetting, /staitisticí vetála|Pacáiste polasaí|Sonra\?/u);
+  assert.doesNotMatch(vetting, /Scéim\(í\)|Nótaí bróicéir príobháideach|torthaí nochta(?:,|")/u);
+  assert.doesNotMatch(vetting, /\bClose\b|Athbhreithnigh an toradh|Chuaigh ball i dteagmháil/u);
+
+  assert.equal(irish.vetting.privacy_title, 'Ná uaslódáil doiciméid ghrinnfhiosrúcháin');
+  assert.match(irish.vetting.privacy_body, /Ná taifead ach an raon feidhme oibríochtúil agus an cinneadh inmheánach/u);
+  assert.match(irish.vetting.privacy_body, /Ná huaslódáil ná greamaigh deimhnithe/u);
+  assert.equal(irish.vetting.private_notes_label, 'Nótaí príobháideacha bróicéara');
+  assert.match(irish.vetting.private_notes_help, /Ná cuir isteach uimhreacha deimhnithe/u);
+  assert.equal(irish.vetting.details_title, 'Sonraí deimhniúcháin — {{name}}');
+  assert.equal(irish.vetting.resolution_member_contacted, 'Rinneadh teagmháil leis an mball');
+  assert.equal(irish.vetting.attestation_access_ni, 'AccessNI');
+});
