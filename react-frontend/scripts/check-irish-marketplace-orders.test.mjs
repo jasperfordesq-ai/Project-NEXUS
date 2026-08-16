@@ -124,3 +124,24 @@ test('Irish Marketplace seller and owner wording preserves listing and offer own
   assert.equal(irish.my_offers.send_counter, 'Seol an fhriththairiscint');
   assert.equal(irish.my_offers.checkout_started_success, 'Cuireadh tús leis an íocaíocht ar an tairiscint ar glacadh léi.');
 });
+
+test('Irish Marketplace collections, saved searches and promotions preserve their member actions', () => {
+  const journey = JSON.stringify({
+    collections: irish.collections,
+    savedSearches: irish.saved_searches,
+    promotions: irish.promotions,
+  });
+
+  assert.doesNotMatch(journey, /Liosta Cleiteach|Carbhsheó|Scoránaigh gníomhach/u);
+  assert.doesNotMatch(journey, /\bliosta(?:í)?\b|Gan Earraí Fós|Gan Bailiúcháin Fós/u);
+  assert.doesNotMatch(journey, /Cur Chun Cinn an Liosta|Theip ar chruthú an chur chun cinn/u);
+
+  assert.equal(irish.collections.subtitle, 'Eagraigh na hearraí is ansa leat sa mhargadh agus coinnigh súil orthu');
+  assert.equal(irish.collections.empty_description, 'Cuir earraí ó liostuithe sa mhargadh leis an mbailiúchán seo.');
+  assert.equal(irish.collections.sign_in_title, 'Ní mór síniú isteach');
+  assert.equal(irish.saved_searches.empty_description, 'Sábháil cuardach ón margadh chun foláirimh a fháil nuair a chuirtear earraí nua a oireann dó ar an margadh.');
+  assert.equal(irish.saved_searches.toggle_active, 'Cuir ar siúl nó as');
+  assert.equal(irish.promotions.title, 'Cuir an liostú chun cinn');
+  assert.equal(irish.promotions.featured, 'Liostú roghnaithe');
+  assert.equal(irish.promotions.homepage_carousel, 'Timpeallán an leathanaigh baile');
+});
