@@ -615,7 +615,7 @@
       "description": "Iarr tacaíocht ó do phobal"
     },
     "subtitle": "Tá cúram ag do chomharsana ort. Inis dúinn cad atá uait agus déanfaimid ár ndícheall cabhrú.",
-    "on_behalf_notice": "Tá an t-iarratas seo á chruthú agat do dhuine a thacaíonn tú leis mar chúramóir.",
+    "on_behalf_notice": "Tá an t-iarratas seo á chruthú agat do dhuine a dtugann tú tacaíocht dó mar chúramóir.",
     "form": {
       "what_label": "Cén cineál cabhrach atá uait?",
       "what_placeholder": "m.sh. Cabhair leis an siopadóireacht, síob chuig coinne leighis, comhluadar le haghaidh siúlóide...",
@@ -632,7 +632,7 @@
     "success": {
       "title": "Iarratas faighte",
       "body": "Fuarthas d'iarratas. Beidh comhordaitheoir i dteagmháil leat go luath.",
-      "back": "Ar ais go dtí an Mol Pobail",
+      "back": "Ar ais chuig Mol an Phobail",
       "toast": "Seoladh d'iarratas cabhrach."
     },
     "errors": {
@@ -642,14 +642,14 @@
       "voice_failed": "Níorbh fhéidir linn do thaifeadadh a thuiscint. Bain triail eile as nó líon isteach an fhoirm."
     },
     "voice": {
-      "start": "Tapáil chun d'iarratas a labhairt",
-      "stop": "Stop an taifeadadh",
+      "start": "Tapáil chun d’iarratas a insint dúinn",
+      "stop": "Cuir stop leis an taifeadadh",
       "recording": "Á thaifeadadh... {{seconds}}s",
       "processing": "Ag éisteacht...",
       "filled_hint": "Líonamar an fhoirm ó do thaifeadadh. Déan athbhreithniú uirthi sula seolann tú í.",
-      "transcript_label": "An méid a chuala muid"
+      "transcript_label": "An méid a chualamar"
     },
-    "back": "Ar ais go dtí an Mol Pobail"
+    "back": "Ar ais chuig Mol an Phobail"
   },
   "hour_gift": {
     "meta": {
@@ -664,59 +664,59 @@
       "sent": "Seolta"
     },
     "send": {
-      "recipient_label": "Cé ar mhaith leat uaireanta a bhronnadh air/uirthi?",
+      "recipient_label": "Cé ba mhaith leat a roghnú don bhronntanas uaireanta?",
       "recipient_placeholder": "Cuardaigh de réir ainm...",
-      "hours_label": "Cé mhéad uair?",
-      "hours_balance_helper": "Tá {{balance}} uair ar fáil agat",
+      "hours_label": "Cé mhéad uair an chloig?",
+      "hours_balance_helper": "Tá {{balance}} uair an chloig ar fáil agat",
       "message_label": "Cuir teachtaireacht phearsanta leis (roghnach)",
-      "message_placeholder": "Cén fáth go bhfuil tú ag bronnadh na n-uaireanta seo...",
+      "message_placeholder": "Cén fáth a bhfuil tú ag bronnadh na n-uaireanta seo...",
       "submit": "Bronn Uaireanta",
-      "confirm_title": "Bronn {{hours}} uair ar {{name}}?",
-      "confirm_body": "Bainfear na huaireanta díot anois agus cuirfear chuige iad nuair a ghlacann sé/sí leis.",
-      "confirm_button": "Tá, bronn uaireanta",
+      "confirm_title": "Bronn {{hours}} uair an chloig ar {{name}}?",
+      "confirm_body": "Bainfear na huaireanta de do sparán anois agus cuirfear i sparán an fhaighteora iad nuair a ghlacfar leis an mbronntanas.",
+      "confirm_button": "Bronn na huaireanta",
       "cancel": "Cealaigh",
-      "recipient_hint": "Clóscríobh ar a laghad 2 litir le cuardach",
+      "recipient_hint": "Clóscríobh dhá litir ar a laghad chun cuardach a dhéanamh",
       "recipient_no_results": "Níor aimsíodh aon bhall"
     },
     "inbox": {
-      "empty": "Gan bronntanais le glacadh leo faoi láthair.",
+      "empty": "Níl aon bhronntanas le glacadh faoi láthair.",
       "from": "Ó {{name}}",
-      "received_at": "Faighte {{date}}",
+      "received_at": "Faighte ar {{date}}",
       "accept": "Glac",
       "decline": "Diúltaigh",
       "decline_reason_label": "Cúis le diúltú (roghnach)",
-      "decline_button": "Diúltaigh bronntanas"
+      "decline_button": "Diúltaigh don bhronntanas"
     },
     "sent": {
       "empty": "Níor sheol tú aon bhronntanas fós.",
       "to": "Chuig {{name}}",
       "status": {
-        "pending": "Ag fanacht le glacadh",
+        "pending": "Ag feitheamh lena ghlacadh",
         "accepted": "Glactha",
         "declined": "Diúltaithe",
         "reverted": "Tarraingthe siar"
       },
-      "revert": "Tarraing siar bronntanas"
+      "revert": "Tarraing an bronntanas siar"
     },
     "success": {
-      "sent": "Bronntanas seolta. Cuirfear in iúl do {{name}}.",
-      "accepted": "Bronntanas glactha. Tá na huaireanta i do sparán anois.",
-      "declined": "Bronntanas diúltaithe. Aischuireadh na huaireanta chuig an seoltóir."
+      "sent": "Seoladh an bronntanas. Gheobhaidh {{name}} fógra.",
+      "accepted": "Glacadh leis an mbronntanas. Tá na huaireanta i do sparán anois.",
+      "declined": "Diúltaíodh don bhronntanas. Cuireadh na huaireanta ar ais chuig an seoltóir."
     },
     "errors": {
-      "insufficient_balance": "Níl uaireanta go leor i do sparán.",
+      "insufficient_balance": "Níl go leor uaireanta i do sparán.",
       "send_failed": "Níorbh fhéidir an bronntanas a sheoladh. Bain triail eile as."
     },
     "back": "Ar ais chuig an Mol Pobail"
   },
   "inter_gen": {
-    "badge": "Idirghlúine",
-    "tooltip": "Cuimsíonn an caidreamh tacaíochta seo níos mó ná glúin amháin — saintréith de shamhail Caring Community."
+    "badge": "Idirghlúineach",
+    "tooltip": "Baineann daoine ó níos mó ná glúin amháin leis an gcaidreamh tacaíochta seo — saintréith de shamhail Caring Community."
   },
   "hour_transfer": {
     "meta": {
       "title": "Aistrigh uaireanta i dtaisce",
-      "description": "Bog na huaireanta atá curtha i dtaisce agat go comharchumann Caring Community eile"
+      "description": "Aistrigh na huaireanta atá curtha i dtaisce agat chuig comharchumann Caring Community eile"
     },
     "title": "Aistrigh na huaireanta atá curtha i dtaisce agat",
     "subtitle": "Ag bogadh go pobal eile? Téann do chuid uaireanta i dtaisce leat.",
@@ -724,16 +724,16 @@
     "form": {
       "destination_label": "Comharchumann sprice",
       "destination_placeholder": "m.sh. zug-cooperative",
-      "destination_help": "An slug don chomharchumann Caring Community sprice nó tionónta",
+      "destination_help": "Aitheantóir URL an chomharchumainn Caring Community nó an tionónta cinn scríbe",
       "hours_label": "Uaireanta le haistriú",
       "hours_placeholder": "m.sh. 25.5",
       "reason_label": "Cúis (roghnach)",
-      "reason_placeholder": "m.sh. Bhog mé teach ó Cham go Zug",
+      "reason_placeholder": "m.sh. D’aistrigh mé ó Cham go Zug",
       "submit": "Iarr aistriú",
-      "submitting": "Á iarraidh..."
+      "submitting": "Iarratas á dhéanamh..."
     },
     "history": {
-      "title": "Stair na n-aistrithe agat",
+      "title": "Stair d’aistrithe",
       "aria": "Stair aistrithe uaireanta",
       "date": "Dáta",
       "destination": "Ceann scríbe",
@@ -750,24 +750,24 @@
       "completed": "Críochnaithe",
       "rejected": "Diúltaithe"
     },
-    "disclaimer": "Bainfear uaireanta de do sparán anseo nuair a fhaomhann riarthóir é. Beidh siad le feiceáil i do sparán ag an gcomharchumann ceann scríbe nuair a fhaightear iad.",
+    "disclaimer": "Bainfear na huaireanta de do sparán anseo nuair a fhaomhann riarthóir an t-iarratas. Beidh siad le feiceáil i do sparán ag an gcomharchumann cinn scríbe nuair a fhaightear an t-aistriú.",
     "back": "Ar ais chuig an Mol Pobail",
     "errors": {
       "submit_failed": "Níorbh fhéidir an t-aistriú a iarraidh. Bain triail eile as.",
       "destination_not_found": "Níorbh fhéidir an comharchumann ceann scríbe sin a aimsiú.",
-      "no_matching_email": "Níl do ríomhphost cláraithe ag an gcomharchumann ceann scríbe — cláraigh ansin ar dtús.",
+      "no_matching_email": "Níl do sheoladh ríomhphoist cláraithe ag an gcomharchumann cinn scríbe — cláraigh ansin ar dtús.",
       "insufficient_hours": "Níl go leor uaireanta curtha i dtaisce agat."
     }
   },
   "my_support_relationships": {
     "meta": {
       "title": "Mo Chaidrimh Tacaíochta",
-      "description": "Féach do chuid caidreamh tacaíochta leanúnach"
+      "description": "Féach ar do chaidrimh leanúnacha tacaíochta"
     },
     "subtitle": "Do naisc tacaíochta — na daoine a chabhraíonn tú leo agus na daoine a chabhraíonn leat.",
     "loading": "Ag fáil do chuid faisnéise...",
     "empty": {
-      "title": "Gan Chaidreamh Tacaíochta",
+      "title": "Níl Aon Chaidreamh Tacaíochta Ann",
       "body": "Níl aon chaidreamh tacaíochta gníomhach agat."
     },
     "role": {
@@ -791,13 +791,13 @@
       "pending": "Ar feitheamh",
       "declined": "Diúltaithe"
     },
-    "next_check_in": "An chéad seic eile",
-    "overdue": "Thar téarma",
-    "expected_hours": "{{hours}} u ag súil leo",
+    "next_check_in": "An chéad seiceáil eile",
+    "overdue": "Thar am",
+    "expected_hours": "{{hours}} uair an chloig measta",
     "hours_short": "{{hours}} u",
-    "recent_logs": "Uaireanta a logáladh le déanaí",
-    "no_recent_logs": "Níl aon uaireanta logáilte go fóill",
-    "back": "Ar ais go dtí Mol an Phobail",
+    "recent_logs": "Uaireanta a taifeadadh le déanaí",
+    "no_recent_logs": "Níor taifeadadh aon uair go fóill",
+    "back": "Ar ais chuig Mol an Phobail",
     "errors": {
       "load_failed": "Níorbh fhéidir do chaidrimh tacaíochta a lódáil."
     }
@@ -808,24 +808,24 @@
       "description": "Uaireanta atá curtha i dtaisce agat le haghaidh cúraim amach anseo"
     },
     "title": "Do Chiste Cúraim sa Todhchaí",
-    "subhead": "Luach thart ar CHF {{value}} — cúram ar féidir leat glaoch air nuair a theastaíonn sé",
+    "subhead": "Luach thart ar CHF {{value}} — tacaíocht is féidir leat a úsáid nuair a bheidh sí uait",
     "intro": "Ní uaireanta amháin iad seo. Is é seo an cúram atá curtha i dtaisce agat i do phobal — le húsáid le haghaidh siopadóireachta, coinne dochtúra nó comhluadair nuair a bheidh sé uait.",
-    "hours_short": "uair",
+    "hours_short": "uaireanta",
     "stats": {
       "lifetime_given": "Iomlán Tugtha",
       "lifetime_received": "Iomlán Faighte",
       "active_months": "Míonna Gníomhacha",
       "this_month_given": "Tugtha an mhí seo",
       "this_month_received": "Faighte an mhí seo",
-      "partner_orgs": "Eagraíochtaí Comhpháirtíochta a Tacaíodh"
+      "partner_orgs": "Eagraíochtaí comhpháirtí ar tugadh cúnamh dóibh"
     },
     "reciprocity": {
-      "title": "Do Chothromaíocht",
+      "title": "Do Chomhardú",
       "given_label": "Tugtha",
       "received_label": "Faighte",
       "strong_giver": "Thug tú i bhfad níos mó ná mar a fuair tú — tá do chiste don todhchaí láidir.",
       "balanced": "Tá cothromaíocht mhaith idir an méid a thug tú agus an méid a fuair tú.",
-      "strong_receiver": "Fuair tú go fial — nuair atá tú réidh, tabhair ar ais do do phobal."
+      "strong_receiver": "Fuair tú neart tacaíochta — nuair a bheidh tú réidh, tabhair rud éigin ar ais do do phobal."
     },
     "by_year": {
       "title": "Bliain ar bhliain",
@@ -834,12 +834,12 @@
     },
     "how_it_works": {
       "title": "Conas a oibríonn do chiste cúraim amach anseo",
-      "step1": "Cabhraigh le do chomharsana agus tuill uaireanta",
+      "step1": "Cabhraigh le do chomharsana agus saothraigh uaireanta",
       "step2": "Cuirtear uaireanta i dtaisce go sábháilte i do chiste pobail",
       "step3": "Nuair atá cabhair uait, fuascail uaireanta ó do chiste",
       "cta_offer": "Tairg cabhair anois",
       "cta_browse": "Féach cad atá ag teastáil",
-      "cta_relationships": "Féach mo naisc tacaíochta"
+      "cta_relationships": "Féach ar mo chaidrimh tacaíochta"
     },
     "first_contribution": "An chéad ranníocaíocht: {{date}}",
     "back": "Ar ais chuig an Mol Pobail",
@@ -849,11 +849,11 @@
     }
   },
   "reciprocity": {
-    "title": "Do Chothromaíocht Chómhalartach",
+    "title": "Do Chomhardú Cómhalartachta",
     "given": "Thug tú {{hours}} uair an chloig",
     "received": "Fuair tú {{hours}} uair an chloig",
-    "net_positive": "Glan: +{{hours}} uair an chloig sa bhanc",
-    "net_negative": "Glan: {{hours}} uair an chloig in úsáid",
+    "net_positive": "Iarmhéid glan: +{{hours}} uair an chloig sa chiste",
+    "net_negative": "Iarmhéid glan: {{hours}} uair an chloig úsáidte",
     "view_fund": "Féach ar do Chiste Cúraim sa Todhchaí"
   },
   "gif": {
@@ -1041,14 +1041,14 @@
       "title": "Tairg Gar",
       "description": "Taifead gníomh neamhfhoirmiúil cabhrach idir comharsana"
     },
-    "subtitle": "Níl creidmheasanna ama de dhíth — díreach taifead gníomh cineáltais do do phobal.",
+    "subtitle": "Ní theastaíonn creidmheasanna ama — ní gá ach gníomh cineáltais ar son do phobail a thaifeadadh.",
     "form": {
       "what_label": "Cad a rinne tú chun cabhrú?",
-      "what_placeholder": "m.sh. Chabhraigh mé le siopadóireacht, thug mé síob, roinn mé béile...",
+      "what_placeholder": "m.sh. Chabhraigh mé le málaí siopadóireachta a iompar, thug mé síob, roinn mé béile...",
       "category_label": "Catagóir",
       "categories": {
         "companionship": "Comhluadar",
-        "shopping": "Siopadóireacht & Teachtaireachtaí",
+        "shopping": "Siopadóireacht agus Gnóthaí Beaga",
         "transport": "Iompar",
         "home_help": "Cabhair sa Bhaile",
         "gardening": "Garraíodóireacht",
@@ -1056,7 +1056,7 @@
         "other": "Eile"
       },
       "recipient_label": "Cé ar chabhraigh tú leis? (roghnach)",
-      "recipient_placeholder": "Ainm, nó fág folamh chun fanacht gan ainm",
+      "recipient_placeholder": "Ainm, nó fág folamh é gan ainm a lua",
       "date_label": "Cathain?",
       "what_too_long": "Coinnigh do thuairisc faoi bhun 500 carachtar.",
       "submit": "Taifead Gar",
@@ -1064,26 +1064,26 @@
     },
     "success": {
       "title": "Go raibh maith agat!",
-      "body": "Neartaíonn gach gníomh cineáltais do phobal. Taifeadadh do ghar.",
-      "back": "Ar ais go dtí Mol an Phobail"
+      "body": "Neartaíonn gach gníomh cineáltais an pobal. Taifeadadh do ghar.",
+      "back": "Ar ais chuig Mol an Phobail"
     },
     "errors": {
       "submit_failed": "Níorbh fhéidir do ghar a thaifeadadh. Bain triail eile as."
     },
-    "back": "Ar ais go dtí Mol an Phobail"
+    "back": "Ar ais chuig Mol an Phobail"
   },
   "invite": {
     "valid": {
       "title": "Tá cuireadh agat",
-      "body": "Fuair tú cuireadh teacht isteach i bPobal Cúraim {{community}}. Bí linn chun am, scileanna agus tacaíocht a mhalartú le do chomharsana.",
+      "body": "Fuair tú cuireadh dul isteach i bPobal Cúraim {{community}}. Bí linn chun am, scileanna agus tacaíocht a mhalartú le do chomharsana.",
       "cta": "Glac páirt anois"
     },
     "expired": {
       "title": "Tá an cuireadh seo imithe in éag",
-      "body": "Tá an nasc cuiridh seo imithe in éag. Iarr ceann nua ar an gcomhordaitheoir agat."
+      "body": "Tá an nasc cuiridh seo imithe in éag. Iarr ceann nua ar do chomhordaitheoir."
     },
     "used": {
-      "title": "Cuireadh úsáidte cheana",
+      "title": "Baineadh Úsáid as an gCuireadh Cheana",
       "body": "Tá an nasc cuiridh seo úsáidte cheana féin. Má theastaíonn cabhair uait, déan teagmháil leis an gcomhordaitheoir."
     },
     "invalid": {

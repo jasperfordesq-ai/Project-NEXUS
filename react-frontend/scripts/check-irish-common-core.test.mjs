@@ -106,6 +106,9 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /Sliotán Bailithe|sliotán bailithe|Triail [Aa]rís|Líon coise|buicéadaithe|Uimh dleachtanna/u);
   assert.doesNotMatch(allIrish, /Dúshláin Idéalaithe|Deonaíocht|Forbhreathnú ar do theach pearsanta|atá ag treáil/u);
   assert.doesNotMatch(allIrish, /Ionad Cabhraigh|Lorg Aráin|rudaí a bhriseann|Páirt glactha|sonraí suíomh/u);
+  assert.doesNotMatch(allIrish, /air\/uirthi|sé\/sí|An chéad seic eile|Siopadóireacht & Teachtaireachtaí/u);
+  assert.doesNotMatch(allIrish, /cúram ar féidir leat glaoch air|An slug don chomharchumann|Bhog mé teach|Stair na n-aistrithe agat/u);
+  assert.doesNotMatch(allIrish, /Níl uaireanta go leor|Uaireanta a logáladh|uaireanta logáilte|Cuireadh úsáidte cheana/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -131,4 +134,14 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.members.joined_date, 'Ball ó {{date}}');
   assert.match(irish.biometric.platform_windows_step1, /paseochair/u);
   assert.doesNotMatch(irish.biometric.platform_windows_step1, /pasfhocal/u);
+  assert.equal(irish.request_help.voice.transcript_label, 'An méid a chualamar');
+  assert.equal(irish.request_help.voice.stop, 'Cuir stop leis an taifeadadh');
+  assert.match(irish.hour_gift.send.confirm_body, /sparán an fhaighteora/u);
+  assert.equal(irish.hour_gift.send.confirm_button, 'Bronn na huaireanta');
+  assert.equal(irish.hour_transfer.form.submitting, 'Iarratas á dhéanamh...');
+  assert.equal(irish.my_support_relationships.next_check_in, 'An chéad seiceáil eile');
+  assert.equal(irish.future_care_fund.hours_short, 'uaireanta');
+  assert.equal(irish.reciprocity.title, 'Do Chomhardú Cómhalartachta');
+  assert.equal(irish.offer_favour.form.categories.shopping, 'Siopadóireacht agus Gnóthaí Beaga');
+  assert.match(irish.invite.expired.body, /do chomhordaitheoir/u);
 });
