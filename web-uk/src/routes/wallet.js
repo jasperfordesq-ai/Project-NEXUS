@@ -220,6 +220,17 @@ function storeTransferForm(req) {
   };
 }
 
+// Stash the just-submitted donation so the error re-render can pre-fill it, mirroring
+// storeTransferForm above. The amount and message are echoed input, not money held on the
+// server side; consumed (and deleted) once by GET /wallet.
+function storeDonateForm(req) {
+  if (!req.session) return;
+  req.session.walletDonateForm = {
+    amount: String(req.body.amount || '').trim(),
+    message: String(req.body.message || '').trim().slice(0, 255)
+  };
+}
+
 function walletSearchQuery(query) {
   const params = new URLSearchParams();
   params.set('q', query);
@@ -246,6 +257,8 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   // note can be echoed back into the matching recipient's form rather than lost.
   const transferForm = req.session && req.session.walletTransferForm ? req.session.walletTransferForm : null;
   if (req.session) delete req.session.walletTransferForm;
+  const donateForm = req.session && req.session.walletDonateForm ? req.session.walletDonateForm : null;
+  if (req.session) delete req.session.walletDonateForm;
   const txFilter = ['earned', 'spent', 'pending'].includes(String(req.query.filter || ''))
     ? String(req.query.filter)
     : 'all';
@@ -292,6 +305,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     transferError: typeof req.query.error === 'string' ? req.query.error : '',
     transferForm,
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
+    donateForm,
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -402,18 +416,24 @@ function walletDonationPayload(body) {
 
 router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
   const payload = walletDonationPayload(req.body);
+  // Every failure stashes the entered amount and message so the error re-render can echo
+  // them back into the donate form, rather than the member losing what they typed.
+  const failDonate = (code) => {
+    storeDonateForm(req);
+    return redirectTo(res, walletDonateFailure(code));
+  };
 
   if (!Number.isFinite(payload.amount) || payload.amount <= 0) {
-    return redirectTo(res, walletDonateFailure('invalid'));
+    return failDonate('invalid');
   }
   if (Math.round(payload.amount) !== payload.amount) {
-    return redirectTo(res, walletDonateFailure('decimals'));
+    return failDonate('decimals');
   }
   if (payload.amount > 1000) {
-    return redirectTo(res, walletDonateFailure('too-large'));
+    return failDonate('too-large');
   }
   if (payload.recipient_type === 'user' && (!payload.recipient_id || Number(payload.recipient_id) <= 0)) {
-    return redirectTo(res, walletDonateFailure('invalid'));
+    return failDonate('invalid');
   }
 
   try {
@@ -427,12 +447,12 @@ router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
     if (error instanceof ApiError && error.status === 401) throw error;
     const message = String(error.message || '');
     if (/insufficient/i.test(message)) {
-      return redirectTo(res, walletDonateFailure('insufficient'));
+      return failDonate('insufficient');
     }
     if (/not found|recipient/i.test(message)) {
-      return redirectTo(res, walletDonateFailure('not-found'));
+      return failDonate('not-found');
     }
-    return redirectTo(res, walletDonateFailure('failed'));
+    return failDonate('failed');
   }
 
   return redirectTo(res, '/wallet?status=donate-sent#transactions');

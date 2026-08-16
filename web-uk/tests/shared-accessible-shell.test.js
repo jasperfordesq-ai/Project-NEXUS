@@ -6842,6 +6842,30 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('Thanks for the help');
   });
 
+  it('re-fills the amount and message on the donate form when a donation fails', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // A fractional amount fails validation ('decimals') before any API call.
+    const post = await agent.post('/wallet/donate').set('Cookie', signedCookieHeader()).type('form').send({
+      _csrf: csrf, target: 'community_fund', amount: '2.5', message: 'For the community fund'
+    });
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toContain('status=donate-failed');
+    expect(api.donateCredits).not.toHaveBeenCalled();
+
+    api.getBalance.mockResolvedValueOnce({ data: { balance: 8 } });
+    api.getTransactions.mockResolvedValueOnce({ data: [], meta: {} });
+
+    const page = await agent.get('/wallet?status=donate-failed&donate_error=decimals').set('Cookie', signedCookieHeader());
+    expect(page.status).toBe(200);
+    // The member's typed amount and message are echoed back into the donate form.
+    expect(page.text).toMatch(/id="donate-amount"[^>]*value="2.5"/);
+    expect(page.text).toMatch(/id="donate-message"[^>]*value="For the community fund"/);
+  });
+
   it('renders the messages hub without the legacy bare compose route', async () => {
     const api = require('../src/lib/api');
     api.getConversations.mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
