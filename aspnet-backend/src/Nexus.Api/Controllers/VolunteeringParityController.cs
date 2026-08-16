@@ -595,8 +595,9 @@ public class VolunteeringParityController : ControllerBase
     [HttpGet("donations")]
     public IActionResult Donations() => Ok(new { data = Array.Empty<object>() });
 
-    [HttpGet("accessibility-needs")]
-    public IActionResult AccessibilityNeeds() => Ok(new { data = Array.Empty<object>() });
+    // 🔴 GET accessibility-needs moved to VolunteerMemberRecordsController on
+    // 2026-08-16 (R-27). It returned an empty array, which is why the PUT that
+    // existed alongside it wrote to a store nothing could read.
 
     [HttpGet("custom-fields")]
     public IActionResult CustomFields() => Ok(new { data = Array.Empty<object>() });

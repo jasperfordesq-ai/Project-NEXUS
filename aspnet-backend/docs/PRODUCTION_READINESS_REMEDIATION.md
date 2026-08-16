@@ -460,6 +460,49 @@ Category 3 must not be "fixed", and category 2 must not be started as a stub
 pass. Counting them together is what makes the remaining number look like one
 job when it is three.
 
+## 🔴 A fourth invisible defect class: writes nobody reads
+
+Found 2026-08-16 while giving the volunteering screens their tables (R-27).
+
+`PUT /api/volunteering/accessibility-needs` was **not** a no-op — it wrote the
+whole request body as an opaque blob into **tenant config** under
+`compat:vol-access:{userId}`. It just wrote it somewhere nothing read: the
+matching GET was a separate stub returning an empty array. A member recorded the
+support they need in order to take part, was told it was saved, and it went
+where no screen could ever show it.
+
+🔴 **A test pinned that behaviour**, asserting the blob landed in
+`TenantConfigs`. So the stub detector could not see it (real work happens), the
+suite defended it, and only reading the GET and the PUT together revealed that
+the pair does nothing useful.
+
+**More of these exist.** The same test asserts config keys for
+`compat:vol-cert:`, `compat:vol-donation:`, `compat:vol-expense:`,
+`compat:vol-incident:`, `compat:vol-training:`, `compat:vol-wellbeing:` and
+`compat:vol-support:`. Each is a write into the config table standing in for a
+missing feature table. Before implementing any of those areas, check whether the
+read path exists at all — and expect the payload to have no schema, because
+whatever the client posted is what was stored.
+
+Detection is manual for now: for each `compat:` prefix, grep for a reader. A
+prefix with a writer and no reader is this defect.
+
+## 🔴 The table-exists guard that hid a broken query
+
+Also 2026-08-16. `VolunteerOrganisationService` reads `vol_reviews` with raw
+SQL, wrapped in "does this table exist — if not, return zeros". The table never
+existed, so the guard returned zeros from the day it was written and the query
+inside it was never executed. It used Laravel's snake_case column names.
+
+Creating `vol_reviews` with EF's default PascalCase columns activated the query
+and broke **every organisation listing** with `column "rating" does not exist`.
+
+The tables are now created with Laravel's column names, which also serves the
+carbon-copy-database goal, and a test creates a Laravel-shaped `vol_reviews` to
+pin it. 🔴 **Generalise the lesson: a table-exists guard does not make the query
+inside it correct, it postpones finding out. Before creating any table, grep for
+guarded raw SQL against that table name.**
+
 ## 🔴 Two ways this backend's tests can appear to pass without running
 
 Both hit on 2026-08-16. Neither is a code defect; both produce a green result

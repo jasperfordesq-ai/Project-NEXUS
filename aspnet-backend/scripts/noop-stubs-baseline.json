@@ -1,7 +1,7 @@
 ﻿{
     "_comment":  "Shrink-only. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower this in the SAME commit that removes stubs; never raise it.",
     "generated_at":  "2026-08-16",
-    "total":  325,
+    "total":  323,
     "by_file":  [
                     {
                         "file":  "MiscParityController.cs",
@@ -17,7 +17,7 @@
                     },
                     {
                         "file":  "ReactFrontendCompatibilityController.cs",
-                        "count":  31
+                        "count":  30
                     },
                     {
                         "file":  "FrontendApiParityController.cs",
@@ -28,15 +28,15 @@
                         "count":  16
                     },
                     {
-                        "file":  "VolunteeringParityController.cs",
-                        "count":  11
-                    },
-                    {
                         "file":  "AdminCompatibilityController.cs",
                         "count":  11
                     },
                     {
                         "file":  "CompatibilityAliasController.cs",
+                        "count":  10
+                    },
+                    {
+                        "file":  "VolunteeringParityController.cs",
                         "count":  10
                     },
                     {
@@ -56,11 +56,11 @@
                         "count":  4
                     },
                     {
-                        "file":  "UsersParityController.cs",
+                        "file":  "StoriesController.cs",
                         "count":  3
                     },
                     {
-                        "file":  "StoriesController.cs",
+                        "file":  "UsersParityController.cs",
                         "count":  3
                     },
                     {
@@ -76,15 +76,11 @@
                         "count":  2
                     },
                     {
-                        "file":  "NotificationPollingController.cs",
-                        "count":  1
-                    },
-                    {
                         "file":  "PerformanceMonitorController.cs",
                         "count":  1
                     },
                     {
-                        "file":  "RegistrationPolicyController.cs",
+                        "file":  "AdminDiagnosticsController.cs",
                         "count":  1
                     },
                     {
@@ -92,11 +88,19 @@
                         "count":  1
                     },
                     {
+                        "file":  "RegistrationPolicyController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "NotificationPollingController.cs",
+                        "count":  1
+                    },
+                    {
                         "file":  "EventRecurrenceController.cs",
                         "count":  1
                     },
                     {
-                        "file":  "AdminToolsController.cs",
+                        "file":  "HealthController.cs",
                         "count":  1
                     },
                     {
@@ -108,15 +112,11 @@
                         "count":  1
                     },
                     {
-                        "file":  "HealthController.cs",
+                        "file":  "AdminToolsController.cs",
                         "count":  1
                     },
                     {
                         "file":  "AdminEmailDeliverabilityController.cs",
-                        "count":  1
-                    },
-                    {
-                        "file":  "AdminDiagnosticsController.cs",
                         "count":  1
                     },
                     {

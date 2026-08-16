@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -3544,12 +3544,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
         return Ok(new { data = reviews, reviews });
     }
 
-    [HttpGet("api/volunteering/reviews/organization/{id:int}")]
-    [Authorize]
-    public IActionResult VolunteeringOrganizationReviews(int id)
-    {
-        return Ok(new { data = Array.Empty<object>(), reviews = Array.Empty<object>() });
-    }
+    // 🔴 GET api/volunteering/reviews/organization/{id} moved to
+    // VolunteerMemberRecordsController on 2026-08-16 (R-27). It returned a
+    // hardcoded empty array, so every organisation appeared to have no reviews
+    // — indistinguishable from a genuinely unreviewed one, which is the wrong
+    // impression to give someone choosing where to volunteer.
 
     [HttpGet("api/legal/{id:int}")]
     [HttpGet("api/legal/version/{id:int}")]

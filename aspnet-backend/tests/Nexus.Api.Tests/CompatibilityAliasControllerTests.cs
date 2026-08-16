@@ -665,9 +665,18 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
             response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
 
+        // 🔴 Accessibility needs moved out of the tenant-config blob store into
+        // vol_accessibility_needs on 2026-08-16 (R-27). This test used to send
+        // {notes:"..."} and assert the blob landed in TenantConfigs — pinning a
+        // write nothing ever read back, because the matching GET was a stub
+        // returning an empty array. It now sends the real payload and asserts
+        // the row a member can actually see again.
         (await Client.PutAsJsonAsync("/api/volunteering/accessibility-needs", new
         {
-            notes = "Step-free access"
+            needs = new[]
+            {
+                new { need_type = "mobility", accommodations_required = "Step-free access" },
+            },
         })).StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var scope = Factory.Services.CreateScope();
@@ -680,8 +689,9 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-incident:")).Should().BeTrue();
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-training:")).Should().BeTrue();
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-wellbeing:")).Should().BeTrue();
-        db.TenantConfigs.Single(c => c.Key == $"compat:vol-access:{TestData.MemberUser.Id}")
-            .Value.Should().Contain("Step-free access");
+        db.Set<VolunteerAccessibilityNeed>().IgnoreQueryFilters()
+            .Single(n => n.UserId == TestData.MemberUser.Id && n.NeedType == "mobility")
+            .AccommodationsRequired.Should().Be("Step-free access");
     }
 
     [Fact]

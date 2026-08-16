@@ -2387,27 +2387,20 @@ public class CompatibilityAliasController : ControllerBase
     public async Task<IActionResult> WellbeingCheckIn([FromBody] object? request = null) =>
         await PersistVolunteerCompatibilityRecord(VolunteerWellbeingKeyPrefix, "volunteer_wellbeing_checkin", request, "Wellbeing check-in recorded");
 
-    /// <summary>
-    /// PUT /api/volunteering/accessibility-needs — Update accessibility needs.
-    /// </summary>
-    [HttpPut("api/volunteering/accessibility-needs")]
-    public async Task<IActionResult> UpdateAccessibilityNeeds([FromBody] object? request = null)
-    {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
-
-        var config = await UpsertTenantConfigValue(
-            $"{VolunteerAccessibilityKeyPrefix}{userId.Value}",
-            new
-            {
-                kind = "volunteer_accessibility_needs",
-                user_id = userId.Value,
-                payload = request ?? EmptyPayload(),
-                updated_at = DateTime.UtcNow
-            });
-
-        return Ok(new { success = true, message = "Accessibility needs updated", id = config.Id });
-    }
+    // 🔴 PUT /api/volunteering/accessibility-needs moved to
+    // VolunteerMemberRecordsController on 2026-08-16 (R-27), once
+    // vol_accessibility_needs existed.
+    //
+    // What it did: wrote the whole request body as an opaque blob into TENANT
+    // CONFIG under "compat:vol-access:{userId}" — and nothing ever read it
+    // back, because the matching GET was a separate stub returning an empty
+    // array. So a member recorded the support they need to take part, was told
+    // it was saved, and it went somewhere no screen could ever display. That is
+    // the same family as a no-op stub: it stores, but the storing is pointless.
+    //
+    // Any blob left in tenant config from that period is NOT migrated: it has
+    // no schema (the payload was whatever the client posted) and was never
+    // visible to anyone, so there is nothing a member would recognise as lost.
 
     /// <summary>
     /// PUT /api/volunteering/applications/{id} — Approve or decline an application as its organizer.
