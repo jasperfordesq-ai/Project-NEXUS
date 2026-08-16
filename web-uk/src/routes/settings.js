@@ -246,7 +246,8 @@ function normalizeRelationship(row, t) {
   const permissions = jsonObjectFrom(row && row.permissions);
   const first = trimmed(row && row.first_name);
   const last = trimmed(row && row.last_name);
-  const name = trimmed((row && row.name) || `${first} ${last}` || (row && row.email));
+  const composite = `${first} ${last}`.trim();
+  const name = trimmed((row && row.name) || composite || (row && row.email));
   const type = allowedValue(row && row.relationship_type, SETTINGS_LINK_TYPES, 'family');
 
   return {

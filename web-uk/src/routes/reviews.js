@@ -429,7 +429,7 @@ router.get('/:id(\\d+)/comments', requireAuth, asyncRoute(async (req, res) => {
 }, { notFoundTitle: 'Review not found' }));
 
 // Delete review
-router.post('/:id/delete', requireAuth, audit.reviewDelete(), asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/delete', requireAuth, audit.reviewDelete(), asyncRoute(async (req, res) => {
   const { id } = req.params;
   let status = 'review-deleted';
 

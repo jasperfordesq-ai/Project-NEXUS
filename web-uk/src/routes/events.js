@@ -1508,13 +1508,22 @@ router.post('/:id(\\d+)/waitlist', asyncRoute(async (req, res) => {
 
 router.post('/:id(\\d+)/waitlist/leave', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  return runCanonicalEventAction(
-    req,
-    res,
-    `/${id}/registration/waitlist/leave`,
-    eventRedirect(id, 'waitlist-left'),
-    eventRedirect(id, 'waitlist-left')
-  );
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  try {
+    await callEventMutation(token, 'POST', `/${id}/registration/waitlist/leave`, undefined, randomUUID());
+    return redirectTo(res, eventRedirect(id, 'waitlist-left'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // Leaving the waitlist is idempotent: if the member is already off the
+    // waitlist, that IS the outcome they asked for, so report success like
+    // Blade. A genuine failure must NOT masquerade as "you have left".
+    const code = apiErrorCode(error);
+    if (code === 'WAITLIST_ENTRY_INACTIVE' || (error instanceof ApiError && error.status === 404)) {
+      return redirectTo(res, eventRedirect(id, 'waitlist-left'));
+    }
+    return redirectTo(res, eventRedirect(id, 'waitlist-failed'));
+  }
 }));
 
 const RECURRENCE_BLUEPRINT_SECTIONS = ['agenda', 'ticket_types', 'registration', 'safety', 'staff'];
@@ -1661,18 +1670,6 @@ async function transitionEventPublication(req, res, action) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '?status=event-publication-failed'));
     throw error;
-  }
-}
-
-async function runCanonicalEventAction(req, res, path, successRedirect, failureRedirect) {
-  const token = tokenFrom(req);
-  if (!token) return redirectTo(res, loginRedirect());
-  try {
-    await callEventMutation(token, 'POST', path, undefined, randomUUID());
-    return redirectTo(res, successRedirect);
-  } catch (error) {
-    if (redirectOnAuthError(error, res)) return undefined;
-    return redirectTo(res, failureRedirect);
   }
 }
 

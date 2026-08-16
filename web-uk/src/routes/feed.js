@@ -393,7 +393,7 @@ router.get('/hashtags', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/posts/:id(\\d+)', asyncRoute(async (req, res) => {
+router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   const id = positiveInteger(req.params.id, 0, 1, Number.MAX_SAFE_INTEGER);
   const token = tokenFrom(req);
   let itemUnavailable = false;
@@ -433,7 +433,7 @@ router.get('/posts/:id(\\d+)', asyncRoute(async (req, res) => {
     statusMessage: feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
-}, { notFoundTitle: 'Post not found' }));
+}), { notFoundTitle: 'Post not found' }));
 
 router.get('/item/:type([a-z]+)/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   const type = trimmed(req.params.type, 40);

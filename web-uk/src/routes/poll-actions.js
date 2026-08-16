@@ -477,7 +477,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   let comments = [];
   let commentsTotal = 0;
   if (poll.id !== null) {
-    const commentsResult = await getComments(token, { target_type: 'poll', target_id: poll.id });
+    const commentsResult = await getComments(token, { target_type: 'poll', target_id: poll.id })
+      .catch(() => ({ data: { comments: [] } }));
     const commentsData = asObject(dataFrom(commentsResult));
     comments = asList(commentsData.comments || dataFrom(commentsResult)).map(normalizeComment);
     commentsTotal = positiveInteger(commentsData.count) || commentCount(comments);

@@ -326,7 +326,12 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
       await updateProfile(req.token, { bio: bio || null });
     } catch (error) {
       if (isAuthError(error)) throw error;
-      return redirectTo(res, '/onboarding/profile?status=bio-too-short');
+      const field = error instanceof ApiError ? String(error.data?.field || '') : '';
+      const message = error instanceof ApiError ? String(error.message || '') : '';
+      if (field === 'bio' || /bio/i.test(message)) {
+        return redirectTo(res, '/onboarding/profile?status=bio-too-short');
+      }
+      return redirectTo(res, '/onboarding/profile?status=complete-failed');
     }
   }
 

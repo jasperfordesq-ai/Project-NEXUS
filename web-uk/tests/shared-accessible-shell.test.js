@@ -4251,6 +4251,81 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('falls back to the email address when a linked account has no name', async () => {
+    const api = require('../src/lib/api');
+    api.callUserSettingsApi.mockImplementation(async (token, method, pathValue) => {
+      if (method === 'GET' && pathValue === '/sub-accounts') {
+        return {
+          data: {
+            children: [
+              {
+                relationship_id: 7,
+                relationship_type: 'family',
+                status: 'active',
+                email: 'no-name-member@example.org',
+                permissions: {}
+              }
+            ]
+          }
+        };
+      }
+      return { data: { id: 42 } };
+    });
+
+    const response = await request(app)
+      .get('/settings/linked-accounts')
+      .set('Cookie', signedAuthCookieHeader());
+
+    // With no name and no first/last, the row must display the email address,
+    // not the "Unknown member" placeholder.
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('no-name-member@example.org');
+    expect(response.text).not.toContain('Unknown member');
+  });
+
+  it('reports waitlist-leave failures distinctly while keeping the leave idempotent', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const cookie = signedCookieHeader();
+    const csrf = await csrfTokenFor(agent, '/contact', cookie);
+
+    // A genuine failure must not tell the member "you have left the waitlist".
+    api.callEventApi.mockRejectedValueOnce(new api.ApiError('Server error', 500));
+    const failed = await agent
+      .post('/events/42/waitlist/leave')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf });
+    expect(failed.headers.location).toBe('/events/42?status=waitlist-failed');
+
+    // The already-absent (idempotent) case still reports success like Blade.
+    api.callEventApi.mockRejectedValueOnce(new api.ApiError('Already absent', 409, {
+      errors: [{ code: 'WAITLIST_ENTRY_INACTIVE', message: 'Already absent' }]
+    }));
+    const idempotent = await agent
+      .post('/events/42/waitlist/leave')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf });
+    expect(idempotent.headers.location).toBe('/events/42?status=waitlist-left');
+  });
+
+  it('only maps a genuine bio validation error to bio-too-short in onboarding', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'onboarding-posts.js'), 'utf8');
+    const profileBlock = source.slice(source.indexOf("if (step === 'profile')"), source.indexOf("if (step === 'interests')"));
+    // The bio-too-short status is now gated on an actual bio field/message.
+    expect(profileBlock).toContain('/bio/i.test(message)');
+    expect(profileBlock).toContain('status=bio-too-short');
+    // Non-bio failures fall back to the generic retry status instead.
+    expect(profileBlock).toContain('status=complete-failed');
+  });
+
+  it('constrains the review delete route to a numeric id', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'reviews.js'), 'utf8');
+    expect(source).toContain("router.post('/:id(\\\\d+)/delete'");
+    expect(source).not.toContain("router.post('/:id/delete'");
+  });
+
   it('preserves Laravel safeguarding failures for linked-account requests', async () => {
     const api = require('../src/lib/api');
     const agent = request.agent(app);
@@ -14538,6 +14613,39 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('View listing');
   });
 
+  it('refreshes an expired signed token before rendering a Laravel feed post permalink', async () => {
+    const api = require('../src/lib/api');
+
+    api.getFeedPostV2
+      .mockRejectedValueOnce(new api.ApiError('Expired token', 401, {}))
+      .mockResolvedValueOnce({
+        data: {
+          id: 42,
+          type: 'post',
+          content: 'Repair cafe is open.',
+          created_at: '2026-07-05T14:15:00Z',
+          author: { name: 'Grace Hopper', avatar_url: '/avatars/grace.jpg' },
+          likes_count: 4,
+          comments_count: 0,
+          is_liked: false
+        }
+      });
+    api.getComments.mockResolvedValueOnce({ data: { comments: [] } });
+
+    const response = await request(app)
+      .get('/feed/posts/42')
+      .set('Cookie', signedAuthCookieHeader('expired-token', 'refresh-me'));
+
+    // The permalink must refresh a signed-in member's expired token and retry,
+    // matching the /feed/item sibling, instead of logging them out.
+    expect(response.status).toBe(200);
+    expect(api.refreshToken).toHaveBeenCalledWith('refresh-me', '');
+    expect(api.getFeedPostV2).toHaveBeenNthCalledWith(1, 'expired-token', 42);
+    expect(api.getFeedPostV2).toHaveBeenNthCalledWith(2, 'test-token', 42);
+    expect(api.getComments).toHaveBeenCalledWith('test-token', { target_type: 'post', target_id: 42 });
+    expect(response.text).toContain('Repair cafe is open.');
+  });
+
   it('submits the Laravel feed post store route through the v2 feed API helper', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
@@ -15400,6 +15508,23 @@ describe('shared accessible frontend shell', () => {
     expect(api.getPollExport).toHaveBeenCalledWith('test-token', 42);
     expect(exported.headers['content-type']).toContain('text/csv');
     expect(exported.text).toContain('Community garden,3');
+  });
+
+  it('keeps the poll detail page usable when the comments endpoint fails', async () => {
+    const api = require('../src/lib/api');
+    api.getPoll.mockResolvedValueOnce({ data: { id: 42, question: 'Which project should happen next?' } });
+    api.getFeedItemV2.mockResolvedValueOnce({ data: { id: 42, type: 'poll', likes_count: 2, is_liked: 0 } });
+    api.getComments.mockRejectedValueOnce(new api.ApiError('Comments unavailable', 500));
+
+    const response = await request(app)
+      .get('/polls/42')
+      .set('Cookie', signedCookieHeader());
+
+    // A comments-endpoint 500 must degrade to an empty discussion, not take
+    // down an otherwise-loaded poll page.
+    expect(response.status).toBe(200);
+    expect(api.getComments).toHaveBeenCalledWith('test-token', { target_type: 'poll', target_id: 42 });
+    expect(response.text).toContain('Which project should happen next?');
   });
 
   it('renders the poll listing from the exact Arabic Laravel catalog', async () => {
@@ -18842,9 +18967,10 @@ describe('shared accessible frontend shell', () => {
     expect(api.callJobApi).not.toHaveBeenCalled();
   });
 
-  it('matches Blade owner denial when the applicant collection cannot be loaded', async () => {
+  it('reports a service outage (503) when the applicant collection cannot be loaded', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
+    const englishUnavailableTitle = createTranslator('en')('error_pages.503_title');
     api.getJob.mockResolvedValueOnce({ data: { id: 501, title: 'Volunteer Coordinator' } });
     api.callJobApi.mockImplementation((token, method, pathName) => {
       if (pathName === '/501/applications') {
@@ -18859,8 +18985,11 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', [`token=${encodeURIComponent(signedToken)}`]);
 
     expect(api.callJobApi).toHaveBeenCalledWith('test-token', 'GET', '/501/applications');
-    expect(response.status).toBe(403);
-    expect(response.text).toContain(englishForbiddenTitle);
+    // A transient/5xx failure must surface as a service outage, matching the
+    // /pipeline and /analytics siblings, not a misleading Forbidden page.
+    expect(response.status).toBe(503);
+    expect(response.text).toContain(englishUnavailableTitle);
+    expect(response.text).not.toContain(englishForbiddenTitle);
     expect(response.text).not.toContain('Applications could not be loaded');
     expect(api.callJobApi).not.toHaveBeenCalledWith('test-token', 'GET', '/501/analytics');
   });

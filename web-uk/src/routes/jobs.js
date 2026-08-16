@@ -2393,7 +2393,7 @@ router.get('/:id(\\d+)/applications', asyncRoute(async (req, res) => {
     if (error instanceof ApiError && error.status === 404) {
       return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
-    return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   try {
