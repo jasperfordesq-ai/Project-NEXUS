@@ -35,6 +35,13 @@
         {% include "partials/notification-banner.njk" %}
       {% endif %}
 
+      {% if loadError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+        </div>
+      {% endif %}
+
       <div class="govuk-grid-row govuk-!-margin-bottom-6">
         <div class="govuk-grid-column-one-quarter">
           {% set size = 'large' %}{% include "partials/avatar.njk" %}

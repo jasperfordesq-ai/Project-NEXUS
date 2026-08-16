@@ -11674,6 +11674,25 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Level 1 - 0 XP');
   });
 
+  it('shows a "we could not load this" banner on a member profile when a content section fails', async () => {
+    const api = require('../src/lib/api');
+    const member = { data: { id: 77, name: 'Ada Lovelace', first_name: 'Ada', last_name: 'Lovelace', created_at: '2026-01-03T12:00:00Z' } };
+
+    // Healthy: the core profile and every section load -> no load-error banner.
+    api.getUser.mockResolvedValueOnce(member);
+    const ok = await request(app).get('/members/77').set('Cookie', signedCookieHeader());
+    expect(ok.status).toBe(200);
+    expect(ok.text).not.toContain('govuk-error-summary');
+
+    // A content section fails (non-auth outage) -> the profile still renders, banner shown.
+    api.getUser.mockResolvedValueOnce(member);
+    api.getUserReviews.mockRejectedValueOnce(new api.ApiError('Reviews unavailable', 503));
+    const degraded = await request(app).get('/members/77').set('Cookie', signedCookieHeader());
+    expect(degraded.status).toBe(200);
+    expect(degraded.text).toContain('govuk-error-summary');
+    expect(degraded.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
   it('handles Laravel v2 member profile authentication and null-data not-found envelopes tenant-safely', async () => {
     const api = require('../src/lib/api');
     const { ApiError } = api;

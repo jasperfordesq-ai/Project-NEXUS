@@ -904,6 +904,13 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
 
   const tenant = req.accessibleRouting?.tenant || res.locals.tenant || {};
   const listingsEnabled = flagEnabled(tenant, 'listings', 'modules', true);
+  // A profile's content sections each fall back to empty on failure. Record when
+  // one actually failed (rather than being genuinely empty) so the page can show a
+  // single "we could not load this" banner instead of, say, a real member looking
+  // as if they have no reviews, skills or activity during a backend wobble. The
+  // connection-status and block-status catches keep their own dedicated handling.
+  let sectionsFailed = false;
+  const trackSection = (fallback) => () => { sectionsFailed = true; return fallback; };
   const [
     userResult,
     connectionResult,
@@ -924,14 +931,14 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       connectionErrorMessage = res.locals.t('states.connection-failed');
       return { data: { status: 'none' } };
     }),
-    getGamificationProfileByUserId(req.token, Number(id)).catch(() => ({ data: null })),
-    getAllBadges(req.token, { user_id: Number(id) }).catch(() => ({ data: [], meta: { total: 0, available_types: [] } })),
-    getUserReviews(req.token, id).catch(() => ({ data: [], summary: null })),
+    getGamificationProfileByUserId(req.token, Number(id)).catch(trackSection({ data: null })),
+    getAllBadges(req.token, { user_id: Number(id) }).catch(trackSection({ data: [], meta: { total: 0, available_types: [] } })),
+    getUserReviews(req.token, id).catch(trackSection({ data: [], summary: null })),
     getRequestProfile(req, req.token).catch(() => null),
-    listingsEnabled ? getUserListings(req.token, id, { limit: 6 }).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
-    getUserSkills(req.token, id).catch(() => ({ data: [] })),
-    getUserAvailability(req.token, id).catch(() => ({ data: { weekly: [] } })),
-    getUserActivityDashboard(req.token, id).catch(() => ({ data: { timeline: [] } })),
+    listingsEnabled ? getUserListings(req.token, id, { limit: 6 }).catch(trackSection({ data: [] })) : Promise.resolve({ data: [] }),
+    getUserSkills(req.token, id).catch(trackSection({ data: [] })),
+    getUserAvailability(req.token, id).catch(trackSection({ data: { weekly: [] } })),
+    getUserActivityDashboard(req.token, id).catch(trackSection({ data: { timeline: [] } })),
     // 🔴 Fail CLOSED. This used to default to is_blocked_by:false on any API error,
     // so a transient wobble made a member who has blocked you look un-blocking. When
     // we cannot confirm the block state, assume you may be blocked (is_blocked_by:true)
@@ -997,7 +1004,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     walletEnabled: flagEnabled(tenant, 'wallet', 'modules', true),
     transferIdempotencyKey: randomUUID(),
     successMessage: profileStatus?.type === 'success' ? profileStatus.text : flashedSuccess,
-    errorMessage: connectionErrorMessage || (profileStatus?.type === 'error' ? profileStatus.text : flashedError)
+    errorMessage: connectionErrorMessage || (profileStatus?.type === 'error' ? profileStatus.text : flashedError),
+    loadError: sectionsFailed ? res.locals.t('states.load_error') : ''
   });
 }, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH, notFoundTitle: 'User not found' }));
 
