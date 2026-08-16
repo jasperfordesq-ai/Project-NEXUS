@@ -302,8 +302,10 @@ describe('native date input ceiling', () => {
   // scheduled_for converted (idPrefix added so the doubled add/edit partial keeps unique
   // ids). Then 14 -> 13: events/communications scheduled_at (per-broadcast loop, idPrefix
   // schedule-{id}). Then 13 -> 11: registration campaign expires_at + scheduled_for
-  // (_registration-organizer-workflows, idPrefix campaign-*-{id}). Keep lowering.
-  const CEILING = { 'datetime-local': 11, date: 1, time: 2 };
+  // (_registration-organizer-workflows, idPrefix campaign-*-{id}). Then 11 -> 8:
+  // registration organizer settings opens_at/closes_at/cancellation_cutoff_at (the API
+  // does the timezone conversion; web-uk passes the local string as before). Keep lowering.
+  const CEILING = { 'datetime-local': 8, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

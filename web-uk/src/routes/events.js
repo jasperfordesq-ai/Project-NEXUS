@@ -32,7 +32,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate, readDateTime } = require('../lib/date-input');
+const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -2695,7 +2695,10 @@ router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) =
       ...settings,
       opens_at_local: dateTimeLocalInZone(settings.opens_at_utc, timezone),
       closes_at_local: dateTimeLocalInZone(settings.closes_at_utc, timezone),
-      cancellation_cutoff_at_local: dateTimeLocalInZone(settings.cancellation_cutoff_at_utc, timezone)
+      cancellation_cutoff_at_local: dateTimeLocalInZone(settings.cancellation_cutoff_at_utc, timezone),
+      opens_at_parts: splitDateTime(dateTimeLocalInZone(settings.opens_at_utc, timezone)),
+      closes_at_parts: splitDateTime(dateTimeLocalInZone(settings.closes_at_utc, timezone)),
+      cancellation_cutoff_at_parts: splitDateTime(dateTimeLocalInZone(settings.cancellation_cutoff_at_utc, timezone))
     }
   };
   res.set('Cache-Control', 'private, no-store');
@@ -2704,8 +2707,16 @@ router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) =
 
 router.post('/:id(\\d+)/registration/settings', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const expectedRevision = Number.parseInt(req.body.expected_revision, 10); const approvalMode = selectedValue(req.body.approval_mode, ['auto', 'manual']); const perMemberLimit = positiveInteger(req.body.per_member_limit); const guestRetentionDays = positiveInteger(req.body.guest_retention_days); const guestsEnabled = checked(req.body.guests_enabled); const maxGuests = guestsEnabled ? positiveInteger(req.body.max_guests_per_registration) : 0;
-  if (!key || !Number.isInteger(expectedRevision) || expectedRevision < 0 || !approvalMode || !perMemberLimit || !guestRetentionDays || maxGuests === null) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  const payload = { approval_mode: approvalMode, opens_at: trimmed(req.body.opens_at) || null, closes_at: trimmed(req.body.closes_at) || null, cancellation_cutoff_at: trimmed(req.body.cancellation_cutoff_at) || null, per_member_limit: perMemberLimit, guests_enabled: guestsEnabled, max_guests_per_registration: maxGuests, guest_retention_days: guestRetentionDays, expected_revision: expectedRevision };
+  // Optional GOV.UK date+time windows recombine to the same local YYYY-MM-DDTHH:MM the
+  // native input posted (the API converts to UTC using the event timezone; nothing on this
+  // side changes). readDateTime accepts a single value too. A partly-typed datetime is a
+  // validation error rather than being silently cleared.
+  const opensAt = readDateTime(req.body, 'opens_at');
+  const closesAt = readDateTime(req.body, 'closes_at');
+  const cutoffAt = readDateTime(req.body, 'cancellation_cutoff_at');
+  if (!key || !Number.isInteger(expectedRevision) || expectedRevision < 0 || !approvalMode || !perMemberLimit || !guestRetentionDays || maxGuests === null
+    || opensAt.error || closesAt.error || cutoffAt.error) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
+  const payload = { approval_mode: approvalMode, opens_at: opensAt.value || null, closes_at: closesAt.value || null, cancellation_cutoff_at: cutoffAt.value || null, per_member_limit: perMemberLimit, guests_enabled: guestsEnabled, max_guests_per_registration: maxGuests, guest_retention_days: guestRetentionDays, expected_revision: expectedRevision };
   try { await callEventMutation(tokenFrom(req), 'PUT', `/${id}/registration-product/settings`, payload, key); return redirectTo(res, eventPath(id, '/registration?status=settings-saved')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));

@@ -2,6 +2,7 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+{% from "_date-input.njk" import nexusDateTimeInput %}
 <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
 <h2 class="govuk-heading-l">{{ t("event_registration.accessible.organizer_heading") }}</h2>
 {% set settings = organizer.settings or {} %}
@@ -21,19 +22,25 @@
       {% for mode in ["auto", "manual"] %}<option value="{{ mode }}"{% if (settings.approval_mode or "auto") == mode %} selected{% endif %}>{{ t("event_registration.settings.approval_modes." + mode) }}</option>{% endfor %}
     </select>
   </div>
-  <div class="govuk-form-group">
-    <label class="govuk-label" for="registration-opens-at">{{ t("event_registration.settings.opens_at") }}</label>
-    <div class="govuk-hint">{{ t("event_registration.settings.window_hint") }}</div>
-    <input class="govuk-input govuk-input--width-20" id="registration-opens-at" name="opens_at" type="datetime-local" value="{{ settings.opens_at_local or '' }}">
-  </div>
-  <div class="govuk-form-group">
-    <label class="govuk-label" for="registration-closes-at">{{ t("event_registration.settings.closes_at") }}</label>
-    <input class="govuk-input govuk-input--width-20" id="registration-closes-at" name="closes_at" type="datetime-local" value="{{ settings.closes_at_local or '' }}">
-  </div>
-  <div class="govuk-form-group">
-    <label class="govuk-label" for="registration-cutoff">{{ t("event_registration.settings.cancellation_cutoff") }}</label>
-    <input class="govuk-input govuk-input--width-20" id="registration-cutoff" name="cancellation_cutoff_at" type="datetime-local" value="{{ settings.cancellation_cutoff_at_local or '' }}">
-  </div>
+  {{ nexusDateTimeInput({
+    name: "opens_at",
+    idPrefix: "registration-opens-at",
+    legend: t("event_registration.settings.opens_at"),
+    hint: t("event_registration.settings.window_hint"),
+    value: settings.opens_at_parts
+  }, t) }}
+  {{ nexusDateTimeInput({
+    name: "closes_at",
+    idPrefix: "registration-closes-at",
+    legend: t("event_registration.settings.closes_at"),
+    value: settings.closes_at_parts
+  }, t) }}
+  {{ nexusDateTimeInput({
+    name: "cancellation_cutoff_at",
+    idPrefix: "registration-cutoff",
+    legend: t("event_registration.settings.cancellation_cutoff"),
+    value: settings.cancellation_cutoff_at_parts
+  }, t) }}
   <div class="govuk-form-group">
     <label class="govuk-label" for="registration-member-limit">{{ t("event_registration.settings.per_member_limit") }}</label>
     <input class="govuk-input govuk-input--width-3" id="registration-member-limit" name="per_member_limit" type="number" min="1" max="10" value="{{ settings.per_member_limit or 1 }}" required>

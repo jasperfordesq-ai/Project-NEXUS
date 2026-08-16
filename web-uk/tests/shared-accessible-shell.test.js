@@ -24912,8 +24912,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('/events/42/registration/forms/8');
     expect(response.text).toContain('/events/42/registration/forms/9/fork');
     expect(response.text).toContain('name="expected_revision" value="3"');
-    expect(response.text).toContain('value="2026-08-01T10:00"');
-    expect(response.text).toContain('id="registration-cutoff" name="cancellation_cutoff_at"');
+    // opens_at / cancellation_cutoff_at are now the GOV.UK date + single-time pattern
+    // (was one native datetime-local each): 2026-08-01T10:00 -> date fields + a time field.
+    expect(response.text).toMatch(/name="opens_at-year"[^>]*value="2026"/);
+    expect(response.text).toMatch(/name="opens_at-time"[^>]*value="10:00"/);
+    expect(response.text).toContain('name="cancellation_cutoff_at-day"');
     expect(response.text).toContain('Version 4');
     expect(response.text).toContain('Revision 3');
     expect(response.text).toContain('data-module="govuk-checkboxes"');
