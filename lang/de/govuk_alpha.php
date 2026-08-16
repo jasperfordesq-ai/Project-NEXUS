@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Umtausch abbrechen',
     ],
     'states' => [
+        'load_error' => 'Wir konnten das nicht laden. Bitte versuchen Sie es erneut.',
         'content-hidden' => 'Dieses Element ist jetzt in Ihrem Feed ausgeblendet.',
         'author-muted' => 'Sie werden keine Beiträge dieses Mitglieds mehr in Ihrem Feed sehen.',
         'content-reported' => 'Vielen Dank. Ihr Bericht wurde an die Moderatoren gesendet.',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Zeit',
+            'time_hint' => 'Zum Beispiel 9:30 Uhr oder 14:30 Uhr',
+            'time_required' => 'Geben Sie eine Uhrzeit ein',
+            'time_invalid' => 'Geben Sie eine Echtzeit ein, z. B. 9:30 Uhr',
             'day_label' => 'Tag',
             'month_label' => 'Monat',
             'year_label' => 'Jahr',

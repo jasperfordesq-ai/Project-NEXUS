@@ -270,6 +270,17 @@ router.get('/', asyncRoute(async (req, res) => {
     volunteering: flagEnabled(tenant, 'volunteering', 'features', true),
     exchangeWorkflow: flagEnabled(tenant, 'exchange_workflow', 'features', true)
   };
+  // Each dashboard card loads independently and falls back to an empty/zero shape on
+  // failure. `track` keeps that resilience (one broken card never blanks the whole page)
+  // but records that at least one fetch failed, so the page can show a single honest
+  // "we couldn't load everything" banner instead of a card silently reading as empty.
+  // Auth (401) errors still re-throw so an expired token redirects to login.
+  let loadFailed = false;
+  const track = (fallback) => (error) => {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    loadFailed = true;
+    return fallback;
+  };
   const [
     profile,
     balanceData,
@@ -281,27 +292,20 @@ router.get('/', asyncRoute(async (req, res) => {
     eventsData
   ] = await Promise.all([
     getRequestProfile(req, req.token),
-    getBalance(req.token).catch(() => ({ balance: 0 })),
-    // 🔴 Re-throw auth errors (an expired token must redirect to login, not render a
-    // dashboard that claims onboarding is done). On a non-auth error, do NOT default to
-    // "completed" — that silently hid the onboarding prompt from a member who may still
-    // need it. The prompt is a gentle dismissible banner, so showing it on a transient
-    // blip is recoverable; hiding a needed step is not.
-    getOnboardingStatus(req.token).catch((error) => {
-      if (error instanceof ApiError && error.status === 401) throw error;
-      return { data: { onboarding_completed: false } };
-    }),
-    getGamificationProfile(req.token).catch(() => ({ data: null })),
-    getMyBadges(req.token).catch(() => ({ data: [], meta: { total: 0, available_types: [] } })),
+    getBalance(req.token).catch(track({ balance: 0 })),
+    // 🔴 On a non-auth error, do NOT default onboarding to "completed" — that silently hid
+    // the onboarding prompt from a member who may still need it. The prompt is a gentle
+    // dismissible banner, so showing it on a transient blip is recoverable; hiding a needed
+    // step is not.
+    getOnboardingStatus(req.token).catch(track({ data: { onboarding_completed: false } })),
+    getGamificationProfile(req.token).catch(track({ data: null })),
+    getMyBadges(req.token).catch(track({ data: [], meta: { total: 0, available_types: [] } })),
     dashboardFeatures.listings
-      ? getListings(req.token, { limit: 5 }).catch(() => ({ data: [] }))
+      ? getListings(req.token, { limit: 5 }).catch(track({ data: [] }))
       : Promise.resolve({ data: [] }),
-    getFeedPosts(req.token, { per_page: 5 }).catch((error) => {
-      if (error instanceof ApiError && error.status === 401) throw error;
-      return { data: [] };
-    }),
+    getFeedPosts(req.token, { per_page: 5 }).catch(track({ data: [] })),
     dashboardFeatures.events
-      ? getMyEvents(req.token).catch(() => ({ data: [] }))
+      ? getMyEvents(req.token).catch(track({ data: [] }))
       : Promise.resolve({ data: [] })
   ]);
 
@@ -313,10 +317,10 @@ router.get('/', asyncRoute(async (req, res) => {
   const currentProfileId = profileId(safeProfile);
   const [exchangeAttentionData, endorsementsData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
-      ? getExchangeAttentionCount(req.token).catch(() => ({ data: { count: 0, items: [] } }))
+      ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
     currentProfileId
-      ? getMemberEndorsements(req.token, currentProfileId).catch(() => ({ data: { endorsements: [] } }))
+      ? getMemberEndorsements(req.token, currentProfileId).catch(track({ data: { endorsements: [] } }))
       : Promise.resolve({ data: { endorsements: [] } })
   ]);
 
@@ -341,6 +345,7 @@ router.get('/', asyncRoute(async (req, res) => {
     communityName: res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible',
     dashboardFeatures,
     status: String(req.query.status || ''),
+    loadError: loadFailed ? t('states.load_error') : '',
     successMessage: req.flash ? req.flash('success')[0] : null
   });
 }));

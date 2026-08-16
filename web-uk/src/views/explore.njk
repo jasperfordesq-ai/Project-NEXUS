@@ -12,6 +12,13 @@
     {{ t("explore.description") }}
   </p>
 
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
+
   <div class="nexus-alpha-card-list govuk-!-margin-top-6">
     {% for item in alphaExploreLinks %}
       <article class="nexus-alpha-card">

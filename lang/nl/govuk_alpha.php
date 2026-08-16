@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Annuleer de uitwisseling',
     ],
     'states' => [
+        'load_error' => 'We konden dit niet laden. Probeer het opnieuw.',
         'content-hidden' => 'Dit item is nu verborgen in uw feed.',
         'author-muted' => 'U ziet geen berichten meer van dit lid in uw feed.',
         'content-reported' => 'Dank u. Uw melding is naar de moderatoren gestuurd.',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Tijd',
+            'time_hint' => 'Bijvoorbeeld 9.30 uur of 14.30 uur',
+            'time_required' => 'Voer een tijd in',
+            'time_invalid' => 'Voer een realtime tijd in, bijvoorbeeld 9.30 uur',
             'day_label' => 'Dag',
             'month_label' => 'Maand',
             'year_label' => 'Jaar',

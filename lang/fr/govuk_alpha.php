@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Annuler l\'échange',
     ],
     'states' => [
+        'load_error' => 'Nous n\'avons pas pu charger ceci. Veuillez réessayer.',
         'content-hidden' => 'Cet élément est désormais masqué de votre fil d\'actualité.',
         'author-muted' => 'Vous ne verrez plus les publications de ce membre dans votre fil d\'actualité.',
         'content-reported' => 'Merci. Votre signalement a été envoyé aux modérateurs.',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Temps',
+            'time_hint' => 'Par exemple, 9h30 ou 14h30',
+            'time_required' => 'Entrez une heure',
+            'time_invalid' => 'Entrez une heure réelle, comme 9h30',
             'day_label' => 'Jour',
             'month_label' => 'Mois',
             'year_label' => 'Année',

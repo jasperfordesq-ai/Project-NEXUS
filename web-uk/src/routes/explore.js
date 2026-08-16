@@ -95,10 +95,16 @@ async function hasActiveClubEvidence() {
 
 async function applyExploreCardEvidence(req, res) {
   let hasClubs = false;
+  let probeFailed = false;
   try {
     hasClubs = await hasActiveClubEvidence();
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    // The evidence probe could not run. Leave the Clubs card gated off (its
+    // design default) but tell the caller so the page can flag the outage,
+    // rather than silently hiding a navigation card.
     hasClubs = false;
+    probeFailed = true;
   }
 
   res.locals.alphaExploreLinks = prefixExploreLinks(buildExploreLinks({
@@ -108,6 +114,8 @@ async function applyExploreCardEvidence(req, res) {
     },
     t: res.locals.t
   }), res);
+
+  return probeFailed;
 }
 
 function renderExploreAuthError(error, res) {
@@ -120,10 +128,12 @@ function renderExploreAuthError(error, res) {
 
 async function optionalExploreCollection(promise) {
   try {
-    return dataList(await promise);
+    return { items: dataList(await promise), failed: false };
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    return [];
+    // Non-auth outage: return empty but tell the caller it failed, so the page
+    // can say "we couldn't load this" instead of showing a false empty state.
+    return { items: [], failed: true };
   }
 }
 
@@ -135,19 +145,21 @@ router.get('/', asyncRoute(async (req, res) => {
 
   let recentListings = [];
   let upcomingEvents = [];
+  let loadFailed = false;
   try {
     const tenant = routedTenantFrom(req);
-    const [listingItems, eventItems] = await Promise.all([
+    const [listingResult, eventResult] = await Promise.all([
       flagEnabled(tenant, 'listings', 'modules', true)
         ? optionalExploreCollection(getListings(token, { per_page: 5 }))
-        : Promise.resolve([]),
+        : Promise.resolve({ items: [], failed: false }),
       flagEnabled(tenant, 'events', 'features', true)
         ? optionalExploreCollection(getEvents(token, { per_page: 5, when: 'upcoming' }))
-        : Promise.resolve([])
+        : Promise.resolve({ items: [], failed: false })
     ]);
-    recentListings = compact(listingItems.map(normalizeListing)).slice(0, 5);
-    upcomingEvents = compact(eventItems.map(normalizeEvent)).slice(0, 5);
-    await applyExploreCardEvidence(req, res);
+    recentListings = compact(listingResult.items.map(normalizeListing)).slice(0, 5);
+    upcomingEvents = compact(eventResult.items.map(normalizeEvent)).slice(0, 5);
+    const cardProbeFailed = await applyExploreCardEvidence(req, res);
+    loadFailed = listingResult.failed || eventResult.failed || cardProbeFailed;
   } catch (error) {
     if (renderExploreAuthError(error, res)) return undefined;
     throw error;
@@ -158,7 +170,8 @@ router.get('/', asyncRoute(async (req, res) => {
     titleKey: 'explore.title',
     activeNav: 'explore',
     recentListings,
-    upcomingEvents
+    upcomingEvents,
+    loadError: loadFailed ? res.locals.t('states.load_error') : ''
   });
 }));
 

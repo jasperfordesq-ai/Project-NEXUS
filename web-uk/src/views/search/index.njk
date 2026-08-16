@@ -38,7 +38,12 @@
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("search.button") }}</button>
   </form>
 
-  {% if not query %}
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% elif not query %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("search.no_query") }}</p></div>
   {% elif not results or results.length == 0 %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("search.empty") }}</p></div>

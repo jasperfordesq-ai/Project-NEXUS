@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => '交換をキャンセルする',
     ],
     'states' => [
+        'load_error' => 'これを読み込むことができませんでした。もう一度試してください。',
         'content-hidden' => 'このアイテムはフィードに表示されなくなりました。',
         'author-muted' => 'このメンバーの投稿はフィードに表示されなくなります。',
         'content-reported' => 'ありがとうございます。あなたの報告がモデレーターに送信されました。',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => '時間',
+            'time_hint' => 'たとえば、午前 9 時 30 分や 14 時 30 分などです。',
+            'time_required' => '時間を入力してください',
+            'time_invalid' => 'リアルタイムの時間を入力します（午前 9 時 30 分など）',
             'day_label' => '日',
             'month_label' => '月',
             'year_label' => '年',

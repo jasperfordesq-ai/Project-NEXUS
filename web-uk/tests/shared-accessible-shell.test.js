@@ -1109,6 +1109,40 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Community helper');
   });
 
+  it('shows a "we could not load this" banner when a dashboard card fails, and none when all load', async () => {
+    const api = require('../src/lib/api');
+
+    // Baseline: everything resolves (the beforeEach defaults) -> no banner.
+    const ok = await request(app)
+      .get('/acme/accessible/dashboard')
+      .set('Cookie', signedCookieHeader());
+    expect(ok.status).toBe(200);
+    expect(ok.text).not.toContain('govuk-error-summary');
+    expect(ok.text).not.toContain(createTranslator('en')('states.load_error'));
+
+    // A single card's fetch fails (non-auth outage) -> page still renders, banner shown.
+    api.getBalance.mockRejectedValueOnce(new api.ApiError('Wallet unavailable', 503));
+    const degraded = await request(app)
+      .get('/acme/accessible/dashboard')
+      .set('Cookie', signedCookieHeader());
+    expect(degraded.status).toBe(200);
+    expect(degraded.text).toContain('govuk-error-summary');
+    expect(degraded.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it('redirects the dashboard to login when a card fetch returns 401', async () => {
+    const api = require('../src/lib/api');
+    api.getBalance.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));
+
+    const response = await request(app)
+      .get('/acme/accessible/dashboard')
+      .set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(302);
+    // The 401 propagates to login rather than being swallowed into a zeroed dashboard.
+    expect(response.headers.location).toMatch(/\/acme\/accessible\/login/);
+  });
+
   it('renders the Laravel-backed Explore hub with live discovery sections', async () => {
     const api = require('../src/lib/api');
     api.getClubs.mockResolvedValueOnce({
@@ -1245,6 +1279,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(createTranslator('ar')('explore.title'));
     expect(response.text).not.toContain(createTranslator('ar')('polish_discovery.explore_listings_title'));
     expect(response.text).not.toContain(createTranslator('ar')('polish_discovery.explore_events_title'));
+    // The outage is announced rather than read as a genuine empty page.
+    expect(response.text).toContain(createTranslator('ar')('states.load_error'));
+    expect(response.text).toContain('govuk-error-summary');
   });
 
   it('does not fetch disabled Laravel Explore live-content sources', async () => {
@@ -10322,7 +10359,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Enter a search term to find listings, members, events and groups.');
   });
 
-  it('matches Blade empty results when the simple search service fails', async () => {
+  it('shows a "we could not load this" banner (not a false empty state) when the simple search service fails', async () => {
     const api = require('../src/lib/api');
     api.searchV2.mockRejectedValueOnce(new api.ApiError('Search unavailable', 503));
 
@@ -10331,10 +10368,13 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(response.text.split('No results found. Try a different search.')).toHaveLength(2);
+    // An outage is announced, not disguised as "no results for your search".
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+    expect(response.text).not.toContain(createTranslator('en')('search.empty'));
+    // The chosen search type is preserved and the raw API error is never leaked.
     expect(response.text).toContain('<option value="listing" selected>');
     expect(response.text).not.toContain('Search unavailable');
-    expect(response.text).not.toContain('There was a problem searching. Please try again.');
   });
 
   it('normalizes advanced search result boundaries like the Blade partials', async () => {

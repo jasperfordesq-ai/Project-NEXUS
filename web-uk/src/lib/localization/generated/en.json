@@ -1226,6 +1226,7 @@
                 "success_title": "Success",
                 "error_title": "There is a problem",
                 "error_prefix": "Error:",
+                "load_error": "We could not load this. Please try again.",
                 "warning": "Warning",
                 "warning_prefix": "Warning",
                 "empty_title": "No results found",
@@ -5761,6 +5762,10 @@
                     }
                 },
                 "date_input": {
+                    "time_label": "Time",
+                    "time_hint": "For example, 9:30am or 14:30",
+                    "time_required": "Enter a time",
+                    "time_invalid": "Enter a real time, like 9:30am",
                     "day_label": "Day",
                     "month_label": "Month",
                     "year_label": "Year",

@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Cancelar troca',
     ],
     'states' => [
+        'load_error' => 'Não foi possível carregar isso. Por favor, tente novamente.',
         'content-hidden' => 'Este item está agora ocultado do seu feed.',
         'author-muted' => 'Deixará de ver publicações deste membro no seu feed.',
         'content-reported' => 'Obrigado. A sua denúncia foi enviada aos moderadores.',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Tempo',
+            'time_hint' => 'Por exemplo, 9h30 ou 14h30',
+            'time_required' => 'Insira um horário',
+            'time_invalid' => 'Insira um horário real, como 9h30',
             'day_label' => 'Dia',
             'month_label' => 'Mês',
             'year_label' => 'Ano',

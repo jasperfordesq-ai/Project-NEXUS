@@ -605,7 +605,8 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
       errorMessage: req.flash ? req.flash('error')[0] : null
     });
   } catch (error) {
-    // Handle non-401 API errors by showing search page with error
+    // Non-401 API errors: show the search page with a "we couldn't load this"
+    // banner instead of a false "No results found" empty state.
     if (error instanceof ApiError && error.status !== 401) {
       return res.render('search/index', {
         title: res.locals.t('search.title'),
@@ -613,7 +614,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
         type,
         results: [],
         totalResults: 0,
-        errorMessage: null
+        loadError: res.locals.t('states.load_error')
       });
     }
     throw error; // Re-throw for asyncRoute to handle 401/503

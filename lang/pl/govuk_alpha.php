@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Anuluj wymianę',
     ],
     'states' => [
+        'load_error' => 'Nie mogliśmy tego załadować. Spróbuj ponownie.',
         'content-hidden' => 'Ten element jest teraz ukryty w Twoim kanale.',
         'author-muted' => 'Posty tego członka nie będą już wyświetlane w Twoim kanale.',
         'content-reported' => 'Dziękujemy. Twoje zgłoszenie zostało wysłane do moderatorów.',
@@ -4754,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Czas',
+            'time_hint' => 'Na przykład 9:30 lub 14:30',
+            'time_required' => 'Wprowadź godzinę',
+            'time_invalid' => 'Podaj czas rzeczywisty, np. 9:30',
             'day_label' => 'Dzień',
             'month_label' => 'Miesiąc',
             'year_label' => 'Rok',

@@ -188,7 +188,7 @@ return [
         'cancel_exchange' => 'Cealaigh malartú',
     ],
     'states' => [
-        'load_error' => 'N?orbh fh?idir linn ? seo a l?d?il. Bain triail eile as.',
+        'load_error' => 'Níorbh fhéidir linn é seo a lódáil. Bain triail eile as.',
         'content-hidden' => 'Tá an mhír seo i bhfolach ó do shreabhadh anois.',
         'author-muted' => 'Ní fheicfidh tú postálacha ón gcomhalta seo i do shreabhadh a thuilleadh.',
         'content-reported' => 'Go raibh maith agat. Seoladh do thuairisc chuig na modhnaitheoirí.',
@@ -4755,6 +4755,10 @@ return [
             ],
         ],
         'date_input' => [
+            'time_label' => 'Am',
+            'time_hint' => 'Mar shampla, 9:30am nó 14:30',
+            'time_required' => 'Cuir am isteach',
+            'time_invalid' => 'Cuir am bailí isteach, mar shampla 9:30am',
             'day_label' => 'Lá',
             'month_label' => 'Mí',
             'year_label' => 'Bliain',
