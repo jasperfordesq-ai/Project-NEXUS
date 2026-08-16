@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The entire 230-value React Podcasts catalogue is now contextually reviewed for Irish.** Podcast Studio, publishing readiness, media states, show lifecycle messages, episode metadata, visibility and moderation labels now use natural Irish instead of English fallbacks, verbal “display” mistranslations, malformed archive actions or incident terminology. A whole-catalogue test permits only the reviewed A–Z and playback-speed formats to remain language-neutral and rejects whitespace and invisible-character corruption.
+
 - **The React podcast listening experience has received a contextual Irish repair.** Browsing, show following, episode counts, transcripts, chapters, reactions, episode types and player errors now use natural Irish instead of English fallbacks or misleading words for display actions and incidents. A listener-catalogue test permits only the reviewed A–Z and playback-speed formats to remain language-neutral.
 
 - **Seventeen more signed-in pages on the accessible site now have an automated accessibility check.** The browser-based accessibility gate only covered the dashboard, account and a handful of other signed-in pages. A fast new check now also guards the marketplace, jobs, ideas, courses, resources, exchanges, goals, connections, matches, federation, premium, coupons, polls, blog, reviews, skills and volunteering pages — confirming each has exactly one main content region, a working "skip to content" target, a page heading, and no duplicated element identifiers (a common cause of confusion for screen readers). It runs in every language with no browser needed, so a future change that breaks one of these basics is caught immediately.
