@@ -341,7 +341,7 @@
     "quantity": "{{count}} míreanna",
     "date": "{{date}}",
     "tracking": "Rianú: {{number}}",
-    "track": "Amhrán",
+    "track": "Rianaigh",
     "continuePayment": "Lean leis an íocaíocht",
     "paymentMerchantDisplayName": "Ionad an mhargaidh Tionscadal NEXUS",
     "paymentCompleteTitle": " Íocaíocht críochnaithe",
@@ -360,7 +360,7 @@
     "buyerRated": "Rátáil an ceannaitheoir",
     "disputeOpen": "Díospóid oscailte",
     "confirmDelivery": "Deimhnigh seachadadh",
-    "rate": "Ordú rátaí",
+    "rate": "Rátáil an t-ordú",
     "rated": "Rátáilte",
     "dispute": "Díospóid oscailte",
     "deliveryOffers": "Tairiscintí seachadta",
@@ -371,7 +371,7 @@
     "trackingNumberPlaceholder": "Tagairt rianaithe",
     "trackingUrl": "URL Rianaithe",
     "trackingUrlPlaceholder": "https://...",
-    "shippingMethod": "Modh loingseoireachta",
+    "shippingMethod": "Modh seachadta",
     "confirmShipped": "Deimhnigh gur seoladh é",
     "cancelTitle": "Cealaigh an t-ordú",
     "cancelReason": "Cúis",
@@ -404,7 +404,7 @@
     "confirmDeliveryOffer": "Deimhnigh an seachadadh",
     "shippingMethods": {
       "standard": "Caighdeán",
-      "express": "Express",
+      "express": "Luas-seachadadh",
       "tracked": "Rianaithe",
       "hand_delivery": "Seachadadh láimhe",
       "other": "Eile"
@@ -578,7 +578,7 @@
     "sales": "{{count}} díolacháin",
     "active": "{{count}} gníomhach",
     "verified": "Fíoraithe",
-    "partnerBadge": "Comhpháirtí Marketplace",
+    "partnerBadge": "Comhpháirtí margaidh",
     "coverAlt": "{{name}} íomhá clúdaigh an díoltóra",
     "sellerType": {
       "private": "Díoltóir príobháideach",
@@ -590,18 +590,18 @@
     "communityTrust": "Iontaobhas pobail",
     "trustScore": "{{score}}%",
     "totalSales": "Díolacháin iomlána",
-    "avgRating": "rátáil Meán Fómhair",
+    "avgRating": "Meánrátáil",
     "responseTime": "Am freagartha",
     "activeListings": "Liostaí gníomhacha",
     "na": " N/B",
-    "message": "Díoltóir teachtaireachta",
-    "listingsTab": "Listings",
+    "message": "Cuir teachtaireacht chuig an díoltóir",
+    "listingsTab": "Liostaí",
     "reviewsTab": "Léirmheasanna",
     "reviewsEmpty": "Níl aon léirmheas ón díoltóir fós",
     "reviewsEmptyHint": "Beidh léirmheasanna ceannaitheoirí agus díoltóirí le feiceáil anseo tar éis gníomhaíocht mhargaidh críochnaithe.",
     "reviewAnonymous": "Athbhreithneoir gan ainm",
-    "reviewMember": "Ball den Phobal",
-    "reviewDate": "Athbhreithniú {{date}}",
+    "reviewMember": "Ball den phobal",
+    "reviewDate": "Athbhreithnithe ar {{date}}",
     "reviewRating": "{{rating}} as 5",
     "empty": "Gan liostaí gníomhacha",
     "emptyHint": "Níl liostaí poiblí ag an díoltóir seo faoi láthair."
@@ -748,10 +748,10 @@
       "successHint": "Tá do chur chun cinn liostála gníomhach anois.",
       "metrics": "{{impressions}} imprisean · {{clicks}} cliceáil",
       "types": {
-        "bump": "Bump",
-        "featured": "Réadmhaoin",
-        "top_of_category": "Barr an chatagóir",
-        "homepage_carousel": "carousel leathanach baile"
+        "bump": "Ardaigh",
+        "featured": "Faoi thrácht",
+        "top_of_category": "Barr na catagóire",
+        "homepage_carousel": "Timpeallán an leathanaigh baile"
       }
     },
     "pickups": {

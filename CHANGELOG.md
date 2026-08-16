@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Marketplace order, seller and promotion terminology in the native app has received a contextual Irish repair.** Fourteen mistranslated or English labels now correctly describe parcel tracking, order ratings, delivery methods, seller messaging, average ratings and promotion placement. A focused test guards against the previously misleading words for “song,” “September,” and property listings returning.
+
 - **The native app's entire 77-string Ideation catalogue is now reviewed for Irish.** The final eighteen challenge filters, lifecycle states, idea outcomes and sorting labels now use context-aware Irish, and a stray space was removed from the date-time example. A whole-catalogue test verifies every key and permits only that reviewed date-time format to remain language-neutral.
 
 - **Idea proposals and voting in the native app now stay in Irish.** Thirteen proposal-form labels, submission outcomes, vote controls and empty states now use context-aware Irish. A focused test protects the complete member-contribution slice.
