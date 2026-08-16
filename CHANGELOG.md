@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish Feed composer assistance and formatting controls now give complete, natural instructions.** AI generation and exhausted-credit messages identify what happened; restored and cleared drafts use action wording; image compression and reordering no longer read as isolated software commands; and bold, italic, underline, bulleted-list, link-preview and media-format controls use accurate publishing terminology with accessible file-size spacing.
+
 - **Irish Feed creation forms now distinguish a marketplace listing from subscribing or registering.** Post, poll, listing, event and goal creation use natural completion and failure messages; listing labels consistently refer to a `liostú`; public-goal guidance says other members can support the goal itself; image and example text is cleaned up; and group-member counts use the appropriate Irish number mutations.
 
 - **The Irish Feed core now preserves discovery, moderation and realtime actions accurately.** Listings and polls no longer use words for lists and votes; feed filters no longer call the feed “life”; draft recovery avoids literal composer terminology; and muting a user uses neutral wording rather than language associated with disability. The realtime new-post banner once again tells members to tap to view the posts across every Irish plural form, and the “like” failure now identifies the actual reaction rather than affection.

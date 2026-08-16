@@ -16,6 +16,8 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.doesNotMatch(catalogue, /cumadóir dréachta|á luchtú|scagairí beatha|scagaire beatha/u);
   assert.doesNotMatch(catalogue, /moderadóirí|balbhaithe|bhalbhú|gceanúlacht/u);
   assert.doesNotMatch(catalogue, /m\.sh\.,|Réamhamharc liostála/u);
+  assert.doesNotMatch(catalogue, /Cur síos AI ginte|creidmheasanna AI úsáidte|Dréacht athchóirithe/u);
+  assert.doesNotMatch(catalogue, /Tarraing chun athordú|Liosta urchar|Ag luchtú réamhamhairc|10MB/u);
 
   assert.equal(irish.subtitle, 'Féach cad atá ag tarlú i do phobal');
   assert.match(irish.meta_description, /liostuithe/u);
@@ -35,4 +37,10 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.equal(irish.compose.listing_preview_alt, 'Réamhamharc ar an liostú');
   assert.equal(irish.compose.group_members_one, '{{count}} bhall');
   assert.equal(irish.compose.group_members_many, '{{count}} mball');
+  assert.equal(irish.compose.ai_generated, 'Gineadh an cur síos le AI!');
+  assert.match(irish.compose.ai_rate_limited, /go léir/u);
+  assert.equal(irish.compose.draft_restored, 'Cuireadh an dréacht ar ais');
+  assert.equal(irish.compose.images_reorder, 'Tarraing chun an t-ord a athrú');
+  assert.equal(irish.compose.bullet_list, 'Liosta le hurchair');
+  assert.equal(irish.compose.link_preview_loading, 'Réamhamharc á lódáil...');
 });
