@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish Feed templates, scheduling and media controls now read as complete member actions.** Reusable post, listing, event and goal prompts use natural community wording; voice input identifies browser support directly; scheduling buttons use Irish action forms; accessibility labels identify the post content type; and upload failures, validation messages, video limits and file-count plurals use accurate post and media terminology.
+
 - **Irish Feed composer assistance and formatting controls now give complete, natural instructions.** AI generation and exhausted-credit messages identify what happened; restored and cleared drafts use action wording; image compression and reordering no longer read as isolated software commands; and bold, italic, underline, bulleted-list, link-preview and media-format controls use accurate publishing terminology with accessible file-size spacing.
 
 - **Irish Feed creation forms now distinguish a marketplace listing from subscribing or registering.** Post, poll, listing, event and goal creation use natural completion and failure messages; listing labels consistently refer to a `liostú`; public-goal guidance says other members can support the goal itself; image and example text is cleaned up; and group-member counts use the appropriate Irish number mutations.

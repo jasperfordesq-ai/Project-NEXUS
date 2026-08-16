@@ -18,6 +18,8 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.doesNotMatch(catalogue, /m\.sh\.,|Réamhamharc liostála/u);
   assert.doesNotMatch(catalogue, /Cur síos AI ginte|creidmheasanna AI úsáidte|Dréacht athchóirithe/u);
   assert.doesNotMatch(catalogue, /Tarraing chun athordú|Liosta urchar|Ag luchtú réamhamhairc|10MB/u);
+  assert.doesNotMatch(catalogue, /Sceideal postáil|Sceidealaithe do|Cum cineál ábhair|Cum post"/u);
+  assert.doesNotMatch(catalogue, /ábhar an phost|Tá an post ró-fhada|curtha ar leataobh|ró-mhór/u);
 
   assert.equal(irish.subtitle, 'Féach cad atá ag tarlú i do phobal');
   assert.match(irish.meta_description, /liostuithe/u);
@@ -43,4 +45,15 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.equal(irish.compose.images_reorder, 'Tarraing chun an t-ord a athrú');
   assert.equal(irish.compose.bullet_list, 'Liosta le hurchair');
   assert.equal(irish.compose.link_preview_loading, 'Réamhamharc á lódáil...');
+  assert.equal(irish.compose.voice_unsupported, 'Ní thacaíonn an brabhsálaí seo le hionchur gutha');
+  assert.equal(irish.compose.schedule_label, 'Postáil a sceidealú');
+  assert.equal(irish.compose.schedule_button, 'Sceidealaigh');
+  assert.equal(irish.compose.post_scheduled, 'Sceidealaíodh an phostáil!');
+  assert.equal(irish.compose.type_tabs_aria, 'Cineál ábhair na postála');
+  assert.equal(irish.compose.compose_post, 'Cum postáil');
+  assert.match(irish.compose.template_post_achievement_content, /críochnaithe agam/u);
+  assert.match(irish.compose.template_post_recommend_content, /an obair iontach atá déanta acu/u);
+  assert.equal(irish.compose.media_rejected_many, 'Fágadh {{count}} gcomhad ar lár (cineál mícheart nó rómhór)');
+  assert.equal(irish.compose.media_compression_failed_many, 'Níorbh fhéidir {{count}} n-íomhá a phróiseáil');
+  assert.match(irish.compose.content_required, /ábhar na postála/u);
 });
