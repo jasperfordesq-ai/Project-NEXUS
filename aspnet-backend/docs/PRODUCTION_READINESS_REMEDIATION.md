@@ -412,6 +412,54 @@ genuinely should be stricter, that is a change to make in Laravel first.
   contact / social fields the client's `SuperAdminTenant` type declares as
   optional — those columns do not exist on this backend's `tenants` table.
 
+## R-27 `TRIAGE, 2026-08-16` — what the remaining stubs are actually blocked on
+
+After the auth pass (327 remaining) the cheap wins are largely gone. Two probes
+made the shape of the rest clear, and both ended in "do not build this yet",
+which is worth recording so the next session does not re-derive them.
+
+### `csrf-token` — vestigial here, and a fake would be worse than nothing
+
+`GET /api/auth/csrf-token` (and its `MiscParityController` twin) returns a fresh
+random string that nothing stores and nothing can verify. That reads like an
+obvious stub to fix. It is not.
+
+Laravel issues a **session-bound** token (`Csrf::generate` writes
+`$_SESSION['csrf_token']`) and verifies it in exactly one place: the
+session-based two-factor path (`TotpController:89-97`). ASP.NET's two-factor
+flow does not use a cookie session at all — it issues a **challenge token**
+(`AuthController:324`, `two_factor_token`), which is the capability, so there is
+no cookie-authenticated request for a CSRF token to protect.
+
+Building a token store here would add a security control that guards nothing
+while looking like it guards something — the same category of harm as the stubs
+this document exists to remove. **Leave it.** If a cookie-session flow is ever
+added to this backend, this becomes real work at that moment, and the check must
+land in the same change.
+
+### `goals/mentoring` — schema-first, like the volunteering cluster
+
+`GET /api/goals/mentoring` returns an empty array. Laravel answers "goals where I
+am someone's buddy" (`GoalsController::mentoring:394` →
+`getGoalsAsMentor`). ASP.NET's `Goal` entity has `UserId` and milestones and
+**no buddy/mentor relationship at all** — `grep -i buddy` over `Entities/` is
+empty. So the endpoint cannot be implemented without a table.
+
+🔴 **The general shape of what is left.** The stub count is a mix of three
+things, and only the first is ordinary work:
+
+1. endpoints whose data model exists (what the last several passes cleared);
+2. endpoints blocked on absent tables — goals buddies, volunteering incidents /
+   reviews / credentials / donations / accessibility-needs, and much of the
+   211-table gap. These need a migration before a line of handler code;
+3. endpoints that only *look* like stubs — `check-session`, `heartbeat`,
+   `validate-token` sit behind `[Authorize]`, so the token check IS the work,
+   and `csrf-token` above.
+
+Category 3 must not be "fixed", and category 2 must not be started as a stub
+pass. Counting them together is what makes the remaining number look like one
+job when it is three.
+
 ## 🔴 Two ways this backend's tests can appear to pass without running
 
 Both hit on 2026-08-16. Neither is a code defect; both produce a green result
