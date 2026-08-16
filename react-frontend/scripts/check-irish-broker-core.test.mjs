@@ -182,3 +182,19 @@ test('Irish Broker archive wording preserves immutable read-only compliance reco
   assert.equal(irish.archives.label_decided_by, 'Cinneadh déanta ag');
   assert.equal(irish.archives.frozen_note, 'Coinnítear an taifead seo díreach mar a bhí sé nuair a rinneadh athbhreithniú air agus ní féidir é a athrú.');
 });
+
+test('Irish Broker configuration preserves tenant policy, thresholds, and fail-closed enforcement', () => {
+  const configuration = JSON.stringify(irish.configuration);
+
+  assert.doesNotMatch(configuration, /ar fud an tenant|liostaí ardriosca|Iarr malartú do liostaí/u);
+  assert.doesNotMatch(configuration, /Léim faomhadh|Lorgú vetála|Coinnigh lorg/u);
+  assert.doesNotMatch(configuration, /Coimeád cartlainne|Riarthóir amháin|Triail arís/u);
+
+  assert.equal(irish.configuration.save_success, 'Sábháladh cumraíocht an bhróicéara.');
+  assert.match(irish.configuration.limited_access_body, /don tionónta ar fad/u);
+  assert.equal(irish.configuration.field_require_exchange_for_listings_label, 'Éiligh malartú le haghaidh liostuithe');
+  assert.equal(irish.configuration.field_auto_approve_low_risk_help, 'Ná héiligh faomhadh bróicéara do mhalartuithe a aicmítear mar ísealriosca.');
+  assert.equal(irish.configuration.field_expiry_hours_label, 'Tréimhse bailíochta an fhaofa (uaireanta)');
+  assert.equal(irish.configuration.section_compliance_safeguarding_desc, 'Rianú grinnfhiosrúcháin agus árachais, forfheidhmiú agus rabhaidh éaga.');
+  assert.equal(irish.configuration.field_broker_contact_email_placeholder, 'broker@example.com');
+});
