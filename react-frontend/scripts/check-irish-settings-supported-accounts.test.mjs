@@ -32,4 +32,6 @@ test('Irish Settings supported actions remain fail-closed until the member appro
   assert.match(irish.support_actions.confirm_error_body, /Níor athraíodh aon rud/u);
   assert.equal(irish.support_actions.type_listing_create, 'Liostú nua');
   assert.equal(irish.support_actions.done_directly_toast, 'Déanta. Cuireadh ar an eolas iad');
+  assert.match(irish.safeguarding.guardians.tiers_explainer, /rinne siad é ar do shon/u);
+  assert.doesNotMatch(irish.safeguarding.guardians.tiers_explainer, /thar do cheann/u);
 });
