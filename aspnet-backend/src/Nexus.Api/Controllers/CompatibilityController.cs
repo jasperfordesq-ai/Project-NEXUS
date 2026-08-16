@@ -31,6 +31,202 @@ public class CompatibilityController : ControllerBase
     /// master and fallback. Kept as a constant rather than read from config:
     /// a tenant cannot invent a locale the translation files do not have.
     /// </summary>
+    /// <summary>
+    /// Per-tenant module configuration defaults, generated 2026-08-16 from
+    /// Laravel's own DEFAULTS constants (ListingConfigurationService,
+    /// VolunteeringConfigurationService, JobConfigurationService,
+    /// GroupConfigurationService) via reflection, NOT copied from a running
+    /// tenant. A live tenant's values are its overrides; shipping those as
+    /// defaults would make one community's choices everybody's.
+    ///
+    /// 🔴 Keys are FLAT and contain dots ("listing.max_images"), matching
+    /// Laravel's payload exactly. They are not nested objects, and turning them
+    /// into nested objects would be a contract change even though the field
+    /// paths look identical when printed.
+    /// </summary>
+    private static readonly Dictionary<string, object> ListingConfigDefaults = new()
+    {
+        ["listing.moderation_enabled"] = false,
+        ["listing.auto_approve_trusted"] = false,
+        ["listing.max_per_user"] = 50,
+        ["listing.max_images"] = 5,
+        ["listing.max_image_size_mb"] = 8,
+        ["listing.require_image"] = false,
+        ["listing.min_title_length"] = 5,
+        ["listing.min_description_length"] = 20,
+        ["listing.allow_offers"] = true,
+        ["listing.allow_requests"] = true,
+        ["listing.require_category"] = true,
+        ["listing.require_location"] = false,
+        ["listing.require_hours_estimate"] = false,
+        ["listing.enable_skill_tags"] = true,
+        ["listing.enable_service_type"] = true,
+        ["listing.auto_expire_days"] = 0,
+        ["listing.max_renewals"] = 12,
+        ["listing.renewal_days"] = 30,
+        ["listing.expiry_reminders"] = true,
+        ["listing.enable_featured"] = true,
+        ["listing.featured_duration_days"] = 7,
+        ["listing.enable_ai_descriptions"] = true,
+        ["listing.enable_reporting"] = true,
+        ["listing.enable_favourites"] = true,
+        ["listing.enable_map_view"] = true,
+        ["listing.enable_reciprocity"] = true,
+    };
+    private static readonly Dictionary<string, object> VolunteeringConfigDefaults = new()
+    {
+        ["volunteering.tab_opportunities"] = true,
+        ["volunteering.tab_applications"] = true,
+        ["volunteering.tab_hours"] = true,
+        ["volunteering.tab_recommended"] = true,
+        ["volunteering.tab_certificates"] = true,
+        ["volunteering.tab_alerts"] = true,
+        ["volunteering.tab_wellbeing"] = true,
+        ["volunteering.tab_credentials"] = true,
+        ["volunteering.tab_waitlist"] = true,
+        ["volunteering.tab_swaps"] = true,
+        ["volunteering.tab_group_signups"] = true,
+        ["volunteering.tab_hours_review"] = true,
+        ["volunteering.tab_expenses"] = true,
+        ["volunteering.tab_safeguarding"] = true,
+        ["volunteering.tab_community_projects"] = true,
+        ["volunteering.tab_donations"] = true,
+        ["volunteering.tab_accessibility"] = true,
+        ["volunteering.swap_requires_admin"] = false,
+        ["volunteering.auto_approve_applications"] = false,
+        ["volunteering.require_org_note_on_decline"] = false,
+        ["volunteering.cancellation_deadline_hours"] = 0,
+        ["volunteering.max_hours_per_shift"] = 24,
+        ["volunteering.hours_require_verification"] = true,
+        ["volunteering.min_hours_for_certificate"] = 0,
+        ["volunteering.alert_default_expiry_hours"] = 24,
+        ["volunteering.alert_skill_matching"] = true,
+        ["volunteering.expenses_enabled"] = true,
+        ["volunteering.expense_require_receipt"] = false,
+        ["volunteering.expense_max_amount"] = 500,
+        ["volunteering.burnout_detection"] = true,
+        ["volunteering.guardian_consent_required"] = false,
+        ["volunteering.enable_qr_checkin"] = true,
+        ["volunteering.enable_recurring_shifts"] = true,
+        ["volunteering.enable_reviews"] = true,
+        ["volunteering.enable_matching"] = true,
+    };
+    private static readonly Dictionary<string, object> JobConfigDefaults = new()
+    {
+        ["jobs.tab_browse"] = true,
+        ["jobs.tab_saved"] = true,
+        ["jobs.tab_my_postings"] = true,
+        ["jobs.page_kanban"] = true,
+        ["jobs.page_analytics"] = true,
+        ["jobs.page_bias_audit"] = true,
+        ["jobs.page_talent_search"] = true,
+        ["jobs.page_alerts"] = true,
+        ["jobs.allow_paid"] = true,
+        ["jobs.allow_volunteer"] = true,
+        ["jobs.allow_timebank"] = true,
+        ["jobs.require_salary"] = false,
+        ["jobs.default_currency"] = "EUR",
+        ["jobs.max_postings_per_user"] = 20,
+        ["jobs.default_deadline_days"] = 30,
+        ["jobs.moderation_enabled"] = false,
+        ["jobs.spam_detection"] = true,
+        ["jobs.auto_approve_trusted"] = false,
+        ["jobs.enable_cv_upload"] = true,
+        ["jobs.require_cover_message"] = false,
+        ["jobs.enable_interview_scheduling"] = true,
+        ["jobs.enable_offers"] = true,
+        ["jobs.enable_scorecards"] = true,
+        ["jobs.enable_pipeline_rules"] = true,
+        ["jobs.enable_blind_hiring"] = false,
+        ["jobs.enable_featured"] = true,
+        ["jobs.featured_duration_days"] = 7,
+        ["jobs.enable_ai_descriptions"] = true,
+        ["jobs.enable_skills_matching"] = true,
+        ["jobs.enable_referrals"] = true,
+        ["jobs.enable_templates"] = true,
+        ["jobs.enable_rss_feed"] = true,
+        ["jobs.enable_saved_profiles"] = true,
+        ["jobs.enable_employer_branding"] = true,
+    };
+    private static readonly Dictionary<string, object> GroupTabDefaults = new()
+    {
+        ["tab_feed"] = true,
+        ["tab_discussion"] = true,
+        ["tab_members"] = true,
+        ["tab_events"] = true,
+        ["tab_files"] = true,
+        ["tab_announcements"] = true,
+        ["tab_qa"] = true,
+        ["tab_wiki"] = true,
+        ["tab_media"] = true,
+        ["tab_chatrooms"] = true,
+        ["tab_tasks"] = true,
+        ["tab_challenges"] = true,
+        ["tab_analytics"] = true,
+        ["tab_subgroups"] = true,
+    };
+
+    /// <summary>
+    /// Merge a tenant's stored settings over a block's defaults, mirroring
+    /// Laravel's array_merge(DEFAULTS, stored). A tenant may override a value
+    /// but may not invent a key: an unknown stored key is ignored, so a stray
+    /// row in tenant config cannot add a field the client does not expect.
+    /// </summary>
+    /// <summary>
+    /// Tenant settings, plus the two onboarding flags Laravel always sends.
+    ///
+    /// 🔴 Both default TRUE. Onboarding being mandatory by default is a
+    /// deliberate product decision on the Laravel side; defaulting them to false
+    /// here would let a member skip onboarding on one backend and not the other.
+    /// </summary>
+    private static Dictionary<string, object> BuildSettings(Dictionary<string, string> configEntries)
+    {
+        var settings = configEntries
+            .Where(kv => kv.Key.StartsWith("settings."))
+            .ToDictionary(kv => kv.Key.Replace("settings.", ""), kv => (object)kv.Value);
+
+        settings["onboarding_enabled"] = GetConfigBool(configEntries, "onboarding.enabled", true);
+        settings["onboarding_mandatory"] = GetConfigBool(configEntries, "onboarding.mandatory", true);
+        return settings;
+    }
+
+    private static Dictionary<string, object> ResolveConfigBlock(
+        IReadOnlyDictionary<string, string> configEntries,
+        IReadOnlyDictionary<string, object> defaults)
+    {
+        var resolved = new Dictionary<string, object>(defaults.Count);
+        foreach (var (key, fallback) in defaults)
+        {
+            if (!configEntries.TryGetValue(key, out var stored) || string.IsNullOrWhiteSpace(stored))
+            {
+                resolved[key] = fallback;
+                continue;
+            }
+
+            resolved[key] = fallback switch
+            {
+                bool => stored is "1" or "true" or "True" or "TRUE",
+                int => int.TryParse(stored, out var i) ? i : fallback,
+                _ => stored,
+            };
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
+    /// Two-factor and passkey settings, flat dotted keys as Laravel sends them.
+    /// </summary>
+    private static readonly Dictionary<string, object> AuthenticationConfigDefaults = new()
+    {
+        ["two_factor.allow_trusted_devices"] = true,
+        ["two_factor.trusted_device_days"] = 30,
+        ["two_factor.backup_code_count"] = 10,
+        ["passkeys.conditional_autofill"] = true,
+        ["passkeys.enrollment_enabled"] = true,
+        ["passkeys.max_credentials_per_user"] = 10,
+    };
+
     private static readonly string[] SupportedLanguages =
         ["en", "ga", "de", "fr", "it", "pt", "es", "nl", "pl", "ja", "ar"];
 
@@ -1796,6 +1992,15 @@ public class CompatibilityController : ControllerBase
             ["notifications"] = GetConfigBool(configEntries, "module.notifications", true),
             ["profile"] = GetConfigBool(configEntries, "module.profile", true),
             ["settings"] = GetConfigBool(configEntries, "module.settings", true),
+
+            // 🔴 Added 2026-08-16: absent while Laravel sends them, and an
+            // absent module reads to the client as "switched off" -- the same
+            // silent-disable as the feature flags.
+            ["events"] = GetConfigBool(configEntries, "module.events", true),
+            ["polls"] = GetConfigBool(configEntries, "module.polls", true),
+            ["goals"] = GetConfigBool(configEntries, "module.goals", true),
+            ["volunteering"] = GetConfigBool(configEntries, "module.volunteering", true),
+            ["resources"] = GetConfigBool(configEntries, "module.resources", true),
             ["dashboard"] = GetConfigBool(configEntries, "module.dashboard", true),
         };
 
@@ -1820,12 +2025,31 @@ public class CompatibilityController : ControllerBase
         };
 
         // Build contact info
+        // 🔴 Active children only, and DIRECT children only -- not the whole
+        // subtree. A grandchild appears in its own parent's switcher, not here,
+        // which is what keeps a deep hierarchy from flooding the utility bar.
+        var switcherItems = await _db.Tenants.IgnoreQueryFilters().AsNoTracking()
+            .Where(t => t.ParentId == tenant.Id && t.IsActive)
+            .OrderBy(t => t.Name)
+            .Select(t => new
+            {
+                id = t.Id,
+                name = t.Name,
+                slug = t.Slug,
+                url = $"{Request.Scheme}://{Request.Host}/{t.Slug}",
+            })
+            .ToListAsync();
+
         var contact = new
         {
             email = GetConfigString(configEntries, "contact.email"),
             phone = GetConfigString(configEntries, "contact.phone"),
             address = GetConfigString(configEntries, "contact.address"),
             location = GetConfigString(configEntries, "contact.location"),
+
+            // Added 2026-08-16; Laravel sends it and the accessible frontend
+            // renders it on the community profile.
+            service_area = GetConfigString(configEntries, "contact.service_area", "national"),
         };
 
         // Build compliance flags
@@ -1853,6 +2077,15 @@ public class CompatibilityController : ControllerBase
             // them. currency drives every price and time-credit figure the client
             // renders; supported_languages drives the language switcher, so an
             // absent list leaves a member no way to change language at all.
+            // 🔴 Flat dotted keys, matching Laravel exactly. The passkey and
+            // two-factor numbers drive real client behaviour: trusted_device_days
+            // decides how long a second factor is skipped, and
+            // max_credentials_per_user caps how many passkeys a member may add.
+            authentication_config = ResolveConfigBlock(configEntries, AuthenticationConfigDefaults),
+            listing_config = ResolveConfigBlock(configEntries, ListingConfigDefaults),
+            volunteering_config = ResolveConfigBlock(configEntries, VolunteeringConfigDefaults),
+            job_config = ResolveConfigBlock(configEntries, JobConfigDefaults),
+            group_tabs = ResolveConfigBlock(configEntries, GroupTabDefaults),
             currency = GetConfigString(configEntries, "settings.currency", "EUR"),
             default_layout = GetConfigString(configEntries, "settings.default_layout", "modern"),
             default_language = GetConfigString(configEntries, "settings.default_language", "en"),
@@ -1867,10 +2100,29 @@ public class CompatibilityController : ControllerBase
             config = new
             {
                 footer_text = GetConfigString(configEntries, "config.footer_text"),
+
+                // Laravel repeats the module map under config as well as at the
+                // top of data. Duplication in Laravel's own payload, mirrored
+                // rather than "tidied": the client may read either.
+                modules,
             },
-            settings = configEntries
-                .Where(kv => kv.Key.StartsWith("settings."))
-                .ToDictionary(kv => kv.Key.Replace("settings.", ""), kv => (object)kv.Value),
+
+            // 🔴 Laravel sends null when no landing page is configured, and the
+            // client distinguishes null from an empty object. Do not substitute {}.
+            landing_page_config = (object?)null,
+
+            // The utility-bar community switcher: this community's active direct
+            // children, alphabetically. Only possible since the tenant hierarchy
+            // landed (R-26) -- before that there were no children to list.
+            tenant_switcher = new
+            {
+                // Laravel hardcodes "children" and the client branches on it, so it
+                // is a literal here too rather than a description of what we did.
+                source = "children",
+                items = switcherItems,
+            },
+
+            settings = BuildSettings(configEntries),
         };
 
         // Laravel consumers read the canonical data envelope, while the

@@ -80,7 +80,35 @@ load calls**:
 spellings is not "compatible" — it is two contracts, and a client that reads the
 wrong one breaks when the duplicate is eventually removed.
 
-**Progress 2026-08-16: 169 missing fields -> 142.** Fixed: all 20 absent
+**Progress 2026-08-16: 169 missing fields -> 0.** Every field Laravel sends,
+ASP.NET now sends. Sequence was 169 -> 142 (feature flags + scalars) -> 29
+(the four config blocks) -> 7 -> 0 (modules, authentication_config,
+service_area, onboarding, landing_page_config, tenant_switcher).
+
+🔴 **The config-block defaults were EXTRACTED, not typed.** 113 keys came
+straight out of Laravel's own `DEFAULTS` constants by reflection
+(`.local-docs-archive/dump_config_defaults.php`) and were code-generated into
+C#. Hand-copying 113 booleans and numbers would have introduced silent
+mistakes that no test would catch, because a wrong default still returns a
+plausible value.
+
+🔴 **They are FLAT keys containing dots** (`"listing.max_images"`), not
+nested objects. Printed field paths look identical either way, so this is easy
+to get wrong and impossible to see in a diff of path names.
+
+🔴 **`landing_page_config` is `null`, not `{}`.** Laravel sends null when
+none is configured and the client distinguishes the two.
+
+**Still open on this endpoint: the EXTRA fields.** Laravel's `branding` has
+four keys (`name`, `tagline`, `logo_url`, `logo_shape`); ASP.NET sends twelve,
+including both `primary_color` and `primaryColor`. ASP.NET also repeats the
+whole payload at the root as well as under `data`. Neither breaks a client
+reading Laravel's keys, which is why this is second in priority — but a
+comment in `AdminSettings.tsx` claims the bootstrap exposes `branding.logo`,
+so **check what the client actually reads before deleting anything**. That is
+its own piece of work, not a tidy-up to fold into a field-addition change.
+
+**Superseded note (kept for the reasoning): 169 -> 142.** Fixed: all 20 absent
 feature flags, plus `currency`, `default_layout`, `default_language`,
 `supported_languages`, `branding.logo_shape` and `meta.base_url`.
 
