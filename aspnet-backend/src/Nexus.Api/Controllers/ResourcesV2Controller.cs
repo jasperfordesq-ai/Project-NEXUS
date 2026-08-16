@@ -117,8 +117,13 @@ public class ResourcesV2Controller : ControllerBase
         });
     }
 
+    // 🔴 Authenticated, matching Laravel. The note above said these
+    // categories stay anonymous "because Laravel serves them publicly" --
+    // that was wrong. /v2/resources/categories sits inside the same
+    // auth:sanctum group as the resources list and answers 401. Corrected
+    // 2026-08-16 after measuring instead of assuming.
     [HttpGet("categories")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> Categories(CancellationToken ct = default)
     {
         var tenantId = TenantId();
@@ -143,7 +148,7 @@ public class ResourcesV2Controller : ControllerBase
     }
 
     [HttpGet("categories/tree")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> CategoryTree(CancellationToken ct = default)
     {
         var tenantId = TenantId();

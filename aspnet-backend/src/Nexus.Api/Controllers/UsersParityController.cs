@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -36,7 +36,14 @@ public class UsersParityController : ControllerBase
         _tenantContext = tenantContext;
     }
 
+    /// 🔴 Authenticated, matching Laravel (401). Until 2026-08-16 this
+    /// returned member names AND EMAIL ADDRESSES to a caller with no credentials
+    /// -- the most serious disclosure the response harness has found. It was
+    /// invisible to every route- and schema-comparison tool because both backends
+    /// "have" the endpoint; only asking them both the same question showed one
+    /// answering strangers.
     [HttpGet("search")]
+    [Authorize]
     public async Task<IActionResult> Search([FromQuery] string? q = null)
     {
         var users = await _db.Users.Where(u => u.TenantId == TenantId() && (q == null || u.FirstName.Contains(q) || u.LastName.Contains(q) || u.Email.Contains(q))).Take(50).Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.AvatarUrl }).ToListAsync();

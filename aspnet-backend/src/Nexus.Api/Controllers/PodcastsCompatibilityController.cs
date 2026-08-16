@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -35,7 +35,9 @@ public sealed class PodcastsCompatibilityController : ControllerBase
         _files = files;
     }
 
-    [AllowAnonymous]
+    // 🔴 Authenticated, matching Laravel (401). Found by the response
+    // harness on the second frontend's paths.
+    [Authorize]
     [HttpGet("api/podcasts")]
     [HttpGet("api/v2/podcasts")]
     public async Task<IActionResult> Index(

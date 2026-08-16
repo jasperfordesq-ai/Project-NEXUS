@@ -205,18 +205,48 @@ against that name — see the table-exists-guard hazard.
 
 ## 7. The second frontend — 🔴 NEVER MEASURED
 
-**Status: completely unmeasured. This is the biggest blind spot.**
+**Status: measured 2026-08-16 — 43/118. Was the biggest blind spot.**
 
 The generated contract matrix is rooted at `react-frontend`. **`web-uk` appears
 nowhere in any generated inventory**, and there is no record of it ever being
 run against ASP.NET.
 
-**What to do:**
-1. Extract web-uk's API call sites (it is Express/Nunjucks, so calls are in
-   server-side code, not a bundle) and feed them to the harness as a path list.
-2. Then point web-uk's API base at ASP.NET and walk its pages.
+**MEASURED 2026-08-16 for the first time: 43/118 contract-identical.**
 
-Until that happens, "two frontends by two backends" is proven for one frontend.
+118 parameter-free GET paths extracted from `web-uk/src` (Express/Nunjucks, so
+the calls are in server-side code, not a bundle). Path list regenerates with:
+
+```bash
+grep -rhoE "['\"\`]/(api/)?v2/[a-zA-Z0-9/_.:{}$-]+" web-uk/src | tr -d "'\"\`"   | sed 's/\${[^}]*}/{id}/g' | sort -u
+```
+
+🔴 **It immediately found SIX more endpoints serving anonymously what Laravel
+protects** — none of which the React-only measurement could ever have seen:
+
+| Endpoint | Was |
+| --- | --- |
+| `/api/v2/users/search` | **member names AND email addresses to anyone** |
+| `/api/v2/courses` | 200 anonymous |
+| `/api/v2/podcasts` | 200 anonymous |
+| `/api/v2/resources/categories` | 200 anonymous |
+| `/api/v2/resources/categories/tree` | 200 anonymous |
+| `/api/v2/jobs` | 200 anonymous |
+
+All fixed. `users/search` is the most serious disclosure this work has found.
+
+🔴 It also corrected something I had written into this document earlier the same
+day: the note on the resources endpoint said its CATEGORIES stay anonymous
+"because Laravel serves those publicly". That was an assumption, and it was
+wrong — they sit in the same `auth:sanctum` group. **Measuring the second
+frontend caught an error in the fix for the first.**
+
+**Still open (14 status + 13 shape).** Three go the other way — `clubs`,
+`listings/tags/popular`, `skills/categories` are public on Laravel and 401 here,
+so signed-out visitors lose working pages. `public/events` is 200 vs 403, a
+feature-gate difference.
+
+**Next:** point web-uk's API base at ASP.NET and walk its pages, which tests
+what a path list cannot — redirects, forms, session handling.
 
 ---
 

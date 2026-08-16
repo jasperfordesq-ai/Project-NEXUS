@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -24,7 +24,9 @@ public sealed class CoursesCompatibilityController : ControllerBase
         _tenant = tenant;
     }
 
-    [AllowAnonymous]
+    // 🔴 Authenticated, matching Laravel (401). Found by the response
+    // harness when the second frontend's paths were measured for the first time.
+    [Authorize]
     [HttpGet("api/courses")]
     [HttpGet("api/v2/courses")]
     public async Task<IActionResult> Index(
