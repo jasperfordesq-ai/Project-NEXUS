@@ -53,3 +53,21 @@ test('Irish Federation connection and onboarding wording preserves consent and s
   assert.equal(irish.onboarding.on, 'Casta air');
   assert.equal(irish.onboarding.off, 'Casta as');
 });
+
+test('Irish Federation member and messaging wording preserves opt-in and communication meaning', () => {
+  const journey = JSON.stringify({ members: irish.members, messages: irish.messages });
+
+  assert.doesNotMatch(journey, /rogha an diúltaithe|tarraingt isteach|\bCum\b/u);
+  assert.doesNotMatch(journey, /cianda OK|Beidh taisteal|Próifíl Amharc/u);
+  assert.doesNotMatch(journey, /Cónaidhm Gan Cumasú|Freagra ionchur|\bAthrú\b/u);
+
+  assert.equal(irish.members.title, 'Baill na Cónaidhme');
+  assert.equal(irish.members.showing_count, '{{shown}} as {{total}} ball á dtaispeáint');
+  assert.equal(irish.members.external_profile_message, 'Tá an ball seo ar ardán comhpháirtíochta seachtrach. Ní féidir a phróifíl a oscailt go díreach.');
+  assert.equal(irish.messages.optin_required, 'Ní mór rogha a dhéanamh páirt a ghlacadh sa Chónaidhm');
+  assert.match(irish.messages.optin_required_description, /rogha a dhéanamh páirt a ghlacadh/u);
+  assert.equal(irish.messages.compose, 'Scríobh');
+  assert.equal(irish.messages.auto_translate_tooltip_on, 'Aistriúchán uathoibríoch casta air — cliceáil chun é a mhúchadh');
+  assert.equal(irish.messages.aria_delivered, 'Seachadta');
+  assert.equal(irish.messages.change, 'Athraigh');
+});
