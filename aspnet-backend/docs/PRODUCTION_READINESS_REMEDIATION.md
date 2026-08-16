@@ -398,6 +398,52 @@ has to render something.
   contact / social fields the client's `SuperAdminTenant` type declares as
   optional — those columns do not exist on this backend's `tenants` table.
 
+## 🔴 Two ways this backend's tests can appear to pass without running
+
+Both hit on 2026-08-16. Neither is a code defect; both produce a green result
+over code nothing executed, which is the same failure this whole document exists
+to fight.
+
+### `dotnet test` exits 0 having run zero tests
+
+A 30-minute local run reported success and had done nothing:
+
+```
+Skipping: Nexus.Api.Tests (could not load dependent assembly 'Nexus.Api'):
+  ... An Application Control policy has blocked this file. (0x800711C7)
+No test matches the given testcase filter ...
+```
+
+Windows Application Control began refusing the freshly built `Nexus.Api.dll`
+part-way through the session (the same filter had run 10 tests successfully an
+hour earlier). "No tests matched" is exit code 0, so the run looks clean.
+
+**Never accept a `dotnet test` result without seeing `Passed! - Failed: 0,
+Passed: N` with N > 0.** There is no Mark-of-the-Web on the file, so
+`Unblock-File` does not help; it is a system policy. Until it is resolved, local
+ASP.NET test execution is unavailable on that machine and CI is the only gate.
+
+### The ASP.NET suite is not in `ci.yml`, and a sibling's push can skip it
+
+The ASP.NET jobs live in **`platform-contracts.yml`**, not `ci.yml` — a green
+`CI Pipeline` says nothing about this backend. Worse, in a shared checkout:
+
+1. You push `aspnet-backend/**`; the ~18-minute ASP.NET run starts.
+2. Another session pushes `web-uk/**`; `cancel-in-progress` **cancels your run**.
+3. That run's changed-siblings filter marks every ASP.NET job **skipped**, and
+   skipped reads as green.
+
+Your commit is then on `main` with a green tick and no job ever compiled or
+tested it. Force a real run and **check the job list, not the conclusion**:
+
+```bash
+gh workflow run platform-contracts.yml --ref main
+gh run view <id> --json jobs --jq '.jobs[] | "\(.conclusion // .status)  \(.name)"'
+```
+
+Note a dispatched run can be cancelled by the next push too, so it may take a
+quiet window.
+
 ## 🔴 A second invisible defect class: tables the model believes in
 
 Found 2026-08-15 while implementing `GET /v2/volunteering/training` for real.
