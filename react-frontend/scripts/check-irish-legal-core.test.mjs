@@ -161,3 +161,30 @@ test('Irish platform-provider Legal documents preserve authority and policy boun
   assert.equal(irish.platform_terms.sections['operator-responsibilities'], 'Freagrachtaí an Oibreora');
   assert.equal(irish.platform_terms.sections['governing-law'], 'An Dlí is Infheidhme');
 });
+
+test('Irish Legal consent, custom-document, FADP, and page metadata have complete translated coverage', () => {
+  for (const section of ['gate', 'custom', 'fadp', 'page_meta']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Legal ${section} key: ${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+
+    for (const [path, value] of irishFlat) {
+      assert.equal(value, value.trim(), `Whitespace defect: ${section}.${path}`);
+      assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${section}.${path}`);
+    }
+  }
+});
+
+test('Irish Legal consent and metadata preserve acceptance, data-rights, and safeguarding meaning', () => {
+  assert.match(irish.gate.consent_text, /‘Glac’ a chliceáil.*go n-aontaíonn tú leo/u);
+  assert.match(irish.gate.subtitle_other_one, /athbhreithniú air agus glac leis/u);
+  assert.match(irish.gate.subtitle_other_two, /\{\{count\}\} dhoiciméad.*orthu agus glac leo/u);
+  assert.match(irish.fadp.fadp_banner_body, /do thoiliú sainráite.*intleacht shaorga/u);
+  assert.equal(irish.fadp.fadp_decline, 'Bain úsáid as bunghnéithe amháin');
+  assert.equal(irish.page_meta.platform_privacy.title, 'Beartas Príobháideachais an Ardáin');
+  assert.match(irish.page_meta.trust_safety.description, /Treoir shoiléir faoi iontaobhas agus cosaint/u);
+});

@@ -487,38 +487,38 @@
   },
   "gate": {
     "title": "Doiciméid dhlíthiúla nuashonraithe",
-    "subtitle_one": "Tá doiciméad nuashonraithe. Athbhreithnigh agus glac leis chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
+    "subtitle_one": "Nuashonraíodh doiciméad. Déan athbhreithniú air agus glac leis chun leanúint ar aghaidh.",
+    "subtitle_other": "Nuashonraíodh {{count}} doiciméad. Déan athbhreithniú orthu agus glac leo chun leanúint ar aghaidh.",
     "type_terms": "Téarmaí Seirbhíse",
-    "type_privacy": "Polasaí Príobháideachais",
-    "type_cookies": "Polasaí Fianán",
+    "type_privacy": "Beartas Príobháideachais",
+    "type_cookies": "Beartas Fianán",
     "type_accessibility": "Ráiteas Inrochtaineachta",
     "type_community_guidelines": "Treoirlínte Pobail",
-    "type_acceptable_use": "Polasaí Úsáide Inghlactha",
+    "type_acceptable_use": "Beartas um Úsáid Inghlactha",
     "updated": "Nuashonraithe",
     "read": "Léigh",
-    "consent_text": "Trí Glacadh a chliceáil, deimhníonn tú go bhfuil na doiciméid liostaithe thuas léite agat agus go n-aontaíonn tú leo.",
+    "consent_text": "Trí ‘Glac’ a chliceáil, deimhníonn tú go bhfuil na doiciméid thuas léite agat agus go n-aontaíonn tú leo.",
     "accept_aria": "Glac le gach doiciméad dlíthiúil nuashonraithe agus lean ar aghaidh",
-    "accepting": "Ag Glacadh…",
-    "accept_continue": "Glac & Lean Ar Aghaidh",
-    "subtitle_other_one": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other_other": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other_few": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other_many": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other_two": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil."
+    "accepting": "Ag glacadh leo…",
+    "accept_continue": "Glac agus Lean ar Aghaidh",
+    "subtitle_other_one": "Nuashonraíodh {{count}} doiciméad. Déan athbhreithniú air agus glac leis chun leanúint ar aghaidh.",
+    "subtitle_other_other": "Nuashonraíodh {{count}} doiciméad. Déan athbhreithniú orthu agus glac leo chun leanúint ar aghaidh.",
+    "subtitle_other_few": "Nuashonraíodh {{count}} doiciméad. Déan athbhreithniú orthu agus glac leo chun leanúint ar aghaidh.",
+    "subtitle_other_many": "Nuashonraíodh {{count}} doiciméad. Déan athbhreithniú orthu agus glac leo chun leanúint ar aghaidh.",
+    "subtitle_other_two": "Nuashonraíodh {{count}} dhoiciméad. Déan athbhreithniú orthu agus glac leo chun leanúint ar aghaidh."
   },
   "custom": {
-    "effective_label": "I bhfeidhm: {{date}}",
-    "contents": "Clár Ábhar",
-    "view_previous_versions": "Féach ar leaganacha roimhe den doiciméad seo",
-    "cta_title": "Ceisteanna Agat?",
-    "cta_body": "Má tá aon cheisteanna agat faoin doiciméad seo, déan teagmháil linn le do thoil.",
+    "effective_label": "I bhfeidhm ón: {{date}}",
+    "contents": "Clár Ábhair",
+    "view_previous_versions": "Féach ar leaganacha roimhe seo den doiciméad seo",
+    "cta_title": "An bhfuil Ceist Agat?",
+    "cta_body": "Má tá ceist ar bith agat faoin doiciméad seo, déan teagmháil linn.",
     "contact_us": "Déan Teagmháil Linn"
   },
   "fadp": {
     "fadp_banner_title": "Cosaint Sonraí na hEilvéise (nDSG)",
-    "fadp_banner_body": "Faoi Acht Chónaidhme na hEilvéise um Chosaint Sonraí, ní mór dúinn do thoiliú sainráite a fháil sula n-úsáidfimid gnéithe atá á gcumhachtú le AI amhail meaitseáil chliste agus oiriúnú.",
-    "fadp_accept": "Glac le gnéithe AI",
+    "fadp_banner_body": "Faoi Acht Cónaidhme na hEilvéise um Chosaint Sonraí, ní mór dúinn do thoiliú sainráite a fháil sula n-úsáidfimid gnéithe atá cumhachtaithe ag intleacht shaorga, amhail meaitseáil chliste agus pearsantú.",
+    "fadp_accept": "Glac le gnéithe intleachta saorga",
     "fadp_decline": "Bain úsáid as bunghnéithe amháin",
     "fadp_learn_more": "Foghlaim tuilleadh faoi do chearta"
   },
@@ -703,36 +703,36 @@
   },
   "page_meta": {
     "platform_terms": {
-      "title": "Ardán Téarmaí Seirbhíse",
-      "description": "Téarmaí seirbhíse a rialaíonn úsáid ardán bainc ama pobail NEXUS."
+      "title": "Téarmaí Seirbhíse an Ardáin",
+      "description": "Téarmaí seirbhíse a rialaíonn úsáid ardán baincéireachta ama pobail NEXUS."
     },
     "platform_privacy": {
-      "title": "Ardán Polasaí Príobháideachta",
+      "title": "Beartas Príobháideachais an Ardáin",
       "description": "Conas a bhailíonn, a phróiseálann agus a chosnaíonn ardán NEXUS do shonraí pearsanta."
     },
     "platform_disclaimer": {
-      "title": "Séanadh Ardáin",
-      "description": "Séanadh tábhachtach maidir le húsáid ardán bainc ama pobail NEXUS."
+      "title": "Séanadh an Ardáin",
+      "description": "Séanaidh thábhachtacha maidir le húsáid ardán baincéireachta ama pobail NEXUS."
     },
     "community_guidelines": {
       "title": "Treoirlínte Pobail",
-      "description": "Treoirlínte Comhphobail maidir le baincéireacht ama atá measúil agus táirgiúil."
+      "description": "Treoirlínte pobail le haghaidh baincéireacht ama mheasúil agus chuiditheach."
     },
     "acceptable_use": {
-      "title": "Beartas Úsáide Inghlactha",
+      "title": "Beartas um Úsáid Inghlactha",
       "description": "Beartas úsáide inghlactha dár n-ardán bainc ama pobail."
     },
     "legal_hub": {
-      "title": "Eolas Dlí",
-      "description": "Doiciméid dlí, beartais, agus faisnéis chomhlíonta."
+      "title": "Faisnéis Dhlíthiúil",
+      "description": "Doiciméid dhlíthiúla, beartais agus faisnéis faoi chomhlíonadh."
     },
     "legal_version_history": {
-      "title": "Stair Leagan Dlí",
-      "description": "Stair leagan ár ndoiciméid agus ár mbeartais dlí."
+      "title": "Stair Leaganacha na nDoiciméad Dlíthiúil",
+      "description": "Stair leaganacha ár ndoiciméad dlíthiúil agus ár mbeartas."
     },
     "trust_safety": {
-      "title": "Iontaobhas & Sábháilteacht",
-      "description": "Conas a oibríonn malartuithe ar {{name}}, cad a dhéanaimid chun an pobal a choinneáil sábháilte, cad nach ndéanaimid, agus conas ábhar imní a thuairisciú. Iontaobhas agus cosaint Bhéarla shimplí."
+      "title": "Iontaobhas agus Sábháilteacht",
+      "description": "Conas a oibríonn malartuithe ar {{name}}, cad a dhéanaimid chun an pobal a choinneáil sábháilte, cad nach ndéanaimid agus conas ábhar imní a thuairisciú. Treoir shoiléir faoi iontaobhas agus cosaint."
     }
   },
   "trust_safety": {
