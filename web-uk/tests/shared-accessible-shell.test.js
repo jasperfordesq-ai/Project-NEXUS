@@ -4518,6 +4518,25 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Service unavailable');
   });
 
+  it('renders the opt-in page (no redirect loop) when federation is not enabled', async () => {
+    const api = require('../src/lib/api');
+    // /settings 403s with FEDERATION_NOT_ENABLED — the normal "not opted in" state.
+    api.callFederationApi.mockImplementation(async (token, method, pathValue) => {
+      if (pathValue === '/settings') {
+        throw new api.ApiError('Forbidden', 403, { errors: [{ code: 'FEDERATION_NOT_ENABLED' }] });
+      }
+      return { data: [] };
+    });
+
+    const response = await request(app)
+      .get('/federation/opt-in')
+      .set('Cookie', signedCookieHeader());
+
+    // The page renders instead of redirecting back to /federation/opt-in (loop).
+    expect(response.status).toBe(200);
+    expect(response.headers.location).toBeUndefined();
+  });
+
   it('renders the Laravel-backed Federation partners list', async () => {
     const api = require('../src/lib/api');
     api.callFederationApi.mockImplementation(async (token, method, pathValue) => {

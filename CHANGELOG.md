@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the accessible frontend, the federation "opt-in" page no longer loops for a community that has federation switched off.** If a community had not enabled federation, opening the opt-in page could bounce endlessly and end in a "too many redirects" browser error — on the very page you'd use to turn it on. It now shows the opt-in page normally. Covered by a test.
+
 - **On the accessible frontend, an expired session on "Discover" or "Nearby" members now sends you to log in, and a job's own page shows the owner their controls.** If your sign-in quietly expired, the Discover and Nearby member pages used to show a dead-end "we couldn't load members" box and leave you stuck; they now send you to log in like every other page. Separately, the job detail page looked up "is this my posting?" using a broken call that always failed, so the person who posted a job could be shown none of their own manage/edit controls; that lookup is fixed. Covered by tests.
 
 - **On the accessible frontend, the "cancel this session" reason box on an event agenda now has a working character counter.** A template typo meant the little "you have N characters remaining" counter was wired to the wrong element, so it did not work and could trip the counter's script. It now works, and a new check across every page prevents the same typo class from recurring.

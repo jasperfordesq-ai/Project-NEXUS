@@ -865,8 +865,22 @@ router.get('/opt-in', asyncRoute(async (req, res) => {
 
     partnersResult = await callFederationApi(token, 'GET', '/partners');
   } catch (error) {
-    if (renderFederationError(error, res)) return undefined;
-    throw error;
+    // 🔴 FEDERATION_NOT_ENABLED on THIS page is the normal "not opted in yet"
+    // state — the opt-in page is exactly where a member turns it on. Render it
+    // with no partners rather than delegating to renderFederationError, which
+    // redirects a FEDERATION_NOT_ENABLED 403 to /federation/opt-in — i.e. this
+    // same page — producing an infinite redirect loop (ERR_TOO_MANY_REDIRECTS).
+    const errorCodes = error instanceof ApiError && Array.isArray(error.data && error.data.errors)
+      ? error.data.errors.map((item) => trimmed(item && item.code)).filter(Boolean)
+      : [];
+    const federationNotEnabled = error instanceof ApiError
+      && error.status === 403
+      && errorCodes.includes('FEDERATION_NOT_ENABLED');
+    if (!federationNotEnabled) {
+      if (renderFederationError(error, res)) return undefined;
+      throw error;
+    }
+    partnersResult = null;
   }
 
   const partners = asList(dataFrom(partnersResult)).map((partner) => normalizePartner(partner, {
