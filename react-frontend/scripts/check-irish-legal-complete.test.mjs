@@ -217,3 +217,56 @@ test('Irish conduct policies preserve privacy, safeguarding, fraud, and enforcem
   assert.match(irish.acceptable_use.sections.interference.items['4'], /innealtóireacht droim ar ais/u);
   assert.match(irish.acceptable_use.sections.enforcement.appeal, /nach raibh baint aige nó aici leis an mbunchinneadh/u);
 });
+
+test('Irish Trust & Safety has complete translated coverage', () => {
+  const englishFlat = flatten(english.trust_safety);
+  const irishFlat = flatten(irish.trust_safety);
+
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Trust & Safety key: ${path}`);
+    assert.notEqual(irishFlat.get(path), englishValue, `trust_safety.${path}`);
+  }
+
+  for (const [path, value] of irishFlat) {
+    assert.equal(value, value.trim(), `Whitespace defect: trust_safety.${path}`);
+    assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: trust_safety.${path}`);
+  }
+});
+
+test('Irish Trust & Safety preserves global emergency, vetting, insurance, and reporting boundaries', () => {
+  const trustSafety = [...flatten(irish.trust_safety).values()].join('\n');
+  assert.doesNotMatch(trustSafety, /Béarla shimplí|Connects with|For services|Some exchanges|tréidlia|instincts|solicitation|Garda Síochána on 999|Muinín agus Sábháilteacht|Iontaobhas & Sábháilteacht/u);
+  assert.equal(irish.trust_safety.safeguarding_step_3, 'Má tá aon duine i ngarchontúirt, déan teagmháil leis na seirbhísí éigeandála áitiúla ar dtús.');
+  assert.match(irish.trust_safety.what_we_do_items['5'], /bainc ama eile thar réigiúin tríd an gCónaidhm/u);
+  assert.match(irish.trust_safety.vetting_body, /grinnfhiosrúchán bailí, reatha/u);
+  assert.match(irish.trust_safety.vetting_body, /Ní choinníonn an t-ardán grinnfhiosrúchán thar ceann ball/u);
+  assert.match(irish.trust_safety.insurance_items['1'], /NÍL baill clúdaithe ag aon árachas ardáin/u);
+  assert.match(irish.trust_safety.disputes_steps['3'], /uaireanta a taifeadadh trí dhearmad/u);
+  assert.match(irish.trust_safety.rights_items['0'], /iarraidh go scriosfaí do shonraí \(RGCS\)/u);
+});
+
+test('complete Irish Legal catalogue permits only reviewed product-name invariants', () => {
+  const englishFlat = flatten(english);
+  const irishFlat = flatten(irish);
+  const invariants = new Set([
+    'cookies.provider_sentry',
+    'cookies.third_party_sentry_label',
+    'cookies.third_party_pusher_label',
+    'cookies.browser_chrome',
+    'cookies.browser_firefox',
+    'cookies.browser_safari',
+    'cookies.browser_edge',
+  ]);
+
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Legal key: ${path}`);
+    if (invariants.has(path)) assert.equal(irishFlat.get(path), englishValue, path);
+    else assert.notEqual(irishFlat.get(path), englishValue, path);
+  }
+
+  const exactMatches = [...englishFlat]
+    .filter(([path, englishValue]) => irishFlat.get(path) === englishValue)
+    .map(([path]) => path)
+    .sort();
+  assert.deepEqual(exactMatches, [...invariants].sort());
+});

@@ -737,86 +737,86 @@
   },
   "trust_safety": {
     "vetting_attestation_body": "Nuair a éilíonn beartas pobail teagmháil idir daoine a ndearnadh grinnfhiosrúchán orthu, déanann an pobal an tseiceáil dhleathach lasmuigh de Project NEXUS. Is féidir le bróicéir údaraithe deimhniú príobháideach pobail, nach bhfuil ann ach meiteashonraí, a thaifeadadh don bheartas teagmhála ar leith. Ní iarrann ná ní choinníonn Project NEXUS deimhnithe DBS, Grinnfhiosrúcháin an Gharda Síochána, AccessNI, PVG ná a gcomhionann, uimhreacha tagartha, torthaí nó sonraí taifid choiriúil. Ní chiallaíonn deimhniú go bhfuil duine sábháilte i ngach cás nó ceadaithe do gach ról.",
-    "what_we_dont_vetting_item": "Ní dhéanaimid iniúchadh neamhspleách ar dheimhnithe taifid choiriúil ná ní stórálaimid iad, ní dheimhnímid comhalta do ghairm, agus ní dhéanaimid cead uilíoch do róil de dheimhniú beartais teagmhála.",
+    "what_we_dont_vetting_item": "Ní dhéanaimid iniúchadh neamhspleách ar dheimhnithe taifid choiriúil ná ní stórálaimid iad, ní dheimhnímid ball do ghairm, agus ní dhéanaimid ceadú uilíoch do róil de dheimhniú faoi bheartas teagmhála.",
     "precautions_vetting_item": "I gcás gníomhaíochtaí a bhaineann le leanaí nó daoine fásta leochaileacha, déan teagmháil le comhordaitheoir do phobail faoi na rialacha is infheidhme. Ná hiarr ar chomhalta eile deimhniú DBS, Grinnfhiosrúcháin an Gharda Síochána, AccessNI, PVG nó a chomhionann a sheoladh trí Project NEXUS.",
-    "page_title": "Iontaobhas & Sábháilteacht",
-    "meta_description": "Conas a oibríonn malartuithe ar {{name}}, cad a dhéanaimid chun an pobal a choinneáil sábháilte, cad nach ndéanaimid, agus conas ábhar imní a thuairisciú. Iontaobhas agus cosaint Bhéarla shimplí.",
-    "heading": "Iontaobhas & Sábháilteacht",
-    "subtitle": "nascann {{name}} comharsana ionas gur féidir leo scileanna a roinnt trí úsáid a bhaint as creidmheasanna ama. Míníonn an leathanach seo conas a oibríonn sé sin go praiticiúil - cad a dhéanann an t-ardán, cad nach ndéanann sé, agus conas is féidir leat fanacht sábháilte.",
+    "page_title": "Iontaobhas agus Sábháilteacht",
+    "meta_description": "Conas a oibríonn malartuithe ar {{name}}, cad a dhéanaimid chun an pobal a choinneáil sábháilte, cad nach ndéanaimid agus conas ábhar imní a thuairisciú. Treoir shoiléir faoi iontaobhas agus cosaint.",
+    "heading": "Iontaobhas agus Sábháilteacht",
+    "subtitle": "Nascann {{name}} comharsana ionas gur féidir leo scileanna a roinnt trí chreidmheasanna ama. Míníonn an leathanach seo conas a oibríonn sé sin go praiticiúil — cad a dhéanann an t-ardán, cad nach ndéanann sé agus conas is féidir leat fanacht sábháilte.",
     "safeguarding_title": "Tuairiscigh imní faoi chosaint",
-    "safeguarding_body": "Má tá imní ort faoi bhall, faoi mhalartú, nó faoi rud éigin atá feicthe agat ar an ardán, inis dúinn le do thoil. Tugaimid freagra ar thuarascálacha cosanta laistigh de lá oibre amháin.",
+    "safeguarding_body": "Má tá imní ort faoi bhall, faoi mhalartú nó faoi rud éigin atá feicthe agat ar an ardán, inis dúinn. Tugaimid freagra ar thuairiscí cosanta laistigh de lá oibre amháin.",
     "safeguarding_step_1": "Úsáid an cnaipe Tuairiscigh ar an liostú, ar an teachtaireacht nó ar an bpróifíl ábhartha.",
     "safeguarding_step_2": "Nó seol ríomhphost chugainn tríd an leathanach Teagmhála — marcáil an t-ábhar mar “Cosaint”.",
-    "safeguarding_step_3": "If anyone is in immediate danger, contact An Garda Síochána on 999 or 112 first.",
+    "safeguarding_step_3": "Má tá aon duine i ngarchontúirt, déan teagmháil leis na seirbhísí éigeandála áitiúla ar dtús.",
     "how_exchanges_title": "Conas a oibríonn malartú",
-    "how_exchanges_intro": "Leanann gach malartú an sreabhadh simplí céanna. Níl aon airgead i gceist — díreach creidmheasanna ama.",
+    "how_exchanges_intro": "Leanann gach malartú an próiseas simplí céanna. Níl aon airgead i gceist — níl ann ach creidmheasanna ama.",
     "how_exchanges_steps": {
       "0": "Aimsigh ball a thairgeann a bhfuil uait, nó postáil iarratas ag cur síos ar a bhfuil uait.",
-      "1": "Cuir teachtaireacht chucu tríd an ardán chun na sonraí a aontú - am, áit, agus cad atá i gceist.",
-      "2": "Comhlánaigh an malartú. Ní bhuaileann tú go pearsanta ach amháin más mian leat araon.",
-      "3": "Logáil na huaireanta. Deimhníonn an dá chomhalta - sin an admháil.",
-      "4": "Aistrítear creidmheasanna ama go huathoibríoch. Uair an chloig de chabhair = creidiúint ama amháin, is cuma cén scil a roinneadh."
+      "1": "Cuir teachtaireacht chucu tríd an ardán chun teacht ar chomhaontú faoi na sonraí — an t-am, an áit agus a bhfuil i gceist.",
+      "2": "Comhlánaigh an malartú. Ní bhuaileann sibh le chéile go pearsanta ach amháin más mian leis an mbeirt agaibh.",
+      "3": "Taifead na huaireanta. Deimhníonn an dá bhall iad — sin í an admháil.",
+      "4": "Aistrítear creidmheasanna ama go huathoibríoch. Uair an chloig cabhrach = creidmheas ama amháin, is cuma cén scil a roinneadh."
     },
     "what_we_do_title": "Cad a dhéanann an ardán",
     "what_we_do_items": {
-      "0": "Fíoraíonn sé seoladh ríomhphoist gach ball ag an gclárú; tairgeann sé fíorú fóta-aitheantais roghnach le suaitheantas Ball Fíoraithe dóibh siúd ar mian leo comharthaí muiníne breise.",
-      "1": "Léirmheasanna agus rátálacha a thaispeáint ar phróifílí na mball ionas gur féidir leis an bpobal a fheiceáil cé a bhí ina chomhpháirtí malairte iontaofa.",
-      "2": "Iarrann sí ar gach ball glacadh lenár dTreoirlínte Pobail agus lenár mBeartas Úsáide Inghlactha agus iad ag clárú, agus cloí leo agus iad anseo.",
-      "3": "Tugtar cnaipe Tuairisce do gach liostú, teachtaireacht agus próifíl a théann díreach chuig na comhordaitheoirí.",
-      "4": "Tá comhordaitheoirí daonna ann ar féidir leo idirghabháil a dhéanamh, tacaíocht a thabhairt dóibh agus céim isteach nuair a théann rud éigin mícheart.",
-      "5": "Connects with other timebanks across Ireland and Europe through federation, so reputation travels with you."
+      "0": "Fíoraíonn sé seoladh ríomhphoist gach ball nuair a chláraíonn siad; tairgeann sé fíorú roghnach aitheantais le grianghraf agus suaitheantas Ball Fíoraithe dóibh siúd ar mian leo comharthaí muiníne breise.",
+      "1": "Taispeánann sé léirmheasanna agus rátálacha ar phróifílí ball ionas gur féidir leis an bpobal a fheiceáil cé a bhí ina chomhpháirtí iontaofa malairte.",
+      "2": "Iarrann sé ar gach ball glacadh lenár dTreoirlínte Pobail agus lenár mBeartas um Úsáid Inghlactha nuair a chláraíonn siad, agus cloí leo fad atá siad anseo.",
+      "3": "Cuireann sé cnaipe Tuairiscigh ar gach liostú, teachtaireacht agus próifíl, agus seoltar an tuairisc díreach chuig na comhordaitheoirí.",
+      "4": "Tá comhordaitheoirí daonna aige ar féidir leo idirghabháil a dhéanamh, tacaíocht a thabhairt agus gníomhú nuair a théann rud éigin mícheart.",
+      "5": "Nascann sé le bainc ama eile thar réigiúin tríd an gCónaidhm, ionas gur féidir le do chlú taisteal leat."
     },
     "what_we_dont_title": "Cad nach ndéanann an t-ardán",
-    "what_we_dont_intro": "Tógtar baincéireacht ama ar chomharsana ag cabhrú le comharsana, ní orainne a bheith ag seasamh eadrainn. Is gné é sin, ní fabht - ach ciallaíonn sé go gcaithfimid a bheith soiléir faoi na teorainneacha atá againn.",
+    "what_we_dont_intro": "Tá baincéireacht ama bunaithe ar chomharsana a bheith ag cabhrú le comharsana, seachas orainne a bheith inár seasamh idir tú féin agus do chomharsana. Is buntáiste é sin, ní fabht — ach ciallaíonn sé go gcaithfimid ár dteorainneacha a mhíniú go soiléir.",
     "what_we_dont_items": {
-      "0": "Ní dhéanaimid tréidlia, ní dhéanaimid oiliúint ná baill a dheimhniú le haghaidh seirbhísí ar leith. Ní gníomhaireacht earcaíochta muid.",
+      "0": "Ní dhéanaimid grinnfhiosrúchán ar bhaill, ní chuirimid oiliúint orthu agus ní dheimhnímid iad le haghaidh seirbhísí ar leith. Ní gníomhaireacht earcaíochta muid.",
       "1": "Ní chuirimid clúdach árachais ar fáil don obair a dhéanann baill dá chéile.",
       "2": "Ní dhéanaimid maoirsiú ar mhalartuithe ná ní fheidhmímid mar fhostóir nó soláthraí seirbhíse aon duine.",
-      "3": "Ní ráthaimid aon toradh sonrach, leibhéal scile ná poncúlacht. Léirmheasanna is ea an chaoi a gcoimeádann an pobal cuntasach air féin."
+      "3": "Ní ráthaimid toradh ar leith, leibhéal scile ná poncúlacht. Úsáideann an pobal léirmheasanna chun cuntasacht a chothú."
     },
     "precautions_title": "Réamhchúraimí ciallmhara don chéad mhalartú",
-    "precautions_intro": "Chuirfeá an chiall chéanna i bhfeidhm anseo agus a dhéanfá bualadh le haon duine nua trí ghrúpa pobail.",
+    "precautions_intro": "D'úsáidfeá an chiall chéanna anseo agus a d'úsáidfeá agus tú ag bualadh le duine nua trí ghrúpa pobail.",
     "precautions_items": {
-      "0": "Buail le chéile in áit phoiblí den chéad uair, nó beir leat cara má tá cuireadh á thabhairt agat do dhuine éigin chuig do theach.",
-      "1": "Léigh léirmheasanna an bhaill eile agus seiceáil cé chomh fada agus atá siad ar an ardán.",
-      "2": "For services involving children, vulnerable adults, or work inside your home, ask about Garda vetting before agreeing.",
-      "3": "Iontaobhas do instincts. Is féidir leat a rá nach bhfuil, deireadh a chur le malartú, nó imní a thuairisciú ag am ar bith."
+      "0": "Buail le chéile in áit phoiblí den chéad uair, nó tabhair cara leat má tá cuireadh á thabhairt agat do dhuine chuig do theach.",
+      "1": "Léigh léirmheasanna an bhaill eile agus seiceáil cá fhad atá an ball sin ar an ardán.",
+      "2": "I gcás seirbhísí lena mbaineann leanaí, daoine fásta leochaileacha nó obair i do theach, fiafraigh faoi aon seiceálacha cúlra nó grinnfhiosrúchán atá riachtanach i do dhlínse sula n-aontaíonn tú.",
+      "3": "Éist le d'instinn. Is féidir leat diúltú, deireadh a chur le malartú nó ábhar imní a thuairisciú ag am ar bith."
     },
     "vetting_title": "Seiceálacha cúlra agus grinnfhiosrúchán",
-    "vetting_body": "Some exchanges — for example childcare, elderly care, or support for vulnerable adults — may legally require a background check or vetting under local law (such as Garda vetting in Ireland, an enhanced DBS check in the UK, or equivalent schemes elsewhere). Members offering these kinds of services are responsible for holding current, valid vetting where their jurisdiction requires it, and you’re entitled to ask to see it before you agree to an exchange. The platform doesn’t hold vetting on members’ behalf and doesn’t verify it.",
+    "vetting_body": "D'fhéadfadh sé go n-éileofaí seiceáil cúlra nó grinnfhiosrúchán faoin dlí áitiúil le haghaidh malartuithe áirithe, mar shampla cúram leanaí, cúram daoine scothaosta nó tacaíocht do dhaoine fásta leochaileacha. Tá baill a thairgeann seirbhísí den chineál sin freagrach as grinnfhiosrúchán bailí, reatha a bheith acu nuair a éilíonn a ndlínse é, agus tá sé de cheart agat iarraidh é a fheiceáil sula n-aontaíonn tú le malartú. Ní choinníonn an t-ardán grinnfhiosrúchán thar ceann ball agus ní fhíoraíonn sé é.",
     "insurance_title": "Árachas agus dliteanas",
     "insurance_items": {
-      "0": "Ní sholáthraíonn {{name}} árachas do mhalartuithe idir comhaltaí. Is seirbhís nasctha é an t-ardán - ní chuireann sé árachas, slánaíocht nó frithghealladh ar an obair a dhéanann baill dá chéile.",
-      "1": "NÍL comhaltaí clúdaithe ag aon árachas ardáin don obair a dhéanann siad ar a chéile. Déantar malartuithe go hiomlán idir comhaltaí agus ar phriacal na gcomhaltaí féin. Féach ar ár dTéarmaí Seirbhíse chun an suíomh iomlán dliteanais agus slánaíochta a fháil.",
-      "2": "Má thairgeann tú seirbhísí gairmiúla (pluiméireachta, leictreacha, cúram sláinte, comhairle dlí, airgeadais), tá tú freagrach as d’árachas slánaíochta gairmiúla féin agus as aon oibleagáidí rialála a bhaineann leis.",
-      "3": "Níl aon luach airgid ag creidmheasanna ama. Ní féidir iad a mhalartú ar airgead tirim, a dhíol, ná a úsáid lasmuigh den phobal bainc ama."
+      "0": "Ní sholáthraíonn {{name}} árachas do mhalartuithe idir baill. Is seirbhís nasctha é an t-ardán — ní thugann sé árachas ná slánaíocht don obair a dhéanann baill dá chéile agus ní dhéanann sé frithghealladh uirthi.",
+      "1": "NÍL baill clúdaithe ag aon árachas ardáin don obair a dhéanann siad dá chéile. Is idir na baill amháin a dhéantar malartuithe agus is ar a bpriacal féin a dhéanann siad iad. Féach ar ár dTéarmaí Seirbhíse chun na sonraí iomlána faoi dhliteanas agus slánaíocht a fháil.",
+      "2": "Má thairgeann tú seirbhísí gairmiúla (pluiméireacht, obair leictreach, cúram sláinte, comhairle dlí nó comhairle airgeadais), tá tú freagrach as d'árachas slánaíochta gairmiúla féin agus as aon oibleagáidí rialála is infheidhme.",
+      "3": "Níl aon luach airgid ag creidmheasanna ama. Ní féidir iad a mhalartú ar airgead tirim, a dhíol ná a úsáid lasmuigh den phobal baincéireachta ama."
     },
     "disputes_title": "Nuair a théann rud éigin mícheart",
-    "disputes_intro": "Is féidir formhór na n-easaontais a réiteach idir baill. Mura féidir leo, cabhróimid.",
+    "disputes_intro": "Is féidir formhór na n-easaontas a réiteach idir baill. Mura féidir, cabhróimid.",
     "disputes_steps": {
-      "0": "Déan iarracht ar dtús é a réiteach go díreach trí theachtaireachtaí - is é sin an chuid is mó de na míthuiscintí.",
+      "0": "Déan iarracht ar dtús é a réiteach go díreach trí theachtaireachtaí — níl i bhformhór na míthuiscintí ach míthuiscintí.",
       "1": "Mura n-oibríonn sin, déan teagmháil le comhordaitheoir tríd an leathanach Teagmhála. Is féidir le comhordaitheoirí idirghabháil a dhéanamh.",
-      "2": "Má sháraíonn ball ár dTreoirlínte Comhphobail, déanaimid beart — rabhaidh, idirghabháil, fionraí nó aistriú, ag brath ar dhéine.",
-      "3": "Déanann riarthóir athbhreithniú ar dhíospóidí maidir le creidmheas ama (uaireanta logáilte isteach, etc.) ar féidir leis iarmhéideanna ar an dá thaobh a choigeartú."
+      "2": "Má sháraíonn ball ár dTreoirlínte Pobail, gníomhaímid — le rabhadh, idirghabháil, fionraí nó baint, ag brath ar a thromchúisí atá an sárú.",
+      "3": "Déanann riarthóir athbhreithniú ar dhíospóidí faoi chreidmheasanna ama (uaireanta a taifeadadh trí dhearmad, mar shampla) agus is féidir leis iarmhéideanna ceachtar taobh a choigeartú."
     },
     "responsibilities_title": "Do fhreagrachtaí mar bhall",
-    "responsibilities_intro": "Trí úsáid a bhaint as {{name}} aontaíonn tú le:",
+    "responsibilities_intro": "Trí {{name}} a úsáid, aontaíonn tú na nithe seo a leanas a dhéanamh:",
     "responsibilities_items": {
-      "0": "Caitheamh le comhaltaí eile le meas (Treoirlínte an Chomhphobail).",
-      "1": "Bí macánta faoi do scileanna, cáilíochtaí, agus teorainneacha.",
-      "2": "Taispeáin suas nuair a dhéanann tú gealltanas, nó cealú le fógra réasúnta.",
-      "3": "Logáil uaireanta go cothrom - don am a thugtar i ndáiríre.",
-      "4": "Bain úsáid as an ardán ach amháin le haghaidh malartuithe ama pobail, ní obair íoctha, solicitation díolacháin, nó aon rud mídhleathach (Beartas Úsáide Inghlactha)."
+      "0": "Caitheamh le baill eile le meas (Treoirlínte Pobail).",
+      "1": "A bheith macánta faoi do scileanna, do cháilíochtaí agus do theorainneacha.",
+      "2": "Do ghealltanas a chomhlíonadh, nó cealú agus fógra réasúnta a thabhairt.",
+      "3": "Uaireanta a thaifeadadh go cóir — an t-am a tugadh i ndáiríre.",
+      "4": "An t-ardán a úsáid le haghaidh malartuithe ama pobail amháin, agus ní le haghaidh obair íoctha, sireadh díolacháin ná aon rud neamhdhleathach (Beartas um Úsáid Inghlactha)."
     },
     "rights_title": "Do chearta",
     "rights_items": {
-      "0": "Fág am ar bith agus iarr ar do shonraí a scriosadh (GDPR).",
-      "1": "Cuir bac ar bhaill eile ionas nach mbeidh siad in ann teagmháil a dhéanamh leat.",
-      "2": "Déan do phróifíl dofheicthe le cuardach nó le brabhsáil.",
-      "3": "Diúltaigh as gach fianán roghnach, anailísíocht agus fógra ríomhphoist."
+      "0": "Is féidir leat imeacht am ar bith agus iarraidh go scriosfaí do shonraí (RGCS).",
+      "1": "Is féidir leat baill eile a bhlocáil ionas nach mbeidh siad in ann teagmháil a dhéanamh leat.",
+      "2": "Is féidir leat do phróifíl a cheilt ó thorthaí cuardaigh agus ó bhrabhsáil.",
+      "3": "Is féidir leat diúltú do gach fianán roghnach, anailísíocht agus fógraí ríomhphoist."
     },
     "contact_cta_title": "An bhfuil ceist agat nár fhreagair muid?",
-    "contact_cta_body": "Bí i dteagmháil agus gheobhaidh comhordaitheoir ar ais chugat. Freagraítear formhór na dteachtaireachtaí laistigh de lá oibre amháin.",
+    "contact_cta_body": "Déan teagmháil linn agus tabharfaidh comhordaitheoir freagra ort. Freagraítear formhór na dteachtaireachtaí laistigh de lá oibre amháin.",
     "contact_cta_button": "Déan teagmháil linn",
     "community_guidelines_link": "Léigh na Treoirlínte Pobail"
   }
