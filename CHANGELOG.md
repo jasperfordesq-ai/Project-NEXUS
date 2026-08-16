@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's entire 303-string Volunteering catalogue is now reviewed for Irish.** The final 25 shift-swap labels, requests, actions, errors and statuses now use context-aware Irish. A whole-catalogue test verifies every key and permits only seven reviewed functional formats for dates, times, currency and percentages to remain language-neutral.
+
 - **Volunteer organisation wallet and settings controls in the native app now stay in Irish.** Twenty-one balance, automatic-payment, deposit, transaction and organisation-editing labels and errors now use context-aware Irish. A focused test protects both management panels.
 
 - **The native app's volunteer organisation dashboard no longer falls back to English in Irish.** Forty-seven dashboard labels, states, tabs, statistics, roles, application actions, hour-approval controls and volunteer summaries now use context-aware Irish while preserving names, dates, hour totals and application counts. A focused test protects the complete organisation-operations slice.
