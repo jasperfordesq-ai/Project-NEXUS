@@ -986,7 +986,7 @@ app.get('/account', async (req, res) => {
 app.use('/explore', exploreRoutes);
 
 app.get('/volunteering', requireAuth, (req, res) => {
-  const { callVolunteeringApi, getVolunteeringCategories, getVolunteeringOpportunities } = require('./lib/api');
+  const { ApiError, callVolunteeringApi, getVolunteeringCategories, getVolunteeringOpportunities } = require('./lib/api');
   const token = req.signedCookies.token || '';
   if (res.locals.volunteeringDisabled) {
     return res.status(403).render('volunteering', {
@@ -1177,8 +1177,14 @@ app.get('/volunteering', requireAuth, (req, res) => {
         csrfToken: req.csrfToken ? req.csrfToken() : ''
       });
     })
-    .catch(() => {
-      res.render('volunteering', {
+    .catch((error) => {
+      // An expired/revoked token (requireAuth only checks the cookie is present,
+      // not that it is still valid) must go to login, like every other authed
+      // route — not render a generic "we could not load this" volunteering page.
+      if (error instanceof ApiError && error.status === 401) {
+        return redirectTo(res, '/login?status=auth-required');
+      }
+      return res.render('volunteering', {
         title: res.locals.t('volunteering.title'),
         activeNav: 'volunteering',
         opportunities: [],
@@ -1303,6 +1309,11 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       });
     })
     .catch((error) => {
+      // An expired/revoked token goes to login, matching every other authed
+      // route — not a scary "Service unavailable" page.
+      if (error instanceof ApiError && error.status === 401) {
+        return redirectTo(res, '/login?status=auth-required');
+      }
       if (error instanceof ApiError && error.status === 404) {
         return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }

@@ -16951,6 +16951,27 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('No volunteering opportunities match your filters.');
   });
 
+  it('redirects the volunteering list to login when the opportunities API returns 401', async () => {
+    const api = require('../src/lib/api');
+    api.getVolunteeringOpportunities.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));
+
+    const response = await request(app).get('/volunteering').set('Cookie', signedCookieHeader());
+
+    // A revoked/expired token goes to login, not a generic "could not load" page.
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/login?status=auth-required');
+  });
+
+  it('redirects the volunteering opportunity detail to login on a 401 instead of a 503 page', async () => {
+    const api = require('../src/lib/api');
+    api.getVolunteerOpportunity.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));
+
+    const response = await request(app).get('/volunteering/opportunities/77').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/login?status=auth-required');
+  });
+
   it('renders the Blade-style paginated organisations browse page from Laravel data', async () => {
     const api = require('../src/lib/api');
     api.getVolunteerOrganisations.mockResolvedValueOnce({
