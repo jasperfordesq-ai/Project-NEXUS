@@ -198,3 +198,39 @@ test('Irish Broker configuration preserves tenant policy, thresholds, and fail-c
   assert.equal(irish.configuration.section_compliance_safeguarding_desc, 'Rianú grinnfhiosrúcháin agus árachais, forfheidhmiú agus rabhaidh éaga.');
   assert.equal(irish.configuration.field_broker_contact_email_placeholder, 'broker@example.com');
 });
+
+test('Irish Broker matching distinguishes proposals, approvals, listings, and review dates', () => {
+  const matching = JSON.stringify(irish.matching);
+
+  assert.doesNotMatch(matching, /Faomhaí Meaitseála|cliste-meaitseála|"Liosta"/u);
+  assert.doesNotMatch(matching, /Níl aon mheaitseálacha|Meaitseáil íseal|Meaitseáil gan aimsiú/u);
+
+  assert.equal(irish.matching.title, 'Faomhadh meaitseálacha');
+  assert.equal(irish.matching.approved_toast, 'Faomhadh an mheaitseáil — cuirfear an ball ar an eolas');
+  assert.equal(irish.matching.rejected_toast, 'Diúltaíodh don mheaitseáil');
+  assert.equal(irish.matching.score_low, 'Meaitseáil lag');
+  assert.equal(irish.matching.reviewed_at, 'Athbhreithnithe ar');
+  assert.equal(irish.matching.distance_km, '{{km}} km');
+});
+
+test('Irish Broker status and moderation wording describes published content actions accurately', () => {
+  const moderation = JSON.stringify({
+    queue: irish.moderation_queue,
+    feed: irish.moderation_feed,
+    comments: irish.moderation_comments,
+    reviews: irish.moderation_reviews,
+    reports: irish.moderation_reports,
+    safeguarding: irish.safeguarding_options,
+  });
+
+  assert.doesNotMatch(moderation, /sula dtéann sé beo|maolú ar thuairimí/u);
+  assert.doesNotMatch(moderation, /Léirmheas, bratach|Triage agus réiteach/u);
+  assert.doesNotMatch(moderation, /Roghanna coimirce|dearbhaithe coimirce/u);
+
+  assert.equal(irish.status.approved, 'Faofa');
+  assert.equal(irish.status.critical, 'Tromchúiseach');
+  assert.equal(irish.status.pending_broker, 'Faomhadh bróicéara ar feitheamh');
+  assert.equal(irish.moderation_queue.description, 'Déan athbhreithniú ar ábhar atá ar feitheamh le modhnóireacht sula bhfoilsítear é.');
+  assert.match(irish.moderation_reviews.description, /cuir bratach orthu agus déan iad a mhodhnú/u);
+  assert.equal(irish.safeguarding_options.title, 'Roghanna cosanta');
+});
