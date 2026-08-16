@@ -98,12 +98,21 @@ hard-disabled upstream).
 🔴 Two hazards inherited from the dead deployment, recorded so they are not
 rediscovered the hard way:
 
-1. **The live ASP.NET database has no working backup.** The scheduled backup in
-   the old repository has failed **156 times out of 156 since 2026-03-08** — 155
-   days, zero successes. Root cause is trivial and total: the job runs
-   `ssh-keyscan -H` with an **empty** host variable and dies before reaching the
-   backup command. There may or may not be a separate backup on the server
-   itself; that is unverified.
+1. **The scheduled off-server ASP.NET backup has never succeeded.** It has failed
+   **156 times out of 156 since 2026-03-08**. Root cause is trivial and total:
+   the job runs `ssh-keyscan -H` with an **empty** host variable and dies before
+   reaching the backup command.
+
+   🔴 **Corrected 2026-08-16 — the "there may or may not be a backup on the
+   server; that is unverified" line above was resolved, and the answer is yes.**
+   A checksum-verified PostgreSQL dump exists at
+   `/opt/nexus-backend/backups/aspnet-nexus_dev-20260810-163536.dump` (2.0 MB,
+   `sha256sum -c` → OK, `PGDMP` header), taken **33 seconds before the database
+   container stopped** on 2026-08-10, and the container has not run since — so
+   that dump is current. The real exposure is that it is the **only** copy and
+   sits on the **same machine as the data**, and it has never been
+   restore-tested. See
+   [`../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md`](../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md).
 2. **The ASP.NET app migrates the database on every start.** `Program.cs` calls
    `Database.MigrateAsync()` in every non-Testing environment. Combined with (1),
    an ordinary `docker restart` of that container can irreversibly alter live

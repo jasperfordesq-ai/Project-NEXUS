@@ -518,6 +518,48 @@ whatever the client posted is what was stored.
 Detection is manual for now: for each `compat:` prefix, grep for a reader. A
 prefix with a writer and no reader is this defect.
 
+## R-29 `MEASURED 2026-08-16` — where the remaining work actually is
+
+Re-measured after the volunteering work, because the old figures were 31 fixes
+and six tables out of date. Scripts live in `.local-docs-archive/`
+(gitignored): `triage-stubs.ps1`, `subsystem_demand.py`, `find_phantom_tables.py`.
+
+**Stubs: 320 total.**
+
+| Bucket | Count | What to do |
+| --- | --- | --- |
+| A client actually calls it | **229** | Implement — this is the real queue (was 258) |
+| No client calls it at all | **63** | 🔴 **Delete, do not implement.** A route that answers success and nothing calls is pure trap surface |
+
+**Phantom tables: 0.** 446 tables created vs 445 mapped — the detector is clean,
+and the six tables added this session are all genuinely created.
+
+**Client demand by subsystem** (call sites across both frontends vs ASP.NET
+routes). Highest demand first; "thin coverage" means the calls far exceed what
+this backend answers:
+
+| Subsystem | Client calls | ASP.NET routes |
+| --- | --- | --- |
+| Volunteering | 3,707 | 554 |
+| Federation | 3,325 | 380 |
+| Safeguarding | 2,841 | 381 |
+| Analytics / reporting | 1,730 | 151 |
+| Marketplace | 1,380 | 104 |
+| Newsletters / comms | 1,309 | 267 |
+| Challenges | 1,004 | 543 |
+| Podcasts / media | 826 | 112 |
+| Jobs / vacancies | 715 | 78 |
+
+🔴 **Do not read this table as a work order.** Federation is second by demand and
+**external federation is switched off by default** — internal cross-tenant
+federation is the live part. Volunteering is top by call count and is the most
+covered, because it is what this session fixed. Rank by *what a member touches
+and cannot do*, not by call count alone.
+
+**Suggested order on this evidence:** delete the 63 uncalled stubs first (cheap,
+and it shrinks the misleading surface), then Safeguarding depth, then Marketplace
+— which has the worst coverage ratio of any subsystem a member uses directly.
+
 ## R-28 — the write-only store sweep, and what is left of it
 
 Method: list every `compat:` key prefix, then check each for a reader. A prefix
@@ -1591,7 +1633,13 @@ large.
 
 ## Owner-gated — cannot be closed by an agent
 
-- **The live ASP.NET database has had no successful backup since 2026-03-08** (156
+- 🔴 **CORRECTED 2026-08-16 — read `DATABASE_BACKUP_DECISION.md` before repeating
+  the line below.** A checksum-verified dump DOES exist on the server, taken 33
+  seconds before the database container stopped on 2026-08-10, and that container
+  has not run since — so it is current. The real exposure is that it is the only
+  copy, on the same machine as the data, and has never been restore-tested. The
+  sentence that follows is true of the SCHEDULED OFF-SERVER JOB only.
+- **The scheduled off-server backup has never succeeded since 2026-03-08** (156
   consecutive failures) while the app runs `Database.MigrateAsync()` on every
   start. Nothing may touch that service until this is fixed.
 - **No designed deployment path.** The former deployment was declared dead
