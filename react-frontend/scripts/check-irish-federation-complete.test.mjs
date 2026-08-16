@@ -71,3 +71,38 @@ test('Irish Federation member and messaging wording preserves opt-in and communi
   assert.equal(irish.messages.aria_delivered, 'Seachadta');
   assert.equal(irish.messages.change, 'Athraigh');
 });
+
+test('Irish Federation listings and settings preserve listing, consent, and service-range meaning', () => {
+  const journey = JSON.stringify({ listings: irish.listings, settings: irish.settings });
+
+  assert.doesNotMatch(journey, /Liostaí Cónaidhme|Próifíl Amharc|Sroicheann Seirbhíse/u);
+  assert.doesNotMatch(journey, /Cónaidhm faoi Mhíchumas|cianda OK|Beidh taisteal/u);
+  assert.doesNotMatch(journey, /Cónaidhm Tá|socruithe cónaidhm|Níorbh fhéidir cónaidhm/u);
+
+  assert.equal(irish.listings.title, 'Liostuithe na Cónaidhme');
+  assert.equal(irish.listings.no_listings_found, 'Níor aimsíodh aon liostú');
+  assert.equal(irish.listings.view_profile, 'Féach ar an bpróifíl');
+  assert.equal(irish.settings.heading, 'Socruithe na Cónaidhme');
+  assert.equal(irish.settings.federation_disabled, 'Tá an Chónaidhm díchumasaithe');
+  assert.equal(irish.settings.service_reach, 'Raon seirbhíse');
+  assert.equal(irish.settings.reach_travel_ok, 'Sásta taisteal');
+  assert.equal(irish.settings.federation_toggled_description, 'Tá an Chónaidhm {{action}} anois.');
+  assert.equal(irish.settings.kilometers_short, 'km');
+});
+
+test('Irish Federation events, groups, and member profiles preserve counts and transfer meaning', () => {
+  const journey = JSON.stringify({ events: irish.events, groups: irish.groups, profile: irish.member_profile });
+
+  assert.doesNotMatch(journey, /Imeachtaí Cónaidhme|Grúpaí Cónaidhme|ball \{\{count\}\}/u);
+  assert.doesNotMatch(journey, /Ball á lódáil|Ball gan aimsiú|Ar ais go Comhaltaí/u);
+  assert.doesNotMatch(journey, /hour\(s\) sent|creidmheasa cónasctha|Scileanna & Suimeanna/u);
+
+  assert.equal(irish.events.heading, 'Imeachtaí na Cónaidhme');
+  assert.equal(irish.events.attendees_going_other, '{{count}} duine ag dul');
+  assert.equal(irish.groups.heading, 'Grúpaí na Cónaidhme');
+  assert.equal(irish.groups.member_count_many, '{{count}} mball');
+  assert.equal(irish.member_profile.page_title, 'Próifíl baill');
+  assert.equal(irish.member_profile.tx_summary, '{{amount}} uair an chloig á seoladh chuig {{name}}');
+  assert.equal(irish.member_profile.tx_success_detail, 'Seoladh {{amount}} uair an chloig chuig {{name}}');
+  assert.equal(irish.member_profile.transactions_disabled_tooltip, 'Ní ghlacann an ball seo le haistrithe creidmheasa Cónaidhme.');
+});
