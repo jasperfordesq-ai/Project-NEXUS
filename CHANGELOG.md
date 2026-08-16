@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's volunteer organisation dashboard no longer falls back to English in Irish.** Forty-seven dashboard labels, states, tabs, statistics, roles, application actions, hour-approval controls and volunteer summaries now use context-aware Irish while preserving names, dates, hour totals and application counts. A focused test protects the complete organisation-operations slice.
+
 - **The accessible wallet transfer form no longer throws away what you typed when a transfer is refused.** If a transfer failed — too large, not enough credit, and so on — the page reloaded with the error but the recipient, amount and note you'd entered were all gone, so you had to search for the person and type everything again. Now the recipient reappears and your amount and note are filled back in, ready to correct and resend. The amount and note are kept server-side for the reload (never put in the web address, since they're financial), and a fresh anti-double-submit key is issued on the retry so there's no risk of sending twice. Covered by a test that fails a transfer and checks the values come back on the right recipient.
 
 - **Volunteer expense claims and donations in the native app no longer fall back to English in Irish.** Forty-one financial labels, prompts, validation messages, categories and statuses now use context-aware Irish. The `EUR` currency code and percentage format remain unchanged as functional values, and a focused test protects both workflows.

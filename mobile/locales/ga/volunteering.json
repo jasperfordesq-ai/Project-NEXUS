@@ -246,66 +246,66 @@
     "editFailedDescription": "Níorbh fhéidir linn an deis a nuashonrú. Bain triail eile as."
   },
   "org": {
-    "title": "Organisation dashboard",
-    "dashboardEyebrow": "Organiser tools",
-    "invalid": "Organisation not found.",
-    "loadError": "Could not load this organisation dashboard.",
-    "statsUnavailable": "Organisation stats are unavailable.",
-    "emptyTitle": "No managed organisations yet",
-    "emptyDescription": "Register or join an approved organisation before using organiser tools.",
-    "register": "Browse organisations",
-    "pendingHeading": "Pending approval",
-    "pendingDescription": "This organisation is waiting for approval.",
-    "walletBalance": "{{count}}h available",
-    "managerTools": "Manager tools",
-    "openDashboardLabel": "Open dashboard for {{name}}",
-    "manage": "Manage",
-    "reviewApplications": "Review applications",
-    "reviewHours": "Review hours",
-    "postOpportunity": "Post opportunity",
+    "title": "Deais na heagraíochta",
+    "dashboardEyebrow": "Uirlisí eagraí",
+    "invalid": "Níor aimsíodh an eagraíocht.",
+    "loadError": "Níorbh fhéidir deais na heagraíochta seo a lódáil.",
+    "statsUnavailable": "Níl staitisticí na heagraíochta ar fáil.",
+    "emptyTitle": "Níl aon eagraíocht faoi do bhainistiú fós",
+    "emptyDescription": "Cláraigh eagraíocht cheadaithe nó glac páirt inti sula n-úsáideann tú uirlisí eagraí.",
+    "register": "Brabhsáil eagraíochtaí",
+    "pendingHeading": "Ceadú ar feitheamh",
+    "pendingDescription": "Tá an eagraíocht seo ag fanacht le ceadú.",
+    "walletBalance": "{{count}} u ar fáil",
+    "managerTools": "Uirlisí bainisteora",
+    "openDashboardLabel": "Oscail deais {{name}}",
+    "manage": "Bainistigh",
+    "reviewApplications": "Athbhreithnigh iarratais",
+    "reviewHours": "Athbhreithnigh uaireanta",
+    "postOpportunity": "Foilsigh deis",
     "tabs": {
-      "overview": "Overview",
-      "applications": "Applications",
-      "hours": "Hours review",
-      "volunteers": "Volunteers",
-      "wallet": "Wallet",
-      "settings": "Settings"
+      "overview": "Forbhreathnú",
+      "applications": "Iarratais",
+      "hours": "Athbhreithniú uaireanta",
+      "volunteers": "Oibrithe deonacha",
+      "wallet": "Sparán",
+      "settings": "Socruithe"
     },
     "stats": {
-      "volunteers": "Volunteers",
-      "pendingApplications": "Applications",
-      "pendingHours": "Hours to review",
-      "walletBalance": "Wallet",
-      "approvedHours": "Approved hours",
-      "activeOpportunities": "Active opportunities"
+      "volunteers": "Oibrithe deonacha",
+      "pendingApplications": "Iarratais",
+      "pendingHours": "Uaireanta le hathbhreithniú",
+      "walletBalance": "Sparán",
+      "approvedHours": "Uaireanta ceadaithe",
+      "activeOpportunities": "Deiseanna gníomhacha"
     },
     "status": {
-      "active": "Active",
-      "approved": "Approved",
-      "pending": "Pending",
-      "declined": "Declined"
+      "active": "Gníomhach",
+      "approved": "Ceadaithe",
+      "pending": "Ar feitheamh",
+      "declined": "Diúltaithe"
     },
     "roles": {
-      "owner": "Owner",
-      "admin": "Admin",
-      "member": "Member",
-      "volunteer": "Volunteer"
+      "owner": "Úinéir",
+      "admin": "Riarthóir",
+      "member": "Ball",
+      "volunteer": "Oibrí deonach"
     },
     "applications": {
-      "empty": "No applications to review.",
-      "applied": "Applied {{date}}",
-      "actionError": "Could not update this application."
+      "empty": "Níl aon iarratas le hathbhreithniú.",
+      "applied": "Rinneadh iarratas ar {{date}}",
+      "actionError": "Níorbh fhéidir an t-iarratas seo a nuashonrú."
     },
     "hours": {
-      "empty": "No hours are waiting for review.",
-      "approve": "Approve hours",
-      "decline": "Decline",
-      "actionError": "Could not update this hours entry."
+      "empty": "Níl aon uaireanta ag fanacht le hathbhreithniú.",
+      "approve": "Ceadaigh na huaireanta",
+      "decline": "Diúltaigh",
+      "actionError": "Níorbh fhéidir an iontráil uaireanta seo a nuashonrú."
     },
     "volunteers": {
-      "empty": "No approved volunteers yet.",
-      "summary": "{{hours}}h across {{count}} applications",
-      "openProfile": "Open profile for {{name}}"
+      "empty": "Níl aon oibrí deonach ceadaithe fós.",
+      "summary": "{{hours}} u thar {{count}} iarratas",
+      "openProfile": "Oscail próifíl {{name}}"
     },
     "wallet": {
       "balance": "Wallet balance",
