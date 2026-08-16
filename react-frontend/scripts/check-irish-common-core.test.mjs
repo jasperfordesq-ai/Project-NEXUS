@@ -121,6 +121,8 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /Buaileann: \{\{schedule\}\}|Féach Club|creidmheas\/u(?:\s|$)/u);
   assert.doesNotMatch(allIrish, /Ualach ard cúraim|Ualach measartha cúraim|logaí cúraim/u);
   assert.doesNotMatch(allIrish, /Níl suim acu ann|I bhfad ar shiúl|Ní oireann sé do mo scileanna/u);
+  assert.doesNotMatch(allIrish, /Cuardaigh liostaí, comhaltaí|Gan gníomhartha comhoiriúnacha/u);
+  assert.doesNotMatch(allIrish, /le haghaidh mear-ghníomhartha|Dún roghchlár cruthaithe|Aitheantas gan fhíorú/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -191,4 +193,11 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.match(irish.caregiver.burnout_warning, /go nglacann tú sos/u);
   assert.equal(irish.dismiss_reasons.not_interested, 'Níl suim agam ann');
   assert.equal(irish.dismiss_reasons.too_far, 'Rófhada uaim');
+  assert.equal(irish.search.placeholder, 'Cuardaigh liostuithe, baill, imeachtaí...');
+  assert.equal(irish.search.clear, 'Glan an cuardach');
+  assert.equal(irish.filter_bar.clear_all, 'Glan iad uile');
+  assert.equal(irish.error_boundary.title, 'Chuaigh rud éigin amú');
+  assert.equal(irish.quick_create.offer_time, 'Tairg do chuid ama');
+  assert.equal(irish.verification.not_id_verified, 'Níor fíoraíodh an t-aitheantas');
+  assert.equal(irish.verification.badge.email_verified, 'Seoladh ríomhphoist fíoraithe');
 });

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish member-shell controls now use the platform’s actual content and clearer recovery language.** Global search now looks for listings and members rather than generic lists and committee members; quick actions, clearing filters, quick creation and error recovery use complete natural instructions; and identity badges distinguish a verified email address from an email message while stating unverified identity as an action that has not happened.
+
 - **Irish wellbeing, caregiver-load and match-dismissal wording now speaks clearly from the member’s perspective.** Low mood and fair wellbeing scores no longer read like object states or moral judgements; caregiver load and rest guidance identify the caregiver and avoid system-log language; and dismissal reasons now say “I am not interested”, “too far from me”, or that a match is outside the member’s skills instead of describing an unnamed third person.
 
 - **Irish local-discovery and regional-points journeys no longer contain misleading literal translations.** Club schedules now say when a club meets rather than that it “hits”; marketplace rates use a complete per-hour label; and the regional-points summary no longer describes lifetime earnings as floods or member IDs as wall identifiers. The malformed transfer amount example and missing negative transaction empty state are repaired, with the numeric format explicitly reviewed as a language-neutral invariant.

@@ -171,11 +171,11 @@
     "new_event": "Imeacht Nua"
   },
   "search": {
-    "placeholder": "Cuardaigh liostaí, comhaltaí, imeachtaí...",
+    "placeholder": "Cuardaigh liostuithe, baill, imeachtaí...",
     "searching": "Ag cuardach...",
     "suggestions": "Moltaí",
     "quick_links": "Naisc Thapa",
-    "clear": "Glan cuardach",
+    "clear": "Glan an cuardach",
     "clear_recent": "Glan na cuardaigh is déanaí",
     "close_search": "Dún an cuardach",
     "type_listing": "Liostú",
@@ -183,9 +183,9 @@
     "type_event": "Imeacht",
     "type_group": "Grúpa",
     "actions": "Gníomhartha",
-    "no_actions": "Gan gníomhartha comhoiriúnacha",
+    "no_actions": "Níor aimsíodh aon ghníomh meaitseála",
     "recent": "Le déanaí",
-    "actions_hint": "Clóscríobh > le haghaidh mear-ghníomhartha",
+    "actions_hint": "Clóscríobh > chun mearghníomhartha a fheiceáil",
     "view_all": "Féach ar gach toradh",
     "no_suggestions": "Níor aimsíodh aon mheaitseáil thapa",
     "search_for": "Cuardaigh"
@@ -193,7 +193,7 @@
   "filter_bar": {
     "filters": "Scagairí",
     "more_filters": "Tuilleadh scagairí",
-    "clear_all": "Glan go léir",
+    "clear_all": "Glan iad uile",
     "active_filters": "Scagairí gníomhacha",
     "remove_filter": "Bain an scagaire: {{filter}}",
     "show_results": "Taispeáin {{count}} torthaí",
@@ -411,7 +411,7 @@
     "hours_short_two": "{{count}} u"
   },
   "error_boundary": {
-    "title": "Chuaigh rud éigin mícheart",
+    "title": "Chuaigh rud éigin amú",
     "description": "Tharla earráid gan choinne. Bain triail eile as nó téigh ar ais go dtí an leathanach baile.",
     "component_stack": "Cruach Comhpháirteanna",
     "try_again": "Bain Triail Eile As",
@@ -419,7 +419,7 @@
   },
   "quick_create": {
     "title": "Cruthaigh Rud Nua",
-    "close_aria": "Dún roghchlár cruthaithe",
+    "close_aria": "Dún an roghchlár cruthaithe",
     "new_listing": "Liostú Nua",
     "new_listing_desc": "Tairg nó iarr seirbhís",
     "new_event": "Imeacht Nua",
@@ -428,7 +428,7 @@
     "new_group_desc": "Tosaigh grúpa pobail",
     "new_goal": "Sprioc Nua",
     "new_goal_desc": "Socraigh sprioc phearsanta",
-    "offer_time": "Tairg am",
+    "offer_time": "Tairg do chuid ama",
     "offer_time_desc": "Oscail an mol cúraim"
   },
   "caring_community": {
@@ -1004,9 +1004,9 @@
   "map_unavailable": "Níl an radharc léarscáile ar fáil",
   "identity_not_verified": "Aitheantas neamhfhíoraithe",
   "verification": {
-    "not_id_verified": "Aitheantas gan fhíorú",
+    "not_id_verified": "Níor fíoraíodh an t-aitheantas",
     "badge": {
-      "email_verified": "Ríomhphost fíoraithe",
+      "email_verified": "Seoladh ríomhphoist fíoraithe",
       "phone_verified": "Uimhir theileafóin fíoraithe",
       "id_verified": "Aitheantas fíoraithe",
       "dbs_checked": "Seiceáil DBS déanta",
