@@ -281,19 +281,19 @@
         }
       },
       "content_and_communication": {
-        "title": "Ábhar agus cumarsáid",
+        "title": "Ábhar agus Cumarsáid",
         "items": {
           "blog": {
             "title": "Blag",
             "description": "Bainistíocht ábhair agus nuacht pobail á riaradh ag an tionónta."
           },
           "resources_and_knowledge_base": {
-            "title": "Acmhainní agus bonn eolais",
+            "title": "Acmhainní agus Bonn Eolais",
             "description": "Ailt struchtúrtha agus leabharlann acmhainní comhroinnte."
           },
           "help_center": {
-            "title": "Lárionad cabhrach",
-            "description": "Mol doiciméadachta agus CCanna."
+            "title": "Ionad Cabhrach",
+            "description": "Mol doiciméadachta agus ceisteanna coitianta."
           },
           "custom_pages": {
             "title": "Leathanaigh shaincheaptha",
@@ -301,24 +301,24 @@
           },
           "newsletter_system": {
             "title": "Córas nuachtlitreach",
-            "description": "Bainisteoir feachtas ríomhphoist le tástáil A/B, deighiltí cliste, spriocdhíriú geo, seoltaí athfhillteacha, teimpléid, optamú ama seolta agus anailísíocht iomlán oscailtí/cliceanna."
+            "description": "Bainisteoir feachtas ríomhphoist le tástáil A/B, deighleoga cliste, spriocdhíriú geografach, seoltaí athfhillteacha, teimpléid, barrfheabhsú an ama seolta agus anailísíocht iomlán ar oscailtí agus cliceálacha."
           },
           "ai_chat": {
             "title": "Comhrá IS",
-            "description": "Cúntóir cumhachtaithe ag OpenAI le haghaidh treoir ardáin."
+            "description": "Cúntóir atá cumhachtaithe ag OpenAI chun treoir a thabhairt maidir leis an ardán."
           },
           "legal_hub": {
             "title": "Mol dlí",
-            "description": "Doiciméid dhlíthiúla leaganaithe le geataí glactha agus lorg iniúchta."
+            "description": "Doiciméid dhlíthiúla le leaganacha, ceanglais ghlactha agus rian iniúchta."
           },
           "impact_reports": {
             "title": "Tuarascálacha tionchair",
-            "description": "Anailís SROI, tuarascálacha torthaí ball agus cás-staidéir tionchair shóisialta."
+            "description": "Anailís SROI, tuarascálacha ar thorthaí na mball agus cás-staidéir ar thionchar sóisialta."
           },
           "social_prescribing": {
-            "title": "Comhpháirtíocht Oideas Sóisialta",
-            "description": "Cosán bainistithe do sheirbhísí sláinte chun othair a chur ar aghaidh chuig an mbanc ama mar thacaíocht chomhphobail. Déanann dochtúir teaghlaigh, oideasóir sóisialta nó oibrí sláinte pobail tarchur foirmiúil — níl aon bhac féin-tarchuir ann — ansin cuireann comhordaitheoir fáilte phearsanta roimh an duine, tógann próifíl thart ar a láidreachtaí, meaitseálann é le malartuithe, grúpaí agus imeachtaí, agus déanann seiceáil isteach go rialta, ag cur sonraí toraidh ar aghaidh chuig an duine a rinne an tarchur. Leagann an leathanach amach na torthaí foilsithe, lena n-áirítear toradh sóisialta 16:1, agus an chaoi a luíonn an tsamhail le Sláintecare agus le Creat Oidis Shóisialta an HSE.",
-            "note": "Is clár beo comhphobail amháin é seo, curtha i láthair do pháirtithe sláinte agus na seirbhíse poiblí — is cosán tarchuir é a ritheann daoine, ní lasc is féidir le comhphobal eile a chasadh air, agus níl foirm tarchuir dá chuid féin ag an ardán. Más mian leat rud éigin cosúil leis a thógáil linn, déan teagmháil linn."
+            "title": "Comhpháirtíocht Oideasachta Sóisialta",
+            "description": "Conair bhainistithe do sheirbhísí sláinte chun othair a atreorú chuig an mbanc ama le haghaidh tacaíocht phobail. Déanann dochtúir teaghlaigh, oideasóir sóisialta nó oibrí sláinte pobail atreorú foirmiúil — ní bhíonn bac ar fhéinatreorú — agus ansin cuireann comhordaitheoir fáilte phearsanta roimh an duine, cruthaíonn próifíl bunaithe ar a láidreachtaí, meaitseálann é le malartuithe, grúpaí agus imeachtaí, agus déanann teagmháil rialta leis. Seoltar sonraí na dtorthaí ar ais chuig an té a rinne an t-atreorú. Leagtar amach ar an leathanach na torthaí foilsithe, toradh sóisialta 16:1 ina measc, agus an chaoi a bhfuil an múnla ag teacht le Sláintecare agus le Creat Oideasachta Sóisialta FSS.",
+            "note": "Is clár beo de chuid pobal amháin é seo, curtha i láthair do chomhpháirtithe sláinte agus earnála poiblí — conair atreoraithe a bhainistíonn daoine atá ann, ní lasc is féidir le pobal eile a chumasú, agus níl foirm atreoraithe dá chuid féin ag an ardán. Más mian leat rud éigin cosúil leis a thógáil linn, déan teagmháil linn."
           },
           "message_translation": {
             "title": "Aistriúchán Teachtaireachtaí",
@@ -327,27 +327,27 @@
         }
       },
       "trust_reputation_and_safety": {
-        "title": "Muinín, clú agus sábháilteacht",
+        "title": "Muinín, Clú agus Sábháilteacht",
         "items": {
           "member_verification_badges": {
             "title": "Suaitheantais fíoraithe ball",
             "description": "Táscairí stádais fíoraithe ar phróifílí ball."
           },
           "nexusscore": {
-            "title": "NexusScór",
-            "description": "Scóráil dhílseánaigh do chlú agus iontaofacht."
+            "title": "Scór NexusScore",
+            "description": "Córas dílsithe scórála ar chlú agus iontaofacht."
           },
           "streaks": {
-            "title": "Sraitheanna",
-            "description": "Rianú gníomhaíochta comhleanúnaí chun rannpháirtíocht chomhsheasmhach a luach saothair."
+            "title": "Stráicí",
+            "description": "Rianú ar ghníomhaíocht as a chéile chun luach saothair a thabhairt as rannpháirtíocht chomhsheasmhach."
           },
           "personal_insights_dashboard": {
-            "title": "Painéal léargas pearsanta",
+            "title": "Painéal Léargais Phearsanta",
             "description": "Méadrachtaí rannpháirtíochta aonair, uaireanta tugtha/faighte, miondealú scileanna, cairteacha míosúla agus moltaí pearsantaithe."
           },
           "safeguarding_module": {
             "title": "Modúl cosanta",
-            "description": "Sreabhadh oibre athbhreithnithe ábhair fhógartha, tuairisciú teagmhas, rianú sannta cosanta agus painéal sábháilteachta pobail."
+            "description": "Próiseas athbhreithnithe d’ábhar a bhfuil bratach curtha leis, tuairisciú teagmhas, rianú sannachán cosanta agus painéal sábháilteachta pobail."
           },
           "crm": {
             "title": "CRM",
@@ -355,8 +355,8 @@
           },
           "broker_application": {
             "title": "Feidhmchlár Bróicéirí agus Comhordaitheoirí",
-            "description": "Feidhmchlár ar leith do na comhordaitheoirí agus na bróicéirí a théann idir baill nuair a bhíonn imní chosanta nó comhlíonta beo. Coinníonn sé maoirseacht malartuithe agus ceadú meaitseálacha, taifid bhall agus dul chun cinn ionduchtaithe, scuainí modhnóireachta don fhotha, do na tuairimí agus do na léirmheasanna, clibeanna riosca agus liostaí faire, athbhreithniú teachtaireachtaí do bhaill atá faoi mhonatóireacht, rianú teastas árachais, agus tuairisciú.",
-            "note": "Is ról oibríochtúil ann féin é bróicéir, ní riarthóir sóisearach: faigheann bróicéirí an feidhmchlár seo agus diúltaítear d’aon ghnó rochtain dóibh ar an bpainéal riaracháin ginearálta."
+            "description": "Feidhmchlár ar leith do chomhordaitheoirí agus do bhróicéirí a dhéanann idirghabháil idir baill nuair a bhíonn imní ghníomhach maidir le cosaint nó comhlíonadh. Cuireann sé maoirseacht ar mhalartuithe agus ceadú meaitseálacha, taifid ball agus dul chun cinn ionduchtaithe, scuainí modhnóireachta don fhotha, do thráchtanna agus do léirmheasanna, clibeanna riosca agus liostaí faire, athbhreithniú teachtaireachtaí do bhaill atá faoi mhonatóireacht, rianú teastas árachais agus tuairisciú ar fáil.",
+            "note": "Is ról oibríochtúil ann féin é bróicéir, ní riarthóir sóisearach: faigheann bróicéirí an feidhmchlár seo agus ní thugtar rochtain dóibh d’aon ghnó ar an bpainéal riaracháin ginearálta."
           },
           "two_factor_and_passkeys": {
             "title": "Fíordheimhniú Dhá Fhachtóir agus Paseochracha",
@@ -369,7 +369,7 @@
         "items": {
           "semantic_search": {
             "title": "Cuardach séimeantach",
-            "description": "Cuardach lántéacs cumhachtaithe ag Meilisearch thar fhógraí, baill, imeachtaí agus grúpaí le caoinfhulaingt clóscríofa, comhchiallaigh agus aonrú per tionónta."
+            "description": "Cuardach lántéacs atá cumhachtaithe ag Meilisearch thar liostálacha, baill, imeachtaí agus grúpaí, le lamháltas d’earráidí clóscríofa, comhchiallaigh agus aonrú do gach tionónta ar leith."
           },
           "collaborative_filtering": {
             "title": "Scagadh comhoibríoch",
@@ -377,31 +377,31 @@
           },
           "semantic_embeddings": {
             "title": "Leabuithe séimeantacha",
-            "description": "Meaitseáil ábhair chumhachtaithe ag OpenAI d'fhógraí, baill agus iarratais."
+            "description": "Meaitseáil ábhair atá cumhachtaithe ag OpenAI do liostálacha, baill agus iarrataí."
           },
           "edgerank_feed": {
             "title": "Fotha EdgeRank",
-            "description": "Rangú fotha meáite ag meath ama, gaol agus rannpháirtíocht."
+            "description": "Rangú an fhotha de réir meath ama, comhghaoil agus rannpháirtíochta."
           },
           "matchrank_and_communityrank": {
             "title": "MatchRank agus CommunityRank",
-            "description": "Scóráil chaighdeáin Bayesach le heatraimh mhuiníne Wilson."
+            "description": "Scóráil cháilíochta Bháéisianach le heatraimh mhuiníne Wilson."
           },
           "group_recommendations": {
             "title": "Moltaí grúpa",
-            "description": "Aimsiú grúpaí bunaithe ar threochtaí agus ar ghaol."
+            "description": "Aimsiú grúpaí bunaithe ar threochtaí agus ar chomhghaol."
           },
           "match_learning": {
             "title": "Foghlaim meaitseála",
             "description": "Lúb aiseolais a fheabhsaíonn moltaí ó idirghníomhaíochtaí úsáideoirí."
           },
           "algorithm_health_dashboard": {
-            "title": "Painéal sláinte algartam",
-            "description": "Monatóireacht bheo riaracháin agus tiúnadh na gcóras rangaithe go léir."
+            "title": "Painéal Sláinte na nAlgartam",
+            "description": "Monatóireacht bheo agus tiúnadh riaracháin ar na córais rangaithe go léir."
           },
           "ai_agents": {
             "title": "Gníomhairí IS",
-            "note": "Tógtha agus múchta de réir réamhshocraithe. Níl aon chomhphobal á úsáid inniu.",
+            "note": "Tógtha agus múchta de réir réamhshocraithe. Níl sé cumasaithe ag aon phobal faoi láthair.",
             "description": "Gníomhairí intleachta saorga do gach pobal a ritheann tascanna de réir sceidil, a chuireann gníomhartha molta faoi bhráid riarthóra lena gceadú agus a chuidíonn le hoibríochtaí laethúla an ardáin. Taifeadtar gach rith agus gach moladh."
           },
           "ai_provider_choice": {
@@ -411,81 +411,81 @@
         }
       },
       "caring_community_layer": {
-        "title": "Ciseal pobail chúraim",
+        "title": "Ciseal Cúraim Phobail",
         "items": {
           "civic_digest": {
-            "title": "Achoimre shibhialta",
+            "title": "Achoimre Chathartha",
             "description": "Achoimre thréimhsiúil ar ghníomhaíocht agus torthaí an phobail do pháirtithe leasmhara."
           },
           "success_stories": {
-            "title": "Scéalta rathúla",
-            "description": "Cás-staidéir roghnaithe ar thorthaí faoi cheannaireacht ball."
+            "title": "Scéalta Ratha",
+            "description": "Cás-staidéir roghnaithe ar thorthaí faoi stiúir na mball."
           },
           "feedback_inbox": {
-            "title": "Bosca aiseolais isteach",
-            "description": "Bailiú lárnach aiseolais píolóta le sórtáil riaracháin."
+            "title": "Bosca Isteach Aiseolais",
+            "description": "Bailiú lárnach aiseolais ón treoirthionscadal, le triáiseáil riaracháin."
           },
           "integration_showcase": {
-            "title": "Taispeántas comhtháthaithe",
-            "description": "Dromchla poiblí do pháirtithe agus do chomhtháthuithe nasctha."
+            "title": "Taispeántas Comhtháthuithe",
+            "description": "Comhéadan poiblí do chomhpháirtithe nasctha agus dá gcomhtháthuithe."
           },
           "lead_nurture": {
-            "title": "Cothú leads",
-            "description": "Uirlisí sreabhadh oibre le haghaidh leantóireachta ar pháirtithe leasmhara píolóta."
+            "title": "Cothú Teagmhálaithe Féideartha",
+            "description": "Uirlisí sreafa oibre chun obair leantach a dhéanamh le páirtithe leasmhara an treoirthionscadail."
           },
           "copilot": {
-            "title": "Cóipchirt",
+            "title": "Cúntóir Copilot",
             "description": "Cúntóir IS comhthéacsúil do riarthóirí pobail."
           },
           "request_help": {
             "title": "Iarr Cabhair agus Tairg Gar",
-            "description": "Inis do na comharsana cad atá uait gan liostú foirmiúil a scríobh, nó taifead gar neamhfhoirmiúil a rinne tú cheana. Ní gá creidmheasanna ama le gar — ní dhéantar ach aitheantas a thabhairt dó."
+            "description": "Inis do do chomharsana cad atá uait gan liostáil fhoirmiúil a scríobh, nó taifead gníomh cineáltais neamhfhoirmiúil atá déanta agat cheana féin. Ní gá creidmheasanna ama le gar — ní thugtar ach aitheantas dó."
           },
           "care_relationships": {
             "title": "Caidrimh Chúraim",
-            "description": "Nasc tú féin le duine a bhfuil tú ag tabhairt cúraim neamhfhoirmiúil dó, féach ar gach duine faoi do chúram in aon áit amháin, socraigh clúdach sealadach nuair a bhíonn sos nó turas de dhíth ort, agus cuir caidreamh ar sos nó cuir deireadh leis gan a stair a chailleadh."
+            "description": "Déan nasc le duine dá dtugann tú cúram neamhfhoirmiúil, féach ar gach duine faoi do chúram in aon áit amháin, socraigh clúdach sealadach nuair a bhíonn faoiseamh uait nó nuair atá tú as baile, agus cuir caidreamh ar sos nó deireadh leis gan a stair a chailleadh."
           },
           "hour_gifting_and_transfer": {
             "title": "Bronnadh, Aistrithe agus Cúram Amach Anseo",
-            "description": "Bronn uaireanta bainc ar theaghlach, ar chairde nó ar aon duine a bhfuil gá acu leo; tabhair do chuid uaireanta bainc leat má bhogann tú go comhphobal eile a ritheann NEXUS; nó fág iad i gciste cúraim don todhchaí chun tarraingt orthu níos déanaí le haghaidh siopadóireachta, ceapachán, nó comhluadair go simplí."
+            "description": "Bronn uaireanta atá curtha i dtaisce ar do theaghlach, ar chairde nó ar aon duine a bhfuil gá acu leo; tabhair na huaireanta leat má bhogann tú go pobal eile a úsáideann NEXUS; nó fág i gciste cúraim don todhchaí iad lena n-úsáid níos déanaí le haghaidh siopadóireachta, coinní nó comhluadair."
           },
           "warmth_pass": {
             "title": "Pas Teasa",
-            "description": "Dintiúr iontaoibhe iniompartha a thuilleann ball ar shroicheadh sraithe Iontaofa, a thaispeánann a uaireanta logáilte, léirmheasanna piaraí, fíorú céannachta agus na réimsí a gcuidíonn sé leo. Taispeánann baill é do lucht cúraim, do chomhordaitheoirí agus d’eagraíochtaí mar chruthúnas gur cabhróir iontaofa é."
+            "description": "Dintiúr iontaobhais iniompartha a thuilleann ball nuair a shroicheann sé an leibhéal Iontaofa. Taispeántar ann na huaireanta atá taifeadta aige, léirmheasanna ó phiaraí, fíorú céannachta agus na réimsí ina dtugann sé cabhair. Taispeánann baill é d’fhaighteoirí cúraim, do chomhordaitheoirí agus d’eagraíochtaí mar chruthúnas gur cúntóirí iontaofa iad."
           },
           "trust_tiers": {
-            "title": "Sraitheanna Iontaoibhe",
-            "description": "Seasamh baill sa chomhphobal, le miondealú soiléir ar an gcaoi ar thuill sé a shraith reatha agus cad a iarrann an chéad cheann eile."
+            "title": "Leibhéil Iontaobhais",
+            "description": "Seasamh an bhaill sa phobal, le miondealú soiléir ar an gcaoi ar thuill sé a leibhéal reatha agus ar a bhfuil riachtanach don chéad leibhéal eile."
           },
           "care_providers": {
             "title": "Eolaire Soláthraithe Cúraim",
-            "description": "Aimsigh seirbhísí cúraim áitiúla, ionaid lae, cumainn agus oibrithe deonacha i do réigiún taobh le cabhair ó bhall go ball."
+            "description": "Aimsigh seirbhísí cúraim áitiúla, ionaid lae, cumainn agus saorálaithe i do réigiún, chomh maith le cabhair idir baill."
           },
           "safeguarding_reporting": {
             "title": "Tuairisciú Imní",
-            "description": "Is féidir le baill imní chosanta a ardú iad féin, agus déanann an fhoireann é a athbhreithniú, a shannadh agus a réiteach in aghaidh loga gníomhaíochta nach féidir ach cur leis, riamh a athscríobh."
+            "description": "Is féidir le baill imní cosanta a thuairisciú iad féin. Déanann an fhoireann athbhreithniú uirthi, sannann siad í agus réitíonn siad í de réir loga gníomhaíochta nach féidir a athscríobh, ach cur leis."
           },
           "surveys_and_projects": {
             "title": "Suirbhéanna agus Tionscadail Chomhphobail",
-            "description": "Bailigh aiseolas struchtúrtha ó chónaitheoirí, ó pháirtithe bardasach agus ó fhoirne clár, agus comhordaigh tionscadail chomhphobail leis na daoine atá páirteach."
+            "description": "Bailigh aiseolas struchtúrtha ó chónaitheoirí, ó chomhpháirtithe bardasacha agus ó fhoirne clár, agus comhordaigh tionscadail phobail leis na daoine atá páirteach iontu."
           },
           "municipality_reporting": {
             "title": "Tuairisciú Bardasach",
-            "description": "Féilire bardasach comhroinnte, bosca aiseolais cónaitheoirí a chuireann ceisteanna, smaointe, fadhbanna agus gearáin chuig an bhfoireann cheart, agus tuairisciú tógtha do pháirtithe comhairle agus na seirbhíse poiblí."
+            "description": "Féilire bardasach comhroinnte, bosca isteach d’aiseolas cónaitheoirí a sheolann ceisteanna, smaointe, fadhbanna agus gearáin chuig an bhfoireann cheart, agus tuairisciú a tógadh do chomhpháirtithe comhairle agus earnála poiblí."
           },
           "community_market": {
             "title": "Margadh Comhphobail",
-            "description": "Aon áit amháin chun seirbhísí creidmheasa ama agus earraí áitiúla a chuirtear ar fáil laistigh den chomhphobal a fháil amach."
+            "description": "Áit amháin chun seirbhísí ar creidmheasanna ama agus earraí áitiúla atá á dtairiscint sa phobal a aimsiú."
           },
           "time_credit_redemption": {
             "title": "Creidmheasanna Ama a Chaitheamh go hÁitiúil",
-            "description": "Feiceann baill na huaireanta atá tuillte acu agus caitheann siad iad i ngnólachtaí áitiúla atá páirteach, le stair gach fuascailte."
+            "description": "Feiceann baill na huaireanta atá tuillte acu agus caitheann siad iad i ngnólachtaí áitiúla rannpháirteacha, agus coinnítear stair iomlán ar gach úsáid."
           }
         },
-        "intro": "Ciseal comhthacaíochta comhtháite a thugann cúram laethúil, obair dheonach, eagraíochtaí agus tionchar le chéile. Fanann sé múchta go dtí go roghnaíonn comhphobal é, agus tugann an painéal riaracháin lipéad Alfa air, mar sin bíonn sliseog Réamhamharc ar gach rud anseo."
+        "intro": "Ciseal comhchabhrach comhtháite a thugann cúram laethúil, obair dheonach, eagraíochtaí agus tionchar le chéile. Fanann sé múchta go dtí go roghnaíonn pobal é a chumasú, agus tugann an painéal riaracháin lipéad Alfa air, mar sin bíonn lipéad Réamhamhairc ar gach rud anseo."
       },
       "built_for_production": {
-        "title": "Tógtha don táirgeadh",
+        "title": "Tógtha don Táirgeadh",
         "items": {
           "enterprise_security": {
             "title": "Slándáil fhiontair",
@@ -493,11 +493,11 @@
           },
           "stripe_payments_layer": {
             "title": "Ciseal íocaíochtaí Stripe",
-            "description": "Síntiúis, síntiúis, margadh (Connect) agus fíorú aitheantais, le láimhseáil idempotent webhook agus clúdach domhain tástála ar shreabhadh airgid."
+            "description": "Síntiúis, tabhartais, íocaíochtaí margaidh (Connect) agus fíorú aitheantais, le láimhseáil idimitheach webhook agus clúdach cuimsitheach tástála ar shreabhadh airgid."
           },
           "gdpr_compliance_suite": {
             "title": "Sraith chomhlíonta GDPR",
-            "description": "Iarratais sonraí, bainistíocht toiliúna, toiliú fianán, rianú sárú agus loga iomlán iniúchta."
+            "description": "Iarrataí ar shonraí, bainistíocht toiliúna, toiliú fianán, rianú sáruithe agus loga iniúchta iomlán."
           },
           "fraud_and_abuse_detection": {
             "title": "Brath calaoise agus mí-úsáide",
@@ -513,7 +513,7 @@
           },
           "wcag_2_1_aa_accessibility": {
             "title": "Inrochtaineacht WCAG 2.1 AA",
-            "description": "Comhlíonadh inrochtaineachta iniúchta thar an dromchla úsáideora."
+            "description": "Comhlíonadh inrochtaineachta iniúchta ar fud na gcomhéadan a fheiceann úsáideoirí."
           },
           "multi_language_support": {
             "title": "Tacaíocht ilteangach",
@@ -521,7 +521,7 @@
           },
           "self_hosted_prerendering": {
             "title": "Réamhrindreáil féinóstáilte",
-            "description": "Pictiúir Playwright le haghaidh bot amháin, freastalaithe ar chreaplaitheoirí SEO; faigheann úsáideoirí an SPA bheo i gcónaí."
+            "description": "Léargais Playwright do róbónna amháin, a sheirbheáiltear ar ríomhchláir innéacsaithe SEO; faigheann úsáideoirí an SPA bheo i gcónaí."
           },
           "guided_onboarding": {
             "title": "Tús treoraithe",
@@ -529,7 +529,7 @@
           },
           "admin_panel": {
             "title": "Painéal riaracháin",
-            "description": "Rialuithe algartaim, diagnóisic, monatóireacht poist cron agus monatóireacht inseachadta ríomhphoist."
+            "description": "Rialuithe algartam, diagnóisic, monatóireacht ar thascanna cron agus monatóireacht ar inseachadacht ríomhphoist."
           },
           "email_webhook_processing": {
             "title": "Próiseáil webhook ríomhphoist",
@@ -537,43 +537,43 @@
           },
           "openapi_3_0_specification": {
             "title": "Sonraíocht OpenAPI 3.0",
-            "description": "Sonraíocht iomlán API le doiciméadachta Swagger UI."
+            "description": "Sonraíocht iomlán API le doiciméadacht Swagger UI."
           },
           "fully_dockerized": {
             "title": "Go hiomlán Dockeraithe",
-            "description": "Ritheann an táirgeadh agus an forbairt ar na bunsraitheanna Docker Compose céanna."
+            "description": "Ritheann an timpeallacht táirgthe agus an timpeallacht forbartha ar na bunsraitheanna Docker Compose céanna."
           },
           "automated_test_suite": {
             "title": "Sraith Tástála Uathoibrithe",
-            "description": "Timpeall 16,500 modh tástála PHP thar 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, gréasáncheangail, cónaidhm, grúpaí agus an margadh. Ritheann gach brú iad, agus cuirtear stop le himscaradh go dtí go seiceáiltear an tiomantas brúite."
+            "description": "Thart ar 16,500 modh tástála PHP i 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, webhooks, cónaidhm, grúpaí agus an margadh. Ritear iad tar éis gach brú chuig Git, agus cuirtear bac ar imscaradh go dtí go mbíonn an tiomantas a brúdh seiceáilte."
           },
           "performance_monitoring": {
             "title": "Monatóireacht Feidhmíochta",
-            "description": "Déantar gach iarratas a chomhaireamh, agus taifeadtar go mion iarratais atá mall, cíocrach ar chuimhne, nó trom ar cheisteanna le haghaidh painéal riaracháin. Ní stóráiltear ach cruth na ceiste, riamh sonraí ball, agus scuabtar seanthaifid gach oíche."
+            "description": "Déantar gach iarratas a chomhaireamh, agus taifeadtar go mion na hiarratais atá mall, a úsáideann an iomarca cuimhne nó a dhéanann an iomarca fiosruithe, lena dtaispeáint ar phainéal riaracháin. Ní stóráiltear ach struchtúr an fhiosraithe, agus ní stóráiltear sonraí ball riamh; scriostar seantaifid gach oíche."
           },
           "partner_api_and_developer_portal": {
-            "title": "API Páirtí agus Tairseach Forbróirí",
-            "note": "Tógtha agus múchta de réir réamhshocraithe. Níl aon pháirtí seachtrach á úsáid inniu.",
-            "description": "API doiciméadaithe a ligeann do pháirtí seachtrach comhtháthú le comhphobal, le fíordheimhniú comharthaí, tagairt críochphointí agus gréasáncheangail, chomh maith le tairseach forbróirí féinseirbhíse do cibé duine atá ag tógáil an chomhtháthaithe."
+            "title": "API Comhpháirtithe agus Tairseach Forbróirí",
+            "note": "Tógtha agus múchta de réir réamhshocraithe. Níl aon chomhpháirtí seachtrach á úsáid faoi láthair.",
+            "description": "API doiciméadaithe a ligeann do chomhpháirtí seachtrach comhtháthú le pobal, le fíordheimhniú trí chomharthaí, tagairt do chríochphointí agus webhooks, chomh maith le tairseach forbróirí féinseirbhíse don fhorbróir atá ag tógáil an chomhtháthaithe."
           },
           "local_advertising": {
             "title": "Fógraíocht Áitiúil",
-            "description": "Feachtais fógraíochta agus brú faoi stiúir an chomhphobail le buiséadú agus uirlisí riaracháin dá gcuid féin, ionas gur féidir le comhphobal gníomhaíocht áitiúil a chur chun cinn é féin.",
+            "description": "Feachtais fógraíochta agus fógraí brú faoi stiúir an phobail, lena mbuiséadú agus lena n-uirlisí riaracháin féin, ionas gur féidir leis an bpobal gníomhaíocht áitiúil a chur chun cinn.",
             "note": "Tógtha agus múchta de réir réamhshocraithe."
           },
           "swiss_fadp_mode": {
             "title": "Mód FADP na hEilvéise",
-            "description": "Meirge toilithe breise agus mód láimhseála sonraí do chomhphobail atá ag feidhmiú faoin Acht Cónaidhme athbhreithnithe um Chosaint Sonraí sa Eilvéis.",
+            "description": "Meirge toilithe breise agus mód láimhseála sonraí do phobail atá ag feidhmiú faoin Acht Cónaidhme athbhreithnithe um Chosaint Sonraí san Eilvéis.",
             "note": "Tógtha agus múchta de réir réamhshocraithe."
           },
           "regional_analytics": {
             "title": "Anailísíocht Réigiúnach",
-            "description": "Tuarascálacha gníomhaíochta réigiúnacha míosúla ullmhaithe do bhardais agus do chomhlachtaí réigiúnacha, á mbainistiú go lárnach seachas ag gach comhphobal.",
+            "description": "Tuarascálacha míosúla ar ghníomhaíocht réigiúnach, ullmhaithe do bhardais agus do chomhlachtaí réigiúnacha agus bainistithe go lárnach seachas ag gach pobal ar leith.",
             "note": "Tógtha agus múchta de réir réamhshocraithe."
           },
           "community_onboarding": {
-            "title": "Ionduchtú Comhphobail Nua",
-            "description": "Conas a chuirtear comhphobal nua ar bun: foirm iarratais phoiblí, nasc a ligeann d’iarratasóirí a ndul chun cinn féin a leanúint, bealach fiosrúcháin do cheisteanna ar dtús, agus uirlisí soláthair riaracháin chun an comhphobal a chur ar a chosa nuair a cheadaítear é."
+            "title": "Ionduchtú Pobail Nua",
+            "description": "Conas a chuirtear pobal nua ar bun: foirm iarratais phoiblí, nasc a ligeann d’iarratasóirí a ndul chun cinn féin a rianú, bealach fiosrúcháin do réamhcheisteanna, agus uirlisí soláthair riaracháin chun an pobal a chumrú nuair a cheadaítear é."
           }
         }
       }

@@ -86,18 +86,8 @@ test('every non-feature Public value is reviewed, translated or language-neutral
   assert.doesNotMatch(journeyText, /Beartaíonn|sconna|"Add"|Suiteáil app|siopa app/u);
 });
 
-test('reviewed Public feature overview, core, federation and member values are complete', () => {
-  const featureSlice = (catalogue) => {
-    const { groups, ...overview } = catalogue.features_page;
-    return {
-      ...overview,
-      groups: {
-        core_platform: groups.core_platform,
-        federation: groups.federation,
-        member_experience: groups.member_experience,
-      },
-    };
-  };
+test('the complete Public feature inventory is reviewed', () => {
+  const featureSlice = (catalogue) => catalogue.features_page;
   const englishFlat = flatten(featureSlice(english));
   const irishFlat = flatten(featureSlice(irish));
   const invariants = new Set([
@@ -106,10 +96,11 @@ test('reviewed Public feature overview, core, federation and member values are c
     'tech_stack.database_value',
     'tech_stack.realtime_value',
     'tech_stack.search_value',
+    'groups.trust_reputation_and_safety.items.crm.title',
   ]);
   const spacedFragments = new Set(['security_body_before', 'security_body_after']);
 
-  assert.equal(englishFlat.size, 171);
+  assert.equal(englishFlat.size, 316);
   for (const [path, englishValue] of englishFlat) {
     assert.ok(irishFlat.has(path), `Missing Irish Public feature key: ${path}`);
     if (invariants.has(path)) {
@@ -134,4 +125,11 @@ test('reviewed Public feature overview, core, federation and member values are c
   assert.doesNotMatch(text, /Eispéireas baill|Fógraí seirbhísí|Modúl aicmithe|Mórmhalartuithe/u);
   assert.doesNotMatch(text, /foláirimh phost sábháilte|foghníomhartha|Foghníomhartha|Cúpóin Cheannaithe/u);
   assert.doesNotMatch(text, /clárú do cheann|á gcruthú in aghaidh an chomhphobail|cruthú státchiste/u);
+  assert.doesNotMatch(text, /Cóipchirt|Cothú leads|Dromchla poiblí|Sraitheanna Iontaoibhe/u);
+  assert.doesNotMatch(text, /sraithe Iontaofa|uaireanta logáilte|imní chosanta a ardú|fuascailte/u);
+  assert.doesNotMatch(text, /Síntiúis, síntiúis|Iarratais sonraí|Pictiúir Playwright|bot amháin/u);
+  assert.doesNotMatch(text, /monatóireacht poist cron|cíocrach ar chuimhne|cruth na ceiste|scuabtar/u);
+  assert.doesNotMatch(text, /API Páirtí|do cibé duine|sa Eilvéis|a chur ar a chosa/u);
+  assert.doesNotMatch(text, /Oideas Sóisialta|Cosán bainistithe|tarchur foirmiúil|Creat Oidis/u);
+  assert.doesNotMatch(text, /NexusScór|ábhair fhógartha|caoinfhulaingt clóscríofa|per tionónta/u);
 });
