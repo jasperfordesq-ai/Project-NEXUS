@@ -51,3 +51,30 @@ test('Irish Privacy preserves data purposes, GDPR rights, and safeguarding bound
   assert.match(irish.privacy.right_restrict_desc, /fad atá ábhar imní á réiteach/u);
   assert.match(irish.privacy.safeguarding_data_body, /Ní thaifeadann bróicéir údaraithe ach cinneadh an phobail/u);
 });
+
+test('Irish Cookie Policy retains only reviewed third-party and browser product names', () => {
+  const englishFlat = flatten(english.cookies);
+  const irishFlat = flatten(irish.cookies);
+  const invariants = new Set([
+    'provider_sentry',
+    'third_party_sentry_label',
+    'third_party_pusher_label',
+    'browser_chrome',
+    'browser_firefox',
+    'browser_safari',
+    'browser_edge',
+  ]);
+
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Cookie Policy key: ${path}`);
+    if (invariants.has(path)) assert.equal(irishFlat.get(path), englishValue, path);
+    else assert.notEqual(irishFlat.get(path), englishValue, path);
+  }
+
+  const cookies = [...irishFlat.values()].join('\n');
+  assert.doesNotMatch(cookies, /Polasai Fianain|Fianain Riiachtanacha|Triiiu Pairtithe|Brúiteoir|browser_edge.*Imeall/u);
+  assert.equal(irish.cookies.third_party_pusher_label, 'Pusher');
+  assert.equal(irish.cookies.browser_edge, 'Edge');
+  assert.match(irish.cookies.manage_warning, /ní bheidh tú in ann logáil isteach/u);
+  assert.match(irish.cookies.cookie_sentry_purpose, /Ní sheoltar tomhais luais ná athsheinm seisiúin ach amháin/u);
+});
