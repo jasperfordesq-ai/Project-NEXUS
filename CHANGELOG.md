@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish Caring Community emergency alerts and Federation discovery now use the intended member actions.** Dismissing an alert is a clear close action, the emergency severity is a noun rather than a dangling adjective, and Federation community discovery uses the platform's established `Cónaidhm` terminology with a natural manual-slug fallback and count label.
+
 - **The complete 671-source-string Irish Legal catalogue has now been semantically reviewed.** The final 67-string Trust & Safety pass removes English fallbacks and Ireland-only emergency advice, restores the global local-emergency-services instruction, translates cross-region Federation, background-check and vetting guidance, and clarifies what the platform verifies, stores, insures and does not guarantee. Exchange steps, first-meeting precautions, disputes, member responsibilities and RGCS rights now use natural Irish. A whole-catalogue gate permits only seven reviewed Sentry, Pusher and browser product names to remain identical to English.
 
 - **The complete 105-string Irish Community Guidelines and Acceptable Use Policy have received semantic review.** Respect, identity, privacy, in-person safety, confidential reporting, proportionate enforcement and independent appeals now read naturally and retain their safeguards. Fraud, impersonation, fake time-credit activity, non-consensual sexual content, intellectual property, spam, artificial engagement, platform interference, account security and serious-breach reporting are repaired; both documents now describe themselves as clear Irish rather than “plain English.”

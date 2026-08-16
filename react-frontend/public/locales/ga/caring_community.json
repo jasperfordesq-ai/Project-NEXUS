@@ -142,22 +142,22 @@
   },
   "emergency_alert": {
     "region_label": "Foláirimh éigeandála",
-    "dismiss": "Díbhe",
+    "dismiss": "Dún",
     "severity_info": "Eolas",
     "severity_warning": "Rabhadh",
-    "severity_danger": "Éigeandála"
+    "severity_danger": "Éigeandáil"
   },
   "federation_picker": {
-    "title": "Brabhsáil pobail chónasctha",
+    "title": "Brabhsáil pobail Chónaidhme",
     "search_placeholder": "Cuardaigh de réir ainm pobail nó réigiúin",
     "browse_button": "Brabhsáil pobail",
     "selected_label": "Roghnaithe:",
     "no_selection": "Níor roghnaíodh aon phobal",
     "select_button": "Roghnaigh",
     "cancel_button": "Cealaigh",
-    "empty": "Níl aon phobail chónasctha le fáil faoi láthair. Is féidir leat fós sluga pobail a chur isteach de láimh.",
-    "fallback_label": "Nó cuir isteach sluga pobail de láimh",
-    "member_count_label": "baill"
+    "empty": "Níl aon phobal Cónaidhme le haimsiú faoi láthair. Is féidir leat sluga pobail a chur isteach de láimh fós.",
+    "fallback_label": "Nó cuir sluga pobail isteach de láimh",
+    "member_count_label": "ball"
   },
   "onboarding": {
     "title": "Fáilte romhat chuig do Phobal Cúraim",

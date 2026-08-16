@@ -80,3 +80,15 @@ test('Irish member-facing care, cover, provider and trust journeys reject known 
   assert.equal(irish.warmth_pass.not_eligible_hint, 'Bain an leibhéal Iontaofa amach chun do Phas Teasa a dhíghlasáil');
   assert.equal(irish.panel.sidebar.search_placeholder, 'Cuardaigh an nascleanúint...');
 });
+
+test('Irish emergency alerts and Federation picker preserve their member actions', () => {
+  const memberSections = [irish.emergency_alert, irish.federation_picker];
+  const memberIrish = memberSections.flatMap(section => [...flatten(section).values()]).join('\n');
+
+  assert.doesNotMatch(memberIrish, /Díbhe|Éigeandála$|pobail chónasctha/u);
+  assert.equal(irish.emergency_alert.dismiss, 'Dún');
+  assert.equal(irish.emergency_alert.severity_danger, 'Éigeandáil');
+  assert.equal(irish.federation_picker.title, 'Brabhsáil pobail Chónaidhme');
+  assert.match(irish.federation_picker.empty, /sluga pobail a chur isteach de láimh fós/u);
+  assert.equal(irish.federation_picker.member_count_label, 'ball');
+});
