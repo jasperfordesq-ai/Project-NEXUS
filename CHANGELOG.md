@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish skill discovery, personal-data export and problem reporting now preserve their full member-facing meaning.** Skill search now searches for skills rather than categories and uses clearer member and proficiency wording; the data-export introduction restores the omitted explanation of machine-readable JSON and the right to move data to another service; and technical-support reports now distinguish blocked core tasks, diagnostic information and reference numbers accurately. Focused assertions guard the restored data-portability promise and repaired actions.
+
 - **Irish coupon, time-credit redemption, saved-collection and thank-you journeys now describe the actions members actually take.** Coupon QR expiry and in-store redemption, merchant discounts and usage limits now use natural retail wording; the member ledger identifies time-credit redemptions rather than abstract loyalty; saved-item empty states and visibility controls are grammatical; and public versus private thank-you notes clearly identify who can see them. Focused shared-catalogue assertions protect the repaired meanings.
 
 - **The React donation journey now stays a donation journey in Irish.** Support levels, recurring and one-off donations, checkout returns, payment recovery, cancellation and supporter recognition no longer describe a paid “premium” subscription or promise extra paid features that the English source explicitly says are not being sold. The shared-catalogue test now protects that distinction.

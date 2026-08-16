@@ -113,6 +113,9 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /lascainí ceannaithe|fuascailte in-stór|Téann an cód QR in éag i gceann/u);
   assert.doesNotMatch(allIrish, /Cód an chúpóin cóipeáilte|Ceannaigh ceann, faigh ceann|Uasúsáid|stair dílseachta/u);
   assert.doesNotMatch(allIrish, /Bain ó shábhálta|Gan aon bhailiúchán|Ní féidir leo seo a fheiceáil ach iadsan/u);
+  assert.doesNotMatch(allIrish, /faigh amach baill|Ní féidir lódáil|Cuardaigh catagóirí scileanna/u);
+  assert.doesNotMatch(allIrish, /Níl catagóirí ag meaitseáil|baill oilte|Leibhéal Inniúlachta/u);
+  assert.doesNotMatch(allIrish, /Do cheart rochtain agus easpórtáil|Ní oibríonn buntasc|Fadhb amhairc nó foclaíochta/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -162,4 +165,12 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.collections.make_public, 'Cuir ar fáil go poiblí');
   assert.equal(irish.appreciations.wall_title, 'Nótaí Buíochais');
   assert.equal(irish.appreciations.private_hint, 'Ní fheicfidh ach an duine sin é seo');
+  assert.equal(irish.skills.search_placeholder, 'Cuardaigh scil...');
+  assert.equal(irish.skills.proficiency.intermediate, 'Idirmheánach');
+  assert.equal(irish.skills.aria_results, '{{count}} moladh scile ar fáil');
+  assert.match(irish.data_export.intro, /iniomparthacht sonraí/u);
+  assert.match(irish.data_export.intro, /seirbhís eile/u);
+  assert.equal(irish.data_export.history.date, 'Dáta iarrtha');
+  assert.equal(irish.report_problem.impact.major, 'Ní oibríonn ceann de na príomhthascanna');
+  assert.equal(irish.report_problem.success_description, 'Cruthaíodh an uimhir thagartha {{reference}}.');
 });
