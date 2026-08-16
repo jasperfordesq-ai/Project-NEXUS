@@ -59,24 +59,24 @@
     "claimError": "Níorbh fhéidir an luach saothair a éileamh."
   },
   "challenges": {
-    "title": "Challenges",
-    "empty": "No challenges yet.",
-    "active": "Active challenges",
-    "completed": "Completed challenges",
+    "title": "Dúshláin",
+    "empty": "Níl aon dúshlán ann fós.",
+    "active": "Dúshláin ghníomhacha",
+    "completed": "Dúshláin chríochnaithe",
     "xpReward": "{{xp}} XP",
     "progress": "{{current}} / {{target}}",
-    "claimXp": "Claim {{xp}} XP",
-    "claimed": "Claimed",
-    "claimedTitle": "Challenge claimed",
-    "claimedMessage": "Challenge reward claimed.",
-    "claimError": "Could not claim challenge."
+    "claimXp": "Éiligh {{xp}} XP",
+    "claimed": "Éilithe",
+    "claimedTitle": "Luach saothair an dúshláin éilithe",
+    "claimedMessage": "Éilíodh luach saothair an dúshláin.",
+    "claimError": "Níorbh fhéidir luach saothair an dúshláin a éileamh."
   },
   "journeys": {
-    "title": "Journeys",
-    "empty": "No journeys yet.",
-    "complete": "Complete",
+    "title": "Turais",
+    "empty": "Níl aon turas ann fós.",
+    "complete": "Críochnaithe",
     "xpReward": "{{xp}} XP",
-    "badgesCollected": "{{earned}} of {{total}} badges"
+    "badgesCollected": "{{earned}} as {{total}} suaitheantas"
   },
   "shop": {
     "title": "Shop",
