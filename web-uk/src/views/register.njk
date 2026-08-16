@@ -186,7 +186,12 @@
               "aria-describedby": "password-hint password-strength-msg"
             }
           }) }}
-          <p id="password-strength-msg" class="govuk-body-s govuk-!-margin-top-2" aria-live="polite"></p>
+          <p id="password-strength-msg" class="govuk-body-s govuk-!-margin-top-2" aria-live="polite"
+            data-msg-idle="{{ t('auth.password_strength.idle') }}"
+            data-msg-too-short="{{ t('auth.password_strength.too_short') }}"
+            data-msg-checking="{{ t('auth.password_strength.checking') }}"
+            data-msg-breached="{{ t('auth.password_strength.breached') }}"
+            data-msg-strong="{{ t('auth.password_strength.strong') }}"></p>
 
           {{ govukInput({
             label: { text: t("auth.password_confirmation_label"), classes: "govuk-label--m" },

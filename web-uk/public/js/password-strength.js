@@ -43,6 +43,16 @@
              tone === 'success' ? 'app-success-message' : '');
     }
 
+    // Advisory strings are rendered into #password-strength-msg data-* attributes
+    // in the member's language (see register.njk / reset-password.njk). This region
+    // is aria-live, so a screen-reader user hears it — it MUST NOT be English-only.
+    // Fall back to English if the template didn't supply a translation, and swap the
+    // :min token for the actual minimum so the number stays in sync with MIN_LEN.
+    function msgText(key, fallback) {
+        var raw = (msg.dataset && msg.dataset[key]) ? msg.dataset[key] : fallback;
+        return raw.replace(/:min/g, MIN_LEN);
+    }
+
     async function sha1Hex(s) {
         var enc = new TextEncoder().encode(s);
         var buf = await crypto.subtle.digest('SHA-1', enc);
@@ -81,23 +91,25 @@
     function onInput() {
         var pw = input.value;
         if (pw.length === 0) {
-            setMessage('Use ' + MIN_LEN + ' or more characters. A memorable passphrase is stronger than a short complex one.', 'idle');
+            setMessage(msgText('msgIdle', 'Use :min or more characters. A memorable passphrase is stronger than a short complex one.'), 'idle');
             return;
         }
         if (pw.length < MIN_LEN) {
-            var remaining = MIN_LEN - pw.length;
-            setMessage('Add ' + remaining + ' more character' + (remaining === 1 ? '' : 's') + '.', 'warn');
+            // A single plural-safe requirement rather than a counted-down "N more
+            // characters", which cannot be translated correctly across 11 locales'
+            // plural rules from a static string.
+            setMessage(msgText('msgTooShort', 'Enter at least :min characters.'), 'warn');
             return;
         }
-        setMessage('Checking against known data breaches…', 'idle');
+        setMessage(msgText('msgChecking', 'Checking against known data breaches…'), 'idle');
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(function () {
             checkHibp(pw).then(function (pwned) {
                 if (pw !== input.value) return; // user kept typing
                 if (pwned) {
-                    setMessage('This password appears in a known data breach. Please choose a different one.', 'error');
+                    setMessage(msgText('msgBreached', 'This password appears in a known data breach. Please choose a different one.'), 'error');
                 } else {
-                    setMessage('Strong enough.', 'success');
+                    setMessage(msgText('msgStrong', 'Strong enough.'), 'success');
                 }
             });
         }, 350);

@@ -1471,6 +1471,13 @@
                 "register_duplicate": "Já existe uma conta com este endereço de e-mail. Tente fazer login ou use um e-mail diferente.",
                 "register_password_pwned": "Esta senha foi encontrada em violações de dados conhecidas. Escolha uma senha diferente.",
                 "register_password_mismatch": "A senha e a confirmação não coincidem. Digite novamente a mesma senha em ambos os campos.",
+                "password_strength": {
+                    "idle": "Use :min ou mais caracteres. Uma senha memorável é mais forte do que uma senha curta e complexa.",
+                    "too_short": "Insira pelo menos :min caracteres.",
+                    "checking": "Verificando violações de dados conhecidas.",
+                    "breached": "Esta senha aparece em uma violação de dados conhecida. Por favor, escolha um diferente.",
+                    "strong": "Forte o suficiente."
+                },
                 "register_terms_required": "Você deve aceitar os termos de serviço e a política de privacidade para se registrar.",
                 "register_invite_required": "É necessário um código de convite para se registrar nesta comunidade. Peça um a um administrador da comunidade.",
                 "register_invite_invalid": "Este código de convite é inválido, expirou ou já foi usado. Verifique o código e tente novamente.",

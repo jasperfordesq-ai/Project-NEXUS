@@ -473,6 +473,16 @@ return [
         'register_duplicate' => 'An account with this email address already exists. Try signing in or use a different email.',
         'register_password_pwned' => 'This password has been found in known data breaches. Choose a different password.',
         'register_password_mismatch' => 'Password and confirmation do not match. Re-enter the same password in both fields.',
+        // Live password-strength advisory shown (and read aloud) as the member
+        // types on the register and reset-password forms. :min is replaced with
+        // the minimum length client-side. See public/js/password-strength.js.
+        'password_strength' => [
+            'idle' => 'Use :min or more characters. A memorable passphrase is stronger than a short complex one.',
+            'too_short' => 'Enter at least :min characters.',
+            'checking' => 'Checking against known data breaches.',
+            'breached' => 'This password appears in a known data breach. Please choose a different one.',
+            'strong' => 'Strong enough.',
+        ],
         'register_terms_required' => 'You must accept the terms of service and privacy policy to register.',
         'register_invite_required' => 'An invite code is required to register on this community. Ask a community administrator for one.',
         'register_invite_invalid' => 'This invite code is invalid, has expired, or has already been used. Check the code and try again.',

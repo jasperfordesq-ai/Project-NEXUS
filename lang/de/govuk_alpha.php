@@ -464,6 +464,13 @@ return [
         'register_duplicate' => 'Es existiert bereits ein Konto mit dieser E-Mail-Adresse. Versuchen Sie, sich anzumelden, oder verwenden Sie eine andere E-Mail-Adresse.',
         'register_password_pwned' => 'Dieses Passwort wurde bei bekannten Datenschutzverletzungen gefunden. Wählen Sie ein anderes Passwort.',
         'register_password_mismatch' => 'Passwort und Bestätigung stimmen nicht überein. Geben Sie in beiden Feldern erneut dasselbe Passwort ein.',
+        'password_strength' => [
+            'idle' => 'Verwenden Sie :min oder mehr Zeichen. Eine einprägsame Passphrase ist stärker als eine kurze, komplexe.',
+            'too_short' => 'Geben Sie mindestens :min Zeichen ein.',
+            'checking' => 'Prüfung auf bekannte Datenschutzverletzungen.',
+            'breached' => 'Dieses Passwort taucht bei einem bekannten Datenverstoß auf. Bitte wählen Sie eine andere aus.',
+            'strong' => 'Stark genug.',
+        ],
         'register_terms_required' => 'Um sich zu registrieren, müssen Sie die Nutzungsbedingungen und Datenschutzbestimmungen akzeptieren.',
         'register_invite_required' => 'Für die Registrierung in dieser Community ist ein Einladungscode erforderlich. Bitten Sie einen Community-Administrator darum.',
         'register_invite_invalid' => 'Dieser Einladungscode ist ungültig, abgelaufen oder wurde bereits verwendet. Überprüfen Sie den Code und versuchen Sie es erneut.',

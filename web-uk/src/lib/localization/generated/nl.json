@@ -1471,6 +1471,13 @@
                 "register_duplicate": "Er bestaat al een account met dit e-mailadres. Probeer in te loggen of gebruik een ander e-mailadres.",
                 "register_password_pwned": "Dit wachtwoord is aangetroffen bij bekende datalekken. Kies een ander wachtwoord.",
                 "register_password_mismatch": "Wachtwoord en bevestiging komen niet overeen. Voer in beide velden opnieuw hetzelfde wachtwoord in.",
+                "password_strength": {
+                    "idle": "Gebruik :min of meer tekens. Een gedenkwaardige wachtwoordzin is sterker dan een korte, complexe wachtwoordzin.",
+                    "too_short": "Voer minimaal :min tekens in.",
+                    "checking": "Controle op bekende datalekken.",
+                    "breached": "Dit wachtwoord komt voor bij een bekend datalek. Kies een andere.",
+                    "strong": "Sterk genoeg."
+                },
                 "register_terms_required": "Om u te kunnen registreren, moet u de servicevoorwaarden en het privacybeleid accepteren.",
                 "register_invite_required": "Om u bij deze community te registreren, is een uitnodigingscode vereist. Vraag er een aan een communitybeheerder.",
                 "register_invite_invalid": "Deze uitnodigingscode is ongeldig, verlopen of al gebruikt. Controleer de code en probeer het opnieuw.",

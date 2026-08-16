@@ -306,6 +306,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     transferForm,
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
     donateForm,
+    donateIdempotencyKey: randomUUID(),
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -365,6 +366,7 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
     recipientQuery,
     donateTarget,
     status: walletManageStatus(req.query.status, req.query.error, req.query.donate_error, res.locals.t),
+    donateIdempotencyKey: randomUUID(),
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -410,7 +412,12 @@ function walletDonationPayload(body) {
     amount,
     message: String(body.message || '').trim().slice(0, 255),
     recipient_type: target === 'user' ? 'user' : 'community_fund',
-    recipient_id: recipientId
+    recipient_id: recipientId,
+    // 🔴 This is money, exactly like transferPayload above. The key is minted per
+    // render (randomUUID) so a real submit always carries a long one; an empty or
+    // stubby key means a replayed / hand-crafted request. Passing it lets Laravel
+    // dedupe a double-submit (back button, slow retry) the same way transfer does.
+    idempotency_key: String(body.idempotency_key || '').trim()
   };
 }
 
@@ -435,13 +442,20 @@ router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
   if (payload.recipient_type === 'user' && (!payload.recipient_id || Number(payload.recipient_id) <= 0)) {
     return failDonate('invalid');
   }
+  // Reject a missing/stubby idempotency key exactly as transferPayload does — a
+  // real render always supplies a randomUUID, so anything under 8 chars is a
+  // replay or hand-crafted request and must not reach the donate endpoint blank.
+  if (payload.idempotency_key.length < 8) {
+    return failDonate('invalid');
+  }
 
   try {
     await donateCredits(req.token, {
       recipient_type: payload.recipient_type,
       recipient_id: payload.recipient_type === 'user' ? Number(payload.recipient_id) : undefined,
       amount: payload.amount,
-      message: payload.message
+      message: payload.message,
+      idempotency_key: payload.idempotency_key
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;

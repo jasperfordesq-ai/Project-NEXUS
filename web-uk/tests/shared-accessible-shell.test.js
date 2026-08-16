@@ -7607,6 +7607,10 @@ describe('shared accessible frontend shell', () => {
       .get('/wallet')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
     const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+    // The donate form now carries a per-render idempotency key (like transfer),
+    // so a double-submit can't donate twice. Send the one the form rendered.
+    const keyMatch = first.text.match(/name="idempotency_key" value="([^"]+)"/);
+    expect(keyMatch).not.toBeNull();
 
     const response = await agent
       .post('/wallet/donate')
@@ -7616,7 +7620,8 @@ describe('shared accessible frontend shell', () => {
         _csrf: csrfMatch[1],
         target: 'community_fund',
         amount: '2',
-        message: ' Thank you '
+        message: ' Thank you ',
+        idempotency_key: keyMatch[1]
       });
 
     expect(response.status).toBe(302);
@@ -7624,8 +7629,37 @@ describe('shared accessible frontend shell', () => {
     expect(api.donateCredits).toHaveBeenCalledWith('test-token', expect.objectContaining({
       recipient_type: 'community_fund',
       amount: 2,
-      message: 'Thank you'
+      message: 'Thank you',
+      idempotency_key: keyMatch[1]
     }));
+  });
+
+  it('rejects a wallet donation with a missing or stubby idempotency key', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+
+    const first = await agent
+      .get('/wallet')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+
+    // A valid amount but no idempotency key (a replayed / hand-crafted request)
+    // must be refused before it reaches the donate API, exactly like transfer.
+    const response = await agent
+      .post('/wallet/donate')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({
+        _csrf: csrfMatch[1],
+        target: 'community_fund',
+        amount: '2'
+      });
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/wallet?status=donate-failed&donate_error=invalid#donate');
+    expect(api.donateCredits).not.toHaveBeenCalled();
   });
 
   it('submits the Laravel saved destroy route through the bookmark toggle API helper', async () => {

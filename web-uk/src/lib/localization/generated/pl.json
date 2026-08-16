@@ -1471,6 +1471,13 @@
                 "register_duplicate": "Konto o tym adresie e-mail już istnieje. Spróbuj się zalogować lub użyj innego adresu e-mail.",
                 "register_password_pwned": "To hasło zostało znalezione w znanych przypadkach naruszenia bezpieczeństwa danych. Wybierz inne hasło.",
                 "register_password_mismatch": "Hasło i potwierdzenie nie zgadzają się. Wpisz ponownie to samo hasło w obu polach.",
+                "password_strength": {
+                    "idle": "Użyj :min lub więcej znaków. Zapadające w pamięć hasło jest silniejsze niż krótkie, złożone hasło.",
+                    "too_short": "Wpisz co najmniej :min znaków.",
+                    "checking": "Sprawdzanie znanych naruszeń danych.",
+                    "breached": "To hasło pojawia się w przypadku znanego naruszenia bezpieczeństwa danych. Proszę wybrać inny.",
+                    "strong": "Wystarczająco silny."
+                },
                 "register_terms_required": "Aby się zarejestrować, musisz zaakceptować Regulamin usługi i Politykę prywatności.",
                 "register_invite_required": "Aby zarejestrować się w tej społeczności, wymagany jest kod zaproszenia. Poproś o nią administratora społeczności.",
                 "register_invite_invalid": "Ten kod zaproszenia jest nieprawidłowy, wygasł lub został już wykorzystany. Sprawdź kod i spróbuj ponownie.",

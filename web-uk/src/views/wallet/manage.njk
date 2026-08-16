@@ -122,7 +122,7 @@
     <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_wallet.states.warning") }}</span>{{ t("govuk_alpha_wallet.donate.warning") }}</strong></div>
 
     <form method="post" action="{{ urlFor('/wallet/donate') }}">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ donateIdempotencyKey }}">
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset" aria-describedby="donate-target-hint">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_wallet.donate.target_legend") }}</legend>
@@ -137,7 +137,7 @@
       {% if recipients.length %}<input type="hidden" name="recipient_id" value="{{ recipients[0].id }}"><p class="govuk-body">{{ recipients[0].name }}</p>{% else %}<p class="govuk-hint">{{ t("govuk_alpha_wallet.donate.recipient_required") }}</p>{% endif %}
       <div class="govuk-form-group"><label class="govuk-label" for="donate-amount">{{ t("govuk_alpha_wallet.donate.amount_label") }}</label><div id="donate-amount-hint" class="govuk-hint">{{ t("govuk_alpha_wallet.donate.amount_hint") }}</div><input class="govuk-input govuk-input--width-5" id="donate-amount" name="amount" type="number" min="1" max="1000" step="1" inputmode="numeric" aria-describedby="donate-amount-hint" required></div>
       <div class="govuk-form-group"><label class="govuk-label" for="donate-message">{{ t("govuk_alpha_wallet.donate.message_label") }}</label><div id="donate-message-hint" class="govuk-hint">{{ t("govuk_alpha_wallet.donate.message_hint") }}</div><input class="govuk-input" id="donate-message" name="message" type="text" maxlength="255" aria-describedby="donate-message-hint"></div>
-      <button class="govuk-button" data-module="govuk-button">{% if recipients.length and donateTarget == "user" %}{{ t("govuk_alpha_wallet.donate.button_member", { name: recipients[0].name }) }}{% else %}{{ t("govuk_alpha_wallet.donate.button_fund") }}{% endif %}</button>
+      <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{% if recipients.length and donateTarget == "user" %}{{ t("govuk_alpha_wallet.donate.button_member", { name: recipients[0].name }) }}{% else %}{{ t("govuk_alpha_wallet.donate.button_fund") }}{% endif %}</button>
     </form>
   </section>
 

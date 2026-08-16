@@ -464,6 +464,13 @@ return [
         'register_duplicate' => 'Esiste già un account con questo indirizzo email. Prova ad accedere o utilizza un\'e-mail diversa.',
         'register_password_pwned' => 'Questa password è stata trovata in violazioni di dati note. Scegli una password diversa.',
         'register_password_mismatch' => 'Password e conferma non corrispondono. Reinserisci la stessa password in entrambi i campi.',
+        'password_strength' => [
+            'idle' => 'Utilizza :min o più caratteri. Una passphrase memorabile è più forte di una breve e complessa.',
+            'too_short' => 'Inserisci almeno :min caratteri.',
+            'checking' => 'Controllo delle violazioni dei dati note.',
+            'breached' => 'Questa password appare in una violazione dei dati nota. Scegline uno diverso.',
+            'strong' => 'Abbastanza forte.',
+        ],
         'register_terms_required' => 'Per registrarti devi accettare i termini di servizio e l\'informativa sulla privacy.',
         'register_invite_required' => 'Per registrarsi su questa community è necessario un codice di invito. Chiedine uno a un amministratore della comunità.',
         'register_invite_invalid' => 'Questo codice di invito non è valido, è scaduto o è già stato utilizzato. Controlla il codice e riprova.',

@@ -464,6 +464,13 @@ return [
         'register_duplicate' => 'Tá cuntas leis an seoladh ríomhphoist seo ann cheana. Bain triail as síniú isteach nó úsáid ríomhphost eile.',
         'register_password_pwned' => 'Fuarthas an pasfhocal seo i sáruithe aitheanta sonraí. Roghnaigh pasfhocal eile.',
         'register_password_mismatch' => 'Ní hionann pasfhocal agus deimhniú. Cuir isteach an focal faire céanna arís sa dá réimse.',
+        'password_strength' => [
+            'idle' => 'Use :min or more characters. A memorable passphrase is stronger than a short complex one.',
+            'too_short' => 'Enter at least :min characters.',
+            'checking' => 'Checking against known data breaches.',
+            'breached' => 'This password appears in a known data breach. Please choose a different one.',
+            'strong' => 'Strong enough.',
+        ],
         'register_terms_required' => 'Ní mór duit glacadh leis na téarmaí seirbhíse agus polasaí príobháideachta chun clárú.',
         'register_invite_required' => 'Teastaíonn cód cuirí chun clárú ar an bpobal seo. Iarr ceann ar riarthóir pobail.',
         'register_invite_invalid' => 'Tá cód an chuiridh seo neamhbhailí, tá sé imithe in éag, nó úsáideadh é cheana. Seiceáil an cód agus bain triail eile as.',

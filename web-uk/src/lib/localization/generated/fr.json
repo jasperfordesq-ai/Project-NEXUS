@@ -1471,6 +1471,13 @@
                 "register_duplicate": "Un compte avec cette adresse email existe déjà. Essayez de vous connecter ou utilisez une autre adresse e-mail.",
                 "register_password_pwned": "Ce mot de passe a été trouvé dans des violations de données connues. Choisissez un mot de passe différent.",
                 "register_password_mismatch": "Le mot de passe et la confirmation ne correspondent pas. Saisissez à nouveau le même mot de passe dans les deux champs.",
+                "password_strength": {
+                    "idle": "Utilisez :min ou plusieurs caractères. Une phrase secrète mémorable est plus forte qu’une phrase courte et complexe.",
+                    "too_short": "Saisissez au moins :min caractères.",
+                    "checking": "Vérification des violations de données connues.",
+                    "breached": "Ce mot de passe apparaît dans une violation de données connue. Veuillez en choisir un autre.",
+                    "strong": "Assez fort."
+                },
                 "register_terms_required": "Vous devez accepter les conditions d’utilisation et la politique de confidentialité pour vous inscrire.",
                 "register_invite_required": "Un code d'invitation est requis pour s'inscrire sur cette communauté. Demandez-en un à un administrateur de communauté.",
                 "register_invite_invalid": "Ce code d'invitation n'est pas valide, a expiré ou a déjà été utilisé. Vérifiez le code et réessayez.",
