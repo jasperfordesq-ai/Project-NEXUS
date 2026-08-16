@@ -151,7 +151,10 @@ function logError(err, context = {}) {
 
   if (context.req) {
     logData.method = context.req.method;
-    logData.url = context.req.originalUrl;
+    // Path only — never `originalUrl`, which carries the query string and so a
+    // password-reset token (`/password/reset?token=…`) or a member's search
+    // terms (`?q=…`). Same decision as routeHelpers' Sentry reporter.
+    logData.url = context.req.path;
     logData.ip = context.req.ip;
   }
 

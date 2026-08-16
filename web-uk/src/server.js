@@ -349,6 +349,14 @@ app.use(helmet({
 
 // Request logging. Broad local smoke runs can opt out so their terminal output
 // remains a concise certification report instead of hundreds of access lines.
+//
+// 🔴 Log the PATH only, never `originalUrl`. The query string carries a member's
+// single-use password-reset token (`/password/reset?token=…`) and their search
+// terms (`?q=…`); writing those to the access log would let anyone with log
+// access lift a still-valid reset token or read search terms. Overriding morgan's
+// built-in `:url` token makes every format (combined and dev) safe. Same decision
+// the Sentry reporter already makes in routeHelpers.js.
+morgan.token('url', (req) => req.path);
 if (process.env.DISABLE_REQUEST_LOGGING !== '1') {
   if (NODE_ENV === 'production') {
     app.use(morgan('combined'));
