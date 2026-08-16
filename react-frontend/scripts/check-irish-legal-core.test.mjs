@@ -188,3 +188,32 @@ test('Irish Legal consent and metadata preserve acceptance, data-rights, and saf
   assert.equal(irish.page_meta.platform_privacy.title, 'Beartas Príobháideachais an Ardáin');
   assert.match(irish.page_meta.trust_safety.description, /Treoir shoiléir faoi iontaobhas agus cosaint/u);
 });
+
+test('Irish Community Guidelines and Acceptable Use have complete translated coverage', () => {
+  for (const section of ['community_guidelines', 'acceptable_use']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Legal ${section} key: ${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+
+    for (const [path, value] of irishFlat) {
+      assert.equal(value, value.trim(), `Whitespace defect: ${section}.${path}`);
+      assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${section}.${path}`);
+    }
+  }
+});
+
+test('Irish conduct policies preserve privacy, safeguarding, fraud, and enforcement meaning', () => {
+  const reviewed = [...flatten(irish.community_guidelines).values(), ...flatten(irish.acceptable_use).values()].join('\n');
+  assert.doesNotMatch(reviewed, /i mBéarla simplí|Polasaí|Muinín agus Sábháilteacht|maitheasanna|iontráil aisiompaithe|cuntais bhladhrach|chúblálú|seáfála|séideáin fógraíochta|Sláinteachas cuntais|ná ná/u);
+  assert.match(irish.community_guidelines.sections.privacy.items['0'], /gan cead soiléir an bhaill sin/u);
+  assert.match(irish.community_guidelines.sections.in_person.items['4'], /seirbhísí éigeandála áitiúla ar dtús/u);
+  assert.match(irish.community_guidelines.sections.report.body_after, /Ní roinnimid d'aitheantas/u);
+  assert.match(irish.acceptable_use.sections.fraud.items['3'], /Ná cúbláil iarmhéideanna creidmheasanna ama/u);
+  assert.match(irish.acceptable_use.sections.harm.items['4'], /ábhar gnéasach neamhthoiliúil/u);
+  assert.match(irish.acceptable_use.sections.interference.items['4'], /innealtóireacht droim ar ais/u);
+  assert.match(irish.acceptable_use.sections.enforcement.appeal, /nach raibh baint aige nó aici leis an mbunchinneadh/u);
+});

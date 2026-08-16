@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The complete 105-string Irish Community Guidelines and Acceptable Use Policy have received semantic review.** Respect, identity, privacy, in-person safety, confidential reporting, proportionate enforcement and independent appeals now read naturally and retain their safeguards. Fraud, impersonation, fake time-credit activity, non-consensual sexual content, intellectual property, spam, artificial engagement, platform interference, account security and serious-breach reporting are repaired; both documents now describe themselves as clear Irish rather than “plain English.”
+
 - **The 44 Irish strings for legal acceptance, custom documents, Swiss data-protection consent and Legal page metadata have completed semantic review.** Updated-document notices now distinguish singular and plural review actions, the consent statement names the actual Accept control, and policy names match the reviewed Legal documents. The Swiss FADP notice preserves explicit consent and the choice to retain basic features without AI, while search metadata no longer describes Irish guidance as “plain English.”
 
 - **The 58 strings identifying the Project NEXUS platform-provider legal documents have completed their Irish semantic review.** Platform terms, privacy and disclaimer navigation now uses consistent policy names; the provider notice remains explicitly separate from each community operator's terms; the authoritative-English notice retains its legal effect; and controller/processor, RGCS rights, liability, operator responsibility and governing-law headings use accurate Irish. A focused gate covers all four platform sections.

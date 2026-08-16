@@ -526,8 +526,8 @@
     "default_community_name": "an pobal seo",
     "heading": "Treoirlínte an Phobail",
     "page_title": "Treoirlínte an Phobail",
-    "subtitle": "An chaoi a bhfuilimid ag súil go gcaithfidh gach duine i {{communityName}} le chéile. Gearr, i mBéarla simplí, agus baineann sé le gach malartú, teachtaireacht, postáil agus imeacht.",
-    "version": "Leagan 1.0 - Nuashonraithe go deireanach 13-05-2026",
+    "subtitle": "An chaoi a bhfuilimid ag súil go gcaitheann gach duine i {{communityName}} le daoine eile. Tá sé gearr, scríofa i dteanga shoiléir, agus baineann sé le gach malartú, teachtaireacht, postáil agus imeacht.",
+    "version": "Leagan 1.0 — Nuashonraithe go deireanach 2026-05-13",
     "sections": {
       "kind": {
         "title": "1. Bí cineálta agus measúil",
@@ -540,42 +540,42 @@
       },
       "honest": {
         "title": "2. Bí ionraic",
-        "body": "Is é an mhuinín a chuireann banc ama ag obair. Déanann sé dochar don phobal ar fad má dhéantar mífhaisnéis ort féin nó ar a bhfuil á thairiscint agat.",
+        "body": "Is í an mhuinín a chuireann banc ama ag obair. Déanann sé dochar don phobal ar fad má thugann tú léiriú bréagach ort féin nó ar a bhfuil á thairiscint agat.",
         "items": {
           "0": "Bain úsáid as d'fhíorainm agus as fíorghrianghraf ar do phróifíl.",
           "1": "Déan cur síos cruinn ar scileanna, liostuithe agus iarratais. Ná déan áibhéil ar a bhfuil tú in ann a dhéanamh ná ar a fhad a thógfaidh sé.",
-          "2": "Logáil uaireanta go macánta. Ná héiligh am nár thug tú.",
+          "2": "Taifead uaireanta go macánta. Ná héiligh am nár thug tú.",
           "3": "Duine amháin, cuntas amháin."
         }
       },
       "relevant": {
-        "title": "3. Coinnigh ábhartha é",
+        "title": "3. Fan leis an ábhar",
         "body": "Is spás é seo do mhalartú pobail, ní margadh, ní clár fógraíochta agus ní ardán polaitíochta.",
         "items": {
-          "0": "Gan turscar, fógraíocht arís is arís eile ná postálacha móra as ábhar.",
-          "1": "Gan díolachán tráchtála, earcaíocht ná bailiú airgid lasmuigh de na gnéithe atá deartha don chuspóir sin, mar phoist, eagraíochtaí nó an margadh nuair atá sé cumasaithe.",
-          "2": "Gan ábhar feachtais, eagrú páirtíneach ná ábhar atá deartha chun coinbhleacht pholaitiúil a ghríosú. Tá rannpháirtíocht shibhialta fáilteach; níl achrann páirtíneach."
+          "0": "Gan turscar, fógraíocht arís is arís eile ná ollphostálacha nach mbaineann leis an ábhar.",
+          "1": "Gan díolachán tráchtála, earcaíocht ná tiomsú airgid lasmuigh de na gnéithe atá deartha don chuspóir sin, amhail poist, eagraíochtaí nó an margadh nuair atá siad cumasaithe.",
+          "2": "Gan ábhar feachtais, eagrú páirtíneach ná ábhar atá deartha chun coinbhleacht pholaitiúil a ghríosú. Cuirtear fáilte roimh rannpháirtíocht shibhialta; ní chuirtear fáilte roimh achrann páirtíneach."
         }
       },
       "privacy": {
         "title": "4. Cosain príobháideachas",
-        "body": "An rud a roinneann baill laistigh den phobal, fanann sé laistigh den phobal.",
+        "body": "Fanann an méid a roinneann baill laistigh den phobal laistigh den phobal.",
         "items": {
-          "0": "Ná roinn faisnéis phearsanta ball eile, mar shampla seoladh, fón, grianghraif, sonraí sláinte nó staid teaghlaigh, gan a chead soiléir.",
+          "0": "Ná roinn faisnéis phearsanta ball eile, amhail seoladh, uimhir fóin, grianghraif, sonraí sláinte nó cúinsí teaghlaigh, gan cead soiléir an bhaill sin.",
           "1": "Ná postáil seatanna scáileáin de theachtaireachtaí príobháideacha.",
-          "2": "Ná tóg grianghraif ag imeachtaí pobail gan iarraidh ar na daoine atá iontu.",
+          "2": "Ná tóg grianghraif ag imeachtaí pobail gan cead a iarraidh ar na daoine atá iontu.",
           "3": "Bain úsáid as teachtaireachtaí an ardáin do chumarsáid a bhaineann le malartuithe; ná brúigh daoine chuig cainéil sheachtracha sula bhfuil siad réidh."
         }
       },
       "in_person": {
         "title": "5. Tabhair aire dá chéile go pearsanta",
-        "body": "Is minic a bhíonn cruinniú duine le duine i gceist le malartuithe, uaireanta i dteach duine. Bain úsáid as ciall choiteann.",
+        "body": "Is minic a bhíonn bualadh le chéile i gceist le malartuithe, uaireanta i dteach duine. Bain úsáid as do chiall.",
         "items": {
-          "0": "Léigh próifíl agus athbhreithnithe an bhaill roimh an gcéad mhalartú.",
+          "0": "Léigh próifíl agus léirmheasanna an bhaill roimh an gcéad mhalartú.",
           "1": "Buail le chéile in áit phoiblí don chéad mhalartú nuair is féidir.",
-          "2": "Inis do dhuine a bhfuil muinín agat as cá bhfuil tú ag dul agus cathain a bhfuil súil agat filleadh.",
-          "3": "Stop an malartú agus imigh leat má bhraitheann tú nach bhfuil rud éigin ceart. Ní gá duit míniú a thabhairt do dhuine ar bith sa nóiméad sin.",
-          "4": "Má tá duine i mbaol, é féin nó le daoine eile, féach ar Mhuinín agus Sábháilteacht le foghlaim conas tuairisciú a dhéanamh. I gcás éigeandála, déan teagmháil leis na seirbhísí éigeandála áitiúla ar dtús."
+          "2": "Inis do dhuine a bhfuil muinín agat as cá bhfuil tú ag dul agus cathain a bhfuil súil agat a bheith ar ais.",
+          "3": "Cuir deireadh leis an malartú agus imigh má bhraitheann tú nach bhfuil rud éigin ceart. Ní gá duit míniú a thabhairt d'aon duine ag an nóiméad sin.",
+          "4": "Má tá duine i mbaol, nó má chuireann sé é féin nó daoine eile i mbaol, féach ar Iontaobhas agus Sábháilteacht chun a fháil amach conas tuairisc a dhéanamh. I gcás éigeandála, déan teagmháil leis na seirbhísí éigeandála áitiúla ar dtús."
         }
       },
       "report": {
@@ -584,120 +584,120 @@
         "items": {
           "0": "an cnaipe tuairiscithe a úsáid ar aon phróifíl, liostú, teachtaireacht, postáil nó imeacht.",
           "1": "ríomhphost a sheoladh chuig foireann an phobail tríd an leathanach Teagmhála.",
-          "2": "I gcás imní cosanta, mar shampla leanbh nó duine fásta leochaileach i mbaol, féach ar an leathanach Muinín agus Sábháilteacht don bhealach tuairiscithe tiomnaithe."
+          "2": "I gcás ábhar imní faoi chosaint, amhail leanbh nó duine fásta leochaileach a bheith i mbaol, féach ar an leathanach Iontaobhas agus Sábháilteacht chun an bealach tuairiscithe tiomnaithe a fháil."
         },
-        "body_after": "Déanann modhnóirí na tuairiscí a athbhreithniú agus láimhseáiltear iad faoi rún. Ní roinnimid d'aitheantas leis an duine a thuairiscíodh mura n-iarrann tú orainn é nó mura n-éilíonn an dlí é."
+        "body_after": "Déanann modhnóirí athbhreithniú ar thuairiscí agus láimhseáiltear iad faoi rún. Ní roinnimid d'aitheantas leis an duine ar thuairiscigh tú é mura n-iarrann tú orainn é sin a dhéanamh nó mura gceanglaíonn an dlí orainn é."
       },
       "enforcement": {
         "title": "7. Cad a tharlaíonn nuair a sháraítear na treoirlínte",
-        "body_before": "Is míthuiscintí beaga is mó na fadhbanna agus is féidir focal síochánta iad a réiteach. I gcás sáruithe níos soiléire úsáidimid céimeanna comhréireacha:",
+        "body_before": "Is míthuiscintí beaga iad formhór na bhfadhbanna agus réitíonn comhrá ciúin iad. I gcás sáruithe níos soiléire, glacaimid céimeanna comhréireacha:",
         "items": {
-          "0": "Meabhrúchán, do chéad mhioneachtra.",
-          "1": "Baint ábhair, mar phostáil, liostú nó teachtaireacht.",
+          "0": "Meabhrúchán, don chéad mhionsárú.",
+          "1": "Ábhar a bhaint, amhail postáil, liostú nó teachtaireacht a bhaint anuas.",
           "2": "Rabhadh, taifeadta ar do chuntas.",
           "3": "Fionraí shealadach, do shaincheisteanna a tharlaíonn arís is arís nó atá tromchúiseach.",
-          "4": "Baint bhuan, do chiapadh, do shárú cosanta, do chalaois, do bhagairtí, d'fhuathchaint nó do fhionraíocha athdhéanta."
+          "4": "Baint bhuan, i gcás ciaptha, sáruithe cosanta, calaoise, bagairtí, fuathchainte nó fionraíochtaí arís agus arís eile."
         },
         "body_serious": "Féadfar nithe tromchúiseacha, lena n-áirítear mí-úsáid, bagairtí, calaois nó dúshaothrú, a thuairisciú do lucht forghníomhaithe dlí cuí nó d'údarás inniúil, beag beann ar an mbeart ar an ardán.",
-        "body_appeal": "Más dóigh leat go raibh cinneadh mícheart, is féidir leat achomharc a dhéanamh tríd an leathanach Teagmhála. Déanfaidh modhnóir a athbhreithniú nach raibh baint aige nó aici leis an mbunchinneadh."
+        "body_appeal": "Má cheapann tú go raibh cinneadh mícheart, is féidir leat achomharc a dhéanamh tríd an leathanach Teagmhála. Déanfaidh modhnóir nach raibh baint aige nó aici leis an mbunchinneadh athbhreithniú air."
       },
       "changes": {
         "title": "Athruithe ar na treoirlínte seo",
-        "body": "D'fhéadfaimis na treoirlínte seo a nuashonrú de réir mar a fhásann an pobal. Fógrófar athruithe ábhartha ar an ardán agus déanfar iad a thaifeadadh i stair dhlí na leaganacha."
+        "body": "Féadfaimid na treoirlínte seo a nuashonrú de réir mar a fhásann an pobal. Fógrófar athruithe suntasacha ar an ardán agus déanfar iad a thaifeadadh i stair na leaganacha dlíthiúla."
       }
     }
   },
   "acceptable_use": {
     "default_platform_name": "an t-ardán",
-    "heading": "Polasaí um Úsáid Inghlactha",
-    "page_title": "Polasaí um Úsáid Inghlactha",
-    "subtitle": "Na hiompair shonracha nach gceadaítear ar {{platformName}}. Tagann sé seo le hais na dTéarmaí Seirbhíse agus Threoirlínte an Phobail agus baineann sé le gach cuntas.",
-    "version": "Leagan 1.0 - Nuashonraithe go deireanach 13-05-2026",
+    "heading": "Beartas um Úsáid Inghlactha",
+    "page_title": "Beartas um Úsáid Inghlactha",
+    "subtitle": "Na cineálacha sonracha iompair nach gceadaítear ar {{platformName}}. Tá an beartas seo ann in éineacht leis na Téarmaí Seirbhíse agus na Treoirlínte Pobail, agus baineann sé le gach cuntas.",
+    "version": "Leagan 1.0 — Nuashonraithe go deireanach 2026-05-13",
     "sections": {
       "scope": {
         "title": "1. Raon Feidhme",
-        "body": "Baineann an polasaí seo le duine ar bith a úsáideann {{platformName}}: baill, eagraíochtaí, cuairteoirí, úsáideoirí API agus comhtháthaitheoirí. Baineann sé le gach gníomhaíocht ar an ardán, lena n-áirítear próifílí, liostuithe, teachtaireachtaí, imeachtaí, postálacha, vótaíochtaí, poist, comhaid agus cumarsáid amach a sheoltar tríd an ardán."
+        "body": "Baineann an beartas seo le duine ar bith a úsáideann {{platformName}}: baill, eagraíochtaí, cuairteoirí, úsáideoirí API agus lucht comhtháthaithe. Baineann sé le gach gníomhaíocht ar an ardán, lena n-áirítear próifílí, liostuithe, teachtaireachtaí, imeachtaí, postálacha, pobalbhreitheanna, poist, comhaid agus cumarsáid amach a sheoltar tríd an ardán."
       },
       "illegal": {
         "title": "2. Gan gníomhaíocht neamhdhleathach",
-        "body": "Níor cheart duit an t-ardán a úsáid chun:",
+        "body": "Ní ceadmhach duit an t-ardán a úsáid chun:",
         "items": {
-          "0": "Aon ní neamhdhleathach a dhéanamh, a phleanáil nó a éascú san áit a bhfuil tú féin, an duine eile nó an ghníomhaíocht.",
-          "1": "Seirbhísí a chur ar fáil nó a iarraidh a éilíonn ceadúnú nó rialachán gairmiúil nach bhfuil agat, mar shampla obair leighis, dlí, airgeadais, leictreach, gáis nó cúraim leanaí gan cheadúnas.",
-          "2": "Trádáil a dhéanamh in earraí rialáilte nó srianta, lena n-áirítear alcól, tobac, leigheasanna oideas-ordaithe, airm tine, drugaí rialaithe nó míreanna srianta eile.",
+          "0": "Rud ar bith neamhdhleathach a dhéanamh, a phleanáil nó a éascú san áit ina bhfuil tú féin, an duine eile nó an ghníomhaíocht lonnaithe.",
+          "1": "Seirbhísí a thairiscint nó a lorg a éilíonn ceadúnas nó rialáil ghairmiúil nach bhfuil agat, amhail obair mhíochaine, dlí, airgeadais, leictreachais, gáis nó cúraim leanaí gan cheadúnas.",
+          "2": "Trádáil a dhéanamh in earraí rialáilte nó srianta, lena n-áirítear alcól, tobac, cógais ar oideas, airm thine, drugaí rialaithe nó earraí srianta dá samhail.",
           "3": "Airgead a sciúradh nó oibleagáidí cánach a sheachaint."
         }
       },
       "fraud": {
-        "title": "3. Gan calaois ná pearsanú",
+        "title": "3. Gan calaois ná aithris bhréagach",
         "items": {
-          "0": "Ná déan pearsanú ar dhuine eile, ar eagraíocht ná ar chomhlacht oifigiúil.",
-          "1": "Ná cruthaigh cuntais bhréige, cuntais bhladhrach ná cuntais dhúblacha chun rátálacha, athbhreithnithe, vótaíochtaí nó meaitseáil a chúblálú.",
-          "2": "Ná déan mífhaisnéis ar do chéannacht, dintiúir, cáilíochtaí ná stádas fíoraithe.",
-          "3": "Ná láimhseáil iarmhéideanna creidmheasa ama trí mhalartuithe bréige, comhcheilg nó idirbhearta seáfála."
+          "0": "Ná lig ort gur duine eile, eagraíocht eile nó comhlacht oifigiúil tú.",
+          "1": "Ná cruthaigh cuntais bhréige, cuntais faoi ainm eile ná cuntais dhúblacha chun rátálacha, léirmheasanna, pobalbhreitheanna nó meaitseáil a chúbláil.",
+          "2": "Ná tabhair léiriú bréagach ar do chéannacht, do dhintiúir, do cháilíochtaí ná do stádas grinnfhiosrúcháin.",
+          "3": "Ná cúbláil iarmhéideanna creidmheasanna ama trí mhalartuithe bréige, trí chlaonpháirteachas nó trí idirbhearta a chuirtear ar bun d'aon ghnó."
         }
       },
       "harm": {
         "title": "4. Gan dochar do dhaoine",
         "items": {
-          "0": "Gan ciapadh, bulaíocht, stalcaireacht, doxxing ná spriocdhíriú comhordaithe.",
+          "0": "Gan ciapadh, bulaíocht, stalcaireacht, doxáil ná spriocdhíriú comhordaithe.",
           "1": "Gan fuathchaint, masluithe ná ábhar a íslíonn daoine ar bhonn tréithe cosanta.",
-          "2": "Gan bagairtí, gríosú ná moladh foréigin.",
-          "3": "Gan ábhar a dhéanann gnéasú ar leanaí, in aon fhoirm.",
-          "4": "Gan ábhar gnéasach gan toiliú, mí-úsáid íomhánna pearsanta ná ábhar a phostáiltear chun náire nó sracaireacht a dhéanamh.",
+          "2": "Gan bagairtí, gríosú chun foréigin ná foréigean a ghlóiriú.",
+          "3": "Gan ábhar a ghnéasaíonn leanaí, i bhfoirm ar bith.",
+          "4": "Gan ábhar gnéasach neamhthoiliúil, mí-úsáid íomhánna dlúthphearsanta ná ábhar a phostáiltear chun náire a chur ar dhuine nó dúmhál a dhéanamh air.",
           "5": "Gan féindochar ná féinmharú a chur chun cinn. Má tá tú féin nó duine ar a bhfuil aithne agat i gcruachás, déan teagmháil leis na seirbhísí éigeandála áitiúla nó le líne chabhrach aitheanta."
         }
       },
       "content": {
         "title": "5. Gan ábhar toirmiscthe",
         "items": {
-          "0": "Ábhar atá soiléir ó thaobh gnéis, foréigean gan údar nó ábhar suaiteach.",
-          "1": "Ábhar a sháraíonn cóipcheart, trádmharc ná maoin intleachtúil eile dhuine éigin eile.",
+          "0": "Ábhar gáirsiúil gnéasach, foréigean gan ghá nó ábhar a bhfuil sé d'aidhm aige alltacht a chur ar dhaoine.",
+          "1": "Ábhar a sháraíonn cóipcheart, trádmharc nó maoin intleachtúil eile duine eile.",
           "2": "Faisnéis rúnda nach bhfuil cead agat í a roinnt, mar shampla rúin fostóra nó faisnéis sláinte cosanta.",
           "3": "Sonraí pearsanta faoi dhaoine eile a phostáiltear gan a dtoiliú."
         }
       },
       "misuse": {
-        "title": "6. Gan turscar, mí-úsáid ná mí-úsáid ardáin",
+        "title": "6. Gan turscar, drochúsáid ná mí-úsáid an ardáin",
         "items": {
-          "0": "Gan teachtaireachtaí ollmhóra gan iarraidh, postálacha comhionanna a athdhéantar ná séideáin fógraíochta.",
-          "1": "Gan scríobadh, mór-íoslódáil ná bailiú uathoibrithe próifílí, liostuithe ná sonraí eile, ach amháin trí APIanna doiciméadaithe agus laistigh dá dteorainneacha úsáide.",
-          "2": "Gan rannpháirtíocht a mhéadú go saorga, lena n-áirítear maitheasanna, athbhreithnithe, moltaí, meaitseálacha, suaitheantais nó suíomhanna ar chláir scórála atá bréagach.",
-          "3": "Gan scéimeanna atreoraithe, MLM, pirimidí ná íoctha-in-aghaidh-an-chliceála.",
+          "0": "Gan ollteachtaireachtaí gan iarraidh, postálacha comhionanna arís agus arís eile ná ollfhógraí.",
+          "1": "Gan scríobadh, mór-íoslódáil ná bailiú uathoibrithe próifílí, liostuithe nó sonraí eile, ach amháin trí APIanna doiciméadaithe agus laistigh dá dteorainneacha ráta.",
+          "2": "Gan rannpháirtíocht a mhéadú go saorga, lena n-áirítear ‘is maith liom’, léirmheasanna, formhuinithe, meaitseálacha, suaitheantais nó suíomhanna ar chláir ceannairí atá bréagach.",
+          "3": "Gan scéimeanna atreoraithe, margaíochta il-leibhéil (MLM), pirimide ná íoctha in aghaidh na cliceála.",
           "4": "Gan an t-ardán a úsáid go príomha chun trácht a stiúradh chuig suíomh nó seirbhís sheachtrach nach mbaineann le malartú pobail."
         }
       },
       "interference": {
         "title": "7. Gan cur isteach ar an ardán",
         "items": {
-          "0": "Gan tóireadóireacht, scanadh ná tástáil ar leochaileachtaí gan cead scríofa roimh ré. Tá fáilte roimh nochtadh comhordaithe tríd an leathanach Teagmhála.",
+          "0": "Gan cíoradh, scanadh ná tástáil leochaileachtaí gan cead scríofa roimh ré. Cuirtear fáilte roimh nochtadh comhordaithe tríd an leathanach Teagmhála.",
           "1": "Gan bogearraí mailíseacha, víris, péisteanna ná cód mailíseach eile.",
-          "2": "Gan iarracht fíordheimhniú, teorainneacha úsáide, ballaí íocaíochta, glais ghnéithe nó uirlisí modhnóireachta a sheachaint.",
-          "3": "Gan iarrachtaí diúltaithe seirbhíse ná gníomhaíocht a laghdaíonn an tseirbhís do dhaoine eile go hábhartha.",
-          "4": "Gan iontráil aisiompaithe, dí-thiomsú ná baint as an gcód foinse, ach amháin sa mhéid go gceadaítear sin go follasach faoi cheadúnas AGPL-3.0."
+          "2": "Gan iarracht fíordheimhniú, teorainneacha ráta, ballaí íocaíochta, geataí gnéithe nó uirlisí modhnóireachta a sheachaint.",
+          "3": "Gan iarrachtaí diúltaithe seirbhíse ná gníomhaíocht a dhéanann díghrádú suntasach ar an tseirbhís do dhaoine eile.",
+          "4": "Gan innealtóireacht droim ar ais, díthiomsú ná cód foinseach a bhaint, ach amháin sa mhéid a cheadaíonn ceadúnas AGPL-3.0 go sainráite."
         }
       },
       "account": {
-        "title": "8. Sláinteachas cuntais",
+        "title": "8. Dea-chleachtais cuntais",
         "items": {
           "0": "Ná roinn do dhintiúir logála isteach. Tá tú freagrach as gníomhaíocht faoi do chuntas.",
           "1": "Cuir in iúl dúinn go pras má cheapann tú gur cuireadh do chuntas i mbaol.",
-          "2": "Ná haistrigh ná ná díol do chuntas le duine ar bith eile.",
-          "3": "Bain úsáid as uirlisí an ardáin chun do shonraí a scriosadh nó a easpórtáil; ná déan iarracht iad a bhaint amach trí uathoibriú."
+          "2": "Ná haistrigh agus ná díol do chuntas le duine ar bith eile.",
+          "3": "Bain úsáid as uirlisí an ardáin chun do shonraí a scriosadh nó a easpórtáil; ná déan iarracht iad a asbhaint trí uathoibriú."
         }
       },
       "enforcement": {
         "title": "9. Forghníomhú",
-        "body": "D'fhéadfadh sáruithe a bheith ina gcúis le baint ábhair, rabhaidh, fionraí shealadach nó baint bhuan an rochtana, i gcomhréir le tromchúis agus le stair. D'fhéadfaí sáruithe tromchúiseacha a thuairisciú do lucht forghníomhaithe dlí inniúil, don rialtóir cosanta sonraí ábhartha nó d'údaráis inniúla eile, agus d'fhéadfadh oibleagáid dhlí a bheith orainn é sin a dhéanamh.",
-        "appeal": "Is féidir leat achomharc a dhéanamh i gcoinne cinnidh fhorghníomhaithe tríd an leathanach Teagmhála. Déanann duine nach raibh baint aige nó aici leis an mbunchinneadh achomhairc a athbhreithniú."
+        "body": "D'fhéadfadh baint ábhair, rabhaidh, fionraí shealadach nó deireadh buan le rochtain a bheith mar thoradh ar sháruithe, i gcomhréir lena dtromchúis agus leis an stair roimhe seo. Féadfar sáruithe tromchúiseacha a thuairisciú do lucht forghníomhaithe dlí cuí, don rialtóir cosanta sonraí ábhartha nó d'údaráis inniúla eile, agus d'fhéadfadh ceanglas dlíthiúil a bheith orainn é sin a dhéanamh.",
+        "appeal": "Is féidir leat achomharc a dhéanamh i gcoinne cinnidh fhorghníomhaithe tríd an leathanach Teagmhála. Déanfaidh duine nach raibh baint aige nó aici leis an mbunchinneadh athbhreithniú ar an achomharc."
       },
       "reporting": {
         "title": "10. Sáruithe a thuairisciú",
-        "body": "Má fheiceann tú rud a sháraíonn an polasaí seo, bain úsáid as an uirlis tuairiscithe inmheánach ar an bpróifíl, liostú, teachtaireacht, postáil nó imeacht ábhartha, nó cuir ríomhphost chuig an bhfoireann tríd an leathanach Teagmhála. I gcás imní cosanta i leith linbh nó duine fásta leochailigh, lean an bealach tiomnaithe ar an leathanach Muinín agus Sábháilteacht."
+        "body": "Má fheiceann tú rud a sháraíonn an beartas seo, bain úsáid as an uirlis tuairiscithe sa táirge ar an bpróifíl, ar an liostú, ar an teachtaireacht, ar an bpostáil nó ar an imeacht ábhartha, nó seol ríomhphost chuig an bhfoireann tríd an leathanach Teagmhála. I gcás ábhar imní faoi chosaint linbh nó duine fhásta leochailigh, lean an bealach tiomnaithe ar an leathanach Iontaobhas agus Sábháilteacht."
       },
       "changes": {
         "title": "11. Athruithe",
-        "body": "D'fhéadfaimis an polasaí seo a nuashonrú de réir mar a fhorbraíonn an t-ardán agus an timpeallacht rialála. Fógrófar athruithe ábhartha agus déanfar iad a thaifeadadh i stair dhlí na leaganacha."
+        "body": "Féadfaimid an beartas seo a nuashonrú de réir mar a fhorbraíonn an t-ardán agus an timpeallacht rialála. Fógrófar athruithe suntasacha agus déanfar iad a thaifeadadh i stair na leaganacha dlíthiúla."
       }
     }
   },
