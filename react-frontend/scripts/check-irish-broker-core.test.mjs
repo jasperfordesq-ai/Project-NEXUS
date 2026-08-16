@@ -138,3 +138,33 @@ test('Irish Broker monitoring wording identifies tracked members and messaging r
   assert.equal(irish.monitoring.status_messaging_off, 'Tá teachtaireachtaí díchumasaithe');
   assert.equal(irish.monitoring.retry_button, 'Bain triail eile as');
 });
+
+test('Irish Broker risk tags apply fail-closed controls to listings with accurate terminology', () => {
+  const riskTags = JSON.stringify(irish.risk_tags);
+
+  assert.doesNotMatch(riskTags, /Clibigh liosta|"Liosta"|iar-ghrinnfhiosrúcháin/u);
+  assert.doesNotMatch(riskTags, /fianú an teagmhálaí teachtaireachtaí|Airgeadúil|vetáil/u);
+  assert.doesNotMatch(riskTags, /Níl aon liostaí marcáilte|Chuaigh rud éigin mícheart/u);
+
+  assert.equal(irish.risk_tags.tag_listing, 'Cuir clib ar liostú');
+  assert.equal(irish.risk_tags.col_approval_req, 'Faomhadh');
+  assert.match(irish.risk_tags.legacy_role_vetting_unavailable_description, /fanann sé dúnta go sábháilte/u);
+  assert.equal(irish.risk_tags.requires_approval_description, 'Ní mór do bhróicéir malartuithe don liostú seo a fhaomhadh sula leanfar ar aghaidh.');
+  assert.equal(irish.risk_tags.level_critical, 'Tromchúiseach');
+  assert.equal(irish.risk_tags.id_label, 'ID');
+});
+
+test('Irish Broker insurance controls distinguish verification dates, rejection, and expiry', () => {
+  const insurance = JSON.stringify(irish.insurance);
+
+  assert.doesNotMatch(insurance, /Teastas árachais (?:cruthaithe|nuashonraithe|scriosta|fíoraithe|diúltaithe)/u);
+  assert.doesNotMatch(insurance, /Ag éag go luath|Fíoraithe ag","label_verified_by/u);
+  assert.doesNotMatch(insurance, /\{\{days\}\}l|Triail arís/u);
+
+  assert.equal(irish.insurance.create_success, 'Cruthaíodh an teastas árachais.');
+  assert.equal(irish.insurance.reject_success, 'Diúltaíodh don teastas árachais.');
+  assert.equal(irish.insurance.empty_title, 'Níl aon teastas árachais ann');
+  assert.equal(irish.insurance.label_verified_at, 'Fíoraithe ar');
+  assert.equal(irish.insurance.label_verified_by, 'Fíoraithe ag');
+  assert.equal(irish.insurance.expiry_days_left, '{{days}} lá fágtha');
+});
