@@ -70,3 +70,43 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.equal(irish.poll.live, 'Ar siúl');
   assert.match(irish.poll.results_hidden_until_close, /nuair a dhúnfar an phobalbhreith/u);
 });
+
+test('the complete Irish Feed catalogue retains only reviewed language-neutral values', async () => {
+  const english = JSON.parse(await readFile(new URL('../public/locales/en/feed.json', import.meta.url)));
+  const flatten = (value, prefix = '', output = {}) => {
+    if (value !== null && typeof value === 'object') {
+      for (const [key, child] of Object.entries(value)) {
+        flatten(child, prefix ? `${prefix}.${key}` : key, output);
+      }
+    } else {
+      output[prefix] = String(value);
+    }
+    return output;
+  };
+  const gaValues = flatten(irish);
+  const enValues = flatten(english);
+  const exactMatches = Object.keys(gaValues)
+    .filter((key) => gaValues[key] === enValues[key])
+    .sort();
+
+  assert.equal(Object.keys(gaValues).length, 636);
+  assert.deepEqual(exactMatches, [
+    'compose.char_count',
+    'compose.placeholder_hours',
+    'location.km',
+    'location.radius',
+  ]);
+
+  const catalogue = JSON.stringify(irish);
+  assert.doesNotMatch(catalogue, /Ag Treocht|Mód beatha|"Retry"|Úúú|Díbir/u);
+  assert.doesNotMatch(catalogue, /Díbhalbhaigh|Tacaithe:|Rialuithe beatha|Poist nua ar fáil/u);
+  assert.equal(irish.hashtag.post_count_many, '{{count}} bpostáil');
+  assert.equal(irish.hashtags.title, 'Haischlibeanna i mbéal an phobail');
+  assert.equal(irish.video.unmute, 'Cuir an fhuaim ar siúl');
+  assert.equal(irish.stories.retry, 'Bain triail eile as');
+  assert.equal(irish.reaction.wow, 'Iontas');
+  assert.equal(irish.suggestions.dismiss, 'Folaigh');
+  assert.equal(irish.suggestions.mutual_many, '{{count}} gceangal i gcoiteann');
+  assert.equal(irish.analytics.shares, 'Comhroinntí');
+  assert.equal(irish.controls_region_label, 'Rialuithe an fhotha');
+});
