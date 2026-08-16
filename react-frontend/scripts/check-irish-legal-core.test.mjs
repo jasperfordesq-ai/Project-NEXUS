@@ -78,3 +78,29 @@ test('Irish Cookie Policy retains only reviewed third-party and browser product 
   assert.match(irish.cookies.manage_warning, /ní bheidh tú in ann logáil isteach/u);
   assert.match(irish.cookies.cookie_sentry_purpose, /Ní sheoltar tomhais luais ná athsheinm seisiúin ach amháin/u);
 });
+
+test('Irish Accessibility Statement has complete translated coverage', () => {
+  const englishFlat = flatten(english.accessibility);
+  const irishFlat = flatten(irish.accessibility);
+
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Accessibility key: ${path}`);
+    assert.notEqual(irishFlat.get(path), englishValue, `accessibility.${path}`);
+  }
+
+  for (const [path, value] of irishFlat) {
+    assert.equal(value, value.trim(), `Whitespace defect: accessibility.${path}`);
+    assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: accessibility.${path}`);
+  }
+});
+
+test('Irish Accessibility Statement preserves conformance and assistive-technology meaning', () => {
+  const accessibility = [...flatten(irish.accessibility).values()].join('\n');
+  assert.doesNotMatch(accessibility, /Raitis|Nascleaniiint|Mearclair|Dearadh Freagrach|comhliontach go pairteiach|Sonraiochtai Teicniuila|5 la gno/u);
+  assert.equal(irish.accessibility.heading, 'Ráiteas Inrochtaineachta');
+  assert.equal(irish.accessibility.feature_keyboard_title, 'Nascleanúint Méarchláir');
+  assert.equal(irish.accessibility.conformance_body_2_emphasis, 'comhlíontach go páirteach');
+  assert.match(irish.accessibility.conformance_body_2_after, /nach gcomhlíonann roinnt codanna den ábhar/u);
+  assert.match(irish.accessibility.feature_responsive_desc, /súmáil suas le 200% gan feidhmiúlacht a chailleadh/u);
+  assert.match(irish.accessibility.tech_recommendation, /teicneolaíocht chúnta atá cothrom le dáta/u);
+});
