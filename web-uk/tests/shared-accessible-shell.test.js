@@ -4069,6 +4069,39 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(createTranslator('en')('states.load_error'));
   });
 
+  it('keeps the typed profile fields (incl. a long bio) when a save is rejected', async () => {
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const longBio = 'B'.repeat(1200) + ' community volunteer and neighbour';
+
+    const first = await agent
+      .get('/profile/settings')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // Submit with an empty last name (a validation failure that never reaches
+    // the API), plus a substantial bio.
+    const post = await agent
+      .post('/profile/settings')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrf, first_name: 'Ada', last_name: '', tagline: 'Helping out', bio: longBio, location: 'Cork' });
+
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toContain('status=profile-update-failed');
+
+    // The re-rendered form echoes what was typed instead of reverting to the saved profile.
+    const page = await agent
+      .get('/profile/settings?status=profile-update-failed')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain(longBio);
+    expect(page.text).toContain('value="Ada"');
+    expect(page.text).toContain('value="Cork"');
+  });
+
   it('renders the Laravel-style availability settings page', async () => {
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;

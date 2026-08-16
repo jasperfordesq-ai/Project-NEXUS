@@ -441,6 +441,24 @@ function profileSettingsRedirect(status, fragment = '') {
   return statusRedirect('/profile/settings', status, fragment);
 }
 
+// Preserve a failed profile-settings submission so the re-render keeps what the
+// member typed — especially a long bio — instead of silently reverting to their
+// saved profile. Consumed once by buildProfileSettingsViewModel. Only the text
+// fields the core PUT accepts are echoed; no avatar/consent state is stored.
+function storeProfileSettingsForm(req) {
+  if (!req.session) return;
+  req.session.profileSettingsForm = {
+    first_name: String(req.body.first_name || ''),
+    last_name: String(req.body.last_name || ''),
+    phone: String(req.body.phone || ''),
+    profile_type: String(req.body.profile_type || ''),
+    organization_name: String(req.body.organization_name || ''),
+    tagline: String(req.body.tagline || ''),
+    bio: String(req.body.bio || ''),
+    location: String(req.body.location || '')
+  };
+}
+
 function twoFactorRedirect(status) {
   return statusRedirect('/profile/two-factor', status);
 }
@@ -813,6 +831,12 @@ function insuranceEnabledForRequest(req) {
 function buildProfileSettingsViewModel(req, data) {
   const profile = data.profile || {};
   const account = data.account || {};
+  // Consume (once) a failed submission so the member's typed values are echoed
+  // back rather than reverting to the saved profile. Falls back to the profile
+  // when absent.
+  const savedForm = req.session && req.session.profileSettingsForm ? req.session.profileSettingsForm : null;
+  if (req.session) delete req.session.profileSettingsForm;
+  const formValue = (key) => (savedForm ? savedForm[key] : profileValue(profile, key));
   const profileLocales = profileLocalesForRequest(req);
   const defaultProfileLocale = profileLocales[0] || 'en';
   const preferredLanguage = allowedValue(
@@ -856,15 +880,15 @@ function buildProfileSettingsViewModel(req, data) {
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     profile: {
       id: profileValue(profile, 'id'),
-      first_name: profileValue(profile, 'first_name'),
-      last_name: profileValue(profile, 'last_name'),
+      first_name: formValue('first_name'),
+      last_name: formValue('last_name'),
       email: account.email || profileValue(profile, 'email'),
-      phone: profileValue(profile, 'phone'),
-      profile_type: profileType,
-      organization_name: profileValue(profile, 'organization_name'),
-      tagline: profileValue(profile, 'tagline'),
-      bio: profileValue(profile, 'bio'),
-      location: profileValue(profile, 'location'),
+      phone: formValue('phone'),
+      profile_type: savedForm ? allowedValue(savedForm.profile_type, PROFILE_TYPES, 'individual') : profileType,
+      organization_name: formValue('organization_name'),
+      tagline: formValue('tagline'),
+      bio: formValue('bio'),
+      location: formValue('location'),
       avatar_url: resolveBackendAssetUrl(profileValue(profile, 'avatar_url')),
       privacy_profile: privacyProfile,
       privacy_search: boolValue(profileValue(profile, 'privacy_search'), true),
@@ -1216,6 +1240,7 @@ router.post('/settings', asyncRoute(async (req, res) => {
 
   if (profilePayload.first_name === '' || profilePayload.last_name === '') {
     await removeUploadedFile(avatar);
+    storeProfileSettingsForm(req);
     return redirectTo(res, profileSettingsRedirect('profile-update-failed'));
   }
 
@@ -1292,6 +1317,11 @@ router.post('/settings', asyncRoute(async (req, res) => {
     await removeUploadedFile(avatar);
   }
 
+  if (status !== 'profile-updated') {
+    // Keep the member's typed values (name, phone, tagline, bio, location) on the
+    // re-render rather than reverting to the saved profile.
+    storeProfileSettingsForm(req);
+  }
   return redirectTo(res, status === 'profile-updated'
     ? statusRedirect('/profile', status)
     : profileSettingsRedirect(status));
