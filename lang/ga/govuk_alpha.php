@@ -244,9 +244,9 @@ return [
         'error_prefix' => 'Earráid:',
     ],
     'home' => [
-        'network_heading' => 'Communities in this network',
-        'network_intro' => 'Switch to a community in :community.',
-        'network_community_link' => 'Community link: :slug',
+        'network_heading' => 'Pobail sa líonra seo',
+        'network_intro' => 'Athraigh chuig pobal in :community.',
+        'network_community_link' => 'Nasc pobail: :slug',
         'module_signin' => 'Sínigh isteach',
         'module_signin_hint' => 'Sínigh isteach chun é seo a úsáid.',
         'caption' => ':community',
@@ -313,7 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
-        'load_error' => 'We could not load the available communities. Try again later.',
+        'load_error' => 'Níorbh fhéidir linn na pobail atá ar fáil a lódáil. Bain triail eile as ar ball.',
         'title' => 'Roghnaigh pobal',
         'description' => 'Roghnaigh an pobal is mian leat a úsáid le Project NEXUS Inrochtana.',
         'empty' => 'Níl pobail ghníomhacha ar fáil.',
@@ -365,8 +365,8 @@ return [
         'edit_profile' => 'Cuir do phróifíl in eagar',
     ],
     'auth' => [
-        'community_code_label' => 'Community code',
-        'community_code_hint' => 'The code for your community, for example \'acme\'.',
+        'community_code_label' => 'Cód pobail',
+        'community_code_hint' => 'Cód do phobail, mar shampla \'acme\'.',
         'resend_email_label' => 'Seoladh ríomhphoist',
         'resend_verification_hint' => 'Seolfaimid nasc fíoraithe nua chuig an seoladh seo má tá cuntas ag teastáil fíorú.',
         'resend_verification_button' => 'Athsheoladh ríomhphost fíoraithe',
@@ -604,7 +604,7 @@ return [
         'comment_posted_on_prefix' => 'Trácht postáilte ar',
     ],
     'listings' => [
-        'exchange_check_error' => 'Exchange options could not be checked. Try again before sending a request.',
+        'exchange_check_error' => 'Níorbh fhéidir na roghanna malartaithe a sheiceáil. Bain triail eile as sula seolann tú iarratas.',
         'sort_label' => 'Sórtáil de réir',
         'sort_newest' => 'is nuaí',
         'sort_recommended' => 'Molta',
@@ -872,8 +872,8 @@ return [
         ],
     ],
     'messages' => [
-        'empty_conversation' => 'No messages in this conversation yet.',
-        'your_message_label' => 'Your message',
+        'empty_conversation' => 'Níl aon teachtaireacht sa chomhrá seo fós.',
+        'your_message_label' => 'Do theachtaireacht',
         'search_label' => 'Cuardaigh duine le teachtaireacht a sheoladh chuige',
         'search_hint' => 'Cuardaigh de réir ainm comhalta nó eagraíochta.',
         'search_empty' => 'Níor aimsíodh aon chomhaltaí. Bain triail as ainm difriúil nó brabhsáil an t-eolaire.',
@@ -1704,7 +1704,7 @@ return [
         'sign_out' => 'Sínigh amach',
     ],
     'connections' => [
-        'load_error' => 'We could not load your connections. Please try again.',
+        'load_error' => 'Níorbh fhéidir linn do naisc a lódáil. Bain triail eile as.',
         'title' => 'Naisc',
         'caption' => ':community',
         'description' => 'Bainistigh d\'iarratais nasctha agus na comhaltaí atá nasctha agat.',
@@ -2457,7 +2457,7 @@ return [
         'leaderboard_filter_heading' => 'Scagaigh an clárcéimseata',
     ],
     'jobs' => [
-        'alerts_load_error' => 'Job alerts could not be loaded. Try again.',
+        'alerts_load_error' => 'Níorbh fhéidir na foláirimh poist a lódáil. Bain triail eile as.',
         'title' => 'Poist',
         'caption' => ':community',
         'description' => 'Róil agus deiseanna sa phobal seo.',
