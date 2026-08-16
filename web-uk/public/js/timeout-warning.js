@@ -24,8 +24,13 @@
   // the marker; it is deliberately the same as the server default so the fallback is
   // not itself a desync.
   var DEFAULT_SESSION_TIMEOUT_MINUTES = 30;
-  var WARNING_BEFORE_MINUTES = 5; // Show warning 5 minutes before timeout
-  var COUNTDOWN_SECONDS = 60; // Countdown in the modal
+  var WARNING_BEFORE_MINUTES = 5; // Show the warning this long before the session ends.
+  // The modal counts down the FULL warning lead, so logout lands exactly at the
+  // session timeout. Previously this was a fixed 60s while the warning appeared 5
+  // minutes early, which signed idle members out at (timeout − 4 min) — four
+  // minutes before their session actually expired — with a modal that claimed
+  // "60 seconds" remaining.
+  var COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60;
 
   function resolveSessionTimeoutMinutes() {
     var marker = document.querySelector('[data-session-timeout-minutes]');
@@ -48,6 +53,7 @@
   var countdownSeconds = COUNTDOWN_SECONDS;
   var modalOpen = false;
   var lastFocusedElement = null;
+  var loggingOut = false;
 
   function timeoutMarker() {
     return document.querySelector('[data-authenticated="true"]');
@@ -71,6 +77,21 @@
     var template = timeoutText('data-timeout-' + unit + '-' + category)
       || timeoutText('data-timeout-' + unit + '-other');
     return template.replace(':count', String(count));
+  }
+
+  // Format a countdown duration as localised "N minutes and M seconds" / "N
+  // minutes" / "M seconds". Shared by the initial modal notice and the live
+  // countdown so they never disagree about the remaining time.
+  function formatCountdownText(totalSeconds) {
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    if (minutes > 0 && seconds > 0) {
+      return formatTimeoutUnit(minutes, 'minutes') + ' ' + timeoutText('data-timeout-time-separator') + ' ' + formatTimeoutUnit(seconds, 'seconds');
+    }
+    if (minutes > 0) {
+      return formatTimeoutUnit(minutes, 'minutes');
+    }
+    return formatTimeoutUnit(seconds, 'seconds');
   }
 
   function appendTimeMessage(element, template, timeText) {
@@ -118,7 +139,7 @@
     appendTimeMessage(
       document.getElementById('timeout-warning-description'),
       timeoutText('data-timeout-security-notice'),
-      formatTimeoutUnit(COUNTDOWN_SECONDS, 'seconds')
+      formatCountdownText(COUNTDOWN_SECONDS)
     );
     return modal;
   }
@@ -194,18 +215,7 @@
   function updateCountdown() {
     var countdownEl = document.getElementById('timeout-countdown');
     if (countdownEl) {
-      var minutes = Math.floor(countdownSeconds / 60);
-      var seconds = countdownSeconds % 60;
-      var text = '';
-
-      if (minutes > 0 && seconds > 0) {
-        text = formatTimeoutUnit(minutes, 'minutes') + ' ' + timeoutText('data-timeout-time-separator') + ' ' + formatTimeoutUnit(seconds, 'seconds');
-      } else if (minutes > 0) {
-        text = formatTimeoutUnit(minutes, 'minutes');
-      } else {
-        text = formatTimeoutUnit(seconds, 'seconds');
-      }
-
+      var text = formatCountdownText(countdownSeconds);
       countdownEl.textContent = text;
 
       // Announce to screen readers at key intervals
@@ -252,6 +262,18 @@
   }
 
   function submitLogout() {
+    // The countdown now ends exactly at the session timeout, so it and the backup
+    // logoutTimer fire at the same instant — guard against a double submit.
+    if (loggingOut) {
+      return;
+    }
+    loggingOut = true;
+    clearTimeout(warningTimer);
+    clearTimeout(logoutTimer);
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+    }
+
     var logoutForm = document.getElementById('session-timeout-logout-form');
     if (!logoutForm) {
       redirectToLogin();

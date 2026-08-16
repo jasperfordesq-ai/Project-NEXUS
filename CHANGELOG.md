@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the accessible frontend, an idle sign-in no longer times you out early with a countdown that lied.** The "your session is about to end" warning appears five minutes before the timeout, but its countdown only ever counted 60 seconds — so it signed you out four minutes early, while the on-screen message still claimed "60 seconds" remaining. A 30-minute session was ending at about 26 minutes. The countdown now runs the full five minutes, the warning and the timer always agree on the time left, the message reads naturally in the member's own language (for example "4 minutes and 30 seconds"), and the sign-out can no longer fire twice. Locked by a regression test.
+
 - **Irish Feed cards and polls now distinguish reactions, comments, achievements and pobalbhreitheanna accurately.** Removing a like no longer reads as disliking a post; muting uses neutral wording; earned badges, comment actions, sharing outcomes, content-detail links, event countdowns, volunteer-credit plurals and rating labels describe the displayed action; and poll loading, expiry, status and results consistently refer to a pobalbhreith rather than an individual vote.
 
 - **Irish Feed templates, scheduling and media controls now read as complete member actions.** Reusable post, listing, event and goal prompts use natural community wording; voice input identifies browser support directly; scheduling buttons use Irish action forms; accessibility labels identify the post content type; and upload failures, validation messages, video limits and file-count plurals use accurate post and media terminology.
