@@ -543,11 +543,19 @@ grep -rhoE '"compat:[a-z0-9-]+:' --include=*.cs . | sort -u
 | `compat:vol-wellbeing:` | ✅ Fixed — the check-in now calls the existing service over the real store. A WORKING implementation already sat at `POST /api/volunteer/wellbeing` (singular) while the screen posted to `/v2/volunteering/wellbeing/checkin` (plural). A low mood is flagged for follow-up rather than left for someone to spot. |
 | `compat:vol-support:` | 🔴 **Write-only.** No entity; supporting a community project goes nowhere. |
 | `compat:conv-archive:` | ✅ Fixed — archiving now stamps `ArchivedBySender`/`ArchivedByReceiver`, which is what the inbox reads. 🔴 **There is no restore route**: the handler takes an `archived` flag and only ever receives `true`, so a member can archive and cannot bring it back. Not invented, because adding an endpoint the client does not call is guessing at a contract. |
-| `compat:comment-reaction:` | 🔴 **Write-only.** `MessageReaction` exists but is for messages; comments need their own. |
+| `compat:comment-reaction:` | 🟡 **Corrected 2026-08-16 — my earlier note was wrong.** Reacting to a comment is NOT broken: the handler writes real `CommentReactions` rows for `ThreadedComments`, which `CommentsV2Controller` reads. The blob is a **fallback branch** taken only when the id belongs to the older `PostComments` table AND the request is not a v2 request — and a v2 request returns a proper 404, so the current React client never reaches it. Leave it unless a non-v2 caller is found to need it; `ContentReaction` (polymorphic) is the store if so. |
 | `compat:fed-msg-read:` | 🔴 **Write-only.** Marking a federated message read does nothing. |
 
-Three of the remaining seven have an entity sitting unused, so they are small.
-`vol-support`, `comment-reaction` and `fed-msg-read` need a store first.
+🔴 **Do not trust the "needs a store first" column without re-checking.** Two of
+these entries were wrong when first written, and both errors ran the same way —
+guessing from the key name instead of reading the handler:
+
+- `comment-reaction` looked write-only and is mostly fine (see above).
+- `vol-cert` and `vol-training` looked like simple reconnects and are design
+  questions.
+
+The check that settles it is always the same and takes two minutes: open the
+handler, find the read path, and confirm the two use the same store.
 
 ### 🔴 A hazard in the fix itself, hit twice
 
