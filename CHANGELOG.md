@@ -5,6 +5,8 @@ All notable changes to Project NEXUS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Irish Settings now preserves member control throughout linked-account support.** Member-approved capabilities are clearly separated from staff-recorded guardian arrangements; pending support remains inaccessible until approval, message viewing requires the member's own consent and stays auditable and withdrawable, and prepared listings or transfers remain fail-closed until the supported member agrees.
+
 - **Irish Settings account-rights and destructive-action wording now matches the live controls.** GDPR access, portability, restriction and permanent account deletion are distinguished accurately; password feedback now states the real 12-character minimum instead of eight, and profile, privacy, 2FA, marketing and data-request status messages restore complete accented Irish and actionable failure guidance.
 
 - **Irish Settings now distinguishes passkeys from passwords throughout device setup.** Windows, Mac, iPhone, iPad, Android and Linux instructions consistently use `pas-eochair`, retain the real Authy product name, and clarify relying-party domains, credential limits and successful registration; focused tests prevent this security-critical terminology from regressing.
