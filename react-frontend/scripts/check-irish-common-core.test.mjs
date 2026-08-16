@@ -47,6 +47,7 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
     'compose.placeholder_hours',
     'compose.placeholder_url',
     'empty_dash',
+    'footer.project_nexus',
     'install.ios_step_2_after',
     'keyboard.command_symbol',
     'keyboard.k_key',
@@ -103,6 +104,8 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /sreabhadh bordála|bhformhór na ngrúpaí|painéal admin|Chuinneog chúntóra|Líon coise/u);
   assert.doesNotMatch(allIrish, /hooks gréasáin|comharthaí bearer|críochphointí scóipithe|comhpháirtithe GBM/u);
   assert.doesNotMatch(allIrish, /Sliotán Bailithe|sliotán bailithe|Triail [Aa]rís|Líon coise|buicéadaithe|Uimh dleachtanna/u);
+  assert.doesNotMatch(allIrish, /Dúshláin Idéalaithe|Deonaíocht|Forbhreathnú ar do theach pearsanta|atá ag treáil/u);
+  assert.doesNotMatch(allIrish, /Ionad Cabhraigh|Lorg Aráin|rudaí a bhriseann|Páirt glactha|sonraí suíomh/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -118,6 +121,14 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.match(irish.caring_workflow.predictive.helper_churn, /Cúntóirí caillte/u);
   assert.equal(irish.marketplace.pickup.slots_title, 'Tráthanna Bailithe');
   assert.equal(irish.verein_dues.badge_none, 'Gan táillí');
+  assert.equal(irish.nav.ideation, 'Smaointe');
+  assert.equal(irish.nav.premium, 'Tabhair Síntiús');
+  assert.equal(irish.nav.accessibility_alpha, 'Leagan WCAG 2.2 AA');
+  assert.equal(irish.nav_desc.premium, 'Tacaigh leis an bpobal seo');
+  assert.equal(irish.nav_desc.dashboard, 'Forbhreathnú pearsantaithe ar do leathanach baile');
+  assert.equal(irish.footer.project_nexus, 'Project NEXUS');
+  assert.match(irish.cookie_consent.description, /tuairiscí anaithnidithe/u);
+  assert.equal(irish.members.joined_date, 'Ball ó {{date}}');
   assert.match(irish.biometric.platform_windows_step1, /paseochair/u);
   assert.doesNotMatch(irish.biometric.platform_windows_step1, /pasfhocal/u);
 });
