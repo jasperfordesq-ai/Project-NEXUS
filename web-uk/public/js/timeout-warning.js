@@ -24,25 +24,38 @@
   // the marker; it is deliberately the same as the server default so the fallback is
   // not itself a desync.
   var DEFAULT_SESSION_TIMEOUT_MINUTES = 30;
-  var WARNING_BEFORE_MINUTES = 5; // Show the warning this long before the session ends.
-  // The modal counts down the FULL warning lead, so logout lands exactly at the
-  // session timeout. Previously this was a fixed 60s while the warning appeared 5
-  // minutes early, which signed idle members out at (timeout − 4 min) — four
-  // minutes before their session actually expired — with a modal that claimed
-  // "60 seconds" remaining.
-  var COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60;
+  // Preferred lead time for the "your session is about to end" warning. The
+  // ACTUAL lead is clamped to fit the session below, so a short server-declared
+  // session still gets a warning that fires before it expires.
+  var WARNING_LEAD_MAX_MINUTES = 5;
 
   function resolveSessionTimeoutMinutes() {
     var marker = document.querySelector('[data-session-timeout-minutes]');
     var declared = marker && parseInt(marker.getAttribute('data-session-timeout-minutes'), 10);
-    // Must exceed the warning lead time, or the warning could never be shown.
-    if (declared && isFinite(declared) && declared > WARNING_BEFORE_MINUTES) {
+    // Honour any positive server-declared timeout. Previously a value of 5 or
+    // fewer minutes was silently replaced by the 30-minute default — which is
+    // LONGER than the real session — so a genuinely short session would log the
+    // member out server-side while the warning was still counting down.
+    if (declared && isFinite(declared) && declared > 0) {
       return declared;
     }
     return DEFAULT_SESSION_TIMEOUT_MINUTES;
   }
 
   var SESSION_TIMEOUT_MINUTES = resolveSessionTimeoutMinutes();
+
+  // The warning lead can never be as long as the session itself, or the warning
+  // would be scheduled at (or before) t=0. Clamp it to at most the preferred
+  // lead and at least one minute, always strictly inside the session.
+  var WARNING_BEFORE_MINUTES = Math.min(
+    WARNING_LEAD_MAX_MINUTES,
+    Math.max(1, SESSION_TIMEOUT_MINUTES - 1)
+  );
+  // The modal counts down the FULL warning lead, so logout lands exactly at the
+  // session timeout. Previously this was a fixed 60s while the warning appeared
+  // several minutes early, which signed idle members out minutes before their
+  // session actually expired, with a modal that claimed "60 seconds" remaining.
+  var COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60;
 
   var sessionTimeoutMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
   var warningTimeMs = (SESSION_TIMEOUT_MINUTES - WARNING_BEFORE_MINUTES) * 60 * 1000;

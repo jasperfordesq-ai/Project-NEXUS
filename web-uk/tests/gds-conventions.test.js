@@ -143,8 +143,12 @@ describe('GDS conventions', () => {
       );
       expect(script).toContain('[data-session-timeout-minutes]');
       expect(script).toContain('resolveSessionTimeoutMinutes');
-      // The fallback must not be able to produce a negative warning window.
-      expect(script).toContain('declared > WARNING_BEFORE_MINUTES');
+      // The warning lead is clamped strictly inside the session, so the warning
+      // window can never be zero or negative — even when the server declares a
+      // session shorter than the preferred 5-minute lead (which used to be
+      // silently replaced by the 30-minute default, warning far too late).
+      expect(script).toContain('Math.max(1, SESSION_TIMEOUT_MINUTES - 1)');
+      expect(script).toContain('COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60');
     });
 
     /**

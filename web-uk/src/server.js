@@ -96,6 +96,7 @@ const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendAssetUrl } = require('./lib/accessible-shell');
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
+const { nl2br } = require('./lib/nl2br');
 const { parseMultipartForm } = require('./middleware/multipart');
 const { buildAccountLinks } = require('./lib/account-links');
 const { localization } = require('./middleware/localization');
@@ -285,17 +286,8 @@ nunjucksEnv.addFilter('take', (arr, count) => {
   return arr.slice(0, count);
 });
 
-nunjucksEnv.addFilter('nl2br', (str) => {
-  if (!str) return '';
-  // Escape HTML entities first to prevent XSS, then convert newlines to <br>
-  const escaped = str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-  return escaped.replace(/\n/g, '<br>');
-});
+// Escapes HTML first, then converts newlines to <br> (see src/lib/nl2br.js).
+nunjucksEnv.addFilter('nl2br', nl2br);
 
 app.set('view engine', 'njk');
 
@@ -327,6 +319,14 @@ app.use(helmet({
       // Hash is for: document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
       // challenges.cloudflare.com — Cloudflare Turnstile widget script.
       scriptSrc: ["'self'", "'sha256-GUQ5ad8JK5KmEWmROf3LZd9ge94daqNvd8xy9YS1iDw='", "https://challenges.cloudflare.com"],
+      // style-src keeps 'unsafe-inline' deliberately. GOV.UK Frontend injects
+      // inline styles (e.g. the JS-support flag, component sizing) and ~16
+      // templates use presentational inline `style=` attributes. Locking this
+      // down would need a per-request nonce threaded through every inline style
+      // and the vendor CSS — high risk for little gain, because the real
+      // script-injection vector is already closed: script-src has NO
+      // 'unsafe-inline' (only 'self' + one pinned hash), so an injected inline
+      // style cannot execute code. Revisit only if inline styles are removed.
       styleSrc: ["'self'", "'unsafe-inline'"],
       // Browser-reachable asset origin, not the server-to-server API origin: in
       // Docker those differ, and allowing the container-only hostname would
