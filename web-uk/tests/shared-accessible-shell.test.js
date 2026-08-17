@@ -34527,6 +34527,66 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('lets an organiser edit venue accessibility on an existing event, prefilled from the API shape', async () => {
+    // 🔴 Two faults, one root cause. edit.njk never imported the shared partial, so all
+    // ten fields were uneditable. And the API does NOT send flat `accessibility_*`
+    // columns — EventContractMapper projects them onto `location.accessibility` with
+    // SHORT keys and true/false/null — so reading the flat names yielded "unknown"
+    // everywhere, and because eventScopedPayload maps 'unknown' to null, saving WIPED
+    // real accessibility data. That is what this test pins.
+    const api = require('../src/lib/api');
+    api.getEventCategories.mockReset().mockResolvedValue({ data: [] });
+
+    api.getEvent.mockResolvedValueOnce({
+      data: {
+        id: 42,
+        user_id: 101,
+        title: 'Garden day',
+        location: {
+          label: 'The hall',
+          accessibility: {
+            schema_version: 1,
+            step_free_access: true,
+            accessible_toilet: false,
+            hearing_loop: true,
+            quiet_space: null,
+            seating_available: true,
+            accessible_parking: false,
+            parking_details: 'Two bays by the side door.',
+            transit_details: 'Bus 12 stops outside.',
+            assistance_contact: 'ring 555 0100',
+            notes: 'Ask at reception.'
+          }
+        }
+      }
+    });
+
+    const response = await request(app)
+      .get('/events/42/edit')
+      .set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+
+    const selected = (field) => {
+      const block = response.text.match(new RegExp(`name="${field}"[\\s\\S]*?</select>`));
+      if (!block) return null;
+      const chosen = block[0].match(/value="([^"]+)" selected/);
+      return chosen ? chosen[1] : null;
+    };
+
+    // Prefilled from the real API shape, not defaulted to "unknown".
+    expect(selected('accessibility_step_free')).toBe('yes');
+    expect(selected('accessibility_toilet')).toBe('no');
+    expect(selected('accessibility_hearing_loop')).toBe('yes');
+    expect(selected('accessibility_quiet_space')).toBe('unknown');
+    expect(selected('accessibility_seating')).toBe('yes');
+    expect(selected('accessibility_parking')).toBe('no');
+    expect(response.text).toContain('Two bays by the side door.');
+    expect(response.text).toContain('Bus 12 stops outside.');
+    expect(response.text).toContain('ring 555 0100');
+    expect(response.text).toContain('Ask at reception.');
+  });
+
   it('cannot create a second exchange by resubmitting the same request form', async () => {
     // 🔴 Creating an exchange moves time credits once both sides confirm, and this was
     // the ONE money form in web-uk with no double-click guard, no token and no

@@ -11,6 +11,11 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{# 🔴 The SAME partial the create and recurring-edit forms use. This form imported it
+   nowhere until 2026-08-17, so all ten venue-accessibility fields were uneditable on
+   an existing one-off event — while CHANGELOG.md claimed the shared block meant the
+   forms "cannot drift apart again". #}
+{% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -177,6 +182,9 @@
             </div>
           </div>
         </fieldset>
+
+        {# Shared with the event CREATE and recurring-EDIT forms so the three cannot drift. #}
+        {{ venueAccessibilityFields(t, accessibility, characterCountMessages) }}
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">

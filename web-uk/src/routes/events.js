@@ -618,6 +618,57 @@ function triState(value) {
   return 'unknown';
 }
 
+/**
+ * The venue-accessibility answers as the shared form partial expects them.
+ *
+ * 🔴 Read the API's ACTUAL shape, which is NOT the flat `accessibility_step_free`
+ * columns. `EventContractMapper::venueAccessibility()` projects them onto
+ * `location.accessibility` (surfaced by `eventFrom()` as `venue_accessibility`) using
+ * SHORT keys — `step_free_access`, `accessible_toilet`, `hearing_loop`, `quiet_space`,
+ * `seating_available`, `accessible_parking` — with true/false/null, not 'yes'/'no'.
+ *
+ * Getting this wrong is not a cosmetic bug, it DESTROYS data. Until 2026-08-17 the
+ * recurring-edit form read the flat columns, which the v2 contract does not send, so
+ * every answer rendered as "unknown" and every empty text box as blank — and because
+ * `eventScopedPayload` maps 'unknown' to null and an empty string to null, saving a
+ * recurring event silently wiped the venue's step-free access, hearing loop, quiet
+ * space, parking and assistance contact. The single-event edit form never rendered
+ * these fields at all, which is why it could not wipe them.
+ *
+ * `valueOr` lets a rejected submission keep what the organiser typed.
+ */
+function venueAccessibilityView(event, valueOr) {
+  // 🔴 Read BOTH places, because which one is populated depends on the normaliser the
+  // route used. `eventFrom()` returns the v2 contract untouched, so the answers are at
+  // `location.accessibility`; the detail normaliser copies them to
+  // `venue_accessibility`. Reading only one silently yields "unknown" for everything,
+  // which on save writes null over real data.
+  const row = event && typeof event === 'object' ? event : {};
+  const fromLocation = row.location && typeof row.location === 'object' && row.location.accessibility
+    && typeof row.location.accessibility === 'object'
+    ? row.location.accessibility
+    : null;
+  const source = fromLocation
+    || (row.venue_accessibility && typeof row.venue_accessibility === 'object' ? row.venue_accessibility : {});
+  // The mapper emits short keys directly; tolerate a `features` wrapper too, because
+  // the write contract accepts that shape.
+  const features = source.features && typeof source.features === 'object' ? source.features : source;
+  const keep = typeof valueOr === 'function' ? valueOr : (_field, fallback) => fallback;
+
+  return {
+    stepFree: keep('accessibility_step_free', triState(features.step_free_access)),
+    toilet: keep('accessibility_toilet', triState(features.accessible_toilet)),
+    hearingLoop: keep('accessibility_hearing_loop', triState(features.hearing_loop)),
+    quietSpace: keep('accessibility_quiet_space', triState(features.quiet_space)),
+    seating: keep('accessibility_seating', triState(features.seating_available)),
+    parking: keep('accessibility_parking', triState(features.accessible_parking)),
+    parkingDetails: keep('accessibility_parking_details', trimmed(source.parking_details)),
+    transitDetails: keep('accessibility_transit_details', trimmed(source.transit_details)),
+    assistanceContact: keep('accessibility_assistance_contact', trimmed(source.assistance_contact)),
+    notes: keep('accessibility_notes', trimmed(source.notes))
+  };
+}
+
 async function callEventMutation(token, method, path, data, idempotencyKey) {
   return callEventApi(token, method, path, data, {
     headers: { 'Idempotency-Key': idempotencyKey }
@@ -1134,18 +1185,9 @@ router.get('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
       allowRemoteAttendance: checked(valueOr('allow_remote_attendance', event.allow_remote_attendance ?? event.allowRemoteAttendance)),
       videoUrl: valueOr('video_url', trimmed(event.video_url ?? event.videoUrl)),
       maxAttendees: positiveInteger(valueOr('max_attendees', event.max_attendees ?? event.maxAttendees)),
-      accessibility: {
-        stepFree: valueOr('accessibility_step_free', triState(event.accessibility_step_free)),
-        toilet: valueOr('accessibility_toilet', triState(event.accessibility_toilet)),
-        hearingLoop: valueOr('accessibility_hearing_loop', triState(event.accessibility_hearing_loop)),
-        quietSpace: valueOr('accessibility_quiet_space', triState(event.accessibility_quiet_space)),
-        seating: valueOr('accessibility_seating', triState(event.accessibility_seating)),
-        parking: valueOr('accessibility_parking', triState(event.accessibility_parking)),
-        parkingDetails: valueOr('accessibility_parking_details', trimmed(event.accessibility_parking_details)),
-        transitDetails: valueOr('accessibility_transit_details', trimmed(event.accessibility_transit_details)),
-        assistanceContact: valueOr('accessibility_assistance_contact', trimmed(event.accessibility_assistance_contact)),
-        notes: valueOr('accessibility_notes', trimmed(event.accessibility_notes))
-      }
+      // 🔴 Was ten flat `event.accessibility_*` reads, which the v2 contract does not
+      // send — so every answer rendered "unknown" and saving wiped the real values.
+      accessibility: venueAccessibilityView(event, valueOr)
     },
     categories,
     supportsEffectiveRevisions: supportsEffectiveRevisions(capabilitiesResult),
@@ -3553,6 +3595,11 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
     endTime: dateTimeLocal(event.end_time ?? event.endTime),
     startTimeParts: splitDateTime(dateTimeLocal(event.start_time ?? event.startTime)),
     endTimeParts: splitDateTime(dateTimeLocal(event.end_time ?? event.endTime)),
+    // 🔴 This form rendered NONE of the ten venue-accessibility fields, so an organiser
+    // could set step-free access, a hearing loop or a quiet space when creating an
+    // event and never correct it afterwards — the information a disabled member needs
+    // in order to decide whether they can attend.
+    accessibility: venueAccessibilityView(event),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
@@ -3616,6 +3663,11 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
       endTime: values.end_time,
       startTimeParts: values.start_time_parts,
       endTimeParts: values.end_time_parts,
+      // A rejected submission must keep the answers the organiser gave, not fall back
+      // to "unknown" — which on save would wipe them.
+      accessibility: venueAccessibilityView({}, (field, fallback) => (
+        Object.prototype.hasOwnProperty.call(req.body || {}, field) ? trimmed(req.body[field]) : fallback
+      )),
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   };
