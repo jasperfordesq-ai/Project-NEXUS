@@ -2,7 +2,6 @@
   "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet over type errors in test files and the src/test harness, which tsconfig.json deliberately excludes from the app type-check. Granularity is file x error code x count. Regenerate with: npm run check:test-types -- --baseline (do this whenever you FIX errors, to lock the win in). Raising a count or adding a file/code is a REGRESSION and fails CI — fix the test instead. Enforced by the blocking \"Test-File TypeScript Ratchet\" step in .github/workflows/ci.yml.",
   "offenders": {
     "src/admin/AdminLayout.test.tsx": {
-      "TS2322": 1,
       "TS2345": 3,
       "TS2769": 1
     },
@@ -40,20 +39,13 @@
       "TS2353": 16
     },
     "src/admin/components/AdminHeader.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
-    },
-    "src/admin/components/AdminSidebar.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/components/BuilderToolbar.test.tsx": {
       "TS2739": 1
     },
     "src/admin/components/BulkActionToolbar.test.tsx": {
       "TS2550": 4
-    },
-    "src/admin/components/ConfirmModal.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/components/DataTable.test.tsx": {
       "TS2322": 1
@@ -178,11 +170,8 @@
     "src/admin/modules/advanced/MatchDebugPanel.test.tsx": {
       "TS2769": 1
     },
-    "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/advertising/AdCampaignAdminPage.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/ai/AiModuleDocsAdminPage.test.tsx": {
       "TS2345": 3
@@ -205,7 +194,6 @@
       "TS2322": 1
     },
     "src/admin/modules/billing/BillingControl.test.tsx": {
-      "TS2322": 1,
       "TS2538": 1
     },
     "src/admin/modules/billing/BillingPage.test.tsx": {
@@ -218,7 +206,6 @@
       "TS2345": 2
     },
     "src/admin/modules/billing/RevenueDashboard.test.tsx": {
-      "TS2322": 1,
       "TS2532": 1
     },
     "src/admin/modules/blog/BlogAdmin.test.tsx": {
@@ -228,15 +215,9 @@
     "src/admin/modules/blog/BlogPostForm.test.tsx": {
       "TS2345": 4
     },
-    "src/admin/modules/caring-community/CareProviderAdminPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/caring-community/CaringCommunityAdmin.test.tsx": {
       "TS2345": 1,
       "TS2741": 5
-    },
-    "src/admin/modules/caring-community/CaringCommunityWorkflowPage.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/modules/caring-community/CategoryCoefficientsAdminPage.test.tsx": {
       "TS2322": 1,
@@ -271,13 +252,10 @@
       "TS2345": 11
     },
     "src/admin/modules/caring-community/LoyaltyAdminPage.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/caring-community/MunicipalVerificationAdminPage.test.tsx": {
       "TS2322": 6
-    },
-    "src/admin/modules/caring-community/MunicipalityFeedbackAdminPage.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/modules/caring-community/OperatingPolicyAdminPage.test.tsx": {
       "TS2345": 2
@@ -421,9 +399,6 @@
       "TS2345": 1
     },
     "src/admin/modules/federation/CreditAgreements.test.tsx": {
-      "TS2322": 2
-    },
-    "src/admin/modules/federation/ExternalPartners.test.tsx": {
       "TS2322": 1
     },
     "src/admin/modules/federation/FederationAggregatesPage.test.tsx": {
@@ -431,9 +406,6 @@
     },
     "src/admin/modules/federation/FederationSettings.test.tsx": {
       "TS2345": 4
-    },
-    "src/admin/modules/federation/PartnerTimebankGuidance.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/modules/federation/Partnerships.test.tsx": {
       "TS2345": 4,
@@ -461,7 +433,7 @@
       "TS2345": 1
     },
     "src/admin/modules/groups/GroupOrganization.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/groups/GroupRanking.test.tsx": {
       "TS2345": 1
@@ -482,7 +454,7 @@
       "TS2769": 1
     },
     "src/admin/modules/legal/FadpAdminPage.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/marketplace/AdminCouponsPage.test.tsx": {
       "TS2322": 1
@@ -506,7 +478,6 @@
       "TS2345": 1
     },
     "src/admin/modules/moderation/ReportsManagement.test.tsx": {
-      "TS2322": 1,
       "TS2345": 9
     },
     "src/admin/modules/moderation/ReviewsModeration.test.tsx": {
@@ -626,7 +597,6 @@
       "TS2345": 7
     },
     "src/admin/modules/system/VerificationAuditLog.test.tsx": {
-      "TS2322": 1,
       "TS2532": 1
     },
     "src/admin/modules/timebanking/FraudAlerts.test.tsx": {
@@ -647,17 +617,13 @@
       "TS2739": 10
     },
     "src/admin/modules/users/UserEdit.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/admin/modules/users/UserList.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/volunteering/VolunteerApprovals.test.tsx": {
       "TS2345": 4
-    },
-    "src/admin/modules/volunteering/VolunteerConfig.test.tsx": {
-      "TS2322": 1
     },
     "src/admin/modules/volunteering/VolunteerGivingDays.test.tsx": {
       "TS2345": 1
@@ -669,9 +635,6 @@
       "TS18048": 1,
       "TS2345": 2
     },
-    "src/broker/BrokerLayout.test.tsx": {
-      "TS2322": 1
-    },
     "src/broker/BrokerRoute.test.tsx": {
       "TS2322": 1
     },
@@ -679,11 +642,9 @@
       "TS2345": 1
     },
     "src/broker/components/BrokerHeader.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/broker/components/BrokerSidebar.test.tsx": {
-      "TS2322": 1,
       "TS2741": 14
     },
     "src/broker/pages/BrokerConfigurationPage.test.tsx": {
@@ -721,15 +682,10 @@
     "src/broker/pages/VettingPage.test.tsx": {
       "TS2322": 2
     },
-    "src/caring/CaringLayout.test.tsx": {
-      "TS2322": 1
-    },
     "src/caring/components/CaringPanelHeader.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/caring/components/CaringPanelSidebar.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/components/auth/OAuthButtons.test.tsx": {
@@ -740,14 +696,13 @@
       "TS2352": 1
     },
     "src/components/availability/AvailabilityGrid.test.tsx": {
-      "TS2322": 1,
       "TS2345": 3
     },
     "src/components/branding/__tests__/TenantLogo.test.tsx": {
       "TS2556": 1
     },
     "src/components/caring-community/EmergencyAlertBanner.test.tsx": {
-      "TS2322": 2,
+      "TS2322": 1,
       "TS2352": 1
     },
     "src/components/caring-community/OnboardingChoiceModal.test.tsx": {
@@ -773,16 +728,10 @@
       "TS2345": 1
     },
     "src/components/compose/MobileComposeOverlay.test.tsx": {
-      "TS2322": 2
-    },
-    "src/components/compose/shared/AiAssistButton.test.tsx": {
       "TS2322": 1
     },
     "src/components/compose/shared/EmojiPicker.test.tsx": {
       "TS2532": 2
-    },
-    "src/components/compose/shared/GroupSelector.test.tsx": {
-      "TS2322": 1
     },
     "src/components/compose/shared/TemplatePicker.test.tsx": {
       "TS2532": 2
@@ -796,14 +745,7 @@
     "src/components/compose/shared/__tests__/TemplatePicker.test.tsx": {
       "TS2345": 2
     },
-    "src/components/compose/tabs/EventTab.test.tsx": {
-      "TS2322": 1
-    },
-    "src/components/compose/tabs/GoalTab.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/compose/tabs/ListingTab.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2,
       "TS2769": 1
     },
@@ -812,7 +754,7 @@
       "TS2769": 1
     },
     "src/components/compose/tabs/PostTab.test.tsx": {
-      "TS2322": 15,
+      "TS2322": 14,
       "TS2769": 1
     },
     "src/components/compose/tabs/__tests__/GoalTab.test.tsx": {
@@ -833,9 +775,6 @@
     },
     "src/components/courses/CourseCard.test.tsx": {
       "TS2741": 1
-    },
-    "src/components/courses/LessonDiscussion.test.tsx": {
-      "TS2322": 1
     },
     "src/components/donations/DonationCheckout.test.tsx": {
       "TS2532": 1
@@ -899,20 +838,11 @@
       "TS2345": 4,
       "TS2769": 1
     },
-    "src/components/feed/sidebar/FeedSidebar.test.tsx": {
-      "TS2322": 1
-    },
-    "src/components/feed/sidebar/PeopleYouMayKnowWidget.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/feed/sidebar/ProfileCardWidget.test.tsx": {
       "TS2322": 1,
       "TS2769": 1
     },
     "src/components/feed/sidebar/QuickActionsWidget.test.tsx": {
-      "TS2322": 2
-    },
-    "src/components/feed/sidebar/TopCategoriesWidget.test.tsx": {
       "TS2322": 1
     },
     "src/components/feed/sidebar/WidgetSkeleton.test.tsx": {
@@ -977,7 +907,6 @@
       "TS2786": 4
     },
     "src/components/feedback/FloatingReportProblemButton.test.tsx": {
-      "TS2322": 1,
       "TS2345": 5
     },
     "src/components/feedback/LoadingScreen.test.tsx": {
@@ -987,20 +916,12 @@
       "TS2559": 1
     },
     "src/components/feedback/SessionTimeoutWarning.test.tsx": {
-      "TS2322": 1,
       "TS2532": 2
-    },
-    "src/components/hashtags/HashtagRenderer.test.tsx": {
-      "TS2322": 1
     },
     "src/components/hashtags/TrendingHashtags.test.tsx": {
       "TS2532": 3
     },
-    "src/components/ideation/TeamChatrooms.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/ideation/TeamTasks.test.tsx": {
-      "TS2322": 1,
       "TS2345": 4
     },
     "src/components/jobs/AiChatDrawer.test.tsx": {
@@ -1022,9 +943,6 @@
       "TS2345": 1,
       "TS2739": 6
     },
-    "src/components/landing/CtaSection.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/landing/HeroSection.test.tsx": {
       "TS2353": 1
     },
@@ -1042,11 +960,8 @@
       "TS2769": 1
     },
     "src/components/layout/NotificationFlyout.test.tsx": {
-      "TS2322": 2,
+      "TS2322": 1,
       "TS2769": 1
-    },
-    "src/components/layout/SearchOverlay.test.tsx": {
-      "TS2322": 1
     },
     "src/components/layout/__tests__/NotificationFlyout.test.tsx": {
       "TS2769": 1
@@ -1068,23 +983,19 @@
       "TS2322": 1
     },
     "src/components/listings/ListingAnalyticsPanel.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/listings/SkillTagsInput.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2
     },
     "src/components/location/EntityMapView.test.tsx": {
       "TS2532": 5
     },
-    "src/components/location/GoogleMapsProvider.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/location/LocationMapCard.test.tsx": {
       "TS2322": 5
     },
     "src/components/location/NominatimAutocomplete.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/location/OsPlacesAutocomplete.test.tsx": {
       "TS2345": 4,
@@ -1110,19 +1021,15 @@
     "src/components/marketplace/AiReplySuggestion.test.tsx": {
       "TS2345": 8
     },
-    "src/components/marketplace/BusinessSellerBadge.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/marketplace/BuyNowButton.test.tsx": {
       "TS2532": 2,
       "TS2578": 1
     },
     "src/components/marketplace/CommunityDeliveryCard.test.tsx": {
-      "TS2322": 1,
       "TS2532": 3
     },
     "src/components/marketplace/LoyaltyRedemptionCard.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/components/marketplace/MakeOfferForm.test.tsx": {
       "TS2345": 1
@@ -1155,7 +1062,6 @@
       "TS2345": 1
     },
     "src/components/messages/MessageContextCard.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/components/messages/__tests__/MessageContextCard.test.tsx": {
@@ -1168,22 +1074,13 @@
       "TS7006": 1,
       "TS7053": 1
     },
-    "src/components/profile/ProfileFeed.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/profile/__tests__/ProfileFeed.test.tsx": {
       "TS2741": 6,
       "TS2769": 1
     },
-    "src/components/pwa/InstallAppButton.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/pwa/InstallBanner.test.tsx": {
       "TS2322": 2,
       "TS2367": 1
-    },
-    "src/components/reviews/ReviewModal.test.tsx": {
-      "TS2322": 1
     },
     "src/components/routing/FeatureGate.test.tsx": {
       "TS2352": 4
@@ -1192,12 +1089,6 @@
       "TS2322": 22,
       "TS2556": 1,
       "TS2769": 1
-    },
-    "src/components/search/AdvancedSearchFilters.test.tsx": {
-      "TS2322": 1
-    },
-    "src/components/search/SavedSearches.test.tsx": {
-      "TS2322": 1
     },
     "src/components/security/BiometricSettings.test.tsx": {
       "TS2769": 1
@@ -1215,27 +1106,16 @@
     "src/components/social/MentionAutocomplete.test.tsx": {
       "TS2532": 2
     },
-    "src/components/social/PresenceIndicator.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/social/ReactionPicker.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/components/social/ReactionSummary.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/components/social/SaveButton.test.tsx": {
       "TS2352": 1
     },
-    "src/components/social/SocialInteractionPanel.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/social/StatusSelector.test.tsx": {
-      "TS2322": 2
-    },
-    "src/components/social/UserHoverCard.test.tsx": {
       "TS2322": 1
     },
     "src/components/social/__tests__/CommentsSection.test.tsx": {
@@ -1249,14 +1129,10 @@
     "src/components/social/__tests__/StatusSelector.test.tsx": {
       "TS2352": 1
     },
-    "src/components/stories/StoryCreator.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/stories/StoryHighlights.test.tsx": {
       "TS2322": 1
     },
     "src/components/stories/StoryViewer.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/components/stories/__tests__/StoryHighlights.test.tsx": {
@@ -1266,7 +1142,6 @@
       "TS2769": 1
     },
     "src/components/subaccounts/SubAccountsManager.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/components/subaccounts/__tests__/SubAccountsManager.test.tsx": {
@@ -1446,12 +1321,6 @@
     "src/pages/activity/ActivityDashboardPage.test.tsx": {
       "TS2322": 1
     },
-    "src/pages/advertise/MyAdCampaignsPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/advertise/MyPushCampaignsPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/auth/ForgotPasswordPage.test.tsx": {
       "TS2322": 1
     },
@@ -1470,9 +1339,6 @@
     "src/pages/auth/VerifyEmailPage.test.tsx": {
       "TS2322": 1,
       "TS2352": 1
-    },
-    "src/pages/auth/VerifyIdentityPage.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/auth/__tests__/VerifyIdentityPage.test.tsx": {
       "TS2352": 1
@@ -1500,9 +1366,6 @@
     "src/pages/caring-community/FutureCareFundPage.test.tsx": {
       "TS2322": 1
     },
-    "src/pages/caring-community/HourGiftPage.test.tsx": {
-      "TS2322": 2
-    },
     "src/pages/caring-community/InviteRedemptionPage.test.tsx": {
       "TS2345": 5
     },
@@ -1511,11 +1374,7 @@
       "TS2352": 1
     },
     "src/pages/caring-community/MarktPage.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
-    },
-    "src/pages/caring-community/MunicipalSurveyPage.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/caring-community/MunicipalityFeedbackPage.test.tsx": {
       "TS2345": 2
@@ -1528,7 +1387,6 @@
       "TS2322": 1
     },
     "src/pages/caring-community/ProjectAnnouncementsPage.test.tsx": {
-      "TS2322": 1,
       "TS2339": 1
     },
     "src/pages/caring-community/RequestHelpPage.test.tsx": {
@@ -1556,9 +1414,6 @@
       "TS2741": 1
     },
     "src/pages/courses/CourseAnalyticsPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/courses/CourseDetailPage.test.tsx": {
       "TS2322": 1
     },
     "src/pages/courses/CreateCoursePage.test.tsx": {
@@ -1611,7 +1466,6 @@
       "TS2345": 1
     },
     "src/pages/explore/ExplorePage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1,
       "TS2769": 1
     },
@@ -1654,9 +1508,6 @@
       "TS2322": 1,
       "TS2345": 1
     },
-    "src/pages/feed/PostDetailPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/goals/GoalDetailPage.test.tsx": {
       "TS2322": 1
     },
@@ -1666,20 +1517,10 @@
       "TS2741": 3
     },
     "src/pages/goals/components/GoalCheckinModal.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
-    },
-    "src/pages/goals/components/GoalInsightsPanel.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/goals/components/GoalProgressHistory.test.tsx": {
       "TS2769": 1
-    },
-    "src/pages/goals/components/GoalReminderToggle.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/goals/components/GoalTemplatePickerModal.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/goals/components/__tests__/GoalCheckinModal.test.tsx": {
       "TS2769": 1,
@@ -1740,45 +1581,26 @@
     "src/pages/groups/components/GroupModals.test.tsx": {
       "TS2345": 1
     },
-    "src/pages/groups/components/PinnedAnnouncementsBanner.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/groups/components/ScheduledPostPanel.test.tsx": {
       "TS2345": 3
     },
     "src/pages/groups/tabs/GroupAnnouncementsTab.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2
     },
     "src/pages/groups/tabs/GroupChallengesTab.test.tsx": {
       "TS2345": 6
     },
-    "src/pages/groups/tabs/GroupChatroomsTab.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/groups/tabs/GroupDiscussionTab.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/groups/tabs/GroupEventsTab.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/pages/groups/tabs/GroupFeedTab.test.tsx": {
-      "TS2322": 3,
+      "TS2322": 2,
       "TS2741": 5
-    },
-    "src/pages/groups/tabs/GroupFilesTab.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/groups/tabs/GroupMediaTab.test.tsx": {
       "TS2345": 1,
       "TS2550": 1,
       "TS2769": 2
-    },
-    "src/pages/groups/tabs/GroupSubgroupsTab.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/groups/tabs/GroupTasksTab.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/help/HelpCenterPage.test.tsx": {
       "TS2322": 1
@@ -1862,62 +1684,24 @@
     "src/pages/listings/ListingsPage.test.tsx": {
       "TS2322": 1
     },
-    "src/pages/marketplace/BuyerOrdersPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/marketplace/CreateMarketplaceListingPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/pages/marketplace/EditMarketplaceListingPage.test.tsx": {
-      "TS2322": 1,
       "TS2532": 1
     },
     "src/pages/marketplace/FreeItemsPage.test.tsx": {
-      "TS2322": 2,
+      "TS2322": 1,
       "TS2741": 7
     },
-    "src/pages/marketplace/MarketplaceCategoryPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/MarketplaceCollectionsPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/MarketplaceListingPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/marketplace/MarketplaceMapSearchPage.test.tsx": {
-      "TS2322": 1,
       "TS2532": 1
     },
-    "src/pages/marketplace/MarketplacePage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/MarketplaceSearchPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/MerchantOnboardingPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/MyListingsPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/marketplace/MyOffersPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2,
       "TS2741": 6
     },
-    "src/pages/marketplace/MyPickupsPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/SellerOrdersPage.test.tsx": {
-      "TS2322": 1
-    },
-    "src/pages/marketplace/SellerProfilePage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/marketplace/StripeOnboardingPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2
     },
     "src/pages/marketplace/seller/SellerCouponEditPage.test.tsx": {
@@ -1946,7 +1730,6 @@
       "TS2322": 1
     },
     "src/pages/messages/components/CreateGroupModal.test.tsx": {
-      "TS2322": 1,
       "TS2345": 3
     },
     "src/pages/messages/components/MessageBubble.test.tsx": {
@@ -1989,7 +1772,7 @@
       "TS2322": 1
     },
     "src/pages/podcasts/PodcastShowPage.test.tsx": {
-      "TS2322": 2,
+      "TS2322": 1,
       "TS2740": 11
     },
     "src/pages/podcasts/PodcastStudioPage.test.tsx": {
@@ -2007,7 +1790,6 @@
       "TS2345": 3
     },
     "src/pages/profile/AppreciationWallPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 3
     },
     "src/pages/profile/CollectionDetailPage.test.tsx": {
@@ -2019,9 +1801,6 @@
     "src/pages/profile/MyVereinDuesPage.test.tsx": {
       "TS2322": 3,
       "TS2345": 4
-    },
-    "src/pages/profile/MyVereinInvitationsPage.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/profile/ProfilePage.test.tsx": {
       "TS2322": 3,
@@ -2080,7 +1859,6 @@
       "TS7006": 1
     },
     "src/pages/reviews/ReviewsPage.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/pages/search/SearchPage.test.tsx": {
@@ -2091,9 +1869,6 @@
     },
     "src/pages/settings/SettingsPage.test.tsx": {
       "TS2503": 3
-    },
-    "src/pages/settings/VerifyIdentityOptionalPage.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/settings/tabs/ConnectedAccountsTab.test.tsx": {
       "TS2345": 4
@@ -2111,7 +1886,6 @@
       "TS2769": 1
     },
     "src/pages/vereine/VereinCrossInvitationButton.test.tsx": {
-      "TS2322": 1,
       "TS2740": 1
     },
     "src/pages/volunteering/CertificatesTab.test.tsx": {
@@ -2119,9 +1893,6 @@
     },
     "src/pages/volunteering/CreateOpportunityPage.test.tsx": {
       "TS2769": 1
-    },
-    "src/pages/volunteering/DonationReceiptPage.test.tsx": {
-      "TS2322": 1
     },
     "src/pages/volunteering/EmergencyAlertsTab.test.tsx": {
       "TS2769": 1
@@ -2168,9 +1939,6 @@
       "TS2769": 1,
       "TS7006": 1
     },
-    "src/pages/volunteering/VolOrgDashboardPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/volunteering/VolunteeringPage.test.tsx": {
       "TS2322": 1,
       "TS2741": 3
@@ -2200,7 +1968,6 @@
       "TS18046": 2
     },
     "src/super-admin/SuperAdminLayout.test.tsx": {
-      "TS2322": 1,
       "TS2769": 1
     },
     "src/super-admin/components/SuperAdminBreadcrumbs.test.tsx": {
@@ -2214,7 +1981,7 @@
     }
   },
   "totals": {
-    "fileCount": 648,
-    "errorCount": 1932
+    "fileCount": 583,
+    "errorCount": 1809
   }
 }

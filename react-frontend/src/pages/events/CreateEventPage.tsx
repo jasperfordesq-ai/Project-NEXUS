@@ -41,7 +41,8 @@ import BarChart3 from 'lucide-react/icons/chart-column';
 import { Breadcrumbs } from '@/components/navigation';
 import { LoadingScreen } from '@/components/feedback';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
-import { useToast, useTenant } from '@/contexts';
+import { useToast, useTenant, useAuth } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
@@ -199,8 +200,14 @@ export function CreateEventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
   const toast = useToast();
   const isEditing = !!id;
+  // Creation only. Editing an existing Event is governed by the Event policy
+  // (organiser / delegated staff / admin), NOT by the community's
+  // "who can create Events" setting — so an organiser whose community later
+  // restricted creation must still be able to edit what they already own.
+  const blockedFromCreating = !isEditing && !canCreateEvents(user);
   const groupId = searchParams.get('group_id');
   const pageTitle = isEditing ? t('form.edit_title') : t('form.create_title');
   usePageTitle(pageTitle);
@@ -903,6 +910,26 @@ export function CreateEventPage() {
 
   if (isLoading) {
     return <LoadingScreen message={t('form.loading')} />;
+  }
+
+  // Direct navigation to /events/create when the community restricts creation.
+  // The server refuses the POST regardless; this avoids presenting a long form
+  // that cannot be submitted.
+  if (blockedFromCreating) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <GlassCard className="p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
+          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('form.creation_restricted_title')}</h2>
+          <p className="text-theme-muted mb-4">{t('form.creation_restricted_body')}</p>
+          <div className="flex justify-center">
+            <Button as={Link} to={tenantPath('/events')} color="primary">
+              {t('form.back_to_events')}
+            </Button>
+          </div>
+        </GlassCard>
+      </div>
+    );
   }
 
   if (loadError) {

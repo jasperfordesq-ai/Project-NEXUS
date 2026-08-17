@@ -43,7 +43,7 @@ import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMenuContext } from '@/contexts/MenuContextCore';
 import { resolveAvatarUrl } from '@/lib/helpers';
-import { hasAdminPanelAccess, hasBrokerPanelAccess, isPlatformSuperAdminUser } from '@/lib/access';
+import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess, isPlatformSuperAdminUser } from '@/lib/access';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopMenuItems } from '@/components/navigation';
@@ -849,7 +849,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                       >
                         {t('create.new_listing')}
                       </DropdownItem>
-                      {hasFeature('events') ? (
+                      {hasFeature('events') && canCreateEvents(user) ? (
                         <DropdownItem
                           key={tenantPath('/events/create')} id={tenantPath('/events/create')}
                           startContent={<Calendar className="w-4 h-4" aria-hidden="true" />}

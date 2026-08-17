@@ -208,6 +208,8 @@
     "group_event_notice": "Dit evenement wordt aan uw groep gekoppeld.",
     "loading": "Evenement laden...",
     "unable_to_load": "Kan evenement niet laden",
+    "creation_restricted_title": "Hier kunnen alleen medewerkers evenementen maken",
+    "creation_restricted_body": "Deze community heeft ervoor gekozen om alleen haar makelaars en beheerders evenementen te laten maken. Wil je dat er een evenement wordt opgezet, vraag dit dan aan een beheerder van de community.",
     "back_to_events": "Terug naar Evenementen",
     "try_again": "Probeer het opnieuw",
     "nav_new": "Nieuw evenement",

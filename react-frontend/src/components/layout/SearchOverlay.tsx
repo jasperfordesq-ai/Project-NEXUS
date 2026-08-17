@@ -28,6 +28,7 @@ import Clock from 'lucide-react/icons/clock';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant, useTheme } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 import { api } from '@/lib/api';
 import { safeLocalStorageGetJSON, safeLocalStorageSetJSON, safeLocalStorageRemove } from '@/lib/safeStorage';
 import { Button } from '@/components/ui/Button';
@@ -93,7 +94,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { tenantPath, hasFeature } = useTenant();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -199,7 +200,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     const actions: { label: string; icon: typeof Search; action: () => void }[] = [];
     if (isAuthenticated) {
       actions.push({ label: t('create.new_listing'), icon: ListTodo, action: () => navigate(tenantPath('/listings/create')) });
-      if (hasFeature('events')) {
+      // Creation can be restricted to brokers/admins even with events enabled.
+      if (hasFeature('events') && canCreateEvents(user)) {
         actions.push({ label: t('create.new_event'), icon: Calendar, action: () => navigate(tenantPath('/events/create')) });
       }
       actions.push(
@@ -212,7 +214,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       { label: t('support.help_center'), icon: HelpCircle, action: () => navigate(tenantPath('/help')) }
     );
     return actions;
-  }, [isAuthenticated, t, navigate, tenantPath, hasFeature, resolvedTheme, toggleTheme]);
+  }, [isAuthenticated, user, t, navigate, tenantPath, hasFeature, resolvedTheme, toggleTheme]);
 
   const isActionMode = query.startsWith('>');
   const filteredActions = useMemo(() => {

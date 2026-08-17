@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\UserService;
 use App\Services\Enterprise\GdprService;
+use App\Services\EventConfigurationService;
 use App\Services\ListingService;
 use App\Services\MailchimpService;
 use App\Models\User;
@@ -41,6 +42,7 @@ class UsersController extends BaseApiController
         private readonly MailchimpService $mailchimpService,
         private readonly UserService $userService,
         private readonly MemberRankingService $memberRankingService,
+        private readonly EventConfigurationService $eventConfiguration,
     ) {}
 
     // ================================================================
@@ -83,6 +85,30 @@ class UsersController extends BaseApiController
         } catch (\Throwable $e) {
             // Never break /me over this — absent is treated as 'none' by the UI.
             $profile['super_panel_level'] = 'none';
+        }
+
+        /*
+         * Whether this caller may create an Event in the current community,
+         * resolved server-side by the same predicate POST /v2/events enforces.
+         *
+         * 🔴 The UI must not infer this from `events.creation_role` plus the
+         * caller's role. The server decision also depends on the actor's account
+         * being active and non-deleted, and on broker/coordinator failing closed
+         * independently of any legacy admin flag. A client that guessed would
+         * offer a Create button that 403s only after the whole form is filled
+         * in — which is exactly the behaviour this field exists to remove.
+         *
+         * Absent is treated as `true` by the UI: a missing capability must not
+         * hide the button on the open default, and the server refuses anyway.
+         */
+        try {
+            $profile['can_create_events'] = $this->eventConfiguration->canCreate(
+                (int) TenantContext::getId(),
+                $userId,
+            );
+        } catch (\Throwable $e) {
+            // Never break /me over this. Omit rather than guess, so the UI falls
+            // back to showing the button and the server stays authoritative.
         }
 
         return $this->respondWithData($profile);

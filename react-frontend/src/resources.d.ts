@@ -43200,6 +43200,8 @@ export default interface Resources {
       "create_badge": "Event setup",
       "create_intro": "Shape the essential details, timing, access, and cover image so people can decide quickly if this event is for them.",
       "create_title": "Create New Event",
+      "creation_restricted_body": "This community has chosen to let only its brokers and administrators create Events. If you would like an Event set up, ask a community administrator.",
+      "creation_restricted_title": "Only staff can create Events here",
       "description_label": "Description",
       "description_placeholder": "Describe your event in detail...",
       "edit_badge": "Editing event",

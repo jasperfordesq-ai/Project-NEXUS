@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/feedback';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts';
 import { useTenant } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 import { formatDateTime, formatMonthShort, getFormattingLocale } from '@/lib/helpers';
 import type { Event } from '@/types/api';
 
@@ -68,14 +69,16 @@ export function GroupEventsTab({
   onLoadMoreEvents,
 }: GroupEventsTabProps) {
   const { t } = useTranslation('groups');
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { tenantPath } = useTenant();
+  // Group membership is not enough: the community can restrict who creates Events.
+  const mayCreateEvent = isMember && isAuthenticated && canCreateEvents(user);
 
   return (
     <GlassCard className="p-4 sm:p-6">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-theme-primary">{t('detail.group_events_heading')}</h2>
-        {isMember && isAuthenticated && (
+        {mayCreateEvent && (
           <Button as={Link} to={tenantPath(`/events/create?group_id=${groupId}`)}
             className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto"
             size="sm"
@@ -96,7 +99,7 @@ export function GroupEventsTab({
           title={t('detail.no_events_title')}
           description={t('detail.no_events_desc')}
           action={
-            isMember && isAuthenticated && (
+            mayCreateEvent && (
               <Button as={Link} to={tenantPath(`/events/create?group_id=${groupId}`)}
                 className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
                 startContent={<Plus className="w-4 h-4" aria-hidden="true" />}

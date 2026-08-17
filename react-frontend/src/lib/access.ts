@@ -11,6 +11,8 @@ type UserLike = {
   is_god?: unknown;
   /** Server-resolved super-panel reach — see superPanelLevel() below. */
   super_panel_level?: unknown;
+  /** Server-resolved Event-creation capability — see canCreateEvents() below. */
+  can_create_events?: unknown;
 } | null | undefined;
 
 function userRole(user: UserLike): string {
@@ -112,6 +114,30 @@ export function superPanelLevel(user: UserLike): SuperPanelLevel {
    * hierarchy — facts the client does not have. No level, no branch panel.
    */
   return isPlatformSuperAdminUser(user) ? 'master' : 'none';
+}
+
+/**
+ * True when this user may create an Event in the current community.
+ *
+ * A community can restrict Event creation to "Brokers and administrators" or
+ * "Administrators only" (Admin → Event Settings → Who can create Events). The
+ * server enforces that on POST /v2/events; this exists so the UI stops offering
+ * a Create button that only refuses after the whole form has been filled in.
+ *
+ * 🔴 Never infer this from the community's `creation_role` plus the caller's
+ * role. The server decision also depends on the account being active and
+ * non-deleted, and on broker/coordinator failing closed regardless of any legacy
+ * admin flag. Supplied as `can_create_events` by GET /v2/users/me.
+ *
+ * 🔴 Absent means ALLOWED, deliberately — the opposite of superPanelLevel()'s
+ * fail-closed default. The field is new, so a client holding a /me payload from
+ * before it existed (cached response, session spanning the deploy, older native
+ * build) must keep the button rather than lose it. The overwhelmingly common
+ * case is the open default where everyone may create, and the server refuses
+ * anyway, so a stale client costs one clear error instead of a missing feature.
+ */
+export function canCreateEvents(user: UserLike): boolean {
+  return (user as { can_create_events?: unknown } | null | undefined)?.can_create_events !== false;
 }
 
 /** True when this user should be offered the super panel at all. */

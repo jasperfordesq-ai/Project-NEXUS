@@ -51,6 +51,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { useApi } from '@/hooks/useApi';
 import { useTenant, useAuth } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import apiClient from '@/lib/api';
 import { ExploreSection, ExploreStatCard, HorizontalScroll } from '@/components/explore';
@@ -412,9 +413,10 @@ export default function ExplorePage() {
 
   const navigate = useNavigate();
   const { tenantPath, hasFeature } = useTenant();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const hasConnections = hasFeature('connections');
   const hasEvents = hasFeature('events');
+  const mayCreateEvent = isAuthenticated && canCreateEvents(user);
   const hasGroups = hasFeature('groups');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -1809,7 +1811,14 @@ export default function ExplorePage() {
         <EmptyState icon={Users} message={t('empty_people')} />
       )}
       {!isLoading && activeTab === 'events' && !data?.upcoming_events?.length && (
-        <EmptyState icon={Calendar} message={t('empty_events')} cta={t('create_event')} onAction={() => navigate(tenantPath('/events/create'))} />
+        // The community can restrict who creates Events, so the CTA is dropped
+        // rather than offered as a dead end.
+        <EmptyState
+          icon={Calendar}
+          message={t('empty_events')}
+          cta={mayCreateEvent ? t('create_event') : undefined}
+          onAction={mayCreateEvent ? () => navigate(tenantPath('/events/create')) : undefined}
+        />
       )}
       {!isLoading && activeTab === 'groups' && !data?.active_groups?.length && (
         <EmptyState icon={Users} message={t('empty_groups')} cta={t('create_group')} onAction={() => navigate(tenantPath('/groups/create'))} />

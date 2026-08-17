@@ -19,7 +19,8 @@ import Target from 'lucide-react/icons/target';
 import Heart from 'lucide-react/icons/heart';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
-import { useTenant } from '@/contexts';
+import { useTenant, useAuth } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 import type { TenantFeatures, TenantModules } from '@/types/api';
 import { Button } from '@/components/ui/Button';
 import { Modal, ModalContent, ModalBody } from '@/components/ui/Modal';
@@ -82,13 +83,20 @@ const createOptionDefs: CreateOptionDef[] = [
   },
 ];
 
+/**
+ * @param canCreateEvent Server-resolved: a community may restrict Event creation
+ *   to brokers/admins even while the `events` feature is on. Defaults to true so
+ *   existing callers and tests are unaffected.
+ */
 export function getVisibleCreateOptions(
   hasFeature: (feature: keyof TenantFeatures) => boolean,
   hasModule: (module: keyof TenantModules) => boolean,
+  canCreateEvent = true,
 ): CreateOptionDef[] {
   return createOptionDefs.filter((option) => {
     if (option.feature && !hasFeature(option.feature)) return false;
     if (option.module && !hasModule(option.module)) return false;
+    if (option.href === '/events/create' && !canCreateEvent) return false;
     return true;
   });
 }
@@ -97,8 +105,9 @@ export function QuickCreateMenu({ isOpen, onClose }: QuickCreateMenuProps) {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { hasFeature, hasModule, tenantPath } = useTenant();
+  const { user } = useAuth();
 
-  const visibleOptions = getVisibleCreateOptions(hasFeature, hasModule);
+  const visibleOptions = getVisibleCreateOptions(hasFeature, hasModule, canCreateEvents(user));
 
   const handleSelect = (href: string) => {
     onClose();

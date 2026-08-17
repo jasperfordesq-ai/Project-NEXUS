@@ -54,6 +54,51 @@ class UsersControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    /**
+     * The Create-Event button is driven by this field, so /me must report the
+     * same decision POST /v2/events enforces. Without it the client shows a
+     * button that only refuses after the whole form has been filled in.
+     */
+    public function test_me_reports_the_event_creation_capability(): void
+    {
+        $this->authenticatedUser();
+        $this->setEventCreationRole('members');
+
+        $this->apiGet('/v2/users/me')
+            ->assertStatus(200)
+            ->assertJsonPath('data.can_create_events', true);
+    }
+
+    public function test_me_reports_the_capability_as_false_when_creation_is_restricted(): void
+    {
+        $this->authenticatedUser(['role' => 'member']);
+        $this->setEventCreationRole('admins');
+
+        $this->apiGet('/v2/users/me')
+            ->assertStatus(200)
+            ->assertJsonPath('data.can_create_events', false);
+    }
+
+    public function test_me_reports_the_capability_as_true_for_an_admin_on_a_restricted_community(): void
+    {
+        $this->authenticatedUser(['role' => 'admin']);
+        $this->setEventCreationRole('admins');
+
+        $this->apiGet('/v2/users/me')
+            ->assertStatus(200)
+            ->assertJsonPath('data.can_create_events', true);
+    }
+
+    private function setEventCreationRole(string $role): void
+    {
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $configuration = is_string($raw) ? (json_decode($raw, true) ?: []) : (is_array($raw) ? $raw : []);
+        $configuration['events'] = array_merge($configuration['events'] ?? [], ['creation_role' => $role]);
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'configuration' => json_encode($configuration),
+        ]);
+    }
+
     // ================================================================
     // ME — Authentication required
     // ================================================================

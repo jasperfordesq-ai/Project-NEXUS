@@ -44,6 +44,7 @@ import Rows3 from 'lucide-react/icons/rows-3';
 import { useTranslation } from 'react-i18next';
 import { SafeHtml } from '@/components/ui/SafeHtml';
 import { useAuth } from '@/contexts/AuthContext';
+import { canCreateEvents } from '@/lib/access';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
@@ -169,7 +170,10 @@ export function EventsPage() {
   useSetAppBarTitle(t('title'));
   const isPhone = useMediaQuery('(max-width: 639px)');
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  // A community can restrict Event creation to brokers/admins. Offering Create to
+  // someone who cannot use it wastes a whole form before the server refuses.
+  const mayCreateEvent = isAuthenticated && canCreateEvents(user);
   const { tenantPath } = useTenant();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -499,14 +503,17 @@ export function EventsPage() {
         action={
           isAuthenticated ? (
             <div className="flex flex-wrap gap-2">
+              {/* Calendar feeds stay for every signed-in member — only creating is gated. */}
               <CalendarSubscriptionPanel />
-              <Button as={Link} to={tenantPath('/events/create')}
-                color="primary"
-                className="font-semibold"
-                startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('create_event')}
-              </Button>
+              {mayCreateEvent && (
+                <Button as={Link} to={tenantPath('/events/create')}
+                  color="primary"
+                  className="font-semibold"
+                  startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {t('create_event')}
+                </Button>
+              )}
             </div>
           ) : undefined
         }
@@ -538,13 +545,15 @@ export function EventsPage() {
       {isPhone && isAuthenticated && (
         <div className="flex flex-wrap items-center gap-2 px-1">
           <CalendarSubscriptionPanel />
-          <Button as={Link} to={tenantPath('/events/create')}
-            color="primary"
-            className="font-semibold"
-            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-          >
-            {t('create_event')}
-          </Button>
+          {mayCreateEvent && (
+            <Button as={Link} to={tenantPath('/events/create')}
+              color="primary"
+              className="font-semibold"
+              startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+            >
+              {t('create_event')}
+            </Button>
+          )}
         </div>
       )}
 
@@ -801,7 +810,7 @@ export function EventsPage() {
               accent="amber"
               tips={[t('empty_tip_workshops'), t('empty_tip_social'), t('empty_tip_online')]}
               action={
-                isAuthenticated && (
+                mayCreateEvent && (
                   <Button as={Link} to={tenantPath('/events/create')} color="primary">
                     {t('create_event')}
                   </Button>

@@ -20,12 +20,16 @@
  */
 
 import { vi } from 'vitest';
+import type { User } from '@/types/api';
 
 /** Default return values for every hook exported from @/contexts */
 const DEFAULTS = {
   // AuthContext
   useAuth: () => ({
-    user: null,
+    // Typed `User | null`, not the inferred literal `null`: a test overriding
+    // useAuth to supply a signed-in user is the normal case, and inferring
+    // `null` made every one of those a TS2322 error.
+    user: null as User | null,
     isAuthenticated: false,
     login: vi.fn(),
     logout: vi.fn(),
@@ -39,7 +43,7 @@ const DEFAULTS = {
   // (e.g. the ErrorBoundary fallback). Defaults to unauthenticated; the factory
   // mirrors an overridden useAuth into it so per-test auth state carries over.
   useAuthOptional: () => ({
-    user: null,
+    user: null as User | null,
     isAuthenticated: false,
     login: vi.fn(),
     logout: vi.fn(),

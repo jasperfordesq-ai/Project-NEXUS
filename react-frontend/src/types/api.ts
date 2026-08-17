@@ -45,6 +45,20 @@ export interface User {
    * hierarchy — see src/lib/access.ts superPanelLevel().
    */
   super_panel_level?: 'master' | 'regional' | 'none';
+  /**
+   * Whether this user may create an Event in the current community, resolved by
+   * the SERVER and supplied by GET /v2/users/me. Mirrors exactly what
+   * POST /v2/events enforces.
+   *
+   * 🔴 Do not derive this from `events.creation_role` plus `role`. The server
+   * decision also depends on the account being active and non-deleted, and on
+   * broker/coordinator failing closed regardless of legacy admin flags.
+   *
+   * Undefined means "not reported" and must be treated as ALLOWED — see
+   * canCreateEvents() in src/lib/access.ts. Hiding the button on a missing
+   * field would hide it for everyone on the open default.
+   */
+  can_create_events?: boolean;
   is_admin?: boolean;
   status?: 'active' | 'inactive' | 'suspended' | 'pending';
   tenant_id?: number;

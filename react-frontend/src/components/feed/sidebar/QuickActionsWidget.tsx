@@ -16,9 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAuth, useTenant } from '@/contexts';
+import { canCreateEvents } from '@/lib/access';
 
 export function QuickActionsWidget() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
   const { t } = useTranslation('feed');
 
@@ -59,7 +60,12 @@ export function QuickActionsWidget() {
     },
   ];
 
-  const enabledActions = secondaryActions.filter((action) => hasFeature(action.feature));
+  const enabledActions = secondaryActions.filter((action) => {
+    if (!hasFeature(action.feature)) return false;
+    // The events feature can be on while creation is restricted to brokers/admins.
+    if (action.path === '/events/create' && !canCreateEvents(user)) return false;
+    return true;
+  });
 
   return (
     <GlassCard className="p-4">

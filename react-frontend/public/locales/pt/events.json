@@ -217,6 +217,8 @@
     "group_event_notice": "Este evento será associado ao seu grupo.",
     "loading": "A carregar evento...",
     "unable_to_load": "Não Foi Possível Carregar o Evento",
+    "creation_restricted_title": "Aqui, apenas a equipa pode criar eventos",
+    "creation_restricted_body": "Esta comunidade optou por permitir que apenas os seus corretores e administradores criem eventos. Se quiser que um evento seja criado, fale com um administrador da comunidade.",
     "back_to_events": "Voltar aos Eventos",
     "try_again": "Tentar Novamente",
     "nav_new": "Novo Evento",

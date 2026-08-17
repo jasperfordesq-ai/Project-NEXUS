@@ -208,6 +208,8 @@
     "group_event_notice": "This event will be associated with your group.",
     "loading": "Loading event...",
     "unable_to_load": "Unable to Load Event",
+    "creation_restricted_title": "Only staff can create Events here",
+    "creation_restricted_body": "This community has chosen to let only its brokers and administrators create Events. If you would like an Event set up, ask a community administrator.",
     "back_to_events": "Back to Events",
     "try_again": "Try Again",
     "nav_new": "New Event",

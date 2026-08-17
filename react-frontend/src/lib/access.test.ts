@@ -16,6 +16,7 @@ import {
   canImpersonateTarget,
   superPanelLevel,
   isSuperAdminUser,
+  canCreateEvents,
 } from './access';
 
 describe('hasBrokerRole', () => {
@@ -284,5 +285,45 @@ describe('canImpersonateTarget', () => {
 
   it('refuses a plain member outright', () => {
     expect(canImpersonateTarget({ role: 'member' }, { role: 'member' })).toBe(false);
+  });
+});
+
+describe('canCreateEvents', () => {
+  it('uses the server-supplied capability when present', () => {
+    expect(canCreateEvents({ can_create_events: true })).toBe(true);
+    expect(canCreateEvents({ can_create_events: false })).toBe(false);
+  });
+
+  /**
+   * 🔴 Absent means ALLOWED — deliberately the opposite of superPanelLevel()'s
+   * fail-closed default. The field is new, so a client holding a /me payload
+   * from before it existed (cached response, session spanning the deploy, older
+   * native build) must keep the Create button rather than lose it. The common
+   * case by far is the open default, and the server refuses regardless, so a
+   * stale client costs one clear error instead of a missing feature.
+   */
+  it('treats an absent capability as allowed', () => {
+    expect(canCreateEvents({})).toBe(true);
+    expect(canCreateEvents(null)).toBe(true);
+    expect(canCreateEvents(undefined)).toBe(true);
+  });
+
+  /**
+   * Only an explicit `false` hides the button. Anything else — a truthy string
+   * from a loose serializer, a null, a number — must not be read as a refusal,
+   * because guessing wrong here removes a feature rather than showing an error.
+   */
+  it('only an explicit false denies', () => {
+    expect(canCreateEvents({ can_create_events: null })).toBe(true);
+    expect(canCreateEvents({ can_create_events: 0 })).toBe(true);
+    expect(canCreateEvents({ can_create_events: 'false' })).toBe(true);
+  });
+
+  it('ignores role and admin flags entirely', () => {
+    // The decision is the server's. A plain member may create on the open
+    // default; an admin must not be admitted by role alone when told otherwise.
+    expect(canCreateEvents({ role: 'member' })).toBe(true);
+    expect(canCreateEvents({ role: 'admin', can_create_events: false })).toBe(false);
+    expect(canCreateEvents({ is_super_admin: true, can_create_events: false })).toBe(false);
   });
 });

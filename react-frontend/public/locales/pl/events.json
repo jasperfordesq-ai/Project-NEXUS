@@ -226,6 +226,8 @@
     "group_event_notice": "To wydarzenie zostanie powiązane z Twoją grupą.",
     "loading": "Ładowanie wydarzenia...",
     "unable_to_load": "Nie można wczytać wydarzenia",
+    "creation_restricted_title": "Tutaj wydarzenia mogą tworzyć tylko pracownicy",
+    "creation_restricted_body": "Ta społeczność zdecydowała, że wydarzenia mogą tworzyć wyłącznie jej brokerzy i administratorzy. Jeśli chcesz, aby zorganizowano wydarzenie, poproś o to administratora społeczności.",
     "back_to_events": "Powrót do Wydarzeń",
     "try_again": "Spróbuj ponownie",
     "nav_new": "Nowe wydarzenie",

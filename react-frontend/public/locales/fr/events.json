@@ -217,6 +217,8 @@
     "group_event_notice": "Cet événement sera associé à votre groupe.",
     "loading": "Chargement de l'événement...",
     "unable_to_load": "Impossible de charger l'événement",
+    "creation_restricted_title": "Seul le personnel peut créer des événements ici",
+    "creation_restricted_body": "Cette communauté a choisi de réserver la création d’événements à ses courtiers et administrateurs. Si vous souhaitez qu’un événement soit créé, adressez-vous à un administrateur de la communauté.",
     "back_to_events": "Retour aux événements",
     "try_again": "Réessayer",
     "nav_new": "Nouvel événement",

@@ -235,6 +235,8 @@
     "group_event_notice": "Beidh baint ag an imeacht seo le do ghrúpa.",
     "loading": "Ag luchtú imeacht...",
     "unable_to_load": "Ní Féidir an Imeacht a Luchtú",
+    "creation_restricted_title": "Ní féidir ach le foireann Imeachtaí a chruthú anseo",
+    "creation_restricted_body": "Tá an pobal seo tar éis a roghnú nach féidir ach le bróicéirí agus riarthóirí Imeachtaí a chruthú. Más mian leat Imeacht a chur ar bun, iarr ar riarthóir pobail.",
     "back_to_events": "Ar Ais go Imeachtaí",
     "try_again": "Triail Arís",
     "nav_new": "Imeacht Nua",

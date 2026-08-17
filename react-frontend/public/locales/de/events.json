@@ -208,6 +208,8 @@
     "group_event_notice": "Diese Veranstaltung wird Ihrer Gruppe zugeordnet.",
     "loading": "Veranstaltung wird geladen...",
     "unable_to_load": "Veranstaltung kann nicht geladen werden",
+    "creation_restricted_title": "Hier können nur Mitarbeitende Veranstaltungen erstellen",
+    "creation_restricted_body": "Diese Community hat festgelegt, dass nur ihre Makler und Administratoren Veranstaltungen erstellen dürfen. Wenn Sie eine Veranstaltung einrichten lassen möchten, wenden Sie sich an eine Administratorin oder einen Administrator der Community.",
     "back_to_events": "Zurück zu Veranstaltungen",
     "try_again": "Erneut versuchen",
     "nav_new": "Neue Veranstaltung",

@@ -5,10 +5,10 @@
 
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderEventRoute } from '@/test/events-test-harness';
+import { createCanonicalEventFixture, renderEventRoute } from '@/test/events-test-harness';
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockApi, mockToast, mockLogError } = vi.hoisted(() => ({
+const { mockApi, mockToast, mockLogError, mockAuthUser } = vi.hoisted(() => ({
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -23,6 +23,8 @@ const { mockApi, mockToast, mockLogError } = vi.hoisted(() => ({
     warning: vi.fn(),
   },
   mockLogError: vi.fn(),
+  // Mutable so a test can flip the server-supplied Event-creation capability.
+  mockAuthUser: { current: { id: 1, name: 'Alice' } as { id: number; name: string; can_create_events?: boolean } },
 }));
 
 vi.mock('@/lib/api', () => ({ api: mockApi }));
@@ -36,6 +38,17 @@ vi.mock('@/contexts', () =>
       hasModule: vi.fn(() => true),
     }),
     useToast: () => mockToast,
+    useAuth: () => ({
+      user: mockAuthUser.current,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
   }),
 );
 
@@ -169,6 +182,7 @@ async function renderCreateEventPage() {
 describe('CreateEventPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuthUser.current = { id: 1, name: 'Alice' };
     mockApi.get.mockImplementation((endpoint: string) => Promise.resolve({
       success: true,
       data: endpoint === '/v2/events/recurrence-capabilities'
@@ -191,6 +205,41 @@ describe('CreateEventPage', () => {
       configurable: true,
       value: vi.fn(),
     });
+  });
+
+  /**
+   * A community can restrict Event creation to brokers/admins. The server refuses
+   * the POST regardless; this stops the page presenting a long form that cannot
+   * be submitted, which is what used to happen.
+   */
+  it('refuses the create form when the community restricts Event creation', async () => {
+    mockAuthUser.current = { id: 1, name: 'Alice', can_create_events: false };
+    await renderEventRoute(<CreateEventPage />);
+
+    expect(await screen.findByText(/only staff can create events here/i)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /title/i })).not.toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 The restriction is on CREATING. Editing an existing Event is governed by
+   * the Event policy (organiser / delegated staff / admin), so an organiser whose
+   * community later restricted creation must still be able to edit what they own.
+   */
+  it('still allows editing an existing Event when creation is restricted', async () => {
+    mockAuthUser.current = { id: 1, name: 'Alice', can_create_events: false };
+    // A real event payload, so this asserts the edit FORM renders rather than
+    // passing vacuously against the "unable to load" screen.
+    const existing = createCanonicalEventFixture({ id: 5, title: 'Existing Event' });
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith('/v2/events/5')
+        ? { success: true, data: existing }
+        : { success: true, data: [] },
+    ));
+
+    await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+    expect(await screen.findByDisplayValue('Existing Event')).toBeInTheDocument();
+    expect(screen.queryByText(/only staff can create events here/i)).not.toBeInTheDocument();
   });
 
   it('renders the create-event heading', async () => {
