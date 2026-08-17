@@ -107,7 +107,6 @@
     "lucide-react": "^0.453.0",
     "marked": "^17.0.5",
     "papaparse": "^5.5.3",
-    "postcss": ">=8.5.10",
     "pusher-js": "^8.5.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.6",
