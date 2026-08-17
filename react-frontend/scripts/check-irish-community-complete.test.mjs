@@ -153,3 +153,26 @@ test('Irish recommendations and certificates preserve matching, approval, and re
   assert.match(irish.certificates_tab.load_error, /Bain triail eile as/u);
   assert.equal(irish.closes_date, 'Dúnfar ar {{date}}');
 });
+
+test('the complete 289-value Irish Community source catalogue is reviewed', () => {
+  const allowedExactValues = new Map([
+    ['organisations.form_email_placeholder', 'contact@yourorg.com'],
+    ['organisations.form_website_placeholder', 'https://yourorg.com'],
+    ['group_signups.email_placeholder', 'member@example.com'],
+  ]);
+  const englishFlat = flatten(english);
+  const irishFlat = flatten(irish);
+
+  assert.equal(englishFlat.size, 289, 'Update the audited Community source-value total');
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Community key: ${path}`);
+    const irishValue = irishFlat.get(path);
+    assert.equal(irishValue, irishValue.trim(), `Irish Community value has outer whitespace: ${path}`);
+    assert.doesNotMatch(irishValue, /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u200B-\u200D\u2060\uFEFF]/u, `Irish Community value has invisible or control characters: ${path}`);
+    if (allowedExactValues.has(path)) assert.equal(irishValue, allowedExactValues.get(path), path);
+    else assert.notEqual(irishValue, englishValue, `Unreviewed English value in Irish Community catalogue: ${path}`);
+  }
+
+  const exactMatches = [...englishFlat].filter(([path, value]) => irishFlat.get(path) === value);
+  assert.deepEqual(exactMatches.map(([path]) => path).sort(), [...allowedExactValues.keys()].sort());
+});
