@@ -2365,9 +2365,27 @@ router.get('/:id(\\d+)/analytics', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const result = await callApi(tokenFrom(req), 'GET', `/${id}/analytics`);
   const summary = dataFrom(result) || {};
+  const formatNumber = typeof res.locals.formatLocaleNumber === 'function'
+    ? res.locals.formatLocaleNumber
+    : (input, options = {}) => (options.style === 'percent'
+      ? `${(Number(input) * 100).toFixed(1)}%`
+      : String(Number(input) || 0));
+  // Intl's percent style multiplies by 100 itself, so basis points become a
+  // fraction here rather than the already-multiplied number a manual "%" needed.
+  const formatPercent = (basisPoints) => formatNumber(Number(basisPoints) / 10000, {
+    style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1
+  });
+  const formatCount = (input) => {
+    if (input === null || input === undefined || input === '') return formatNumber(0);
+    const numeric = Number(input);
+    // A non-numeric value the API may add is passed through: formatting it would
+    // render an empty cell.
+    return Number.isFinite(numeric) ? formatNumber(numeric) : input;
+  };
+  // 'suppressed' is a sentinel the template matches on — it must stay exact.
   const value = (input) => input && typeof input === 'object'
-    ? (input.suppressed ? 'suppressed' : (input.basis_points === null || input.basis_points === undefined ? (input.value ?? 0) : `${(Number(input.basis_points) / 100).toFixed(1)}%`))
-    : (input ?? 0);
+    ? (input.suppressed ? 'suppressed' : (input.basis_points === null || input.basis_points === undefined ? formatCount(input.value) : formatPercent(input.basis_points)))
+    : formatCount(input);
   const sections = {
     registration: [['confirmed', value(summary.registration?.confirmed)], ['pending', value(summary.registration?.pending)], ['cancelled', value(summary.registration?.cancelled)], ['capacity_remaining', summary.registration?.remaining ?? 'not_limited']],
     acquisition: [['invitations_issued', value(summary.invitation?.issued)], ['invitations_accepted', value(summary.invitation?.accepted)], ['invitation_conversion', value(summary.invitation?.conversion)], ['waitlist_joined', value(summary.waitlist?.joined)], ['waitlist_accepted', value(summary.waitlist?.accepted)], ['waitlist_conversion', value(summary.waitlist?.conversion)]],
@@ -2376,10 +2394,18 @@ router.get('/:id(\\d+)/analytics', requireAuth, asyncRoute(async (req, res) => {
     funnel: [['event_views', value(summary.optional_funnel?.event_views)], ['registration_starts', value(summary.optional_funnel?.registration_starts)], ['start_conversion', value(summary.optional_funnel?.start_to_registration_conversion)], ['guardian_consents', value(summary.safeguarding?.guardian_consents)]],
     finance: summary.tickets?.redacted ? [['finance', 'finance_redacted']] : [['ticket_units', value(summary.tickets?.confirmed_units)], ['ticket_credit_value', value(summary.tickets?.confirmed_credit_value)], ['completed_credit_claims', value(summary.credits?.completed_claims)], ['failed_credit_claims', value(summary.credits?.failed_claims)]]
   };
+  const generatedAt = new Date(summary.generated_at);
+  const generatedAtLabel = summary.generated_at && !Number.isNaN(generatedAt.getTime())
+    && typeof res.locals.formatLocaleDate === 'function'
+    ? res.locals.formatLocaleDate(generatedAt, {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    })
+    : summary.generated_at;
   res.set('Cache-Control', 'private, no-store');
   res.set('Pragma', 'no-cache');
   return res.render('events/analytics', {
-    title: res.locals.t('govuk_alpha.events.analytics.title'), activeNav: 'events', eventId: id, summary, sections
+    title: res.locals.t('govuk_alpha.events.analytics.title'), activeNav: 'events', eventId: id, summary, sections,
+    generatedAtLabel, privacyThresholdLabel: formatCount(summary.privacy_threshold)
   });
 }, { notFoundTitle: 'Event not found' }));
 

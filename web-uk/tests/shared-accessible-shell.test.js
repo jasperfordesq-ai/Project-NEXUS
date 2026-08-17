@@ -20801,6 +20801,25 @@ describe('shared accessible frontend shell', () => {
     expect(api.callIdeationApi).toHaveBeenCalledWith('test-token', 'GET', '/ideation-outcomes/dashboard');
   });
 
+  it('groups four-figure ideation outcome counts for the request locale', async () => {
+    const api = require('../src/lib/api');
+    const dashboard = () => ({
+      data: { data: { stats: { total: 1234, implemented: 1000, in_progress: 1, not_started: 1, abandoned: 0 }, outcomes: [] } }
+    });
+
+    api.callIdeationApi.mockResolvedValueOnce(dashboard());
+    const english = await request(app).get('/ideation/outcomes').set('Cookie', signedCookieHeader());
+    expect(english.status).toBe(200);
+    expect(english.text).toContain('1,234');
+    expect(english.text).toContain('1,000');
+
+    api.callIdeationApi.mockResolvedValueOnce(dashboard());
+    const german = await request(app).get('/ideation/outcomes?locale=de').set('Cookie', signedCookieHeader());
+    expect(german.status).toBe(200);
+    expect(german.text).toContain('1.234');
+    expect(german.text).not.toContain('1,234');
+  });
+
   it('renders the Laravel-backed ideation outcome edit page', async () => {
     const api = require('../src/lib/api');
     const staticPageRoutes = require('../src/routes/static-pages');
@@ -25368,6 +25387,45 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('50.0%');
     expect(response.text).toContain('/events/42/analytics/export.csv');
     expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'GET', '/42/analytics');
+  });
+
+  it('formats event analytics rates, counts and the generated-at stamp for the request locale', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    const analyticsPayload = () => ({ data: {
+      event_title: 'Community garden day', generated_at: '2026-07-13T10:00:00Z', privacy_threshold: 5,
+      registration: { confirmed: 1234, pending: 2, cancelled: 1, remaining: 8 },
+      invitation: { issued: 4, accepted: 2, conversion: { basis_points: 5000 } },
+      waitlist: { joined: 3, accepted: 1, conversion: { suppressed: true } },
+      attendance: { checked_in: 9, attended: 8, no_show: 1, attendance_rate: { basis_points: 6667 } },
+      communications: { delivered: 20, suppressed: 2, failed: 1, dead_lettered: 0, delivery_rate: { basis_points: 8696 } },
+      optional_funnel: { event_views: { suppressed: true }, registration_starts: { value: 10 }, start_to_registration_conversion: { basis_points: 7000 } },
+      safeguarding: { guardian_consents: { value: 2 } }, tickets: { redacted: true }, credits: {}
+    } });
+
+    api.callEventApi.mockResolvedValueOnce(analyticsPayload());
+    const english = await request(app).get('/events/42/analytics').set('Cookie', signedCookieHeader());
+    expect(english.status).toBe(200);
+    // English output must stay byte-identical to the hand-rolled toFixed(1) it replaced.
+    expect(english.text).toContain('50.0%');
+    expect(english.text).toContain('66.7%');
+    expect(english.text).toContain('1,234');
+    // The generated-at stamp is no longer a raw ISO timestamp.
+    expect(english.text).not.toContain('2026-07-13T10:00:00Z');
+    expect(english.text).toContain('13 July 2026');
+
+    api.callEventApi.mockResolvedValueOnce(analyticsPayload());
+    const german = await request(app).get('/events/42/analytics?locale=de').set('Cookie', signedCookieHeader());
+    expect(german.status).toBe(200);
+    // Comma decimal and full-stop grouping. The percent sign is preceded by a
+    // no-break space in de-DE, so the separator is asserted rather than the glyph.
+    expect(german.text).toContain('50,0');
+    expect(german.text).toContain('66,7');
+    expect(german.text).not.toContain('50.0%');
+    expect(german.text).toContain('1.234');
+    expect(german.text).not.toContain('1,234');
+    // A suppressed rate stays a translated word rather than becoming a number.
+    expect(german.text).toContain(translate('de', 'govuk_alpha.events.analytics.suppressed'));
   });
 
   it('streams the canonical Laravel Event Analytics CSV without caching or MIME sniffing', async () => {

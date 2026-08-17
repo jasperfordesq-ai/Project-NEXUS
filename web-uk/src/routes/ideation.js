@@ -267,14 +267,21 @@ function dashboardFrom(result) {
   return {};
 }
 
-function normalizeStats(stats) {
+function normalizeStats(stats, res) {
   const row = stats && typeof stats === 'object' ? stats : {};
+  // Formatted here rather than in the template, matching normalizeAboutStats:
+  // these are backend totals with no ceiling, so a four-figure count would
+  // otherwise render in US grouping for every language.
+  const formatNumber = typeof res?.locals?.formatLocaleNumber === 'function'
+    ? res.locals.formatLocaleNumber
+    : (value) => String(value);
+  const count = (value) => formatNumber(Number(value ?? 0) || 0, { maximumFractionDigits: 0 });
   return {
-    total: Number(row.total ?? 0) || 0,
-    implemented: Number(row.implemented ?? 0) || 0,
-    inProgress: Number(row.in_progress ?? row.inProgress ?? 0) || 0,
-    notStarted: Number(row.not_started ?? row.notStarted ?? 0) || 0,
-    abandoned: Number(row.abandoned ?? 0) || 0
+    total: count(row.total),
+    implemented: count(row.implemented),
+    inProgress: count(row.in_progress ?? row.inProgress),
+    notStarted: count(row.not_started ?? row.notStarted),
+    abandoned: count(row.abandoned)
   };
 }
 
@@ -639,7 +646,7 @@ router.get('/outcomes', asyncRoute(async (req, res) => {
   return res.render('ideation/outcomes', {
     title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.outcomes.title') : 'Outcomes'),
     activeNav: 'explore',
-    stats: normalizeStats(dashboard.stats),
+    stats: normalizeStats(dashboard.stats, res),
     outcomes,
     ideationIsAdmin: ideationAdministrator(profileResult)
   });
