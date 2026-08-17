@@ -40,6 +40,7 @@ Project NEXUS documentation follows these external standards:
 - Index scoped guides from their nearest maintained README (`mobile/README.md`, `web-uk/README.md`, `e2e/README.md`) rather than leaving them discoverable only through repository search.
 
 > 🔴 **Corrected 2026-08-17.** The three places above said `accessible-frontend/` — as an information-architecture location, as a "current code path to prefer", and as the accessible frontend's README. That directory was the Laravel Blade accessible frontend, **deleted on 2026-08-14**; it does not exist, and its absence is not damage. The accessible frontend is `web-uk/`. Do not write new documentation against the deleted paths, and do not treat a reference to them in an older document as a live code path.
+
 - Mark dated snapshots clearly and keep them out of the maintained-reference path.
 - Use neutral global examples, not Ireland-only assumptions.
 - Treat `CHANGELOG.md`, `VERSION`, `NOTICE`, `CONTRIBUTOR_TERMS.md`, and `CONTRIBUTING.md` as source-of-truth documents.
