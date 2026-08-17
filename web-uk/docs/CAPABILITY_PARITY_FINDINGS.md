@@ -27,7 +27,26 @@ Laravel services/controllers behind them, with the most severe claims re-verifie
 
 These come first because of where they are.
 
-### 0.1 A volunteer's accessibility needs are collapsed on read and overwritten on save
+### 0.1 ✅ FIXED 2026-08-17 — a volunteer's accessibility needs were collapsed on read and overwritten on save
+
+Each need now has its own fields (`description[mobility]`, `description[hearing]`, …), read
+back per need. Detail groups render for every need type because with no JavaScript nothing can
+reveal a hidden group when a box is ticked, and every label is the one the page already used,
+reused inside each need's own fieldset legended with that need's existing translated name — so
+**no new translation keys** were needed.
+
+Two further data-loss risks were found and closed in the same change: a need whose type this
+build does not recognise would have been **deleted** by an ordinary save (the API replaces the
+whole set), so those rows are now carried through hidden fields untouched; and a member holding
+the **old** form in a cache would have written nulls over everything, so that submission is now
+refused rather than accepted.
+
+🔴 A pre-existing test had **encoded the bug** — it posted a single flat description and
+asserted it was applied to the need — and the disposable-env runtime spec had the same fault,
+giving both needs identical details. Both are corrected, and one new test fails on the old
+implementation.
+
+The original finding follows.
 
 - Read: `web-uk/src/routes/volunteering-actions.js:1850-1881` keeps only the **first non-empty**
   value across all needs.
@@ -157,7 +176,7 @@ delete-confirmation pages, and the deliberate card-payment refusal at
 
 ## Suggested order
 
-1. **0.1** — destroys disabled members' data.
+1. ~~**0.1**~~ — ✅ **done 2026-08-17.**
 2. **1.1, 1.2, 1.5** — money wrong by a wrong amount.
 3. **1.3** — the only unguarded money form.
 4. **0.2** — same bug class as the one already "fixed", and the changelog wrongly implies it cannot recur.
