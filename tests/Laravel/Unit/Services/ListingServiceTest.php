@@ -362,6 +362,44 @@ class ListingServiceTest extends TestCase
         $this->assertArrayHasKey('has_more', $result);
     }
 
+    /**
+     * Regression: the list path returned only `user.name`, never `author_name`.
+     * The React listing cards read `author_name`, so every card in the grid showed
+     * the generic "User" fallback label instead of the member's name.
+     */
+    public function test_getAll_includes_author_name_and_avatar(): void
+    {
+        $userId = $this->insertUser([
+            'first_name' => 'Aoife',
+            'last_name'  => 'Nolan',
+            'avatar_url' => 'https://example.test/avatar.png',
+        ]);
+        $this->insertListing($userId);
+
+        $result = ListingService::getAll(['user_id' => $userId]);
+
+        $this->assertNotEmpty($result['items']);
+        $item = $result['items'][0];
+        $this->assertSame('Aoife Nolan', $item['author_name']);
+        $this->assertSame('https://example.test/avatar.png', $item['author_avatar']);
+        $this->assertSame('Aoife Nolan', $item['user']['name']);
+    }
+
+    public function test_getAll_uses_organisation_name_as_author_name(): void
+    {
+        $userId = $this->insertUser([
+            'first_name'        => 'Contact',
+            'last_name'         => 'Person',
+            'profile_type'      => 'organisation',
+            'organization_name' => 'Dunmanway Community Hub',
+        ]);
+        $this->insertListing($userId);
+
+        $result = ListingService::getAll(['user_id' => $userId]);
+
+        $this->assertSame('Dunmanway Community Hub', $result['items'][0]['author_name']);
+    }
+
     public function test_getAll_only_returns_active_approved_listings(): void
     {
         $userId  = $this->insertUser();

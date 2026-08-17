@@ -1214,7 +1214,9 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
   const isFavorited = listing.is_favorited === true;
   const fallbackUserName = t('user_fallback');
   const imageAlt = listing.title || t('listing_image_alt');
-  const authorName = listing.author_name || fallbackUserName;
+  // Read both author fields: the list endpoint historically sent only `user.name`,
+  // so keying on `author_name` alone showed the generic fallback on every card.
+  const authorName = listing.author_name || listing.user?.name || fallbackUserName;
   const formatDistance = (distanceKm: number) =>
     distanceKm < 1
       ? t('distance_meters', { distance: Math.round(distanceKm * 1000) })
@@ -1310,9 +1312,9 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
                 </span>
               )}
               {listing.location && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" aria-hidden="true" />
-                  <span className="truncate max-w-[120px]">{listing.location}</span>
+                <span className="flex min-w-0 items-center gap-1" title={listing.location}>
+                  <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate max-w-[160px] sm:max-w-[200px]">{listing.location}</span>
                 </span>
               )}
               {listing.distance_km !== undefined && (
@@ -1425,8 +1427,11 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
         </h3>
         <p className="mb-4 line-clamp-3 flex-1 text-sm leading-6 text-theme-muted">{listing.description}</p>
 
-        {/* Footer: Author + Meta */}
-        <div className="flex flex-col gap-3 border-t border-theme-default pt-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Footer: Author row above a single meta row.
+            Both rows are fixed height — the meta row never wraps and the address
+            truncates — so every card's footer is the same height and the cards in
+            a row keep matching bottom padding no matter how long the address is. */}
+        <div className="mt-auto flex flex-col gap-2 border-t border-theme-default pt-3">
           <div className="flex items-center gap-2 min-w-0">
             <Avatar
               src={avatarSrc}
@@ -1434,7 +1439,7 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
               size="sm"
               className="shrink-0 w-8 h-8"
             />
-            <span className="truncate text-sm text-theme-subtle">{authorName}</span>
+            <span className="truncate text-sm font-medium text-theme-secondary">{authorName}</span>
             {listing.author_rating != null && listing.author_rating > 0 && (
               <span className="flex items-center gap-0.5 text-[11px] text-[var(--color-warning)] shrink-0">
                 <Star className="w-3 h-3 fill-amber-500" aria-hidden="true" />
@@ -1442,28 +1447,34 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
               </span>
             )}
           </div>
-          <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-theme-subtle sm:justify-end">
-            {hours && (
-              <span className="flex items-center gap-1 shrink-0" aria-label={t('aria_hours_estimated', { hours })}>
-                <Clock className="w-3 h-3" aria-hidden="true" />
-                {t('listings:hours_short', { hours })}
-              </span>
-            )}
-            {listing.location && (
-              <span className="flex items-center gap-1 min-w-0" aria-label={t('aria_location', { location: listing.location })}>
-                <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{listing.location}</span>
-              </span>
-            )}
-            {listing.distance_km !== undefined && (
-              <span className="flex items-center gap-1 shrink-0 text-accent font-medium">
-                <MapPin className="w-3 h-3" aria-hidden="true" />
-                {formatDistance(listing.distance_km)}
-              </span>
-            )}
-          </div>
+          {(hours || listing.location || listing.distance_km !== undefined) && (
+            <div className="flex min-w-0 items-center gap-3 text-xs text-theme-subtle">
+              {hours && (
+                <span className="flex items-center gap-1 shrink-0" aria-label={t('aria_hours_estimated', { hours })}>
+                  <Clock className="w-3 h-3" aria-hidden="true" />
+                  {t('listings:hours_short', { hours })}
+                </span>
+              )}
+              {listing.location && (
+                <span
+                  className="flex min-w-0 flex-1 items-center gap-1"
+                  title={listing.location}
+                  aria-label={t('aria_location', { location: listing.location })}
+                >
+                  <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{listing.location}</span>
+                </span>
+              )}
+              {listing.distance_km !== undefined && (
+                <span className="flex items-center gap-1 shrink-0 text-accent font-medium">
+                  <MapPin className="w-3 h-3" aria-hidden="true" />
+                  {formatDistance(listing.distance_km)}
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        </div>{/* end p-5 wrapper */}
+        </div>{/* end p-4 wrapper */}
       </GlassCard>
   );
 });

@@ -394,11 +394,21 @@ class ListingService
         $data = $listing->toArray();
 
         $user = $listing->user;
+        $authorName = $user
+            ? (($user->profile_type === 'organisation' && $user->organization_name)
+                ? $user->organization_name
+                : trim($user->first_name . ' ' . $user->last_name))
+            : '';
+
+        // `author_name` / `author_avatar` are part of the listing contract every
+        // React listing card reads. getById(), getSaved() and getFeatured() all
+        // emit them; this list path did not, so the listings grid fell back to the
+        // generic "User" label on every card (it reads author_name only).
+        $data['author_name']   = $authorName !== '' ? $authorName : __('api.unknown_user');
+        $data['author_avatar'] = $user->avatar_url ?? null;
         $data['user'] = $user ? [
             'id'         => $user->id,
-            'name'       => ($user->profile_type === 'organisation' && $user->organization_name)
-                                ? $user->organization_name
-                                : trim($user->first_name . ' ' . $user->last_name),
+            'name'       => $authorName,
             'avatar'     => $user->avatar_url,
             'avatar_url' => $user->avatar_url,
             'tagline'    => $user->tagline,

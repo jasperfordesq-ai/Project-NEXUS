@@ -173,6 +173,45 @@ describe('ListingsPage', () => {
     });
   });
 
+  describe('listing card author', () => {
+    /**
+     * Regression: the card keyed on `author_name` only. The list endpoint sent the
+     * member's name under `user.name`, so every card showed the "User" fallback.
+     */
+    it('shows the member name when only user.name is present', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/v2/listings')
+            ? {
+                success: true,
+                meta: {},
+                data: [
+                  {
+                    id: 1,
+                    title: 'Basic carpentry',
+                    description: 'I would love some basic carpentry advice.',
+                    type: 'request',
+                    status: 'active',
+                    created_at: '2026-08-01T00:00:00Z',
+                    updated_at: '2026-08-01T00:00:00Z',
+                    location: 'Dunmanway, County Cork, Ireland',
+                    user: { id: 9, first_name: 'Aoife', last_name: 'Nolan', name: 'Aoife Nolan' },
+                  },
+                ],
+              }
+            : { success: true, meta: {}, data: [] },
+        ) as ReturnType<typeof api.get>,
+      );
+
+      render(<ListingsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Aoife Nolan')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('User')).not.toBeInTheDocument();
+    });
+  });
+
   describe('phone layout', () => {
     beforeEach(() => {
       isPhoneViewport = true;
