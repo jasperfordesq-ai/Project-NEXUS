@@ -372,12 +372,24 @@ for one score is how the disagreement started.
 ### 🔴 Also outstanding, and not an owner decision
 
 **The Apache `Define` / `<IfDefine>` behaviour that makes rollback cheap is
-unverified against the production Apache build.** The accessible vhost include
-falls back to the PHP port when `NEXUS_WEBUK_PORT` is not defined, so that a
-rollback to a release predating `web-uk` does not fail its own configuration test
-and thereby abort the rollback. That must be confirmed with `apachectl configtest`
-on the real server, in both states, **before** any cutover — not discovered during
-a rollback.
+rehearsed on Apache 2.4, but not yet on the production Apache build.** The
+accessible vhost include falls back to the PHP port when `NEXUS_WEBUK_PORT` is not
+defined, so that a rollback to a release predating `web-uk` does not fail its own
+configuration test and thereby abort the rollback.
+
+- **Rehearsed 2026-08-17** by `scripts/test/rehearse-bluegreen-rollback.sh`, a
+  disposable harness that drives the **real** `write_apache_routes()` function and
+  the **real** accessible vhost template against a throwaway `httpd:2.4-alpine`
+  container (no production, no Cloudflare, no `systemctl`). All 11 checks pass: the
+  route swap is accepted by a real `apachectl configtest` + graceful reload; a
+  colour switch moves live traffic; a rollback with `NEXUS_WEBUK_PORT` **absent**
+  still passes configtest via the `<IfDefine !...>` arm and routes to the PHP port;
+  and a bad config is rejected with the previous route file auto-restored. This
+  confirms the *logic*.
+- **Still outstanding:** the same `apachectl configtest`, in both states, on the
+  **real** production Plesk Apache build. It is now an expected pass rather than a
+  leap of faith, but it must still be run **before** any cutover — not discovered
+  during a rollback.
 
 ## 🔴 RETIRING BLADE — the assessment (2026-08-14)
 
@@ -439,9 +451,15 @@ magnitude — there is no measurable member population on Blade's accessible pag
 2. **Both community domains must be cut over and soaked.** Two real communities.
 3. **An owner decision to retire**, which is not a technical step. Freezing is not
    retiring, and this document has said so since the freeze.
-4. **The blue/green rollback has never been exercised** — 0 of 322 recorded deploys used
-   the `rollback` subcommand. That matters more here than for an ordinary deploy, because
-   the cheap-rollback arm in those vhosts is the safety net for a cutover.
+4. **The blue/green rollback has never been exercised on production** — 0 of 322 recorded
+   deploys used the `rollback` subcommand. That matters more here than for an ordinary deploy,
+   because the cheap-rollback arm in those vhosts is the safety net for a cutover.
+   - **Partly retired 2026-08-17:** the rollback's route-switch logic is now rehearsed off
+     production by `scripts/test/rehearse-bluegreen-rollback.sh` (11/11 pass — see the
+     `Define`/`<IfDefine>` note above). What remains genuinely unexercised is a full
+     end-to-end `rollback` on the real two-colour production stack (worker draining, health
+     gating, public-host smoke, Cloudflare purge), which needs a live deploy window and
+     explicit owner authorisation.
 
 ### Recommended order
 
