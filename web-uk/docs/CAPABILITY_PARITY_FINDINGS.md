@@ -63,7 +63,28 @@ per-need edits, so a correct fix needs per-need field groups (new labels ⇒ ele
 merge that preserves unedited needs. Do not "fix" it by only sending changed fields without
 first proving the read path stops collapsing.
 
-### 0.2 The single-event edit form cannot record venue accessibility at all
+### 0.2 ✅ FIXED 2026-08-17 — venue accessibility was uneditable, and the recurring form was WIPING it
+
+🔴 **The investigation found a second, worse fault the finding had not spotted.** The
+recurring-edit form — the one the changelog held up as proof the forms "cannot drift" —
+read ten flat `event.accessibility_*` properties that the v2 contract **does not send**.
+`EventContractMapper::venueAccessibility()` projects the answers onto
+`location.accessibility` with SHORT keys (`step_free_access`, `accessible_toilet`,
+`hearing_loop`, `quiet_space`, `seating_available`, `accessible_parking`) and
+true/false/null values. So every select rendered "unknown" and every text box blank —
+and because `eventScopedPayload` maps `'unknown'` and `''` to null, **saving a recurring
+event silently wiped the venue's real accessibility information.** The single-event form
+could not wipe anything only because it rendered none of the fields.
+
+One `venueAccessibilityView()` helper now serves all three forms, reading
+`location.accessibility` **or** `venue_accessibility` — which one is populated depends on
+the normaliser the route used, and reading only one is exactly what produced "unknown"
+everywhere. `edit.njk` now imports the shared partial. No new translation keys. The test
+feeds the real API shape and fails against the old code.
+
+The original finding follows.
+
+### 0.2 (original) The single-event edit form cannot record venue accessibility at all
 
 `web-uk/src/views/events/edit.njk` contains **zero** occurrences of "accessib" (verified). The
 shared partial `events/_venue-accessibility-fields.njk` is imported by `new.njk:12` and
@@ -179,8 +200,8 @@ delete-confirmation pages, and the deliberate card-payment refusal at
 1. ~~**0.1**~~ — ✅ **done 2026-08-17.**
 2. ~~**1.1, 1.2, 1.5**~~ — ✅ **all done 2026-08-17.**
 3. ~~**1.3**~~ — ✅ **done 2026-08-17.**
-4. **0.2** — same bug class as the one already "fixed", and the changelog wrongly implies it cannot recur. **Next**, but read its two traps first: the value shape is ambiguous and a wrong guess silently defaults every field to "unknown" and overwrites real accessibility data on save.
-5. **1.4, 1.6, 1.7, 1.8, 1.9, 1.12** — silent wrong writes.
+4. ~~**0.2**~~ — ✅ **done 2026-08-17**, and it turned out the recurring form was actively wiping data.
+5. **1.4, 1.6, 1.7, 1.8, 1.9, 1.12** — silent wrong writes. **Next.**
 6. Tier 2 blockers, cheapest first: group invite redemption (one route), announcements (one link), event/opportunity comments (plumbing exists).
 
 ## Caveats
