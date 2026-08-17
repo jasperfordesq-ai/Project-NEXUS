@@ -122,3 +122,34 @@ test('Irish emergency and group journeys preserve urgency, invitation, and retry
   assert.match(irish.group_signups.add_member_desc, /Gheobhaidh an duine cuireadh/u);
   assert.match(irish.group_signups.add_member_failed, /seoladh ríomhphoist a bheith neamhbhailí/u);
 });
+
+test('Irish recommendations, certificates, and remaining Community labels have complete translated coverage', () => {
+  for (const section of ['recommended_shifts', 'certificates_tab']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Community ${section}.${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+  }
+
+  for (const path of ['remote', 'closes_date', 'page_meta.register_organisation.title']) {
+    assert.notEqual(flatten(irish).get(path), flatten(english).get(path), path);
+  }
+});
+
+test('Irish recommendations and certificates preserve matching, approval, and retry meaning', () => {
+  const reviewed = [
+    ...flatten(irish.recommended_shifts).values(),
+    ...flatten(irish.certificates_tab).values(),
+  ].join('\n');
+  assert.doesNotMatch(reviewed, /moltaí sealta|\bmeaitseáil\b|Bain Triail Eile As|Theip ar mholtaí a lódáil$|Theip ar theastais a lódáil$|Teastas ginte/u);
+  assert.equal(irish.recommended_shifts.match_score, 'Comhoiriúnacht {{score}}%');
+  assert.match(irish.recommended_shifts.no_recommendations_desc, /moltaí pearsantaithe faoi shealanna/u);
+  assert.match(irish.recommended_shifts.load_failed, /Bain triail eile as/u);
+  assert.match(irish.certificates_tab.description, /gach uair dheonach atá ceadaithe duit/u);
+  assert.equal(irish.certificates_tab.generated_success, 'Gineadh an teastas!');
+  assert.match(irish.certificates_tab.no_verified_hours, /a bheith ceadaithe sular féidir teastas a ghiniúint/u);
+  assert.match(irish.certificates_tab.load_error, /Bain triail eile as/u);
+  assert.equal(irish.closes_date, 'Dúnfar ar {{date}}');
+});

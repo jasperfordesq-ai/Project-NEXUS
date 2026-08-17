@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The remaining 26 Irish Community strings for recommended shifts, impact certificates and page labels have completed semantic review.** Personalised recommendations now refer naturally to shifts and percentage compatibility; recommendation and certificate failures retain their retry action; certificate copy clearly distinguishes approved volunteer hours, verification and generation; and closing-date and registration-page labels now read naturally.
+
 - **Irish Community emergency-shift alerts and group sign-ups have completed a 35-string semantic review.** Alert urgency, pending requests, expiry dates and failures now use complete member-facing language. Group reservations clearly explain volunteering together, invitation delivery and invalid-email failures without importing English singular-they grammar; the example email remains unchanged deliberately.
 
 - **Irish Community organisation discovery, registration and detail pages have completed a 109-string semantic review.** `Eagraíocht` terminology is now consistent; loading, empty and retry states are complete; registration distinguishes administrative approval from generic permission; and public-listing terms state the organiser's authority and responsibilities clearly. Opportunity counts follow Irish numeral grammar, while applications and organisation reviews now distinguish reviews from administrative inspection and translate the remaining Rating and Comment labels.

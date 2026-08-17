@@ -292,36 +292,36 @@
   },
   "recommended_shifts": {
     "heading": "Molta duit",
-    "refresh": "Athnuaigh",
-    "try_again": "Bain Triail Eile As",
+    "refresh": "Athlódáil",
+    "try_again": "Bain triail eile as",
     "no_recommendations_title": "Níl moltaí ann fós",
-    "no_recommendations_desc": "Cuir scileanna le do phróifíl chun moltaí sealta pearsantaithe a fháil.",
-    "match_score": "{{score}}% meaitseáil",
-    "load_failed": "Theip ar mholtaí a lódáil",
-    "load_error": "Ní féidir moltaí a lódáil. Bain triail eile as le do thoil."
+    "no_recommendations_desc": "Cuir scileanna le do phróifíl chun moltaí pearsantaithe faoi shealanna a fháil.",
+    "match_score": "Comhoiriúnacht {{score}}%",
+    "load_failed": "Níorbh fhéidir moltaí a lódáil. Bain triail eile as.",
+    "load_error": "Níorbh fhéidir moltaí a lódáil. Bain triail eile as."
   },
   "certificates_tab": {
     "heading": "Teastais Tionchair",
     "generate": "Gin Teastas",
-    "description": "Cuimsíonn teastais d'uaireanta deonacha ceadaithe ar fad i ngach eagraíocht.",
-    "try_again": "Bain Triail Eile As",
+    "description": "Cuimsíonn na teastais gach uair dheonach atá ceadaithe duit i ngach eagraíocht.",
+    "try_again": "Bain triail eile as",
     "no_certificates_title": "Níl teastais ann fós",
     "no_certificates_desc": "Gin teastas chun d'uaireanta deonacha a thaispeáint.",
-    "verified_hours": "{{count}} Uair Fhíoraithe",
+    "verified_hours": "{{count}} uair fhíoraithe",
     "generated": "Ginte",
     "download": "Íoslódáil",
     "verify": "Fíoraigh",
-    "generated_success": "Teastas ginte!",
-    "no_verified_hours": "Níor aimsíodh uaireanta deonacha fíoraithe. Ní mór uaireanta a cheadú roimh theastas a ghiniúint.",
+    "generated_success": "Gineadh an teastas!",
+    "no_verified_hours": "Níor aimsíodh aon uair dheonach fhíoraithe. Ní mór na huaireanta a bheith ceadaithe sular féidir teastas a ghiniúint.",
     "generate_failed": "Theip ar theastas a ghiniúint. Bain triail eile as le do thoil.",
-    "load_failed": "Theip ar theastais a lódáil",
-    "load_error": "Ní féidir teastais a lódáil."
+    "load_failed": "Níorbh fhéidir teastais a lódáil. Bain triail eile as.",
+    "load_error": "Níorbh fhéidir teastais a lódáil. Bain triail eile as."
   },
   "remote": "Cianda",
-  "closes_date": "Dúnann {{date}}",
+  "closes_date": "Dúnfar ar {{date}}",
   "page_meta": {
     "register_organisation": {
-      "title": "Eagraíocht a Chlárú"
+      "title": "Eagraíocht a chlárú"
     }
   }
 }
