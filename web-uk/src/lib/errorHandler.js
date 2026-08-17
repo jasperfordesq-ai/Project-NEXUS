@@ -207,7 +207,7 @@ function finalErrorHandler(err, req, res, next) {
   }
 
   if (status === 419) {
-    return res.status(419).render('errors/419', { title: 'This page has expired' });
+    return res.status(419).render('errors/419', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.419_title') : 'This page has expired') });
   }
 
   if (status === 413) {

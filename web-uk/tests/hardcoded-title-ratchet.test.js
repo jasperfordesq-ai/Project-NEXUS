@@ -44,8 +44,17 @@ const path = require('node:path');
  *     there; helper functions in route files (buildProfileSettingsViewModel(req,
  *     data)) and module-level data (lib/account-links.js) have no `res`, and a blind
  *     rewrite threw ReferenceError at require time and broke 926 tests in one run.
+ *
+ * 🔴 21 -> 19 on 2026-08-17: both 419 CSRF-expiry titles (lib/errorHandler.js and
+ * the server.js CSRF handler) now use the EXISTING, already-translated
+ * `error_pages.419_title`, whose English value is byte-identical to the literal
+ * they replaced. Every sibling status in that same block (403, 404, 413, 429,
+ * 503) already used the translator, so 419 was a plain oversight rather than
+ * missing copy — and `errors/419.njk` was already fully translated, meaning the
+ * page heading read Irish while the browser tab read English. The remaining 19
+ * are the categories listed above and still need their own new keys.
  */
-const CEILING = 21;
+const CEILING = 19;
 
 const SRC = path.join(__dirname, '..', 'src');
 const TITLE_LITERAL = /title:\s*'[A-Z][^']{2,80}'/g;

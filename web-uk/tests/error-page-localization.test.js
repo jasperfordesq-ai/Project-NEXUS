@@ -111,6 +111,17 @@ describe('Laravel-first error-page localization', () => {
     }
   );
 
+  it('passes a translated title to the 419 page from both CSRF handlers', () => {
+    // The browser-tab <title> comes from the ROUTE, not the template. errors/419.njk
+    // was already fully translated while both handlers passed an English literal, so
+    // the page heading read Irish and the tab read English.
+    for (const file of ['lib/errorHandler.js', 'server.js']) {
+      const source = fs.readFileSync(path.join(__dirname, '..', 'src', file), 'utf8');
+      expect(source).toContain("res.locals.t('govuk_alpha.error_pages.419_title')");
+      expect(source).not.toMatch(/render\('errors\/419',\s*\{\s*title:\s*'This page has expired'\s*\}/);
+    }
+  });
+
   it('preserves generic route copy but standardizes shared exception copy', () => {
     const genericHtml = renderErrorTemplate('error.njk', 'ga', {
       heading: 'Account access paused',
