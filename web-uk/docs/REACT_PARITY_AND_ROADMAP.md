@@ -145,7 +145,7 @@ Ordered. "Real gap" counts exclude everything in the deliberate-absences section
 
 | # | Item | Routes | Why it matters |
 |---|---|---:|---|
-| 1 | **Identity verification** | 3 | `web-uk` shows verification *status* but has no route to START verification or receive the callback. A member cannot become verified at all |
+| 1 | **Identity verification** — 🔴 **BLOCKED, see below** | 3 | `web-uk` shows verification *status* but has no route to START verification. The ID check itself needs no JavaScript; the **fee** step does, and the fee-free variant is unreachable for every live community. Needs one Laravel addition |
 | 2 | **Emailed-token pages** + the email-URL fix below | 5 | Guardian consent (event + volunteering), support-action confirm, invite-code join, group-invite accept |
 | 3 | **Social / OAuth sign-in** | 1 | A member whose only credential is a Google login cannot sign in at all. `auth.js` implements password, 2FA, forgot and reset only |
 | 4 | Clubs / Verein dues | 4 | `/clubs` index exists; dues, imports and membership invitations do not |
@@ -153,6 +153,62 @@ Ordered. "Real gap" counts exclude everything in the deliberate-absences section
 | 6 | Smaller singles | 5 | Wallet regional points, volunteering shift check-in token, donation receipt, municipality calendar, ad campaigns |
 | 7 | **Capability comparison of the 179 matched routes** | — | See the honesty note below. This is the largest unmeasured risk |
 | 8 | Generated, CI-gated React-parity matrix | — | So this document stops being a manual exercise and becomes a number that CI watches |
+
+### 🔴 Item 1 (identity verification) is BLOCKED, and the blocker is not in `web-uk`
+
+Contracts mapped 2026-08-17. The encouraging part: **the ID check itself needs no
+JavaScript.** `POST /api/v2/identity/start` returns a `redirect_url` which is Stripe's
+**hosted** verification page (`app/Services/Identity/StripeIdentityProvider.php:94-103`,
+Stripe's `VerificationSession.url`) — React merely opens it in a tab, and the mobile app
+opens it with `Linking.openURL`, so `res.redirect(303, …)` is a valid equivalent. `web-uk`
+would need no Stripe secret, and no publishable key either.
+
+Then three measured facts stop it being worth building yet.
+
+**1. The fee step cannot be done HTML-first.** `POST /api/v2/identity/create-payment`
+returns only a PaymentIntent `client_secret`
+(`app/Services/Identity/IdentityVerificationPaymentService.php:100-113`). Confirming a
+PaymentIntent requires Stripe.js. There is no Checkout Session, no hosted payment page and
+no payment link anywhere in the identity fee path. The default fee is **500 (€5.00)** and
+only a super admin can set it to 0 (`IdentityVerificationPaymentService.php:30-35`), and the
+value is an authenticated tenant setting so it could not be sampled per community from
+outside. 🔴 This is the **same** blocker `web-uk` already met and honestly declined for
+marketplace orders — see the comment at `web-uk/src/routes/marketplace-actions.js:937-947`,
+which refuses rather than "creating and discarding an intent or claiming that payment
+started". Any build here must follow that precedent.
+
+**2. The fee-free flow is unreachable for every live community.** `/verify-identity` (the
+registration-gated variant) has no fee and no date-of-birth step, so it *is* fully
+implementable — but it only opens when a community's `registration_mode` is
+`verified_identity` or `government_id`. Measured on the public
+`/api/v2/auth/registration-info` for `hour-timebank`, `timebanking-org`,
+`minehead-and-coast-timebank`, `agoris`, `timebanks-us` and `timebank-global`: **all six are
+`open_with_approval`.** So building that page today delivers a page no member can reach.
+
+**3. Stripe returns the member to React, not here.** `return_url` is built from
+`TenantContext::getFrontendUrl()` (`StripeIdentityProvider.php:89-92`), which never consults
+`tenants.accessible_domain` — the same fault described in the next section. Mitigation
+exists and is cheap: `GET /api/v2/identity/status` reconciles against Stripe on **every**
+call, so a member who comes back to the page by any route gets the correct terminal state. A
+GOV.UK "check your status" link is the accessible equivalent of React's spinner-poll; no
+polling loop is needed, because a webhook and an hourly `nexus:identity:poll-stuck` command
+also settle it.
+
+**What would unblock it — one owner decision, outside `web-uk`:** a Laravel endpoint that
+returns a Stripe **Checkout Session** URL for the identity fee (hosted, no JS), which would
+also close the identical marketplace-payment gap. That touches payments and is outside
+`web-uk/**`, so it needs explicit authorisation. Until then, note that `identity_verification`
+defaults to **ON** (`app/Services/TenantFeatureConfig.php:57`) and was measured **true for
+all five communities sampled**, so the capability is advertised platform-wide while being
+unreachable on the accessible frontend.
+
+Also recorded for whoever builds it: roughly **20–28 new translation keys** are needed across
+eleven locales (no identity page copy exists in the `govuk_alpha*` namespaces today; only the
+badge labels `verification_type_id_verified` and `verification_badges.id_verified` are
+reusable). Put them in a new `identity` block in `lang/en/govuk_alpha_settings.php`, which
+the sync script already globs. `web-uk` also needs `identity_verification` added to
+`src/middleware/tenant-feature-gates.js` with **two** prefix entries, because
+`/verify-identity` does not prefix-match `/verify-identity-optional`.
 
 ### 🔴 A correction that changes item 2's shape
 
