@@ -7,9 +7,20 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type { Result } from 'axe-core';
 import {
+  DEFAULT_TENANT,
   dismissBlockingModals,
   tenantUrl,
 } from '../helpers/test-utils';
+
+const API_BASE_URL = (
+  process.env.E2E_API_URL
+  || process.env.E2E_BASE_URL
+  || 'http://localhost:8090'
+).replace(/\/+$/, '');
+
+function apiUrl(pathname: string): string {
+  return `${API_BASE_URL}/api${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
+}
 
 const EMPTY_STORAGE = { cookies: [], origins: [] };
 const USER_STORAGE = 'e2e/fixtures/.auth/user.json';
@@ -306,13 +317,49 @@ test.describe('real-browser accessibility gate', () => {
         reducedMotion: true,
       });
 
-      for (const route of IRISH_MEMBER_ROUTES) {
-        await visit(page, route.path);
-        await expect(page.locator('html')).toHaveAttribute('lang', 'ga');
-        await expect(page.locator('html')).toHaveAttribute('data-large-text', 'true');
-        await expect(page.locator('h1').first()).toContainText(route.heading);
-        await assertNoHorizontalOverflow(page, `Irish member ${route.path}`);
-        await audit(page, `Irish member ${route.path} with large text at 320px`);
+      // 🔴 Seeding `nexus_language` alone does NOT make the app Irish for a
+      // SIGNED-IN member, so this test cannot rely on setThemeProfile for the
+      // language. AuthContext applies the member's ACCOUNT language
+      // (`preferred_language`) on every session restore and it deliberately
+      // wins over browser storage (AuthContext.tsx, "overrides browser
+      // detection"). The fixture user sits on the schema default 'en'
+      // (users.preferred_language NOT NULL DEFAULT 'en'), so a correctly
+      // working app switches back to English and <html lang> never becomes
+      // "ga" — this asserted a state the UI cannot produce.
+      //
+      // A real Irish-speaking member has BOTH set, because LanguageSwitcher
+      // writes the account as well as local storage. Mirror that here, and
+      // restore in `finally` so the shared fixture user is not left in Irish
+      // for every other spec that reuses this storage state.
+      await visit(page, IRISH_MEMBER_ROUTES[0].path);
+      const token = await page.evaluate(() => localStorage.getItem('nexus_access_token'));
+      expect(token, 'signed-in member access token from the saved auth fixture').toBeTruthy();
+
+      const setAccountLanguage = async (language: string): Promise<void> => {
+        const response = await page.request.put(apiUrl('/v2/users/me/language'), {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-Slug': DEFAULT_TENANT,
+            Authorization: `Bearer ${token}`,
+          },
+          data: { language },
+        });
+        expect(response.status(), `set account language to ${language}`).toBeLessThan(400);
+      };
+
+      await setAccountLanguage('ga');
+
+      try {
+        for (const route of IRISH_MEMBER_ROUTES) {
+          await visit(page, route.path);
+          await expect(page.locator('html')).toHaveAttribute('lang', 'ga');
+          await expect(page.locator('html')).toHaveAttribute('data-large-text', 'true');
+          await expect(page.locator('h1').first()).toContainText(route.heading);
+          await assertNoHorizontalOverflow(page, `Irish member ${route.path}`);
+          await audit(page, `Irish member ${route.path} with large text at 320px`);
+        }
+      } finally {
+        await setAccountLanguage('en');
       }
     });
   });
