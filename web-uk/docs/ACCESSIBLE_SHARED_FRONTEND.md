@@ -74,7 +74,7 @@ workstream must make it conform to the Laravel contract.
 
 ## Current Status Pointer
 
-`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is the sole current coordination and
+`CURRENT_WEBUK_PRODUCTION_STATUS.md` is the sole current coordination and
 scoring source. This maintained architecture note deliberately does not mirror
 its live score, route/API totals, test aggregate, blockers, or working-tree
 boundary. Static and code gates are not runtime, manual-accessibility,
@@ -100,7 +100,7 @@ production, or ASP.NET-switching certification.
 ## Historical Evidence Boundary (2026-07-10)
 
 This section preserves the 2026-07-10 checkpoint and is superseded by
-`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`. At that checkpoint the checkout had
+`CURRENT_WEBUK_PRODUCTION_STATUS.md`. At that checkpoint the checkout had
 passed `45/45` Jest suites (`1,411/1,411` tests),
 ESLint, the brand-policy gate, CSS compilation, the `62/62` Chromium/axe gate
 in `749.3` seconds (`12.3` minutes),

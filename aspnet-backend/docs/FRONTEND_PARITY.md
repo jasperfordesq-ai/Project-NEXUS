@@ -47,7 +47,7 @@ explicitly approves that specific frontend change.
 
 Route declaration equality alone proves none of these four runtime combinations.
 Current workstream status lives in `CURRENT_ASPNET_CONTRACT_STATUS.md` and
-`../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`.
+`../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`.
 
 ## Historical Static Route Counts
 
@@ -81,8 +81,8 @@ uploads, realtime config, and status codes.
 
 The `608/612` Web UK matrix recorded after merge commit `f7c80d32` on
 2026-07-08 is also historical. For the current matrix and its exact source SHAs,
-read `apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` and regenerate
-`apps/web-uk/docs/generated/accessible-route-matrix.*`. A current static matrix
+read `../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` and regenerate
+`../../web-uk/docs/generated/accessible-route-matrix.*`. A current static matrix
 still does not prove rendered UI, workflow, tenant/auth, localization, API side
 effects, or Laravel/ASP.NET runtime behavior.
 

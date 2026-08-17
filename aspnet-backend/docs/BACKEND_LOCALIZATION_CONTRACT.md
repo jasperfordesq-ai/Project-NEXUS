@@ -52,7 +52,7 @@ shared Laravel API behavior includes:
 | Catalog lookup | Laravel PHP resources and the JSON `App\I18n\Translator` use the active locale; the JSON translator falls back to English and then the key, and supports both `{{name}}` and `:name` interpolation. |
 | Validation and API errors | The v2 framework envelope is `errors: [{ code, message, field? }]`; validation exceptions are normally 422. Exact status, code, field, and message remain endpoint-specific, and translated messages must use the resolved locale where Laravel calls its translation layer. |
 | Recipient copy | Email, in-app, push, and background-job copy is rendered inside a temporary recipient locale context where Laravel does so. The prior locale is restored after each recipient. The caller or worker locale must not leak into recipient copy. |
-| Accessible session override | Laravel's accessible frontend additionally honors a valid explicit switch, the session locale, and the signed-in member preference through `AlphaSetLocale`. Web UK owns the corresponding frontend contract; see its [current status](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md). |
+| Accessible session override | Web UK honors a valid explicit switch, the session locale, and the signed-in member preference through its request-local locale middleware. Web UK owns the corresponding frontend contract; see its [current status](../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md). |
 
 These mechanisms are reference evidence, not permission to generalize. A
 backend-switch claim still needs route-by-route comparison at this exact Laravel

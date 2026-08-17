@@ -1,6 +1,6 @@
 # Continuous Integration & Quality Gates
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-08-17
 
 > **Diátaxis:** explanation. What runs on every push and pull request, which checks are blocking, and how to run the same checks locally before you push.
 
@@ -82,7 +82,9 @@ python -m mkdocs build --clean --strict
 rm -f docs/openapi.json
 
 # i18n (after locale changes)
-npm run check:i18n:baseline && npm run check:i18n:gaps
+npm run check:i18n
+npm --prefix web-uk run locales:audit
+npm --prefix web-uk run locales:audit-irish
 ```
 
 **Nothing above runs automatically on commit or push.** Husky is intentionally disabled at repository root — there is no root `.husky/` directory and no `husky`/`lint-staged` dependency (the only Husky config in the tree belongs to the `mobile/` subproject). Run the commands yourself, or rely on CI.

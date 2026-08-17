@@ -11,11 +11,11 @@
 > `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`; the `663/1000` in
 > `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is **retired**.
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-08-17
 
 Status: **Maintained reference — current backend-switching contract, not a score**
 
-`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is the sole current Web UK status and
+`CURRENT_WEBUK_PRODUCTION_STATUS.md` is the sole current Web UK status and
 scoring source. This document defines the switching contract; dated evidence
 paragraphs are historical checkpoints and do not override the current status,
 generated route matrix, generated frontend-consumer API ledger, or root backend
@@ -38,7 +38,7 @@ The repository containing Web UK is not an architectural authority: locating
 backend source of truth.
 
 Live route, API-ledger, test, score, and certification totals are intentionally
-not copied here. Read `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` at reporting time;
+not copied here. Read `CURRENT_WEBUK_PRODUCTION_STATUS.md` at reporting time;
 generated inventories remain static evidence rather than switching
 certification.
 
@@ -140,17 +140,19 @@ calls. Date, number, currency, and list formatting must use the same request
 locale instead of fixed `en-GB` or `en-IE` values.
 
 The catalog boundary is also backend-neutral: Web UK imports the authoritative
-Laravel locale files into 11 generated catalogs, each with 36 namespaces and
-8,837 string keys. The imported boundary includes `govuk_alpha*.php`,
-`event_*.php`, and `safeguarding.php`. Future ASP.NET mode must accept the same locale/profile and
-`Accept-Language` contracts; it must not require ASP.NET-specific template
-branches. Structural catalog parity is not translation completeness. The
-read-only Laravel source still has 4,096-4,199 English-identical values in each
-non-English locale and 13 wholly English-identical namespaces.
-Contextual route titles, headings, validation/status copy, ARIA labels, and
-residual template strings also remain under review. Therefore localization and
-RTL are started but not certified for either Laravel-first completion or
-backend switching.
+Laravel locale files into 11 generated catalogs, each with 39 namespaces and
+9,348 string keys. The imported boundary includes `govuk_alpha*.php`,
+`event_*.php`, and `safeguarding.php`. Future ASP.NET mode must accept the same
+locale/profile and `Accept-Language` contracts; it must not require ASP.NET-
+specific template branches. Structural catalog parity alone is not translation
+completeness, so the generated catalogues have separate content audits. On
+2026-08-17 the Irish audit reported zero unreviewed English fallbacks,
+question-mark mismatches, or terminology violations; its 104 English-identical
+values are reviewed invariants. Across all ten non-English catalogues, 1,403
+values remain byte-identical to English and still require locale-by-locale
+interpretation. Localization and RTL therefore have strong automated contract
+coverage, but independent native-speaker and assistive-technology sign-off are
+separate from backend-switching certification.
 
 Host-scoped tenant API calls must carry the same tenant context Laravel can
 resolve from browser traffic. Web UK sends `Host` plus `Origin:

@@ -44,7 +44,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and decision gates for keeping Laravel authoritative while preserving ASP.NET as an optional, contract-identical future alternative. |
 | [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and safe workflow for Laravel, ASP.NET, React, and Web UK contract work. |
-| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The changeover in which Web UK replaces the Blade accessible frontend: what each one serves since the 2026-08-12 cutover, which phase the changeover is in, both public URL shapes, and which document answers which question. Read this before any other accessible-frontend status claim. |
+| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The completed changeover in which Web UK replaced the deleted Blade accessible frontend: current URL shapes, deployment boundary, surviving translation sources, and historical provenance. Read this before any other accessible-frontend status claim. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |
 | [MODULES.md](MODULES.md) | The module map: each module → its code paths and guide, including the modules that have no guide yet. |
 
@@ -92,21 +92,21 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 
 ## Accessible Frontend
 
-🔴 **There are two accessible frontends and they are mid-changeover. Read
-[ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) before
-believing any status claim below or anywhere else.** As of **2026-08-12**,
-`web-uk/` — a standalone Node 22 / Express / Nunjucks application consuming the
-Laravel API — serves `accessible.project-nexus.ie`. The original Laravel Blade
-frontend (`accessible-frontend/` plus `app/Http/Controllers/GovukAlpha/`) still
-serves the community accessible domains and every `/{tenantSlug}/accessible/...`
-path, and retires when the changeover completes. Both answer identical public
-URLs, so `/version` is the only way to tell which one replied.
+**There is one accessible frontend: `web-uk/`.** It is the production Node 22 /
+Express / Nunjucks application consuming the Laravel API and serves the platform
+accessible host, both community accessible domains, and every
+`/{tenantSlug}/accessible/...` path. The Blade accessible frontend was deleted
+on 2026-08-14; its old code paths must not be restored. The Laravel
+`lang/*/govuk_alpha*.php` files survive because they are live translation
+sources, not because a second frontend survives. Read
+[ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) for the exact
+boundary.
 
 | Document | Purpose |
 | --- | --- |
-| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | **The status source.** Which frontend serves which addresses, which phase the changeover is in, both public URL shapes, and which document answers which question. |
-| [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md) | The original architecture decision for the **Blade** track, and the GOV.UK Frontend constraints — branding prohibitions, approved packages, HTML-first progressive enhancement — which still bind **both** frontends. Its architecture description covers Blade only and predates the changeover. |
-| [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md) | GOV.UK-related attribution notes. Applies to both frontends. |
+| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | **The status source.** Current accessible addresses and URL shapes, the completed retirement boundary, and which document answers each remaining question. |
+| [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md) | The original architecture decision for the retired Blade track, plus GOV.UK Frontend constraints—branding prohibitions, approved packages, and HTML-first progressive enhancement—that still bind Web UK. |
+| [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md) | GOV.UK-related attribution notes for the maintained accessible frontend. |
 
 ## Governance
 

@@ -21,7 +21,7 @@ Status: **Historical checkpoint — not a current status or resume source**
 > **Archive notice:** This is not a current handoff despite its retained
 > filename. Do not start or resume work, report a score, select the next job, or
 > copy execution commands from this file. Read
-> `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for the only current Web UK
+> `CURRENT_WEBUK_PRODUCTION_STATUS.md` for the only current Web UK
 > architecture, ownership boundary, safety rule, counts, score, and queue, then
 > use `../../../docs/FULL_PARITY_REMEDIATION_RUNBOOK.md` for the broader
 > cross-workstream gate.

@@ -26,8 +26,9 @@ hand — the first three cover the React JSON locales, the last two cover the PH
 5. PHP `lang/` untranslated ratchet (BLOCKING)
    Run `node scripts/check-php-lang-untranslated.mjs`
    Purpose: shrink-only ceiling on `lang/` values that are byte-identical to English. The committed
-   ceiling lives in `.github/php-lang-untranslated-baseline.json` (currently 249) and may only go
-   down; regenerate it with `--write-baseline`, never by hand.
+   ceiling lives in `.github/php-lang-untranslated-baseline.json` and may only go
+   down; run the check for the current count and regenerate the ceiling with
+   `--write-baseline`, never by hand.
 
 The remaining blocking checks in that job are `check-i18n-literals.mjs`, `scripts/check-i18n.sh`
 (hardcoded PHP strings), `check-admin-i18n-token-integrity.mjs`, `check-admin-ui-literals.mjs`,
@@ -68,6 +69,14 @@ Use these states mentally when reviewing locale work:
    may fill supported non-Irish locales; author and review `lang/ga` directly.
 7. Add `Translation Status:` and `Translation Reviewer:` to the PR description before merge.
 8. Review the changed locale files before merge.
+9. For Irish React changes, run `npm run check:i18n:irish-react`. Every value
+   still identical to English must be pinned by exact key, value, and review
+   reason in `scripts/irish-react-reviewed-invariants.json`. Run
+   `generate-irish-react-invariants.mjs --write` only after semantic review;
+   never use it to bless a scanner result without reading the UI context.
+10. For accessible-frontend source changes, regenerate the Web UK catalogues
+    with Docker PHP, then run both `npm --prefix web-uk run locales:audit` and
+    `npm --prefix web-uk run locales:audit-irish`.
 
 ## Notes
 
@@ -87,7 +96,10 @@ Use these states mentally when reviewing locale work:
 
 ## Acceptable residual English
 
-When a gap report flags an admin-namespace value that is identical to English, do not treat it as a missing translation if it falls into one of these categories — they are expected, review-safe residues, not blockers:
+When a gap report flags a value identical to English, review its exact key and
+UI context. For Irish, the categories below are guidance only: the value is not
+accepted until the exhaustive key/value/reason manifest records it. This keeps
+a value-level allowlist from concealing a new English UI fallback.
 
 - **Format placeholders and units** — e.g. `{{value}} ms`, `{{count}}h`, `{{value}}/min`, `#{{id}}`.
 - **Sample data** — example emails, phone numbers, postal codes, placeholder domains.
@@ -95,4 +107,6 @@ When a gap report flags an admin-namespace value that is identical to English, d
 - **Proper nouns and technical identifiers** — Project NEXUS, OpenAI, Redis, Docker, cPanel, OAuth, GDPR, FADP, JSON/API labels, social-network names, currency labels, protocol names, and civic terms such as Age-Stiftung, Spitex, Vereine, Kanton, Gemeinden.
 - **Accepted same-spelling or loanword terms** in the target language (especially German, French, Dutch, Polish) — e.g. Status, Blog, Admin, Partner, Dashboard, Action, Date, Agent, Module, Contact, Plan, Type, Marketing, Webhook, Cache.
 
-Only treat an exact-English match as a blocker when it is user-facing prose or a label not covered above.
+Treat user-facing prose or a translatable label as a blocker. Names, identifiers,
+functional examples, formats, units, and genuine shared terms may remain
+identical only after explicit review.

@@ -1,6 +1,6 @@
 # Accessible Frontend Takeover
 
-Last reviewed: 2026-08-14
+Last reviewed: 2026-08-17
 
 ## 🔴 CURRENT STATUS, AND THE ONLY STATUS CLAIM THAT COUNTS
 
@@ -51,6 +51,15 @@ comparison tooling.
 **Deploying:** `bash scripts/deploy.sh --with-webuk`. The flag is mandatory — see
 [DEPLOYMENT.md](DEPLOYMENT.md). A guard on the server refuses a deploy that would
 drop `web-uk`, because there is no working fallback any more.
+
+**Irish localisation status:** both maintained frontends are current locally.
+Web UK's generated Irish catalogue has 39 namespaces and 9,348 strings with
+zero unreviewed English fallbacks, question-mark mismatches, or terminology
+violations. React has zero structural or aggressive-scan Irish gaps, and every
+one of its 737 intentional English-identical values is pinned by exact key,
+value, and review reason. These are automated completeness and reviewed-
+exception results, not a claim that every sentence has received independent
+native-speaker sign-off. Google Translate remains prohibited for Irish.
 
 **What the cutover cost:** the fast rollback is gone. Until 2026-08-14, removing one
 `Define` line from the Apache routes file sent every accessible address back to a

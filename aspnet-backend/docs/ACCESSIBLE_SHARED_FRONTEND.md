@@ -70,7 +70,7 @@ or complete API/side-effect compatibility.
 
 Current local preparation docs in `apps/web-uk/docs/`:
 
-- `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` (read first; only current score and queue)
+- `../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` (read first; only current score and queue)
 - `LARAVEL_ACCESSIBLE_ROUTE_MATRIX.md`
 - `BLADE_COMPONENT_PORT_AUDIT.md`
 - `BACKEND_SWITCHING_CONTRACT.md`

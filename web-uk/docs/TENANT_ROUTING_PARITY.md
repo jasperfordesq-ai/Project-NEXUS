@@ -25,7 +25,7 @@ Status: **Maintained reference — tenant-routing evidence, not the current aggr
 This note records the Laravel tenant-routing contract that `apps/web-uk` must
 clone before it can be called tenant-domain parity complete.
 
-`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is the sole current coordination and
+`CURRENT_WEBUK_PRODUCTION_STATUS.md` is the sole current coordination and
 scoring source. Counts and smoke outcomes in the chronological body below are
 dated implementation checkpoints, not the current aggregate. This routing note
 intentionally does not mirror the live route inventory, score, blocker set, or

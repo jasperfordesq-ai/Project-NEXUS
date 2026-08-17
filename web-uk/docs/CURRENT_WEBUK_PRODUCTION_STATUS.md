@@ -1,6 +1,6 @@
 # Current Web UK Production Status (Goal W2)
 
-Last reviewed: 2026-08-16
+Last reviewed: 2026-08-17
 
 Status: **Canonical current — sole Web UK scoring source**
 
@@ -23,7 +23,7 @@ artefact.
 
 ## 🔴 How this number moved, and which rows went DOWN
 
-W1 banked `663/1000` (66.3%). W2 stands at `920/1000` (92.0%), rescored on 2026-08-13 (651 -> 710 -> 745 -> 730 -> 830 -> 836 -> 845 -> 851 -> 867 -> 873), then on 2026-08-16 (873 -> 917) when the two deferred production-evidence rows were re-derived against live measurement, then on 2026-08-17 (917 -> 920) when the route row's last deduction was closed by fetching both real community accessible domains.
+W1 banked `663/1000` (66.3%). W2 stands at `920/1000` (92.0%), rescored on 2026-08-13 (651 -> 710 -> 745 -> 730 -> 830 -> 836 -> 845 -> 851 -> 867 -> 873), then on 2026-08-16 (873 -> 917) when the two deferred production-evidence rows were re-derived against live measurement, then on 2026-08-17 (917 -> 920) when the route row's last deduction was closed by fetching both real community accessible domains. The later Irish-completion pass does not move the total: it closes the Irish blocker, while the localisation row's remaining deductions are cross-locale exact-English debt and 19 hardcoded page-title literals.
 
 ### 🔴 2026-08-14 continuation — the number held at 873 (the honest reason), then 2026-08-16 rose to 917 on production evidence
 
@@ -49,6 +49,7 @@ so it makes that credit truthful without adding to it.
 
 **Two rows were deferred on 2026-08-14, and are now rescored on 2026-08-16 against
 live production measurement** (`873 -> 917`). The measurements, taken this date:
+
 - **Blade retirement without regression (5 -> 45/50).** The Blade code is gone —
   `accessible-frontend/`, `app/Http/Controllers/GovukAlpha` and `routes/govuk-alpha.php`
   are all absent from the tree — and the deletion is DEPLOYED: `/version` on all three
@@ -130,8 +131,9 @@ re-derived from the deduction lists by hand, per the rule above.
   covers GETs only.
 - **Manual WCAG 95 (+5)** — a committable screenshot set exists at last; and
   **Observable Blade behaviour 242 (+2)** — the `/exchanges` empty-state heading.
-- **Localisation unchanged at 42.** Irish is still the blocker. A concurrent session is
-  landing the translations; nothing is claimed here until it does.
+- **Localisation was unchanged at 42 at this checkpoint.** Later work on
+  2026-08-17 completed the Irish catalogue and raised the row to 44; the current
+  evidence and remaining deductions are stated below.
 
 🔴 **Three real defects were found by this work, all fixed with tests that were proven to
 fail first**: member-private pages served under another community's URL prefix; a profile
@@ -143,6 +145,16 @@ Read the mapping table below before quoting either number; do not convert one in
 the other, and do not describe either as "about finished".
 
 ## Rubric `WEBUK-W2-PROD-R1`
+
+**Current localisation interpretation (2026-08-17):** Irish is no longer a
+blocker. The 9,348-key Irish catalogue has zero unreviewed English fallbacks,
+question-mark mismatches, or terminology violations. The score remains 44/50
+because 1,403 values across all ten non-English catalogues are byte-identical to
+English (a conservative cross-locale measure, not an Irish defect) and the
+separate hardcoded-title ratchet still records 19 literals. Any older wording in
+the detailed row below that calls Irish, character-count copy, date labels,
+timeout copy, federation copy, or event validation "blocked on Irish" is retained
+as deduction history and is superseded by this paragraph.
 
 | Row | Earned | Maximum | Exact deduction |
 |---|---:|---:|---|
@@ -180,8 +192,9 @@ All counts below come from `docs/generated/`, regenerated at commit
 |---|---|---|
 | Route matrix | Laravel 707, `web-uk` **727**, **matched 707, missing 0**, extra **17**, ignored infrastructure 4. 🔴 726 -> 727 on 2026-08-17: `POST /marketplace/offers/{param}/accept-counter`, the buyer accepting a seller's counter offer. It is "extra" because Blade never had it either — and its absence was a money bug, not a missing page: without it a countered offer was routed through `/accept`, which binds the buyer's ORIGINAL lower amount. 🔴 **725 -> 726 on 2026-08-17, and it is a real gain plus a fixed blind spot.** The new route is `GET /page/{param}`, a community's own published CMS page: `static-pages.js` held an EMPTY page map, so every community-authored page 404'd here while React served it. Fixing it then exposed a measurement fault — the matrix generator parsed that one file with a bespoke parser that only mined the hardcoded map, so even after the route existed the file still reported zero routes. Both fixed. It counts as `extra-web-uk` because Blade never had the page either, which is exactly why the frozen Blade inventory could never have revealed the gap; it was found by diffing against **React** instead | Declaration coverage. Not workflow, auth, tenant or visual parity. Extras went 12 -> 13 on 2026-08-13: `POST /cookie-consent/hide`, which exists because GDS specifies a BUTTON for "Hide cookie message" and a button needs somewhere to submit to. Blade uses a link, so it has no equivalent route. Extras went 13 -> 15 on 2026-08-16: the `GET .../delete` confirmation-interstitial pages for a marketplace listing and a podcast episode (a stray-click guard before a permanent delete); the destructive action still POSTs to the existing route. |
 | API consumer ledger | **698** contracts (**382** state-changing); **468** OpenAPI matches; 229 route-declared OpenAPI omissions; **0** without a Laravel route declaration; **0** dynamic unresolved; 381 state-changing; **0** without tests; **0** without direct helper assertions | Static and mocked ownership evidence. No live Laravel was contacted. The 696th contract is `GET /api/ai/providers`, newly consumed by the chat page on 2026-08-13 so it can tell a member when no AI assistant is configured, as Blade does. |
-| Jest | 74 suites, 2,127 tests passing, `--runInBand` | Mocked contract and page behaviour. |
-| Locale catalogs | 11 locales, 38 namespaces, 9,070 string keys, 0 missing, 0 extra | Structural shape only. |
+| Jest | 98 suites, 2,439 tests passing, `--runInBand` | Mocked contract and page behaviour. |
+| Locale catalogs | 11 locales, 39 namespaces, 9,348 string keys, 0 missing, 0 extra | Structural shape only. |
+| Irish locale integrity | 9,348 strings; 104 reviewed English-identical invariants; 0 unreviewed fallbacks; 0 question-mark mismatches; 0 terminology violations | Blocking catalogue-quality evidence. It is not independent native-speaker certification of every sentence. |
 | Static locale usage | 7,878 references, 5,984 unique keys, **0 unresolved** | Every key referenced in source exists. |
 | Template localisation | 335 templates, **0** conservative hard-coded matches | 🔴 **Read this narrowly.** It scans TEMPLATES with a conservative matcher and is blind to hard-coded English in route files, and to a template string it does not recognise as user-facing. `views/federation/index.njk` held 23 hard-coded English strings while this line read 0. It is not evidence that the frontend is fully localised. |
 | Automated accessibility | 24/24 on the isolated fixture, **and 24/24 on real signed-in pages** (axe wcag2a/2aa/21a/21aa/22aa, 2026-08-13) | Automated subset only. It is **not** manual sign-off and must never be reported as one. 🔴 The real-page run is the stronger evidence: it found a WCAG 2.2 target-size failure the fixture never could, on five pages. 🔴 It needed `bypassCSP` to inject axe — the site CSP blocked it on the first attempt, which is incidental proof the CSP works. |
