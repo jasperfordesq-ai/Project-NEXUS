@@ -85,7 +85,12 @@ public sealed class VolunteerTrainingTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var items = (await response.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("data").EnumerateArray().ToList();
+            // 🔴 Laravel wraps these in `data.items` with cursor pagination beside
+            // them — verified live: {"data":{"items":[…],"cursor":null,
+            // "has_more":false}} — not a bare list under `data`. This backend
+            // returned the bare list until 2026-08-17, so a client looping over
+            // `data` got nothing from the production backend.
+            .GetProperty("data").GetProperty("items").EnumerateArray().ToList();
 
         var required = items.Single(x => x.GetProperty("id").GetInt32() == requiredId);
         required.GetProperty("is_required").GetBoolean().Should().BeTrue();
@@ -130,7 +135,12 @@ public sealed class VolunteerTrainingTests : IntegrationTestBase
         await AuthenticateAsMemberAsync();
         var response = await Client.GetAsync("/api/v2/volunteering/training");
         var items = (await response.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("data").EnumerateArray().ToList();
+            // 🔴 Laravel wraps these in `data.items` with cursor pagination beside
+            // them — verified live: {"data":{"items":[…],"cursor":null,
+            // "has_more":false}} — not a bare list under `data`. This backend
+            // returned the bare list until 2026-08-17, so a client looping over
+            // `data` got nothing from the production backend.
+            .GetProperty("data").GetProperty("items").EnumerateArray().ToList();
 
         items.Single(x => x.GetProperty("id").GetInt32() == requiredId)
             .GetProperty("completed").GetBoolean().Should().BeFalse(

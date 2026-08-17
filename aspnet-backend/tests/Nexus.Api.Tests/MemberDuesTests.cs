@@ -99,7 +99,16 @@ public sealed class MemberDuesTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var ids = body.GetProperty("data").EnumerateArray()
+        // 🔴 Laravel wraps these in `data.items` with a `total` beside them —
+        // verified live: {"data":{"items":[…],"total":N}} — not a bare list under
+        // `data`. This backend returned the bare list until 2026-08-17, so a client
+        // looping over `data` got nothing from the production backend. The envelope
+        // is asserted here so this test stays about dues rather than about JSON.
+        var data = body.GetProperty("data");
+        data.ValueKind.Should().Be(JsonValueKind.Object, "Laravel wraps these in data.items");
+        data.GetProperty("total").GetInt32().Should().BeGreaterThan(0);
+
+        var ids = data.GetProperty("items").EnumerateArray()
             .Select(x => x.GetProperty("id").GetInt64()).ToList();
         ids.Should().Contain(dueId, "the stub returned an empty array for everyone");
     }
