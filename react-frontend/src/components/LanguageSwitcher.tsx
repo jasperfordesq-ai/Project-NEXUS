@@ -75,10 +75,26 @@ export function LanguageSwitcher({ compact = true, triggerClassName }: LanguageS
     // TenantContext checks this flag to decide whether to apply the tenant default.
     safeLocalStorageSet('nexus_language_user_chosen', 'true');
 
-    // Persist to user profile if authenticated
+    // Persist to user profile if authenticated.
+    //
+    // 🔴 This is checked with `res.success`, NOT `.catch()`. The API client
+    // never rejects on an API-level failure — `request()` returns
+    // `{ success: false, error, code }` and only ever throws from `download()`.
+    // The `.catch()` that used to be here could therefore never run, so a
+    // failed save was completely silent.
+    //
+    // That silence had a real cost: the member sees the language change, but
+    // the ACCOUNT keeps the old value, and AuthContext reapplies the account
+    // language on the next session restore — so their choice reverts on the
+    // next page load with nothing logged anywhere to explain it.
     if (tokenManager.hasAccessToken()) {
-      api.put('/v2/users/me/language', { language: code }).catch((err) => {
-        logError('Failed to persist language preference', err);
+      void api.put('/v2/users/me/language', { language: code }).then((res) => {
+        if (!res.success) {
+          logError(
+            'Failed to persist language preference; it will revert on next load',
+            res.error ?? res.code ?? 'unknown error',
+          );
+        }
       });
     }
   };

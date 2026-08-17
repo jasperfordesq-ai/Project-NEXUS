@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 
 // ─── Mock api + helpers ───────────────────────────────────────────────────────
@@ -12,7 +12,10 @@ const { mockApi, mockTokenManager, mockSafeLocalStorageSet, mockLogError } = vi.
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
-    put: vi.fn().mockResolvedValue({}),
+    // Resolves to a SUCCESS envelope, not `{}`. The API client signals failure
+    // by resolving `{ success: false }` rather than rejecting, so a bare `{}`
+    // would read as a failed save in every test that persists a language.
+    put: vi.fn().mockResolvedValue({ success: true }),
     patch: vi.fn(),
     delete: vi.fn(),
     download: vi.fn(),
@@ -225,6 +228,50 @@ describe('LanguageSwitcher', () => {
       '/v2/users/me/language',
       { language: 'fr' }
     );
+  });
+
+  // ─── Regression: the failed-save path used to be unreachable ────────────────
+  // `api.put` NEVER rejects on an API-level failure — it resolves
+  // `{ success: false }` — so the `.catch()` this component used to rely on
+  // could not run and a failed save was silent. These two pin the replacement:
+  // the failure path must fire, and the success path must stay quiet.
+  it('logs when persisting the language fails, so the silent revert is diagnosable', async () => {
+    const user = userEvent.setup();
+    mockTokenManager.hasAccessToken.mockReturnValue(true);
+    mockApi.put.mockResolvedValue({ success: false, error: 'Network unavailable' });
+
+    const { LanguageSwitcher } = await import('./LanguageSwitcher');
+    render(<LanguageSwitcher />);
+
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /Irish/ }));
+
+    // Positive control: the save was genuinely attempted, so the assertion
+    // below is about the failure being reported and not about a dead click.
+    expect(mockApi.put).toHaveBeenCalledWith('/v2/users/me/language', { language: 'ga' });
+    await waitFor(() => {
+      expect(mockLogError).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to persist language preference'),
+        'Network unavailable',
+      );
+    });
+  });
+
+  it('does not log when persisting the language succeeds', async () => {
+    const user = userEvent.setup();
+    mockTokenManager.hasAccessToken.mockReturnValue(true);
+    mockApi.put.mockResolvedValue({ success: true });
+
+    const { LanguageSwitcher } = await import('./LanguageSwitcher');
+    render(<LanguageSwitcher />);
+
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /Irish/ }));
+
+    await waitFor(() => {
+      expect(mockApi.put).toHaveBeenCalledWith('/v2/users/me/language', { language: 'ga' });
+    });
+    expect(mockLogError).not.toHaveBeenCalled();
   });
 
   it('renders the trigger button with globe aria-label', async () => {
