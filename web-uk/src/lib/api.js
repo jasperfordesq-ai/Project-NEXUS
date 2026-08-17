@@ -351,6 +351,10 @@ function tenantHostHeaders(host) {
  * so that case is deliberately never cached rather than cached under a key that
  * cannot distinguish one community from another.
  */
+function cloneBootstrap(value) {
+  return value === null || typeof value !== 'object' ? value : JSON.parse(JSON.stringify(value));
+}
+
 function tenantBootstrapCacheKey(endpoint, headers) {
   if (Object.keys(headers).length === 0) {
     return '';
@@ -375,8 +379,9 @@ async function getTenantBootstrap(options = {}) {
     if (cached !== undefined) {
       // Cloned on the way out as well as in: callers decorate the bootstrap
       // object, and a shared reference would let one request's additions show up
-      // in another community's response.
-      return structuredClone(cached);
+      // in another community's response. A JSON round trip is a complete clone
+      // here because the value is always a parsed JSON response body.
+      return cloneBootstrap(cached);
     }
   }
 
@@ -385,7 +390,7 @@ async function getTenantBootstrap(options = {}) {
   // Only a resolved success reaches here — `request()` throws on non-2xx, so a
   // 404 for an unknown community is never cached.
   if (key) {
-    cache.set(key, structuredClone(result), CACHE_TTL.BOOTSTRAP);
+    cache.set(key, cloneBootstrap(result), CACHE_TTL.BOOTSTRAP);
   }
 
   return result;
