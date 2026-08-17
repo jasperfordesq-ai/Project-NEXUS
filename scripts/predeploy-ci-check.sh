@@ -53,7 +53,15 @@
 
 set -uo pipefail
 
-WORKFLOW="ci.yml"
+# 🔴 BOTH workflows must be forced, because the checks covering production are
+# split across them. `web-uk` is the only accessible frontend and serves three
+# live hostnames, but its suite/lint/brand/accessibility jobs live in
+# platform-contracts.yml. Forcing ci.yml alone would leave the verifier with no
+# web-uk evidence, so --trigger could never clear a refusal and every deploy
+# would block. Both jobs there carry workflow_dispatch escapes, so a dispatched
+# run genuinely runs them rather than skipping on unchanged paths.
+WORKFLOWS="ci.yml platform-contracts.yml"
+WORKFLOW="ci.yml"   # the one whose absence of runs is reported first
 SHA=""
 WAIT=0
 TRIGGER=0
@@ -141,26 +149,43 @@ wait_for_run() {
 
 trigger_full_run() {
     say "Starting a full check of every job on this commit. This takes roughly half an hour."
-    if ! gh workflow run "$WORKFLOW" --ref main >/dev/null 2>&1; then
-        fail "Could not start the check run. Refusing to deploy."
-        exit 2
-    fi
-    say "Waiting for the run to appear..."
-    local new_run=""
-    for _ in $(seq 1 20); do
-        sleep 5
-        new_run="$(gh run list --workflow="$WORKFLOW" --event workflow_dispatch --limit 10 \
-            --json databaseId,headSha --jq \
-            "[.[] | select(.headSha == \"$SHA\")] | .[0].databaseId // empty" 2>/dev/null)"
-        [ -n "$new_run" ] && break
+    local started=""
+    local wf
+    for wf in $WORKFLOWS; do
+        if ! gh workflow run "$wf" --ref main >/dev/null 2>&1; then
+            fail "Could not start the $wf check run. Refusing to deploy."
+            exit 2
+        fi
+        started="$started $wf"
     done
-    if [ -z "$new_run" ]; then
-        fail "The check run did not appear within 100 seconds. Refusing to deploy."
-        fail "  Check manually: gh run list --workflow=$WORKFLOW"
-        exit 2
-    fi
-    say "Full check running: https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/$new_run"
-    wait_for_run "$new_run" || exit 2
+
+    # Collect each dispatched run id before waiting on any of them: they run in
+    # parallel on GitHub, so waiting serially costs nothing but starting serially
+    # would.
+    local run_ids=""
+    for wf in $started; do
+        say "Waiting for the $wf run to appear..."
+        local new_run=""
+        for _ in $(seq 1 20); do
+            sleep 5
+            new_run="$(gh run list --workflow="$wf" --event workflow_dispatch --limit 10 \
+                --json databaseId,headSha --jq \
+                "[.[] | select(.headSha == \"$SHA\")] | .[0].databaseId // empty" 2>/dev/null)"
+            [ -n "$new_run" ] && break
+        done
+        if [ -z "$new_run" ]; then
+            fail "The $wf check run did not appear within 100 seconds. Refusing to deploy."
+            fail "  Check manually: gh run list --workflow=$wf"
+            exit 2
+        fi
+        say "Full check running ($wf): https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/$new_run"
+        run_ids="$run_ids $new_run"
+    done
+
+    local id
+    for id in $run_ids; do
+        wait_for_run "$id" || exit 2
+    done
 }
 
 # --- evaluate, waiting/triggering as allowed --------------------------------

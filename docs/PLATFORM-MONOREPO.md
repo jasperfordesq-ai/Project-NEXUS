@@ -418,9 +418,20 @@ deliberate hand-edited commit rather than a bulk regeneration.
 Re-checked 2026-08-10. If any of these stops being true, the monorepo has
 started costing the primary tracks something:
 
-- **They cannot block a production deploy.** `REQUIRED_JOBS` in
-  `scripts/predeploy-ci-verify.mjs` contains no ASP.NET or web-uk job. A red
-  sibling job cannot stop a Laravel release.
+- **ASP.NET cannot block a production deploy.** `REQUIRED_JOBS` in
+  `scripts/predeploy-ci-verify.mjs` contains no ASP.NET job, and the verifier
+  deliberately ignores every non-`Web UK` job in `platform-contracts.yml`, so a red
+  ASP.NET job cannot stop a Laravel release.
+  > 🔴 **Corrected 2026-08-17.** This bullet used to read "contains no ASP.NET **or
+  > web-uk** job. A red sibling job cannot stop a Laravel release." The web-uk half
+  > was true on 2026-08-10 and is now deliberately false: `web-uk` is the
+  > production accessible frontend serving three live hostnames, its checks live in
+  > `platform-contracts.yml` rather than `ci.yml`, and the `ci.yml` job that once
+  > covered the accessible frontend was removed with Blade on 2026-08-14 and never
+  > replaced — so a deploy could ship it with no evidence its tests passed. The two
+  > `Web UK` jobs are now REQUIRED. ASP.NET's isolation is unchanged and is the
+  > reason the verifier scopes that workflow by job name instead of watching all of
+  > it.
 - **They cannot enter the production image.** `Dockerfile.bluegreen` uses an
   explicit COPY allowlist (17 instructions, none whole-context), and
   `.dockerignore` excludes both `aspnet-backend/` and `web-uk/`. Guarded by

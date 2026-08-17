@@ -147,19 +147,34 @@ The maintenance script toggles both enforcement layers: the pre-framework `.main
 `api.project-nexus.net` and `uk.project-nexus.net` are live and serving, but
 they were deployed from the former `api.project-nexus.net` repository, which
 was archived on 2026-08-10. **This repository cannot update either of them.**
-That is deliberate, not an oversight: `aspnet-backend/` and `web-uk/` are
-secondary, development-only tracks and must never ride along with a Laravel
-deploy.
+That is deliberate, not an oversight: `aspnet-backend/` is a secondary,
+development-only track and must never ride along with a Laravel deploy.
 
-The isolation is enforced in three independent places, all re-verified
-2026-08-10:
+> 🔴 **Corrected 2026-08-17.** This paragraph and the list below used to name
+> **`web-uk/` alongside `aspnet-backend/`** as "secondary, development-only tracks"
+> whose checks could not block a Laravel release. That was true when it was written
+> on 2026-08-10 and is now wrong, and wrong in the direction that matters: `web-uk`
+> became the production accessible frontend, and since 2026-08-14 it is the ONLY
+> one, serving three live hostnames. It deploys with this repository's own
+> `--with-webuk` path. The two experimental hosts named above
+> (`uk.project-nexus.net`, `api.project-nexus.net`) are a different, retired thing
+> and still have no deploy path here.
 
-- `REQUIRED_JOBS` in `scripts/predeploy-ci-verify.mjs` lists no ASP.NET or
-  web-uk job, so a red sibling check cannot block a Laravel release
+The isolation below applies to **`aspnet-backend/` only**. It was re-verified
+2026-08-10, and the ASP.NET half is unchanged:
+
+- `REQUIRED_JOBS` in `scripts/predeploy-ci-verify.mjs` lists no ASP.NET job, so a
+  red ASP.NET check cannot block a Laravel release. 🔴 It DOES now require the two
+  `Web UK` jobs (added 2026-08-17), because the accessible frontend is production
+  and its tests are the only automated cover it has
 - `Dockerfile.bluegreen` copies an explicit allowlist and `.dockerignore`
-  excludes both directories, so neither can enter the production image
-  (guarded by `scripts/check-production-image-allowlist.mjs`)
-- no deploy script references either directory
+  excludes both directories, so neither can enter the **PHP** production image
+  (guarded by `scripts/check-production-image-allowlist.mjs`). This still holds
+  for `web-uk` and is still correct: it ships as its own image and container,
+  not inside the PHP one
+- no deploy script references `aspnet-backend/`. 🔴 The deploy scripts DO
+  reference `web-uk/` — `compose.webuk.bluegreen.yml`, ports 3500/3600, and the
+  `--with-webuk` flag — which is how the accessible frontend reaches production
 
 🔴 Before any deploy path is built for the ASP.NET backend, note that its
 deployed database is **112 migrations behind** this repository (53 applied vs
