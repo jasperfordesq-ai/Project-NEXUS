@@ -26,11 +26,16 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         await SeedEnabledSsoProviderAsync();
 
         var providersJson = await ReadJsonAsync(await Client.GetAsync($"/api/v2/auth/sso/providers?tenant_id={TestData.Tenant1.Id}"), HttpStatusCode.OK);
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        providersJson.TryGetProperty("success", out _).Should().BeFalse();
-        providersJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 This IS a /api/v2 path and the "no `success`, always `meta`" rule still
+        // does not apply — verified against the running Laravel, which answers
+        // exactly {"success":true,"providers":[…]} with no meta.
+        // SsoAuthController::providers uses a raw response()->json() rather than a
+        // base-controller helper, so there is no envelope to match; and
+        // LaravelDataEnvelopeFilter only acts on a body that HAS a `data` key, so
+        // it deliberately leaves this one alone. Only reading the Laravel route
+        // reveals that — the response itself cannot tell you.
+        providersJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        providersJson.TryGetProperty("meta", out _).Should().BeFalse();
         providersJson.GetProperty("providers").EnumerateArray().Should().Contain(p =>
             p.GetProperty("provider_key").GetString() == "azure-entra" &&
             p.GetProperty("display_name").GetString() == "Azure Entra");

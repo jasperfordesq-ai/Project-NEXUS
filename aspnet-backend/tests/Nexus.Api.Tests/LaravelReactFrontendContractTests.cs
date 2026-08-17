@@ -92,11 +92,21 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         providers.StatusCode.Should().Be(HttpStatusCode.OK, providersBody);
         var providersJson = JsonDocument.Parse(providersBody).RootElement;
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        providersJson.TryGetProperty("success", out _).Should().BeFalse();
-        providersJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 This IS a /api/v2 path and the "no `success`, always `meta`" rule still
+        // does not apply — verified against the running Laravel, which answers
+        // exactly {"success":true,"providers":[]} with no meta.
+        //
+        // Why: Laravel's v2 envelope comes from the base-controller helpers, and
+        // SocialAuthController::enabledProviders uses a raw response()->json()
+        // instead. LaravelDataEnvelopeFilter encodes the same boundary from the
+        // other side — it only acts on a body that HAS a `data` key — so it
+        // deliberately leaves this one alone. That is the `[LaravelOmitsMeta]`
+        // situation, and it cannot be inferred from the response: only reading the
+        // Laravel route reveals it.
+        //
+        // The assertion here was the generalised v2 rule and left main red.
+        providersJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        providersJson.TryGetProperty("meta", out _).Should().BeFalse();
         var providerList = providersJson.GetProperty("providers");
         providerList.ValueKind.Should().Be(JsonValueKind.Array);
         providerList.EnumerateArray().Should().BeEmpty("Laravel's default OAUTH_ENABLED=false kill switch should not advertise connectable providers");
@@ -115,11 +125,20 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         identities.StatusCode.Should().Be(HttpStatusCode.OK);
         var identitiesJson = await identities.Content.ReadFromJsonAsync<JsonElement>();
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        identitiesJson.TryGetProperty("success", out _).Should().BeFalse();
-        identitiesJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 Same as the providers endpoint above: a /api/v2 path where the
+        // "no `success`, always `meta`" rule does not apply. Verified against the
+        // running Laravel, which answers
+        //   {"success":true,"identities":[],"enabled_providers":[],
+        //    "supported_providers":["google","facebook"]}
+        // — no meta, no data, because the Laravel route uses a raw
+        // response()->json() rather than a base-controller helper.
+        //
+        // 🔴 Noted while verifying, NOT changed here: Laravel's supported_providers
+        // is ["google","facebook"] and this backend also offers "apple". That is a
+        // real contract divergence in the provider list, separate from the envelope,
+        // and it needs its own decision rather than being folded into a test fix.
+        identitiesJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        identitiesJson.TryGetProperty("meta", out _).Should().BeFalse();
         identitiesJson.GetProperty("identities").ValueKind.Should().Be(JsonValueKind.Array);
         identitiesJson.GetProperty("enabled_providers").ValueKind.Should().Be(JsonValueKind.Array);
         identitiesJson.GetProperty("enabled_providers").EnumerateArray().Should().BeEmpty();

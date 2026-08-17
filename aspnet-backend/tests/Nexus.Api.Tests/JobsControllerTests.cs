@@ -26,7 +26,12 @@ public class JobsControllerTests : IntegrationTestBase
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
         content.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
-        content.GetProperty("pagination").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(0);
+        // 🔴 `pagination:{page,limit,total,pages}` became `meta:{per_page,has_more,total}`
+        // in 8582235b2, matching Laravel's respondWithCollection. The assertion was
+        // not updated with it, so this threw KeyNotFoundException and left main red.
+        // /api/v2/jobs is one of the few that does carry `total`, so it is still
+        // asserted here — just under `meta`.
+        content.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(0);
     }
 
     [Fact]

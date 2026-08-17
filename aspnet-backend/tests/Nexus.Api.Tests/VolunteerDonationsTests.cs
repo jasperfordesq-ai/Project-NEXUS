@@ -35,11 +35,28 @@ public sealed class VolunteerDonationsTests : IntegrationTestBase
 {
     public VolunteerDonationsTests(NexusWebApplicationFactory factory) : base(factory) { }
 
+    /// <summary>
+    /// The member's own donations, as a list.
+    ///
+    /// 🔴 Laravel wraps these in <c>data.items</c> with <c>next_cursor</c> beside
+    /// them — verified live: <c>{"data":{"items":[…],"next_cursor":null}}</c> — not
+    /// a bare list under <c>data</c>. This backend returned the bare list until
+    /// 2026-08-17, so a client looping over <c>data</c> got nothing from the
+    /// production backend.
+    ///
+    /// The envelope is asserted here, once, so the five behavioural tests below
+    /// can keep reading a plain list and stay about donations rather than JSON.
+    /// </summary>
     private async Task<JsonElement> MineAsync()
     {
         var response = await Client.GetAsync("/api/v2/volunteering/donations");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
+
+        var data = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
+        data.ValueKind.Should().Be(JsonValueKind.Object, "Laravel wraps these in data.items, not a bare list");
+        data.TryGetProperty("next_cursor", out _).Should().BeTrue("Laravel sends next_cursor beside items here");
+
+        return data.GetProperty("items");
     }
 
     [Fact]

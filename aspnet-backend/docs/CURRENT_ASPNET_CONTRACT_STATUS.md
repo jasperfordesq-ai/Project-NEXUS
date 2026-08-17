@@ -222,6 +222,29 @@ A corpus-wide sweep for the same defect class then ran against **both** backends
 which is schema cruft on the `categories` table rather than a user credential and
 is contract-identical, so it is recorded and deliberately not "fixed".
 
+### The five `data.items` envelopes — differing 87 → 82
+
+Exposed by fixing the harness hole above. Laravel wraps these rows in an object
+under `data`, this backend returned a bare list, so a client looping over `data`
+gets nothing from the production backend:
+
+| Endpoint | Laravel |
+| --- | --- |
+| `/api/v2/coupons` | `{items}` |
+| `/api/v2/jobs/my-applications` | `{items, cursor, has_more}` |
+| `/api/v2/me/verein-dues` | `{items, total}` |
+| `/api/v2/volunteering/donations` | `{items, next_cursor}` |
+| `/api/v2/volunteering/training` | `{items, cursor, has_more}` |
+
+🔴 **Four different pagination shapes across five endpoints.** There is no rule to
+generalise, and which wrapper a Laravel route emits is not derivable from its
+response — each was read live. Applying one shape to all five would repeat the
+`per_page`/`has_more` over-generalisation that cost 22 endpoints in a single run.
+
+All five now report envelope-correct. Their rows stay uncompared because the
+ASP.NET fixture holds none for these entities — the mirror image of the Laravel
+fixture problem solved earlier, and the next fixture job.
+
 ### 🔴 `main` was red, from two earlier commits, and is green again
 
 A full `dotnet test Nexus.sln -c Release` run read **3,636 passed / 8 failed** (read
@@ -260,6 +283,37 @@ left alone, because that endpoint was not part of that change.
 
 Verified: the four affected classes plus every area changed in this section run
 **114 passed / 0 failed**.
+
+🔴 **A second full run found three MORE of the same two mistakes**, which the first
+run's log had truncated away (it was piped through `tail -40`, so only 4 of its 8
+failures were ever visible — read the whole log, not its tail):
+
+- `JobsControllerTests.ListJobs_AsAuthenticated_ReturnsOk` — still read
+  `pagination.total` after `8582235b2`. `/api/v2/jobs` is one of the few endpoints
+  that genuinely carries `total`, so it is still asserted, just under `meta`.
+- `LaravelReactFrontendContractTests.AuthOAuthV2_…` and
+  `LaravelReactUtilityCompatibilityTests.SsoAndOauthRoutes_…` — the "no `success`,
+  always `meta`" rule applied to **three** OAuth/SSO endpoints that are genuinely
+  `/api/v2` paths and still do not follow it. Verified against the running Laravel:
+  `/api/v2/auth/oauth/enabled-providers`, `/api/v2/auth/sso/providers` and
+  `/api/v2/auth/oauth/me/identities` all answer `{"success":true, …}` with **no
+  meta and no data**, because those Laravel routes use a raw `response()->json()`
+  instead of a base-controller helper. `LaravelDataEnvelopeFilter` encodes the same
+  boundary from the other side — it only acts on a body that HAS a `data` key — so
+  ASP.NET already matched and the tests were wrong.
+
+That makes **eight** instances of this one over-generalisation, across five files.
+The lesson is not "check the verb": it is that **an endpoint's envelope is a
+property of the Laravel ROUTE, not of its method or its prefix**, and the only way
+to know is to ask the running Laravel.
+
+🔴 **Noted while verifying, NOT changed:** Laravel's
+`/api/v2/auth/oauth/me/identities` reports `supported_providers`
+`["google","facebook"]`; this backend also offers `"apple"`. A real divergence in
+the provider list, separate from the envelope, needing its own decision.
+
+Final verification for this batch: **176 passed / 0 failed** across every changed
+area.
 
 ### The nine raw-record endpoints — 62 → 64 identical, differing 90 → 82
 
