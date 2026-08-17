@@ -518,7 +518,10 @@ public class MarketplaceController : ControllerBase
     public async Task<IActionResult> SellerDashboard()
     {
         var userId = RequireUserId();
-        var profile = await _marketplace.GetOrCreateSellerProfileAsync(userId);
+        // Called for its side effect: a seller viewing the dashboard for the first
+        // time gets their profile row created. The profile itself is deliberately
+        // NOT returned — see the note on the response below.
+        _ = await _marketplace.GetOrCreateSellerProfileAsync(userId);
         var sellerListings = _db.MarketplaceListings.Where(l => l.UserId == userId);
         var activeListings = await sellerListings.CountAsync(l => l.Status == "active" && l.ModerationStatus == "approved");
         var draftListings = await sellerListings.CountAsync(l => l.Status == "draft");
@@ -528,10 +531,30 @@ public class MarketplaceController : ControllerBase
         var totalViews = await sellerListings.SumAsync(l => l.ViewsCount);
         var totalSaves = await sellerListings.SumAsync(l => l.SavesCount);
         var pendingOffers = await _db.MarketplaceOffers.CountAsync(o => o.SellerUserId == userId && o.Status == "pending");
-        var orders = await _db.MarketplaceOrders.CountAsync(o => o.SellerUserId == userId);
-        var totalRevenue = await _db.MarketplaceOrders
-            .Where(o => o.SellerUserId == userId && o.Status == "completed")
-            .SumAsync(o => o.TotalAmount ?? 0m);
+
+        // 🔴 Revenue is reported PER CURRENCY, and the single-figure total is
+        // deliberately null when a seller has taken money in more than one.
+        // Laravel: MarketplaceSellerService.php:231-266 — group by UPPER(currency)
+        // over completed orders with total_price > 0, then
+        //   total_revenue    = count <= 1 ? that total : null
+        //   revenue_currency = count <= 1 ? that currency : null
+        // The comment there is explicit that it will not "pretend unlike
+        // currencies are equal". This backend summed every order and hard-coded
+        // "EUR", so a seller paid in two currencies saw one meaningless number
+        // under the wrong symbol.
+        var revenueByCurrency = (await _db.MarketplaceOrders
+                .Where(o => o.SellerUserId == userId
+                    && o.Status == "completed"
+                    && o.TotalAmount != null
+                    && o.TotalAmount > 0m)
+                .GroupBy(o => o.Currency.ToUpper())
+                .Select(g => new { currency = g.Key, total = g.Sum(o => o.TotalAmount ?? 0m) })
+                .ToListAsync())
+            .OrderBy(r => r.currency, StringComparer.Ordinal)
+            .ToList();
+
+        var singleCurrency = revenueByCurrency.Count <= 1;
+        var only = revenueByCurrency.FirstOrDefault();
 
         return Ok(new
         {
@@ -546,11 +569,19 @@ public class MarketplaceController : ControllerBase
                 total_views = totalViews,
                 total_saves = totalSaves,
                 pending_offers = pendingOffers,
-                total_revenue = totalRevenue,
-                revenue_currency = "EUR",
-                profile,
-                listings = totalListings,
-                orders
+                total_revenue = singleCurrency ? (only?.total ?? 0m) : (decimal?)null,
+                revenue_currency = singleCurrency ? only?.currency : null,
+                // 🔴 Was absent, and MyListingsPage.tsx:373 PREFERS it over the
+                // single figure — so the seller's revenue panel was falling back
+                // on this backend. A real client-facing gap, not a shape nit.
+                revenue_by_currency = revenueByCurrency,
+                // 🔴 `profile`, `listings` and `orders` removed. Laravel sends
+                // counters only. `profile` was the raw SellerProfile ENTITY, so it
+                // published camelCase keys, `stripeAccountId`, `suspensionReason`
+                // and a nested `user` navigation property — null here only because
+                // nothing eager-loads it, which is one `.Include` away from
+                // publishing a whole User record. Verified before removing that
+                // no React call site and no test reads any of the three.
             }
         });
     }

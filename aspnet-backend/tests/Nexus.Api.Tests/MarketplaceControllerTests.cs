@@ -289,6 +289,17 @@ public class MarketplaceControllerTests : IntegrationTestBase
     [Fact]
     public async Task PromotionProductsV2_MatchesLaravelReactSelectorContract()
     {
+        // 🔴 `marketplace.promotions_enabled` is a SECOND switch on top of the
+        // marketplace feature and it DEFAULTS TO FALSE, matching Laravel
+        // (MarketplacePromotionController::ensurePromotionsEnabled). The gate was
+        // added on 2026-08-17 and this test was not updated, so it asserted 200
+        // and got 403 — a red main.
+        //
+        // The gate is correct, so the fix is to switch the setting on rather than
+        // assert the un-gated behaviour back into existence. Verifying that the
+        // gate correctly REFUSES is a separate check against a tenant with it off.
+        await EnableMarketplacePromotionsAsync();
+
         // 🔴 Authenticated, matching Laravel (401). Same [AllowAnonymous]
         // trap as the categories test above.
         await AuthenticateAsMemberAsync();
@@ -2341,6 +2352,42 @@ public class MarketplaceControllerTests : IntegrationTestBase
         await db.SaveChangesAsync();
 
         return order.Id;
+    }
+
+    /// <summary>
+    /// Switches on <c>marketplace.promotions_enabled</c> for the test tenant.
+    ///
+    /// This is a SECOND switch on top of the marketplace feature and it defaults
+    /// to false on both backends, so a promotion endpoint answers 403 until a
+    /// community turns it on. Written under the canonical spelling — see
+    /// <see cref="Nexus.Api.Support.TenantFeatureKeys"/> for why two spellings
+    /// exist and why the reader accepts both.
+    /// </summary>
+    private async Task EnableMarketplacePromotionsAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+
+        const string key = "marketplace.promotions_enabled";
+        var row = await db.TenantConfigs
+            .FirstOrDefaultAsync(c => c.TenantId == TestData.Tenant1.Id && c.Key == key);
+
+        if (row is null)
+        {
+            db.TenantConfigs.Add(new TenantConfig
+            {
+                TenantId = TestData.Tenant1.Id,
+                Key = key,
+                Value = "true",
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            row.Value = "true";
+        }
+
+        await db.SaveChangesAsync();
     }
 
     private static MultipartFormDataContent CreateImageUpload(string fieldName, string fileName)

@@ -213,6 +213,45 @@ tests, all passing). The disclosure test asserts against the **raw response text
 rather than named properties, so a future entity column cannot leak past it.
 `AdminV2RouteAliasRuntimeTests` re-run green (234/234).
 
+A corpus-wide sweep for the same defect class then ran against **both** backends
+(all 170 paths, signed in, looking for `passwordHash`, `totpSecret`,
+`emailVerificationCode`, `remember_token`, `api_key` and eleven more). Result:
+**no other credential disclosure**. Two lesser findings —
+`marketplace/seller/dashboard` exposed `suspensionReason` (fixed below), and
+`/api/v2/categories` exposes a stray `reset_token` column on **both** backends,
+which is schema cruft on the `categories` table rather than a user credential and
+is contract-identical, so it is recorded and deliberately not "fixed".
+
+### `marketplace/seller/dashboard` — 62/170, and money that should not have been added up
+
+🔴 **Laravel refuses to sum unlike currencies and this backend did it anyway.**
+`MarketplaceSellerService.php:249-266` groups completed orders by currency and
+then sets `total_revenue` and `revenue_currency` to **null** when there is more
+than one, with a comment saying it will not "pretend unlike currencies are
+equal". ASP.NET summed every order and hard-coded `"EUR"`, so a seller paid in two
+currencies saw one meaningless number under the wrong symbol.
+
+It also never sent `revenue_by_currency` — which `MyListingsPage.tsx:373`
+**prefers over the single figure** — so the seller's revenue panel was silently
+falling back. That is a client-facing gap, not a shape nit.
+
+The response also carried `data.profile`, the raw `SellerProfile` **entity**:
+camelCase keys, `stripeAccountId`, `suspensionReason`, and a nested `user`
+navigation property that is null only because nothing eager-loads it — one
+`.Include` from publishing a whole User record. Laravel sends counters only.
+Removed after verifying no React call site and no test reads `profile`,
+`listings` or `orders`.
+
+Endpoint now MATCHes: **61 → 62 identical, 91 → 90 differing.**
+
+🔴 **A pre-existing red test on `main` was found and fixed in passing.**
+`MarketplaceControllerTests.PromotionProductsV2_MatchesLaravelReactSelectorContract`
+asserted 200 and got 403: the `marketplace.promotions_enabled` gate landed
+earlier the same day without the test being updated. The gate is correct — that
+setting defaults off on both backends — so the test now switches it on rather
+than asserting the un-gated behaviour back into existence. `MarketplaceControllerTests`
+32/32 green.
+
 ---
 
 Evidence: `dotnet test Nexus.sln --configuration Release`. 🔴 Read the pass
