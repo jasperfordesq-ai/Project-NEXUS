@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -23,6 +23,13 @@ public sealed class LaravelReactMemberPremiumCompatibilityTests : IntegrationTes
     [Fact]
     public async Task MemberPremiumTiers_ReturnsLaravelReactPublicTierEnvelope()
     {
+        // 🔴 member_premium defaults OFF, and Laravel answers 403
+        // FEATURE_DISABLED when it is off -- this endpoint used to return tiers
+        // regardless, advertising paid tiers on communities that had the feature
+        // switched off. This test is about the ENVELOPE, so it switches the
+        // feature on rather than asserting the un-gated behaviour back into
+        // existence.
+        await EnableFeatureAsync("member_premium");
         var now = DateTime.UtcNow;
         int publicPlanId;
 
@@ -263,5 +270,32 @@ public sealed class LaravelReactMemberPremiumCompatibilityTests : IntegrationTes
         var refreshed = await verifyDb.UserSubscriptions.SingleAsync(s => s.Id == subscriptionId);
         refreshed.Status.Should().Be(SubscriptionStatus.Cancelled);
         refreshed.CancelledAt.Should().NotBeNull();
+    }
+
+    /// <summary>Switch a tenant feature on for this test's tenant.</summary>
+    private async Task EnableFeatureAsync(string feature)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        var key = $"feature.{feature}";
+        var row = await db.TenantConfigs
+            .FirstOrDefaultAsync(c => c.TenantId == TestData.Tenant1.Id && c.Key == key);
+
+        if (row is null)
+        {
+            db.TenantConfigs.Add(new TenantConfig
+            {
+                TenantId = TestData.Tenant1.Id,
+                Key = key,
+                Value = "true",
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            row.Value = "true";
+        }
+
+        await db.SaveChangesAsync();
     }
 }

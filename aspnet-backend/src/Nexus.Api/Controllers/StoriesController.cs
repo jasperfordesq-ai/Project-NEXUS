@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -27,7 +27,19 @@ public class StoriesController : ControllerBase
         _tenantContext = tenantContext;
     }
 
+    /// 🔴 Action-level [Authorize] is deliberate even where the controller
+    /// already carries one. The class attribute protected the /api/... route but
+    /// NOT the generated /api/v2/... alias, which answered 200 to anonymous
+    /// callers while Laravel answers 401 — and /api/v2 is the spelling both
+    /// frontends actually call.
+    ///
+    /// The mechanism is NOT understood. Carrying the authorization metadata onto
+    /// the alias selector in AdminV2RouteAliasConvention was tried and did not
+    /// change the behaviour, so that attempt was reverted rather than left in
+    /// place claiming a fix it does not deliver. Do not remove this attribute on
+    /// the grounds that the class already has one.
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Index() => Ok(new { data = await _db.Stories.Where(s => s.ExpiresAt > DateTime.UtcNow).OrderByDescending(s => s.CreatedAt).ToListAsync() });
 
     [HttpPost]

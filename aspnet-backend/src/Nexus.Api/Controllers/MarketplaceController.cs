@@ -172,8 +172,16 @@ public class MarketplaceController : ControllerBase
         });
     }
 
+    /// 🔴 Authenticated, matching Laravel (401). This carried
+    /// [AllowAnonymous] and served real data to any caller.
+    ///
+    /// Worth knowing WHY it looked mysterious: adding [Authorize] alongside the
+    /// existing [AllowAnonymous] changed nothing, because AllowAnonymous always
+    /// wins in ASP.NET Core regardless of which is more specific. The endpoint
+    /// stayed open while the source looked protected. Remove the AllowAnonymous —
+    /// never just add an Authorize beside it.
     [HttpGet("listings/featured")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> FeaturedListings([FromQuery] int limit = 20)
     {
         var (items, total) = await _marketplace.ListListingsAsync(null, null, null, null, null, null, null, null, null, null, true, false, 1, Math.Clamp(limit, 1, 100));
@@ -929,8 +937,16 @@ public class MarketplaceController : ControllerBase
         return NoContent();
     }
 
+    /// 🔴 Authenticated, matching Laravel (401). This carried
+    /// [AllowAnonymous] and served real data to any caller.
+    ///
+    /// Worth knowing WHY it looked mysterious: adding [Authorize] alongside the
+    /// existing [AllowAnonymous] changed nothing, because AllowAnonymous always
+    /// wins in ASP.NET Core regardless of which is more specific. The endpoint
+    /// stayed open while the source looked protected. Remove the AllowAnonymous —
+    /// never just add an Authorize beside it.
     [HttpGet("promotions/products")]
-    [AllowAnonymous]
+    [Authorize]
     public IActionResult PromotionProducts()
         => Ok(new
         {
@@ -1585,8 +1601,16 @@ public class MarketplaceController : ControllerBase
         return Ok(new { data = MapListing(listing) });
     }
 
+    /// 🔴 Authenticated, matching Laravel (401). This carried
+    /// [AllowAnonymous] and served real data to any caller.
+    ///
+    /// Worth knowing WHY it looked mysterious: adding [Authorize] alongside the
+    /// existing [AllowAnonymous] changed nothing, because AllowAnonymous always
+    /// wins in ASP.NET Core regardless of which is more specific. The endpoint
+    /// stayed open while the source looked protected. Remove the AllowAnonymous —
+    /// never just add an Authorize beside it.
     [HttpGet("categories")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> Categories()
     {
         await _marketplace.EnsureDefaultCategoriesAsync();

@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -768,10 +768,32 @@ public class MemberParityController : ControllerBase
     [HttpPost("me/verein-invitations/{invitationId:int}/respond")]
     public IActionResult RespondVereinInvitation(int invitationId, [FromBody] JsonElement body) => Ok(new { data = new { id = invitationId, response = Str(body, "response") ?? "accepted" } });
 
+    /// <summary>
+    /// 🔴 Feature-gated, not auth-gated, and the distinction matters.
+    /// Laravel answers 403 {"errors":[{"code":"FEATURE_DISABLED"}]} here because
+    /// member_premium defaults OFF; this endpoint returned 200 with the
+    /// community's subscription tiers regardless, advertising paid tiers on
+    /// communities that have the feature switched off.
+    ///
+    /// It stays [AllowAnonymous]: the gate is the feature, not the login, and
+    /// copying Laravel means copying WHICH refusal it gives, not just that it
+    /// refuses.
+    /// </summary>
     [HttpGet("member-premium/tiers")]
     [AllowAnonymous]
     public async Task<IActionResult> PremiumTiers()
     {
+        if (!await IsFeatureEnabledAsync("member_premium"))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                errors = new[]
+                {
+                    new { code = "FEATURE_DISABLED", message = "Service unavailable" },
+                },
+            });
+        }
+
         var plans = await _db.SubscriptionPlans
             .AsNoTracking()
             .Where(p => p.TenantId == TenantId() && p.IsActive && p.IsPublic)
@@ -2293,6 +2315,21 @@ public class MemberParityController : ControllerBase
     };
 
     private async Task<User?> CurrentUser() => await _db.Users.FirstOrDefaultAsync(u => u.Id == UserId());
+
+    /// <summary>
+    /// Whether a tenant feature is on, defaulting to Laravel's value when the
+    /// tenant has no stored override. Mirrors GetConfigBool elsewhere.
+    /// </summary>
+    private async Task<bool> IsFeatureEnabledAsync(string feature, bool fallback = false)
+    {
+        var row = await _db.TenantConfigs.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.TenantId == TenantId() && c.Key == $"feature.{feature}");
+
+        return row is null || string.IsNullOrWhiteSpace(row.Value)
+            ? fallback
+            : row.Value is "1" or "true" or "True" or "TRUE";
+    }
+
     private int TenantId() => _tenantContext.TenantId ?? throw new InvalidOperationException("Tenant context not resolved");
     private int UserId() => User.GetUserId() ?? throw new UnauthorizedAccessException("Invalid token");
     private static string? Str(JsonElement e, string name) => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind != JsonValueKind.Null ? v.ToString() : null;

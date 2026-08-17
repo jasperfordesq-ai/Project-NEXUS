@@ -1,4 +1,4 @@
-// Copyright © 2024-2026 Jasper Ford
+﻿// Copyright © 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -80,9 +80,14 @@ public class NotificationPollingController : ControllerBase
     /// GET /api/realtime/config - Get realtime configuration for the client.
     /// Returns SignalR hub URL, polling interval, and feature flags.
     /// </summary>
+    /// 🔴 Authenticated, matching Laravel (401). This was anonymous and
+    /// handed out the realtime hub URL, Pusher key and cluster to any caller.
+    /// Those are connection details for the live-updates channel, not public
+    /// configuration, and Laravel keeps the endpoint behind auth
+    /// (routes/api.php:919, inside the auth:sanctum group).
     [HttpGet("api/realtime/config")]
     [HttpGet("api/v2/realtime/config")]
-    [AllowAnonymous]
+    [Authorize]
     public IActionResult GetRealtimeConfig()
     {
         var pusherKey = PusherConfigValue("PUSHER_APP_KEY", "Pusher:Key", "Pusher:AppKey");

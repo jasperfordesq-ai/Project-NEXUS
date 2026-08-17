@@ -59,7 +59,18 @@ public sealed class CoursesCompatibilityController : ControllerBase
         });
     }
 
-    [AllowAnonymous]
+    /// 🔴 Action-level [Authorize] is deliberate even where the controller
+    /// already carries one. The class attribute protected the /api/... route but
+    /// NOT the generated /api/v2/... alias, which answered 200 to anonymous
+    /// callers while Laravel answers 401 — and /api/v2 is the spelling both
+    /// frontends actually call.
+    ///
+    /// The mechanism is NOT understood. Carrying the authorization metadata onto
+    /// the alias selector in AdminV2RouteAliasConvention was tried and did not
+    /// change the behaviour, so that attempt was reverted rather than left in
+    /// place claiming a fix it does not deliver. Do not remove this attribute on
+    /// the grounds that the class already has one.
+    [Authorize]
     [HttpGet("api/courses/categories")]
     [HttpGet("api/v2/courses/categories")]
     public async Task<IActionResult> Categories(CancellationToken ct)

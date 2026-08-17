@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -25,6 +25,12 @@ public class MarketplaceControllerTests : IntegrationTestBase
     [Fact]
     public async Task Categories_Public_ReturnsDefaultCategories()
     {
+        // 🔴 Authenticated. This asserted anonymous access; Laravel answers 401
+        // on every tenant, and the endpoint carried [AllowAnonymous] -- which
+        // silently beat the [Authorize] beside it, because AllowAnonymous always
+        // wins in ASP.NET Core. The categories themselves are what this test is
+        // about, and they do not depend on who is asking.
+        await AuthenticateAsMemberAsync();
         Client.DefaultRequestHeaders.Add("X-Tenant-ID", TestData.Tenant1.Id.ToString());
         var response = await Client.GetAsync("/api/marketplace/categories");
         Client.DefaultRequestHeaders.Remove("X-Tenant-ID");
@@ -277,6 +283,9 @@ public class MarketplaceControllerTests : IntegrationTestBase
     [Fact]
     public async Task PromotionProductsV2_MatchesLaravelReactSelectorContract()
     {
+        // 🔴 Authenticated, matching Laravel (401). Same [AllowAnonymous]
+        // trap as the categories test above.
+        await AuthenticateAsMemberAsync();
         Client.DefaultRequestHeaders.Add("X-Tenant-ID", TestData.Tenant1.Id.ToString());
         var response = await Client.GetAsync("/api/v2/marketplace/promotions/products");
         Client.DefaultRequestHeaders.Remove("X-Tenant-ID");
