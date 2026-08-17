@@ -1735,6 +1735,9 @@ jobs:
           E2E_REQUIRE_AUTH: 1
           CI: true
 
+      - name: Verify Accessibility Gate Contracts
+        run: npm run check:a11y:gates
+
       - name: Run Real-Browser Accessibility Gate
         run: |
           npx playwright test e2e/tests/accessibility-audit.spec.ts --project=accessibility || {

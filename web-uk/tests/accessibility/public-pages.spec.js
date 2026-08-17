@@ -34,6 +34,12 @@ const RTL_ROUTES = [
   { name: 'Arabic password reset request', path: `${mountPath}/login/forgot-password?locale=ar` }
 ];
 
+const IRISH_ROUTES = [
+  { name: 'Irish sign in', path: `${mountPath}/login?locale=ga`, heading: 'auth.login_title' },
+  { name: 'Irish register', path: `${mountPath}/register?locale=ga`, heading: 'auth.register_title' },
+  { name: 'Irish accessibility statement', path: `${mountPath}/accessibility?locale=ga`, heading: 'accessibility.title' }
+];
+
 const AUTHENTICATED_ROUTES = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'account hub', path: '/account' },
@@ -175,6 +181,47 @@ test.describe('representative public-page accessibility gate', () => {
         formatViolations(blockingViolations),
         `serious or critical axe violations on ${route.path}`
       ).toEqual([]);
+    });
+  }
+});
+
+test.describe('Irish narrow reflow and catalogue gate', () => {
+  for (const route of IRISH_ROUTES) {
+    test(`${route.name} uses Irish semantics, reflows, and has no high-impact axe violations`, async ({ page }, testInfo) => {
+      test.setTimeout(90_000);
+      await page.setViewportSize({ width: 320, height: 640 });
+      const response = await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+
+      expect(response, `${route.path} did not return a document response`).not.toBeNull();
+      expect(response.status(), `${route.path} returned HTTP ${response.status()}`).toBeLessThan(400);
+      expect(response.headers()['content-language']).toBe('ga');
+      await expect(page.locator('html')).toHaveAttribute('lang', 'ga');
+      await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+      await expect(page.locator('main')).toHaveCount(1);
+      await expect(page.locator('#main-content')).toHaveCount(1);
+      await expect(page.locator('h1')).toHaveText(translate('ga', route.heading));
+
+      const overflow = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth
+      }));
+      expect(
+        overflow.scrollWidth,
+        `${route.path} has horizontal overflow at a 320px CSS viewport`
+      ).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+      const axeResults = await new AxeBuilder({ page }).analyze();
+      await testInfo.attach('irish-axe-results', {
+        body: Buffer.from(JSON.stringify({
+          url: page.url(),
+          viewport: { width: 320, height: 640 },
+          overflow,
+          violations: formatViolations(axeResults.violations),
+          incomplete: formatViolations(axeResults.incomplete)
+        }, null, 2)),
+        contentType: 'application/json'
+      });
+      expect(formatViolations(seriousOrCritical(axeResults.violations))).toEqual([]);
     });
   }
 });

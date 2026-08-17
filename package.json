@@ -2,6 +2,7 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "check:admin-i18n": "node scripts/check-admin-i18n.mjs && node scripts/check-admin-ui-literals.mjs && node scripts/check-admin-api-literals.mjs && node scripts/check-admin-i18n-token-integrity.mjs",
+    "check:a11y:gates": "node scripts/check-accessibility-readiness-gates.mjs",
     "check:i18n:baseline": "node scripts/check-i18n-gap-regression.mjs",
     "check:i18n:json-integrity": "node scripts/check-i18n-json-integrity.mjs",
     "check:i18n:drift": "node scripts/check-i18n-drift.mjs",

@@ -18,10 +18,19 @@ const ADMIN_STORAGE = 'e2e/fixtures/.auth/admin.json';
 type ThemeSetup = {
   theme?: 'light' | 'dark';
   language?: string;
+  largeText?: boolean;
   highContrast?: boolean;
   reducedMotion?: boolean;
   accentColor?: string;
 };
+
+const IRISH_MEMBER_ROUTES = [
+  { path: 'dashboard', heading: 'Fáilte ar ais' },
+  { path: 'listings', heading: 'Liostálacha' },
+  { path: 'events', heading: 'Imeachtaí' },
+  { path: 'messages', heading: 'Teachtaireachtaí' },
+  { path: 'wallet', heading: 'Sparán' },
+] as const;
 
 function formatViolations(violations: Result[]): string {
   return violations
@@ -55,7 +64,7 @@ async function setThemeProfile(page: Page, setup: ThemeSetup): Promise<void> {
       accentColor: profile.accentColor ?? '#6366f1',
       fontSize: 'medium',
       density: 'comfortable',
-      largeText: false,
+      largeText: profile.largeText ?? false,
       highContrast: profile.highContrast ?? false,
       reducedMotion: profile.reducedMotion ?? false,
       simplifiedLayout: false,
@@ -68,6 +77,18 @@ async function visit(page: Page, path: string): Promise<void> {
   expect(response?.status(), `HTTP status for ${path || 'home'}`).toBeLessThan(400);
   await dismissBlockingModals(page);
   await expect(page.locator('main, [role="main"]').first()).toBeVisible({ timeout: 15_000 });
+}
+
+async function assertNoHorizontalOverflow(page: Page, label: string): Promise<void> {
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+
+  expect(
+    dimensions.scrollWidth,
+    `${label} has horizontal overflow at a 320px CSS viewport`,
+  ).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 }
 
 async function audit(page: Page, label: string): Promise<void> {
@@ -87,7 +108,7 @@ async function audit(page: Page, label: string): Promise<void> {
   await page.waitForTimeout(200);
 
   const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
   expect(
@@ -190,6 +211,33 @@ test.describe('real-browser accessibility gate', () => {
       await expect(page.locator('html')).toHaveAttribute('data-reduced-motion', 'true');
       await audit(page, 'about (RTL and reduced motion)');
     });
+
+    test('Irish login reflows with large text and retains translated semantics', async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await setThemeProfile(page, {
+        theme: 'light',
+        language: 'ga',
+        largeText: true,
+      });
+      await visit(page, 'login');
+
+      await expect(page.locator('html')).toHaveAttribute('lang', 'ga');
+      await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+      await expect(page.locator('html')).toHaveAttribute('data-large-text', 'true');
+      await expect(page.locator('h1')).toContainText('Fáilte ar ais');
+      await assertNoHorizontalOverflow(page, 'Irish login with large text');
+      await audit(page, 'Irish login with large text at 320px');
+    });
+
+    test('forced-colours login retains its form semantics', async ({ page }) => {
+      await page.emulateMedia({ forcedColors: 'active' });
+      await setThemeProfile(page, { theme: 'light' });
+      await visit(page, 'login');
+
+      await expect(page.locator('input[type="email"]')).toHaveAccessibleName(/.+/);
+      await expect(page.locator('input[type="password"]')).toHaveAccessibleName(/.+/);
+      await audit(page, 'login form (forced colours)');
+    });
   });
 
   test.describe('authenticated member surfaces', () => {
@@ -246,6 +294,26 @@ test.describe('real-browser accessibility gate', () => {
       await page.keyboard.press('Escape');
       await expect(dialog).toBeHidden();
       await expect(page.locator('#a11y-search-restore-target')).toBeFocused();
+    });
+
+    test('core Irish member routes retain translated headings and large-text reflow', async ({ page }) => {
+      test.setTimeout(120_000);
+      await page.setViewportSize({ width: 320, height: 800 });
+      await setThemeProfile(page, {
+        theme: 'light',
+        language: 'ga',
+        largeText: true,
+        reducedMotion: true,
+      });
+
+      for (const route of IRISH_MEMBER_ROUTES) {
+        await visit(page, route.path);
+        await expect(page.locator('html')).toHaveAttribute('lang', 'ga');
+        await expect(page.locator('html')).toHaveAttribute('data-large-text', 'true');
+        await expect(page.locator('h1').first()).toContainText(route.heading);
+        await assertNoHorizontalOverflow(page, `Irish member ${route.path}`);
+        await audit(page, `Irish member ${route.path} with large text at 320px`);
+      }
     });
   });
 
