@@ -97,3 +97,28 @@ test('Irish organisation journeys preserve registration, approval, opportunity, 
   assert.equal(irish.organisation_detail.review_modal_title, 'Déan léirmheas ar an eagraíocht seo');
   assert.match(irish.organisation_detail.error_load_retry, /Bain triail eile as/u);
 });
+
+test('Irish emergency alerts and group sign-ups have complete translated coverage', () => {
+  const invariants = new Map([['group_signups.email_placeholder', 'member@example.com']]);
+  for (const section of ['emergency_alerts', 'group_signups']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+    for (const [path, englishValue] of englishFlat) {
+      const fullPath = `${section}.${path}`;
+      assert.ok(irishFlat.has(path), `Missing Irish Community ${fullPath}`);
+      if (invariants.has(fullPath)) assert.equal(irishFlat.get(path), englishValue, fullPath);
+      else assert.notEqual(irishFlat.get(path), englishValue, fullPath);
+    }
+  }
+});
+
+test('Irish emergency and group journeys preserve urgency, invitation, and retry meaning', () => {
+  const reviewed = [...flatten(irish.emergency_alerts).values(), ...flatten(irish.group_signups).values()].join('\n');
+  assert.doesNotMatch(reviewed, /Bain Triail Eile As|iarratais sealta|CRITICIÚIL|PRÁINNEACH|GNÁTH|Theip ar áirithintí|Gheobhaidh siad/u);
+  assert.equal(irish.emergency_alerts.no_alerts_title, 'Níl aon fholáireamh éigeandála ann');
+  assert.match(irish.emergency_alerts.load_failed, /Bain triail eile as/u);
+  assert.equal(irish.emergency_alerts.expires, 'Dáta éaga: {{date}}');
+  assert.match(irish.group_signups.no_signups_desc, /in éineacht le cairde nó baill foirne/u);
+  assert.match(irish.group_signups.add_member_desc, /Gheobhaidh an duine cuireadh/u);
+  assert.match(irish.group_signups.add_member_failed, /seoladh ríomhphoist a bheith neamhbhailí/u);
+});
