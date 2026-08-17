@@ -92,6 +92,8 @@ export function LanguageSwitcher({ compact = true, triggerClassName }: LanguageS
         if (!res.success) {
           logError(
             'Failed to persist language preference; it will revert on next load',
+            // admin-i18n-ignore: diagnostic only — this goes to logError, never
+            // to a user-visible surface, so it must stay the raw server text.
             res.error ?? res.code ?? 'unknown error',
           );
         }
