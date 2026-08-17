@@ -206,13 +206,21 @@ else
   echo "  FAIL  --with-webuk was refused"; fail=$((fail+1))
 fi
 
-# An explicit retreat to Blade is allowed, but must warn rather than pass quietly.
+# An explicit --without-webuk is allowed, but must warn rather than pass quietly.
+#
+# 🔴 This assertion was STALE and had been FAILING since 2026-08-14, unnoticed
+# because nothing in CI runs this file. It searched for 'fall back to the Blade
+# frontend' — wording deliberately deleted when Blade was, because there is no
+# fallback any more. The script's behaviour was right and the test was wrong, which
+# is the dangerous way round: satisfying the old assertion would have meant
+# reinstating a promise of a working site that does not exist. It now asserts the
+# claim that actually matters.
 DEPLOY_WEBUK=0; WEBUK_EXPLICITLY_DISABLED=1
 if out="$( enforce_webuk_live_marker 2>&1 )"; then
-  if echo "$out" | grep -q 'fall back to the Blade frontend'; then
-    echo "  PASS  web-uk LIVE + --without-webuk: allowed, with a warning"
+  if echo "$out" | grep -q 'TAKE THE ACCESSIBLE HOSTNAMES OFFLINE'; then
+    echo "  PASS  web-uk LIVE + --without-webuk: allowed, warning that it causes an outage"
   else
-    echo "  FAIL  --without-webuk proceeded without warning about the fallback"; fail=$((fail+1))
+    echo "  FAIL  --without-webuk proceeded without warning that it takes the site offline"; fail=$((fail+1))
   fi
 else
   echo "  FAIL  --without-webuk should be allowed as a deliberate choice"; fail=$((fail+1))
@@ -255,6 +263,29 @@ else
   else
     echo "  FAIL  deploy.sh exited non-zero but not for the right reason"; fail=$((fail+1))
   fi
+fi
+
+# 🔴 The DEFAULT must be --with-webuk (changed 2026-08-17). It used to be empty, so a
+# routine flagless deploy sent no flag; the server then refused via the .webuk-live
+# marker, but only after this script had pushed and waited for CI. Since Blade was
+# deleted there is no correct flagless deploy, so the safe case is the default and
+# the breaking one must be typed out.
+if grep -q '^WEBUK_FLAG=" --with-webuk"' "$D"; then
+  echo "  PASS  deploy.sh defaults to --with-webuk"
+else
+  echo "  FAIL  deploy.sh does not default to --with-webuk"; fail=$((fail+1))
+fi
+# The default must not swallow a deliberate --without-webuk.
+if grep -q -- '--without-webuk) WEBUK_FLAG=" --without-webuk"; WEBUK_FLAG_EXPLICIT=1' "$D"; then
+  echo "  PASS  deploy.sh still honours an explicit --without-webuk"
+else
+  echo "  FAIL  deploy.sh no longer honours --without-webuk"; fail=$((fail+1))
+fi
+# And it must say so, since that choice now causes an outage rather than a fallback.
+if grep -q 'WILL TAKE THE ACCESSIBLE HOSTNAMES OFFLINE' "$D"; then
+  echo "  PASS  deploy.sh warns that --without-webuk breaks the accessible site"
+else
+  echo "  FAIL  deploy.sh does not warn about --without-webuk"; fail=$((fail+1))
 fi
 
 # 🔴 And the guards must sit BEFORE the push. A guard that fires after the

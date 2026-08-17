@@ -52,16 +52,34 @@ fi
 #    waiting for GitHub before refusing. A guard that fires after the
 #    irreversible step is not a guard.
 # ---------------------------------------------------------------------------
-WEBUK_FLAG=""
+# 🔴 DEFAULT IS NOW `--with-webuk` (changed 2026-08-17). It used to be empty, so a
+# routine `bash scripts/deploy.sh` with no flag sent NO flag to the server.
+#
+# That is not an outage, because the server refuses: the `.webuk-live` marker is
+# present on production (written at the 2026-08-12 cutover) and
+# `enforce_webuk_live_marker()` exits 2 rather than dropping web-uk. But it refuses
+# in step [4/5] — AFTER this script has already pushed to origin and waited for
+# GitHub to finish checking the commit. This file's own header says it: a guard
+# that fires after the irreversible step is not a guard.
+#
+# Since 2026-08-14 there is no such thing as a correct flagless deploy. Blade is
+# deleted, so excluding web-uk takes every accessible hostname OFFLINE rather than
+# falling back to anything. The safe case is therefore the default, and the
+# dangerous one has to be said out loud — which is the same shape as the
+# server-side rule, not a new policy.
+WEBUK_FLAG=" --with-webuk"
+WEBUK_FLAG_EXPLICIT=0
 for arg in "$@"; do
     case "$arg" in
-        --with-webuk) WEBUK_FLAG=" --with-webuk" ;;
-        --without-webuk) WEBUK_FLAG=" --without-webuk" ;;
+        --with-webuk) WEBUK_FLAG=" --with-webuk"; WEBUK_FLAG_EXPLICIT=1 ;;
+        --without-webuk) WEBUK_FLAG=" --without-webuk"; WEBUK_FLAG_EXPLICIT=1 ;;
         -h|--help)
             echo "Usage: bash scripts/deploy.sh [--with-webuk | --without-webuk]"
             echo ""
-            echo "  --with-webuk     include the web-uk accessible frontend"
-            echo "  --without-webuk  deliberately exclude it (required once web-uk is live)"
+            echo "  --with-webuk     include the web-uk accessible frontend (THE DEFAULT)"
+            echo "  --without-webuk  deliberately exclude it — this takes every accessible"
+            echo "                   hostname OFFLINE, because the Blade frontend they used"
+            echo "                   to fall back to was deleted on 2026-08-14"
             exit 0
             ;;
         *)
@@ -75,7 +93,7 @@ for arg in "$@"; do
             ;;
     esac
 done
-if [ -n "${NEXUS_DEPLOY_WEBUK:-}" ] && [ -z "$WEBUK_FLAG" ]; then
+if [ -n "${NEXUS_DEPLOY_WEBUK:-}" ] && [ "$WEBUK_FLAG_EXPLICIT" = "0" ]; then
     # Refuse rather than silently ignoring it. Someone setting this variable
     # clearly INTENDS to deploy web-uk; dropping it quietly is the exact fault
     # this guard exists to prevent.
@@ -120,8 +138,18 @@ else
 fi
 
 echo "===> [4/5] Blue/green deploy (zero-downtime, detached)"
-if [ -n "$WEBUK_FLAG" ]; then
+if [ "$WEBUK_FLAG_EXPLICIT" = "1" ]; then
     echo "===>       web-uk:$WEBUK_FLAG"
+else
+    echo "===>       web-uk:$WEBUK_FLAG (default — no flag was given)"
+fi
+if [ "$WEBUK_FLAG" = " --without-webuk" ]; then
+    echo "===>"
+    echo "===> ⚠  --without-webuk WILL TAKE THE ACCESSIBLE HOSTNAMES OFFLINE."
+    echo "===>    accessible.project-nexus.ie, accessible-uk.timebank.global,"
+    echo "===>    accessible-minehead-and-coast.timebank.global and /{slug}/accessible"
+    echo "===>    have nothing to fall back to since Blade was deleted on 2026-08-14."
+    echo "===>"
 fi
 ENV_FILE=".secrets.local/deploy.env"
 [ -f "$ENV_FILE" ] || { echo "===> Missing $ENV_FILE — cannot reach the server."; exit 2; }
