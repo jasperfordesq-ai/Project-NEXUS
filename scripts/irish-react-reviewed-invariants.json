@@ -1,0 +1,2957 @@
+{
+  "_meta": {
+    "purpose": "Every React Irish value intentionally identical to English, reviewed and pinned by key and value.",
+    "reviewed": "2026-08-17",
+    "update": "Run this generator only after semantic review; the audit rejects unexpected or stale entries."
+  },
+  "invariants": {
+    "about.partner.tbuk_heading": {
+      "value": "Timebanking UK",
+      "reason": "person-or-organisation-name"
+    },
+    "about.social_prescribing.testimonial_name": {
+      "value": "Monica",
+      "reason": "person-or-organisation-name"
+    },
+    "about.impact_report.case_study_monica_name": {
+      "value": "Monica",
+      "reason": "person-or-organisation-name"
+    },
+    "about.impact_report.case_study_elaine_name": {
+      "value": "Elaine",
+      "reason": "person-or-organisation-name"
+    },
+    "about.impact_report.activity_value_0": {
+      "value": "161",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.activity_value_1": {
+      "value": "847",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.activity_value_2": {
+      "value": "64",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.activity_value_3": {
+      "value": "2,340",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.sroi_result_value": {
+      "value": "€16 : €1",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.sroi_total_investment_value": {
+      "value": "€50,000",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.sroi_total_present_value_amount": {
+      "value": "€803,184",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.sroi_net_social_value_amount": {
+      "value": "€753,184",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "about.impact_report.sroi_ratio_value": {
+      "value": "€16.06 : €1",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.label_port": {
+      "value": "Port",
+      "reason": "accepted-shared-technical-term"
+    },
+    "admin_advanced.advanced.placeholder_noreply_example": {
+      "value": "noreply@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_advanced.advanced.placeholder_robots_txt": {
+      "value": "User-agent: *\nDisallow: /admin/",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_advanced.advanced.placeholder_smtpexamplecom": {
+      "value": "Smtpexamplecom...",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_advanced.advanced.placeholder_smtp_port": {
+      "value": "587",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_advanced.advanced.placeholder_test_example": {
+      "value": "test@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_advanced.advanced.placeholder_user_example": {
+      "value": "user@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_advanced.advanced.placeholder_xxxxappsgoogleusercontentcom": {
+      "value": "Xxxxappsgoogleusercontentcom...",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_advanced.advanced.match_category.value": {
+      "value": "{{category}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_advanced.advanced.provider_gmail_api": {
+      "value": "Gmail API",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_advanced.advanced.provider_openai": {
+      "value": "OpenAI",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_advanced.advanced.provider_smtp": {
+      "value": "SMTP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.prerender.analytics.columns.ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.prerender.analytics.columns.uri": {
+      "value": "URI",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.prerender.analytics.columns.url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.prerender.inventory.columns.http": {
+      "value": "HTTP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advanced.advanced.prerender.jobs.columns.id": {
+      "value": "#",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_advanced.advanced.prerender.ttl_inspector.placeholders.route": {
+      "value": "/blog/my-post",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_advanced.advanced.prerender.tenant_safety.placeholders.tenant_slug": {
+      "value": "hour-timebank",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_advanced.advanced.next_public.edge_canary_edges.apache_plesk": {
+      "value": "Apache/Plesk",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_advertising.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advertising.advertising.advertiser.sme": {
+      "value": "SME",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advertising.advertising.shared.columns.ctr": {
+      "value": "CTR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_advertising.advertising.shared.columns.id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_agents.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_agents.agents.common.empty_dash": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_agents.agents.runs.columns.id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_ai.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_ai.ai.common.empty_dash": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_ai.ai.ki_agents.config.notification_email_placeholder": {
+      "value": "admin@example.org",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_ai.ai.trace_metrics.stats.latency_value": {
+      "value": "{{value}} ms",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_analytics.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_analytics.analytics.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.empty.infinity": {
+      "value": "∞",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.age_groups.25_34": {
+      "value": "25-34",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.age_groups.35_44": {
+      "value": "35-44",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.age_groups.45_54": {
+      "value": "45-54",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.age_groups.55_64": {
+      "value": "55-64",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.analytics.regional.age_groups.65_plus": {
+      "value": "65+",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.search_analytics.count_value": {
+      "value": "{{count}}×",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.search_analytics.count_value_one": {
+      "value": "{{count}}×",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_analytics.search_analytics.count_value_other": {
+      "value": "{{count}}×",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_api_partners.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_api_partners.api_partners.common.empty_dash": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_api_partners.api_partners.common.milliseconds": {
+      "value": "{{value}} ms",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_api_partners.api_partners.create_modal.contact_email_placeholder": {
+      "value": "integrations@partner.example",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_api_partners.api_partners.credentials_modal.client_id": {
+      "value": "client_id",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_api_partners.api_partners.credentials_modal.client_secret": {
+      "value": "client_secret",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_billing.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_billing.billing.arr": {
+      "value": "ARR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_billing.billing.mrr": {
+      "value": "MRR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_blog.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_blog.blog.placeholder_featured_image": {
+      "value": "https://example.com/image.jpg",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_blog.content.label_u_r_l": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_blog.content.stripe": {
+      "value": "Stripe",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_blog.content.landing_placeholder_button_link_register": {
+      "value": "/register",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_blog.content.landing_placeholder_button_link_about": {
+      "value": "/about",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.admin.providers.duplicates.vs": {
+      "value": "vs",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.admin.common.empty_dash": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.admin.loyalty.table.empty_value": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.admin.operating_policy.placeholders.url": {
+      "value": "https://...",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.admin.warmth_pass.empty_date": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.caring_workflow.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.caring_workflow.paper_onboarding.email_placeholder": {
+      "value": "member@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.caring_workflow.paper_onboarding.phone_placeholder": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.caring_workflow.tandem.reason_join": {
+      "value": "{{previous}}; {{next}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.caring_workflow.safeguarding.age_hours": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.caring_workflow.safeguarding.age_hours_one": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.caring_workflow.safeguarding.age_hours_other": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.caring_workflow.assisted_onboarding.email_placeholder": {
+      "value": "member@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.caring_workflow.assisted_onboarding.phone_placeholder": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.category_coefficients.about.chf_amount": {
+      "value": "CHF 35",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_help_requests.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_support_relationships.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_caregiver_links.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_substitute_cover.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_warmth_pass.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_emergency_alerts.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_sub_regions.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_research_consent.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_municipal_roi.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_pilot_scoreboard.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_disclosure_pack.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.caring_operating_policy.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.safeguarding_reports.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.trust_tier_system.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.municipal_verification.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.xp_badges_journeys.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.appreciation_messages.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.premium_member_tier.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.merchant_loyalty_coupons.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.capabilities.smart_matching_engine.notes": {
+      "value": "",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.commercial_boundary.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.data_quality.summary.count": {
+      "value": "{{count}} {{label}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.data_quality.summary.count_one": {
+      "value": "{{count}} {{label}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.data_quality.summary.count_other": {
+      "value": "{{count}} {{label}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.data_quality.table.id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.data_quality.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.disclosure_pack.export.filename": {
+      "value": "disclosure-pack.md",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.disclosure_pack.default_copy.subprocessor_cloudflare": {
+      "value": "Cloudflare (CDN / WAF)",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_caring_community.external_integrations.table.dsa": {
+      "value": "DSA",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.external_integrations.categories.ahv": {
+      "value": "AHV",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.external_integrations.editor.owner_email_placeholder": {
+      "value": "contact@partner.example",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.external_integrations.editor.interface_spec_placeholder": {
+      "value": "https://docs.partner.example/spec",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.external_integrations.editor.sandbox_placeholder": {
+      "value": "https://sandbox.partner.example",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.federation_peers_admin.create_modal.peer_slug_placeholder": {
+      "value": "bern-cooperative",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.federation_peers_admin.create_modal.base_url_placeholder": {
+      "value": "https://api.bern-cooperative.ch",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.help_request_sla.about.first_response_suffix": {
+      "value": ")",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.help_request_sla.about.resolution_suffix": {
+      "value": ")",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.help_request_sla.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.integration_showcase.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.isolated_node.fields.url_placeholder": {
+      "value": "https://...",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_caring_community.lead_nurture.fields.follow_up_placeholder": {
+      "value": "2026-05-15",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.lead_nurture.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.municipal_copilot.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.municipal_roi_page.roi.yoy": {
+      "value": "{{value}} YoY",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.municipal_verification.dns.ttl_label": {
+      "value": "TTL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.municipal_verification.dns.txt_type": {
+      "value": "TXT",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.municipal_verification.dns.ttl_value": {
+      "value": "300",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.pilot_launch_readiness.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.pilot_scoreboard.about.age_stiftung_title": {
+      "value": "Stiftung für das Alter",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.pilot_scoreboard.quarterly_modal.label_placeholder": {
+      "value": "quarterly_2026_07",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_caring_community.pilot_scoreboard.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.pilot_scoreboard.currency.chf": {
+      "value": "CHF",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_caring_community.research_partnerships.templates.placeholder_label": {
+      "value": "{{placeholder}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.sub_regions.form.postal_codes_placeholder": {
+      "value": "6330, 6331, 6332",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.sub_regions.form.latitude_placeholder": {
+      "value": "47.1758",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_caring_community.sub_regions.form.longitude_placeholder": {
+      "value": "8.4622",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_categories.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_community.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_config.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_config.config.feature_toggled": {
+      "value": "{{name}} {{status}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_config.config.module_toggled": {
+      "value": "{{name}} {{status}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_config.config.translation_provider_openai": {
+      "value": "OpenAI",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_config.config.translation_provider_deepl": {
+      "value": "DeepL",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_config.config.option_choice_podcasts_cloud_storage_disk_azure": {
+      "value": "Azure Blob",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_config.config.option_choice_jobs_default_currency_eur": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_config.config.option_choice_jobs_default_currency_gbp": {
+      "value": "GBP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_config.config.option_choice_jobs_default_currency_usd": {
+      "value": "USD",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_config.tenant_features.section_redis": {
+      "value": "Redis",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_config.tenant_features.status_os_places": {
+      "value": "OS Places (PSGA)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_content.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.breadcrumbs.crm": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.breadcrumbs.gdpr": {
+      "value": "GDPR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.breadcrumbs.seo": {
+      "value": "SEO",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.breadcrumbs.fadp": {
+      "value": "FADP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.breadcrumbs.ai": {
+      "value": "AI",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.config.feature_toggled": {
+      "value": "{{name}} {{status}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_content.config.module_toggled": {
+      "value": "{{name}} {{status}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_content.config.option_choice_podcasts_cloud_storage_disk_azure": {
+      "value": "Azure Blob",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_content.config.option_choice_jobs_default_currency_eur": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.config.option_choice_jobs_default_currency_gbp": {
+      "value": "GBP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.config.option_choice_jobs_default_currency_usd": {
+      "value": "USD",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.content.label_u_r_l": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.content.stripe": {
+      "value": "Stripe",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_content.content.landing_placeholder_button_link_register": {
+      "value": "/register",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.content.landing_placeholder_button_link_about": {
+      "value": "/about",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.federation.csv_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.federation.webhooks_col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.federation.auth_method_oauth2": {
+      "value": "OAuth 2.0",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_content.federation.cc_exchange_rate_placeholder": {
+      "value": "1.0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_content.federation.cc_parent_url_placeholder": {
+      "value": "https://cc.example.org",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.federation.cc_validated_window_placeholder": {
+      "value": "300",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_content.federation.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.federation.health_check_partner_error": {
+      "value": "{{name}}: {{error}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_content.federation.analytics.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.menu_builder.placeholder_external_url": {
+      "value": "https://example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.menu_builder.placeholder_internal_route": {
+      "value": "/dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.menu_builder.url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.menu_builder.route_faq": {
+      "value": "FAQ",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_content.users.placeholder_email": {
+      "value": "email@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_content.users.placeholder_phone": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_crm.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_crm.crm.crm_label": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_crm.crm.page_title": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_dashboard.modules.algorithm_settings_desc": {
+      "value": "MatchRank & CommunityRank",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_deliverability.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_diagnostics.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_editor.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_editor.content.label_u_r_l": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_editor.content.stripe": {
+      "value": "Stripe",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_editor.content.landing_placeholder_button_link_register": {
+      "value": "/register",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_editor.content.landing_placeholder_button_link_about": {
+      "value": "/about",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_editor.page_builder.mode_html": {
+      "value": "HTML",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_editor.page_builder.grapesjs.traits.id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_editor.grapesjs_core.asset_manager.image_url_placeholder": {
+      "value": "http://path/to/the/image.jpg",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_enterprise.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.col_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.empty_value": {
+      "value": "---",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_enterprise.enterprise.redis": {
+      "value": "Redis",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_enterprise.enterprise.col_sla": {
+      "value": "SLA",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.gdpr_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.gdpr_sla": {
+      "value": "SLA",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.api": {
+      "value": "API",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.health_check_name_redis": {
+      "value": "Redis",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_enterprise.enterprise.health_check_name_api": {
+      "value": "API",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.permission_categories.gdpr": {
+      "value": "GDPR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_enterprise.enterprise.value_separator": {
+      "value": " / ",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_enterprise.enterprise.gdpr_consent_rate_summary": {
+      "value": "{{percentage}}% ({{granted}}/{{total}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_enterprise.log_files_labels.filter_cron": {
+      "value": "Cron",
+      "reason": "accepted-shared-technical-term"
+    },
+    "admin_events.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_federation.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_federation.federation.csv_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_federation.federation.webhooks_col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_federation.federation.auth_method_oauth2": {
+      "value": "OAuth 2.0",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_federation.federation.cc_exchange_rate_placeholder": {
+      "value": "1.0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_federation.federation.cc_parent_url_placeholder": {
+      "value": "https://cc.example.org",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_federation.federation.cc_validated_window_placeholder": {
+      "value": "300",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_federation.federation.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_federation.federation.health_check_partner_error": {
+      "value": "{{name}}: {{error}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_federation.federation.analytics.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_gamification.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_goals.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_groups.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_help.articles./caring.relatedPaths.0.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring.relatedPaths.1.path": {
+      "value": "/caring/safeguarding",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring.relatedPaths.2.path": {
+      "value": "/caring/launch-readiness",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/workflow.relatedPaths.0.path": {
+      "value": "/caring/hour-transfers",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/workflow.relatedPaths.1.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/workflow.relatedPaths.2.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/projects.relatedPaths.0.path": {
+      "value": "/caring/workflow",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/projects.relatedPaths.1.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/trust-tier.relatedPaths.0.path": {
+      "value": "/caring/warmth-pass",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/trust-tier.relatedPaths.1.path": {
+      "value": "/caring/safeguarding",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/warmth-pass.relatedPaths.0.path": {
+      "value": "/caring/trust-tier",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/warmth-pass.relatedPaths.1.path": {
+      "value": "/partner-timebanks/caring/peers",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/safeguarding.relatedPaths.0.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/safeguarding.relatedPaths.1.path": {
+      "value": "/caring/data-quality",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/category-coefficients.relatedPaths.0.path": {
+      "value": "/caring/operating-policy",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/category-coefficients.relatedPaths.1.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/operating-policy.relatedPaths.0.path": {
+      "value": "/caring/category-coefficients",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/operating-policy.relatedPaths.1.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/isolated-node.relatedPaths.0.path": {
+      "value": "/caring/commercial-boundary",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/isolated-node.relatedPaths.1.path": {
+      "value": "/caring/disclosure-pack",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/isolated-node.relatedPaths.2.path": {
+      "value": "/partner-timebanks/caring/peers",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/commercial-boundary.relatedPaths.0.path": {
+      "value": "/caring/isolated-node",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/commercial-boundary.relatedPaths.1.path": {
+      "value": "/caring/disclosure-pack",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/disclosure-pack.relatedPaths.0.path": {
+      "value": "/caring/isolated-node",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/disclosure-pack.relatedPaths.1.path": {
+      "value": "/caring/commercial-boundary",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-roi.relatedPaths.0.path": {
+      "value": "/caring/category-coefficients",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-roi.relatedPaths.1.path": {
+      "value": "/caring/operating-policy",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-roi.relatedPaths.2.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-roi.relatedPaths.3.path": {
+      "value": "/caring/data-quality",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-impact.relatedPaths.0.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-impact.relatedPaths.1.path": {
+      "value": "/caring/success-stories",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/municipal-impact.relatedPaths.2.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/kpi-baselines.relatedPaths.0.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/kpi-baselines.relatedPaths.1.path": {
+      "value": "/caring/pilot-scoreboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/sla-dashboard.relatedPaths.0.path": {
+      "value": "/caring/safeguarding",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/sla-dashboard.relatedPaths.1.path": {
+      "value": "/caring/nudges",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/sla-dashboard.relatedPaths.2.path": {
+      "value": "/caring/operating-policy",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/data-quality.relatedPaths.0.path": {
+      "value": "/caring/municipal-roi",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/data-quality.relatedPaths.1.path": {
+      "value": "/caring/safeguarding",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/launch-readiness.relatedPaths.0.path": {
+      "value": "/caring/pilot-scoreboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/launch-readiness.relatedPaths.1.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/launch-readiness.relatedPaths.2.path": {
+      "value": "/caring/operating-policy",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/pilot-scoreboard.relatedPaths.0.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/pilot-scoreboard.relatedPaths.1.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/pilot-scoreboard.relatedPaths.2.path": {
+      "value": "/caring/launch-readiness",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/nudges.relatedPaths.0.path": {
+      "value": "/caring/copilot",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/nudges.relatedPaths.1.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/emergency-alerts.relatedPaths.0.path": {
+      "value": "/caring/sub-regions",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/emergency-alerts.relatedPaths.1.path": {
+      "value": "/caring/copilot",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/surveys.relatedPaths.0.path": {
+      "value": "/caring/lead-nurture",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/surveys.relatedPaths.1.path": {
+      "value": "/caring/municipal-impact",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/copilot.relatedPaths.0.path": {
+      "value": "/caring/nudges",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/copilot.relatedPaths.1.path": {
+      "value": "/caring/emergency-alerts",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/copilot.relatedPaths.2.path": {
+      "value": "/caring/civic-digest",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/civic-digest.relatedPaths.0.path": {
+      "value": "/caring/nudges",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/civic-digest.relatedPaths.1.path": {
+      "value": "/caring/copilot",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/lead-nurture.relatedPaths.0.path": {
+      "value": "/caring/surveys",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/lead-nurture.relatedPaths.1.path": {
+      "value": "/admin/pilot-inquiries",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/success-stories.relatedPaths.0.path": {
+      "value": "/caring/municipal-impact",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/success-stories.relatedPaths.1.path": {
+      "value": "/caring/disclosure-pack",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/feedback.relatedPaths.0.path": {
+      "value": "/caring/copilot",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/feedback.relatedPaths.1.path": {
+      "value": "/caring/sla-dashboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/verification.relatedPaths.0.path": {
+      "value": "/caring/lead-nurture",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/verification.relatedPaths.1.path": {
+      "value": "/caring/municipal-impact",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/hour-transfers.relatedPaths.0.path": {
+      "value": "/caring/workflow",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/hour-transfers.relatedPaths.1.path": {
+      "value": "/caring/loyalty",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/loyalty.relatedPaths.0.path": {
+      "value": "/caring/regional-points",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/loyalty.relatedPaths.1.path": {
+      "value": "/caring/pilot-scoreboard",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/regional-points.relatedPaths.0.path": {
+      "value": "/caring/sub-regions",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/regional-points.relatedPaths.1.path": {
+      "value": "/caring/loyalty",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/sub-regions.relatedPaths.0.path": {
+      "value": "/caring/regional-points",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/sub-regions.relatedPaths.1.path": {
+      "value": "/caring/emergency-alerts",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./partner-timebanks/caring/peers.relatedPaths.0.path": {
+      "value": "/caring/warmth-pass",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./partner-timebanks/caring/peers.relatedPaths.1.path": {
+      "value": "/caring/isolated-node",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/providers.relatedPaths.0.path": {
+      "value": "/caring/recipient-circle",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/providers.relatedPaths.1.path": {
+      "value": "/caring/workflow",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/recipient-circle.relatedPaths.0.path": {
+      "value": "/caring/providers",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/recipient-circle.relatedPaths.1.path": {
+      "value": "/caring/safeguarding",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/research.relatedPaths.0.path": {
+      "value": "/caring/kpi-baselines",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/research.relatedPaths.1.path": {
+      "value": "/caring/disclosure-pack",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/external-integrations.relatedPaths.0.path": {
+      "value": "/caring/integration-showcase",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/external-integrations.relatedPaths.1.path": {
+      "value": "/caring/disclosure-pack",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./caring/integration-showcase.relatedPaths.0.path": {
+      "value": "/caring/external-integrations",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./super-admin/national/kiss.relatedPaths.0.path": {
+      "value": "/admin/ki-agents",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./super-admin/national/kiss.relatedPaths.1.path": {
+      "value": "/admin/pilot-inquiries",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./admin/ki-agents.relatedPaths.0.path": {
+      "value": "/caring/nudges",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./admin/ki-agents.relatedPaths.1.path": {
+      "value": "/super-admin/national/kiss",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./admin/pilot-inquiries.relatedPaths.0.path": {
+      "value": "/caring/lead-nurture",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./admin/pilot-inquiries.relatedPaths.1.path": {
+      "value": "/caring/launch-readiness",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help.articles./admin/pilot-inquiries.relatedPaths.2.path": {
+      "value": "/super-admin/national/kiss",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_help_module.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_help_module.help_faqs.category_value": {
+      "value": "{{category}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_ideation.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_impact.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_impact.impact.currency_eur": {
+      "value": "EUR (€)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_impact.impact.currency_gbp": {
+      "value": "GBP (£)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_impact.impact.currency_usd": {
+      "value": "USD ($)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_impact.impact.multiplier_value": {
+      "value": "{{value}}×",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_jobs.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_jobs.jobs.cv_label": {
+      "value": "CV",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_jobs.jobs.no_organization": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_jobs.jobs.category_value": {
+      "value": "{{category}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_legal.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_legal.fadp.common.empty_dash": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_legal_editor.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_legal_editor.fadp.common.empty_dash": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_listings.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_marketplace.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_marketplace.marketplace.coupons.discount_percent": {
+      "value": "{{value}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_marketplace.marketplace.coupons.discount_fixed": {
+      "value": "{{value}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_marketplace.marketplace.coupons.discount_bogo": {
+      "value": "BOGO",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_marketplace.marketplace.coupons.no_expiry": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_matching.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_matching.matching.feedback_reason_aria": {
+      "value": "{{label}}: {{count}} ({{percent}}%)",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_matching.matching.pillar_aria": {
+      "value": "{{label}}: {{percent}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_matching.matching.feedback_reason_aria_one": {
+      "value": "{{label}}: {{count}} ({{percent}}%)",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_matching.matching.feedback_reason_aria_other": {
+      "value": "{{label}}: {{count}} ({{percent}}%)",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_moderation.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_national.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_national.national_kiss_dashboard.metrics.yoy": {
+      "value": "{{value}} YoY",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_nav.crm": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_nav.breadcrumbs.crm": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_nav.breadcrumbs.gdpr": {
+      "value": "GDPR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_nav.breadcrumbs.seo": {
+      "value": "SEO",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_nav.breadcrumbs.fadp": {
+      "value": "FADP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_nav.breadcrumbs.ai": {
+      "value": "AI",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletters.placeholder_jane": {
+      "value": "Jane...",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_newsletters.newsletters.ab_label": {
+      "value": "A/B",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_newsletters.newsletters.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletters.col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletter_form.ab_test_short": {
+      "value": "A/B",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_newsletters.newsletter_builder.blocks.html_label": {
+      "value": "HTML",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletter_content_editor.mode_html": {
+      "value": "HTML",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletter_activity.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletter_activity.col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_newsletters.newsletter_templates.category_count": {
+      "value": "{{category}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_newsletters.newsletter_diagnostics.gmail_api": {
+      "value": "Gmail API",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_newsletters.newsletter_diagnostics.health_range": {
+      "value": "{{min}}–{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_not_found_module.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_performance.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_podcasts.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_podcasts.podcasts_admin.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_podcasts.podcasts_admin.readiness.rss": {
+      "value": "RSS",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_podcasts.podcasts_admin.report_meta": {
+      "value": "{{show}} · {{reporter}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_podcasts.podcasts_admin.stats.percent": {
+      "value": "{{value}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_polls.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_premium.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_premium.member_premium_admin.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_premium.member_premium_admin.table.stripe": {
+      "value": "STRIPE",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_premium.member_premium_admin.settings.stripe_connect_placeholder": {
+      "value": "acct_...",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_provisioning.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_provisioning.provisioning_requests.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_regional_analytics.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_regional_analytics.regional_analytics_admin.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_reports.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_reports.reports.ellipsis": {
+      "value": "...",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_reports.municipal_reports.about.chf_abbr": {
+      "value": "CHF",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_reports.municipal_reports.stats.csv_pdf": {
+      "value": "CSV/PDF",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_reports.municipal_reports.values.formatted_hours": {
+      "value": "{{value}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_resources.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.blog.placeholder_featured_image": {
+      "value": "https://example.com/image.jpg",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_resources.breadcrumbs.crm": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.breadcrumbs.gdpr": {
+      "value": "GDPR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.breadcrumbs.seo": {
+      "value": "SEO",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.breadcrumbs.fadp": {
+      "value": "FADP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.breadcrumbs.ai": {
+      "value": "AI",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.content.label_u_r_l": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.content.stripe": {
+      "value": "Stripe",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_resources.content.landing_placeholder_button_link_register": {
+      "value": "/register",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_resources.content.landing_placeholder_button_link_about": {
+      "value": "/about",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_resources.federation.csv_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.federation.webhooks_col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.federation.auth_method_oauth2": {
+      "value": "OAuth 2.0",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_resources.federation.cc_exchange_rate_placeholder": {
+      "value": "1.0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_resources.federation.cc_parent_url_placeholder": {
+      "value": "https://cc.example.org",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_resources.federation.cc_validated_window_placeholder": {
+      "value": "300",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_resources.federation.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.federation.health_check_partner_error": {
+      "value": "{{name}}: {{error}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_resources.federation.analytics.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_resources.resources.sort_order_placeholder": {
+      "value": "0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_resources.resources.video_url_placeholder": {
+      "value": "https://www.youtube.com/watch?v=...",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_safeguarding.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_safeguarding.safeguarding.placeholder_guardian_email": {
+      "value": "guardian@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_safeguarding.safeguarding.placeholder_help_url": {
+      "value": "https://...",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_safeguarding.safeguarding.placeholder_ward_email": {
+      "value": "member@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_super.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_super.super.csv_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_super.super.level_value": {
+      "value": "L{{level}}",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.col_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_super.super.jwt_setup_aws": {
+      "value": "AWS ECS / Fargate:",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.jwt_setup_hosting_panel": {
+      "value": "Plesk / cPanel / IIS:",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.social_facebook": {
+      "value": "Facebook",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_super.super.social_instagram": {
+      "value": "Instagram",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.social_linkedin": {
+      "value": "LinkedIn",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.social_twitter": {
+      "value": "Twitter / X",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.super.social_youtube": {
+      "value": "YouTube",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_super.tenant_form.facebook_label": {
+      "value": "Facebook",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_super.tenant_form.instagram_label": {
+      "value": "Instagram",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.tenant_form.linkedin_label": {
+      "value": "Linkedin",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_super.tenant_form.robots.noindex_nofollow": {
+      "value": "Noindex Nofollow",
+      "reason": "accepted-shared-technical-term"
+    },
+    "admin_super.tenant_form.tab_seo": {
+      "value": "SEO",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_super.tenant_form.twitter_label": {
+      "value": "Twitter",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_super.tenant_form.youtube_label": {
+      "value": "Youtube",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_super.pilot_inquiry_admin.budget_values.5k_10k": {
+      "value": "5,000–10,000",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_super.pilot_inquiry_admin.budget_values.10k_25k": {
+      "value": "10,000–25,000",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_super.pilot_inquiry_admin.stages.unknown": {
+      "value": "{{stage}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_super.pilot_inquiry_admin.values.asap": {
+      "value": "ASAP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_super.pilot_inquiry_admin.values.country_region": {
+      "value": "{{country}} · {{region}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_super.pilot_inquiry_admin.values.empty": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_support.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_support.support_reports.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_support.support_reports.handoff.field": {
+      "value": "{{label}}: {{value}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_system.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.operations.redis_label": {
+      "value": "Redis",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.sso.preset_entra": {
+      "value": "Microsoft Entra ID",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.sso.preset_hivebrite": {
+      "value": "Hivebrite",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.currency_eur": {
+      "value": "EUR - Euro",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.platform_azure_vm": {
+      "value": "Azure VM",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.system.platform_cpanel": {
+      "value": "cPanel",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.platform_docker": {
+      "value": "Docker",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.platform_gcp": {
+      "value": "GCP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.system.platform_linux_vps": {
+      "value": "Linux / VPS",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.placeholder_powered_by_url": {
+      "value": "https://example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_system.system.csv_header_id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.system.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.system.latency_value_ms": {
+      "value": "{{value}}ms",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_system.system.status_ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.verification.col_ip": {
+      "value": "IP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_system.verification.empty_value": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_system.verification.provider_veriff": {
+      "value": "Veriff",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.verification.provider_jumio": {
+      "value": "Jumio",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.verification.provider_onfido": {
+      "value": "Onfido",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_system.verification.provider_idenfy": {
+      "value": "iDenfy",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_timebanking.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_timebanking.timebanking.hours_value": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_timebanking.timebanking.hours_value_one": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_timebanking.timebanking.hours_value_other": {
+      "value": "{{count}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_users.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_users.users.placeholder_email": {
+      "value": "email@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_users.users.placeholder_phone": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "admin_users.user_edit.placeholders.email": {
+      "value": "user@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_users.user_edit.placeholders.phone": {
+      "value": "e.g. +1 555 123 4567",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_volunteering.common.ok": {
+      "value": "OK",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.channel_sms": {
+      "value": "SMS",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.col_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.dlp_label": {
+      "value": "DLP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.filter_sms": {
+      "value": "SMS",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.website_placeholder": {
+      "value": "https://",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_volunteering.volunteering.webhook_events_placeholder": {
+      "value": "application.created, shift.completed, hours.logged",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_volunteering.volunteering.webhook_url": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "admin_volunteering.volunteering.webhook_url_placeholder": {
+      "value": "https://example.com/webhook",
+      "reason": "functional-address-route-or-example"
+    },
+    "admin_volunteering.volunteering.org_type_club": {
+      "value": "Club",
+      "reason": "accepted-shared-technical-term"
+    },
+    "admin_volunteering.donation_refunds.payment_method_stripe": {
+      "value": "Stripe",
+      "reason": "brand-product-or-platform-name"
+    },
+    "admin_volunteering.donation_refunds.payment_method_paypal": {
+      "value": "PayPal",
+      "reason": "reviewed-locale-invariant"
+    },
+    "admin_volunteering.giving_days.hours_target": {
+      "value": "/ {{target}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "auth.register.email_placeholder": {
+      "value": "you@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "auth.register.password_tip_weak_example": {
+      "value": "P@ssw0rd!",
+      "reason": "reviewed-locale-invariant"
+    },
+    "auth.login.email_placeholder": {
+      "value": "you@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "auth.login.twofa_backup_placeholder": {
+      "value": "XXXX-XXXX",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "auth.login.twofa_code_placeholder": {
+      "value": "000000",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "auth.forgot_password.email_placeholder": {
+      "value": "you@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "availability.slot_status_label": {
+      "value": "{{day}} {{time}}: {{status}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "broker.header.search_shortcut": {
+      "value": "⌘K",
+      "reason": "keyboard-or-control-label"
+    },
+    "broker.palette.close_key": {
+      "value": "esc",
+      "reason": "keyboard-or-control-label"
+    },
+    "broker.vetting.attestation_access_ni": {
+      "value": "AccessNI",
+      "reason": "reviewed-locale-invariant"
+    },
+    "broker.messages.detail_none": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "broker.risk_tags.id_label": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "broker.configuration.field_broker_contact_email_placeholder": {
+      "value": "broker@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "broker.matching.distance_km": {
+      "value": "{{km}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "caring_community.providers.filter_spitex": {
+      "value": "Spitex",
+      "reason": "reviewed-locale-invariant"
+    },
+    "caring_community.admin.common.empty_dash": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.providers.duplicates.vs": {
+      "value": "vs",
+      "reason": "reviewed-locale-invariant"
+    },
+    "caring_community.admin.providers.types.spitex": {
+      "value": "Spitex",
+      "reason": "reviewed-locale-invariant"
+    },
+    "caring_community.admin.loyalty.ledger.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.loyalty.table.empty_value": {
+      "value": "—",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.surveys.actions.csv": {
+      "value": "CSV",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "caring_community.admin.surveys.analytics.option_percentage_aria": {
+      "value": "{{option}}: {{percentage}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.feedback.table.id": {
+      "value": "ID",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "caring_community.admin.civic_digest.includes.sources.vereine": {
+      "value": "Vereine",
+      "reason": "reviewed-locale-invariant"
+    },
+    "caring_community.admin.safeguarding_reports.empty_dash": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.safeguarding_reports.actor_id": {
+      "value": "#{{id}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "caring_community.admin.safeguarding_reports.table.sla_abbr": {
+      "value": "SLA",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "caring_community.admin.regional_points.ledger.user_fallback": {
+      "value": "#{{id}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.empty_dash": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.keyboard.command_symbol": {
+      "value": "⌘",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.keyboard.k_key": {
+      "value": "K",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "common.footer.project_nexus": {
+      "value": "Project NEXUS",
+      "reason": "person-or-organisation-name"
+    },
+    "common.members.distance_km": {
+      "value": "{{distance}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.members.location_distance": {
+      "value": "{{location}} · {{distance}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.caring_community.actions.markt": {
+      "value": "Marktplatz",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.caring_community.modules.markt": {
+      "value": "Marktplatz",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.compose.placeholder_url": {
+      "value": "https://example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "common.compose.placeholder_hours": {
+      "value": "1",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.radius_5": {
+      "value": "5 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.radius_10": {
+      "value": "10 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.radius_25": {
+      "value": "25 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.radius_50": {
+      "value": "50 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.radius_100": {
+      "value": "100 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.markt.meta.title": {
+      "value": "Marktplatz",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.proximity.radius_option": {
+      "value": "{{km}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.safeguarding_reports.submit.form.evidence_placeholder": {
+      "value": "https://...",
+      "reason": "functional-address-route-or-example"
+    },
+    "common.advertise.stats.ctr": {
+      "value": "CTR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "common.advertise.col_ctr": {
+      "value": "CTR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "common.push_campaign.radius_km": {
+      "value": "{{radius}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.regional_points.transfer.amount_placeholder": {
+      "value": "0.00",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.verein_import.csv_placeholder": {
+      "value": "email,first_name,last_name,phone,role\nalice@example.org,Alice,Smith,+1 555 123 4567,member",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.regional_analytics.tiers.pro.label": {
+      "value": "Pro",
+      "reason": "accepted-shared-technical-term"
+    },
+    "common.partner_analytics.suppressed_short": {
+      "value": "--",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.verein_federation.char_count": {
+      "value": "{{count}}/500",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.verein_federation.char_count_one": {
+      "value": "{{count}}/500",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.verein_federation.char_count_other": {
+      "value": "{{count}}/500",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.oauth.provider_google": {
+      "value": "Google",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.oauth.provider_facebook": {
+      "value": "Facebook",
+      "reason": "brand-product-or-platform-name"
+    },
+    "common.verein_dues.unnamed_verein": {
+      "value": "Verein",
+      "reason": "accepted-shared-technical-term"
+    },
+    "common.install.ios_step_2_after": {
+      "value": ".",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.xp_progress": {
+      "value": "{{current}} / {{required}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.25_34": {
+      "value": "25–34",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.35_44": {
+      "value": "35–44",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.45_54": {
+      "value": "45–54",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.55_64": {
+      "value": "55–64",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.65_plus": {
+      "value": "65+",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.nexus_score.tier_threshold": {
+      "value": "{{tier}} ({{min}}+)",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.salary.currency_eur": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "common.salary_display": {
+      "value": "{{min}} – {{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.providers.filter_spitex": {
+      "value": "Spitex",
+      "reason": "reviewed-locale-invariant"
+    },
+    "common.menu_builder.route_faq": {
+      "value": "FAQ",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "common.municipal_copilot.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.commercial_boundary.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.caring_workflow.empty.value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.empty.infinity": {
+      "value": "∞",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.age_groups.25_34": {
+      "value": "25-34",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.age_groups.35_44": {
+      "value": "35-44",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.age_groups.45_54": {
+      "value": "45-54",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.age_groups.55_64": {
+      "value": "55-64",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.age_groups.65_plus": {
+      "value": "65+",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "common.analytics.regional.empty_value": {
+      "value": "-",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "community.organisations.form_email_placeholder": {
+      "value": "contact@yourorg.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "community.organisations.form_website_placeholder": {
+      "value": "https://yourorg.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "community.group_signups.email_placeholder": {
+      "value": "member@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "courses.lesson_content.pdf": {
+      "value": "PDF",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "dashboard.suggestions.score_chip": {
+      "value": "{{score}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "dashboard.suggestions.distance_chip": {
+      "value": "{{value}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "dashboard.gamification.xp_value": {
+      "value": "{{count}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "dashboard.gamification.xp_value_one": {
+      "value": "{{count}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "dashboard.gamification.xp_value_other": {
+      "value": "{{count}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "emails.footer.address": {
+      "value": "{{community}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "emails.vetting.subject": {
+      "value": "{{heading}} - {{tenant}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "events.detail.attendee_rsvp": {
+      "value": "RSVP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "events.form.recurrence_count_placeholder": {
+      "value": "10",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "events.form.recurrence_preview_empty": {
+      "value": "RRULE:...",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.manage.agenda.speaker_with_role": {
+      "value": "{{name}}, {{role}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "events.radius_5": {
+      "value": "5 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.radius_10": {
+      "value": "10 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.radius_25": {
+      "value": "25 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.radius_50": {
+      "value": "50 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.radius_100": {
+      "value": "100 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "events.calendar_actions.outlook": {
+      "value": "Outlook",
+      "reason": "reviewed-locale-invariant"
+    },
+    "exchanges.request.prep_time_placeholder": {
+      "value": "0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "federation.listings.hours_estimated": {
+      "value": "~{{hours}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "federation.settings.kilometers_short": {
+      "value": "km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "federation.onboarding.kilometers_short": {
+      "value": "km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "federation.reputation.chip_label": {
+      "value": "{{score}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "federation.reputation.chip_label_one": {
+      "value": "{{score}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "federation.reputation.chip_label_other": {
+      "value": "{{score}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "feed.compose.placeholder_hours": {
+      "value": "1",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "feed.compose.char_count": {
+      "value": "{{current}}/{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "feed.location.radius": {
+      "value": "{{km}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "feed.location.km": {
+      "value": "km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.achievements.xp_value": {
+      "value": "{{xp}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.achievements.badge_detail.threshold_value": {
+      "value": "{{threshold}} {{type}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "gamification.achievements.badge_detail.xp_value": {
+      "value": "{{xp}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.goals.modal.target_value_placeholder": {
+      "value": "100",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "gamification.leaderboard.type.xp": {
+      "value": "XP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "gamification.leaderboard.season.xp_reward": {
+      "value": "{{xp}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.leaderboard.score_unit.hours": {
+      "value": "h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.leaderboard.score_unit.credits": {
+      "value": "cr",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.leaderboard.score_unit.nexus_score": {
+      "value": "/1000",
+      "reason": "functional-address-route-or-example"
+    },
+    "gamification.leaderboard.score_unit.xp": {
+      "value": "XP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "gamification.journey.xp_value": {
+      "value": "{{xp}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "gamification.nexus_score.tier_threshold": {
+      "value": "{{tier}} ({{min}}+)",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "gamification.nexus_score.max_score_label": {
+      "value": "/ {{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "goals.checkin.progress_value": {
+      "value": "{{percent}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "goals.insights.milestone_target": {
+      "value": "{{percent}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "group_exchanges.create.weight_suffix": {
+      "value": "x",
+      "reason": "reviewed-locale-invariant"
+    },
+    "groups.detail.tab_section_label": {
+      "value": "{{section}} - {{label}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.detail.invite_email_placeholder": {
+      "value": "email1@example.com, email2@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "groups.challenges.xp_reward": {
+      "value": "{{xp}} XP",
+      "reason": "reviewed-locale-invariant"
+    },
+    "groups.challenges.progress_value": {
+      "value": "{{current}} / {{target}} {{metric}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.files.folder_chip": {
+      "value": "{{name}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.files.size_value": {
+      "value": "{{value}} {{unit}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.files.size_b": {
+      "value": "B",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "groups.files.size_kb": {
+      "value": "KB",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "groups.files.size_mb": {
+      "value": "MB",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "groups.files.size_gb": {
+      "value": "GB",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "groups.files.folder_chip_one": {
+      "value": "{{name}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.files.folder_chip_other": {
+      "value": "{{name}} ({{count}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "groups.webhooks.url_placeholder": {
+      "value": "https://example.com/webhook",
+      "reason": "functional-address-route-or-example"
+    },
+    "ideation.media.url_label": {
+      "value": "URL",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "ideation.media.url_placeholder": {
+      "value": "https://...",
+      "reason": "functional-address-route-or-example"
+    },
+    "jobs.analytics.versus": {
+      "value": "vs",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.salary.range": {
+      "value": "{{min}} - {{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "jobs.salary.currency_eur": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "jobs.salary.currency_gbp": {
+      "value": "GBP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "jobs.salary.currency_usd": {
+      "value": "USD",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "jobs.geo.radius_5": {
+      "value": "5 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.geo.radius_10": {
+      "value": "10 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.geo.radius_25": {
+      "value": "25 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.geo.radius_50": {
+      "value": "50 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.geo.radius_100": {
+      "value": "100 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.kanban.ai_score": {
+      "value": "AI: {{score}}/100",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.kanban.interview_location_placeholder": {
+      "value": "https://meet.google.com/...",
+      "reason": "functional-address-route-or-example"
+    },
+    "jobs.apply.cv_size_kb": {
+      "value": "({{count}} KB)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.apply.cv_size_kb_one": {
+      "value": "({{count}} KB)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.apply.cv_size_kb_other": {
+      "value": "({{count}} KB)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.interview.calendar_google": {
+      "value": "Google",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.interview.calendar_outlook": {
+      "value": "Outlook",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.interview.calendar_ics": {
+      "value": ".ics",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.branding.video_placeholder": {
+      "value": "https://www.youtube.com/watch?v=...",
+      "reason": "functional-address-route-or-example"
+    },
+    "jobs.saved_profile.inline_cv": {
+      "value": "- CV: {{filename}}",
+      "reason": "reviewed-locale-invariant"
+    },
+    "jobs.form.contact_email_placeholder": {
+      "value": "contact@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "jobs.form.contact_phone_placeholder": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "jobs.onboarding.org_website_placeholder": {
+      "value": "https://example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "jobs.salary_display": {
+      "value": "{{min}} – {{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "jobs.jobs.category_value": {
+      "value": "{{category}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "legal.cookies.provider_sentry": {
+      "value": "Sentry",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.third_party_sentry_label": {
+      "value": "Sentry",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.third_party_pusher_label": {
+      "value": "Pusher",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.browser_chrome": {
+      "value": "Chrome",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.browser_firefox": {
+      "value": "Firefox",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.browser_safari": {
+      "value": "Safari",
+      "reason": "brand-product-or-platform-name"
+    },
+    "legal.cookies.browser_edge": {
+      "value": "Edge",
+      "reason": "brand-product-or-platform-name"
+    },
+    "listings.form.character_count": {
+      "value": "{{count}}/{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "listings.form.hours_placeholder": {
+      "value": "1",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "listings.form.character_count_one": {
+      "value": "{{count}}/{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "listings.form.character_count_other": {
+      "value": "{{count}}/{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "listings.radius_5": {
+      "value": "5 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.radius_10": {
+      "value": "10 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.radius_25": {
+      "value": "25 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.radius_50": {
+      "value": "50 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.radius_100": {
+      "value": "100 km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.distance_meters": {
+      "value": "{{distance}} m",
+      "reason": "reviewed-locale-invariant"
+    },
+    "listings.distance_kilometers": {
+      "value": "{{distance}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "marketplace.listing.detail_field_label": {
+      "value": "{{field}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "marketplace.offer.amount_placeholder": {
+      "value": "0.00",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "marketplace.create.photos_count": {
+      "value": "({{current}}/{{max}})",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "marketplace.community_delivery.time_credits_placeholder": {
+      "value": "1.0",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "marketplace.community_delivery.estimated_time_placeholder": {
+      "value": "30",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "marketplace.map.radius_option": {
+      "value": "{{km}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "marketplace.shipping.price_placeholder": {
+      "value": "0.00",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "matches.card.distance_km": {
+      "value": "{{value}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "matches.preferences.thresholds.distance_value": {
+      "value": "{{value}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "matches.preferences.thresholds.quality_value": {
+      "value": "{{value}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "messages.character_count": {
+      "value": "{{current}}/{{max}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "partners.nav.credit_commons": {
+      "value": "Credit Commons",
+      "reason": "brand-product-or-platform-name"
+    },
+    "partners.breadcrumbs.credit_commons": {
+      "value": "Credit Commons",
+      "reason": "brand-product-or-platform-name"
+    },
+    "partners.pages.credit_commons.title": {
+      "value": "Credit Commons",
+      "reason": "brand-product-or-platform-name"
+    },
+    "podcasts.browse.sort.title": {
+      "value": "A-Z",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "podcasts.player.speed": {
+      "value": "{{rate}}x",
+      "reason": "reviewed-locale-invariant"
+    },
+    "profile.aria.listing_card": {
+      "value": "{{type}}: {{title}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "profile.review_modal.rating_required": {
+      "value": "*",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "project_announcements.meta.detail_title": {
+      "value": "{{title}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "project_announcements.share.share_text": {
+      "value": "{{title}} - {{description}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "project_announcements_admin.progress_value": {
+      "value": "{{value}}%",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "public.features_page.security_email": {
+      "value": "jasper@hour-timebank.ie",
+      "reason": "functional-address-route-or-example"
+    },
+    "public.features_page.tech_stack.backend_value": {
+      "value": "Laravel 12 + PHP 8.2+",
+      "reason": "reviewed-locale-invariant"
+    },
+    "public.features_page.tech_stack.database_value": {
+      "value": "MariaDB 10.11",
+      "reason": "reviewed-locale-invariant"
+    },
+    "public.features_page.tech_stack.realtime_value": {
+      "value": "Pusher WebSockets, Firebase Cloud Messaging",
+      "reason": "reviewed-locale-invariant"
+    },
+    "public.features_page.tech_stack.search_value": {
+      "value": "Meilisearch v1.7",
+      "reason": "reviewed-locale-invariant"
+    },
+    "public.features_page.groups.trust_reputation_and_safety.items.crm.title": {
+      "value": "CRM",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "public.contact.form.email_placeholder": {
+      "value": "you@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "public.faq.categories.account_privacy.q2.answer_link_after": {
+      "value": ".",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "public.install_app.steps_tab_android": {
+      "value": "Android",
+      "reason": "brand-product-or-platform-name"
+    },
+    "public.install_app.steps_tab_windows": {
+      "value": "Windows",
+      "reason": "brand-product-or-platform-name"
+    },
+    "public.install_app.steps_tab_mac": {
+      "value": "Mac",
+      "reason": "brand-product-or-platform-name"
+    },
+    "settings.twofa_app_google": {
+      "value": "Google Authenticator",
+      "reason": "brand-product-or-platform-name"
+    },
+    "settings.twofa_app_authy": {
+      "value": "Authy",
+      "reason": "brand-product-or-platform-name"
+    },
+    "settings.profile.phone_placeholder": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "settings.delete_modal.placeholder": {
+      "value": "DELETE",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "settings.sub_accounts.email_placeholder": {
+      "value": "child@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "stories.creator.font_sans": {
+      "value": "Sans",
+      "reason": "accepted-shared-technical-term"
+    },
+    "stories.creator.font_serif": {
+      "value": "Serif",
+      "reason": "accepted-shared-technical-term"
+    },
+    "stories.creator.video_duration_seconds": {
+      "value": "{{count}}s",
+      "reason": "reviewed-locale-invariant"
+    },
+    "stories.creator.video_duration_seconds_one": {
+      "value": "{{count}}s",
+      "reason": "reviewed-locale-invariant"
+    },
+    "stories.creator.video_duration_seconds_other": {
+      "value": "{{count}}s",
+      "reason": "reviewed-locale-invariant"
+    },
+    "super_admin.breadcrumbs.kiss": {
+      "value": "KISS",
+      "reason": "accepted-shared-technical-term"
+    },
+    "super_admin.breadcrumbs.unknown": {
+      "value": "{{segment}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "utility.coming_soon.features.nexus_score": {
+      "value": "NexusScore",
+      "reason": "brand-product-or-platform-name"
+    },
+    "volunteering.hours_abbrev": {
+      "value": "{{hours}}h",
+      "reason": "reviewed-locale-invariant"
+    },
+    "volunteering.distance_m": {
+      "value": "{{value}} m",
+      "reason": "reviewed-locale-invariant"
+    },
+    "volunteering.distance_km": {
+      "value": "{{value}} km",
+      "reason": "reviewed-locale-invariant"
+    },
+    "volunteering.date_range_separator": {
+      "value": " – ",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "volunteering.expenses.form.currency_placeholder": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "volunteering.donations.payment_methods.paypal": {
+      "value": "paypal",
+      "reason": "reviewed-locale-invariant"
+    },
+    "volunteering.donations.currencies.EUR": {
+      "value": "EUR",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "volunteering.donations.currencies.GBP": {
+      "value": "GBP",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "volunteering.donations.currencies.USD": {
+      "value": "USD",
+      "reason": "protocol-acronym-or-identifier"
+    },
+    "volunteering.org_settings.website_placeholder": {
+      "value": "https://example.org",
+      "reason": "functional-address-route-or-example"
+    },
+    "volunteering.group_signup.email_placeholder": {
+      "value": "member@example.com",
+      "reason": "functional-address-route-or-example"
+    },
+    "volunteering.group_signup.reserve_opportunity_option": {
+      "value": "{{title}} - {{organization}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "volunteering.group_signup.reserve_shift_option": {
+      "value": "{{date}}, {{start}}-{{end}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "volunteering.certificates.organization_hours": {
+      "value": "{{name}} ({{hours}}h)",
+      "reason": "reviewed-locale-invariant"
+    },
+    "volunteering.wellbeing.score_out_of_100": {
+      "value": "{{score}}/100 - {{label}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "wallet.donate_amount_placeholder": {
+      "value": "1",
+      "reason": "placeholder-number-or-display-format"
+    }
+  }
+}

@@ -27,7 +27,7 @@
           "path": "/caring/sla-dashboard"
         },
         {
-          "label": "Safeguarding",
+          "label": "Cosaint",
           "path": "/caring/safeguarding"
         },
         {
@@ -155,7 +155,7 @@
           "path": "/caring/warmth-pass"
         },
         {
-          "label": "Safeguarding",
+          "label": "Cosaint",
           "path": "/caring/safeguarding"
         }
       ]
@@ -593,7 +593,7 @@
       "caution": "Tá iarratais ar suan ar taispeáint fós ar an tuarascáil chomhlíonta. Cuirfear iarratais Chriticiúla ar suan go minic san iniúchadh ar cháilíocht sonraí.",
       "relatedPaths": [
         {
-          "label": "Safeguarding",
+          "label": "Cosaint",
           "path": "/caring/safeguarding"
         },
         {
@@ -641,7 +641,7 @@
           "path": "/caring/municipal-roi"
         },
         {
-          "label": "Safeguarding",
+          "label": "Cosaint",
           "path": "/caring/safeguarding"
         }
       ]
@@ -805,7 +805,7 @@
       "caution": "Ná húsáid Foláirimh Éigeandála le haghaidh gnáthchumarsáide. Cuirfidh tuirse foláirimh ar bhaill neamhaird a dhéanamh ar fhíorfholáirimh amach anseo.",
       "relatedPaths": [
         {
-          "label": "Sub-Regions",
+          "label": "Fo-Réigiúin",
           "path": "/caring/sub-regions"
         },
         {
@@ -1212,7 +1212,7 @@
       ],
       "relatedPaths": [
         {
-          "label": "Sub-Regions",
+          "label": "Fo-Réigiúin",
           "path": "/caring/sub-regions"
         },
         {
@@ -1373,11 +1373,11 @@
       "caution": "Féadfaidh faisnéis íogair sláinte a bheith i bpleananna cúraim. Déileáil leo mar thaifid rúnda faoi FADP/nDSG.",
       "relatedPaths": [
         {
-          "label": "Providers",
+          "label": "Soláthraithe",
           "path": "/caring/providers"
         },
         {
-          "label": "Safeguarding",
+          "label": "Cosaint",
           "path": "/caring/safeguarding"
         }
       ]

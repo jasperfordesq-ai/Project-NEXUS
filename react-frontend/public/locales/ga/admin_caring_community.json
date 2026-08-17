@@ -3089,7 +3089,7 @@
       "pre_pilot": "Réamhphíolótach",
       "current": "Reatha",
       "change": "Athrú",
-      "delta": "Delta"
+      "delta": "Difríocht"
     },
     "metrics": {
       "active_members": "Baill ghníomhacha (90d)",
@@ -3514,7 +3514,7 @@
       "verein_members": "Baill Verein",
       "volunteers": "Oibrithe Deonacha",
       "recipients": "Faighteoirí cúraim",
-      "kanton": "Kanton"
+      "kanton": "Ceantar"
     },
     "editor": {
       "new_title": "Scéal ratha nua",

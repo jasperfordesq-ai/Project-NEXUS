@@ -1510,7 +1510,7 @@
     "actor_type_system": "Córas",
     "actor_type_user": "Úsáideoir",
     "actor_type_admin": "Riarthóir",
-    "actor_type_webhook": "Webhook",
+    "actor_type_webhook": "Crúca gréasáin",
     "actor_type_unknown": "Aisteoir anaithnid",
     "status_unknown": "Stádas anaithnid",
     "provider_veriff": "Veriff",
