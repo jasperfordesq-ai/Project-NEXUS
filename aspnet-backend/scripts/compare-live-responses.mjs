@@ -24,6 +24,13 @@
  * credentials unless you explicitly pass tokens, which you should only do
  * against a disposable Laravel environment.
  *
+ * 🔴 What the output measures: THIS BACKEND, against Laravel. When run
+ * with a path list extracted from a frontend's source (e.g. web-uk), that list is
+ * only a choice of WHICH endpoints to compare. It does not run that frontend, does
+ * not point it at this backend, and says nothing about whether that frontend
+ * works. Report it as "ASP.NET is N/M contract-identical on the endpoints X
+ * calls", never as "X is N/M".
+ *
  * Usage:
  *   node aspnet-backend/scripts/compare-live-responses.mjs
  *   node aspnet-backend/scripts/compare-live-responses.mjs --paths paths.txt

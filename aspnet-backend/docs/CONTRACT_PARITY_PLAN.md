@@ -165,7 +165,7 @@ the endpoint simply is not implemented on one side.
 
 ## 4. Error shapes
 
-**Status: the 401 envelope is now uniform. 44 -> 51/118 on web-uk.**
+**Status: the 401 envelope is now uniform. 44 -> 51/118 on the web-uk corpus.**
 
 🔴 This backend had **three different 401 bodies** depending on how each endpoint
 happened to be protected:
@@ -238,15 +238,31 @@ against that name — see the table-exists-guard hazard.
 
 ---
 
-## 7. The second frontend — 🔴 NEVER MEASURED
+## 7. The endpoint set the accessible frontend calls
 
-**Status: measured 2026-08-16 — 43/118. Was the biggest blind spot.**
+**Status: 51/118 as of 2026-08-16.**
+
+🔴 **Read this number correctly.** It is **an ASP.NET measurement**, not a web-uk
+one: 118 URLs were extracted from `web-uk/src` and used as a *test corpus* for
+comparing the two BACKENDS. web-uk itself was never started, never pointed at
+ASP.NET, and not one line of it was modified. Nothing here certifies the
+accessible frontend against this backend — that remains a separate gate and a
+separate workstream, untouched.
+
+Earlier revisions of this document and several commit messages called this
+"web-uk: 51/118", which reads as though the accessible site were 43% working.
+It does not mean that.
+
+**Why this corpus is still the right one to use:** it exercises endpoints the
+React app never calls. `/api/v2/users/search` — which returned member names and
+email addresses to anonymous callers — is called by the accessible frontend and
+not by React. A React-only corpus could not have found it.
 
 The generated contract matrix is rooted at `react-frontend`. **`web-uk` appears
 nowhere in any generated inventory**, and there is no record of it ever being
 run against ASP.NET.
 
-**MEASURED 2026-08-16 for the first time: 43/118 contract-identical.**
+**First measured 2026-08-16 against this corpus: 43/118 contract-identical** (ASP.NET vs Laravel, on the paths web-uk calls).
 
 118 parameter-free GET paths extracted from `web-uk/src` (Express/Nunjucks, so
 the calls are in server-side code, not a bundle). Path list regenerates with:
@@ -280,7 +296,7 @@ frontend caught an error in the fix for the first.**
 so signed-out visitors lose working pages. `public/events` is 200 vs 403, a
 feature-gate difference.
 
-**Fixed since (2026-08-16, same day): 43 -> 44/118.** The three reverse cases —
+**Fixed since (2026-08-16, same day): 43 -> 44/118 on that corpus.** The three reverse cases —
 `clubs`, `listings/tags/popular`, `skills/categories` — are public on Laravel and
 were 401 here, so signed-out visitors lost working pages. Two of the three carry
 an explicit `->withoutMiddleware('auth:sanctum')` in `routes/api.php`, which is
@@ -303,8 +319,11 @@ unexplained**.
 If the cause is ever found, re-check every aliased route before concluding this
 was the only one: I proved it is not systemic, not that it is unique.
 
-**Next:** point web-uk's API base at ASP.NET and walk its pages, which tests
-what a path list cannot — redirects, forms, session handling.
+**Next, and NOT started:** pointing web-uk's API base at ASP.NET and walking its
+pages would test what a path list cannot — redirects, forms, session handling.
+🔴 That is the accessible-frontend certification gate, a separate
+workstream. Nothing in this document has done it, and the numbers above must
+not be cited as evidence that it has been done.
 
 ---
 
