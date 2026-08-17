@@ -105,6 +105,18 @@ specification. The owner's words:
 - The web-uk ↔ Blade screenshot comparison set becomes a historical baseline, useful for
   spotting unintended change in web-uk, not a target to converge on.
 
+> 🔴 **SUPERSEDED 2026-08-17 — everything from here to the end of "The two frontends"
+> below describes the state BEFORE 2026-08-14, when Blade was still serving members.**
+> Blade was deleted on 2026-08-14 and there is now exactly ONE accessible frontend,
+> `web-uk`. The instructions in the next few sections — "it is not deleted and not
+> switched off", "do not remove its routes", "open them freely", "both are serving live
+> traffic right now" — cannot be followed, because the files they refer to do not exist.
+> The measured table under "What each surface ACTUALLY serves" is the current state.
+>
+> These sections are kept, not deleted, because they record the owner's freeze decision
+> and because an agent who half-remembers them otherwise goes hunting for
+> `accessible-frontend/` and concludes the repository is damaged. Read them as history.
+
 **Blade is still deployed and still serving real members** on the community accessible
 domains and every `/{tenantSlug}/accessible/...` path. Historic means "no longer the
 specification", not "switched off". Retirement remains a separate reviewed change, and
@@ -158,6 +170,12 @@ below. Freezing the track is not retiring it.
 whole track. `/version` is the only way to tell which one answered a request:
 `web-uk` returns `{"service":"nexus-webuk",…}` and Blade does not.
 
+> 🔴 **END OF THE SUPERSEDED RUN (see the banner above).** The table and paragraph
+> immediately above were true until 2026-08-14 and are false now: there is one accessible
+> frontend, `web-uk`, and it serves all three accessible hostnames. `/version` is still
+> the way to tell what answered — but a response that is NOT `nexus-webuk` now means
+> something is wrong, not that Blade answered. The uptime monitor asserts exactly that.
+
 Both are separate from `react-frontend/`, which is the main product UI and is not
 affected by this changeover.
 
@@ -179,62 +197,89 @@ and reading what was actually sent. So the question "does Node's `fetch` forward
 custom `Host`?" was the wrong one: it does not, and must not.
 
 Legacy `/{tenantSlug}/alpha/...` paths permanently redirect to `/accessible/...`
-and remain redirect-compatibility only. The internal Laravel route names,
-namespaces and translation files still say `govuk_alpha`; that is an internal
-name, not a public one.
+and remain redirect-compatibility only.
 
-## 🔴 What each frontend ACTUALLY serves — measured 2026-08-14
+🔴 **Qualified 2026-08-17 — that redirect no longer works everywhere.** It works on
+every hostname proxied to `web-uk` (all three accessible hosts), because `web-uk`
+handles it itself in `web-uk/src/middleware/tenant-routing.js`. It does **not** work on
+the API host (`api.project-nexus.ie`) any more: the redirect there lived in
+`routes/govuk-alpha.php`, which was deleted on 2026-08-14. The sentence above used to
+claim the redirect applied without qualification. Nothing member-facing depends on the
+API-host redirect — members reach the accessible site through
+`accessible.project-nexus.ie` — but an old `/alpha` bookmark on the API host now 404s
+instead of redirecting.
 
-**Read this table before any claim about either frontend.** Every row was probed live,
-not inferred, because three separate sentences in these documents were wrong on exactly
-this point.
+The internal Laravel translation files still say `govuk_alpha`; that is an internal
+name, not a public one. (The `GovukAlpha` namespace and `govuk-alpha.*` route names are
+gone — only `lang/*/govuk_alpha*.php` survives, and it must not be deleted.)
+
+## 🔴 What each surface ACTUALLY serves — measured 2026-08-17
+
+**Read this table before any claim about what serves an accessible address.** Every row
+was probed live, not inferred, because several sentences in these documents were wrong on
+exactly this point.
 
 | Surface | Served by | Evidence |
 |---|---|---|
-| `accessible.project-nexus.ie` (+ `/{slug}/accessible/...` on it) | **web-uk** | `/version` returns `{"service":"nexus-webuk","release":"a01c8f5c3d49","color":"blue"}` |
-| `accessible-uk.timebank.global` (root, slug-less) | **Blade** | `/version` returns HTML, not JSON. Community `timebanking-org`. |
-| `accessible-minehead-and-coast.timebank.global` (root, slug-less) | **Blade** | as above. Community `minehead-and-coast-timebank`. |
-| `api.project-nexus.ie/{slug}/accessible` | **Blade** | serves a `govuk-template` page |
-| `/{slug}/accessible` on the MAIN app domains (`app.project-nexus.ie`, `timebanks.us`, `pairc-goodman.com`) | **NEITHER — the React SPA answers** | returns React's 1,950-byte shell (`id="root"`), title "NEXUS — Community Timebanking Platform". There is no React route for `accessible`, so it lands on a client-side 404. |
+| `accessible.project-nexus.ie` (+ `/{slug}/accessible/...` on it) | **web-uk** | `/version` returns `{"service":"nexus-webuk","release":"5afb43ff73da","color":"blue"}` |
+| `accessible-uk.timebank.global` (root, slug-less) | **web-uk** | same `/version` response. Community `timebanking-org`. |
+| `accessible-minehead-and-coast.timebank.global` (root, slug-less) | **web-uk** | same `/version` response. Community `minehead-and-coast-timebank`. |
+| `api.project-nexus.ie/{slug}/accessible` | **nothing — Blade is gone** | the Blade routes that answered here were deleted on 2026-08-14. Not a member-facing path; the React utility bar never linked to it. |
+| `/{slug}/accessible` on the MAIN app domains (`app.project-nexus.ie`, `timebanks.us`, `pairc-goodman.com`) | **the React SPA answers** | returns React's shell (`id="root"`), title "NEXUS — Community Timebanking Platform". There is no React route for `accessible`, so it lands on a client-side 404. |
 
-🔴 **Two long-standing claims in this document were FALSE and are corrected here:**
+Apache reaches `web-uk` through `Define NEXUS_WEBUK_PORT` in the production routes file —
+**3500** when blue is active, **3600** when green is. The active colour on 2026-08-17 was
+blue. The PHP app ports (8090 blue, 8190 green) must never be used for accessible traffic.
 
-1. It said Blade serves "**all `/{tenantSlug}/accessible/...` paths**". It does not — on the
-   main app domains that path is swallowed by the React SPA. Blade only serves those paths
-   on the API host and on its own two community domains.
-2. It said no community had an accessible domain. **Two do**, and both are live. That claim
-   came from reading the LOCAL snapshot instead of production.
+🔴 **What this table said before, and why it changed — do not restore the old rows.**
+Until 2026-08-17 this table was headed "measured 2026-08-14" and recorded **Blade** as
+serving `accessible-uk.timebank.global`, `accessible-minehead-and-coast.timebank.global`
+and `api.project-nexus.ie/{slug}/accessible`. Those rows described the state **before**
+the 2026-08-14 cutover, when Blade still held the two community domains and the API-host
+paths. They are kept in this note as history because half-remembering them is how an
+operator ends up proxying an accessible domain to the PHP app and taking the live site
+down. The cutover moved all three hosts to `web-uk` on 2026-08-14 and deleted Blade.
+
+🔴 **Two older claims in this document were also FALSE and remain corrected:**
+
+1. It said Blade served "**all `/{tenantSlug}/accessible/...` paths**". It never did — on
+   the main app domains that path is swallowed by the React SPA, and that is still true
+   today with `web-uk` in place.
+2. It said no community had an accessible domain. **Two do**, and both are live. That
+   claim came from reading the LOCAL snapshot instead of production.
 
 **Members do not reach the React 404**, because the utility-bar link on every tenant's
 React frontend points at `accessible.project-nexus.ie/{slug}/accessible` (built by
-`buildAccessibleFrontendUrl()`), which is web-uk. An old bookmark of `/{slug}/accessible`
+`buildAccessibleFrontendUrl()`), which is `web-uk`. An old bookmark of `/{slug}/accessible`
 on a main domain would land on the React 404 — recorded, low priority, not a member-facing
 regression.
 
-## 🔴 Which phase are we in — Phase A
+## 🔴 Which phase are we in — Phase B, the takeover is COMPLETE
 
-**Phase A: Blade is still deployed** — on the two community accessible domains and the
-`/{tenantSlug}/accessible/...` paths of the API host (see the table above for what that
-does and does NOT include), even though `web-uk` now owns
-`accessible.project-nexus.ie`. The phase turns on Blade being decommissioned, not
-on the first host being cut over, so the cutover of 2026-08-12 did **not** end
-Phase A. Therefore:
+**Phase B, since 2026-08-14: Blade is decommissioned and deleted.** `web-uk` owns every
+accessible address. Therefore:
 
-- Blade remains the **observable-behaviour specification**. Where `web-uk`
-  disagrees with Blade about what a page does, Blade is right unless the
-  difference is a recorded deliberate improvement.
-- The route matrix under `web-uk/docs/generated/` is a **live drift alarm**: a
-  route appearing in Blade and not in `web-uk` is a real gap.
-- The Laravel **API** is the contract source of truth for methods, paths,
-  request and response shapes, status codes, auth, roles, modules and side
-  effects. That does not change in either phase.
+- `web-uk` owns browser behaviour. **GOV.UK Design System + WCAG 2.2** are the
+  presentation authority, `react-frontend/` defines what a member can do, and the Laravel
+  API defines the contract — see the 2026-08-13 section above.
+- The route matrix under `web-uk/docs/generated/` is a **historical record**, not a live
+  drift alarm. It compares against the frozen snapshot
+  `web-uk/scripts/blade-route-inventory.frozen.json` (707 routes), so it still catches a
+  `web-uk` route that disappears.
+- The Laravel **API** is the contract source of truth for methods, paths, request and
+  response shapes, status codes, auth, roles, modules and side effects. That never
+  changed.
 
-**Phase B begins when Blade is decommissioned.** At that point `web-uk` owns
-browser behaviour, the route matrix becomes a historical record rather than an
-alarm, and the Laravel API remains the contract source of truth.
+🔴 **This heading and section used to read "Which phase are we in — Phase A" and
+"Phase A: Blade is still deployed", saying the cutover of 2026-08-12 did not end Phase A
+and that Blade remained the observable-behaviour specification.** That was true when
+written and is false now: Blade was deleted on 2026-08-14, which is exactly the
+"Blade is decommissioned" event that ends Phase A. The old wording is recorded here
+rather than deleted because an agent or operator who half-remembers it goes looking for
+a Blade site that no longer exists.
 
 Anything you read elsewhere that says "Blade is the source of truth" without
-qualification means the Phase A rule above.
+qualification is superseded — it means the old Phase A rule described above.
 
 ## Where the changeover stands
 
@@ -246,7 +291,7 @@ qualification means the Phase A rule above.
 | Cookie-consent record keeping | **Built.** Anonymous visitors' choices are now recorded, as Blade already did. |
 | Deployment path | **Built, and locally rehearsed 2026-08-11.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. The production image was run against the local platform and proved: it does not listen at all until Redis is reachable (so a broken deploy aborts); `/health` then returns `OK`; `/version` returns `{"service":"nexus-webuk",…}` — the exact string the deploy smoke test matches; and a real accessible page renders at 200 in 25 KB. **Deployed to the server and cut over on 2026-08-12**, with twelve post-cutover checks passing; the rollback path is documented and verified on the real server, and the guard that stops an ordinary deploy reverting the switch has been armed. From now on a deploy must pass `--with-webuk` or it refuses to run. |
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
-| Blade retirement | **Not started**, and now the only remaining phase-ending step. The Blade track was **frozen as read-only reference on 2026-08-13** (see above), but decommissioning is still a separate change with its own review, after a soak period. |
+| Blade retirement | **Done, 2026-08-14.** Blade was deleted and the deletion is deployed. 🔴 This row read "**Not started**, and now the only remaining phase-ending step" until 2026-08-17; that is superseded. |
 
 Current score: **873/1000** under rubric `WEBUK-W2-PROD-R1` (rescored 2026-08-13,
 651 -> 710 -> 745 -> 730 -> 830 -> 836 -> 845 -> 851 -> 867 -> 873). See the scoring

@@ -26,25 +26,39 @@ Use `--detach` for production deploys so long Docker builds do not depend on an 
 | --- | --- | --- |
 | `app.project-nexus.ie` | Primary React frontend | React blue/green frontend container |
 | `api.project-nexus.ie` | Laravel API and server-rendered PHP surfaces | PHP blue/green app container |
-| `accessible.project-nexus.ie` | Accessibility-first frontend | PHP blue/green app container |
+| `accessible.project-nexus.ie` | Accessibility-first frontend (`web-uk`) | `web-uk` blue/green container — `nexus-blue-webuk` port **3500** / `nexus-green-webuk` port **3600** |
+| `accessible-uk.timebank.global` | Community accessibility-first frontend (`web-uk`) | Same `web-uk` container and ports as above |
+| `accessible-minehead-and-coast.timebank.global` | Community accessibility-first frontend (`web-uk`) | Same `web-uk` container and ports as above |
 | `project-nexus.ie` | Commercial sales site | Separate sales-site deployment |
 | `api.project-nexus.net` | Experimental ASP.NET backend | ⛔ **RETIRED 2026-08-10** — container stopped, returns 503. Domain retained. |
 | `uk.project-nexus.net` | Experimental Web UK accessible client | ⛔ **RETIRED 2026-08-10** — container stopped, returns 503. Domain retained. |
 
-The accessible frontend is not a separate SPA container. It is rendered by Laravel, with source under `accessible-frontend/` and built assets under `httpdocs/build/accessible-frontend/`.
+The accessible frontend **is** its own container. Its source is `web-uk/` — a Node/Express
+application that reads the Laravel API — and it runs as `nexus-blue-webuk` /
+`nexus-green-webuk`. Apache reaches it through the `Define NEXUS_WEBUK_PORT` line in the
+production routes file: **3500** when blue is the active colour, **3600** when green is.
 
-> 🔴 **That is true today and is changing.** On 2026-08-11 the owner decided that
-> `web-uk/` — a Node/Express application consuming the Laravel API — replaces the
-> Blade accessible frontend, which retires. When that happens the accessible
-> hostname will be served by its **own container**, not the PHP blue/green app
-> container, and the table above will need updating. **It is not built or deployed
-> yet**, so the current instructions stand unchanged. Both public URL shapes are
-> preserved, so no member-facing address changes. See
-> [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) for the phase
-> and the open prerequisites — one of which is that `web-uk`'s own release runbook
-> depends on a `.claude/production-containers.md` file that was never imported into
-> this repository, so its deployment hold cannot be lifted as written and may need
-> superseding by a section in this document.
+🔴 **Never point an accessible hostname at the PHP app ports (8090 blue, 8190 green).**
+Since the Blade accessible frontend was deleted on 2026-08-14 the PHP application has
+nothing to serve there, so an Apache vhost rebuilt that way takes the live accessible
+site offline.
+
+> 🔴 **Corrected 2026-08-17 — the two paragraphs that used to sit here were wrong.**
+> The first read: "The accessible frontend is not a separate SPA container. It is
+> rendered by Laravel, with source under `accessible-frontend/` and built assets under
+> `httpdocs/build/accessible-frontend/`." Both halves are now false — `accessible-frontend/`
+> was deleted on 2026-08-14 and does not exist.
+> The second said the `web-uk` takeover decided on 2026-08-11 was "**not built or
+> deployed yet**", so "the current instructions stand unchanged". That was already
+> contradicted by the two dated corrections further down this page. The takeover was
+> **deployed and completed on 2026-08-14**: all three accessible hostnames listed in the
+> table above are served by the `web-uk` container, and each answers `/version` with
+> `{"service":"nexus-webuk",...}`. Both public URL shapes are preserved, so no
+> member-facing address changed. See
+> [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) for the record.
+> One point from the old text still holds: `web-uk`'s own release runbook referred to a
+> `.claude/production-containers.md` file that was never imported into this repository,
+> so use the deploy steps in this document rather than that runbook.
 
 Before deploying accessible frontend changes, run:
 
@@ -66,11 +80,17 @@ npm --prefix web-uk run build:css
    bash scripts/deploy.sh --with-webuk
    ```
 
-   Without `--with-webuk` the Apache routes file is written without
+   Without web-uk in the deploy, the Apache routes file is written without
    `Define NEXUS_WEBUK_PORT`, and since Blade was deleted there is nothing behind the
    fallback arm — every accessible address goes down. A server-side guard
    (`/opt/nexus-php/.webuk-live`) refuses such a deploy, so this fails loudly rather
    than silently. Do not remove that guard.
+
+   🔴 **Update 2026-08-17: `scripts/deploy.sh` now includes web-uk by DEFAULT.** Running
+   `bash scripts/deploy.sh` with no flag is the same as `--with-webuk`, so the command
+   above is still correct — it is just no longer possible to forget it by accident. The
+   flag to be careful with is now `--without-webuk`: giving it deliberately takes every
+   accessible hostname offline, because there is nothing to fall back to.
 
 ## Gated Deploy From The Dev Machine
 

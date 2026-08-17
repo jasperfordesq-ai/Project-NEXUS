@@ -35,7 +35,9 @@ This page maps the live product modules and cross-cutting client surfaces to the
 | Wallet and exchanges | `WalletService`, exchange services, wallet/exchange routes | wallet and exchange pages, including accessible routes | [modules/wallet-exchanges.md](modules/wallet-exchanges.md) |
 | Federation | federation controllers/services, protocol adapters, partner API routes | member/admin federation pages and accessible federation routes | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) |
 | Mobile | Laravel API consumed by the Expo client | `mobile/` | `mobile/README.md` and `mobile/docs/` |
-| Accessible frontend | `app/Http/Controllers/GovukAlpha`, `routes/govuk-alpha.php`, parity route files | `accessible-frontend/` Blade/Sass/TS | [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md), [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md), and `accessible-frontend/README.md` |
+| Accessible frontend | The same Laravel v2 API the React app uses — the accessible frontend is a separate Node application, not a Laravel surface | `web-uk/` (Express + Nunjucks + GOV.UK Frontend); translations generated from `lang/*/govuk_alpha*.php` | [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md), [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md), [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md), and `web-uk/README.md` |
+
+> 🔴 **Accessible frontend row corrected 2026-08-17.** It previously named `app/Http/Controllers/GovukAlpha`, `routes/govuk-alpha.php`, parity route files, and `accessible-frontend/` Blade/Sass/TS, and pointed at `accessible-frontend/README.md`. Those were the Laravel Blade accessible frontend, **deleted on 2026-08-14** — none of those paths exist, and their absence is not damage. `web-uk/` is the only accessible frontend and serves every accessible address. Two things that look like leftovers must be **kept**: `lang/*/govuk_alpha*.php` (the source `web-uk`'s eleven translation catalogues are generated from) and `web-uk/scripts/blade-route-inventory.frozen.json` (a deliberate frozen record of the 707 routes Blade served, which the route matrix is compared against).
 
 ## Writing A Module Guide
 

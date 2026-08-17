@@ -54,12 +54,33 @@ score, count, or resume queue.
 
 ## Repository And Data Boundaries
 
-Authoritative Laravel source paths are:
+> 🔴 **Corrected 2026-08-17: the Blade paths this section used to name are GONE.**
+> Until today the list below read:
+>
+> ```text
+> accessible-frontend/
+> routes/govuk-alpha.php
+> routes/govuk-alpha-parity/
+> ./
+> ```
+>
+> The Laravel Blade accessible frontend was deleted on 2026-08-14, along with
+> `app/Http/Controllers/GovukAlpha/`. None of those three paths exist, and their
+> absence is not damage — do not go looking for them and do not restore them.
+> `web-uk/` is the only accessible frontend and it is live on all three
+> accessible addresses. What decides behaviour now: the GOV.UK Design System and
+> WCAG 2.2 for presentation, `react-frontend/` for what a member can do, and the
+> Laravel API for the contract.
+>
+> Two things that look like Blade leftovers must be **kept**:
+> `lang/*/govuk_alpha*.php` (the source `web-uk`'s translations are generated
+> from) and `web-uk/scripts/blade-route-inventory.frozen.json` (a deliberate
+> frozen snapshot of the 707 routes Blade served, which the route matrix is
+> compared against).
+
+The authoritative Laravel source path is:
 
 ```text
-accessible-frontend/
-routes/govuk-alpha.php
-routes/govuk-alpha-parity/
 ./
 ```
 

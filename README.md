@@ -123,13 +123,23 @@ is the track currently being built out — unlike the second backend, which rema
 paused. The two were paused together on 2026-07-15 and their states have since
 diverged; do not read one's status from the other.
 
-🔴 **There are two accessible frontends and the changeover is half-done.** The
-Node application took over `accessible.project-nexus.ie` on **2026-08-12**; the
-Blade one still serves every community accessible domain and every
-`/{tenantSlug}/accessible/...` path, and retires when the rest of the changeover
-completes. Both answer identical public URLs, so `/version` is the only way to
-tell which one replied. Status is stated once, in
+🔴 **There is one accessible frontend and the changeover is finished.** `web-uk/`
+took over `accessible.project-nexus.ie` on **2026-08-12** and both community
+accessible domains on **2026-08-14**, and it serves every
+`/{tenantSlug}/accessible/...` path. All three accessible addresses answer with
+`{"service":"nexus-webuk"}` at `/version`. The Laravel Blade accessible frontend
+was **deleted on 2026-08-14**; `accessible-frontend/` no longer exists and its
+absence is not damage. Status is stated once, in
 [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
+🔴 **Corrected 2026-08-17.** This paragraph said "There are two accessible
+frontends and the changeover is half-done", and that the Blade one "still serves
+every community accessible domain and every `/{tenantSlug}/accessible/...` path".
+That was true from 2026-08-12 to 2026-08-14 and is now wrong. It contradicted the
+Repository Topology and Project Status sections further down this same file, which
+already stated the correct position. The old wording is recorded here rather than
+silently dropped, because an agent that half-remembers it goes hunting for a
+deleted directory and concludes the repository is broken.
 
 **The clients are backend-switchable by configuration** — the React app selects
 its target with `VITE_BACKEND_TARGET=laravel|dotnet`, and backend-specific
@@ -204,10 +214,12 @@ different things. Enforced isolation:
 
 ## Architecture
 
-A multi-tenant Laravel 12 API serving four production clients — a React 19 web
-app, two HTML-first accessible frontends mid-changeover, and a native mobile app
-— backed by MariaDB, Redis and Meilisearch, deployed by a zero-downtime
-blue/green container switch.
+A multi-tenant Laravel 12 API serving three production clients — a React 19 web
+app, one HTML-first accessible frontend (`web-uk/`), and a native mobile app —
+backed by MariaDB, Redis and Meilisearch, deployed by a zero-downtime blue/green
+container switch. 🔴 **Corrected 2026-08-17:** this said "four production clients
+… two HTML-first accessible frontends mid-changeover"; the Blade one was deleted
+on 2026-08-14.
 
 Alongside them, and deliberately fenced off from production, sits a second
 complete backend that the same clients are built to switch to by configuration.
@@ -220,13 +232,11 @@ flowchart TD
     end
 
     U -->|app.project-nexus.ie| RC[React 19 web app<br/>react-frontend/]
-    U -->|accessible.project-nexus.ie| WU[Accessible site<br/>Node 22 + Express + Nunjucks<br/>web-uk/]
+    U -->|accessible.project-nexus.ie<br/>community accessible domains<br/>/tenantSlug/accessible| WU[Accessible site<br/>Node 22 + Express + Nunjucks<br/>web-uk/]
 
     RC -->|JSON / Bearer + CSRF| API[Laravel 12 API<br/>routes/api.php]
     M -->|JSON / Bearer| API
     WU -->|server-side fetch, tenant via Origin| API
-    AC --> GC[GovukAlpha controllers<br/>app/Http/Controllers/GovukAlpha]
-    GC --> API
 
     API --> SVC[Domain services<br/>app/Services]
     SVC --> DB[(MariaDB 10.11)]
@@ -258,12 +268,23 @@ flowchart TD
     style SEC stroke-dasharray: 5 5
 ```
 
-**Reading the diagram:** everything outside the dashed box is production. The two
-accessible sites both answer live traffic today — the Node one on the platform
-accessible domain since 2026-08-12, the Blade one on community domains and
-slug paths — and the changeover finishes when Blade is retired. Inside the dashed
-box is a parallel backend that reproduces the contract surface on purpose, with
-its own API, database and message broker. Its dashed arrows are an obligation and
+🔴 **Two lines were removed from the diagram above on 2026-08-17, and this is the
+record of them.** They were `AC --> GC[GovukAlpha controllers<br/>app/Http/Controllers/GovukAlpha]`
+and `GC --> API`, describing the Laravel Blade accessible frontend that was
+deleted on 2026-08-14. Node `AC` had already gone, so the surviving edge pointed
+at nothing and stopped the whole diagram from rendering. Everywhere else this
+repository keeps superseded wording in place with a dated correction; a broken
+diagram edge cannot be kept that way, which is why it is written out here instead.
+
+**Reading the diagram:** everything outside the dashed box is production. There is
+one accessible site, `web-uk/`, and it answers every accessible address — the
+platform accessible domain since 2026-08-12, and community domains and slug paths
+since 2026-08-14. 🔴 **Corrected 2026-08-17:** this sentence used to say "The two
+accessible sites both answer live traffic today … the Blade one on community
+domains and slug paths — and the changeover finishes when Blade is retired". Blade
+was deleted on 2026-08-14, so there is no second accessible site and nothing left
+to retire. Inside the dashed box is a parallel backend that reproduces the
+contract surface on purpose, with its own API, database and message broker. Its dashed arrows are an obligation and
 an intention rather than live traffic: ASP.NET must reproduce Laravel's
 externally observable contracts, and both the React app and the accessible site
 are built to switch to it by configuration alone once that is certified. That

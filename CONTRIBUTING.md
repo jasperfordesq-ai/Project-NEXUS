@@ -156,7 +156,7 @@ Project-NEXUS/
 │   ├── Models/                   # Eloquent models
 │   ├── Services/                 # Business logic services
 │   └── Listeners/                # Event listeners
-├── accessible-frontend/          # HTML-first accessible frontend served by Laravel
+├── web-uk/                       # HTML-first accessible frontend (Express + Nunjucks + GOV.UK Frontend)
 ├── mobile/                       # Expo (React Native) mobile app
 ├── database/
 │   └── migrations/               # Laravel migrations (use these for new schema changes)
@@ -168,7 +168,9 @@ Project-NEXUS/
 └── compose.bluegreen.yml         # Docker Compose (production, blue/green)
 ```
 
-**The React frontend (`react-frontend/`) is the primary UI.** All maintained user-facing and admin UI work belongs in React, except for the approved accessible frontend under `accessible-frontend/`. Legacy PHP views are retired; do not create new PHP views.
+**The React frontend (`react-frontend/`) is the primary UI.** All maintained user-facing and admin UI work belongs in React, except for the approved accessible frontend under `web-uk/`. Legacy PHP views are retired; do not create new PHP views.
+
+> 🔴 **Corrected 2026-08-17.** The tree above listed `accessible-frontend/`, and this rule sent accessible-frontend work there. That directory was the Laravel Blade accessible frontend, which was **deleted on 2026-08-14**; it no longer exists, and its absence is not damage. The accessible frontend is `web-uk/` — a standalone Node application with its own server, tests and container.
 
 ---
 

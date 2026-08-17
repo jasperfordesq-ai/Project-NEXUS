@@ -7,7 +7,14 @@ Project NEXUS supports separate tenant domains for the primary React frontend an
 | Frontend | Tenant column | Serves | Upstream family |
 | --- | --- | --- | --- |
 | React SPA | `tenants.domain` | Primary tenant UI | React blue/green frontend |
-| Accessible frontend | `tenants.accessible_domain` | HTML-first accessible UI | PHP/Laravel blue/green app |
+| Accessible frontend | `tenants.accessible_domain` | HTML-first accessible UI | `web-uk` blue/green container — `nexus-blue-webuk` port **3500** / `nexus-green-webuk` port **3600** |
+
+> 🔴 **Corrected 2026-08-17.** The accessible row above used to say the upstream family
+> was the "PHP/Laravel blue/green app". That is no longer true: the Laravel Blade
+> accessible frontend was deleted on 2026-08-14 and every accessible hostname is now
+> served by the separate `web-uk` container. Do not proxy an accessible domain to the PHP
+> app ports (8090 blue, 8190 green) — the PHP application has nothing to serve there, so
+> doing that takes the live accessible site offline.
 
 Both hostnames resolve a tenant from the HTTP `Host` header. The production web server must preserve the original host when proxying to the app containers, otherwise tenant detection and generated links can be wrong.
 
@@ -43,7 +50,7 @@ ProxyPass / http://127.0.0.1:${NEXUS_FRONTEND_PORT}/ retry=0
 ProxyPassReverse / http://127.0.0.1:${NEXUS_FRONTEND_PORT}/
 ```
 
-Accessible frontend custom domains proxy to the active PHP/Laravel upstream:
+Accessible frontend custom domains proxy to the active `web-uk` upstream:
 
 ```apache
 Include /etc/apache2/conf-enabled/nexus-active-upstreams.conf
@@ -51,8 +58,16 @@ ProxyPreserveHost On
 RequestHeader set X-Forwarded-Proto "https"
 RewriteEngine On
 RewriteRule ^/\.well-known/acme-challenge/ - [L]
-RewriteRule ^(.*)$ http://127.0.0.1:${NEXUS_API_PORT}$1 [P,L]
+RewriteRule ^(.*)$ http://127.0.0.1:${NEXUS_WEBUK_PORT}$1 [P,L]
 ```
+
+`NEXUS_WEBUK_PORT` is set by the deploy in the Apache routes file (`Define NEXUS_WEBUK_PORT`)
+and is **3500** for blue, **3600** for green.
+
+> 🔴 **Corrected 2026-08-17.** This block used to say accessible domains "proxy to the
+> active PHP/Laravel upstream" and used `${NEXUS_API_PORT}`. Copying that into a vhost
+> today sends accessible traffic to the PHP application, which since 2026-08-14 has
+> nothing to serve there — the accessible site would go offline.
 
 ## Verification
 

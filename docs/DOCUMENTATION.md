@@ -26,7 +26,7 @@ Project NEXUS documentation follows these external standards:
 | `openapi.json` | Canonical generated API contract for the large v2 API surface. | Reference |
 | `resources/openapi.*` | Smaller resource contract used by tooling or runtime surfaces. | Reference |
 | `mobile/docs/` | Mobile release, native UI, and security guidance scoped to the Expo app. | How-to / reference |
-| `accessible-frontend/` | HTML-first accessible frontend implementation notes and shared component inventory. | How-to / reference |
+| `web-uk/` | HTML-first accessible frontend implementation notes and shared component inventory. | How-to / reference |
 | `e2e/` | Playwright runbook and route-test reference notes. | How-to / dated reference |
 | `.local-docs-archive/` | Private local scratch, prompts, reports, and handoffs. Gitignored. | Not public docs |
 
@@ -34,10 +34,12 @@ Project NEXUS documentation follows these external standards:
 
 - Keep public docs concise, current, and safe for a public AGPL repository.
 - Do not publish secrets, live credentials, private contact details, production IP addresses, raw prompt logs, generated audit dumps, or machine-local paths.
-- Prefer current code paths: `app/`, `routes/api.php`, `database/migrations/`, `react-frontend/`, and `accessible-frontend/`.
+- Prefer current code paths: `app/`, `routes/api.php`, `database/migrations/`, `react-frontend/`, and `web-uk/`.
 - Link every maintained `docs/` page from `docs/README.md`.
 - Put `Last reviewed: YYYY-MM-DD` near the top of every maintained page under `docs/`, `docs-public/`, and the scoped guide sets; refresh it only after checking the page against current source and configuration. The hygiene gate rejects invalid, future, and more-than-180-day-old review dates.
-- Index scoped guides from their nearest maintained README (`mobile/README.md`, `accessible-frontend/README.md`, `e2e/README.md`) rather than leaving them discoverable only through repository search.
+- Index scoped guides from their nearest maintained README (`mobile/README.md`, `web-uk/README.md`, `e2e/README.md`) rather than leaving them discoverable only through repository search.
+
+> 🔴 **Corrected 2026-08-17.** The three places above said `accessible-frontend/` — as an information-architecture location, as a "current code path to prefer", and as the accessible frontend's README. That directory was the Laravel Blade accessible frontend, **deleted on 2026-08-14**; it does not exist, and its absence is not damage. The accessible frontend is `web-uk/`. Do not write new documentation against the deleted paths, and do not treat a reference to them in an older document as a live code path.
 - Mark dated snapshots clearly and keep them out of the maintained-reference path.
 - Use neutral global examples, not Ireland-only assumptions.
 - Treat `CHANGELOG.md`, `VERSION`, `NOTICE`, `CONTRIBUTOR_TERMS.md`, and `CONTRIBUTING.md` as source-of-truth documents.
