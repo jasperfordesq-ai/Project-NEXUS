@@ -3820,7 +3820,17 @@ public class V15SocialCompatibilityController : ControllerBase
         }
     }
 
-    private static object PageMeta(int page, int limit, int total) => new { page, limit, total, pages = (int)Math.Ceiling(total / (double)limit) };
+    /// <summary>
+    /// Laravel's v2 collection meta: <c>{per_page, has_more}</c>. See the note on
+    /// <c>Paged</c> in V15MemberParityController — this emitted
+    /// <c>{page, limit, total, pages}</c>, which Laravel does not send.
+    /// base_url is filled in by LaravelDataEnvelopeFilter.
+    /// </summary>
+    private static object PageMeta(int page, int limit, int total) => new
+    {
+        per_page = limit,
+        has_more = (long)Math.Max(page, 1) * limit < total,
+    };
 
     private static int? DecodeFeedCursor(string? cursor)
     {

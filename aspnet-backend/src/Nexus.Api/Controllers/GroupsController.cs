@@ -139,12 +139,13 @@ public class GroupsController : ControllerBase
         return Ok(new
         {
             data = groups,
-            pagination = new
+            // Laravel's v2 collection meta: per_page + has_more, under `meta`.
+            // Verified live against the disposable Laravel for this path.
+            // base_url is filled in by LaravelDataEnvelopeFilter.
+            meta = new
             {
-                page,
-                limit,
-                total,
-                pages = totalPages
+                per_page = limit,
+                has_more = (long)Math.Max(page, 1) * limit < total,
             }
         });
     }

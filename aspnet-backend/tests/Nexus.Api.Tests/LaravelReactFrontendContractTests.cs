@@ -51,21 +51,23 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var dashboard = await Client.GetAsync($"/api/partner-analytics/me/dashboard?period=last_30d&token={token}");
         dashboard.StatusCode.Should().Be(HttpStatusCode.OK);
         var dashboardJson = await dashboard.Content.ReadFromJsonAsync<JsonElement>();
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        dashboardJson.TryGetProperty("success", out _).Should().BeFalse();
-        dashboardJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 NOT a /api/v2 path — this is /api/partner-analytics, and
+        // LaravelDataEnvelopeFilter is deliberately scoped to /api/v2 because
+        // that is where the measurement is. So this envelope is unchanged and
+        // still carries `success`. My sweep classified it by HTTP verb alone and
+        // missed that the PATH matters too.
+        dashboardJson.GetProperty("success").GetBoolean().Should().BeTrue();
         dashboardJson.GetProperty("data").TryGetProperty("period", out _).Should().BeTrue();
 
         var reports = await Client.GetAsync($"/api/partner-analytics/me/reports?token={token}");
         reports.StatusCode.Should().Be(HttpStatusCode.OK);
         var reportsJson = await reports.Content.ReadFromJsonAsync<JsonElement>();
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        reportsJson.TryGetProperty("success", out _).Should().BeFalse();
-        reportsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 NOT a /api/v2 path — this is /api/partner-analytics, and
+        // LaravelDataEnvelopeFilter is deliberately scoped to /api/v2 because
+        // that is where the measurement is. So this envelope is unchanged and
+        // still carries `success`. My sweep classified it by HTTP verb alone and
+        // missed that the PATH matters too.
+        reportsJson.GetProperty("success").GetBoolean().Should().BeTrue();
         var report = reportsJson.GetProperty("data").GetProperty("reports").EnumerateArray().Should().ContainSingle().Subject;
 
         var download = await Client.GetAsync($"/api/partner-analytics/me/reports/{report.GetProperty("id").GetInt64()}/download?token={token}");
@@ -1332,6 +1334,14 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
     [Fact]
     public async Task PaidPushCampaigns_UseLaravelReactMemberAndAdminShape()
     {
+        // 🔴 paid_push_campaigns is OFF unless a community turns it on, matching
+        // Laravel (PaidPushCampaignController::featureAvailable — the flag is not
+        // in FEATURE_DEFAULTS). These endpoints send notifications to a
+        // community's members and charge for it, so the test switches the
+        // feature on rather than asserting the un-gated behaviour back into
+        // existence.
+        await EnablePaidPushCampaignsAsync();
+
         await AuthenticateAsAdminAsync();
 
         var estimate = await Client.PostAsJsonAsync("/api/v2/me/push-campaigns/estimate-audience", new
@@ -7017,4 +7027,35 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         form.Add(fileContent, "file", "newsletter.png");
         return form;
     }
+
+    /// <summary>Switches on the tenant feature that gates paid push campaigns.</summary>
+    private async Task EnablePaidPushCampaignsAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+
+        // Canonical spelling — see Nexus.Api.Support.TenantFeatureKeys. The
+        // reader accepts the legacy `feature.` form too, but new writes use this.
+        var key = Nexus.Api.Support.TenantFeatureKeys.Canonical("paid_push_campaigns");
+        var row = await db.TenantConfigs
+            .FirstOrDefaultAsync(c => c.TenantId == TestData.Tenant1.Id && c.Key == key);
+
+        if (row is null)
+        {
+            db.TenantConfigs.Add(new TenantConfig
+            {
+                TenantId = TestData.Tenant1.Id,
+                Key = key,
+                Value = "true",
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            row.Value = "true";
+        }
+
+        await db.SaveChangesAsync();
+    }
+
 }

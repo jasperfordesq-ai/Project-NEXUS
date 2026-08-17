@@ -193,6 +193,24 @@ FEATURES_JSON=$(node "$REPO_ROOT/aspnet-backend/scripts/all-features-on.mjs")
 docker exec "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   -e "UPDATE tenants SET features = '$FEATURES_JSON' WHERE id = 1;"
 echo "features switched on: $(node -e 'process.stdout.write(String(Object.keys(JSON.parse(process.argv[1])).length))' "$FEATURES_JSON")"
 
+say "Opting the fixture members into federation"
+# 🔴 Why. The ASP.NET demo seed opts every user into federation; a fresh Laravel
+# fixture opts nobody in. Federation reads are gated on that choice on BOTH
+# backends, so the two answer differently for a reason that is fixture state,
+# not behaviour, and the harness reports a status difference it cannot see past.
+# Making the two fixtures agree is what lets the PAYLOAD be compared.
+#
+# This is a comparison fixture only. Opting in is a real member decision and
+# nothing here changes that: verifying the gate correctly REFUSES is a separate
+# check, run against a fixture that has not opted in.
+docker exec "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
+  INSERT INTO federation_user_settings
+      (user_id, federation_optin, profile_visible_federated, messaging_enabled_federated,
+       appear_in_federated_search, show_skills_federated, opted_in_at)
+  SELECT id, 1, 1, 1, 1, 1, NOW() FROM users
+  ON DUPLICATE KEY UPDATE federation_optin = 1, opted_in_at = NOW();
+" || echo "Could not set federation opt-in — federation endpoints stay uncomparable." >&2
+
 say "Ready"
 cat <<EOF
 Disposable Laravel : http://127.0.0.1:$APP_PORT

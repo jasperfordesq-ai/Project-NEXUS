@@ -2113,11 +2113,34 @@ public class V15MemberParityController : ControllerBase
 
     private static int Skip(int page, int limit) => (Math.Max(page, 1) - 1) * Limit(limit);
 
-    private static object Paged<T>(IEnumerable<T> data, int page, int limit, int total) => new
+    /// <summary>
+    /// Laravel's v2 collection envelope: <c>{data, meta:{per_page, has_more}}</c>.
+    ///
+    /// 🔴 NOT <c>pagination:{page, limit, total, pages}</c>, which is what this
+    /// emitted until 2026-08-17. Laravel's respondWithCollection
+    /// (BaseApiController.php:200-220) reports how many fit on a page and
+    /// whether another page exists, under <c>meta</c> — verified live on
+    /// /events, /feed, /groups, /polls, /kb and eight more, all
+    /// <c>{"base_url":…,"per_page":20,"has_more":false}</c>. A client reading
+    /// `pagination.pages` to build a pager finds nothing on the real backend.
+    ///
+    /// base_url is added by <see cref="Nexus.Api.Filters.LaravelDataEnvelopeFilter"/>,
+    /// which fills it into an existing meta rather than replacing one.
+    /// </summary>
+    private static object Paged<T>(IEnumerable<T> data, int page, int limit, int total)
     {
-        data,
-        pagination = new { page = Math.Max(page, 1), limit = Limit(limit), total, pages = (int)Math.Ceiling(total / (double)Limit(limit)) }
-    };
+        var perPage = Limit(limit);
+        var currentPage = Math.Max(page, 1);
+        return new
+        {
+            data,
+            meta = new
+            {
+                per_page = perPage,
+                has_more = (long)currentPage * perPage < total,
+            },
+        };
+    }
 
     private static object EventDto(Event ev) => new
     {

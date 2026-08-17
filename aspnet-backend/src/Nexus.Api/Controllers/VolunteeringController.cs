@@ -119,7 +119,10 @@ public class VolunteeringController : ControllerBase
         return Ok(new
         {
             data = opportunities,
-            pagination = new { page, limit, total, pages = (int)Math.Ceiling((double)total / limit) }
+            // Laravel's v2 collection meta: per_page + has_more, under `meta`.
+            // Verified live against the disposable Laravel for this path.
+            // base_url is filled in by LaravelDataEnvelopeFilter.
+            meta = new { per_page = limit, has_more = (long)Math.Max(page, 1) * limit < total }
         });
     }
 

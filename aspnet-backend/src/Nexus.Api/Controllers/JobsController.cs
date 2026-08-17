@@ -73,12 +73,13 @@ public class JobsController : ControllerBase
         return Ok(new
         {
             data,
-            pagination = new
+            // Laravel sends per_page, has_more AND total here — verified live
+            // on /api/v2/jobs. base_url is filled in by LaravelDataEnvelopeFilter.
+            meta = new
             {
-                page,
-                limit,
+                per_page = limit,
+                has_more = (long)Math.Max(page, 1) * limit < total,
                 total,
-                pages = (int)Math.Ceiling((double)total / limit)
             }
         });
     }
@@ -383,7 +384,12 @@ public class JobsController : ControllerBase
                 id = s.Id,
                 job = s.Job != null ? MapJobResponse(s.Job) : null,
                 saved_at = s.CreatedAt
-            })
+            }),
+            // Laravel answers this through respondWithCollection, so the
+            // envelope carries per_page/has_more even though the endpoint
+            // returns the member's whole saved list. base_url is added by
+            // LaravelDataEnvelopeFilter.
+            meta = new { per_page = 20, has_more = false }
         });
     }
 

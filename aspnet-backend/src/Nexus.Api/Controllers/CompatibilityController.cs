@@ -974,7 +974,10 @@ public class CompatibilityController : ControllerBase
         return Ok(new
         {
             data = challenges,
-            pagination = new { page, limit, total, pages = totalPages }
+            // Laravel's v2 collection meta: per_page + has_more, under `meta`,
+            // not `pagination`. Verified live for this path. base_url is added
+            // by LaravelDataEnvelopeFilter.
+            meta = new { per_page = limit, has_more = (long)Math.Max(page, 1) * limit < total }
         });
     }
 
@@ -1160,7 +1163,10 @@ public class CompatibilityController : ControllerBase
         return Ok(new
         {
             data = articles,
-            pagination = new { page, limit, total, pages = totalPages }
+            // Laravel's v2 collection meta: per_page + has_more, under `meta`,
+            // not `pagination`. Verified live for this path. base_url is added
+            // by LaravelDataEnvelopeFilter.
+            meta = new { per_page = limit, has_more = (long)Math.Max(page, 1) * limit < total }
         });
     }
 
