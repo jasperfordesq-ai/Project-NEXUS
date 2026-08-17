@@ -147,7 +147,7 @@ Ordered. "Real gap" counts exclude everything in the deliberate-absences section
 |---|---|---:|---|
 | 1 | **Identity verification** — 🔴 **BLOCKED, see below** | 3 | `web-uk` shows verification *status* but has no route to START verification. The ID check itself needs no JavaScript; the **fee** step does, and the fee-free variant is unreachable for every live community. Needs one Laravel addition |
 | 2 | **Emailed-token pages** + the email-URL fix below | 5 | Guardian consent (event + volunteering), support-action confirm, invite-code join, group-invite accept |
-| 3 | **Social / OAuth sign-in** | 1 | A member whose only credential is a Google login cannot sign in at all. `auth.js` implements password, 2FA, forgot and reset only |
+| 3 | Social / OAuth sign-in — 🔴 **switched off platform-wide; zero member impact today** | 1 | `auth.js` implements password, 2FA, forgot and reset only. But no provider is configured in production, so nobody can use social sign-in on React either. See below |
 | 4 | Clubs / Verein dues | 4 | `/clubs` index exists; dues, imports and membership invitations do not |
 | 5 | Marketplace remainder | 4 | Become-partner application, own reports list, seller shipping options |
 | 6 | Smaller singles | 5 | Wallet regional points, volunteering shift check-in token, donation receipt, municipality calendar, ad campaigns |
@@ -209,6 +209,41 @@ reusable). Put them in a new `identity` block in `lang/en/govuk_alpha_settings.p
 the sync script already globs. `web-uk` also needs `identity_verification` added to
 `src/middleware/tenant-feature-gates.js` with **two** prefix entries, because
 `/verify-identity` does not prefix-match `/verify-identity-optional`.
+
+### 🔴 Item 3 (social sign-in): the gap is real in code, and has NO member impact today
+
+Measured 2026-08-17, and this corrects an earlier claim in this project's own notes that a
+member whose only credential is a Google login "cannot sign in at all". **There are no such
+members**, because social sign-in is not switched on anywhere:
+
+- `GET /api/v2/auth/oauth/enabled-providers` — a public endpoint — returns
+  `{"success":true,"providers":[]}` for `hour-timebank`, `timebanking-org`, `agoris` and
+  `timebanks-us`.
+- Production `/opt/nexus-php/.env` carries **no** `GOOGLE_CLIENT_ID`,
+  `GOOGLE_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID` or `APPLE_CLIENT_ID` (checked read-only, key
+  presence only).
+
+So no member on **either** frontend can sign in with Google, Facebook or Apple. `web-uk`
+lacking the route changes nothing for anybody until a provider is configured — and when one
+is, `web-uk` must render buttons only for providers that endpoint actually reports, never a
+hardcoded set.
+
+**Encouraging, for whenever it is switched on:** the backend design is friendly to an
+HTML-first frontend, unlike the Stripe fee path. The dance is server-side —
+`GET /v2/auth/oauth/{provider}/redirect` starts it, the provider calls back to **Laravel** at
+`/v2/auth/oauth/{provider}/callback` (so no provider configuration needs to know the
+accessible domain exists), and `POST /v2/auth/oauth/exchange` trades a one-time code for
+tokens. `web-uk` already stores `token`/`refresh_token`/`tenant_slug` in signed HTTP-only
+cookies, so the final step reuses existing plumbing.
+
+🔴 **One question still to answer before building:** where Laravel sends the browser *after*
+its own callback. If that target is built from `TenantContext::getFrontendUrl()` — as the
+Stripe `return_url` and every emailed link are — it points at React and the same blocker
+applies. Answer that first; do not assume the server-side callback makes the whole flow safe.
+
+**Recommendation: leave this until a provider is configured.** Building it now delivers
+buttons that cannot appear, and costs new translation keys in eleven locales for copy no
+member can reach.
 
 ### 🔴 A correction that changes item 2's shape
 
