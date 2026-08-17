@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The complete 24-value React Reviews namespace has received Irish semantic review.** Average ratings, anonymous reviewers, review deletion, empty states, completed exchanges, review recipients and star accessibility text now retain their actual meaning; malformed wording that referred to recruits or simply “more” reviews has been replaced. A whole-catalogue gate rejects English residue and corrupted values.
+
 - **The one-value React Endorsements namespace has received Irish semantic review.** “Most Endorsed” now uses the Irish verb for endorsing rather than incorrectly saying that the greatest number of people agreed, and a complete-catalogue test locks the distinction in place.
 
 - **The complete 39-value React Connections namespace has received Irish semantic review.** Connection nouns no longer use an imperative verb, disconnect actions no longer imply dissolving something, empty and search states read naturally, and sent-request outcomes now preserve acceptance, refusal, cancellation and link-removal meaning. A whole-catalogue gate rejects English residue, whitespace and invisible corruption.

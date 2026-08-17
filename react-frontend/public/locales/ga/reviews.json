@@ -6,33 +6,33 @@
     "pending": "Léirmheasanna ar Feitheamh"
   },
   "stats": {
-    "average": "Meánmharcáil",
-    "total": "Léirmheasanna iomlána",
-    "no_reviews": "Níl aon léirmheasanna go fóill"
+    "average": "Meánrátáil",
+    "total": "Líon Iomlán na Léirmheasanna",
+    "no_reviews": "Níl aon léirmheas ann fós"
   },
   "review_card": {
-    "anonymous": "Anaithnid",
-    "delete": "Scrios léirmheas",
+    "anonymous": "Gan ainm",
+    "delete": "Scrios an Léirmheas",
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an léirmheas seo a scriosadh?",
-    "delete_success": "Léirmheas scriosta",
-    "delete_error": "Theip ar scriosadh an léirmheasa"
+    "delete_success": "Scriosadh an léirmheas",
+    "delete_error": "Níorbh fhéidir an léirmheas a scriosadh"
   },
   "pending": {
-    "empty": "Níl aon léirmheasanna ar feitheamh",
-    "empty_subtitle": "Tá tú suas chun dáta! Tiocfaidh léirmheasanna do mhalartuithe críochnaithe le feiceáil anseo.",
-    "write_review": "Scríobh léirmheas"
+    "empty": "Níl aon léirmheas ar feitheamh",
+    "empty_subtitle": "Tá gach rud déanta agat! Beidh léirmheasanna ar do mhalartuithe críochnaithe le feiceáil anseo.",
+    "write_review": "Scríobh Léirmheas"
   },
   "received": {
-    "empty": "Níor faigheadh aon léirmheasanna go fóill",
-    "empty_subtitle": "Críochnaigh malartuithe le baill pobail chun léirmheasanna a thuilleadh."
+    "empty": "Ní bhfuair tú aon léirmheas fós",
+    "empty_subtitle": "Críochnaigh malartuithe le baill den phobal chun tosú ar léirmheasanna a fháil."
   },
   "given": {
     "empty": "Níl aon léirmheas scríofa agat go fóill",
-    "empty_subtitle": "Tar éis malartuithe a chríochnú, is féidir leat léirmheasanna a fhágáil d'earcaigh eile."
+    "empty_subtitle": "Tar éis malartuithe a chríochnú, is féidir leat léirmheasanna a fhágáil do bhaill eile."
   },
-  "load_error": "Theip ar lódáil léirmheasanna. Déan iarracht eile le do thoil.",
-  "load_more": "Luchtaigh níos mó",
+  "load_error": "Níorbh fhéidir léirmheasanna a lódáil. Bain triail eile as.",
+  "load_more": "Lódáil tuilleadh",
   "stars": "{{count}} réalta",
   "stars_plural": "{{count}} réalta",
-  "rating_aria": "{{n}} as 5 réalta"
+  "rating_aria": "{{n}} réalta as 5"
 }
