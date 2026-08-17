@@ -91,8 +91,8 @@ guards on `hasOwnProperty`), but the information is uneditable.
 
 | # | Finding | Evidence |
 |---|---|---|
-| 1.1 | **Accepting a countered offer binds the buyer's ORIGINAL lower price.** The seller loses the difference. `counter_amount` is never even displayed. | `views/marketplace/offers.njk:62-70` renders Accept for `countered` (`marketplace.js:665`); `MarketplaceOfferService.php:155-175` `accept()` never touches `amount` — only `acceptCounter()` `:406-411` promotes it |
-| 1.2 | **The purchase page shows the UNIT price, not the amount charged.** Buying 3 of a 5-credit listing displays "5 time credits" and debits 15. Shipping is never totalled. | `views/marketplace/buy.njk:33` uses a per-unit label (`marketplace.js:463-475`); server charges unit × quantity (`MarketplaceOrderService.php:378-380,396-399`) |
+| 1.1 | ✅ **FIXED 2026-08-17.** A countered offer is now the buyer's move: the seller's tab acts only on `pending`, the buyer gets a new `/offers/:id/accept-counter` route calling the endpoint that promotes the counter, and the counter amount is displayed to both parties. All offer buttons gained `data-prevent-double-click`. *Original finding:* accepting a countered offer bound the buyer's ORIGINAL lower price and `counter_amount` was never even displayed. | `views/marketplace/offers.njk:62-70` renders Accept for `countered` (`marketplace.js:665`); `MarketplaceOfferService.php:155-175` `accept()` never touches `amount` — only `acceptCounter()` `:406-411` promotes it |
+| 1.2 | ✅ **FIXED 2026-08-17.** A Total row now shows unit x quantity, and quantity moved to its own GET form so the total is always derived from a confirmed quantity (no JavaScript can recalculate one in place). The purchase form posts that quantity as a hidden field, so displayed and charged amounts cannot diverge. Shipping stays on its own option label deliberately — a radio that can change without a reload would recreate the same lie. *Original finding:* the page showed the UNIT price while the server charges unit x quantity, so buying 3 of a 5-credit listing displayed "5 time credits" and debited 15. | `views/marketplace/buy.njk:33` uses a per-unit label (`marketplace.js:463-475`); server charges unit × quantity (`MarketplaceOrderService.php:378-380,396-399`) |
 | 1.3 | **Creating an exchange has no double-submit protection anywhere** — the only money form in web-uk missing even `data-prevent-double-click`. Two POSTs create two exchanges on one listing; confirming both moves credits twice. | `views/listings/exchange-request.njk:72-93`; handler `listings.js:958-1007` never calls its own `checkExchangeForListing`; `ExchangeWorkflowService.php:105-166` inserts unconditionally |
 | 1.4 | **Editing a coupon silently applies its discount to the seller's whole catalogue.** | `marketplace-actions.js:290` hardcodes `applies_to: 'all_listings'` in the shared create/update payload; `MerchantCouponService.php:100-109` re-normalises to it |
 | 1.5 | **Fixed-value coupons are off by 100×.** A seller typing `5` for £5 creates a £0.05 coupon and is shown "5.00". | React labels cents and divides (`CouponDetailPage.tsx:122`); web-uk neither (`marketplace.js:868-883`) |
@@ -177,7 +177,7 @@ delete-confirmation pages, and the deliberate card-payment refusal at
 ## Suggested order
 
 1. ~~**0.1**~~ — ✅ **done 2026-08-17.**
-2. **1.1, 1.2, 1.5** — money wrong by a wrong amount.
+2. ~~**1.1, 1.2**~~ — ✅ **done 2026-08-17.** **1.5** (fixed-value coupons off by 100x) still open.
 3. **1.3** — the only unguarded money form.
 4. **0.2** — same bug class as the one already "fixed", and the changelog wrongly implies it cannot recur.
 5. **1.4, 1.6, 1.7, 1.8, 1.9, 1.12** — silent wrong writes.
