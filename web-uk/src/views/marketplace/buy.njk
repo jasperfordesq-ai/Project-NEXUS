@@ -32,7 +32,30 @@
     <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.item_label") }}</dt><dd class="govuk-summary-list__value">{{ item.title }}</dd></div>
     <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.price_label") }}</dt><dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey">{{ item.priceLabel }}</strong></dd></div>
     {% if item.sellerName %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.seller_label") }}</dt><dd class="govuk-summary-list__value">{{ item.sellerName }}</dd></div>{% endif %}
+    {# 🔴 The row above is the price of ONE item. This is what will actually be
+       charged: unit x quantity. Until 2026-08-17 only the unit price was shown, so
+       buying 3 of a 5-credit item displayed "5 time credits" and debited 15. #}
+    {% if totalLabel and not acceptedOfferCheckout %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.orders.total_label") }}</dt>
+        <dd class="govuk-summary-list__value"><strong>{{ totalLabel }}</strong>{% if quantity > 1 %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.buy.quantity_label") }}: {{ quantity }})</span>{% endif %}</dd>
+      </div>
+    {% endif %}
   </dl>
+
+  {# Quantity is chosen in its own GET form so the Total above is always computed from
+     a quantity the member has confirmed. With no JavaScript there is nothing to
+     recalculate a total in place, and a number typed straight into the purchase form
+     would be charged against a total the page never showed. #}
+  {% if not acceptedOfferCheckout %}
+    <form method="get" action="{{ urlFor('/marketplace/' + (item.id | string) + '/buy') }}" class="govuk-!-margin-bottom-6">
+      <div class="govuk-form-group govuk-!-margin-bottom-2">
+        <label class="govuk-label govuk-label--s" for="quantity">{{ t("govuk_alpha_commerce.buy.quantity_label") }}</label>
+        <input class="govuk-input govuk-input--width-5" id="quantity" name="quantity" type="number" min="1" max="999" step="1" inputmode="numeric" value="{{ quantity }}">
+      </div>
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply") }}</button>
+    </form>
+  {% endif %}
 
   {% set selectedPayment = oldInput.payment_method or ('' if item.price > 0 and item.timeCreditPrice > 0 else ('cash' if item.price > 0 else ('time_credits' if item.timeCreditPrice > 0 else 'free'))) %}
   {% if selectedPayment == 'cash' %}
@@ -58,7 +81,9 @@
     {% endif %}
 
     {% if acceptedOfferCheckout %}<input type="hidden" name="listing_id" value="{{ item.id }}"><input type="hidden" name="quantity" value="1">{% else %}
-      <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="quantity">{{ t("govuk_alpha_commerce.buy.quantity_label") }}</label><input class="govuk-input govuk-input--width-5" id="quantity" name="quantity" type="number" min="1" step="1" inputmode="numeric" value="{{ oldInput.quantity or 1 }}"></div>
+      {# The confirmed quantity, matching the Total shown above. Changing it goes
+         through the GET form so the total is recomputed before anything is charged. #}
+      <input type="hidden" name="quantity" value="{{ quantity }}">
     {% endif %}
 
     <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="delivery_notes">{{ t("govuk_alpha_commerce.buy.delivery_notes_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label><div id="delivery_notes-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.buy.delivery_notes_hint") }}</div><textarea class="govuk-textarea" id="delivery_notes" name="delivery_notes" rows="3" aria-describedby="delivery_notes-hint">{{ oldInput.delivery_notes or '' }}</textarea></div>

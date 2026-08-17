@@ -34503,6 +34503,84 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('never offers the seller Accept on an offer they have countered', async () => {
+    // 🔴 MarketplaceOfferService::accept() binds the sale at the buyer's ORIGINAL
+    // amount — only acceptCounter() promotes counter_amount. Rendering Accept for a
+    // countered offer on the seller's tab therefore sold at the lower price with one
+    // click, and the counter amount was never even displayed.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const countered = {
+      data: [{
+        id: 501,
+        status: 'countered',
+        amount: 50,
+        counter_amount: 80,
+        currency: 'GBP',
+        listing: { id: 42, title: 'Community bike' },
+        buyer: { name: 'Aisha Khan' },
+        seller: { name: 'Sam Seller' }
+      }]
+    };
+
+    api.callMarketplaceApi.mockResolvedValueOnce(countered);
+    const received = await request(app)
+      .get('/marketplace/offers?tab=received')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(received.status).toBe(200);
+    expect(received.text).not.toContain('/marketplace/offers/501/accept"');
+    expect(received.text).not.toContain('/marketplace/offers/501/decline"');
+    // The counter amount is shown to both parties.
+    expect(received.text).toContain('80');
+
+    api.callMarketplaceApi.mockResolvedValueOnce(countered);
+    const sent = await request(app)
+      .get('/marketplace/offers?tab=sent')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(sent.status).toBe(200);
+    // The buyer gets accept-counter, which promotes the counter amount, never /accept.
+    expect(sent.text).toContain('/marketplace/offers/501/accept-counter');
+    expect(sent.text).not.toContain('/marketplace/offers/501/accept"');
+    expect(sent.text).toContain('/marketplace/offers/501/withdraw');
+  });
+
+  it('shows the amount that will be charged, not the price of one item', async () => {
+    // 🔴 The server charges unit x quantity. The page showed the unit price only, so
+    // buying 3 of a 5-credit listing displayed "5 time credits" and debited 15.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const listing = () => ({
+      data: {
+        id: 42,
+        title: 'Community bike',
+        time_credit_price: 5,
+        status: 'active',
+        delivery_method: 'pickup',
+        user: { id: 77, name: 'Sam Seller' }
+      }
+    });
+
+    api.callMarketplaceApi.mockResolvedValue(listing());
+
+    const single = await request(app)
+      .get('/marketplace/42/buy')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(single.status).toBe(200);
+    expect(single.text).toContain('Total');
+
+    const three = await request(app)
+      .get('/marketplace/42/buy?quantity=3')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(three.status).toBe(200);
+    // 5 credits x 3 = 15, and the quantity the Buy button will post matches it.
+    expect(three.text).toContain('15');
+    expect(three.text).toContain('name="quantity" value="3"');
+  });
+
   it('keeps each accessibility need own details separate instead of collapsing them', async () => {
     // 🔴 The regression this pins: the read path used to keep the FIRST non-empty
     // description/accommodations/contact across all of a member's needs and show it

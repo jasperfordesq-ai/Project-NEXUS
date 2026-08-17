@@ -51,28 +51,47 @@
             <strong class="govuk-tag {{ offer.statusTagClass }}">{{ offer.statusLabel }}</strong>
           </div>
           <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_commerce.offers.amount_label") }}:</strong> {{ offer.amountLabel }}</p>
+          {# The seller's counter amount — the figure that will actually be charged if
+             the buyer accepts. It was never displayed, so neither party could see it. #}
+          {% if offer.counterAmountLabel %}
+            <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_commerce.offers.status_countered") }}:</strong> {{ offer.counterAmountLabel }}</p>
+          {% endif %}
           {% if offer.counterparty %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ offer.counterpartyLabel }}: {{ offer.counterparty }}</p>
           {% endif %}
           {% if offer.message %}
             <p class="govuk-body govuk-!-margin-bottom-2">{{ offer.message }}</p>
           {% endif %}
-          {% if offer.canAct %}
+          {% if offer.canAct or offer.canAcceptCounter %}
             <div class="nexus-alpha-actions">
               {% if tab == 'received' %}
-                <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/accept') }}" class="nexus-alpha-inline-form">
-                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.offers.accept") }}</button>
-                </form>
-                <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/decline') }}" class="nexus-alpha-inline-form">
-                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.offers.decline") }}</button>
-                </form>
+                {# Only a PENDING offer is the seller's to accept. On a countered offer
+                   the next move is the buyer's — see canAct in routes/marketplace.js. #}
+                {% if offer.canAct %}
+                  <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/accept') }}" class="nexus-alpha-inline-form">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.accept") }}</button>
+                  </form>
+                  <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/decline') }}" class="nexus-alpha-inline-form">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.decline") }}</button>
+                  </form>
+                {% endif %}
               {% else %}
-                <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/withdraw') }}" class="nexus-alpha-inline-form">
-                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                  <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.offers.withdraw") }}</button>
-                </form>
+                {# The buyer accepting the seller's counter binds the COUNTER amount,
+                   which is displayed above this button. #}
+                {% if offer.canAcceptCounter %}
+                  <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/accept-counter') }}" class="nexus-alpha-inline-form">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.accept") }}</button>
+                  </form>
+                {% endif %}
+                {% if offer.canAct %}
+                  <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/withdraw') }}" class="nexus-alpha-inline-form">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.withdraw") }}</button>
+                  </form>
+                {% endif %}
               {% endif %}
             </div>
           {% endif %}

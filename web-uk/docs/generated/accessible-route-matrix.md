@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-17T13:32:16.492Z
-Laravel commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
-Web UK repository commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
+Generated: 2026-08-17T15:47:31.912Z
+Laravel commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
+Web UK repository commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 726 |
+| web-uk routes | 727 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 16 |
+| Extra web-uk routes | 17 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -62,7 +62,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | listings | 19 | 0 | 1 | 0 |
 | login | 7 | 0 | 0 | 0 |
 | logout | 1 | 0 | 0 | 0 |
-| marketplace | 50 | 0 | 1 | 0 |
+| marketplace | 50 | 0 | 2 | 0 |
 | matches | 4 | 0 | 0 | 0 |
 | me | 6 | 0 | 0 | 0 |
 | members | 11 | 0 | 1 | 0 |
@@ -119,6 +119,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
 | GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
+| POST | `/marketplace/offers/{param}/accept-counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/podcasts/studio/{param}/episodes/{param}/delete` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-17T13:32:16.492Z",
+  "generatedAt": "2026-08-17T15:47:31.912Z",
   "provenance": {
-    "generatedAt": "2026-08-17T13:32:16.492Z",
+    "generatedAt": "2026-08-17T15:47:31.912Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "43a1a000a92f54f58c90199b83a0a7a4455589b1",
+    "laravelCommitSha": "b00c0ea1a9b1fe30380de3cd02745f70792c9dcc",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "43a1a000a92f54f58c90199b83a0a7a4455589b1",
+    "webUkRepositoryCommitSha": "b00c0ea1a9b1fe30380de3cd02745f70792c9dcc",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-17T13:32:16.492Z",
+    "generatedAt": "2026-08-17T15:47:31.912Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 726,
+    "webUkRoutes": 727,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 16,
+    "extraWebUkRoutes": 17,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "cookie-consent": {
@@ -55,7 +55,7 @@
       "marketplace": {
         "matched": 50,
         "missing": 0,
-        "extraWebUk": 1,
+        "extraWebUk": 2,
         "ignoredInfrastructure": 0
       },
       "members": {
@@ -688,6 +688,27 @@
       "apiNeeds": "",
       "webUkPath": "/marketplace/{param}/delete",
       "webUkView": "confirm-delete",
+      "webUkFile": "web-uk/src/routes/marketplace-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/marketplace/offers/{param}/accept-counter",
+      "family": "marketplace",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/marketplace/offers/{param}/accept-counter",
+      "webUkView": "",
       "webUkFile": "web-uk/src/routes/marketplace-actions.js",
       "webUkRouteKind": ""
     },

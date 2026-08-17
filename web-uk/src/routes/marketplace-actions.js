@@ -854,6 +854,23 @@ router.post('/offers/:id(\\d+)/accept', asyncRoute(async (req, res) => {
   );
 }));
 
+// 🔴 The BUYER accepting the seller's counter. Distinct from /accept, which is the
+// SELLER accepting the buyer's original amount: only `acceptCounter()` promotes
+// `counter_amount`, so routing a countered offer through /accept sold at the lower
+// price. Redirects to the `sent` tab because this is the buyer's own list.
+router.post('/offers/:id(\\d+)/accept-counter', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return runAction(
+    req,
+    res,
+    'PUT',
+    `/offers/${id}/accept-counter`,
+    undefined,
+    offersRedirect('sent', 'accepted'),
+    offersRedirect('sent', 'accept-failed')
+  );
+}));
+
 router.post('/offers/:id(\\d+)/decline', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   return runAction(

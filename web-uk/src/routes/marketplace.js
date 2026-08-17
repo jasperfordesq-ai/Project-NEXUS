@@ -460,6 +460,40 @@ function objectValue(value) {
   return {};
 }
 
+const MAX_BUY_QUANTITY = 999;
+
+/** A confirmed quantity for the purchase page: a positive whole number, capped. */
+function buyQuantity(fromQuery, fromReplay) {
+  const candidate = positiveInteger(fromQuery) || positiveInteger(fromReplay) || 1;
+  return Math.min(candidate, MAX_BUY_QUANTITY);
+}
+
+/**
+ * What the member will actually be charged.
+ *
+ * 🔴 Multiplies by quantity, which the page never did. Shipping is deliberately NOT
+ * folded in: the chosen option is a radio inside the form and can change without a
+ * reload, so including it would recreate the same class of lie in a new place. The
+ * shipping cost stays on its own option label.
+ */
+function buyTotalLabel(item, quantity) {
+  const row = item && typeof item === 'object' ? item : {};
+  const credits = decimalNumber(row.timeCreditPrice ?? row.time_credit_price);
+  const money = decimalNumber(row.price);
+  const currency = row.priceCurrency || row.price_currency;
+  const units = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+
+  if (credits > 0 && money > 0) {
+    return fallbackTranslator('govuk_alpha_commerce.buy.hybrid_price', {
+      money: formatMoney(money * units, currency),
+      credits: formatCompactNumber(credits * units)
+    });
+  }
+  if (credits > 0) return formatCredits(credits * units);
+  if (money > 0) return formatMoney(money * units, currency);
+  return '';
+}
+
 function priceLabel(row) {
   const credits = decimalNumber(row.time_credit_price);
   const money = decimalNumber(row.price);
@@ -662,7 +696,22 @@ function decorateOffer(offer, tab, translate = fallbackTranslator) {
     counterparty,
     counterpartyLabel: translate(`govuk_alpha_commerce.offers.${tab === 'sent' ? 'to_label' : 'from_label'}`),
     message: limitText(row.message || '', 200),
-    canAct: status === 'pending' || status === 'countered',
+    // 🔴 The seller's counter amount was never shown, so neither party could see the
+    // number actually in play on a countered offer.
+    counterAmountLabel: (row.counter_amount ?? row.counterAmount) === null
+      || (row.counter_amount ?? row.counterAmount) === undefined
+      || (row.counter_amount ?? row.counterAmount) === ''
+      ? ''
+      : formatMoney(row.counter_amount ?? row.counterAmount, row.currency || row.price_currency || 'EUR'),
+    // 🔴 Tab-aware, and it must stay that way. This was
+    // `status === 'pending' || status === 'countered'` for BOTH tabs, which put an
+    // Accept button in front of the SELLER on an offer the seller had themselves
+    // countered. `MarketplaceOfferService::accept()` binds the sale at the buyer's
+    // ORIGINAL `amount` — only `acceptCounter()` promotes `counter_amount` — so one
+    // click discarded the seller's counter and sold at the lower price. A countered
+    // offer is now the buyer's move: the seller waits.
+    canAct: tab === 'received' ? status === 'pending' : (status === 'pending' || status === 'countered'),
+    canAcceptCounter: tab === 'sent' && status === 'countered',
     canPurchase: tab === 'sent' && status === 'accepted'
   };
 }
@@ -1850,11 +1899,19 @@ router.get('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
     }
     const buyError = req.session[directBuyErrorSessionKey(id)] || null;
     delete req.session[directBuyErrorSessionKey(id)];
+    // 🔴 The confirmation page showed the PER-UNIT price while the server charges
+    // unit x quantity, so buying 3 of a 5-credit item displayed "5 time credits" and
+    // debited 15. The quantity now travels in the query string, so the total below is
+    // computed from a quantity the member has actually confirmed and is always the
+    // figure the Buy button will charge.
+    const quantity = buyQuantity(req.query.quantity, buyError?.oldInput?.quantity);
     return res.render('marketplace/buy', {
       title: 'Confirm your purchase',
       titleKey: 'govuk_alpha_commerce.buy.title',
       activeNav: 'explore',
       item: checkout.item,
+      quantity,
+      totalLabel: buyTotalLabel(checkout.item, quantity),
       shippingOptions: checkout.shippingOptions,
       pickupSlots: checkout.pickupSlots,
       idempotencyKey,

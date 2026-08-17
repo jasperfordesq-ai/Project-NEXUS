@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-17T13:32:32.774Z
-- Laravel commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
-- Web UK repository commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
+- Generated: 2026-08-17T15:47:32.517Z
+- Laravel commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
+- Web UK repository commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 697
+- Contracts: 698
 - Laravel OpenAPI matches: 468
-- Missing OpenAPI matches: 229
-- Direct Laravel route declarations omitted from OpenAPI: 229
+- Missing OpenAPI matches: 230
+- Direct Laravel route declarations omitted from OpenAPI: 230
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 381
+- State-changing contracts: 382
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
@@ -462,6 +462,7 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/marketplace/my-offers/sent?per_page=50` | `callMarketplaceApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/marketplace-actions.js<br>src/routes/marketplace.js | tests/api.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/marketplace/offers/{param}` | `callMarketplaceApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-template-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | PUT | `/api/v2/marketplace/offers/{param}/accept` | `callMarketplaceApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
+| PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | `callMarketplaceApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | PUT | `/api/v2/marketplace/offers/{param}/decline` | `callMarketplaceApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/marketplace/orders` | `callMarketplaceApi` | createMarketplaceOrder | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/empty-state-heading-contract.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-template-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | PUT | `/api/v2/marketplace/orders/{param}/cancel` | `callMarketplaceApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/marketplace-actions.js | tests/api.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/marketplace-status-localization.test.js<br>tests/marketplace-title-localization.test.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
