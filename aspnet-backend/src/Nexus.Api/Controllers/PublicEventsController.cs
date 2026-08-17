@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Api.Data;
 using Nexus.Api.Entities;
 
+using Nexus.Api.Support;
+
 namespace Nexus.Api.Controllers;
 
 /// <summary>
@@ -97,17 +99,25 @@ public class PublicEventsController : ControllerBase
         var context = await ProjectionContextAsync(rows);
 
         Response.Headers["API-Version"] = "2.0";
+
+        // 🔴 meta is built exactly as Laravel's respondWithCollection does
+        // (BaseApiController.php:200-220): base_url, per_page, has_more, and
+        // `cursor` ONLY when there is a next page. Laravel has no `next_cursor`
+        // key at all, and it omits `cursor` rather than sending null — so a
+        // client testing `'cursor' in meta` got the wrong answer here on every
+        // last page.
+        var meta = new Dictionary<string, object?>
+        {
+            ["base_url"] = $"{Request.Scheme}://{Request.Host}",
+            ["per_page"] = perPage,
+            ["has_more"] = hasMore
+        };
+        if (nextCursor is not null) meta["cursor"] = nextCursor;
+
         return Ok(new
         {
             data = rows.Select(e => ProjectListItem(e, context)).ToList(),
-            meta = new
-            {
-                base_url = $"{Request.Scheme}://{Request.Host}",
-                per_page = perPage,
-                cursor = nextCursor,
-                next_cursor = nextCursor,
-                has_more = hasMore
-            }
+            meta
         });
     }
 
@@ -271,15 +281,20 @@ public class PublicEventsController : ControllerBase
         var tenantId = _tenant.IsResolved ? _tenant.TenantId : null;
         if (tenantId is null) return FeatureDisabled();
 
+        // Both stored spellings -- see TenantFeatureKeys. This gate read only
+        // "features.{flag}" while /tenant/bootstrap read "feature.{flag}", so
+        // the gate and the frontend could disagree about the same community.
+        var keys = TenantFeatureKeys.BothKeys("events")
+            .Concat(TenantFeatureKeys.BothKeys("public_events"))
+            .ToArray();
         var flags = await _db.TenantConfigs.IgnoreQueryFilters().AsNoTracking()
-            .Where(c => c.TenantId == tenantId.Value
-                && (c.Key == "features.events" || c.Key == "features.public_events"))
+            .Where(c => c.TenantId == tenantId.Value && keys.Contains(c.Key))
             .ToDictionaryAsync(c => c.Key, c => c.Value, HttpContext.RequestAborted);
 
-        var eventsEnabled = !flags.TryGetValue("features.events", out var eventsRaw)
-            || !IsFalse(eventsRaw);
-        var publicEnabled = flags.TryGetValue("features.public_events", out var publicRaw)
-            && IsTrue(publicRaw);
+        // events defaults ON, public_events defaults OFF -- opting a community
+        // into public advertising stays a deliberate, separate decision.
+        var eventsEnabled = TenantFeatureKeys.Read(flags, "events", true);
+        var publicEnabled = TenantFeatureKeys.Read(flags, "public_events", false);
         return eventsEnabled && publicEnabled ? null : FeatureDisabled();
     }
 

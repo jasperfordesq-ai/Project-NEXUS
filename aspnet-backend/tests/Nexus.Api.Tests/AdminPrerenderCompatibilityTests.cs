@@ -36,26 +36,26 @@ public class AdminPrerenderCompatibilityTests : IntegrationTestBase
     {
         await AuthenticateAsAdminAsync();
 
-        var summary = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/summary"));
+        var summary = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/summary"));
         summary.GetProperty("cache_readable").GetBoolean().Should().BeTrue();
         summary.GetProperty("expected_routes").EnumerateArray().Should().NotBeEmpty();
         summary.GetProperty("realtime_channel").GetString().Should().Be("private-admin-prerender");
         summary.GetProperty("realtime_event").GetString().Should().Be("job.updated");
 
-        var inventory = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/inventory?tenant=test-tenant"));
+        var inventory = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/inventory?tenant=test-tenant"));
         inventory.GetProperty("cache_path").GetString().Should().NotBeNullOrWhiteSpace();
         inventory.GetProperty("items").ValueKind.Should().Be(JsonValueKind.Array);
 
-        var coverage = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/coverage"));
+        var coverage = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/coverage"));
         coverage.GetProperty("expected_routes").EnumerateArray().Should().NotBeEmpty();
         var coverageRow = coverage.GetProperty("rows").EnumerateArray().Single(r => r.GetProperty("slug").GetString() == "test-tenant");
         coverageRow.GetProperty("tenant_id").GetInt32().Should().Be(TestData.Tenant1.Id);
 
-        var health = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/health"));
+        var health = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/health"));
         health.GetProperty("status").GetString().Should().Be("green");
         health.GetProperty("checks").EnumerateArray().Should().NotBeEmpty();
 
-        var realtime = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/realtime-channel"));
+        var realtime = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/realtime-channel"));
         realtime.GetProperty("channel").GetString().Should().Be("private-admin-prerender");
         realtime.GetProperty("event").GetString().Should().Be("job.updated");
     }
@@ -78,10 +78,10 @@ public class AdminPrerenderCompatibilityTests : IntegrationTestBase
         enqueueData.GetProperty("job").GetProperty("tenant_slug").GetString().Should().Be("test-tenant");
         enqueueData.GetProperty("job").GetProperty("priority").GetInt32().Should().Be(9);
 
-        var list = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/jobs?status=queued&limit=10"));
+        var list = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/jobs?status=queued&limit=10"));
         list.GetProperty("items").EnumerateArray().Should().Contain(item => item.GetProperty("id").GetInt32() == jobId);
 
-        var show = await ReadDataAsync(await Client.GetAsync($"/api/v2/admin/prerender/jobs/{jobId}"));
+        var show = await ReadV2GetDataAsync(await Client.GetAsync($"/api/v2/admin/prerender/jobs/{jobId}"));
         show.GetProperty("status").GetString().Should().Be("queued");
 
         var cancel = await ReadDataAsync(await Client.PostAsJsonAsync($"/api/v2/admin/prerender/jobs/{jobId}/cancel", new { }));
@@ -133,11 +133,11 @@ public class AdminPrerenderCompatibilityTests : IntegrationTestBase
         var unexpected = await ReadDataAsync(await Client.PostAsJsonAsync("/api/v2/admin/prerender/purge-unexpected", new { apply = false }));
         unexpected.GetProperty("dry_run").GetBoolean().Should().BeTrue();
 
-        var ttl = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/ttl-inspector?route=%2Fabout"));
+        var ttl = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/ttl-inspector?route=%2Fabout"));
         ttl.GetProperty("route").GetString().Should().Be("/about");
         ttl.GetProperty("ttl_seconds").GetInt32().Should().BeGreaterThan(0);
 
-        var sitemap = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/sitemap-explorer?tenant=test-tenant"));
+        var sitemap = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/sitemap-explorer?tenant=test-tenant"));
         sitemap.GetProperty("tenant_slug").GetString().Should().Be("test-tenant");
         sitemap.GetProperty("tenant_id").GetInt32().Should().Be(TestData.Tenant1.Id);
 
@@ -227,13 +227,13 @@ public class AdminPrerenderCompatibilityTests : IntegrationTestBase
         data.GetProperty("tenant_count").GetInt32().Should().Be(2);
         data.GetProperty("planned_routes").GetInt32().Should().Be(10);
 
-        var jobs = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/jobs?limit=20"));
+        var jobs = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/jobs?limit=20"));
         jobs.GetProperty("items").EnumerateArray().Should().Contain(row =>
             row.GetProperty("id").GetInt32() == data.GetProperty("job_id").GetInt32() &&
             row.GetProperty("status").GetString() == "queued" &&
             row.GetProperty("force").GetBoolean());
 
-        var audit = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/prerender/audit?action=reset_all"));
+        var audit = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/prerender/audit?action=reset_all"));
         audit.GetProperty("items").EnumerateArray().Should().ContainSingle(row => row.GetProperty("outcome").GetString() == "ok");
     }
 
@@ -284,11 +284,41 @@ public class AdminPrerenderCompatibilityTests : IntegrationTestBase
         missingJobJson.GetProperty("code").GetString().Should().Be("NOT_FOUND");
     }
 
+    /// <summary>
+    /// Reads <c>data</c> out of a successful v2 <b>GET</b>, asserting Laravel's
+    /// GET envelope: <c>data</c> + <c>meta</c>, and NO <c>success</c>.
+    ///
+    /// 🔴 Separate from <c>ReadDataAsync</c> on purpose. Laravel's v2 read helpers
+    /// (respondWithData / respondWithCollection / respondWithPaginatedCollection)
+    /// never emit <c>success</c> — of Laravel's 1,129 /v2 GET routes only 8 do,
+    /// and none of those carry a <c>data</c> key. Write responses are a
+    /// different envelope and have NOT been compared against Laravel yet, so
+    /// they keep using <c>ReadDataAsync</c> and keep asserting <c>success</c>.
+    /// </summary>
+    private static async Task<JsonElement> ReadV2GetDataAsync(HttpResponseMessage response)
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
+        return json.GetProperty("data");
+    }
+
     private static async Task<JsonElement> ReadDataAsync(HttpResponseMessage response)
     {
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        // 🔴 This is the WRITE helper and it keeps asserting `success`. Only the
+        // GET envelope changed; POST/PUT/DELETE responses have not been compared
+        // against Laravel yet. GET call sites use ReadV2GetDataAsync instead.
+        // 🔴 This is the WRITE helper and it keeps asserting `success`. Only the
+        // GET envelope changed; POST/PUT/DELETE responses have not been compared
+        // against Laravel yet. GET call sites use ReadV2GetDataAsync instead.
         json.GetProperty("success").GetBoolean().Should().BeTrue();
+
         return json.GetProperty("data");
     }
 }

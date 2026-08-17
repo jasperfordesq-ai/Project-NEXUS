@@ -23,7 +23,22 @@ public enum RegistrationMode
     GovernmentId = 3,
 
     /// <summary>Invite-only — registration is closed to the public.</summary>
-    InviteOnly = 4
+    InviteOnly = 4,
+
+    // 🔴 Added 2026-08-17 so this backend can represent Laravel's full
+    // registration vocabulary. Laravel accepts open / open_with_approval /
+    // verified_identity / government_id / invite_only / closed / waitlist; the
+    // last two had no .NET counterpart, so a community that closed registration
+    // or opened a waiting list could not be modelled here at all. New members
+    // only — no existing value is renumbered, and Mode persists by NAME
+    // (HasConversion&lt;string&gt;, TenantConfiguration.cs:99), so stored rows
+    // are unaffected.
+
+    /// <summary>Registration is closed; nobody may sign up.</summary>
+    Closed = 5,
+
+    /// <summary>Registration collects a waiting list rather than creating accounts.</summary>
+    Waitlist = 6
 }
 
 /// <summary>

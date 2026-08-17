@@ -240,6 +240,7 @@ public class NexusDbContext : DbContext
     public DbSet<StoryHighlightItem> StoryHighlightItems => Set<StoryHighlightItem>();
 
     // Phase 23: Skills & Endorsements
+    public DbSet<SkillCategory> SkillCategories => Set<SkillCategory>();
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<UserSkill> UserSkills => Set<UserSkill>();
     public DbSet<Endorsement> Endorsements => Set<Endorsement>();

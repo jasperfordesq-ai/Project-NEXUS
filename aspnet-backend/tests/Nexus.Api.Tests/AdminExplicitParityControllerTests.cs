@@ -1454,7 +1454,12 @@ public class AdminExplicitParityControllerTests : IntegrationTestBase
         data.GetProperty("trial_ends_at").ValueKind.Should().Be(JsonValueKind.Null);
         data.GetProperty("cancel_at_period_end").GetBoolean().Should().BeFalse();
         data.GetProperty("stripe_subscription_id").GetString().Should().Be("sub_laravel_react_contract");
-        json.TryGetProperty("meta", out _).Should().BeFalse();
+        // 🔴 Laravel DOES send meta here. AdminBillingController::getSubscription
+        // returns respondWithData($subscription) (AdminBillingController.php:36),
+        // and that helper seeds meta.base_url on every call. This asserted meta
+        // was ABSENT until 2026-08-17, which pinned this backend's old shape
+        // under a name that claims Laravel parity. Ask Laravel, not the test name.
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -1884,7 +1889,10 @@ public class AdminExplicitParityControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var tiers = json.GetProperty("data").GetProperty("tiers").EnumerateArray().ToList();
         var activeTier = tiers.Single(t => t.GetProperty("id").GetInt32() == activePlanId);
         activeTier.GetProperty("tenant_id").GetInt32().Should().Be(TestData.Tenant1.Id);
@@ -1947,7 +1955,10 @@ public class AdminExplicitParityControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var tier = json.GetProperty("data").GetProperty("tier");
         tier.GetProperty("id").GetInt32().Should().Be(planId);
         tier.GetProperty("tenant_id").GetInt32().Should().Be(TestData.Tenant1.Id);
@@ -2278,7 +2289,10 @@ public class AdminExplicitParityControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = json.GetProperty("data");
         data.GetProperty("total").GetInt32().Should().Be(1);
         data.GetProperty("page").GetInt32().Should().Be(1);

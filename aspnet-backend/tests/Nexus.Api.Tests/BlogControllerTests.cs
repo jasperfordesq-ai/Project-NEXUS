@@ -143,7 +143,10 @@ public class BlogControllerTests : IntegrationTestBase
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         using var listDocument = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
         var listRoot = listDocument.RootElement;
-        listRoot.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        listRoot.TryGetProperty("success", out _).Should().BeFalse();
+        listRoot.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listData = listRoot.GetProperty("data");
         listData.GetArrayLength().Should().Be(1);
         var summary = listData[0];
@@ -167,7 +170,11 @@ public class BlogControllerTests : IntegrationTestBase
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         using var detailDocument = JsonDocument.Parse(await detail.Content.ReadAsStringAsync());
         var detailRoot = detailDocument.RootElement;
-        detailRoot.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailRoot.TryGetProperty("success", out _).Should().BeFalse();
+        detailRoot.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var post = detailRoot.GetProperty("data");
         post.GetProperty("content").GetString().Should().Contain("Public blog body");
         post.GetProperty("featured_image").GetString().Should().Contain("/uploads/blog/public.jpg");

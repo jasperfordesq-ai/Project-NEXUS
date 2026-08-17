@@ -25,7 +25,7 @@ public sealed class LaravelReactPresenceContractTests : IntegrationTestBase
         var heartbeatData = await ReadOkDataAsync(heartbeat);
         heartbeatData.GetProperty("ok").GetBoolean().Should().BeTrue();
 
-        var onlineCount = await ReadOkDataAsync(await Client.GetAsync("/api/v2/presence/online-count"));
+        var onlineCount = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/presence/online-count"));
         onlineCount.GetProperty("online_count").GetInt32().Should().BeGreaterThanOrEqualTo(1);
 
         var status = await Client.PutAsJsonAsync("/api/v2/presence/status", new
@@ -40,7 +40,7 @@ public sealed class LaravelReactPresenceContractTests : IntegrationTestBase
         statusData.GetProperty("emoji").GetString().Should().Be(":focus:");
 
         var userId = TestData.MemberUser.Id;
-        var users = await ReadOkDataAsync(await Client.GetAsync($"/api/v2/presence/users?user_ids={userId},999999"));
+        var users = await ReadV2GetDataAsync(await Client.GetAsync($"/api/v2/presence/users?user_ids={userId},999999"));
         users.ValueKind.Should().Be(JsonValueKind.Object);
         var memberPresence = users.GetProperty(userId.ToString());
         memberPresence.GetProperty("status").GetString().Should().Be("dnd");
@@ -52,6 +52,28 @@ public sealed class LaravelReactPresenceContractTests : IntegrationTestBase
         var privacy = await Client.PutAsJsonAsync("/api/v2/presence/privacy", new { hide_presence = true });
         var privacyData = await ReadOkDataAsync(privacy);
         privacyData.GetProperty("hide_presence").GetBoolean().Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Reads <c>data</c> out of a successful v2 <b>GET</b>, asserting Laravel's
+    /// GET envelope: <c>data</c> + <c>meta</c>, and NO <c>success</c>.
+    ///
+    /// 🔴 Separate from <c>ReadOkDataAsync</c> on purpose. Laravel's v2 read helpers
+    /// (respondWithData / respondWithCollection / respondWithPaginatedCollection)
+    /// never emit <c>success</c> — of Laravel's 1,129 /v2 GET routes only 8 do,
+    /// and none of those carry a <c>data</c> key. Write responses are a
+    /// different envelope and have NOT been compared against Laravel yet, so
+    /// they keep using <c>ReadOkDataAsync</c> and keep asserting <c>success</c>.
+    /// </summary>
+    private static async Task<JsonElement> ReadV2GetDataAsync(HttpResponseMessage response)
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
+        return json.GetProperty("data");
     }
 
     private static async Task<JsonElement> ReadOkDataAsync(HttpResponseMessage response)

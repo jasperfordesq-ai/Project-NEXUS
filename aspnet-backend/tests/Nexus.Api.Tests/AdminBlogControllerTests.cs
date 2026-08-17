@@ -300,7 +300,15 @@ public class AdminBlogControllerTests : IntegrationTestBase
         var show = await Client.GetAsync($"/api/v2/admin/blog/{postId}");
         show.StatusCode.Should().Be(HttpStatusCode.OK);
         using var showDocument = JsonDocument.Parse(await show.Content.ReadAsStringAsync());
-        showDocument.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta`, with NO `success`. Laravel's
+        // AdminBlogController::show goes through respondWithData, and the live
+        // Laravel admin blog endpoints were confirmed to answer
+        // {"data":…,"meta":{"base_url":…}} with no success key. This asserted
+        // `success == true`, pinning this backend's old shape. Only the GET is
+        // changed here: the create/update/delete assertions below are POST/PUT/
+        // DELETE, whose envelopes have NOT been compared against Laravel yet.
+        showDocument.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        showDocument.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var shown = showDocument.RootElement.GetProperty("data");
         shown.GetProperty("content").GetString().Should().Contain("Contract body");
         shown.GetProperty("featured_image").GetString().Should().Be("/uploads/blog/contract.jpg");

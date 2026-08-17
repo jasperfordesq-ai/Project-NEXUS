@@ -28,13 +28,150 @@ node aspnet-backend/scripts/compare-live-responses.mjs --paths list.txt --json o
 
 **First run, 20 read-only endpoints: 5 identical.** That is the real baseline.
 
-🔴 **Two traps when reading its output:**
+🔴 **Four traps when reading its output:**
 
 1. **Local Laravel runs in debug mode**, so its error bodies carry
    `exception`, `file`, `line`, `trace`. ASP.NET must NOT reproduce those — a
    `SHAPE_DIFFERS` on a 404 error body is usually this, not a real gap.
 2. **A `404` from Laravel may mean the path is wrong in the seed list**, not
    that ASP.NET is wrong. Source paths from the contract matrix, not from memory.
+   Six entries in the React corpus were extractor damage, not endpoints —
+   `/api/v2/public/events${qs`, `/api/v2/matches/all...`, `/api/v2/test1`. The
+   extractor cut template literals at the interpolation. Repair or drop them;
+   do not "fix" a backend to satisfy a path no client calls.
+3. **An empty list on one side proves nothing** (added 2026-08-17). The two
+   backends hold different data — a production-derived Laravel snapshot against
+   a thin demo seed — so one side routinely has rows where the other has none.
+   Collapsing `[]` to a comparable skeleton invented six field mismatches on
+   `/api/v2/blog/categories` that were only ASP.NET having content. The harness
+   now returns a separate verdict, `MATCH_BUT_LIST_EMPTY`, which is **not**
+   counted as a match: the envelope agrees, the row contract is untested. Do not
+   fold it into the pass number.
+4. **Shape blindness is real: equal types can still be a defect.** Both backends
+   returned a string for `registration_mode`, so the harness said MATCH — but
+   Laravel sends `verified_identity` and ASP.NET was sending `VerifiedIdentity`,
+   the raw .NET enum name. Any client that switches on the value takes the wrong
+   branch. When an endpoint carries an enumerated value, **read the values**, not
+   just the skeleton.
+
+**Scores measured with this instrument (React corpus, 170 endpoints after
+repairing the six damaged paths):**
+
+| Date | Identical | Untested lists | Differing | Note |
+| --- | --- | --- | --- | --- |
+| 2026-08-16 | 136 | — | 38 | first full React run |
+| 2026-08-17 | 145 | — | 29 | nine anonymous leaks closed |
+| 2026-08-17 | 156 | — | 18 | `/api/v2` aliases stopped bypassing `[Authorize]` |
+| 2026-08-17 | 163 | 4 | 3 | envelope, meta, status fixes |
+| 2026-08-17 | **164** | **6** | **0** | skill_categories table, categories row, cursor meta |
+
+The "untested" column is honest, not padding: those six agree on everything
+visible, and have an empty list or a null field on one side, so the row contract
+inside them was never exercised. They are deliberately NOT counted as passes.
+
+🔴 **What 164/170 does and does not mean.** It means: for every one of those
+endpoints, an anonymous GET to both backends returns the same status and the
+same JSON shape. It does NOT mean the endpoints are equivalent behind
+authentication, that writes behave the same, or that the 229 do-nothing handlers
+have gained bodies. The corpus is the GET requests the React frontend makes;
+most resolve to 401 on both sides, which proves the authorisation boundary
+matches and nothing about the payload behind it. Authenticated comparison is the
+next instrument, and it needs a disposable Laravel environment — the ordinary
+local Laravel database is a production-derived snapshot and is never a fixture.
+
+---
+
+## 0a. Signed-in comparison — the disposable Laravel (2026-08-17)
+
+🔴 **The signed-out number was never the real number, and this is the correction.**
+Most of the React corpus answers 401 on both backends. That proves the door is
+locked the same way and says NOTHING about the room behind it. Measured signed
+in, the same 170 endpoints scored **17/170**, against 164/170 signed out.
+
+That gap was invisible because the ordinary local Laravel database is a
+confidential production-derived snapshot — read-only, unauthenticated GET/HEAD
+only — so nobody could sign in to compare.
+
+**The unblock:** `bash aspnet-backend/scripts/start-disposable-laravel.sh`. It
+builds a second Laravel on `:8091` from the committed schema dump (740 tables)
+plus `E2ETestDataSeeder`, so it holds **synthetic fixtures and no real member
+data**. Safe to sign into, write to, and destroy (`--down`). It never touches
+`nexus-php-db`, the snapshot, or `nexus_test`.
+
+```bash
+bash aspnet-backend/scripts/start-disposable-laravel.sh
+node aspnet-backend/scripts/compare-live-responses.mjs   --laravel http://127.0.0.1:8091 --laravel-tenant 1   --laravel-auth "e2e.user.a@project-nexus.local:TestPassword123!"   --aspnet-auth "member@acme.test:NexusV2!Demo#2026:acme"   --paths .local-docs-archive/react-paths.txt --json out.json
+```
+
+The harness **refuses to send credentials** when `--laravel` points at
+`127.0.0.1:8090`. That guard is not advisory — do not remove it.
+
+### 🔴 Both fixtures must have the SAME features on, or the run is noise
+
+Fifteen features default OFF in Laravel (`TenantFeatureConfig::FEATURE_DEFAULTS`):
+marketplace, courses, member_premium, podcasts, local_advertising,
+caring_community, public_events and the rest. A fresh fixture answers 403
+FEATURE_DISABLED on ~27 endpoints and the harness never reaches the payload —
+and the ASP.NET dev tenant has a DIFFERENT set on, so the mismatch runs both
+ways. Enabling everything on both sides moved the score from 29 to 42 while
+raising the visible difference count, which is the honest direction: more
+surface compared, not a better backend.
+
+- Laravel side: the start script does it (`all-features-on.mjs` → `tenants.features`).
+- ASP.NET side: insert `features.<flag> = true` rows into `tenant_configs`.
+
+Switching everything on is a COMPARISON choice. It says nothing about what
+should default on, and verifying a gate correctly REFUSES is a separate check
+against a fixture with the features off.
+
+### Which endpoint serves a path
+
+`scripts/map-paths-to-actions.mjs` turns a parity report into a list of METHODS
+to edit, by making each request and reading the action the container logged.
+Grep is unreliable here: `AdminV2RouteAliasConvention` synthesises `/api/v2`
+routes that exist in no source file, and several paths are claimed by more than
+one controller. It scopes the log read to a time window opened before the
+request, so a request that executes no action reports none rather than
+inheriting the previous one.
+
+### Progress, signed in, on the 170 React GET paths
+
+| Change | Identical | Envelope right, rows untestable | Differing |
+| --- | --- | --- | --- |
+| first signed-in run | 17 | 8 | 145 |
+| + `meta` block added by shared filter | 31 | 21 | 118 |
+| + both fixtures fully featured | 42 | 21 | 107 |
+| + six authorisation/validation fixes | 47 | 21 | 102 |
+| + stray `success` flag removed | **57** | **31** | **82** |
+
+---
+
+### 🔴 A rule that looked safe and was not — read this before writing another one
+
+The shared filter is right for `meta.base_url` and for removing `success`, both
+measured 89-vs-0 and 41-vs-0. So I extended it once more: "a list `data` means
+Laravel used `respondWithCollection`, so add `per_page` and `has_more` too."
+
+It was wrong, and the run said so in one step: **57/170 → 35/170**, breaking 22
+endpoints that already matched.
+
+Laravel uses `respondWithData` for plenty of LIST endpoints, and that helper
+emits `base_url` alone. `/api/v2/ads/active`, `/api/v2/billing/plans` and
+`/api/v2/skills/search` all answer `{"data":[…],"meta":{"base_url":…}}` with no
+`per_page`. **Which helper a Laravel route used is not derivable from its
+response** — the same lesson as `[OwnErrorContract]` and `[LaravelOmitsMeta]`,
+learned a third time.
+
+The rule of thumb that keeps holding: a shared rule is safe when the measurement
+shows N-versus-**zero** across the corpus. `meta.base_url` and `success` did.
+"List means collection" did not — it was inferred from a plausible story about
+Laravel's internals instead of counted. **Count first; the harness answers in
+one run.**
+
+The ~11 endpoints that genuinely need `per_page`/`has_more`, and the 5 that
+report pagination as `pagination` where Laravel uses `meta`, are per-endpoint
+work. Use `map-paths-to-actions.mjs` to find the method, then read the live
+Laravel response for that path before editing.
 
 ---
 
@@ -59,6 +196,83 @@ a broken public page. Fix ASP.NET to match Laravel in both directions.
 **Why it matters more than shape:** a field-name mismatch breaks a screen
 visibly. An authorisation mismatch is silent, and in one direction it is a
 disclosure.
+
+### 1a. RESOLVED 2026-08-17 — anonymous divergences closed, and the root cause of most of them
+
+All anonymous-access divergences on the React corpus are closed. The count went
+9 -> 0, and the harness reports zero remaining.
+
+Two mechanisms produced them, and both are worth knowing because neither is
+visible in source review or in a route inventory.
+
+**(a) `[AllowAnonymous]` always wins.** Adding `[Authorize]` beside an existing
+`[AllowAnonymous]` changes nothing, whichever is more specific. Three marketplace
+endpoints read as protected in source while staying open. The rule: **remove the
+`AllowAnonymous`; never add an `Authorize` next to it.**
+
+**(b) `/api/v2` alias routes silently lost their `[Authorize]`.** This is the
+larger one. `AdminV2RouteAliasConvention` built controller-level alias routes as
+a bare `new SelectorModel { AttributeRouteModel = ... }`. Under endpoint routing
+a controller-level `[Authorize]` is not a filter — it is endpoint metadata
+carried on the controller's selector — so a hand-made selector produced a route
+with no `IAuthorizeData` at all and `AuthorizationMiddleware` never challenged.
+
+Measured on the running API before the fix:
+
+```
+GET /api/caring-community/sub-regions      -> 401, no endpoint executed
+GET /api/v2/caring-community/sub-regions   -> 403 FEATURE_DISABLED
+    log: "Executing endpoint CaringCommunitySubRegionsController.Index"
+```
+
+The alias reached the controller body with **no user**. It returned 403 rather
+than the tenant's data only because `caring_community` happened to be switched
+off. Eleven endpoints were affected — ten caring-community routes plus
+`users/me/match-preferences`, which 500ed instead of challenging.
+
+It hid for so long because the **action**-level alias helpers in the same file
+have always used the copy constructor `new SelectorModel(source)` and are
+correct, so most aliases behaved; and because a route inventory counts the alias
+as present either way. The fix routes every controller-level adder through
+`AddControllerAlias`, which copies the source selector.
+
+**Lesson for future work:** when a route exists twice, test BOTH spellings
+anonymously. Equal route counts are not equal authorisation.
+
+---
+
+### 1b. Feature flags: the switch and the display read different rows (fixed 2026-08-17)
+
+Not authorisation, but the same shape of defect — found while checking why
+`/api/v2/public/events` differed.
+
+Tenant feature flags live in `tenant_configs`, and this backend had grown **two
+spellings for the same flag**:
+
+| Spelling | Written by | Read by |
+| --- | --- | --- |
+| `features.{flag}` | seeders, admin paths | the gates that enforce access — `PublicEventsController`, `AuthController`, `OutOfScopeFeatureGuardMiddleware`, every Caring Community service |
+| `feature.{flag}` | several tests | `/api/v2/tenant/bootstrap` — **all forty flags it publishes** — plus `MemberParityController` and the volunteering services |
+
+Bootstrap is how the React frontend learns which features a community has, so
+the switch and the display were reading different rows. Reproduced live:
+
+```
+INSERT features.public_events = true
+GET /api/v2/public/events     -> 200    (the gate honoured it)
+GET /api/v2/tenant/bootstrap  -> features.public_events = false
+```
+
+The backend was serving a feature the frontend had been told did not exist. The
+reverse is worse: switching a default-on feature OFF left the frontend still
+advertising it, sending members to a screen the backend refuses.
+
+Fixed by `Nexus.Api.Support.TenantFeatureKeys`, which every reader now goes
+through. It reads **both** spellings, canonical first. It deliberately does not
+pick one: live rows exist under the canonical spelling and tests write the
+legacy one, so collapsing to a single key would silently discard whichever half
+it dropped — the same failure again in the other direction. Pinned by
+`tests/Nexus.Api.Tests/TenantFeatureKeySpellingTests.cs`.
 
 ---
 
@@ -363,6 +577,46 @@ the same notification?) are all part of the contract and none is compared.
 
 **What to do:** after 1–7. Side effects need their own harness — comparing what
 each backend *wrote*, not what it returned.
+
+---
+
+## Next measurable batch — the legacy duplicate-key envelopes
+
+**Status: suspected divergence, NOT yet measured. Do not fix blind.**
+
+Laravel's `respondWithData` emits exactly `{data, meta}`. This backend has two
+habits Laravel does not have:
+
+- **39** responses of the form `Ok(new { data = badges, badges })` — the payload
+  repeated under a second, legacy key.
+- Many more carrying `success = true` beside `data` (21 in `AdminFeedController`
+  alone, 10 in `AdminExplicitParityController`).
+- **`next_cursor` in pagination meta, which Laravel does not have.** Laravel's
+  `respondWithCollection` emits `cursor` and **only when it is non-null** — it
+  omits the key rather than sending null, so a client testing `'cursor' in meta`
+  gets the wrong answer on every last page. Fixed on `/api/v2/public/events`
+  where the harness could see it; `events/{id}/lifecycle-history` and the
+  volunteer-hours list still emit `next_cursor` and are authenticated, so they
+  are unverified. Two tests currently PIN `next_cursor`, so this needs the
+  Laravel comparison before it is changed, not after.
+
+Where these were measurable they were all divergences and all removed —
+`help/faqs` had `faqs`, `platform/stats` had `stats`, `blog/categories` had
+`success`. So the prior is strong.
+
+🔴 **They are still not proven, and must not be stripped on that prior alone.**
+Almost all sit behind authentication, so the anonymous harness never reaches
+them, and this plan has already recorded three separate occasions where a
+"consistent rule" applied without measurement broke something real. Two of the
+duplicate keys may also be deliberate: a Laravel endpoint built with a raw
+`response()->json()` instead of the base-controller helper follows no rule at all
+(`/api/v2/categories` legitimately has no `meta`).
+
+**What unblocks this:** an authenticated mode for the harness, which needs a
+**disposable** Laravel environment. The ordinary local Laravel database is a
+confidential production-derived snapshot and is never a fixture, so the
+authenticated corpus cannot be run against it. Provision the disposable
+environment first; then this batch is mechanical and verifiable in one pass.
 
 ---
 

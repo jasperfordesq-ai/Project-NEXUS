@@ -51,13 +51,21 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var dashboard = await Client.GetAsync($"/api/partner-analytics/me/dashboard?period=last_30d&token={token}");
         dashboard.StatusCode.Should().Be(HttpStatusCode.OK);
         var dashboardJson = await dashboard.Content.ReadFromJsonAsync<JsonElement>();
-        dashboardJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        dashboardJson.TryGetProperty("success", out _).Should().BeFalse();
+        dashboardJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         dashboardJson.GetProperty("data").TryGetProperty("period", out _).Should().BeTrue();
 
         var reports = await Client.GetAsync($"/api/partner-analytics/me/reports?token={token}");
         reports.StatusCode.Should().Be(HttpStatusCode.OK);
         var reportsJson = await reports.Content.ReadFromJsonAsync<JsonElement>();
-        reportsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        reportsJson.TryGetProperty("success", out _).Should().BeFalse();
+        reportsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var report = reportsJson.GetProperty("data").GetProperty("reports").EnumerateArray().Should().ContainSingle().Subject;
 
         var download = await Client.GetAsync($"/api/partner-analytics/me/reports/{report.GetProperty("id").GetInt64()}/download?token={token}");
@@ -82,7 +90,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         providers.StatusCode.Should().Be(HttpStatusCode.OK, providersBody);
         var providersJson = JsonDocument.Parse(providersBody).RootElement;
-        providersJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        providersJson.TryGetProperty("success", out _).Should().BeFalse();
+        providersJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var providerList = providersJson.GetProperty("providers");
         providerList.ValueKind.Should().Be(JsonValueKind.Array);
         providerList.EnumerateArray().Should().BeEmpty("Laravel's default OAUTH_ENABLED=false kill switch should not advertise connectable providers");
@@ -101,7 +113,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         identities.StatusCode.Should().Be(HttpStatusCode.OK);
         var identitiesJson = await identities.Content.ReadFromJsonAsync<JsonElement>();
-        identitiesJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        identitiesJson.TryGetProperty("success", out _).Should().BeFalse();
+        identitiesJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         identitiesJson.GetProperty("identities").ValueKind.Should().Be(JsonValueKind.Array);
         identitiesJson.GetProperty("enabled_providers").ValueKind.Should().Be(JsonValueKind.Array);
         identitiesJson.GetProperty("enabled_providers").EnumerateArray().Should().BeEmpty();
@@ -1538,7 +1554,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var initialJson = await initial.Content.ReadFromJsonAsync<JsonElement>();
-        initialJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        initialJson.TryGetProperty("success", out _).Should().BeFalse();
+        initialJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var initialData = initialJson.GetProperty("data");
         initialData.GetProperty("email_messages").GetBoolean().Should().BeTrue();
         initialData.GetProperty("email_digest").GetBoolean().Should().BeFalse();
@@ -1601,7 +1623,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var initialJson = await initial.Content.ReadFromJsonAsync<JsonElement>();
-        initialJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        initialJson.TryGetProperty("success", out _).Should().BeFalse();
+        initialJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var initialData = initialJson.GetProperty("data");
         initialData.GetProperty("max_distance_km").GetInt32().Should().Be(25);
         initialData.GetProperty("min_match_score").GetInt32().Should().Be(50);
@@ -1645,7 +1673,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var initialJson = await initial.Content.ReadFromJsonAsync<JsonElement>();
-        initialJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        initialJson.TryGetProperty("success", out _).Should().BeFalse();
+        initialJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         initialJson.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
 
         var update = await Client.PutAsJsonAsync("/api/v2/users/me/consent", new
@@ -1689,7 +1723,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var initialJson = await initial.Content.ReadFromJsonAsync<JsonElement>();
-        initialJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        initialJson.TryGetProperty("success", out _).Should().BeFalse();
+        initialJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var initialData = initialJson.GetProperty("data");
         initialData.GetProperty("privacy").GetProperty("privacy_profile").GetString().Should().Be("public");
         initialData.GetProperty("privacy").GetProperty("privacy_search").GetBoolean().Should().BeTrue();
@@ -1764,7 +1804,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         sessions.StatusCode.Should().Be(HttpStatusCode.OK);
         var sessionsJson = await sessions.Content.ReadFromJsonAsync<JsonElement>();
-        sessionsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        sessionsJson.TryGetProperty("success", out _).Should().BeFalse();
+        sessionsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         sessionsJson.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
     }
 
@@ -1777,7 +1823,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var initialJson = await initial.Content.ReadFromJsonAsync<JsonElement>();
-        initialJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        initialJson.TryGetProperty("success", out _).Should().BeFalse();
+        initialJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var initialData = initialJson.GetProperty("data");
         initialData.GetProperty("id").GetInt32().Should().Be(TestData.MemberUser.Id);
         initialData.GetProperty("email").GetString().Should().Be(TestData.MemberUser.Email);
@@ -2092,7 +2144,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = json.GetProperty("data");
         data.ValueKind.Should().Be(JsonValueKind.Array);
         data.EnumerateArray().Should().Contain(item =>
@@ -2112,7 +2170,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = json.GetProperty("data");
         data.ValueKind.Should().Be(JsonValueKind.Array);
         data.EnumerateArray().Should().Contain(item =>
@@ -2139,7 +2203,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var list = await Client.GetAsync("/api/v2/upload/list");
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.GetProperty("data").GetProperty("images").EnumerateArray()
             .Should().Contain(image => image.GetProperty("path").GetString() == path);
     }
@@ -2182,7 +2252,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = json.GetProperty("data");
         data.GetProperty("tenant").GetProperty("slug").GetString().Should().Be(TestData.Tenant1.Slug);
         data.GetProperty("counts").TryGetProperty("expected", out _).Should().BeTrue();
@@ -2804,7 +2880,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         index.StatusCode.Should().Be(HttpStatusCode.OK);
         var indexJson = await index.Content.ReadFromJsonAsync<JsonElement>();
-        indexJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        indexJson.TryGetProperty("success", out _).Should().BeFalse();
+        indexJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         indexJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var indexData = indexJson.GetProperty("data");
         indexData.GetProperty("shows").EnumerateArray().Should().Contain(row => row.GetProperty("id").GetInt32() == showId);
@@ -2884,7 +2966,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         policy.StatusCode.Should().Be(HttpStatusCode.OK);
         var policyJson = await policy.Content.ReadFromJsonAsync<JsonElement>();
-        policyJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        policyJson.TryGetProperty("success", out _).Should().BeFalse();
+        policyJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         policyJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var policyData = policyJson.GetProperty("data");
         policyData.GetProperty("registration_mode").GetString().Should().NotBeNullOrWhiteSpace();
@@ -2897,7 +2985,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         providers.StatusCode.Should().Be(HttpStatusCode.OK);
         var providersJson = await providers.Content.ReadFromJsonAsync<JsonElement>();
-        providersJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        providersJson.TryGetProperty("success", out _).Should().BeFalse();
+        providersJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         providersJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         providersJson.GetProperty("data").EnumerateArray()
             .Should().Contain(provider =>
@@ -2957,7 +3049,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         available.StatusCode.Should().Be(HttpStatusCode.OK);
         var availableJson = await available.Content.ReadFromJsonAsync<JsonElement>();
-        availableJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        availableJson.TryGetProperty("success", out _).Should().BeFalse();
+        availableJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         availableJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var availableTenants = availableJson.GetProperty("data").EnumerateArray().ToArray();
         availableTenants.Should().Contain(t =>
@@ -2998,7 +3096,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(n => n.GetProperty("id").GetInt32() == neighborhoodId);
@@ -3033,7 +3135,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         dashboard.StatusCode.Should().Be(HttpStatusCode.OK);
         var dashboardJson = await dashboard.Content.ReadFromJsonAsync<JsonElement>();
-        dashboardJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        dashboardJson.TryGetProperty("success", out _).Should().BeFalse();
+        dashboardJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         dashboardJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var data = dashboardJson.GetProperty("data");
         var overview = data.GetProperty("overview");
@@ -3054,7 +3162,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         geography.StatusCode.Should().Be(HttpStatusCode.OK);
         var geographyJson = await geography.Content.ReadFromJsonAsync<JsonElement>();
-        geographyJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        geographyJson.TryGetProperty("success", out _).Should().BeFalse();
+        geographyJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var geographyData = geographyJson.GetProperty("data");
         geographyData.GetProperty("member_locations").ValueKind.Should().Be(JsonValueKind.Array);
         geographyData.GetProperty("total_with_location").ValueKind.Should().Be(JsonValueKind.Number);
@@ -3081,7 +3193,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(comment => comment.GetProperty("id").GetInt32() == commentId);
@@ -3102,7 +3220,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         detailJson.GetProperty("data").GetProperty("id").GetInt32().Should().Be(commentId);
 
         var hide = await Client.PostAsync($"/api/v2/admin/comments/{commentId}/hide", null);
@@ -3139,7 +3261,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(post => post.GetProperty("id").GetInt32() == postId);
@@ -3161,7 +3289,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(postId);
         detailData.GetProperty("user_email").GetString().Should().Be(TestData.MemberUser.Email);
@@ -3171,7 +3303,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         stats.StatusCode.Should().Be(HttpStatusCode.OK);
         var statsJson = await stats.Content.ReadFromJsonAsync<JsonElement>();
-        statsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        statsJson.TryGetProperty("success", out _).Should().BeFalse();
+        statsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var statsData = statsJson.GetProperty("data");
         statsData.GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         statsData.GetProperty("hidden").GetInt32().Should().BeGreaterThanOrEqualTo(0);
@@ -3215,7 +3351,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         brokerList.StatusCode.Should().Be(HttpStatusCode.OK);
         var brokerListJson = await brokerList.Content.ReadFromJsonAsync<JsonElement>();
-        brokerListJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        brokerListJson.TryGetProperty("success", out _).Should().BeFalse();
+        brokerListJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         brokerListJson.GetProperty("data").EnumerateArray()
             .Should().Contain(post => post.GetProperty("id").GetInt32() == postId);
 
@@ -3237,7 +3379,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         coordinatorStats.StatusCode.Should().Be(HttpStatusCode.OK);
         var coordinatorStatsJson = await coordinatorStats.Content.ReadFromJsonAsync<JsonElement>();
-        coordinatorStatsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        coordinatorStatsJson.TryGetProperty("success", out _).Should().BeFalse();
+        coordinatorStatsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
 
         await AuthenticateAsMemberAsync();
 
@@ -3545,7 +3691,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == listingId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3564,7 +3716,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(listingId);
         detailData.GetProperty("type").GetString().Should().Be("listing");
@@ -3603,7 +3759,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == eventId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3619,7 +3781,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(eventId);
         detailData.GetProperty("type").GetString().Should().Be("event");
@@ -3658,7 +3824,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == pollId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3674,7 +3846,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(pollId);
         detailData.GetProperty("type").GetString().Should().Be("poll");
@@ -3713,7 +3889,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == goalId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3729,7 +3911,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(goalId);
         detailData.GetProperty("type").GetString().Should().Be("goal");
@@ -3768,7 +3954,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == jobId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3784,7 +3976,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(jobId);
         detailData.GetProperty("type").GetString().Should().Be("job");
@@ -3823,7 +4019,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == challengeId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.AdminUser.Id);
@@ -3839,7 +4041,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(challengeId);
         detailData.GetProperty("type").GetString().Should().Be("challenge");
@@ -3878,7 +4084,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == opportunityId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3894,7 +4106,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(opportunityId);
         detailData.GetProperty("type").GetString().Should().Be("volunteer");
@@ -3933,7 +4149,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == blogId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -3949,7 +4171,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(blogId);
         detailData.GetProperty("type").GetString().Should().Be("blog");
@@ -3988,7 +4214,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == discussionId);
         listed.GetProperty("user_id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -4004,7 +4236,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(discussionId);
         detailData.GetProperty("type").GetString().Should().Be("discussion");
@@ -4043,7 +4279,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var listed = listJson.GetProperty("data").EnumerateArray()
             .Single(review => review.GetProperty("id").GetInt32() == seeded.ReviewId);
@@ -4065,7 +4307,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         detailJson.GetProperty("data").GetProperty("id").GetInt32().Should().Be(seeded.ReviewId);
 
         var flag = await Client.PostAsync($"/api/v2/admin/reviews/{seeded.ReviewId}/flag", null);
@@ -4118,7 +4364,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         listJson.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         listJson.GetProperty("meta").GetProperty("current_page").GetInt32().Should().Be(1);
@@ -4134,7 +4386,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(pollId);
         detailData.GetProperty("question").GetString().Should().Be("Laravel React admin poll");
@@ -4160,7 +4416,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         var payload = listJson.GetProperty("data");
         payload.GetProperty("meta").GetProperty("page").GetInt32().Should().Be(1);
@@ -4180,7 +4442,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(articleId);
         detailData.GetProperty("title").GetString().Should().Be("Laravel React resource article");
@@ -4207,7 +4473,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         listJson.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         listJson.GetProperty("meta").GetProperty("current_page").GetInt32().Should().Be(1);
@@ -4228,7 +4500,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(goalId);
         detailData.GetProperty("title").GetString().Should().Be("Laravel React admin goal");
@@ -4254,7 +4530,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.TryGetProperty("compatibility", out _).Should().BeFalse();
         listJson.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         listJson.GetProperty("meta").GetProperty("current_page").GetInt32().Should().Be(1);
@@ -4272,7 +4554,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(challengeId);
         detailData.GetProperty("title").GetString().Should().Be("Laravel React ideation challenge");
@@ -4674,7 +4960,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailOutcome = detailJson.GetProperty("data");
         detailOutcome.GetProperty("challenge_id").GetInt32().Should().Be(challengeId);
         detailOutcome.GetProperty("implementation_status").GetString().Should().Be("in_progress");
@@ -4727,7 +5019,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         dashboard.StatusCode.Should().Be(HttpStatusCode.OK);
         var dashboardJson = await dashboard.Content.ReadFromJsonAsync<JsonElement>();
-        dashboardJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        dashboardJson.TryGetProperty("success", out _).Should().BeFalse();
+        dashboardJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = dashboardJson.GetProperty("data");
         data.GetProperty("total").GetInt32().Should().Be(2);
         data.GetProperty("implemented").GetInt32().Should().Be(1);
@@ -4793,7 +5091,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.GetProperty("data").EnumerateArray()
             .Should().Contain(item =>
                 item.GetProperty("id").GetInt32() == campaignId &&
@@ -4815,7 +5119,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.GetProperty("data");
         detailData.GetProperty("id").GetInt32().Should().Be(campaignId);
         detailData.GetProperty("challenges_count").GetInt32().Should().Be(1);
@@ -4895,7 +5203,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var idea = detailJson.GetProperty("data");
         idea.GetProperty("id").GetInt32().Should().Be(ideaId);
         idea.GetProperty("challenge_id").GetInt32().Should().Be(challengeId);
@@ -4955,7 +5269,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         comments.StatusCode.Should().Be(HttpStatusCode.OK);
         var commentsJson = await comments.Content.ReadFromJsonAsync<JsonElement>();
-        commentsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        commentsJson.TryGetProperty("success", out _).Should().BeFalse();
+        commentsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         commentsJson.GetProperty("data").EnumerateArray()
             .Should().Contain(row =>
                 row.GetProperty("id").GetInt32() == commentId &&
@@ -5045,7 +5363,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var list = await Client.GetAsync($"/api/v2/groups/{groupId}/tasks?status=todo&per_page=10");
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.GetProperty("data").EnumerateArray().Should().Contain(item =>
             item.GetProperty("id").GetInt32() == taskId &&
             item.GetProperty("title").GetString() == "Draft team prototype" &&
@@ -5112,7 +5436,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         listJson.GetProperty("data").EnumerateArray().Should().Contain(item =>
             item.GetProperty("id").GetInt32() == documentId &&
             item.GetProperty("group_id").GetInt32() == groupId &&
@@ -5164,7 +5494,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var rooms = await Client.GetAsync($"/api/v2/groups/{groupId}/chatrooms");
         rooms.StatusCode.Should().Be(HttpStatusCode.OK);
         var roomsJson = await rooms.Content.ReadFromJsonAsync<JsonElement>();
-        roomsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        roomsJson.TryGetProperty("success", out _).Should().BeFalse();
+        roomsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         roomsJson.GetProperty("data").EnumerateArray().Should().Contain(item =>
             item.GetProperty("id").GetInt32() == chatroomId &&
             item.GetProperty("name").GetString() == "delivery");
@@ -5183,7 +5519,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var messages = await Client.GetAsync($"/api/v2/group-chatrooms/{chatroomId}/messages");
         messages.StatusCode.Should().Be(HttpStatusCode.OK);
         var messagesJson = await messages.Content.ReadFromJsonAsync<JsonElement>();
-        messagesJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        messagesJson.TryGetProperty("success", out _).Should().BeFalse();
+        messagesJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         messagesJson.GetProperty("data").EnumerateArray().Should().Contain(item =>
             item.GetProperty("id").GetInt32() == messageId &&
             item.GetProperty("chatroom_id").GetInt32() == chatroomId &&
@@ -5200,7 +5540,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         var pinned = await Client.GetAsync($"/api/v2/groups/{groupId}/chatrooms/{chatroomId}/pinned");
         pinned.StatusCode.Should().Be(HttpStatusCode.OK);
         var pinnedJson = await pinned.Content.ReadFromJsonAsync<JsonElement>();
-        pinnedJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        pinnedJson.TryGetProperty("success", out _).Should().BeFalse();
+        pinnedJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         pinnedJson.GetProperty("data").EnumerateArray().Should().Contain(item =>
             item.GetProperty("id").GetInt32() == messageId &&
             item.GetProperty("pinned_by").GetInt32() == TestData.MemberUser.Id &&
@@ -5230,7 +5574,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         categories.StatusCode.Should().Be(HttpStatusCode.OK);
         var categoriesJson = await categories.Content.ReadFromJsonAsync<JsonElement>();
-        categoriesJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        categoriesJson.TryGetProperty("success", out _).Should().BeFalse();
+        categoriesJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var category = categoriesJson.GetProperty("data")
             .EnumerateArray()
             .Should()
@@ -5246,7 +5596,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         popularTags.StatusCode.Should().Be(HttpStatusCode.OK);
         var popularTagsJson = await popularTags.Content.ReadFromJsonAsync<JsonElement>();
-        popularTagsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        popularTagsJson.TryGetProperty("success", out _).Should().BeFalse();
+        popularTagsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var popularTag = popularTagsJson.GetProperty("data")
             .EnumerateArray()
             .Should()
@@ -5258,7 +5612,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         tags.StatusCode.Should().Be(HttpStatusCode.OK);
         var tagsJson = await tags.Content.ReadFromJsonAsync<JsonElement>();
-        tagsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        tagsJson.TryGetProperty("success", out _).Should().BeFalse();
+        tagsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var tag = tagsJson.GetProperty("data")
             .EnumerateArray()
             .Should()
@@ -5272,7 +5630,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         templates.StatusCode.Should().Be(HttpStatusCode.OK);
         var templatesJson = await templates.Content.ReadFromJsonAsync<JsonElement>();
-        templatesJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        templatesJson.TryGetProperty("success", out _).Should().BeFalse();
+        templatesJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var template = templatesJson.GetProperty("data")
             .EnumerateArray()
             .Should()
@@ -5291,14 +5653,22 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailJson = await detail.Content.ReadFromJsonAsync<JsonElement>();
-        detailJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         detailJson.GetProperty("data").GetProperty("id").GetInt32().Should().Be(templateId);
 
         var templateData = await Client.GetAsync($"/api/v2/ideation-templates/{templateId}/data");
 
         templateData.StatusCode.Should().Be(HttpStatusCode.OK);
         var templateDataJson = await templateData.Content.ReadFromJsonAsync<JsonElement>();
-        templateDataJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        templateDataJson.TryGetProperty("success", out _).Should().BeFalse();
+        templateDataJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var data = templateDataJson.GetProperty("data");
         data.GetProperty("title").GetString().Should().Be("Community project");
         data.GetProperty("description").GetString().Should().NotBeNullOrWhiteSpace();
@@ -5694,7 +6064,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         json.TryGetProperty("compatibility", out _).Should().BeFalse();
         var data = json.GetProperty("data").EnumerateArray().ToList();
         data.Should().HaveCount(2);
@@ -5776,7 +6152,13 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
         queue.StatusCode.Should().Be(HttpStatusCode.OK);
         var queueJson = await queue.Content.ReadFromJsonAsync<JsonElement>();
         queueJson.TryGetProperty("compatibility", out _).Should().BeFalse();
-        queueJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        queueJson.TryGetProperty("success", out _).Should().BeFalse();
+        queueJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         queueJson.GetProperty("meta").GetProperty("current_page").GetInt32().Should().Be(1);
         queueJson.GetProperty("meta").GetProperty("per_page").GetInt32().Should().Be(20);
         queueJson.GetProperty("meta").GetProperty("total_pages").GetInt32().Should().BeGreaterThanOrEqualTo(1);
@@ -5796,7 +6178,11 @@ public class LaravelReactFrontendContractTests : IntegrationTestBase
 
         stats.StatusCode.Should().Be(HttpStatusCode.OK);
         var statsJson = await stats.Content.ReadFromJsonAsync<JsonElement>();
-        statsJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        statsJson.TryGetProperty("success", out _).Should().BeFalse();
+        statsJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var statsData = statsJson.GetProperty("data");
         statsData.GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         statsData.GetProperty("pending").GetInt32().Should().BeGreaterThanOrEqualTo(1);

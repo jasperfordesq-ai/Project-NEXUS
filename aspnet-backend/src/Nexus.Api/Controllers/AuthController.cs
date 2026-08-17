@@ -19,6 +19,8 @@ using Nexus.Api.Services.Registration;
 using Nexus.Contracts.Events;
 using Nexus.Messaging;
 
+using Nexus.Api.Support;
+
 namespace Nexus.Api.Controllers;
 
 /// <summary>
@@ -96,13 +98,13 @@ public class AuthController : ControllerBase
     /// <summary>Tenant feature flag lookup (features.&lt;key&gt; in tenant_configs).</summary>
     private async Task<bool> TenantFeatureEnabledAsync(int tenantId, string feature)
     {
-        var raw = await _db.TenantConfigs.IgnoreQueryFilters().AsNoTracking()
-            .Where(c => c.TenantId == tenantId && c.Key == $"features.{feature}")
-            .Select(c => c.Value)
-            .FirstOrDefaultAsync(HttpContext.RequestAborted);
-        if (string.IsNullOrWhiteSpace(raw)) return false;
-        raw = raw.Trim().Trim('"');
-        return raw is "1" or "true" or "True" or "TRUE" or "yes" or "on";
+        // Both stored spellings -- see TenantFeatureKeys.
+        var keys = TenantFeatureKeys.BothKeys(feature);
+        var rows = await _db.TenantConfigs.IgnoreQueryFilters().AsNoTracking()
+            .Where(c => c.TenantId == tenantId && keys.Contains(c.Key))
+            .ToDictionaryAsync(c => c.Key, c => c.Value!.Trim().Trim('"'), HttpContext.RequestAborted);
+
+        return TenantFeatureKeys.Read(rows, feature, false);
     }
 
     private static string MaskEmail(string email)

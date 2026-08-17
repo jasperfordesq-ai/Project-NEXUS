@@ -57,7 +57,14 @@ public sealed class LaravelReactAdsCompatibilityTests : IntegrationTestBase
 
         active.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await active.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 `data` + `meta`, with no `success` key. This asserted
+        // `success == true` until 2026-08-17, which was pinning THIS backend's
+        // shape rather than Laravel's: Laravel serves /v2/ads/active through
+        // respondWithData, verified live as {"data":[…],"meta":{"base_url":…}}.
+        // A test named for Laravel compatibility is not evidence about Laravel.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
         var rows = json.GetProperty("data").EnumerateArray().ToArray();
         rows.Should().ContainSingle(row => row.GetProperty("campaign_id").GetInt32() == campaignId);
 

@@ -60,29 +60,19 @@ public sealed class AdminV2RouteAliasConvention : IApplicationModelConvention
         }
 
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => template!)
-            .Where(IsAliasedAdminPrefix)
-            .Select(ToV2AdminAlias)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(selector => selector.AttributeRouteModel?.Template is not null)
+            .Where(selector => IsAliasedAdminPrefix(selector.AttributeRouteModel!.Template!))
+            .Select(selector => new
+            {
+                Selector = selector,
+                Alias = ToV2AdminAlias(selector.AttributeRouteModel!.Template!)
+            })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
@@ -682,176 +672,96 @@ public sealed class AdminV2RouteAliasConvention : IApplicationModelConvention
     private static void AddUsersControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => Normalize(template))
-            .Where(template => template.Equals("api/users", StringComparison.OrdinalIgnoreCase))
-            .Select(template => "api/v2/users")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(selector => Normalize(selector.AttributeRouteModel?.Template)
+                .Equals("api/users", StringComparison.OrdinalIgnoreCase))
+            .Select(selector => new { Selector = selector, Alias = "api/v2/users" })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
     private static void AddJobsControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => Normalize(template))
-            .Where(template => template.Equals("api/jobs", StringComparison.OrdinalIgnoreCase))
-            .Select(template => "api/v2/jobs")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(selector => Normalize(selector.AttributeRouteModel?.Template)
+                .Equals("api/jobs", StringComparison.OrdinalIgnoreCase))
+            .Select(selector => new { Selector = selector, Alias = "api/v2/jobs" })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
     private static void AddFederationControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => Normalize(template))
-            .Where(template => template.Equals("api/federation", StringComparison.OrdinalIgnoreCase))
-            .Select(template => "api/v2/federation")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(selector => Normalize(selector.AttributeRouteModel?.Template)
+                .Equals("api/federation", StringComparison.OrdinalIgnoreCase))
+            .Select(selector => new { Selector = selector, Alias = "api/v2/federation" })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
     private static void AddGoalsControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => Normalize(template))
-            .Where(template => template.Equals("api/goals", StringComparison.OrdinalIgnoreCase))
-            .Select(template => "api/v2/goals")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(selector => Normalize(selector.AttributeRouteModel?.Template)
+                .Equals("api/goals", StringComparison.OrdinalIgnoreCase))
+            .Select(selector => new { Selector = selector, Alias = "api/v2/goals" })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
     private static void AddCaringCommunityControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => Normalize(template))
-            .Where(template =>
-                template.Equals("api/caring-community", StringComparison.OrdinalIgnoreCase)
-                || template.StartsWith("api/caring-community/", StringComparison.OrdinalIgnoreCase))
-            .Select(template => "api/v2/caring-community" + template["api/caring-community".Length..])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(selector => new { Selector = selector, Template = Normalize(selector.AttributeRouteModel?.Template) })
+            .Where(item =>
+                item.Template.Equals("api/caring-community", StringComparison.OrdinalIgnoreCase)
+                || item.Template.StartsWith("api/caring-community/", StringComparison.OrdinalIgnoreCase))
+            .Select(item => new
+            {
+                item.Selector,
+                Alias = "api/v2/caring-community" + item.Template["api/caring-community".Length..]
+            })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
     private static void AddSimpleV2ControllerAliases(ControllerModel controller, ISet<string> existingRoutes)
     {
         var aliases = controller.Selectors
-            .Select(selector => selector.AttributeRouteModel?.Template)
-            .Where(template => template is not null)
-            .Select(template => ToSimpleV2Alias(template))
-            .Where(alias => alias is not null)
-            .Select(alias => Normalize(alias))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(selector => new { Selector = selector, Alias = ToSimpleV2Alias(selector.AttributeRouteModel?.Template) })
+            .Where(item => item.Alias is not null)
+            .Select(item => new { item.Selector, Alias = Normalize(item.Alias) })
+            .DistinctBy(item => item.Alias, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var alias in aliases)
+        foreach (var item in aliases)
         {
-            if (HasRoute(controller.Selectors, alias))
-            {
-                continue;
-            }
-
-            controller.Selectors.Add(new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = alias
-                }
-            });
-            existingRoutes.Add(Normalize(alias));
+            AddControllerAlias(controller, existingRoutes, item.Selector, item.Alias!);
         }
     }
 
@@ -1045,6 +955,70 @@ public sealed class AdminV2RouteAliasConvention : IApplicationModelConvention
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Adds a controller-level <c>/api/v2</c> alias that keeps the source
+    /// selector's endpoint metadata.
+    ///
+    /// 🔴 Copying the selector is the whole point — do not "simplify" this back
+    /// to <c>new SelectorModel { AttributeRouteModel = … }</c>.
+    ///
+    /// Under endpoint routing a controller-level <c>[Authorize]</c> is not a
+    /// filter. <c>AuthorizationApplicationModelProvider</c> only registers an
+    /// <c>AuthorizeFilter</c> when <c>EnableEndpointRouting</c> is false; on the
+    /// default path the attribute is carried as ENDPOINT METADATA on the
+    /// controller's selector, and each action descriptor inherits it from the
+    /// controller selector it was built from. A hand-made selector starts with
+    /// an empty metadata collection, so the alias route it produces has no
+    /// <c>IAuthorizeData</c> at all and <c>AuthorizationMiddleware</c> never
+    /// challenges.
+    ///
+    /// The effect is not a cosmetic status-code difference. It is anonymous
+    /// execution of the action body. Measured on the running API before this
+    /// fix:
+    ///
+    /// <code>
+    /// GET /api/caring-community/sub-regions      → 401 (no endpoint executed)
+    /// GET /api/v2/caring-community/sub-regions   → 403 FEATURE_DISABLED
+    ///     …"Executing endpoint CaringCommunitySubRegionsController.Index"
+    /// </code>
+    ///
+    /// The alias reached the controller body with no user. It returned 403
+    /// rather than data only because <c>caring_community</c> happened to be
+    /// switched off for that tenant — with the feature on, the same anonymous
+    /// request would have been served the tenant's sub-regions. Laravel answers
+    /// 401 on both paths.
+    ///
+    /// It was invisible because the action-level alias helpers in this same file
+    /// have always used <c>new SelectorModel(source)</c> and are therefore
+    /// correct, so most aliases behaved. Only controllers that carry their route
+    /// AND their <c>[Authorize]</c> at CONTROLLER level were exposed, and route
+    /// inventories counted the alias as present either way.
+    /// </summary>
+    private static void AddControllerAlias(
+        ControllerModel controller,
+        ISet<string> existingRoutes,
+        SelectorModel source,
+        string alias)
+    {
+        if (HasRoute(controller.Selectors, alias))
+        {
+            return;
+        }
+
+        // The route model is deliberately fresh rather than copied: an alias
+        // must not inherit the source route's Name, or two endpoints would
+        // share one attribute-route name with different templates.
+        controller.Selectors.Add(new SelectorModel(source)
+        {
+            AttributeRouteModel = new AttributeRouteModel
+            {
+                Template = alias
+            }
+        });
+
+        existingRoutes.Add(Normalize(alias));
     }
 
     private static bool HasRoute(IList<SelectorModel> selectors, string template) =>

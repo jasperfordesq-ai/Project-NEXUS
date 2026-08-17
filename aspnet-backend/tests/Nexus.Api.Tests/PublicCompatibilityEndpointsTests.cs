@@ -200,8 +200,24 @@ public class PublicCompatibilityEndpointsTests : IntegrationTestBase
         var tenantsResponse = await Client.GetAsync("/api/v2/tenants?include_master=1");
         tenantsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var tenants = await tenantsResponse.Content.ReadFromJsonAsync<JsonElement>();
-        tenants.ValueKind.Should().Be(JsonValueKind.Array);
-        tenants.EnumerateArray().Should().Contain(t => t.GetProperty("slug").GetString() == "test-tenant");
+
+        // 🔴 `{data, meta}`, not a bare array. This asserted an array until
+        // 2026-08-17 and was pinning THIS backend's old shape, not Laravel's:
+        // Laravel's list() returns respondWithData(...)
+        // (TenantBootstrapController.php:250). Verified against the running
+        // Laravel. A test named for parity is not evidence about Laravel — ask
+        // Laravel.
+        tenants.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
+        tenants.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
+        var rows = tenants.GetProperty("data").EnumerateArray().ToList();
+        rows.Should().Contain(t => t.GetProperty("slug").GetString() == "test-tenant");
+
+        // Every row carries the auth/feature blocks the login page reads.
+        var testTenant = rows.First(t => t.GetProperty("slug").GetString() == "test-tenant");
+        testTenant.GetProperty("authentication_config")
+            .TryGetProperty("passkeys.conditional_autofill", out _).Should().BeTrue();
+        testTenant.GetProperty("features").TryGetProperty("biometric_login", out _).Should().BeTrue();
 
         var registrationInfoResponse = await Client.GetAsync("/api/v2/auth/registration-info");
         registrationInfoResponse.StatusCode.Should().Be(HttpStatusCode.OK);

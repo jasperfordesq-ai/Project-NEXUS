@@ -52,7 +52,10 @@ public class GamificationControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        json.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        json.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        json.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
 
         var data = json.RootElement.GetProperty("data");
         data.GetProperty("user").GetProperty("id").GetInt32().Should().BeGreaterThan(0);
@@ -156,7 +159,10 @@ public class GamificationControllerTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         using var listJson = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
-        listJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        listJson.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var badges = listJson.RootElement.GetProperty("data").EnumerateArray().ToArray();
         badges.Should().NotBeEmpty();
         listJson.RootElement.GetProperty("meta").GetProperty("available_types").ValueKind.Should().Be(JsonValueKind.Array);
@@ -174,7 +180,11 @@ public class GamificationControllerTests : IntegrationTestBase
 
         detail.StatusCode.Should().Be(HttpStatusCode.OK);
         using var detailJson = JsonDocument.Parse(await detail.Content.ReadAsStringAsync());
-        detailJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        detailJson.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        detailJson.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var detailData = detailJson.RootElement.GetProperty("data");
         detailData.GetProperty("key").GetString().Should().Be(badge.GetProperty("badge_key").GetString());
         detailData.GetProperty("badge_key").GetString().Should().Be(badge.GetProperty("badge_key").GetString());

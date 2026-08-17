@@ -99,7 +99,10 @@ public class BlogV2Controller : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { success = true, data = categories, meta = new { base_url = BaseUrl() } });
+        // No `success` key: Laravel's respondWithData emits `data` + `meta` only
+        // (BaseApiController.php:92-105), and BlogPublicController::categories
+        // goes through it. Verified live against Laravel.
+        return Ok(new { data = categories, meta = new { base_url = BaseUrl() } });
     }
 
     [HttpGet("{slug}")]

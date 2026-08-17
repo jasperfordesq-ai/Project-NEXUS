@@ -74,10 +74,10 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260816144805_AddVolunteerProjectSupporters",
-            "the chain currently ends with vol_community_project_supporters — backing a "
-            + "project wrote to a config blob and the project list carried no supporter_count, "
-            + "so the whole feature was cosmetic; "
+        migrations.Last().Should().Be("20260817121949_AddSkillCategories",
+            "the chain currently ends with skill_categories — /api/v2/skills/categories "
+            + "answered from the LISTING category table because no skill taxonomy table "
+            + "existed here, returning a healthy 200 that described the wrong thing; "
             + "adding a migration is fine but must be deliberate — update this pin in the same commit. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
             + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "

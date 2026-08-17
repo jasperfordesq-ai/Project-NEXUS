@@ -108,6 +108,12 @@ builder.Services.AddControllers(opt =>
     // Every 401 gets Laravel's envelope, whatever produced it. See the filter
     // for why three different shapes existed.
     opt.Filters.Add<Nexus.Api.Filters.LaravelAuthEnvelopeFilter>();
+
+    // Every successful GET that returns `data` also returns Laravel's `meta`
+    // block. In Laravel that is one shared place (BaseApiController), not
+    // per-endpoint behaviour, so it is one shared place here too. Measured:
+    // 89 endpoints had meta on Laravel and not here, and ZERO the other way.
+    opt.Filters.Add<Nexus.Api.Filters.LaravelDataEnvelopeFilter>();
 });
 
 // Global request body size limit (5MB) to prevent abuse

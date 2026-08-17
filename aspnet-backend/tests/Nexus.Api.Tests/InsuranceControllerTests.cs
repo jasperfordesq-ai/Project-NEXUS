@@ -91,7 +91,10 @@ public class InsuranceControllerTests : IntegrationTestBase
 
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await list.Content.ReadFromJsonAsync<JsonElement>();
-        listJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        listJson.TryGetProperty("success", out _).Should().BeFalse();
+        listJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var cert = listJson.GetProperty("data").EnumerateArray()
             .Single(item => item.GetProperty("id").GetInt32() == data.GetProperty("id").GetInt32());
         cert.GetProperty("insurance_type").GetString().Should().Be("professional_indemnity");

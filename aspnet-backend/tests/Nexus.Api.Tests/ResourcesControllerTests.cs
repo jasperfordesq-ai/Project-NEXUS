@@ -268,7 +268,11 @@ public class ResourcesControllerTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var root = document.RootElement;
-        root.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        root.TryGetProperty("success", out _).Should().BeFalse();
+        root.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
 
         var data = root.GetProperty("data").EnumerateArray().ToArray();
         data.Should().HaveCount(1);
@@ -301,7 +305,11 @@ public class ResourcesControllerTests : IntegrationTestBase
 
         categoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var categoriesDocument = JsonDocument.Parse(await categoriesResponse.Content.ReadAsStringAsync());
-        categoriesDocument.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        categoriesDocument.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        categoriesDocument.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var categories = categoriesDocument.RootElement.GetProperty("data").EnumerateArray().ToArray();
         var contractCategory = categories.Single(c => c.GetProperty("id").GetInt32() == category.Id);
         contractCategory.GetProperty("name").GetString().Should().Be(category.Name);

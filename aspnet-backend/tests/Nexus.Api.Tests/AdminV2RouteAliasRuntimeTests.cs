@@ -80,9 +80,18 @@ public class AdminV2RouteAliasRuntimeTests : IntegrationTestBase
         using var getJson = JsonDocument.Parse(await getResponse.Content.ReadAsStringAsync());
         using var postJson = JsonDocument.Parse(await postResponse.Content.ReadAsStringAsync());
 
+        // 🔴 The GET and the POST no longer carry the SAME envelope, so they can
+        // no longer share one assertion. A v2 GET returns `data` + `meta` with no
+        // `success` — Laravel's LinkPreviewController::show goes through
+        // respondWithData. The POST still carries `success` here because write
+        // envelopes have NOT been compared against Laravel yet, and changing one
+        // on a guess is how three earlier over-generalisations broke things.
+        getJson.RootElement.TryGetProperty("success", out _).Should().BeFalse();
+        getJson.RootElement.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        postJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+
         foreach (var json in new[] { getJson.RootElement, postJson.RootElement })
         {
-            json.GetProperty("success").GetBoolean().Should().BeTrue();
             var data = json.GetProperty("data");
             data.GetProperty("url").GetString().Should().Be("https://example.com/welcome");
             data.GetProperty("title").GetString().Should().NotBeNullOrWhiteSpace();

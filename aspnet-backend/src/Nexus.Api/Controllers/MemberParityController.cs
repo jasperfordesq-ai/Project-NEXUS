@@ -17,6 +17,8 @@ using Nexus.Api.Extensions;
 using Nexus.Api.Middleware;
 using Nexus.Api.Services;
 
+using Nexus.Api.Support;
+
 namespace Nexus.Api.Controllers;
 
 /// <summary>
@@ -472,6 +474,19 @@ public class MemberParityController : ControllerBase
     [HttpGet("me/push-campaigns")]
     public async Task<IActionResult> PushCampaigns()
     {
+        // 🔴 Paid push campaigns send notifications to a community's members and
+        // charge for it. Laravel gates them on `paid_push_campaigns`, which is
+        // NOT in FEATURE_DEFAULTS and so resolves false unless a community turns
+        // it on (PaidPushCampaignController::featureAvailable, :446-456). This
+        // backend had no gate at all.
+        if (!await IsFeatureEnabledAsync("paid_push_campaigns"))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                errors = new[] { new { code = "FEATURE_DISABLED", message = "Service unavailable" } },
+            });
+        }
+
         var userId = UserId();
         var campaigns = (await LoadPushCampaignsAsync())
             .Where(c => c.CreatedBy == userId)
@@ -2322,12 +2337,15 @@ public class MemberParityController : ControllerBase
     /// </summary>
     private async Task<bool> IsFeatureEnabledAsync(string feature, bool fallback = false)
     {
-        var row = await _db.TenantConfigs.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.TenantId == TenantId() && c.Key == $"feature.{feature}");
+        // Reads BOTH stored spellings -- see TenantFeatureKeys. Reading only
+        // "feature.{flag}" here made this blind to everything the seeders and
+        // the gates write under "features.{flag}".
+        var keys = TenantFeatureKeys.BothKeys(feature);
+        var rows = await _db.TenantConfigs.AsNoTracking()
+            .Where(c => c.TenantId == TenantId() && keys.Contains(c.Key))
+            .ToDictionaryAsync(c => c.Key, c => c.Value);
 
-        return row is null || string.IsNullOrWhiteSpace(row.Value)
-            ? fallback
-            : row.Value is "1" or "true" or "True" or "TRUE";
+        return TenantFeatureKeys.Read(rows, feature, fallback);
     }
 
     private int TenantId() => _tenantContext.TenantId ?? throw new InvalidOperationException("Tenant context not resolved");

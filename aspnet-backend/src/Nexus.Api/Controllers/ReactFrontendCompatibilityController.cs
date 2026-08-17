@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -75,24 +76,77 @@ public class ReactFrontendCompatibilityController : ControllerBase
     /// data. Found by scripts/compare-live-responses.mjs.
     [HttpGet("api/categories")]
     [AllowAnonymous]
-    public async Task<IActionResult> ListCategories()
+    // Laravel builds this one with a raw response()->json(['data' => ...])
+    // instead of the base-controller helper (routes/api.php:116-136), so it is
+    // the one measured 200-with-data endpoint that carries NO meta block.
+    [Nexus.Api.Filters.LaravelOmitsMeta]
+    public async Task<IActionResult> ListCategories([FromQuery] string? type = null)
     {
-        var categories = await _db.Categories
+        // Laravel's route (routes/api.php:116-136) filters by `type`, defaulting
+        // to "listing", and treats "event"/"events" as the same set while
+        // reporting the canonical "event" back.
+        var allowed = new[] { "listing", "event", "events", "volunteering", "resource" };
+        var requested = allowed.Contains(type) ? type! : "listing";
+        var canonicalType = requested is "event" or "events" ? "event" : requested;
+
+        var rows = await _db.Categories
+            .AsNoTracking()
             .Where(c => c.IsActive)
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name)
+            .OrderBy(c => c.Name)
+            .ThenBy(c => c.Id)
             .Select(c => new
             {
-                id = c.Id,
-                name = c.Name,
-                slug = c.Slug,
-                description = c.Description,
-                parent_category_id = c.ParentCategoryId,
-                sort_order = c.SortOrder
+                c.Id,
+                c.TenantId,
+                c.Name,
+                c.Slug,
+                c.SortOrder,
+                c.IsActive,
+                c.SubstitutionCoefficient,
+                c.CreatedAt,
+                c.ParentCategoryId,
+                c.UpdatedAt
             })
             .ToListAsync();
 
-        return Ok(new { data = categories, categories });
+        // 🔴 This body is a straight serialization of Laravel's Category model —
+        // every column of the `categories` table, in its types. Four of those
+        // columns (`blocker_user_id`, `clicked_at`, `match`, `reset_token`) are
+        // schema accidents: they are in the committed dump
+        // (database/schema/mysql-schema.sql), nothing writes them, and they are
+        // always null. They are reproduced here anyway, as nulls, because the
+        // brief is a carbon copy of the contract rather than a tidier version of
+        // it. If Laravel ever drops them, drop them here in the same change.
+        //
+        // Types are copied too, and matter: `is_active` is MySQL's tinyint, so
+        // it serializes as 1/0 and NOT as a JSON boolean, and
+        // `substitution_coefficient` is a decimal cast to a STRING ("1.00").
+        // `color` has no ASP.NET column; Laravel's default is "blue".
+        var data = rows.Select(c => new Dictionary<string, object?>
+        {
+            ["id"] = c.Id,
+            ["tenant_id"] = c.TenantId,
+            ["name"] = c.Name,
+            ["slug"] = c.Slug,
+            ["sort_order"] = c.SortOrder,
+            ["is_active"] = c.IsActive ? 1 : 0,
+            ["color"] = "blue",
+            ["substitution_coefficient"] = c.SubstitutionCoefficient.ToString("0.00", CultureInfo.InvariantCulture),
+            ["created_at"] = c.CreatedAt,
+            ["type"] = canonicalType,
+            ["blocker_user_id"] = null,
+            ["clicked_at"] = null,
+            ["match"] = null,
+            ["reset_token"] = null,
+            ["parent_id"] = c.ParentCategoryId,
+            ["updated_at"] = c.UpdatedAt
+        }).ToList();
+
+        // No `meta` here. This one Laravel route builds its response with a raw
+        // response()->json(['data' => …]) instead of the BaseApiController
+        // helper, so it is the single measured 200-with-data endpoint that
+        // carries no meta.base_url. Adding one would be a divergence.
+        return Ok(new { data });
     }
 
     [HttpGet("api/platform/stats")]
@@ -104,22 +158,24 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Where(t => t.Status == TransactionStatus.Completed)
             .SumAsync(t => (decimal?)t.Amount) ?? 0m;
 
+        // Laravel returns these six counts and nothing else. The extra three
+        // (exchanges, events, volunteering_opportunities) and the duplicate
+        // top-level `stats` copy were ASP.NET-only additions.
         var stats = new
         {
-            scope = "tenant",
             members = await _db.Users.CountAsync(u => u.IsActive),
             hours_exchanged = hoursExchanged,
             listings = await _db.Listings.CountAsync(l => l.Status == ListingStatus.Active),
             skills = await _db.Skills.CountAsync(),
             communities = await _db.Groups.CountAsync(),
-            exchanges = await _db.Transactions
-                .ExcludeInternalWalletAdapters()
-                .CountAsync(t => t.Status == TransactionStatus.Completed),
-            events = await _db.Set<Event>().CountAsync(e => !e.IsCancelled),
-            volunteering_opportunities = await _db.VolunteerOpportunities.CountAsync(o => o.Status == OpportunityStatus.Published)
+            scope = "tenant"
         };
 
-        return Ok(new { data = stats, stats });
+        return Ok(new
+        {
+            data = stats,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     [HttpGet("api/menus")]
@@ -183,8 +239,16 @@ public class ReactFrontendCompatibilityController : ControllerBase
     public async Task<IActionResult> CheckExchange([FromQuery] int? listing_id, [FromQuery] int? listingId)
     {
         var id = listing_id ?? listingId;
+
+        // 🔴 A request that names no listing is INVALID, not permission granted.
+        // This used to answer `can_exchange = true` with no listing at all, so a
+        // caller whose listing id failed to serialise was told the exchange was
+        // fine. Laravel rejects it: 400 VALIDATION_REQUIRED_FIELD on listing_id.
         if (!id.HasValue)
-            return Ok(new { can_exchange = true, reason = (string?)null });
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, LaravelValidationError(
+                "Missing required field: listing_id", "listing_id"));
+        }
 
         var userId = User.GetUserId();
         var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == id.Value && l.Status == ListingStatus.Active);
@@ -303,6 +367,8 @@ public class ReactFrontendCompatibilityController : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
+        if (await RequireFederationOptInAsync() is { } blocked) return blocked;
+
         var messages = await _db.Messages
             .Include(m => m.Sender)
             .Where(m => m.SenderId == userId.Value || m.Conversation!.Participant1Id == userId.Value || m.Conversation!.Participant2Id == userId.Value)
@@ -327,6 +393,8 @@ public class ReactFrontendCompatibilityController : ControllerBase
     [Authorize]
     public async Task<IActionResult> FederationActivity()
     {
+        if (await RequireFederationOptInAsync() is { } blocked) return blocked;
+
         var activity = await _db.FederationAuditLogs
             .OrderByDescending(a => a.CreatedAt)
             .Take(50)
@@ -1067,14 +1135,27 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = faqs, faqs });
+        return Ok(new
+        {
+            data = faqs,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     [HttpGet("api/kb/search")]
     [Authorize]
     public async Task<IActionResult> SearchKnowledgeBase([FromQuery] string? q = null)
     {
-        var term = (q ?? string.Empty).Trim().ToLowerInvariant();
+        // Laravel requires the query: 400 VALIDATION_REQUIRED_FIELD on `q`.
+        // Returning every published article for an empty search is a different
+        // answer to a different question.
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, LaravelValidationError(
+                "Search query is required", "q"));
+        }
+
+        var term = q.Trim().ToLowerInvariant();
         var articles = await _db.KnowledgeArticles
             .Where(a => a.IsPublished && (term == string.Empty ||
                 a.Title.ToLower().Contains(term) ||
@@ -1641,27 +1722,68 @@ public class ReactFrontendCompatibilityController : ControllerBase
     public async Task<IActionResult> RegistrationInfo()
     {
         var policy = await _db.TenantRegistrationPolicies.FirstOrDefaultAsync(p => p.IsActive);
-        var mode = policy?.Mode.ToString() ?? RegistrationMode.Standard.ToString();
-        var requiresInvite = policy?.Mode == RegistrationMode.InviteOnly;
-        var requiresVerification = policy?.Mode is RegistrationMode.VerifiedIdentity or RegistrationMode.GovernmentId;
+
+        // 🔴 The wire value is Laravel's snake_case vocabulary, NOT the .NET enum
+        // name. Laravel builds this from `registration_mode`, whose values are
+        // open / open_with_approval / verified_identity / government_id /
+        // invite_only / closed / waitlist (RegistrationPolicyController.php:400-411
+        // and AdminConfigController.php:1384). Emitting `VerifiedIdentity` where
+        // Laravel emits `verified_identity` is invisible to a shape comparison —
+        // both are strings — but any client that switches on the value silently
+        // takes the wrong branch. Storage keeps the enum name; only the wire
+        // representation is translated.
+        var mode = ToLaravelRegistrationMode(policy?.Mode ?? RegistrationMode.Standard);
+
+        // Every flag below is DERIVED from the mode, exactly as Laravel derives
+        // it. They used to be hardcoded (`can_register = true`, `is_closed =
+        // false`, `is_waitlist = false`), so a community that had closed
+        // registration was still told it could register.
+        var requiresInvite = mode == "invite_only";
+        var requiresVerification = mode is "verified_identity" or "government_id";
+        var isClosed = mode == "closed";
+        var isWaitlist = mode == "waitlist";
+        // Laravel's body is exactly these seven fields plus meta.base_url. The
+        // duplicates this used to also emit — mode, provider, verification_level,
+        // invite_required — have no Laravel counterpart, so a client written
+        // against production could never have read them.
         return Ok(new
         {
             data = new
             {
-                mode,
                 registration_mode = mode,
-                provider = policy?.Provider.ToString() ?? VerificationProvider.None.ToString(),
-                verification_level = policy?.VerificationLevel.ToString() ?? VerificationLevel.None.ToString(),
-                message = policy?.RegistrationMessage,
-                invite_required = requiresInvite,
                 requires_invite_code = requiresInvite,
                 requires_verification = requiresVerification,
-                can_register = true,
-                is_closed = false,
-                is_waitlist = false
-            }
+                is_waitlist = isWaitlist,
+                is_closed = isClosed,
+                can_register = !isClosed,
+                // Laravel returns __('api.registration_closed') when closed and
+                // null otherwise — it does NOT surface the tenant's own
+                // registration message here. Text copied verbatim from
+                // lang/en/api.php:365. Not yet localized on this backend.
+                message = isClosed
+                    ? "Registration is closed for this community. Contact a community administrator if you need an account or were given an invitation."
+                    : null
+            },
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
         });
     }
+
+    /// <summary>
+    /// Maps the .NET <see cref="RegistrationMode"/> to the snake_case value
+    /// Laravel puts on the wire. Storage is unchanged — the entity still
+    /// persists the enum name — this is the external contract only.
+    /// </summary>
+    private static string ToLaravelRegistrationMode(RegistrationMode mode) => mode switch
+    {
+        RegistrationMode.Standard => "open",
+        RegistrationMode.StandardWithApproval => "open_with_approval",
+        RegistrationMode.VerifiedIdentity => "verified_identity",
+        RegistrationMode.GovernmentId => "government_id",
+        RegistrationMode.InviteOnly => "invite_only",
+        RegistrationMode.Closed => "closed",
+        RegistrationMode.Waitlist => "waitlist",
+        _ => "open"
+    };
 
     [HttpPost("api/auth/validate-invite")]
     [HttpPost("api/v2/auth/validate-invite")]
@@ -2099,8 +2221,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
         return Ok(new { data = reviews, reviews, pagination = new { page, limit, total, pages = (int)Math.Ceiling(total / (double)limit) } });
     }
 
+    // Laravel serves this signed-out: routes/api.php:791 attaches
+    // ->withoutMiddleware('auth:sanctum'). Verified live — an anonymous GET to
+    // /api/v2/skills/search on Laravel returns 200, not 401.
     [HttpGet("api/skills/search")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> SearchSkills([FromQuery] string? q, [FromQuery] string? query, [FromQuery] int limit = 20)
     {
         var term = q ?? query ?? string.Empty;
@@ -2115,7 +2240,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Select(s => new { id = s.Id, name = s.Name, slug = s.Slug, description = s.Description, category_id = s.CategoryId })
             .ToListAsync();
 
-        return Ok(new { data = skills, skills });
+        return Ok(new
+        {
+            data = skills,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     [HttpGet("api/volunteering/emergency-alerts")]
@@ -4166,6 +4295,54 @@ public class ReactFrontendCompatibilityController : ControllerBase
     public IActionResult AdminJobsCompatibility()
     {
         return Ok(new { success = true, data = Array.Empty<object>() });
+    }
+
+    /// <summary>
+    /// Laravel's validation error body:
+    /// <c>{"errors":[{"code":"VALIDATION_REQUIRED_FIELD","message":…,"field":…}]}</c>.
+    /// The <c>field</c> key is part of the contract — the React forms read it to
+    /// mark the offending input.
+    /// </summary>
+    private static object LaravelValidationError(string message, string field) => new
+    {
+        errors = new[]
+        {
+            new { code = "VALIDATION_REQUIRED_FIELD", message, field },
+        },
+    };
+
+    /// <summary>
+    /// Refuses federation reads for a member who has not opted in, as Laravel
+    /// does (FederationV2Controller::requireFederationOptIn, backed by
+    /// FederationUserService::hasOptedIn reading <c>federation_user_settings</c>).
+    ///
+    /// 🔴 Federation shares a member's profile and activity BEYOND their own
+    /// community, so opting in is a deliberate personal choice. These endpoints
+    /// served the data to any signed-in member regardless of that choice.
+    /// Returns null when the member may proceed.
+    /// </summary>
+    private async Task<IActionResult?> RequireFederationOptInAsync()
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        var optedIn = await _db.FederationUserSettings
+            .AsNoTracking()
+            .AnyAsync(s => s.UserId == userId.Value && s.FederationOptIn);
+
+        if (optedIn) return null;
+
+        return StatusCode(StatusCodes.Status403Forbidden, new
+        {
+            errors = new[]
+            {
+                new
+                {
+                    code = "FEDERATION_NOT_ENABLED",
+                    message = "You must opt in to federation before sending messages.",
+                },
+            },
+        });
     }
 
     private async Task<FederationUserSetting> GetOrCreateFederationSettingsAsync(int userId)

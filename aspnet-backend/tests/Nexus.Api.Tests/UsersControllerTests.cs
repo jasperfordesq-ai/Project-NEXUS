@@ -25,7 +25,13 @@ public class UsersControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        content.TryGetProperty("success", out _).Should().BeFalse();
+        content.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         content.GetProperty("data").GetProperty("email").GetString().Should().Be("member@test.com");
     }
 
@@ -124,7 +130,11 @@ public class UsersControllerTests : IntegrationTestBase
         r.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var user = await r.Content.ReadFromJsonAsync<JsonElement>();
-        user.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        user.TryGetProperty("success", out _).Should().BeFalse();
+        user.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         user.GetProperty("data").GetProperty("onboarding_completed").GetBoolean().Should().BeTrue();
     }
 

@@ -35,6 +35,114 @@ The matching accessible-frontend source is
 Do not combine its score with the ASP.NET score: the two workstreams have
 different evidence gates.
 
+## 2026-08-17 — Live response parity on the React GET corpus: 136 -> 164 of 170
+
+This section records **measured response behaviour**, not a rubric score. The
+banked `712/1000` above is untouched; nothing here has been through the rubric's
+evidence gates. Read it as: what happens today when both running backends are
+asked the same question.
+
+Instrument: `scripts/compare-live-responses.mjs`, against the running Laravel
+(`127.0.0.1:8090`, tenant 2) and the running dev ASP.NET (`127.0.0.1:5080`,
+tenant 1). Corpus: the 170 GET paths the canonical React frontend calls. Method
+and traps: [`CONTRACT_PARITY_PLAN.md`](CONTRACT_PARITY_PLAN.md).
+
+| | Start of day | End of day |
+| --- | --- | --- |
+| Same status AND same JSON shape | 136 | **164** |
+| Envelope matches, contents untestable (empty list / null field one side) | — | 6 |
+| Different | 38 | **0** |
+| Endpoints open to anonymous callers that Laravel protects | 9 | **0** |
+
+Four defects behind that, each invisible to every source-tree instrument in this
+repository:
+
+1. **`/api/v2` alias routes executed without authentication.**
+   `AdminV2RouteAliasConvention` built controller-level aliases as a bare
+   `SelectorModel`, which under endpoint routing carries no `[Authorize]`
+   metadata. Eleven endpoints ran their action body for anonymous callers; ten
+   returned 403 only because the owning community had that section switched off.
+   A route inventory counts the alias as present either way.
+2. **`[AllowAnonymous]` beats `[Authorize]`** regardless of specificity, so three
+   marketplace endpoints read as protected in source and were open in fact.
+3. **Feature switches split across two key spellings.** The gates read
+   `features.{flag}`; `/tenant/bootstrap` read `feature.{flag}` for all forty
+   flags it publishes. A community's setting therefore reached the enforcement
+   half or the display half, never both. Now centralised in
+   `Support/TenantFeatureKeys.cs`, which reads both.
+4. **`skills/categories` answered from the wrong table.** No `skill_categories`
+   table existed here, so the endpoint returned listing categories: a 200 with
+   plausible content describing a different taxonomy. Added as an entity plus
+   migration `20260817121949_AddSkillCategories`; the full chain replays clean
+   from empty on a disposable PostgreSQL, and
+   `has-pending-model-changes` is green.
+
+🔴 **That signed-out number was never the real number.** Most of the 170 resolve
+to 401 on both sides, which proves the authorisation boundary agrees and says
+nothing about the payload behind it. Later the same day a disposable Laravel
+made the signed-in comparison possible, and it read **17/170**. See the section
+below.
+
+## 2026-08-17 (later) — SIGNED-IN parity: 17 -> 57 of 170
+
+🔴 **Read this before quoting the signed-out score.** With a disposable Laravel
+to sign in to, the same 170 React GET paths scored **17/170**, not 164/170. The
+signed-out run was honest about what it measured and useless as a summary: the
+401s were hiding every payload.
+
+`bash aspnet-backend/scripts/start-disposable-laravel.sh` builds a second
+Laravel on `:8091` from the committed schema plus `E2ETestDataSeeder` —
+synthetic fixtures, **no real member data** — so it can be signed into, written
+to and destroyed. The harness now refuses to send credentials to `:8090`.
+
+| Change | Identical | Envelope right, rows untestable | Differing |
+| --- | --- | --- | --- |
+| first signed-in run | 17 | 8 | 145 |
+| `meta` added by a shared filter | 31 | 21 | 118 |
+| both fixtures given the same features | 42 | 21 | 107 |
+| six authorisation/validation fixes | 47 | 21 | 102 |
+| stray `success` flag removed | **57** | **31** | **82** |
+
+Endpoints where the two disagree about whether to answer at all: **29 -> 2**.
+
+**Six defects behind the login, four of them authorisation:**
+
+1. `jobs/talent-search` listed every member who had made themselves visible TO
+   EMPLOYERS, to any signed-in member. Laravel restricts it to admin tiers and
+   to members who have posted a vacancy.
+2. `federation/activity` and `federation/messages` served members who had never
+   opted in. Federation publishes a member's profile beyond their own community;
+   the opt-in is the consent, and it was not being read.
+3. `marketplace/promotions/products` ignored the promotions setting, which is a
+   SECOND switch on top of the marketplace feature and defaults off.
+4. `me/push-campaigns` — paid notifications to a community's members — had no
+   feature gate at all.
+5. `exchanges/check` answered `can_exchange: true` for a request naming no
+   listing. Laravel returns 400 VALIDATION_REQUIRED_FIELD.
+6. `kb/search` returned every published article for an empty query; Laravel
+   requires `q`.
+
+**Two shared-envelope fixes**, both applied in one filter
+(`Filters/LaravelDataEnvelopeFilter.cs`) because in Laravel they come from one
+shared base controller, not from 89 separate decisions:
+`meta.base_url` added, and the `success` flag removed, on `/api/v2` GETs
+returning `data`. Measured 89-vs-0 and 41-vs-0 — never wrong in the other
+direction on any measured endpoint.
+
+🔴 **Still not covered:** writes, uploads, realtime, and the 229 do-nothing
+handlers. And 31 endpoints have a correct envelope whose ROW contract is
+untested because the fixture holds only three users and one listing — richer
+fixtures are the next thing that raises real confidence, not the next code
+change.
+
+---
+
+Evidence: `dotnet test Nexus.sln --configuration Release`. 🔴 Read the pass
+COUNT, never the exit code — this runner exits 0 with failures present, observed
+again on 2026-08-17 (`Failed: 2 ... [exited with code 0]`).
+
+---
+
 ## Required End State
 
 The product goal is a **two-frontends-by-two-backends** contract-identity model in

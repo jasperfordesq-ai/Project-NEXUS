@@ -699,6 +699,14 @@ public sealed class DirectMessageEditDeleteParityTests : IntegrationTestBase
         json.EnumerateObject().Select(property => property.Name)
             .Should().BeEquivalentTo(new[] { "data", "meta" });
         var data = json.GetProperty("data");
+
+        // 🔴 This asserts a DELETE, and `data` is the payload rather than the
+        // envelope. The GET envelope change does not apply: the response root is
+        // already pinned to exactly {data, meta} above, and `success` here is a
+        // field of the delete payload.
+        // 🔴 This asserts a DELETE, and `data` is the payload rather than the
+        // envelope. The response root is already pinned to exactly {data, meta}
+        // above; `success` here is a field of the delete payload.
         data.GetProperty("success").GetBoolean().Should().BeTrue();
         data.GetProperty("message").GetString().Should().Be("Message deleted");
         json.GetProperty("meta").GetProperty("base_url").GetString().Should().NotBeNullOrWhiteSpace();

@@ -654,9 +654,56 @@ public class JobsParityController : ControllerBase
     public async Task<IActionResult> TalentSearch([FromQuery] string? skills = null)
     {
         var tenantId = RequireTenantId();
+
+        // 🔴 Talent search lists members who made themselves visible TO EMPLOYERS.
+        // Laravel restricts it to admins and to people who have actually posted a
+        // vacancy (JobVacanciesController::canSearchTalent, :131-152); this served
+        // the whole list to any signed-in member, which is not what those members
+        // consented to when they ticked "visible to employers".
+        if (!await CanSearchTalentAsync(tenantId))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                errors = new[] { new { code = "RESOURCE_FORBIDDEN", message = "Access denied" } },
+            });
+        }
+
         var terms = SplitTerms(skills);
         var profiles = await _db.JobSavedProfiles.Where(p => p.TenantId == tenantId && p.VisibleToEmployers).ToListAsync();
         return Ok(new { data = profiles.Where(p => !terms.Any() || SplitTerms(p.Skills).Intersect(terms, StringComparer.OrdinalIgnoreCase).Any()).Select(MapSavedProfile) });
+    }
+
+    /// <summary>
+    /// Mirrors Laravel's <c>canSearchTalent</c>: any admin tier, or a member who
+    /// has posted at least one vacancy in this community.
+    /// </summary>
+    private async Task<bool> CanSearchTalentAsync(int tenantId)
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return false;
+
+        var user = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId.Value && u.TenantId == tenantId)
+            .Select(u => new { u.Role, u.IsAdmin, u.IsSuperAdmin, u.IsTenantSuperAdmin, u.IsGod })
+            .FirstOrDefaultAsync();
+
+        if (user is not null)
+        {
+            // 🔴 Role string AND the boolean flags. super_admin / tenant_admin /
+            // god are expressed as flags and are never written to `role`, so a
+            // check on the string alone under-authorises a real platform admin.
+            var role = user.Role ?? string.Empty;
+            if (role is "admin" or "tenant_admin" or "super_admin" or "god"
+                || user.IsAdmin || user.IsSuperAdmin || user.IsTenantSuperAdmin || user.IsGod)
+            {
+                return true;
+            }
+        }
+
+        return await _db.JobVacancies
+            .AsNoTracking()
+            .AnyAsync(v => v.TenantId == tenantId && v.PostedByUserId == userId.Value);
     }
 
     [HttpGet("talent-search/{userId:int}")]

@@ -18,6 +18,32 @@ public class SkillConfiguration : TenantScopedConfiguration
 
     public override void Configure(ModelBuilder modelBuilder)
     {
+        // SkillCategory — the skills taxonomy tree. Distinct from Category,
+        // which is the listing/event taxonomy; /api/v2/skills/categories used to
+        // answer from that one because this table did not exist here.
+        modelBuilder.Entity<SkillCategory>(entity =>
+        {
+            entity.ToTable("skill_categories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Slug).HasMaxLength(120).IsRequired();
+            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.ParentId);
+            entity.HasIndex(e => new { e.TenantId, e.Slug });
+            entity.HasIndex(e => new { e.TenantId, e.ParentId });
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+            // Laravel: ON DELETE SET NULL, so removing a parent promotes its
+            // children to roots rather than deleting them.
+            entity.HasOne(e => e.Parent)
+                .WithMany(e => e.Children)
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
         // Skill
         modelBuilder.Entity<Skill>(entity =>
         {

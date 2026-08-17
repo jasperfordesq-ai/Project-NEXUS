@@ -120,8 +120,11 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult AchievementProgress() => Ok(new { data = new { completed = 0, total = 0 } });
 
+    // Laravel serves this signed-out: routes/api.php:4070 sits OUTSIDE the
+    // auth:sanctum group (which closes at line 1592). Verified live -- an
+    // anonymous GET to /api/v2/ads/active on Laravel returns 200, not 401.
     [HttpGet("ads/active")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> ActiveAds([FromQuery] string? placement = "feed", [FromQuery] int limit = 3)
     {
         var tenantId = _tenantContext.GetTenantIdOrThrow();
@@ -161,7 +164,11 @@ public class MiscParityController : ControllerBase
             .Take(safeLimit)
             .ToList();
 
-        return Ok(new { success = true, data = ads });
+        return Ok(new
+        {
+            data = ads,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     [HttpPost("ads/impression")]
@@ -426,7 +433,11 @@ public class MiscParityController : ControllerBase
             is_active = plan.IsActive
         });
 
-        return Ok(new { data });
+        return Ok(new
+        {
+            data,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     // V1 marketplace-bookmark parity shim. Moved from /api/bookmark-collections

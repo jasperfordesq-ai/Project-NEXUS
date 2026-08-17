@@ -947,8 +947,27 @@ public class MarketplaceController : ControllerBase
     /// never just add an Authorize beside it.
     [HttpGet("promotions/products")]
     [Authorize]
-    public IActionResult PromotionProducts()
-        => Ok(new
+    public async Task<IActionResult> PromotionProducts()
+    {
+        // 🔴 Promotions are a SECOND switch, on top of the marketplace feature.
+        // Laravel gates this with MarketplaceConfigurationService's
+        // `promotions_enabled`, which DEFAULTS TO FALSE
+        // (MarketplacePromotionController::ensurePromotionsEnabled, :38-50), so
+        // a community that enabled the marketplace has not thereby agreed to
+        // advertise paid listing promotions. This backend had no such gate and
+        // offered the promotion catalogue to everyone.
+        if (!await IsPromotionsEnabledAsync())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                errors = new[]
+                {
+                    new { code = "FEATURE_DISABLED", message = "Marketplace promotions are not enabled." },
+                },
+            });
+        }
+
+        return Ok(new
         {
             success = true,
             data = new[]
@@ -988,6 +1007,25 @@ public class MarketplaceController : ControllerBase
                 }
             }
         });
+    }
+
+    /// <summary>
+    /// Whether this community has switched marketplace promotions on. Defaults
+    /// to FALSE, matching Laravel's MarketplaceConfigurationService default.
+    /// </summary>
+    private async Task<bool> IsPromotionsEnabledAsync()
+    {
+        var tenantId = User.GetTenantId() ?? throw new UnauthorizedAccessException();
+        var raw = await _db.TenantConfigs
+            .AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.Key == MarketplacePromotionsEnabledKey)
+            .Select(c => c.Value)
+            .FirstOrDefaultAsync();
+
+        return Nexus.Api.Support.TenantFeatureKeys.IsTruthy(raw);
+    }
+
+    private const string MarketplacePromotionsEnabledKey = "marketplace.promotions_enabled";
 
     [HttpPost("listings/{id:int}/promote")]
     [Authorize]

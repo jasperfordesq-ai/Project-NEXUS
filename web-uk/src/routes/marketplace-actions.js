@@ -278,14 +278,29 @@ function pickupSlotPayload(body, { defaultActive = true } = {}) {
   };
 }
 
+/**
+ * A `fixed` discount is stored in MINOR units — MerchantCouponService compares
+ * discount_value against the order total in minor units.
+ *
+ * 🔴 This form's hint says "For a fixed amount, enter the amount", and the value was
+ * passed straight through as minor units. So a seller who wanted £5 off typed 5 and
+ * created a **5p** coupon, then saw "5.00" echoed back as confirmation. React asks
+ * for cents explicitly; this page asks for the amount, so the amount is what it now
+ * converts. A percentage is unitless and passes through untouched.
+ */
+function couponDiscountValue(discountType, raw) {
+  if (discountType === 'bogo') return 0;
+  const value = Math.max(0, decimalNumber(raw));
+  return discountType === 'fixed' ? Math.round(value * 100) : value;
+}
+
 function couponPayload(body) {
   const discountType = allowed(body.discount_type, COUPON_DISCOUNT_TYPES, 'percent');
-  const discountValue = decimalNumber(body.discount_value);
   const payload = {
     title: trimmed(body.title, 200),
     description: trimmed(body.description, 2000),
     discount_type: discountType,
-    discount_value: discountType === 'bogo' ? 0 : Math.max(0, discountValue),
+    discount_value: couponDiscountValue(discountType, body.discount_value),
     status: allowed(body.status, COUPON_STATUSES, 'draft'),
     applies_to: 'all_listings'
   };

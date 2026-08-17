@@ -90,7 +90,10 @@ public class AvailabilityControllerTests : IntegrationTestBase
 
         mine.StatusCode.Should().Be(HttpStatusCode.OK);
         var mineJson = await mine.Content.ReadFromJsonAsync<JsonElement>();
-        mineJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 v2 GET = `data` + `meta`, no `success`. Laravel's counterpart uses
+        // respondWithData. Measured 41-vs-0 across the React GET corpus.
+        mineJson.TryGetProperty("success", out _).Should().BeFalse();
+        mineJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         var mineWeekly = mineJson.GetProperty("data").GetProperty("weekly").EnumerateArray().ToArray();
         mineWeekly.Should().HaveCount(2);
         mineJson.GetProperty("data").GetProperty("timezone").GetString().Should().NotBeNullOrWhiteSpace();
@@ -99,7 +102,11 @@ public class AvailabilityControllerTests : IntegrationTestBase
 
         publicView.StatusCode.Should().Be(HttpStatusCode.OK);
         var publicJson = await publicView.Content.ReadFromJsonAsync<JsonElement>();
-        publicJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        publicJson.TryGetProperty("success", out _).Should().BeFalse();
+        publicJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         publicJson.GetProperty("data").GetProperty("weekly").EnumerateArray().Should().HaveCount(2);
     }
 

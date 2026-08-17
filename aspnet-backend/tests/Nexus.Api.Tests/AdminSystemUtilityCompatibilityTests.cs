@@ -22,7 +22,7 @@ public sealed class AdminSystemUtilityCompatibilityTests : IntegrationTestBase
     {
         await AuthenticateAsAdminAsync();
 
-        var status = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/registration/breaker"));
+        var status = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/registration/breaker"));
         status.GetProperty("tripped").GetBoolean().Should().BeFalse();
         status.GetProperty("count_in_current_hour").GetInt32().Should().BeGreaterThanOrEqualTo(0);
         status.GetProperty("threshold").GetInt32().Should().BeGreaterThan(0);
@@ -37,7 +37,7 @@ public sealed class AdminSystemUtilityCompatibilityTests : IntegrationTestBase
     {
         await AuthenticateAsAdminAsync();
 
-        var policies = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/retention/policies"));
+        var policies = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/retention/policies"));
         policies.GetProperty("limits").GetProperty("min_days").GetInt32().Should().Be(30);
         policies.GetProperty("limits").GetProperty("max_days").GetInt32().Should().Be(3650);
         policies.GetProperty("limits").GetProperty("actions").EnumerateArray().Select(x => x.GetString()).Should().Contain("delete");
@@ -55,7 +55,7 @@ public sealed class AdminSystemUtilityCompatibilityTests : IntegrationTestBase
         policy.GetProperty("is_enabled").GetBoolean().Should().BeTrue();
         policy.GetProperty("action").GetString().Should().Be("delete");
 
-        var runs = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/retention/runs?limit=25"));
+        var runs = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/retention/runs?limit=25"));
         runs.GetProperty("runs").ValueKind.Should().Be(JsonValueKind.Array);
     }
 
@@ -89,8 +89,11 @@ public sealed class AdminSystemUtilityCompatibilityTests : IntegrationTestBase
     {
         await AuthenticateAsGodAsync();
 
-        var preview = await ReadDataAsync(await Client.GetAsync($"/api/v2/admin/super/tenants/{TestData.Tenant2.Id}/purge-preview"));
-        preview.GetProperty("success").GetBoolean().Should().BeTrue();
+        var preview = await ReadV2GetDataAsync(await Client.GetAsync($"/api/v2/admin/super/tenants/{TestData.Tenant2.Id}/purge-preview"));
+        // `preview` is the DATA element, not the response root — the envelope was
+        // already checked inside ReadV2GetDataAsync. `data` here carries its own
+        // `success` field, which is part of the purge-preview payload and
+        // nothing to do with the response envelope.
         preview.GetProperty("dry_run").GetBoolean().Should().BeTrue();
         preview.GetProperty("tenant_id").GetInt32().Should().Be(TestData.Tenant2.Id);
         preview.GetProperty("resources").ValueKind.Should().Be(JsonValueKind.Array);
@@ -115,11 +118,34 @@ public sealed class AdminSystemUtilityCompatibilityTests : IntegrationTestBase
         return form;
     }
 
+    /// <summary>
+    /// Reads <c>data</c> out of a successful v2 <b>GET</b>, asserting Laravel's
+    /// GET envelope: <c>data</c> + <c>meta</c>, and NO <c>success</c>.
+    ///
+    /// 🔴 Separate from <c>ReadDataAsync</c> on purpose. Laravel's v2 read helpers
+    /// (respondWithData / respondWithCollection / respondWithPaginatedCollection)
+    /// never emit <c>success</c> — of Laravel's 1,129 /v2 GET routes only 8 do,
+    /// and none of those carry a <c>data</c> key. Write responses are a
+    /// different envelope and have NOT been compared against Laravel yet, so
+    /// they keep using <c>ReadDataAsync</c> and keep asserting <c>success</c>.
+    /// </summary>
+    private static async Task<JsonElement> ReadV2GetDataAsync(HttpResponseMessage response)
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
+        return json.GetProperty("data");
+    }
+
     private static async Task<JsonElement> ReadDataAsync(HttpResponseMessage response)
     {
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         json.GetProperty("success").GetBoolean().Should().BeTrue();
+
         return json.GetProperty("data");
     }
 }

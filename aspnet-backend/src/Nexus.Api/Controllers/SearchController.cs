@@ -16,6 +16,13 @@ namespace Nexus.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/search")]
+// Laravel exposes unified search at /v2/search (routes/api.php:1031), inside
+// the auth:sanctum group. The alias convention could not generate it: its
+// action-level helper only rewrites selectors that carry their own template,
+// and this controller's index action is a bare [HttpGet]. Declaring the route
+// here also means it inherits this controller's [Authorize] as a real
+// attribute, so it answers 401 signed-out exactly as Laravel does.
+[Route("api/v2/search")]
 [Authorize]
 public class SearchController : ControllerBase
 {

@@ -42,7 +42,11 @@ public class RegistrationPolicyTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        content.TryGetProperty("success", out _).Should().BeFalse();
+        content.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         content.GetProperty("data").GetProperty("mode").GetString().Should().Be("Standard");
         content.GetProperty("data").GetProperty("requires_verification").GetBoolean().Should().BeFalse();
         content.GetProperty("data").GetProperty("requires_approval").GetBoolean().Should().BeFalse();
@@ -386,7 +390,11 @@ public class RegistrationPolicyTests : IntegrationTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        content.TryGetProperty("success", out _).Should().BeFalse();
+        content.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         content.GetProperty("data").GetProperty("mode").GetString().Should().NotBeNullOrEmpty();
     }
 

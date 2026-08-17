@@ -33807,7 +33807,12 @@ describe('shared accessible frontend shell', () => {
             title: 'Three euro offer',
             code: 'THREE',
             discount_type: 'fixed',
-            discount_value: 3,
+            // 🔴 Updated 2026-08-17. This was `3`, and the test asserted the page
+            // showed "3.00" — but a fixed discount_value is stored in MINOR units, so
+            // 3 is three CENTS, not three euro. The fixture and its assertion had
+            // both absorbed the bug: web-uk passed the typed number straight through
+            // as minor units while its hint asked for "the amount".
+            discount_value: 300,
             status: 'paused'
           }
         ]
@@ -33844,7 +33849,8 @@ describe('shared accessible frontend shell', () => {
     expect(index.text).toContain('Summer sale');
     expect(index.text).toContain('SUMMER10');
     expect(index.text).toContain('10%');
-    expect(index.text).toContain('3.00');
+    // Real money, carrying its currency — not a bare stored number.
+    expect(index.text).toMatch(/[A-Z]{3}\s?3\.00/);
     expect(index.text).toContain('Active');
     expect(index.text).toContain('href="/marketplace/coupons/5/edit"');
     expect(edit.text).toContain('Edit your coupon');
@@ -33991,7 +33997,9 @@ describe('shared accessible frontend shell', () => {
       title: 'Revised offer',
       description: 'Replayed edit',
       discount_type: 'fixed',
-      discount_value: 4.5,
+      // 🔴 4.50 entered, 450 minor units stored. This expected `4.5` — the old
+      // pass-through that turned £4.50 into four and a half pence.
+      discount_value: 450,
       status: 'paused',
       applies_to: 'all_listings',
       min_order_cents: 0
@@ -34402,7 +34410,9 @@ describe('shared accessible frontend shell', () => {
       title: 'Updated offer',
       description: '',
       discount_type: 'fixed',
-      discount_value: 3,
+      // 🔴 "3" entered means three of the community's currency units, stored as 300
+      // minor units. This expected `3`, which was three pence.
+      discount_value: 300,
       status: 'paused',
       applies_to: 'all_listings'
     });
@@ -34501,6 +34511,54 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="+1 555 123 4567"');
     expect(response.text).toContain('Save accessibility needs');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
+  });
+
+  it('round-trips a fixed coupon amount without the hundredfold error', async () => {
+    // 🔴 A fixed discount_value is stored in MINOR units, but this form's hint asks
+    // for "the amount". A seller wanting £5 typed 5 and created a 5p coupon, then saw
+    // "5.00" echoed back as confirmation. The amount is now converted both ways, so
+    // what the seller types, what is stored, and what is displayed all agree.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+
+    // Stored 500 minor units is £5.00, and the edit form must offer "5", not "500".
+    api.callMarketplaceApi.mockResolvedValueOnce({
+      data: { items: [{ id: 9, title: 'Five off', code: 'FIVE', discount_type: 'fixed', discount_value: 500, status: 'active' }] }
+    });
+    const edit = await request(app).get('/marketplace/coupons/9/edit').set('Cookie', cookie);
+    expect(edit.status).toBe(200);
+    expect(edit.text).toMatch(/id="discount_value"[^>]*value="5"/);
+
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue({ data: { id: 9 } });
+
+    await agent
+      .post('/marketplace/coupons/new')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, title: 'Five off', discount_type: 'fixed', discount_value: '5', status: 'draft' });
+
+    const created = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].discount_type === 'fixed');
+    expect(created).toBeTruthy();
+    // Five pounds, stored as 500 minor units — not 5, which was five pence.
+    expect(created[3].discount_value).toBe(500);
+
+    // A percentage is unitless and must NOT be multiplied.
+    api.callMarketplaceApi.mockClear();
+    await agent
+      .post('/marketplace/coupons/new')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, title: 'Ten percent', discount_type: 'percent', discount_value: '10', status: 'draft' });
+
+    const percent = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].discount_type === 'percent');
+    expect(percent[3].discount_value).toBe(10);
   });
 
   it('never offers the seller Accept on an offer they have countered', async () => {

@@ -15,6 +15,8 @@ using Nexus.Api.Entities;
 using Nexus.Api.Extensions;
 using Nexus.Api.Services;
 
+using Nexus.Api.Support;
+
 namespace Nexus.Api.Controllers;
 
 /// <summary>
@@ -674,25 +676,74 @@ public class CompatibilityController : ControllerBase
     [HttpGet("api/skills/categories")]
     public async Task<IActionResult> GetSkillCategories()
     {
-
-        // Return categories that have at least one skill linked to them
-        var categories = await _db.Categories
+        // 🔴 Reads skill_categories, NOT the listing Category table. This
+        // answered from Category until 2026-08-17 and so described the wrong
+        // taxonomy with the wrong columns — a 200 with plausible content, which
+        // is why nothing ever failed. Laravel's source is
+        // App\Services\SkillTaxonomyService::getTree.
+        var rows = await _db.SkillCategories
             .AsNoTracking()
             .Where(c => c.IsActive)
-            .OrderBy(c => c.SortOrder)
+            .OrderBy(c => c.DisplayOrder)
             .ThenBy(c => c.Name)
             .Select(c => new
             {
-                id = c.Id,
-                name = c.Name,
-                slug = c.Slug,
-                description = c.Description,
-                parent_category_id = c.ParentCategoryId,
-                sort_order = c.SortOrder
+                c.Id,
+                c.TenantId,
+                c.Name,
+                c.Slug,
+                c.ParentId,
+                c.Description,
+                c.Icon,
+                c.DisplayOrder,
+                c.IsActive,
+                c.CreatedAt,
+                c.UpdatedAt
             })
             .ToListAsync();
 
-        return Ok(new { data = categories, total = categories.Count });
+        // Laravel returns a TREE: every row carries a `children` array, and only
+        // roots appear at the top level. `is_active` is MySQL tinyint, so it
+        // serializes as 1/0 rather than as a JSON boolean.
+        var byId = rows.ToDictionary(
+            r => r.Id,
+            r => new Dictionary<string, object?>
+            {
+                ["id"] = r.Id,
+                ["tenant_id"] = r.TenantId,
+                ["name"] = r.Name,
+                ["slug"] = r.Slug,
+                ["parent_id"] = r.ParentId,
+                ["description"] = r.Description,
+                ["icon"] = r.Icon,
+                ["display_order"] = r.DisplayOrder,
+                ["is_active"] = r.IsActive ? 1 : 0,
+                ["created_at"] = r.CreatedAt,
+                ["updated_at"] = r.UpdatedAt,
+                ["children"] = new List<Dictionary<string, object?>>()
+            });
+
+        var roots = new List<Dictionary<string, object?>>();
+        foreach (var row in rows)
+        {
+            var node = byId[row.Id];
+            // A parent outside this set (inactive, or another tenant) leaves the
+            // child at the top level rather than dropping it from the tree.
+            if (row.ParentId is int parentId && byId.TryGetValue(parentId, out var parent))
+            {
+                ((List<Dictionary<string, object?>>)parent["children"]!).Add(node);
+            }
+            else
+            {
+                roots.Add(node);
+            }
+        }
+
+        return Ok(new
+        {
+            data = roots,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     // ──────────────────────────────────────────────
@@ -1925,26 +1976,26 @@ public class CompatibilityController : ControllerBase
         // Build features object from config entries (feature.xxx keys)
         var features = new Dictionary<string, bool>
         {
-            ["events"] = GetConfigBool(configEntries, "feature.events", true),
-            ["groups"] = GetConfigBool(configEntries, "feature.groups", true),
-            ["gamification"] = GetConfigBool(configEntries, "feature.gamification", true),
-            ["goals"] = GetConfigBool(configEntries, "feature.goals", true),
-            ["blog"] = GetConfigBool(configEntries, "feature.blog", true),
-            ["resources"] = GetConfigBool(configEntries, "feature.resources", true),
-            ["volunteering"] = GetConfigBool(configEntries, "feature.volunteering", true),
-            ["exchange_workflow"] = GetConfigBool(configEntries, "feature.exchange_workflow", true),
-            ["organisations"] = GetConfigBool(configEntries, "feature.organisations", true),
-            ["federation"] = GetConfigBool(configEntries, "feature.federation", true),
-            ["connections"] = GetConfigBool(configEntries, "feature.connections", true),
-            ["reviews"] = GetConfigBool(configEntries, "feature.reviews", true),
-            ["polls"] = GetConfigBool(configEntries, "feature.polls", true),
-            ["job_vacancies"] = GetConfigBool(configEntries, "feature.job_vacancies", true),
-            ["ideation_challenges"] = GetConfigBool(configEntries, "feature.ideation_challenges", true),
-            ["direct_messaging"] = GetConfigBool(configEntries, "feature.direct_messaging", true),
-            ["group_exchanges"] = GetConfigBool(configEntries, "feature.group_exchanges", true),
-            ["search"] = GetConfigBool(configEntries, "feature.search", true),
-            ["explore"] = GetConfigBool(configEntries, "feature.explore", true),
-            ["ai_chat"] = GetConfigBool(configEntries, "feature.ai_chat", true),
+            ["events"] = GetFeatureBool(configEntries, "events", true),
+            ["groups"] = GetFeatureBool(configEntries, "groups", true),
+            ["gamification"] = GetFeatureBool(configEntries, "gamification", true),
+            ["goals"] = GetFeatureBool(configEntries, "goals", true),
+            ["blog"] = GetFeatureBool(configEntries, "blog", true),
+            ["resources"] = GetFeatureBool(configEntries, "resources", true),
+            ["volunteering"] = GetFeatureBool(configEntries, "volunteering", true),
+            ["exchange_workflow"] = GetFeatureBool(configEntries, "exchange_workflow", true),
+            ["organisations"] = GetFeatureBool(configEntries, "organisations", true),
+            ["federation"] = GetFeatureBool(configEntries, "federation", true),
+            ["connections"] = GetFeatureBool(configEntries, "connections", true),
+            ["reviews"] = GetFeatureBool(configEntries, "reviews", true),
+            ["polls"] = GetFeatureBool(configEntries, "polls", true),
+            ["job_vacancies"] = GetFeatureBool(configEntries, "job_vacancies", true),
+            ["ideation_challenges"] = GetFeatureBool(configEntries, "ideation_challenges", true),
+            ["direct_messaging"] = GetFeatureBool(configEntries, "direct_messaging", true),
+            ["group_exchanges"] = GetFeatureBool(configEntries, "group_exchanges", true),
+            ["search"] = GetFeatureBool(configEntries, "search", true),
+            ["explore"] = GetFeatureBool(configEntries, "explore", true),
+            ["ai_chat"] = GetFeatureBool(configEntries, "ai_chat", true),
 
             // 🔴 Added 2026-08-16. These twenty flags were absent from the
             // bootstrap payload while Laravel has always sent them, and the client
@@ -1959,30 +2010,30 @@ public class CompatibilityController : ControllerBase
             // public_events switched ON, for example, but both default OFF, and
             // copying a live tenant would have shipped its overrides as everyone's
             // defaults.
-            ["caring_community"] = GetConfigBool(configEntries, "feature.caring_community", false),
-            ["marketplace"] = GetConfigBool(configEntries, "feature.marketplace", false),
-            ["merchant_coupons"] = GetConfigBool(configEntries, "feature.merchant_coupons", false),
-            ["message_translation"] = GetConfigBool(configEntries, "feature.message_translation", true),
-            ["member_premium"] = GetConfigBool(configEntries, "feature.member_premium", false),
-            ["ai_agents"] = GetConfigBool(configEntries, "feature.ai_agents", false),
-            ["partner_api"] = GetConfigBool(configEntries, "feature.partner_api", false),
-            ["fadp_compliance"] = GetConfigBool(configEntries, "feature.fadp_compliance", false),
-            ["local_advertising"] = GetConfigBool(configEntries, "feature.local_advertising", false),
-            ["regional_analytics"] = GetConfigBool(configEntries, "feature.regional_analytics", false),
-            ["newsletter"] = GetConfigBool(configEntries, "feature.newsletter", true),
-            ["two_factor_authentication"] = GetConfigBool(configEntries, "feature.two_factor_authentication", true),
-            ["biometric_login"] = GetConfigBool(configEntries, "feature.biometric_login", true),
-            ["identity_verification"] = GetConfigBool(configEntries, "feature.identity_verification", true),
+            ["caring_community"] = GetFeatureBool(configEntries, "caring_community", false),
+            ["marketplace"] = GetFeatureBool(configEntries, "marketplace", false),
+            ["merchant_coupons"] = GetFeatureBool(configEntries, "merchant_coupons", false),
+            ["message_translation"] = GetFeatureBool(configEntries, "message_translation", true),
+            ["member_premium"] = GetFeatureBool(configEntries, "member_premium", false),
+            ["ai_agents"] = GetFeatureBool(configEntries, "ai_agents", false),
+            ["partner_api"] = GetFeatureBool(configEntries, "partner_api", false),
+            ["fadp_compliance"] = GetFeatureBool(configEntries, "fadp_compliance", false),
+            ["local_advertising"] = GetFeatureBool(configEntries, "local_advertising", false),
+            ["regional_analytics"] = GetFeatureBool(configEntries, "regional_analytics", false),
+            ["newsletter"] = GetFeatureBool(configEntries, "newsletter", true),
+            ["two_factor_authentication"] = GetFeatureBool(configEntries, "two_factor_authentication", true),
+            ["biometric_login"] = GetFeatureBool(configEntries, "biometric_login", true),
+            ["identity_verification"] = GetFeatureBool(configEntries, "identity_verification", true),
 
             // 🔴 maps defaults OFF and must stay OFF. It is a multi-tenant cost
             // and privacy decision, not an oversight -- see the platform note about
             // changing it in BOTH the backend and the client if it ever changes.
-            ["maps"] = GetConfigBool(configEntries, "feature.maps", false),
-            ["courses"] = GetConfigBool(configEntries, "feature.courses", false),
-            ["podcasts"] = GetConfigBool(configEntries, "feature.podcasts", false),
-            ["partner_venues"] = GetConfigBool(configEntries, "feature.partner_venues", false),
-            ["public_events"] = GetConfigBool(configEntries, "feature.public_events", false),
-            ["event_attendance_credits"] = GetConfigBool(configEntries, "feature.event_attendance_credits", false),
+            ["maps"] = GetFeatureBool(configEntries, "maps", false),
+            ["courses"] = GetFeatureBool(configEntries, "courses", false),
+            ["podcasts"] = GetFeatureBool(configEntries, "podcasts", false),
+            ["partner_venues"] = GetFeatureBool(configEntries, "partner_venues", false),
+            ["public_events"] = GetFeatureBool(configEntries, "public_events", false),
+            ["event_attendance_credits"] = GetFeatureBool(configEntries, "event_attendance_credits", false),
         };
 
         // Build modules object
@@ -2404,6 +2455,18 @@ public class CompatibilityController : ControllerBase
     // ──────────────────────────────────────────────
     // Config helpers
     // ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Reads a tenant feature flag for the bootstrap payload.
+    ///
+    /// 🔴 Goes through <see cref="TenantFeatureKeys"/> rather than reading
+    /// "feature.{flag}" directly. All forty flags below used to read only that
+    /// spelling, while the gates that actually enforce them read
+    /// "features.{flag}" — so bootstrap reported a community's features at their
+    /// defaults no matter what the community had actually set.
+    /// </summary>
+    private static bool GetFeatureBool(Dictionary<string, string> config, string flag, bool defaultValue = false)
+        => TenantFeatureKeys.Read(config, flag, defaultValue);
 
     private static bool GetConfigBool(Dictionary<string, string> config, string key, bool defaultValue = false)
     {

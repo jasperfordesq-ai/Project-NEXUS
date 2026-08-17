@@ -41,7 +41,13 @@ public class ReactFrontendMemberApiCompatibilityTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // helpers (respondWithData / respondWithCollection / …) never emit it:
+        // of Laravel's 1,129 /v2 GET routes only 8 send `success`, and none of
+        // those carry a `data` key. This asserted the opposite and was pinning
+        // THIS backend's old shape under a Laravel-compatibility name.
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         json.GetProperty("data").GetProperty("max_transfer").GetInt32().Should().Be(75);
     }
 

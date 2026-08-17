@@ -26,7 +26,11 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         await SeedEnabledSsoProviderAsync();
 
         var providersJson = await ReadJsonAsync(await Client.GetAsync($"/api/v2/auth/sso/providers?tenant_id={TestData.Tenant1.Id}"), HttpStatusCode.OK);
-        providersJson.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        providersJson.TryGetProperty("success", out _).Should().BeFalse();
+        providersJson.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         providersJson.GetProperty("providers").EnumerateArray().Should().Contain(p =>
             p.GetProperty("provider_key").GetString() == "azure-entra" &&
             p.GetProperty("display_name").GetString() == "Azure Entra");
@@ -50,16 +54,20 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         await SeedGivenReviewAsync();
         await AuthenticateAsMemberAsync();
 
-        var places = await ReadDataAsync(await Client.GetAsync("/api/v2/geo/os-places/search?q=York"));
+        var places = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/geo/os-places/search?q=York"));
         places.GetProperty("enabled").GetBoolean().Should().BeFalse();
         places.GetProperty("results").ValueKind.Should().Be(JsonValueKind.Array);
 
-        var attention = await ReadDataAsync(await Client.GetAsync("/api/v2/exchanges/needs-attention-count"));
+        var attention = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/exchanges/needs-attention-count"));
         attention.GetProperty("count").GetInt32().Should().BeGreaterThanOrEqualTo(0);
         attention.GetProperty("items").ValueKind.Should().Be(JsonValueKind.Array);
 
         var reviews = await ReadJsonAsync(await Client.GetAsync("/api/v2/reviews/given?per_page=10"), HttpStatusCode.OK);
-        reviews.GetProperty("success").GetBoolean().Should().BeTrue();
+        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
+        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
+        // send `success`, and none of those carry a `data` key.
+        reviews.TryGetProperty("success", out _).Should().BeFalse();
+        reviews.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
         reviews.GetProperty("data").EnumerateArray().Should().Contain(r =>
             r.GetProperty("reviewer_id").GetInt32() == TestData.MemberUser.Id &&
             r.GetProperty("rating").GetInt32() == 5);
@@ -72,7 +80,7 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         var goalId = await SeedMemberGoalAsync();
         await AuthenticateAsMemberAsync();
 
-        var insights = await ReadDataAsync(await Client.GetAsync($"/api/v2/goals/{goalId}/insights"));
+        var insights = await ReadV2GetDataAsync(await Client.GetAsync($"/api/v2/goals/{goalId}/insights"));
         insights.GetProperty("goal_id").GetInt32().Should().Be(goalId);
         insights.GetProperty("progress_percent").GetDecimal().Should().BeGreaterThan(0);
         insights.GetProperty("milestones").ValueKind.Should().Be(JsonValueKind.Array);
@@ -101,14 +109,14 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         var health = await ReadJsonAsync(await Client.GetAsync("/api/health"), HttpStatusCode.OK);
         health.GetProperty("status").GetString().Should().Be("ok");
 
-        var changelog = await ReadDataAsync(await Client.GetAsync("/api/v2/public-changelog"));
+        var changelog = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/public-changelog"));
         changelog.GetProperty("items").ValueKind.Should().Be(JsonValueKind.Array);
 
-        var page = await ReadDataAsync(await Client.GetAsync("/api/v2/public-page-content/about"));
+        var page = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/public-page-content/about"));
         page.GetProperty("page_key").GetString().Should().Be("about");
         page.GetProperty("title").GetString().Should().NotBeNullOrWhiteSpace();
 
-        var staticRoute = await ReadDataAsync(await Client.GetAsync("/api/v2/public-static-route-content/contact"));
+        var staticRoute = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/public-static-route-content/contact"));
         staticRoute.GetProperty("page_key").GetString().Should().Be("contact");
         staticRoute.GetProperty("content").GetString().Should().NotBeNullOrWhiteSpace();
     }
@@ -131,7 +139,7 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
     {
         await AuthenticateAsMemberAsync();
 
-        var starters = await ReadDataAsync(await Client.GetAsync("/api/v2/ai/chat/starters"));
+        var starters = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/ai/chat/starters"));
         starters.GetProperty("starters").EnumerateArray().Should().HaveCountGreaterThan(0);
 
         var missingTrace = await ReadJsonAsync(
@@ -147,7 +155,7 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         var donationId = await SeedPendingMoneyDonationAsync();
         await AuthenticateAsAdminAsync();
 
-        var list = await ReadDataAsync(await Client.GetAsync("/api/v2/admin/volunteering/donations"));
+        var list = await ReadV2GetDataAsync(await Client.GetAsync("/api/v2/admin/volunteering/donations"));
         list.GetProperty("items").EnumerateArray().Should().Contain(d =>
             d.GetProperty("id").GetInt32() == donationId &&
             d.GetProperty("status").GetString() == "pending");
@@ -256,6 +264,28 @@ public sealed class LaravelReactUtilityCompatibilityTests : IntegrationTestBase
         db.MoneyDonations.Add(donation);
         await db.SaveChangesAsync();
         return donation.Id;
+    }
+
+    /// <summary>
+    /// Reads <c>data</c> out of a successful v2 <b>GET</b>, asserting Laravel's
+    /// GET envelope: <c>data</c> + <c>meta</c>, and NO <c>success</c>.
+    ///
+    /// 🔴 Separate from <c>ReadDataAsync</c> on purpose. Laravel's v2 read helpers
+    /// (respondWithData / respondWithCollection / respondWithPaginatedCollection)
+    /// never emit <c>success</c> — of Laravel's 1,129 /v2 GET routes only 8 do,
+    /// and none of those carry a <c>data</c> key. Write responses are a
+    /// different envelope and have NOT been compared against Laravel yet, so
+    /// they keep using <c>ReadDataAsync</c> and keep asserting <c>success</c>.
+    /// </summary>
+    private static async Task<JsonElement> ReadV2GetDataAsync(HttpResponseMessage response)
+    {
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        json.TryGetProperty("success", out _).Should().BeFalse();
+        json.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+
+        return json.GetProperty("data");
     }
 
     private static async Task<JsonElement> ReadDataAsync(HttpResponseMessage response)

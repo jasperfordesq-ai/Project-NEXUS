@@ -928,7 +928,35 @@ function discountLabel(coupon, req) {
       COUPON_DISCOUNT_LABELS.bogo
     );
   }
-  return formatLocaleNumber(safeValue, req?.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // 🔴 A `fixed` discount_value is stored in MINOR units — MerchantCouponService
+  // compares it against the order total in minor units
+  // (`min($orderTotalMinor, (int) $coupon->discount_value)`). This printed the raw
+  // stored number with two decimals and no currency, so a 500 (£5.00) coupon read as
+  // "500.00" and a 5 (5p) coupon read as "5.00" — the latter being exactly what a
+  // seller saw after typing 5 meaning five pounds. Now it renders as real money.
+  return formatMoney(safeValue / 100, couponCurrency(coupon, req));
+}
+
+/** A coupon carries no currency of its own, so fall back to the community's. */
+function couponCurrency(coupon, req) {
+  const explicit = trimmed(coupon?.currency || coupon?.price_currency).toUpperCase();
+  if (/^[A-Z]{3}$/.test(explicit)) return explicit;
+  const configured = trimmed(req?.accessibleRouting?.tenant?.settings?.default_currency).toUpperCase();
+  return /^[A-Z]{3}$/.test(configured) ? configured : 'EUR';
+}
+
+/**
+ * The form value for a fixed discount, in the currency units the field's hint
+ * promises ("For a fixed amount, enter the amount"). Stored minor units are divided
+ * back so the number a seller sees matches the money the coupon is worth.
+ */
+function couponDiscountFormValue(row, discountType) {
+  const raw = row.discount_value;
+  if (raw === null || raw === undefined || raw === '') return '';
+  if (discountType !== 'fixed') return raw;
+  const numeric = Number(raw);
+  if (!Number.isFinite(numeric)) return '';
+  return String(Math.round(numeric) / 100);
 }
 
 function decorateCoupon(coupon, req) {
@@ -948,7 +976,7 @@ function decorateCoupon(coupon, req) {
       `govuk_alpha_commerce.coupons.discount_type_${discountType}`,
       COUPON_DISCOUNT_LABELS[discountType] || discountType
     ),
-    discountValue: row.discount_value ?? '',
+    discountValue: couponDiscountFormValue(row, discountType),
     discountLabel: discountLabel({ ...row, discount_type: discountType }, req),
     minOrderCents: row.min_order_cents ?? '',
     maxUses: row.max_uses ?? '',

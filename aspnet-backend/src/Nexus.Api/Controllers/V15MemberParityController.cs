@@ -421,7 +421,11 @@ public class V15MemberParityController : ControllerBase
         var query = _db.ListingTags.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(q)) query = query.Where(t => t.Tag.ToLower().Contains(q.ToLower()));
         var tags = await query.GroupBy(t => t.Tag).OrderByDescending(g => g.Count()).Take(25).Select(g => new { tag = g.Key, count = g.Count() }).ToListAsync();
-        return Ok(new { data = tags });
+        return Ok(new
+        {
+            data = tags,
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
+        });
     }
 
     [HttpPost("api/ai/generate/listing")]
