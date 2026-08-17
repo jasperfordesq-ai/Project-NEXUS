@@ -161,10 +161,15 @@
         </strong>
       </div>
       <div class="nexus-alpha-actions">
-        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/complete') }}" class="nexus-alpha-linkform">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" data-prevent-double-click="true" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>
-        </form>
+        {# 🔴 Not offered on a DISPUTED exchange. The API would allow it once everyone
+           has confirmed, and completing moves the credits — so a disputed exchange must
+           be resolved or cancelled, never completed from here. Cancel stays available. #}
+        {% if not isDisputed %}
+          <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/complete') }}" class="nexus-alpha-linkform">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" data-prevent-double-click="true" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>
+          </form>
+        {% endif %}
         <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/cancel') }}" class="nexus-alpha-linkform">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.cancel_button") }}</button>

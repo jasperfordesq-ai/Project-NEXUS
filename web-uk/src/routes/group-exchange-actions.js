@@ -114,15 +114,29 @@ function exchangePayload(body) {
   };
 }
 
-function participantPayload(body) {
+// 🔴 `weight` is not decoration on a WEIGHTED exchange — GroupExchangeService gives each
+// participant `(weight / sum-of-weights-in-role) * total_hours`. Sending a hardcoded
+// `weight: 1` therefore did two silent wrong things at once: the hours the organiser
+// typed were ignored, AND every existing participant's share moved, because adding a
+// weight changes the divisor. Mapping weight to the hours asked for is what "weighted"
+// means: when the role's requests sum to total_hours everyone gets exactly what was
+// typed, and otherwise they scale proportionally. `equal` and `custom` never read
+// weight, so 1 stays right there.
+function participantPayload(body, splitType = 'equal') {
   const role = trimmed(body.role) === 'receiver' ? 'receiver' : 'provider';
-  const hours = decimalNumber(body.hours);
+  const hours = Math.max(0, decimalNumber(body.hours));
   return {
     user_id: positiveInteger(body.participant_id || body.user_id) || 0,
     role,
-    hours: Math.max(0, hours),
-    weight: 1
+    hours,
+    weight: splitType === 'weighted' ? (hours > 0 ? hours : 1) : 1
   };
+}
+
+function splitTypeOf(result) {
+  const data = dataFrom(result);
+  const value = trimmed(data && typeof data === 'object' ? data.split_type : '');
+  return ['equal', 'custom', 'weighted'].includes(value) ? value : 'equal';
 }
 
 router.post('/new', asyncRoute(async (req, res) => {
@@ -145,12 +159,23 @@ router.post('/new', asyncRoute(async (req, res) => {
 
 router.post('/:id(\\d+)/participants', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let splitType = 'equal';
+  try {
+    splitType = splitTypeOf(await callApi(token, 'GET', `/${id}`));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, exchangeRedirect(id, 'add-failed'));
+  }
+
   return runAction(
     req,
     res,
     'POST',
     `/${id}/participants`,
-    participantPayload(req.body),
+    participantPayload(req.body, splitType),
     exchangeRedirect(id, 'participant-added'),
     exchangeRedirect(id, 'add-failed')
   );

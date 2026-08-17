@@ -223,11 +223,19 @@ function storeTransferForm(req) {
 // Stash the just-submitted donation so the error re-render can pre-fill it, mirroring
 // storeTransferForm above. The amount and message are echoed input, not money held on the
 // server side; consumed (and deleted) once by GET /wallet.
+// 🔴 The target and recipient are part of what must survive a failure, not just the
+// amount. Storing only amount+message sent the member back to the community-fund form
+// with their amount already filled in, so pressing Donate again gave the credits to the
+// FUND instead of the person they chose — a silent wrong write of real money. The
+// recipient id is echoed input like the rest; POST /donate re-validates it.
 function storeDonateForm(req) {
   if (!req.session) return;
   req.session.walletDonateForm = {
     amount: String(req.body.amount || '').trim(),
-    message: String(req.body.message || '').trim().slice(0, 255)
+    message: String(req.body.message || '').trim().slice(0, 255),
+    target: String(req.body.target || req.body.recipient_type || '') === 'user' ? 'user' : 'community_fund',
+    recipientId: String(req.body.recipient_id || '').trim(),
+    recipientQuery: String(req.body.recipient_q || '').trim()
   };
 }
 
@@ -350,21 +358,38 @@ router.get('/recipients', asyncRoute(async (req, res) => {
 }));
 
 router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
-  const recipientQuery = String(req.query.recipient_q || '').trim();
-  const donateTarget = req.query.donate_target === 'user' ? 'user' : 'community_fund';
+  // Consume (once) a donation that just failed so the amount, message and chosen
+  // recipient are all echoed back into this form instead of being lost.
+  const donateForm = req.session && req.session.walletDonateForm ? req.session.walletDonateForm : null;
+  if (req.session) delete req.session.walletDonateForm;
+  const recipientQuery = String(req.query.recipient_q || (donateForm && donateForm.recipientQuery) || '').trim();
+  const donateTarget = req.query.donate_target === 'user' || (donateForm && donateForm.target === 'user')
+    ? 'user'
+    : 'community_fund';
   const [walletRaw, fundRaw, recipients] = await Promise.all([
     callWalletApi(req.token, 'GET', '/balance'),
     callWalletApi(req.token, 'GET', '/community-fund'),
     walletRecipientsFor(req.token, recipientQuery, res.locals.t)
   ]);
 
+  const donateRecipients = transferRecipients(recipients);
+  // Pin the recipient to the one the member actually chose when a retry brings them back
+  // here. Falling through to the first search result would silently pay a different
+  // person if the result order moved between the two renders.
+  const stashedRecipientId = donateForm ? String(donateForm.recipientId || '').trim() : '';
+  const donateRecipient = donateRecipients.find(
+    (recipient) => stashedRecipientId !== '' && String(recipient.id) === stashedRecipientId
+  ) || donateRecipients[0] || null;
+
   res.render('wallet/manage', {
     title: res.locals.t('govuk_alpha_wallet.manage.title'),
     wallet: normalizeWallet(walletRaw),
     fund: normalizeFund(fundRaw),
-    recipients: transferRecipients(recipients),
+    recipients: donateRecipients,
     recipientQuery,
     donateTarget,
+    donateForm,
+    donateRecipient,
     status: walletManageStatus(req.query.status, req.query.error, req.query.donate_error, res.locals.t),
     donateIdempotencyKey: randomUUID(),
     hoursValue,
@@ -399,9 +424,19 @@ router.post('/transfer', requireAuth, audit.walletTransfer(), asyncRoute(async (
   }
 }));
 
-function walletDonateFailure(error) {
+// A member donation is only offered on /wallet/manage — /wallet's form is hardcoded to
+// the community fund — so a failed member donation must go back to /manage with the
+// member option still selected, never to the fund form.
+function walletDonateFailure(error, body = {}) {
   const encoded = encodeURIComponent(error || 'failed');
-  return `/wallet?status=donate-failed&donate_error=${encoded}#donate`;
+  const target = String(body.target || body.recipient_type || '') === 'user' ? 'user' : 'community_fund';
+  if (target !== 'user') {
+    return `/wallet?status=donate-failed&donate_error=${encoded}#donate`;
+  }
+  const params = new URLSearchParams({ status: 'donate-failed', donate_error: String(error || 'failed'), donate_target: 'user' });
+  const recipientQuery = String(body.recipient_q || '').trim();
+  if (recipientQuery !== '') params.set('recipient_q', recipientQuery);
+  return `/wallet/manage?${params.toString()}#donate`;
 }
 
 function walletDonationPayload(body) {
@@ -427,7 +462,7 @@ router.post('/donate', requireAuth, asyncRoute(async (req, res) => {
   // them back into the donate form, rather than the member losing what they typed.
   const failDonate = (code) => {
     storeDonateForm(req);
-    return redirectTo(res, walletDonateFailure(code));
+    return redirectTo(res, walletDonateFailure(code, req.body));
   };
 
   if (!Number.isFinite(payload.amount) || payload.amount <= 0) {

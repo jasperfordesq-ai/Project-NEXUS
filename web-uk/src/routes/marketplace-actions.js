@@ -294,16 +294,30 @@ function couponDiscountValue(discountType, raw) {
   return discountType === 'fixed' ? Math.round(value * 100) : value;
 }
 
-function couponPayload(body) {
+/**
+ * @param {boolean} isUpdate
+ *
+ * 🔴 `applies_to` is sent ONLY on create. It used to be hardcoded to `all_listings`
+ * in the payload shared by create and update, so a seller who had scoped a coupon to
+ * one listing in React — and then opened and saved it here, changing something
+ * unrelated — silently had the discount applied to their WHOLE catalogue.
+ * `MerchantCouponService::update` resolves it as
+ * `$data['applies_to'] ?? $coupon->applies_to`, so omitting it preserves the seller's
+ * scope. `applies_to_ids` is likewise preserved because it is never sent.
+ * This page cannot yet choose a scope, so it must not overwrite one.
+ */
+function couponPayload(body, isUpdate = false) {
   const discountType = allowed(body.discount_type, COUPON_DISCOUNT_TYPES, 'percent');
   const payload = {
     title: trimmed(body.title, 200),
     description: trimmed(body.description, 2000),
     discount_type: discountType,
     discount_value: couponDiscountValue(discountType, body.discount_value),
-    status: allowed(body.status, COUPON_STATUSES, 'draft'),
-    applies_to: 'all_listings'
+    status: allowed(body.status, COUPON_STATUSES, 'draft')
   };
+  if (!isUpdate) {
+    payload.applies_to = 'all_listings';
+  }
 
   const code = trimmed(body.code, 64);
   if (code !== '') {
@@ -679,6 +693,13 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   if (deliveryMethod === 'pickup') {
     payload.shipping_method = 'pickup';
     isPickup = true;
+  } else if (deliveryMethod === 'community_delivery') {
+    // 🔴 This branch did not exist, so no `shipping_method` was sent at all and the
+    // order stored NULL — while reporting success to the buyer. Every method in
+    // MarketplaceCommunityDeliveryService requires `shipping_method` to equal
+    // 'community_delivery', so the order could never receive a delivery offer: the
+    // purchase looked fine and was permanently unfulfillable.
+    payload.shipping_method = 'community_delivery';
   } else if (deliveryMethod === 'both' && choice === 'pickup') {
     payload.shipping_method = 'pickup';
     isPickup = true;
@@ -1123,7 +1144,8 @@ router.post('/coupons/:id(\\d+)/update', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const values = couponFormValues(req.body);
   const errors = couponValidationErrors(req.body);
-  const payload = couponPayload(req.body);
+  // Update: `applies_to` is omitted so the seller's own scope survives — see couponPayload.
+  const payload = couponPayload(req.body, true);
   if (errors.length > 0) {
     rememberCouponForm(req, `edit:${id}`, values, errors);
     return redirectTo(res, `/marketplace/coupons/${id}/edit`);

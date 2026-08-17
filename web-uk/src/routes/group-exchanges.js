@@ -230,6 +230,13 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const viewerRow = participants.find((participant) => participant.userId === viewerId) || null;
   const isParticipant = viewerRow !== null;
   const isClosed = ['completed', 'cancelled'].includes(exchange.statusKey);
+  // 🔴 A DISPUTED exchange must not be completable from here. The API refuses only
+  // `completed` and `cancelled` and otherwise just requires every participant to have
+  // confirmed — so with all confirmations in place, completing a disputed exchange
+  // MOVED THE CREDITS. React requires `pending_confirmation`. `disputed` is not added
+  // to `isClosed` because Cancel lives in the same block and cancelling a disputed
+  // exchange is a legitimate thing for an organiser to do.
+  const isDisputed = exchange.statusKey === 'disputed';
   const editable = isOrganizer && ['draft', 'pending', 'approved'].includes(exchange.statusKey);
   const allConfirmed = participants.length > 0 && participants.every((participant) => participant.confirmed);
   const participantQuery = trimmed(req.query.participant_q);
@@ -251,6 +258,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     isOrganizer,
     isParticipant,
     isClosed,
+    isDisputed,
     editable,
     viewerConfirmed: viewerRow ? viewerRow.confirmed : false,
     allConfirmed,

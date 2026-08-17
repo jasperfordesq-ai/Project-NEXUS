@@ -33536,7 +33536,9 @@ describe('shared accessible frontend shell', () => {
 
     expect(buyer.status).toBe(200);
     expect(seller.status).toBe(200);
-    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/orders/purchases?limit=50&status=completed');
+    // The buyer's Completed tab asks for both terminal statuses. It used to send the tab
+    // name verbatim, which hid every `delivered` order.
+    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/orders/purchases?limit=50&status=completed%2Cdelivered');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/orders/sales?limit=50&status=paid');
     expect(buyer.text).toContain('My orders');
     expect(buyer.text).toContain('Delivery confirmed. Thank you.');
@@ -34015,7 +34017,10 @@ describe('shared accessible frontend shell', () => {
       // pass-through that turned £4.50 into four and a half pence.
       discount_value: 450,
       status: 'paused',
-      applies_to: 'all_listings',
+      // 🔴 No `applies_to`. This form does not offer a scope field, so sending
+      // 'all_listings' on an UPDATE silently widened a coupon the seller had limited to
+      // specific listings out to their whole catalogue. Omitting it leaves the stored
+      // scope alone; it is still sent on create, where all_listings is the real default.
       min_order_cents: 0
     });
 
@@ -34427,8 +34432,9 @@ describe('shared accessible frontend shell', () => {
       // 🔴 "3" entered means three of the community's currency units, stored as 300
       // minor units. This expected `3`, which was three pence.
       discount_value: 300,
-      status: 'paused',
-      applies_to: 'all_listings'
+      status: 'paused'
+      // No `applies_to` on an update — see the coupon-scope test for why sending it
+      // reset a narrowly-scoped coupon to the seller's whole catalogue.
     });
 
     const couponDeleteResponse = await post('/marketplace/coupons/5/delete');
@@ -34525,6 +34531,216 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="+1 555 123 4567"');
     expect(response.text).toContain('Save accessibility needs');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
+  });
+
+  it('does not reset a coupon scope to the whole catalogue when it is edited', async () => {
+    // 🔴 `applies_to: 'all_listings'` was hardcoded in the payload shared by create AND
+    // update, so a coupon scoped to one listing in React silently became
+    // catalogue-wide the first time it was saved here. The API resolves it as
+    // `$data['applies_to'] ?? $coupon->applies_to`, so omitting it preserves the scope.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue({ data: { id: 5 } });
+
+    await agent
+      .post('/marketplace/coupons/5/update')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, title: 'Scoped offer', discount_type: 'percent', discount_value: '10', status: 'active' });
+
+    const update = api.callMarketplaceApi.mock.calls.find((call) => call[1] === 'PUT');
+    expect(update).toBeTruthy();
+    expect(Object.hasOwn(update[3], 'applies_to')).toBe(false);
+
+    // Creating one still sets an explicit default.
+    api.callMarketplaceApi.mockClear();
+    await agent
+      .post('/marketplace/coupons/new')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, title: 'New offer', discount_type: 'percent', discount_value: '10', status: 'draft' });
+
+    const create = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].title === 'New offer');
+    expect(create[3].applies_to).toBe('all_listings');
+  });
+
+  it('asks the API for order statuses that exist, so the buyer tabs are not empty', async () => {
+    // 🔴 Tab names were sent verbatim as `status`. The enum has no "active", so the
+    // buyer's Active tab was permanently empty; Completed hid every `delivered` order
+    // and Cancelled hid every `refunded` one.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+
+    for (const [tab, expected] of [
+      ['active', 'pending_payment,paid,shipped'],
+      ['completed', 'completed,delivered'],
+      ['cancelled', 'cancelled,refunded']
+    ]) {
+      api.callMarketplaceApi.mockReset();
+      api.callMarketplaceApi.mockResolvedValue({ data: { items: [] } });
+
+      const response = await request(app)
+        .get(`/marketplace/orders?tab=${tab}`)
+        .set('Cookie', cookie);
+      expect(response.status).toBe(200);
+
+      const call = api.callMarketplaceApi.mock.calls.find((entry) => String(entry[2]).includes('/orders/purchases'));
+      expect(decodeURIComponent(String(call[2]))).toContain(`status=${expected}`);
+    }
+  });
+
+  it('records community delivery on the order instead of storing it broken', async () => {
+    // 🔴 No branch handled `community_delivery`, so no shipping_method was sent, the
+    // order stored NULL, and it could never receive a delivery offer — while the
+    // purchase reported success.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue({
+      data: {
+        id: 42,
+        title: 'Community bike',
+        time_credit_price: 5,
+        status: 'active',
+        delivery_method: 'community_delivery',
+        user: { id: 77, name: 'Sam Seller' }
+      }
+    });
+
+    const form = await agent.get('/marketplace/42/buy').set('Cookie', cookie);
+    const csrf = form.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const idempotencyKey = form.text.match(/name="idempotency_key" value="([^"]+)"/)[1];
+
+    // The POST re-fetches the listing and its shipping options, so the mock must keep
+    // answering those reads and return the order only for the write.
+    api.callMarketplaceApi.mockClear();
+    api.callMarketplaceApi.mockImplementation((_token, method, path) => {
+      if (method === 'POST') return Promise.resolve({ data: { id: 900 } });
+      if (String(path).includes('shipping-options') || String(path).includes('pickup-slots')) {
+        return Promise.resolve({ data: [] });
+      }
+      return Promise.resolve({
+        data: {
+          id: 42,
+          title: 'Community bike',
+          time_credit_price: 5,
+          status: 'active',
+          delivery_method: 'community_delivery',
+          user: { id: 77, name: 'Sam Seller' }
+        }
+      });
+    });
+
+    await agent
+      .post('/marketplace/42/buy')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, idempotency_key: idempotencyKey, quantity: '1', payment_method: 'time_credits' });
+
+    const order = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].listing_id);
+    expect(order).toBeTruthy();
+    expect(order[3].shipping_method).toBe('community_delivery');
+  });
+
+  it('gives a new participant the share the organiser typed on a weighted exchange', async () => {
+    // 🔴 `weight` was hardcoded to 1. On a WEIGHTED exchange the service pays each
+    // participant (weight / role-total-weight) * total_hours, so the hours the organiser
+    // typed were discarded AND every existing participant's share moved, because adding
+    // a weight changes the divisor. Equal and custom never read weight, so 1 is right
+    // there and must stay 1.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    for (const [splitType, expectedWeight] of [['weighted', 3.5], ['custom', 1], ['equal', 1]]) {
+      api.callGroupExchangeApi.mockReset();
+      api.callGroupExchangeApi.mockImplementation((_token, method) => (
+        method === 'GET'
+          ? Promise.resolve({ data: { id: 7, split_type: splitType, total_hours: 12 } })
+          : Promise.resolve({ data: { id: 7 } })
+      ));
+
+      await agent
+        .post('/group-exchanges/7/participants')
+        .set('Cookie', cookie)
+        .type('form')
+        .send({ _csrf: csrf, participant_id: '55', role: 'receiver', hours: '3.5' });
+
+      const add = api.callGroupExchangeApi.mock.calls.find((call) => call[1] === 'POST');
+      expect(add).toBeTruthy();
+      expect(add[3]).toEqual({ user_id: 55, role: 'receiver', hours: 3.5, weight: expectedWeight });
+    }
+  });
+
+  it('sends a failed member donation back to the member form, not the community fund', async () => {
+    // 🔴 Every donation failure redirected to /wallet#donate, whose form is hardcoded to
+    // the community fund, carrying the amount forward. A member whose donation to a
+    // PERSON failed therefore got the fund form pre-filled with their amount, and
+    // pressing Donate again gave those credits to the fund instead. Real money, silently
+    // to the wrong recipient.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    api.donateCredits.mockReset();
+    api.donateCredits.mockRejectedValue(new Error('insufficient balance'));
+
+    const failed = await agent
+      .post('/wallet/donate')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        target: 'user',
+        recipient_id: '404',
+        recipient_q: 'alex',
+        amount: '5',
+        message: 'Thanks for the lift',
+        idempotency_key: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      });
+
+    expect(failed.status).toBe(302);
+    // Back to the form that was actually submitted, with the member option still chosen.
+    expect(failed.headers.location).toContain('/wallet/manage');
+    expect(failed.headers.location).toContain('donate_target=user');
+    expect(failed.headers.location).toContain('recipient_q=alex');
+    expect(failed.headers.location).not.toBe('/wallet?status=donate-failed&donate_error=failed#donate');
+
+    // A community-fund failure still belongs on /wallet, where that form lives.
+    const fundFailure = await agent
+      .post('/wallet/donate')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        target: 'community_fund',
+        amount: '5',
+        idempotency_key: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      });
+    expect(fundFailure.headers.location).toContain('/wallet?status=donate-failed');
   });
 
   it('lets an organiser edit venue accessibility on an existing event, prefilled from the API shape', async () => {

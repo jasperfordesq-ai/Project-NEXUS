@@ -1115,10 +1115,31 @@ function advancedSearchQuery(query) {
   return params.toString();
 }
 
+/**
+ * 🔴 Tab names are NOT order statuses, and sending them as such broke three tabs.
+ *
+ * The `marketplace_orders` enum is pending_payment, paid, shipped, delivered,
+ * completed, disputed, refunded, cancelled. `ordersQuery` passed the tab name straight
+ * through as `status`, and `MarketplaceOrderService` matches exactly — so the buyer's
+ * **Active tab was permanently empty** (no status is called "active"), Completed hid
+ * every `delivered` order, and Cancelled hid every `refunded` one. A member could not
+ * see an order they had actually placed.
+ *
+ * The API accepts a comma-separated list (`whereIn`), so each tab maps to the statuses
+ * it actually means.
+ */
+const ORDER_TAB_STATUSES = {
+  active: 'pending_payment,paid,shipped',
+  completed: 'completed,delivered',
+  cancelled: 'cancelled,refunded'
+};
+
 function ordersQuery(tab) {
   const params = new URLSearchParams();
   params.set('limit', '50');
-  if (tab !== 'all') params.set('status', tab);
+  if (tab !== 'all') {
+    params.set('status', Object.hasOwn(ORDER_TAB_STATUSES, tab) ? ORDER_TAB_STATUSES[tab] : tab);
+  }
   return params.toString();
 }
 

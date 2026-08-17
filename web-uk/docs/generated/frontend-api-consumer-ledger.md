@@ -5,9 +5,9 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-17T15:47:32.517Z
-- Laravel commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
-- Web UK repository commit SHA: `b00c0ea1a9b1fe30380de3cd02745f70792c9dcc`
+- Generated: 2026-08-17T16:46:11.984Z
+- Laravel commit SHA: `8582235b26fca8d1c018ab3c04a7235085b38807`
+- Web UK repository commit SHA: `8582235b26fca8d1c018ab3c04a7235085b38807`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -312,7 +312,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/v2/group-exchanges` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/group-exchanges?{query}` | `callGroupExchangeApi` | documented | read-only by HTTP method<br>not applicable | src/routes/group-exchanges.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/group-exchanges/{param}` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/group-exchanges/{param}` | `callGroupExchangeApi` | documented | read-only by HTTP method<br>not applicable | src/routes/group-exchanges.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/group-exchanges/{param}` | `callGroupExchangeApi` | documented | read-only by HTTP method<br>not applicable | src/routes/group-exchange-actions.js<br>src/routes/group-exchanges.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/group-exchanges/{param}/complete` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/group-exchanges/{param}/confirm` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/group-exchanges/{param}/participants` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
