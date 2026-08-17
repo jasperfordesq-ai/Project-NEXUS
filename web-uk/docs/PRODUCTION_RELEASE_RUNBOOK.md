@@ -214,6 +214,42 @@ rollback to the recorded digest and restoration of the previous proxy target.
 Do not repair a failed release by changing Laravel or ASP.NET contracts from
 the Web UK deployment procedure.
 
+### 6a. Rollback confidence: the route-switch is rehearsed off-production
+
+The blue/green rollback flips the accessible host back by rewriting one Apache
+route file and reloading — the `write_apache_routes()` step in
+`scripts/deploy/bluegreen-deploy.sh`. That switch logic is rehearsed by
+`scripts/test/rehearse-bluegreen-rollback.sh`, a disposable harness (throwaway
+`httpd:2.4-alpine`, no production, no Cloudflare, no `systemctl`). It drives the
+**real** `write_apache_routes()` and the **real** accessible vhost template, and
+all 11 checks pass:
+
+- the route swap is accepted by a real `apachectl configtest` + graceful reload;
+- a colour switch moves live traffic to the other colour;
+- a rollback to a release **predating** `web-uk` (no `NEXUS_WEBUK_PORT` Define)
+  still passes configtest via the `<IfDefine !NEXUS_WEBUK_PORT>` arm, so the
+  rollback does not abort itself — the specific risk the vhost template records;
+- a bad config is rejected and the previous route file is auto-restored, so there
+  is no half-applied switch.
+
+Re-run it before a release if the deploy script or the vhost template changed:
+
+```bash
+bash scripts/test/rehearse-bluegreen-rollback.sh   # expect: 11 passed, 0 failed
+```
+
+🔴 **What the rehearsal does NOT cover, and still must be confirmed on the real
+server:**
+
+1. The same `apachectl configtest` (both states) on the production **Plesk**
+   Apache build — the rehearsal proves the logic on stock Apache 2.4, not that
+   exact build. Now an expected pass, but run it before cutover, not during a
+   rollback.
+2. A full end-to-end `rollback` on the live two-colour stack — worker draining,
+   health gating, the public-host smoke, and the Cloudflare purge in
+   `cmd_rollback` are not exercised by the harness. This needs a live deploy
+   window and explicit owner authorization.
+
 ## 7. Post-release evidence
 
 Record the deployed digest, configuration identifiers (never secret values),
