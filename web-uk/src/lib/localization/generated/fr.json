@@ -2585,6 +2585,7 @@
                     "pending": "En attente",
                     "approved": "Approuvé",
                     "declined": "Refusé",
+                    "suspended": "Suspendu",
                     "withdrawn": "Retiré",
                     "open": "Ouvert",
                     "active": "Actif",

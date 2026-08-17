@@ -1578,6 +1578,7 @@ return [
             'pending' => 'Aż do',
             'approved' => 'Zatwierdzone',
             'declined' => 'Odrzucono',
+            'suspended' => 'Zawieszony',
             'withdrawn' => 'Wycofane',
             'open' => 'Otwórz',
             'active' => 'Aktywny',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Wyświetl',
         'statuses' => [
             'draft' => 'Szkic',
-
             'pending_participants' => 'Czekam na uczestników',
             'pending' => 'Oczekuje na zatwierdzenie',
             'approved' => 'Zatwierdzona',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Potwierdź moje uczestnictwo',
         'confirmed_already' => 'Potwierdziłeś swoje uczestnictwo.',
         'start_title' => 'Rozpocznij wymianę',
-
         'start_body' => 'Rozpoczęcie wymiany oznacza, że wszystkie uczestniczące osoby zostaną poproszone o potwierdzenie swoich godzin. Później nie można dodawać ani usuwać osób.',
-
         'start_button' => 'Rozpocznij i poproś wszystkich o potwierdzenie',
 
         'complete_title' => 'Ukończ wymianę',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Osoba dodana do wymiany.',
             'participant-removed' => 'Osoba usunięta z wymiany.',
             'started' => 'Wymiana została rozpoczęta. Wszystkie uczestniczące osoby zostały poproszone o potwierdzenie.',
-
             'start-failed' => 'Nie udało się rozpocząć wymiany. Potrzebna jest co najmniej jedna osoba przekazująca czas i jedna go otrzymująca, a godziny muszą się równoważyć.',
 
             'confirmed' => 'Dziękujemy — twoje uczestnictwo zostało potwierdzone.',

@@ -34680,6 +34680,89 @@ describe('shared accessible frontend shell', () => {
     expect(order[3].shipping_method).toBe('community_delivery');
   });
 
+  it('translates course and podcast status labels instead of printing English', async () => {
+    // 🔴 Four separate leaks of the same kind. Courses held the literal words 'Published',
+    // 'Awaiting review', 'Draft', 'Completed' and 'In progress' and rendered them straight
+    // out, so an instructor or learner saw English whatever language they chose — while the
+    // translated sets for exactly those lists already existed and were simply never used.
+    // Podcasts translated only when a `t` was handed in and fell back to English otherwise,
+    // and `t` was NOT passed on several paths; its studio banners fell back to the raw
+    // translation KEY NAME, which is worse than English. All now translate from the request
+    // locale, so there is no path left that can fall back.
+    const api = require('../src/lib/api');
+
+    api.getMyCourses.mockReset().mockResolvedValue({
+      data: [{
+        id: 5,
+        status: 'in_progress',
+        progress_percent: 40,
+        course: { id: 5, title: 'Bike repair basics' }
+      }]
+    });
+    const learning = await request(app)
+      .get('/courses/mine?locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(learning.status).toBe(200);
+    expect(learning.text).toContain('Im Gange');
+    expect(learning.text).not.toContain('>In progress<');
+
+    // instructorStatus() needs BOTH status published and moderation approved to read as
+    // published — otherwise it reports "awaiting review".
+    api.callCourseApi.mockReset().mockResolvedValue({
+      data: [{
+        id: 9,
+        title: 'Sourdough for beginners',
+        status: 'published',
+        moderation_status: 'approved',
+        is_published: true
+      }]
+    });
+    const instructor = await request(app)
+      .get('/courses/instructor?locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(instructor.status).toBe(200);
+    expect(instructor.text).toContain('Veröffentlicht');
+    expect(instructor.text).not.toContain('>Published<');
+
+    // The podcast studio: the show list is one of the paths that DID pass `t`; the episode
+    // rows inside a show were not, which is where the English came through.
+    api.callPodcastApi.mockReset().mockResolvedValue({
+      data: [{
+        id: 3,
+        title: 'Neighbourhood notes',
+        status: 'draft',
+        episodes: [{ id: 31, title: 'Episode one', status: 'draft' }]
+      }]
+    });
+    const studio = await request(app)
+      .get('/podcasts/studio?locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(studio.status).toBe(200);
+    expect(studio.text).toContain('Entwurf');
+    expect(studio.text).not.toContain('>Draft<');
+
+    // A listing's condition and delivery wording came from the same kind of English map and
+    // is printed on search results, which every member sees.
+    api.callMarketplaceApi.mockReset().mockResolvedValue({
+      data: [{
+        id: 61,
+        title: 'Bread tin',
+        condition: 'like_new',
+        delivery_method: 'pickup',
+        price_type: 'fixed',
+        price: 4,
+        price_currency: 'GBP',
+        status: 'active'
+      }],
+      meta: { cursor: null, has_more: false, per_page: 30 }
+    });
+    const search = await request(app)
+      .get('/marketplace/search?q=tin&locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(search.status).toBe(200);
+    expect(search.text).not.toContain('Like new');
+  });
+
   it('starts a group exchange, which is what asks participants to confirm', async () => {
     // 🔴 There was no /start route and no button, so a group exchange could never leave
     // `draft`. GroupExchangeService::start() is the ONLY caller of

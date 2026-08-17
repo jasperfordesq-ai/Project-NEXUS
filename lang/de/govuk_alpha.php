@@ -1578,6 +1578,7 @@ return [
             'pending' => 'Ausstehend',
             'approved' => 'Genehmigt',
             'declined' => 'Abgelehnt',
+            'suspended' => 'Suspendiert',
             'withdrawn' => 'Zurückgezogen',
             'open' => 'Offen',
             'active' => 'Aktiv',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Anzeigen',
         'statuses' => [
             'draft' => 'Entwurf',
-
             'pending_participants' => 'Warten auf Teilnehmende',
             'pending' => 'Wartet auf Genehmigung',
             'approved' => 'Genehmigt',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Meine Teilnahme bestätigen',
         'confirmed_already' => 'Sie haben Ihre Teilnahme bereits bestätigt.',
         'start_title' => 'Den Austausch starten',
-
         'start_body' => 'Wenn Sie den Austausch starten, werden alle Beteiligten gebeten, ihre Stunden zu bestätigen. Danach können Sie keine Personen mehr hinzufügen oder entfernen.',
-
         'start_button' => 'Starten und alle um Bestätigung bitten',
 
         'complete_title' => 'Den Austausch abschließen',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Person zum Austausch hinzugefügt.',
             'participant-removed' => 'Person aus dem Austausch entfernt.',
             'started' => 'Der Austausch wurde gestartet. Alle Beteiligten wurden um Bestätigung gebeten.',
-
             'start-failed' => 'Der Austausch konnte nicht gestartet werden. Es braucht mindestens eine Person, die Zeit gibt, und eine, die sie erhält, und die Stunden müssen ausgeglichen sein.',
 
             'confirmed' => 'Vielen Dank — Ihre Teilnahme ist bestätigt.',

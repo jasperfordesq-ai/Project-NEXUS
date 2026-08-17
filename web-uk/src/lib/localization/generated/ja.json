@@ -2585,6 +2585,7 @@
                     "pending": "保留中",
                     "approved": "承認済み",
                     "declined": "拒否されました",
+                    "suspended": "一時停止中",
                     "withdrawn": "撤回されました",
                     "open": "開く",
                     "active": "アクティブ",

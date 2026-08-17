@@ -1578,6 +1578,7 @@ return [
             'pending' => '保留中',
             'approved' => '承認済み',
             'declined' => '拒否されました',
+            'suspended' => '一時停止中',
             'withdrawn' => '撤回されました',
             'open' => '開く',
             'active' => 'アクティブ',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => '表示',
         'statuses' => [
             'draft' => '下書き',
-
             'pending_participants' => '参加者を待っています',
             'pending' => '承認待ち',
             'approved' => '承認済み',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => '参加を確認する',
         'confirmed_already' => '参加を確認済みです。',
         'start_title' => '交換を開始する',
-
         'start_body' => '交換を開始すると、参加するすべての方に時間の確認をお願いします。開始後は参加者を追加したり外したりできません。',
-
         'start_button' => '開始して全員に確認を依頼する',
 
         'complete_title' => '交換を完了する',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => '交換に参加者を追加しました。',
             'participant-removed' => '交換から参加者を削除しました。',
             'started' => '交換を開始しました。参加するすべての方に確認をお願いしました。',
-
             'start-failed' => '交換を開始できませんでした。時間を提供する方と受け取る方がそれぞれ1名以上必要で、時間の合計が釣り合っている必要があります。',
 
             'confirmed' => 'ありがとうございます — 参加が確認されました。',

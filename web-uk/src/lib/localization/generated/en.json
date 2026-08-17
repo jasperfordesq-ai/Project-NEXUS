@@ -2578,6 +2578,7 @@
                     "pending": "Pending",
                     "approved": "Approved",
                     "declined": "Declined",
+                    "suspended": "Suspended",
                     "withdrawn": "Withdrawn",
                     "open": "Open",
                     "active": "Active",

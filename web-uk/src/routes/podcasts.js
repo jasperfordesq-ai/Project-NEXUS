@@ -10,24 +10,32 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { splitDateTime } = require('../lib/date-input');
+const { translateForRequest } = require('../lib/request-translator');
 
 const router = express.Router();
 
 const PODCAST_SORTS = ['newest', 'title', 'episodes', 'followers'];
-const SHOW_STATUS_LABELS = {
-  published: 'Published',
-  draft: 'Draft',
-  archived: 'Archived'
+// 🔴 The status label was translated ONLY when a `t` was handed in, with these English
+// words as the fallback — and `t` is not passed on every path (an episode inside a show,
+// and the single-episode page, both call the decorators without it), so the English leaked
+// into those pages in all eleven languages. Translating from the request locale directly
+// removes the conditional, so there is no path left that can fall back to English.
+const SHOW_STATUS_KEYS = {
+  published: 'govuk_alpha_commerce.podcast_studio.status_published',
+  draft: 'govuk_alpha_commerce.podcast_studio.status_draft',
+  archived: 'govuk_alpha_commerce.podcast_studio.status_archived'
 };
 const SHOW_STATUS_TAGS = {
   published: 'govuk-tag--green',
   draft: 'govuk-tag--grey',
   archived: 'govuk-tag--red'
 };
-const EPISODE_STATUS_LABELS = {
-  published: 'Published',
-  draft: 'Draft',
-  archived: 'Archived'
+// Episodes have their own translated set — same words in English, but a separate key so a
+// language can distinguish "this show is published" from "this episode is published".
+const EPISODE_STATUS_KEYS = {
+  published: 'govuk_alpha_commerce.podcast_studio.episode_status_published',
+  draft: 'govuk_alpha_commerce.podcast_studio.episode_status_draft',
+  archived: 'govuk_alpha_commerce.podcast_studio.episode_status_archived'
 };
 const EPISODE_STATUS_TAGS = {
   published: 'govuk-tag--green',
@@ -242,10 +250,10 @@ function episodeCountLabel(count) {
   return `${number} episodes`;
 }
 
-function decorateShow(show, t = null) {
+function decorateShow(show) {
   const row = show && typeof show === 'object' ? show : {};
   const id = positiveInteger(row.id);
-  const title = trimmed(row.title) || (t ? t('govuk_alpha.podcasts.title') : 'Podcasts');
+  const title = trimmed(row.title) || translateForRequest('govuk_alpha.podcasts.title');
   const ownerName = trimmed(row.owner && row.owner.name);
   const approvedCount = row.approved_episode_count !== undefined ? row.approved_episode_count : row.episodes_count;
   const episodeCount = approvedCount !== undefined ? approvedCount : row.episode_count;
@@ -260,7 +268,7 @@ function decorateShow(show, t = null) {
     summary: stripHtml(row.summary || ''),
     ownerName,
     byLabel: ownerName
-      ? (t ? t('govuk_alpha.podcasts.by_label', { name: ownerName }) : `By ${ownerName}`)
+      ? translateForRequest('govuk_alpha.podcasts.by_label', { name: ownerName })
       : '',
     artworkUrl: backendRelativeUrl(row.artwork_url),
     rssUrl: backendRelativeUrl(row.rss_url),
@@ -268,16 +276,14 @@ function decorateShow(show, t = null) {
     episodeCount: Number.isFinite(Number(episodeCount)) ? Number(episodeCount) : 0,
     episodeCountLabel: episodeCountLabel(episodeCount),
     status,
-    statusLabel: t && Object.hasOwn(SHOW_STATUS_LABELS, status)
-      ? t(`govuk_alpha_commerce.podcast_studio.status_${status}`)
-      : (SHOW_STATUS_LABELS[status] || status),
+    statusLabel: SHOW_STATUS_KEYS[status] ? translateForRequest(SHOW_STATUS_KEYS[status]) : status,
     statusTag: SHOW_STATUS_TAGS[status] || 'govuk-tag--grey',
     visibility: ['public', 'members', 'private'].includes(trimmed(row.visibility)) ? trimmed(row.visibility) : 'public',
     moderationStatus: trimmed(row.moderation_status) || 'approved'
   };
 }
 
-function decorateEpisode(episode, showId = null, t = null) {
+function decorateEpisode(episode, showId = null) {
   const row = episode && typeof episode === 'object' ? episode : {};
   const id = positiveInteger(row.id);
   const status = trimmed(row.status) || 'draft';
@@ -287,7 +293,7 @@ function decorateEpisode(episode, showId = null, t = null) {
     ...row,
     id,
     showId: positiveInteger(row.show_id) || showId,
-    title: trimmed(row.title) || (t ? t('govuk_alpha.podcasts.episodes_title') : 'Episodes'),
+    title: trimmed(row.title) || translateForRequest('govuk_alpha.podcasts.episodes_title'),
     description: stripHtml(row.description || row.summary || ''),
     cardDescription: limitedText(row.description || row.summary || '', 240),
     audioUrl: backendRelativeUrl(row.audio_url),
@@ -301,13 +307,11 @@ function decorateEpisode(episode, showId = null, t = null) {
     scheduledFor: trimmed(row.scheduled_for).slice(0, 16),
     scheduledForParts: splitDateTime(trimmed(row.scheduled_for).slice(0, 16)),
     status,
-    statusLabel: t && Object.hasOwn(EPISODE_STATUS_LABELS, status)
-      ? t(`govuk_alpha_commerce.podcast_studio.episode_status_${status}`)
-      : (EPISODE_STATUS_LABELS[status] || status),
+    statusLabel: EPISODE_STATUS_KEYS[status] ? translateForRequest(EPISODE_STATUS_KEYS[status]) : status,
     statusTag: EPISODE_STATUS_TAGS[status] || 'govuk-tag--grey',
     episodeNumber: number,
     episodeNumberLabel: number !== null
-      ? (t ? t('govuk_alpha_commerce.podcast_studio.episode_number_short', { number }) : `Episode ${number}`)
+      ? translateForRequest('govuk_alpha_commerce.podcast_studio.episode_number_short', { number })
       : ''
   };
 }
@@ -320,25 +324,25 @@ function showEpisodes(show) {
     .filter((episode) => episode.id !== null);
 }
 
-function studioEpisodes(show, t = null) {
+function studioEpisodes(show) {
   const rows = Array.isArray(show.episodes) ? show.episodes : [];
   return rows
-    .map((episode) => decorateEpisode(episode, show.id, t))
+    .map((episode) => decorateEpisode(episode, show.id))
     .filter((episode) => episode.id !== null);
 }
 
-function statusEntry(status, t = null) {
+function statusEntry(status) {
   const key = trimmed(status);
   if (STUDIO_SUCCESS_KEYS[key]) {
     return {
       type: 'success',
-      message: t ? t(`govuk_alpha_commerce.podcast_studio.${STUDIO_SUCCESS_KEYS[key]}`) : STUDIO_SUCCESS_KEYS[key]
+      message: translateForRequest(`govuk_alpha_commerce.podcast_studio.${STUDIO_SUCCESS_KEYS[key]}`)
     };
   }
   if (STUDIO_ERROR_KEYS[key]) {
     return {
       type: 'error',
-      message: t ? t(`govuk_alpha_commerce.podcast_studio.${STUDIO_ERROR_KEYS[key]}`) : STUDIO_ERROR_KEYS[key]
+      message: translateForRequest(`govuk_alpha_commerce.podcast_studio.${STUDIO_ERROR_KEYS[key]}`)
     };
   }
   return null;
@@ -370,7 +374,7 @@ router.get('/', asyncRoute(async (req, res) => {
       meta = metaFrom(result);
     }
     const shows = rowsFrom(result)
-      .map((show) => decorateShow(show, res.locals.t))
+      .map((show) => decorateShow(show))
       .filter((show) => show.id !== null);
 
     let canAccessPodcastStudio = false;
@@ -412,7 +416,7 @@ router.get('/studio', asyncRoute(async (req, res) => {
     const result = await callPodcast(token, 'GET', '/mine');
     const meta = metaFrom(result);
     const shows = rowsFrom(result)
-      .map((show) => decorateShow(show, res.locals.t))
+      .map((show) => decorateShow(show))
       .filter((show) => show.id !== null);
 
     return res.render('podcasts/studio', {
@@ -420,7 +424,7 @@ router.get('/studio', asyncRoute(async (req, res) => {
       activeNav: 'explore',
       shows,
       canCreateShow: meta.can_create_show === true,
-      status: statusEntry(req.query.status, res.locals.t)
+      status: statusEntry(req.query.status)
     });
   } catch (error) {
     return renderPodcastError(error, res, 'Podcast studio');
@@ -463,7 +467,7 @@ router.get('/studio/new', asyncRoute(async (req, res) => {
         visibility: 'public'
       },
       visibilities: meta.enable_private_shows === true ? ['public', 'members', 'private'] : ['public'],
-      status: statusEntry(req.query.status, res.locals.t)
+      status: statusEntry(req.query.status)
     });
   } catch (error) {
     return renderPodcastError(error, res, 'Create a podcast');
@@ -478,7 +482,7 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
   try {
     const result = await callPodcast(token, 'GET', '/mine');
     const meta = metaFrom(result);
-    const shows = rowsFrom(result).map((show) => decorateShow(show, res.locals.t));
+    const shows = rowsFrom(result).map((show) => decorateShow(show));
     const show = shows.find((row) => row.id === showId);
     if (!show) {
       res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
@@ -488,7 +492,7 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
     const episodeVisibilities = meta.enable_private_shows === true
       ? ['inherit', 'public', 'members', 'private']
       : ['inherit', 'public'];
-    const episodes = studioEpisodes(show, res.locals.t).map((episode) => ({
+    const episodes = studioEpisodes(show).map((episode) => ({
       ...episode,
       visibility: ['inherit', 'public', 'members', 'private'].includes(trimmed(episode.visibility))
         ? trimmed(episode.visibility)
@@ -506,7 +510,7 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
       episodeVisibilities,
       transcriptsEnabled: meta.enable_transcripts === true,
       chaptersEnabled: meta.enable_chapters === true,
-      status: statusEntry(req.query.status, res.locals.t),
+      status: statusEntry(req.query.status),
       episodeStoreAction: `/podcasts/studio/${show.id}/episodes`
     });
   } catch (error) {
@@ -554,8 +558,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       return undefined;
     }
 
-    const show = decorateShow({ id: showId, ...showData }, res.locals.t);
-    const episodes = showEpisodes(show).map((episode) => decorateEpisode(episode, show.id, res.locals.t));
+    const show = decorateShow({ id: showId, ...showData });
+    const episodes = showEpisodes(show).map((episode) => decorateEpisode(episode, show.id));
     const statusConfig = PODCAST_STATUS_KEYS[trimmed(req.query.status)];
     return res.render('podcasts/detail', {
       title: show.title,

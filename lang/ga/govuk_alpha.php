@@ -1578,6 +1578,7 @@ return [
             'pending' => 'Ar feitheamh',
             'approved' => 'Ceadaithe',
             'declined' => 'Diúltaithe',
+            'suspended' => 'Ar fionraí',
             'withdrawn' => 'Tarraingthe siar',
             'open' => 'Oscail',
             'active' => 'Gníomhach',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Féach',
         'statuses' => [
             'draft' => 'Dréacht',
-
             'pending_participants' => 'Ag fanacht le rannpháirtithe',
             'pending' => 'Ag feitheamh le ceadú',
             'approved' => 'Ceadaithe',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Deimhnigh mo rannpháirtíocht',
         'confirmed_already' => 'Tá do rannpháirtíocht deimhnithe agat.',
         'start_title' => 'Tosaigh an malartú',
-
         'start_body' => 'Nuair a thosaíonn tú an malartú, iarrtar ar gach duine atá páirteach a gcuid uaireanta a dheimhniú. Ní féidir daoine a chur leis ná a bhaint as ina dhiaidh sin.',
-
         'start_button' => 'Tosaigh agus iarr ar chách deimhniú',
 
         'complete_title' => 'Críochnaigh an malartú',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Duine curtha leis an malartú.',
             'participant-removed' => 'Duine bainte ón malartú.',
             'started' => 'Thosaigh an malartú. Iarradh ar gach duine atá páirteach deimhniú a dhéanamh.',
-
             'start-failed' => 'Níorbh fhéidir an malartú a thosú. Teastaíonn duine amháin ar a laghad a thugann am agus duine amháin a fhaigheann é, agus caithfidh na huaireanta a bheith cothrom.',
 
             'confirmed' => 'Go raibh maith agat — tá do rannpháirtíocht deimhnithe.',

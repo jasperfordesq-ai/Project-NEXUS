@@ -1578,6 +1578,7 @@ return [
             'pending' => 'En attente',
             'approved' => 'Approuvé',
             'declined' => 'Refusé',
+            'suspended' => 'Suspendu',
             'withdrawn' => 'Retiré',
             'open' => 'Ouvert',
             'active' => 'Actif',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Voir',
         'statuses' => [
             'draft' => 'Brouillon',
-
             'pending_participants' => 'En attente de participants',
             'pending' => 'En attente d\'approbation',
             'approved' => 'Approuvé',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Confirmer ma participation',
         'confirmed_already' => 'Vous avez confirmé votre participation.',
         'start_title' => 'Démarrer l\'échange',
-
         'start_body' => 'Démarrer l\'échange demande à toutes les personnes concernées de confirmer leurs heures. Vous ne pourrez plus ajouter ni retirer de personnes ensuite.',
-
         'start_button' => 'Démarrer et demander à tous de confirmer',
 
         'complete_title' => 'Finaliser l\'échange',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Personne ajoutée à l\'échange.',
             'participant-removed' => 'Personne retirée de l\'échange.',
             'started' => 'L\'échange a démarré. Toutes les personnes concernées ont été invitées à confirmer.',
-
             'start-failed' => 'L\'échange n\'a pas pu démarrer. Il faut au moins une personne qui donne du temps et une qui en reçoit, et les heures doivent s\'équilibrer.',
 
             'confirmed' => 'Merci — votre participation est confirmée.',

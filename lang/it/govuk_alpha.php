@@ -1578,6 +1578,7 @@ return [
             'pending' => 'In sospeso',
             'approved' => 'Approvato',
             'declined' => 'Rifiutato',
+            'suspended' => 'Sospeso',
             'withdrawn' => 'Ritirato',
             'open' => 'Aperto',
             'active' => 'Attivo',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Visualizza',
         'statuses' => [
             'draft' => 'Bozza',
-
             'pending_participants' => 'In attesa di partecipanti',
             'pending' => 'In attesa di approvazione',
             'approved' => 'Approvato',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Conferma la mia partecipazione',
         'confirmed_already' => 'Hai già confermato la tua partecipazione.',
         'start_title' => 'Avvia lo scambio',
-
         'start_body' => 'Avviando lo scambio, a tutte le persone coinvolte viene chiesto di confermare le proprie ore. Dopo non potrai più aggiungere o rimuovere persone.',
-
         'start_button' => 'Avvia e chiedi a tutti di confermare',
 
         'complete_title' => 'Completa lo scambio',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Persona aggiunta allo scambio.',
             'participant-removed' => 'Persona rimossa dallo scambio.',
             'started' => 'Lo scambio è iniziato. A tutte le persone coinvolte è stato chiesto di confermare.',
-
             'start-failed' => 'Non è stato possibile avviare lo scambio. Serve almeno una persona che dona tempo e una che lo riceve, e le ore devono essere in pari.',
 
             'confirmed' => 'Grazie — la tua partecipazione è confermata.',

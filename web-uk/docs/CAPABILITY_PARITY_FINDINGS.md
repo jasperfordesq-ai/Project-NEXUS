@@ -152,6 +152,14 @@ guards on `hasOwnProperty`), but the information is uneditable.
 
 ---
 
+## Tier 1b — the page works, but it speaks English to everyone
+
+| # | Finding | Evidence |
+|---|---|---|
+| 1.13 | ✅ **PARTLY FIXED 2026-08-17 — read the "still open" half.** A sweep of every hardcoded-English display map in `web-uk` found **43 maps holding 187 English words**, and, crucially, that **183 of those 187 already had a reviewed translation somewhere in the catalogues** — in most cases a purpose-built set (`govuk_alpha_commerce.orders.status_*`, `…pickups.status_*`, `…instructor.status_*`, `govuk_alpha_volunteering.credentials.status_*`) written for exactly that list and then never wired up. Two distinct failure shapes: (a) the map rendered **unconditionally**, so English showed in all eleven languages; (b) the value was translated **only if a `t` was passed in**, with the English map as fallback — and `t` was not passed on every path. **Fixed and verified with a German render test:** course instructor status, course My-learning status, podcast show and episode status (plus four more podcast strings, two of which fell back to the raw translation KEY NAME — worse than English), and marketplace listing condition, delivery method and price type, which appear on search results every member sees. The optional-`t` parameter was deleted from the podcast and pickup decorators outright, so no path remains that can fall back. `request-translator.js` (added with finding 1.10) is what makes this possible without threading a translator through every call site. Maps went 43 → 36, English values 187 → 161. 🔴 **STILL OPEN, and quantified rather than hand-waved:** 36 maps / 161 values remain. Most are *guarded* — they translate first and use English only if a key is genuinely missing — so they are latent rather than live. But **57 `t ? t(…) : 'English'` sites remain across `federation.js`, `goals.js`, `messages.js`, `poll-actions.js`, `search.js` and `volunteering-actions.js`**, each of which leaks if any caller omits `t`; that is exactly how podcasts was leaking, so these need the same treatment. Also unconverted: `marketplace.js advancedSearchOptions()` builds a whole block of raw English option labels (`'Any'`, `'Collection only'`, `'Last 7 days'`, sort names). None of this was verified page-by-page and must not be reported as working. | `courses.js:446,466`; `podcasts.js:256,271,296,314,339,345` and the `t = null` decorators; `marketplace.js:628,643,645` printed at `views/marketplace/search.njk:131` |
+
+---
+
 ## Tier 3 — completes, but with data loss or silence (selected)
 
 - **A failed safety report is indistinguishable from a successful one** on listings and marketplace — the status banners are never rendered (`views/listings/detail.njk`, `marketplace/detail.njk`).

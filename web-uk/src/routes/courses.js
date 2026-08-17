@@ -7,6 +7,7 @@ const express = require('express');
 const { ApiError, ApiOfflineError, callCourseApi, getMyCourses } = require('../lib/api');
 const { sanitizeCmsHtml, htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -49,10 +50,14 @@ const LESSON_CONTENT_TYPE_LABELS = {
   embed: 'Interactive content',
   quiz: 'Quiz'
 };
-const INSTRUCTOR_STATUS_LABELS = {
-  published: 'Published',
-  pending_review: 'Awaiting review',
-  draft: 'Draft'
+// 🔴 These held the English words and were rendered straight into the page, so an
+// instructor saw "Published" / "Awaiting review" / "Draft" whatever language they had
+// chosen. The translated set was already written for exactly this list and simply never
+// used. Keys, not words, from here on.
+const INSTRUCTOR_STATUS_KEYS = {
+  published: 'govuk_alpha_commerce.instructor.status_published',
+  pending_review: 'govuk_alpha_commerce.instructor.status_pending_review',
+  draft: 'govuk_alpha_commerce.instructor.status_draft'
 };
 const INSTRUCTOR_STATUS_CLASSES = {
   published: 'govuk-tag--green',
@@ -443,7 +448,13 @@ function normalizeEnrollment(enrollment) {
     course: normalizeCourse(course),
     percent,
     completed: enrollment.status === 'completed',
-    statusLabel: enrollment.status === 'completed' ? 'Completed' : 'In progress'
+    // 🔴 Was the literal 'Completed' / 'In progress', rendered on My learning in every
+    // language. Both strings already existed, translated, under my_learning.
+    statusLabel: translateForRequest(
+      enrollment.status === 'completed'
+        ? 'govuk_alpha_commerce.my_learning.status_completed'
+        : 'govuk_alpha_commerce.my_learning.status_in_progress'
+    )
   };
 }
 
@@ -463,7 +474,9 @@ function normalizeInstructorCourse(course) {
     enrollmentCount: Number(course.enrollment_count || 0),
     completionCount: Number(course.completion_count || 0),
     instructorStatus: status,
-    instructorStatusLabel: INSTRUCTOR_STATUS_LABELS[status],
+    instructorStatusLabel: INSTRUCTOR_STATUS_KEYS[status]
+      ? translateForRequest(INSTRUCTOR_STATUS_KEYS[status])
+      : status,
     instructorStatusClass: INSTRUCTOR_STATUS_CLASSES[status]
   };
 }

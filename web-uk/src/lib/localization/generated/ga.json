@@ -2585,6 +2585,7 @@
                     "pending": "Ar feitheamh",
                     "approved": "Ceadaithe",
                     "declined": "Diúltaithe",
+                    "suspended": "Ar fionraí",
                     "withdrawn": "Tarraingthe siar",
                     "open": "Oscail",
                     "active": "Gníomhach",

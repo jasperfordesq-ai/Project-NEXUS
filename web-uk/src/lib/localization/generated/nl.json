@@ -2585,6 +2585,7 @@
                     "pending": "In behandeling",
                     "approved": "Goedgekeurd",
                     "declined": "Geweigerd",
+                    "suspended": "Opgeschort",
                     "withdrawn": "Ingetrokken",
                     "open": "Open",
                     "active": "Actief",

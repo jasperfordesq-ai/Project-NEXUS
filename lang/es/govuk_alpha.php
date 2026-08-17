@@ -1578,6 +1578,7 @@ return [
             'pending' => 'Pendiente',
             'approved' => 'Aprobado',
             'declined' => 'Rechazado',
+            'suspended' => 'suspendido',
             'withdrawn' => 'Retirado',
             'open' => 'Abierto',
             'active' => 'Activo',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Ver',
         'statuses' => [
             'draft' => 'Borrador',
-
             'pending_participants' => 'Esperando participantes',
             'pending' => 'Pendiente de aprobación',
             'approved' => 'Aprobado',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Confirmar mi participación',
         'confirmed_already' => 'Ya ha confirmado su participación.',
         'start_title' => 'Iniciar el intercambio',
-
         'start_body' => 'Al iniciar el intercambio se pide a todas las personas participantes que confirmen sus horas. Después no podrá añadir ni quitar personas.',
-
         'start_button' => 'Iniciar y pedir a todos que confirmen',
 
         'complete_title' => 'Completar el intercambio',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Persona añadida al intercambio.',
             'participant-removed' => 'Persona eliminada del intercambio.',
             'started' => 'El intercambio ha comenzado. Se ha pedido a todas las personas participantes que confirmen.',
-
             'start-failed' => 'No se ha podido iniciar el intercambio. Hace falta al menos una persona que dé tiempo y otra que lo reciba, y las horas deben cuadrar.',
 
             'confirmed' => 'Gracias — su participación está confirmada.',

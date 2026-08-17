@@ -1578,6 +1578,7 @@ return [
             'pending' => 'In behandeling',
             'approved' => 'Goedgekeurd',
             'declined' => 'Geweigerd',
+            'suspended' => 'Opgeschort',
             'withdrawn' => 'Ingetrokken',
             'open' => 'Open',
             'active' => 'Actief',
@@ -1806,7 +1807,6 @@ return [
         'view_button' => 'Bekijken',
         'statuses' => [
             'draft' => 'Concept',
-
             'pending_participants' => 'Wachten op deelnemers',
             'pending' => 'Wacht op goedkeuring',
             'approved' => 'Goedgekeurd',
@@ -1847,9 +1847,7 @@ return [
         'confirm_button' => 'Mijn deelname bevestigen',
         'confirmed_already' => 'U heeft uw deelname bevestigd.',
         'start_title' => 'De uitwisseling starten',
-
         'start_body' => 'Als u de uitwisseling start, wordt aan alle deelnemers gevraagd hun uren te bevestigen. Daarna kunt u geen personen meer toevoegen of verwijderen.',
-
         'start_button' => 'Starten en iedereen om bevestiging vragen',
 
         'complete_title' => 'De uitwisseling voltooien',
@@ -1863,7 +1861,6 @@ return [
             'participant-added' => 'Persoon toegevoegd aan de uitwisseling.',
             'participant-removed' => 'Persoon verwijderd uit de uitwisseling.',
             'started' => 'De uitwisseling is gestart. Aan alle deelnemers is gevraagd te bevestigen.',
-
             'start-failed' => 'De uitwisseling kon niet worden gestart. Er is minstens één persoon nodig die tijd geeft en één die tijd ontvangt, en de uren moeten in balans zijn.',
 
             'confirmed' => 'Bedankt — uw deelname is bevestigd.',

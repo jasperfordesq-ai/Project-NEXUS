@@ -2585,6 +2585,7 @@
                     "pending": "في انتظار",
                     "approved": "تمت الموافقة عليه",
                     "declined": "مرفوض",
+                    "suspended": "مع وقف التنفيذ",
                     "withdrawn": "انسحبت",
                     "open": "مفتوح",
                     "active": "نشط",

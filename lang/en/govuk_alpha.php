@@ -1593,6 +1593,7 @@ return [
             'pending' => 'Pending',
             'approved' => 'Approved',
             'declined' => 'Declined',
+            'suspended' => 'Suspended',
             'withdrawn' => 'Withdrawn',
             'open' => 'Open',
             'active' => 'Active',
@@ -1828,7 +1829,6 @@ return [
         'view_button' => 'View',
         'statuses' => [
             'draft' => 'Draft',
-
             'pending_participants' => 'Waiting for participants',
             'pending' => 'Awaiting approval',
             'approved' => 'Approved',
@@ -1869,9 +1869,7 @@ return [
         'confirm_button' => 'Confirm my participation',
         'confirmed_already' => 'You have confirmed your participation.',
         'start_title' => 'Start the exchange',
-
         'start_body' => 'Starting the exchange asks everyone taking part to confirm their hours. You cannot add or remove people afterwards.',
-
         'start_button' => 'Start and ask everyone to confirm',
 
         'complete_title' => 'Complete the exchange',
@@ -1885,7 +1883,6 @@ return [
             'participant-added' => 'Person added to the exchange.',
             'participant-removed' => 'Person removed from the exchange.',
             'started' => 'The exchange has started. Everyone taking part has been asked to confirm.',
-
             'start-failed' => 'The exchange could not be started. It needs at least one person giving time and one receiving it, and the hours must balance.',
 
             'confirmed' => 'Thank you — your participation is confirmed.',

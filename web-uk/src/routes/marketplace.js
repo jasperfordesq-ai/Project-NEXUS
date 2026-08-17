@@ -42,24 +42,30 @@ const ZERO_DECIMAL_CURRENCIES = new Set([
   'RWF', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'
 ]);
 
-const PRICE_TYPE_LABELS = {
-  fixed: 'Fixed price',
-  negotiable: 'Open to offers',
-  free: 'Free to a good home',
-  contact: 'Contact for price'
+// 🔴 These three held English words that were rendered straight onto listing cards and
+// search results — a member browsing in any of the other ten languages read "Like new",
+// "Local pickup", "Open to offers". The translated sets already existed for every value:
+// the listing form asks the seller these exact questions, so its options are the same
+// vocabulary. Only `community_delivery` has no entry in that set, so it takes the reviewed
+// value from the advanced-search set instead; the English is unchanged in all cases.
+const PRICE_TYPE_KEYS = {
+  fixed: 'govuk_alpha_commerce.listing_form.price_type_fixed',
+  negotiable: 'govuk_alpha_commerce.listing_form.price_type_negotiable',
+  free: 'govuk_alpha_commerce.listing_form.price_type_free',
+  contact: 'govuk_alpha_commerce.listing_form.price_type_contact'
 };
-const CONDITION_LABELS = {
-  new: 'New',
-  like_new: 'Like new',
-  good: 'Good',
-  fair: 'Fair',
-  poor: 'Poor'
+const CONDITION_KEYS = {
+  new: 'govuk_alpha_commerce.listing_form.condition_new',
+  like_new: 'govuk_alpha_commerce.listing_form.condition_like_new',
+  good: 'govuk_alpha_commerce.listing_form.condition_good',
+  fair: 'govuk_alpha_commerce.listing_form.condition_fair',
+  poor: 'govuk_alpha_commerce.listing_form.condition_poor'
 };
-const DELIVERY_METHOD_LABELS = {
-  pickup: 'Local pickup',
-  shipping: 'Shipping',
-  both: 'Pickup or shipping',
-  community_delivery: 'Community delivery'
+const DELIVERY_METHOD_KEYS = {
+  pickup: 'govuk_alpha_commerce.listing_form.delivery_pickup',
+  shipping: 'govuk_alpha_commerce.listing_form.delivery_shipping',
+  both: 'govuk_alpha_commerce.listing_form.delivery_both',
+  community_delivery: 'govuk_alpha_commerce.marketplace_advanced.delivery_community_delivery'
 };
 const REPORT_REASON_LABELS = {
   counterfeit: 'Counterfeit or fake goods',
@@ -223,11 +229,11 @@ const ORDER_STATUS_LABELS = {
   completed: 'Completed',
   cancelled: 'Cancelled'
 };
-const PICKUP_STATUS_LABELS = {
-  reserved: 'Reserved',
-  picked_up: 'Picked up',
-  cancelled: 'Cancelled',
-  no_show: 'No show'
+const PICKUP_STATUS_KEYS = {
+  reserved: 'govuk_alpha_commerce.pickups.status_reserved',
+  picked_up: 'govuk_alpha_commerce.pickups.status_picked_up',
+  cancelled: 'govuk_alpha_commerce.pickups.status_cancelled',
+  no_show: 'govuk_alpha_commerce.pickups.status_no_show'
 };
 const SELLER_TYPE_LABELS = {
   private: 'Individual',
@@ -619,7 +625,7 @@ function decorateListing(listing) {
     summary: limitText(row.tagline || row.description || ''),
     description: stripHtml(row.description || ''),
     priceType,
-    priceTypeLabel: PRICE_TYPE_LABELS[priceType] || priceType,
+    priceTypeLabel: PRICE_TYPE_KEYS[priceType] ? translateForRequest(PRICE_TYPE_KEYS[priceType]) : priceType,
     priceLabel: priceLabel(row),
     // One implementation, two template names — see the note above cardPriceLabel's
     // deletion. A card and its detail page must never quote different prices.
@@ -634,9 +640,9 @@ function decorateListing(listing) {
     canBuy: trimmed(row.status) === 'active'
       && ((priceType === 'fixed' && money > 0) || priceType === 'free' || credits > 0),
     condition,
-    conditionLabel: condition ? (CONDITION_LABELS[condition] || condition) : '',
+    conditionLabel: condition ? (CONDITION_KEYS[condition] ? translateForRequest(CONDITION_KEYS[condition]) : condition) : '',
     deliveryMethod,
-    deliveryLabel: deliveryMethod ? (DELIVERY_METHOD_LABELS[deliveryMethod] || deliveryMethod) : '',
+    deliveryLabel: deliveryMethod ? (DELIVERY_METHOD_KEYS[deliveryMethod] ? translateForRequest(DELIVERY_METHOD_KEYS[deliveryMethod]) : deliveryMethod) : '',
     categoryId: positiveInteger(row.category_id),
     location: trimmed(row.location),
     quantity: positiveInteger(row.quantity) || 1,
@@ -878,7 +884,12 @@ function decorateOrder(order, role, translate = fallbackTranslator) {
   };
 }
 
-function decorateReservation(reservation, t = null) {
+// 🔴 The `t = null` parameter and its English fallbacks are gone. Every caller happened to
+// pass `t`, so nothing was leaking here — but the pattern is one missed argument away from
+// showing English, which is exactly how podcasts ended up doing it. It was also actively
+// misleading: the fallback map said "Picked up" and "No show" while the catalogue this page
+// really renders says "Collected" and "Missed".
+function decorateReservation(reservation) {
   const row = reservation && typeof reservation === 'object' ? reservation : {};
   const slot = row.slot && typeof row.slot === 'object' ? row.slot : {};
   const status = trimmed(row.status) || 'reserved';
@@ -886,11 +897,10 @@ function decorateReservation(reservation, t = null) {
     ...row,
     id: positiveInteger(row.id),
     orderId: positiveInteger(row.order_id),
-    title: trimmed(row.listing_title || row.listing?.title) || (t ? t('govuk_alpha_commerce.pickups.order_label', { id: positiveInteger(row.order_id) || 0 }) : `Order ${positiveInteger(row.order_id) || 0}`),
+    title: trimmed(row.listing_title || row.listing?.title)
+      || translateForRequest('govuk_alpha_commerce.pickups.order_label', { id: positiveInteger(row.order_id) || 0 }),
     status,
-    statusLabel: t && Object.hasOwn(PICKUP_STATUS_LABELS, status)
-      ? t(`govuk_alpha_commerce.pickups.status_${status}`)
-      : (PICKUP_STATUS_LABELS[status] || status),
+    statusLabel: PICKUP_STATUS_KEYS[status] ? translateForRequest(PICKUP_STATUS_KEYS[status]) : status,
     statusTagClass: status === 'picked_up'
       ? 'govuk-tag--green'
       : (status === 'cancelled' ? 'govuk-tag--red' : (status === 'reserved' ? 'govuk-tag--blue' : 'govuk-tag--yellow')),
@@ -1199,17 +1209,14 @@ function formOptions() {
   return {
     priceTypes: PRICE_TYPES.map((value) => ({
       value,
-      label: PRICE_TYPE_LABELS[value],
       labelKey: `govuk_alpha_commerce.listing_form.price_type_${value}`
     })),
     conditions: CONDITIONS.map((value) => ({
       value,
-      label: CONDITION_LABELS[value],
       labelKey: `govuk_alpha_commerce.listing_form.condition_${value}`
     })),
     deliveryMethods: DELIVERY_METHODS.map((value) => ({
       value,
-      label: DELIVERY_METHOD_LABELS[value],
       labelKey: `govuk_alpha_commerce.listing_form.delivery_${value}`
     }))
   };
@@ -1274,7 +1281,7 @@ function advancedSearchState(query) {
 
 function advancedSearchOptions() {
   return {
-    conditionOptions: CONDITIONS.map((value) => ({ value, label: CONDITION_LABELS[value] })),
+    conditionOptions: CONDITIONS.map((value) => ({ value, label: translateForRequest(CONDITION_KEYS[value]) })),
     deliveryOptions: [
       { value: '', label: 'Any' },
       { value: 'pickup', label: 'Collection only' },
@@ -1748,7 +1755,7 @@ router.get('/pickups', asyncRoute(async (req, res) => {
       titleKey: 'govuk_alpha_commerce.pickups.title',
       activeNav: 'explore',
       activeTab: 'orders',
-      reservations: rowsFrom(result).map((reservation) => decorateReservation(reservation, res.locals.t))
+      reservations: rowsFrom(result).map((reservation) => decorateReservation(reservation))
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'My collections');
