@@ -405,3 +405,18 @@ DPO_Confidentiality_Agreement_*.docx
 !.agents/skills/heroui-migration/
 !.agents/skills/heroui-native/
 !.agents/skills/heroui-react/
+
+# ─── HyperFrames video projects — machine-local, NOT committed ───────────────
+# `videos/` holds HyperFrames composition projects. A single finished project
+# measured 30 MB, of which ~28 MB was regenerable render output: a 4K mp4, a
+# diagnostic mp4, and full-size verification/snapshot PNGs, plus thumbnail,
+# waveform and media caches. Git keeps binaries in history for ever, so in a
+# PUBLIC repo that cost lands on every clone permanently and cannot be undone
+# without rewriting history.
+#
+# Ignored WHOLE rather than per-entry (unlike .agents/skills/ above): the
+# source side of a project is small but the render output sits inside the same
+# tree, so there is no clean `!` line to write. If a video's source ever needs
+# to be shared, publish the finished mp4 somewhere built for binaries and keep
+# the composition source in its own repo.
+/videos/
