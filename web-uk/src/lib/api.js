@@ -18,7 +18,7 @@ const MAX_API_REQUEST_TIMEOUT_MS = 120000;
 // Cache TTL for different types of data (in milliseconds)
 const CACHE_TTL = {
   COUNTS: 15000,    // 15 seconds for notification/message counts
-  PROFILE: 60000    // 1 minute for user profile data
+  BOOTSTRAP: 30000  // 30 seconds for per-tenant, per-locale bootstrap data
 };
 
 // Helper to create a cache key from token
@@ -336,6 +336,29 @@ function tenantHostHeaders(host) {
   } : {};
 }
 
+/**
+ * Cache key for a bootstrap lookup, or '' when the result must not be cached.
+ *
+ * 🔴 The key must capture EVERYTHING that varies the response, or one community
+ * is served another's configuration:
+ * - `headers` is the only tenant authority this endpoint receives (either
+ *   `X-Tenant-Slug` or `Host`+`Origin`), so it identifies the community exactly.
+ * - the locale matters too: `request()` forwards it as `Accept-Language`, so the
+ *   same community answers with different names/labels per language.
+ * When neither a slug nor a host is supplied the community is resolved later,
+ * per-request, from `getRequestTenantSlug()`/env fallbacks inside
+ * `addRequestTenantHeader()` — the arguments alone do NOT identify the tenant,
+ * so that case is deliberately never cached rather than cached under a key that
+ * cannot distinguish one community from another.
+ */
+function tenantBootstrapCacheKey(endpoint, headers) {
+  if (Object.keys(headers).length === 0) {
+    return '';
+  }
+
+  return `bootstrap:${endpoint}|${JSON.stringify(headers)}|${getRequestLocale() || ''}`;
+}
+
 async function getTenantBootstrap(options = {}) {
   const query = new URLSearchParams();
   if (options.slug) {
@@ -346,7 +369,26 @@ async function getTenantBootstrap(options = {}) {
   const endpoint = `/api/v2/tenant/bootstrap${queryString ? `?${queryString}` : ''}`;
   const headers = options.slug ? tenantSlugHeaders(options.slug) : tenantHostHeaders(options.host);
 
-  return request(endpoint, { headers });
+  const key = tenantBootstrapCacheKey(endpoint, headers);
+  if (key) {
+    const cached = cache.get(key);
+    if (cached !== undefined) {
+      // Cloned on the way out as well as in: callers decorate the bootstrap
+      // object, and a shared reference would let one request's additions show up
+      // in another community's response.
+      return structuredClone(cached);
+    }
+  }
+
+  const result = await request(endpoint, { headers });
+
+  // Only a resolved success reaches here — `request()` throws on non-2xx, so a
+  // 404 for an unknown community is never cached.
+  if (key) {
+    cache.set(key, structuredClone(result), CACHE_TTL.BOOTSTRAP);
+  }
+
+  return result;
 }
 
 async function getPlatformStats(options = {}) {
