@@ -1,7 +1,7 @@
 # Project NEXUS Architecture
 
 Last reviewed: 2026-08-15
-Platform version: 1.6.0
+Platform version: 1.6.1
 
 This document is the maintained architecture map for Project NEXUS. It is intentionally compact: use it to understand the runtime boundaries, primary code paths, and documents to read next.
 

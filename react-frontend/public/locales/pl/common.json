@@ -2414,7 +2414,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Postęp poziomu {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Ogólnie dostępne (v1.6.0)",
+  "release_stage": "Ogólnie dostępne (v1.6.1)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Dostosuj schemat kolorów, akcent i gęstość.",

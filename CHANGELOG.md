@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-08-17
+
 ### Changed
 
 - **The accessible frontend's readiness score is now 920/1000, rescored against live production evidence.** Two rows on the readiness scorecard had been deliberately held back in August pending real production confirmation rather than session claims. That confirmation now exists and was measured directly: the old Blade accessible frontend's code is gone from the repository, and all three accessible web addresses now serve the new frontend live. So "retire the old accessible site" moved from 5/50 to 45/50 (the remaining gap is that no person has yet done a full sign-off pass over a longer settling period), and "production deployment and rollback" moved from 87/100 to 91/100 (the per-community domain cutover is done; the open items are that switching back to a previous version has now been rehearsed off-production but not yet on the live production server, and that it is more delicate because the old quick-fallback path was removed with Blade). Live checks on both community accessible domains then closed the route and URL-shape row's final three-point deduction. No implementation code changed — this is an honest re-measurement, not new work.
@@ -4005,7 +4007,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.9...v1.6.0
 [1.5.9]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.7...v1.5.8
