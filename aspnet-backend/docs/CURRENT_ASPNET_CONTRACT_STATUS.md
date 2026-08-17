@@ -222,6 +222,136 @@ A corpus-wide sweep for the same defect class then ran against **both** backends
 which is schema cruft on the `categories` table rather than a user credential and
 is contract-identical, so it is recorded and deliberately not "fixed".
 
+### 🔴 `main` was red, from two earlier commits, and is green again
+
+A full `dotnet test Nexus.sln -c Release` run read **3,636 passed / 8 failed** (read
+the COUNT — this runner exits 0 with failures present). None of the eight came from
+the work in this section; all were pre-existing, in files this session never
+touched, from two earlier commits:
+
+| Test | Cause |
+| --- | --- |
+| `RegistrationPolicyTests.GetPublicConfig_DefaultPolicy_ReturnsStandard` | `b60c8398d` |
+| `RegistrationPolicyTests.GetPolicy_AsAdmin_ReturnsPolicy` | `b60c8398d` |
+| `UsersControllerTests.GetMe_AsMember_ReturnsOk` | `b60c8398d` |
+| `V15FeedActivityCompatibilityTests.FeedV2_Merges…` | `8582235b2` |
+| `VolunteeringControllerTests.ListOpportunities_ReturnsPublishedByDefault` | `8582235b2` |
+
+Two distinct mistakes, both worth recognising again:
+
+🔴 **The verb-not-path mistake, for the fourth time.** Three tests asserted a v2 GET
+carries no `success` on paths that are **not** `/api/v2` —
+`/api/registration/config`, `/api/registration/admin/policy`, `/api/users/me`.
+`LaravelDataEnvelopeFilter` is deliberately scoped to `/api/v2/`, so it never runs
+on them and the v1 envelope `{success, data}` stands. Laravel has **no counterpart
+route at all** for the registration pair, and only the v2 form of `users/me`
+(routes/api.php:755) — so there was no Laravel contract these could have been
+matching. The same correction had already been applied once in
+`LaravelReactFrontendContractTests`, whose own comment says the sweep "classified
+it by HTTP verb alone and missed that the PATH matters too". It was applied to that
+one file and not to these three.
+
+🔴 **A shape change landed without its tests.** `8582235b2` converted sixteen list
+endpoints from `pagination:{page,limit,total,pages}` to `meta:{per_page,has_more}`,
+which is right — but two tests still read `pagination.total` / `meta.total`, and
+Laravel sends no `total` on either endpoint. Both now assert the keys Laravel
+actually sends. The sibling `/applications` test still reads `pagination` and is
+left alone, because that endpoint was not part of that change.
+
+Verified: the four affected classes plus every area changed in this section run
+**114 passed / 0 failed**.
+
+### The nine raw-record endpoints — 62 → 64 identical, differing 90 → 82
+
+Worked deliberately as a cluster, because both of the day's real faults came from
+one pattern: **an action returning an EF entity instead of a projection.** All nine
+are now projected explicitly. Their nested `tenant` / `user` / `participants`
+navigation properties were null at the time of the audit — no active leak — but
+each was one `.Include` from publishing member records, which is exactly how the
+`connections/suggestions` disclosure would have grown.
+
+Four were not formatting problems at all:
+
+1. 🔴 **`gamification/engagement-history` answered from the WRONG TABLE.** It
+   returned raw `XpLog` rows — individual point awards — where Laravel returns one
+   row per month from `monthly_engagement`. A 200 with plausible content describing
+   something else entirely, the same class as `skills/categories` answering from
+   listing categories.
+2. 🔴 **`wallet/categories` had NO TENANT PREDICATE** —
+   `_db.TransactionCategories.ToListAsync()` returned every community's categories
+   to any signed-in member. Category names are a community's own wording, so this
+   crossed the tenant boundary. It also missed Laravel's feature-off early return,
+   which is `{"balance":0,"enabled":false}` rather than an empty list or a 403.
+3. 🔴 **`/api/v2/groups` listed private and secret groups**, plus inactive and child
+   groups. Laravel filters to `status='active'`, top-level-or-featured, and public
+   or where the caller is the owner/an active member. A secret group's name and
+   existence are what secrecy protects.
+4. **`gamification/member-spotlight`** returned one member as an object where
+   Laravel returns a list, and ranked purely by XP so the same person is spotlit
+   for ever; Laravel picks at random, seeded by the day.
+
+`gamification/challenges` and `gamification/personal-journey` now MATCH.
+`groups/form-capabilities` moved to envelope-correct.
+
+### 🔴 The envelope filter was itself renaming keys to PascalCase
+
+`LaravelDataEnvelopeFilter.ToMutableMap` reflected over properties using
+`property.Name`. Converting an object to a dictionary bypasses serialisation
+entirely, so `[JsonPropertyName]` was never consulted — and a dictionary's keys are
+written verbatim, because MVC's camelCase setting is a *property* naming policy,
+not a dictionary-key one.
+
+So **every endpoint whose body or meta is a typed record had its keys renamed the
+moment the filter touched it.** Measured on `/api/v2/caring-community/markt`: the
+meta record declares `total`, `page`, `per_page`, `has_more`,
+`marketplace_available` and the live response carried `Total`, `Page`, `PerPage`,
+`HasMore`, `MarketplaceAvailable`. The endpoint was correct; the filter broke it.
+Now honours the attribute, then falls back to the same camelCase policy MVC would
+have applied — a no-op for the anonymous objects that make up nearly every action.
+
+### 🔴 The features fixture was switching three modules OFF
+
+`all-features-on.mjs` derived its list from `FEATURE_DEFAULTS` only, and its output
+**replaces** `tenants.features` wholesale. `wallet`, `listings` and `messages` are
+MODULES (`MODULE_DEFAULTS`), so they were absent from the written value — and
+`TenantContext::hasFeature()` merges over `FEATURE_DEFAULTS` only, so a key in
+neither reads as OFF. `WalletFeaturesController::listCategories` checks
+`hasFeature('wallet')`, so the fixture was serving Laravel's feature-disabled body
+while ASP.NET served real data, and the harness reported a contract difference that
+was pure fixture disagreement. Same trap as the CORS subdomain allowlist: a
+replacement value silently drops what the defaults would have supplied.
+
+### 🔴 A live React-against-Laravel defect, reported and deliberately NOT changed
+
+Found while checking `realtime/config` consumers, and it is **not** an ASP.NET
+problem:
+
+- Laravel's `RealtimeController::config` (:21-36) sends exactly six keys —
+  `driver, key, cluster, ws_host, ws_port, force_tls`. No `enabled`.
+- `PusherContext.tsx:152` stores the config only when `response.data.enabled` is
+  truthy, and `:168` refuses to construct the client without it.
+- `api.ts` synthesises `success: true` and unwraps `data`, so `response.success` is
+  not the blocker — `data.enabled` is simply `undefined`.
+- `PusherContext.tsx:186` is the **only** place the frontend constructs a Pusher
+  client; `NotificationsContext` has a test asserting it does not.
+
+Therefore the React app's realtime connection cannot start against Laravel. This
+needs a live production check and an owner decision — whether Laravel gains
+`enabled` or the client stops requiring it — so nothing was changed. ASP.NET keeps
+`enabled` and `authEndpoint` as a **documented divergence**, because removing them
+to match Laravel exactly would break realtime on this backend too, and the parity
+rule forbids fixing a difference by breaking the client.
+
+### What is left on these nine
+
+`/api/v2/groups` still lacks `slug`, `is_featured`, `template_id`,
+`template_features`, `allow_federated_members`, `federated_visibility`,
+`source_idea_id`, `source_challenge_id` — **no column exists for any of them** — and
+Laravel additionally returns ~15 junk columns on that row (`ancestor`, `certa`,
+`apply`, `distance`, `errors`, `pages`, …). Reproducing schema cruft is a decision,
+not a projection fix. `GroupsPage.tsx` reads `is_featured`, `posts_count`,
+`recent_members` and `tags`, so those are real client gaps, not cosmetic.
+
 ### `marketplace/seller/dashboard` — 62/170, and money that should not have been added up
 
 🔴 **Laravel refuses to sum unlike currencies and this backend did it anyway.**

@@ -100,7 +100,28 @@ public class GroupsController : ControllerBase
         if (limit < 1) limit = 1;
         if (limit > 100) limit = 100;
 
-        var query = _db.Groups.AsQueryable();
+        // 🔴 This listed EVERY group, including private and secret ones, and
+        // including inactive and child groups. Laravel's browse query is
+        //   status = 'active'
+        //   AND (is_featured OR parent_id IS NULL)
+        //   AND (visibility IS NULL OR visibility = 'public'
+        //        OR owner_id = me OR I am an active member)
+        // read off the running Laravel's query log. A secret group appearing in a
+        // public browse list is a disclosure in itself — the group's existence and
+        // name are what secrecy is protecting.
+        //
+        // `is_featured` has no column on this backend, so the featured half of the
+        // parent clause cannot be reproduced yet; top-level groups are included and
+        // child groups excluded, which is the behaviour for every group that is not
+        // explicitly featured. Recorded rather than silently approximated.
+        var query = _db.Groups
+            .Where(g => g.Status == "active" && g.ParentId == null)
+            .Where(g => g.Visibility == null
+                || g.Visibility == "public"
+                || g.CreatedById == userId
+                || _db.GroupMembers.Any(gm => gm.GroupId == g.Id
+                    && gm.UserId == userId
+                    && gm.Status == "active"));
 
         // Search by name (case-insensitive)
         if (!string.IsNullOrWhiteSpace(search))
@@ -117,22 +138,72 @@ public class GroupsController : ControllerBase
             .OrderByDescending(g => g.CreatedAt)
             .Skip((page - 1) * limit)
             .Take(limit)
+            // 🔴 The camelCase leftovers are gone: `IsPrivate`, `ImageUrl` and
+            // `CreatedAt` serialised as `isPrivate`, `imageUrl`, `createdAt`, which
+            // Laravel never sends and no client reads. `created_by` is replaced by
+            // Laravel's `creator`, and `viewer_membership` added — GroupsPage.tsx
+            // reads both `group.viewer_membership` and `group.visibility`, and
+            // without the former the page cannot tell whether you have joined.
+            //
+            // `visibility` now comes from the real column rather than being
+            // synthesised from IsPrivate, so a 'secret' group reports 'secret'
+            // instead of being flattened to 'private'.
+            //
+            // 🔴 STILL ABSENT, needs schema work, NOT silently faked here:
+            // slug, is_featured, template_id, template_features,
+            // allow_federated_members, federated_visibility, source_idea_id,
+            // source_challenge_id have no column on this backend, and Laravel also
+            // returns ~15 junk columns on this row (ancestor, certa, apply,
+            // distance, errors, pages, …) that are schema cruft. Reproducing those
+            // is a decision, not a projection fix. GroupsPage.tsx reads
+            // `is_featured`, `posts_count`, `recent_members` and `tags`, so those
+            // are real client gaps and are recorded in CONTRACT_PARITY_PLAN.md.
             .Select(g => new
             {
-                g.Id,
-                g.Name,
-                g.Description,
-                g.IsPrivate,
-                g.ImageUrl,
+                id = g.Id,
+                parent_id = g.ParentId,
+                type_id = g.TypeId,
+                owner_id = g.CreatedById,
+                creator_id = g.CreatedById,
+                name = g.Name,
+                description = g.Description,
+                visibility = g.Visibility,
                 image_url = g.ImageUrl,
-                cover_image_url = g.ImageUrl,
-                cover_image = g.ImageUrl,
-                visibility = g.IsPrivate ? "private" : "public",
-                g.CreatedAt,
-                created_by = g.CreatedBy != null
-                    ? new { g.CreatedBy.Id, g.CreatedBy.FirstName, g.CreatedBy.LastName }
+                cover_image_url = g.CoverImageUrl,
+                cover_image = g.CoverImageUrl,
+                primary_color = g.PrimaryColor,
+                accent_color = g.AccentColor,
+                location = g.Location,
+                latitude = g.Latitude,
+                longitude = g.Longitude,
+                is_active = g.IsActive,
+                status = g.Status,
+                has_children = g.HasChildren,
+                cached_member_count = g.CachedMemberCount,
+                created_at = g.CreatedAt,
+                updated_at = g.UpdatedAt,
+                creator = g.CreatedBy != null
+                    ? new
+                    {
+                        id = g.CreatedBy.Id,
+                        first_name = g.CreatedBy.FirstName,
+                        last_name = g.CreatedBy.LastName,
+                        avatar_url = g.CreatedBy.AvatarUrl,
+                    }
                     : null,
-                member_count = _db.GroupMembers.Count(gm => gm.GroupId == g.Id)
+                member_count = _db.GroupMembers.Count(gm => gm.GroupId == g.Id && gm.Status == "active"),
+                members_count = _db.GroupMembers.Count(gm => gm.GroupId == g.Id && gm.Status == "active"),
+                active_members_count = _db.GroupMembers.Count(gm => gm.GroupId == g.Id && gm.Status == "active"),
+                viewer_membership = _db.GroupMembers
+                    .Where(gm => gm.GroupId == g.Id && gm.UserId == userId)
+                    .Select(gm => new
+                    {
+                        status = gm.Status,
+                        role = gm.Role,
+                        is_admin = gm.Role == Entities.Group.Roles.Admin
+                            || gm.Role == Entities.Group.Roles.Owner,
+                    })
+                    .FirstOrDefault(),
             })
             .ToListAsync();
 

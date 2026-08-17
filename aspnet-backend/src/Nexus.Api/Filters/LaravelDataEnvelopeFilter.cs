@@ -5,6 +5,9 @@
 
 using System.Collections;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -224,11 +227,41 @@ public sealed class LaravelDataEnvelopeFilter : IAlwaysRunResultFilter
         foreach (var property in properties)
         {
             if (!property.CanRead) continue;
-            map[property.Name] = property.GetValue(value);
+            if (property.GetCustomAttribute<JsonIgnoreAttribute>() is not null) continue;
+            map[JsonKeyFor(property)] = property.GetValue(value);
         }
 
         return map;
     }
+
+    /// <summary>
+    /// The key this property would have serialised under, had this filter not
+    /// turned its object into a dictionary.
+    ///
+    /// 🔴 This existed as bare <c>property.Name</c> and that was a contract break
+    /// caused BY the filter. Converting an object to a dictionary bypasses
+    /// serialisation entirely: <c>[JsonPropertyName]</c> is never consulted, and a
+    /// dictionary's keys are written verbatim because MVC's camelCase setting is a
+    /// PROPERTY naming policy, not a dictionary-key one. So every endpoint whose
+    /// body or meta is a typed record — rather than an anonymous object with
+    /// lower-case members — had its keys renamed to PascalCase the moment this
+    /// filter touched it.
+    ///
+    /// Measured on <c>/api/v2/caring-community/markt</c>: the meta record declares
+    /// <c>[JsonPropertyName("total")]</c>, <c>("page")</c>, <c>("per_page")</c>,
+    /// <c>("has_more")</c>, <c>("marketplace_available")</c> and the live response
+    /// carried <c>Total</c>, <c>Page</c>, <c>PerPage</c>, <c>HasMore</c>,
+    /// <c>MarketplaceAvailable</c>. The endpoint was correct; the filter renamed it.
+    ///
+    /// Honouring the attribute first, then falling back to the same camelCase
+    /// policy MVC would have applied, makes the conversion faithful. It is a no-op
+    /// for the anonymous objects that make up nearly every action here, because
+    /// their members are already written in the wire spelling
+    /// (<c>data</c>, <c>per_page</c>, <c>base_url</c>).
+    /// </summary>
+    private static string JsonKeyFor(PropertyInfo property) =>
+        property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name
+        ?? JsonNamingPolicy.CamelCase.ConvertName(property.Name);
 
     private static bool DeclaresLaravelOmitsMeta(FilterContext context) =>
         context.ActionDescriptor.EndpointMetadata.OfType<LaravelOmitsMetaAttribute>().Any();

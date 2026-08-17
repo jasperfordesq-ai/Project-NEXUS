@@ -59,17 +59,37 @@ public sealed partial class GroupFormService
         {
             allowed_visibility = allowPrivate ? new[] { "public", "private", "secret" } : new[] { "public" },
             limits = new { name_min = 3, name_max = 255, description_min = descriptionMin, description_max = descriptionMax, location_max = 255, image_max_bytes = ImageMaxBytes },
+            // Laravel returns the whole group_templates row (`SELECT *`), so
+            // tenant_id, is_active, sort_order, created_at and updated_at are part
+            // of the contract — they were absent here.
             templates = templates.Select(row => new
             {
-                row.Id, row.Name, row.Description, row.Icon,
+                id = row.Id,
+                tenant_id = row.TenantId,
+                name = row.Name,
+                description = row.Description,
+                icon = row.Icon,
                 default_visibility = row.DefaultVisibility,
                 default_type_id = row.DefaultTypeId,
                 default_tags = ReadJson(row.DefaultTagsJson, Array.Empty<int>()),
                 features = ReadJson<object>(row.FeaturesJson, new Dictionary<string, bool>()),
-                welcome_message = row.WelcomeMessage
+                welcome_message = row.WelcomeMessage,
+                is_active = row.IsActive,
+                sort_order = row.SortOrder,
+                created_at = row.CreatedAt,
+                updated_at = row.UpdatedAt,
             }),
             group_types = types,
-            parent_candidates = manageable,
+            // 🔴 `parent_id`, not `parentId`. These were projected as
+            // `new { groupRow.ParentId }`, and MVC's camelCase policy turns that
+            // into `parentId` — a key the client does not read. Laravel sends
+            // id / name / parent_id.
+            parent_candidates = manageable.Select(row => new
+            {
+                id = row.Id,
+                name = row.Name,
+                parent_id = row.ParentId,
+            }),
             fields = new { type = types.Count != 0, parent = manageable.Count != 0, location = true, avatar = true, cover = true, branding = true },
             image_operations = new[] { "keep", "replace", "remove" },
             capabilities = new { can_create = GetBool(config, "allow_user_group_creation", true) }

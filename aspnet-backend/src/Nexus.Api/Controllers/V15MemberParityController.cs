@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Nexus.Api.Support;
 using Nexus.Api.Data;
 using Nexus.Api.Entities;
 using Nexus.Api.Extensions;
@@ -810,8 +811,59 @@ public class V15MemberParityController : ControllerBase
         }, 201);
     }
 
+    /// <summary>
+    /// GET /api/v2/wallet/categories — the community's transaction categories.
+    ///
+    /// 🔴 The query had NO TENANT PREDICATE: `_db.TransactionCategories.ToListAsync()`
+    /// returned EVERY community's categories to any signed-in member. Category
+    /// names are a community's own wording, so this crossed the tenant boundary —
+    /// the one invariant this codebase treats as non-negotiable.
+    ///
+    /// It also returned the raw entity, so the keys came out camelCase
+    /// (`tenantId`, `isDefault`, `createdAt`) with a `tenant` navigation property
+    /// attached, where Laravel sends snake_case and no tenant object.
+    ///
+    /// Contract from WalletFeaturesController::listCategories:190-201 — note the
+    /// early return: when the community does not have the wallet switched on,
+    /// Laravel answers `{"balance":0,"enabled":false}` rather than an empty list or
+    /// a 403. A client checking `enabled` needs that exact body.
+    /// </summary>
     [HttpGet("api/v2/wallet/categories")]
-    public async Task<IActionResult> V2WalletCategories() => Ok(new { data = await _db.TransactionCategories.AsNoTracking().ToListAsync() });
+    public async Task<IActionResult> V2WalletCategories()
+    {
+        var tenantId = TenantId();
+
+        // `wallet` is a MODULE in Laravel (MODULE_DEFAULTS), so it defaults ON.
+        // Read through TenantFeatureKeys, which knows both stored spellings.
+        var walletConfig = await _db.TenantConfigs
+            .AsNoTracking()
+            .Where(c => c.TenantId == tenantId && TenantFeatureKeys.BothKeys("wallet").Contains(c.Key))
+            .ToDictionaryAsync(c => c.Key, c => c.Value ?? string.Empty);
+
+        if (!TenantFeatureKeys.Read(walletConfig, "wallet", defaultValue: true))
+        {
+            return Ok(new { data = new { balance = 0, enabled = false } });
+        }
+
+        var data = await _db.TransactionCategories
+            .AsNoTracking()
+            .Where(c => c.TenantId == tenantId)
+            .OrderBy(c => c.Name)
+            .Select(c => new
+            {
+                id = c.Id,
+                tenant_id = c.TenantId,
+                name = c.Name,
+                description = c.Description,
+                color = c.Color,
+                icon = c.Icon,
+                is_default = c.IsDefault,
+                created_at = c.CreatedAt,
+            })
+            .ToListAsync();
+
+        return Ok(new { data });
+    }
 
     [HttpPost("api/v2/wallet/categories")]
     [Authorize(Policy = "AdminOnly")]

@@ -98,13 +98,31 @@ public class NotificationPollingController : ControllerBase
             && !string.IsNullOrWhiteSpace(PusherConfigValue("PUSHER_APP_SECRET", "Pusher:Secret", "Pusher:AppSecret"))
             && !string.IsNullOrWhiteSpace(PusherConfigValue("PUSHER_APP_ID", "Pusher:AppId"));
 
+        // 🔴 Laravel sends SIX keys under `data` and nothing at the root:
+        // driver, key, cluster, ws_host, ws_port, force_tls
+        // (RealtimeController::config:21-36). This response repeated hub_url,
+        // polling_interval_ms, realtime_enabled and transports at BOTH the root
+        // and inside `data`. Nothing in react-frontend or web-uk reads any of the
+        // eight, so the duplicates are removed.
+        //
+        // 🔴 `authEndpoint` and `enabled` are KEPT, and that is a deliberate,
+        // documented divergence rather than an oversight. The canonical React
+        // client requires them: PusherContext.tsx:152 stores the config only when
+        // `response.data.enabled` is truthy, and :168 refuses to construct the
+        // client without it. Removing `enabled` to match Laravel exactly would
+        // stop realtime working on THIS backend, which is the one thing the
+        // parity rule forbids — never fix a difference by breaking the client.
+        //
+        // 🔴 The same reading says Laravel has a live defect here, reported
+        // separately and NOT changed from this workstream: because Laravel omits
+        // `enabled`, `response.data.enabled` is undefined against the production
+        // backend, so PusherContext never stores a config and never constructs a
+        // client — and PusherContext.tsx:186 is the only place in the frontend
+        // that constructs one. Whether Laravel should send `enabled` or the client
+        // should stop requiring it is an owner decision, not a parity edit.
         return Ok(new
         {
             success = true,
-            hub_url = "/hubs/messages",
-            polling_interval_ms = 30000,
-            realtime_enabled = enabled,
-            transports = new[] { "websockets", "server-sent-events", "long-polling" },
             data = new
             {
                 driver = "pusher",
@@ -115,10 +133,6 @@ public class NotificationPollingController : ControllerBase
                 force_tls = true,
                 authEndpoint = "/api/pusher/auth",
                 enabled,
-                hub_url = "/hubs/messages",
-                polling_interval_ms = 30000,
-                realtime_enabled = enabled,
-                transports = new[] { "websockets", "server-sent-events", "long-polling" }
             }
         });
     }

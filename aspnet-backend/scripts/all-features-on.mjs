@@ -30,16 +30,37 @@ const defaultSource = path.resolve(here, '../../app/Services/TenantFeatureConfig
 const source = process.argv[2] ?? defaultSource;
 
 const php = fs.readFileSync(source, 'utf8');
-const block = php.match(/FEATURE_DEFAULTS\s*=\s*\[([\s\S]*?)\n\s*\];/);
-if (!block) {
-  console.error(`Could not find FEATURE_DEFAULTS in ${source}`);
-  process.exit(1);
+
+function constKeys(name) {
+  const block = php.match(new RegExp(`${name}\\s*=\\s*\\[([\\s\\S]*?)\\n\\s*\\];`));
+  if (!block) {
+    console.error(`Could not find ${name} in ${source}`);
+    process.exit(1);
+  }
+  const keys = [...block[1].matchAll(/'([a-z0-9_]+)'\s*=>/g)].map((m) => m[1]);
+  if (keys.length === 0) {
+    console.error(`${name} parsed but no keys found — has its shape changed?`);
+    process.exit(1);
+  }
+  return keys;
 }
 
-const keys = [...block[1].matchAll(/'([a-z0-9_]+)'\s*=>/g)].map((m) => m[1]);
-if (keys.length === 0) {
-  console.error('FEATURE_DEFAULTS parsed but no keys found — has its shape changed?');
-  process.exit(1);
-}
+// 🔴 MODULE_DEFAULTS is included as well, and that is not tidiness.
+//
+// `wallet`, `listings` and `messages` are MODULES, not features, so they are
+// absent from FEATURE_DEFAULTS. But several Laravel controllers check them with
+// `TenantContext::hasFeature()` — WalletFeaturesController::listCategories is one
+// — and hasFeature() merges the tenant's JSON over FEATURE_DEFAULTS only. A key
+// that appears in neither is simply missing, and `!empty()` reads missing as OFF.
+//
+// Because this script's output REPLACES tenants.features wholesale, a module name
+// left out here reads as disabled. Measured: /api/v2/wallet/categories answered
+// Laravel's feature-disabled body `{"balance":0,"enabled":false}` while ASP.NET
+// returned real categories, so the harness was comparing a switched-off endpoint
+// against a working one and reporting it as a contract difference.
+//
+// Same trap as the CORS subdomain allowlist: writing a replacement value silently
+// drops whatever the defaults would have supplied.
+const keys = [...new Set([...constKeys('FEATURE_DEFAULTS'), ...constKeys('MODULE_DEFAULTS')])];
 
 process.stdout.write(JSON.stringify(Object.fromEntries(keys.map((k) => [k, true]))));

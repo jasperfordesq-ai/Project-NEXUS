@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -769,25 +770,375 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GamificationBadge(int id) => Ok(new { data = await _db.Badges.FirstOrDefaultAsync(b => b.Id == id) });
 
+    /// <summary>
+    /// GET /api/v2/gamification/challenges — the community's live challenges.
+    ///
+    /// 🔴 Was <c>_db.Challenges...ToListAsync()</c>: the raw Challenge ENTITY, so
+    /// it published camelCase keys the client does not read (<c>targetAction</c>,
+    /// <c>xpReward</c>, <c>startsAt</c>) and dragged along the <c>tenant</c>,
+    /// <c>badge</c> and <c>participants</c> navigation properties. Those are null
+    /// today only because nothing eager-loads them — <c>participants</c> is a list
+    /// of ChallengeParticipant, each with a <c>User</c>, so one `.Include` away
+    /// from publishing member records. Same pattern as the connections/suggestions
+    /// disclosure.
+    ///
+    /// It also ignored the date window and returned inactive and expired
+    /// challenges, and never told the member their own progress.
+    ///
+    /// Contract and arithmetic read off Laravel's ChallengeService::…:402-435 —
+    /// active only, currently in date, ordered by end date; progress_percent
+    /// capped at 100; days/hours remaining are floats, floored at 0.
+    /// </summary>
     [HttpGet("gamification/challenges")]
     [Authorize]
-    public async Task<IActionResult> GamificationChallenges() => Ok(new { data = await _db.Challenges.Where(c => c.TenantId == TenantId()).Take(50).ToListAsync() });
+    public async Task<IActionResult> GamificationChallenges()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+        var now = DateTime.UtcNow;
+
+        var challenges = await _db.Challenges
+            .AsNoTracking()
+            .Where(c => c.TenantId == tenantId
+                && c.IsActive
+                && c.StartsAt <= now
+                && c.EndsAt >= now)
+            .OrderBy(c => c.EndsAt)
+            .Select(c => new
+            {
+                c.Id, c.TenantId, c.Title, c.Description, c.ChallengeType, c.TargetAction,
+                c.TargetCount, c.XpReward, c.StartsAt, c.EndsAt, c.IsActive, c.CreatedAt,
+                // Laravel's challenges.badge_reward is a badge SLUG (varchar), not
+                // an id, so the joined Badge's slug is the right value here.
+                BadgeSlug = c.Badge != null ? c.Badge.Slug : null,
+            })
+            .ToListAsync();
+
+        var ids = challenges.Select(c => c.Id).ToList();
+        var progress = ids.Count == 0
+            ? new Dictionary<int, ChallengeParticipant>()
+            : await _db.ChallengeParticipants
+                .AsNoTracking()
+                .Where(p => p.UserId == userId && ids.Contains(p.ChallengeId))
+                .ToDictionaryAsync(p => p.ChallengeId);
+
+        var data = challenges.Select(c =>
+        {
+            progress.TryGetValue(c.Id, out var mine);
+            var userProgress = mine?.CurrentProgress ?? 0;
+            var remaining = c.EndsAt - now;
+
+            return new
+            {
+                id = c.Id,
+                tenant_id = c.TenantId,
+                title = c.Title,
+                description = c.Description,
+                // Laravel's vocabulary is daily|weekly|monthly|special, lower case.
+                challenge_type = c.ChallengeType.ToString().ToLowerInvariant(),
+                action_type = c.TargetAction,
+                target_count = c.TargetCount,
+                xp_reward = c.XpReward,
+                badge_reward = c.BadgeSlug,
+                start_date = c.StartsAt,
+                end_date = c.EndsAt,
+                is_active = c.IsActive,
+                created_at = c.CreatedAt,
+                user_progress = userProgress,
+                completed_at = mine?.CompletedAt,
+                reward_claimed = mine?.IsCompleted ?? false,
+                progress_percent = c.TargetCount > 0
+                    ? Math.Min(100, Math.Round(userProgress / (double)c.TargetCount * 100))
+                    : 0,
+                is_completed = userProgress >= c.TargetCount,
+                days_remaining = Math.Max(0, remaining.TotalDays),
+                hours_remaining = Math.Max(0, remaining.TotalHours),
+                reward_xp = c.XpReward,
+            };
+        }).ToList();
+
+        return Ok(new { data });
+    }
 
     [HttpGet("gamification/community-dashboard")]
     [Authorize]
     public async Task<IActionResult> GamificationCommunityDashboard() => Ok(new { data = new { members = await _db.Users.CountAsync(u => u.TenantId == TenantId()), xp = await _db.Users.Where(u => u.TenantId == TenantId()).SumAsync(u => u.TotalXp) } });
 
+    /// <summary>
+    /// GET /api/v2/gamification/engagement-history — was this member active, month
+    /// by month.
+    ///
+    /// 🔴 This answered from the WRONG TABLE. It returned raw XpLog entities — a
+    /// list of individual point awards — where Laravel returns one row per month
+    /// from `monthly_engagement`. Not a formatting difference: a 200 with
+    /// plausible content describing something else entirely, the same class of
+    /// fault as `skills/categories` answering from the listing categories table.
+    ///
+    /// Laravel: `SELECT * FROM monthly_engagement WHERE tenant_id AND user_id
+    /// ORDER BY year_month DESC LIMIT 12` — read off the running query log.
+    /// </summary>
     [HttpGet("gamification/engagement-history")]
     [Authorize]
-    public async Task<IActionResult> GamificationEngagementHistory() => Ok(new { data = await _db.XpLogs.Where(x => x.UserId == UserId()).OrderByDescending(x => x.CreatedAt).Take(50).ToListAsync() });
+    public async Task<IActionResult> GamificationEngagementHistory()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
 
+        var data = await _db.MonthlyEngagements
+            .AsNoTracking()
+            .Where(m => m.TenantId == tenantId && m.UserId == userId)
+            .OrderByDescending(m => m.YearMonth)
+            .Take(12)
+            .Select(m => new
+            {
+                year_month = m.YearMonth,
+                was_active = m.WasActive,
+                activity_count = m.ActivityCount,
+                recognized_at = m.RecognizedAt,
+            })
+            .ToListAsync();
+
+        return Ok(new { data });
+    }
+
+    /// <summary>
+    /// GET /api/v2/gamification/member-spotlight — a few members to highlight.
+    ///
+    /// 🔴 Returned ONE member as an object where Laravel returns a LIST, under
+    /// camelCase keys, with no `bio`, `avatar_url`, `member_since` or
+    /// `recent_activity` — so the spotlight panel had almost nothing to render.
+    /// It also ranked purely by XP, which makes the same person the spotlight for
+    /// ever; Laravel deliberately picks at random.
+    ///
+    /// Contract from CommunityDashboardService::getMemberSpotlight:121-167 —
+    /// `limit` defaults to 3, capped at 10; candidates are approved members with
+    /// XP above zero OR at least one badge; bio truncated to 120 characters;
+    /// member_since formatted "MMM yyyy"; recent_activity is a badge count or a
+    /// fallback phrase.
+    ///
+    /// 🔴 The ordering is `RAND(<todays date>)` — random, but SEEDED BY THE DAY, so
+    /// it is stable within a day and rotates the next. Reproduced here with a
+    /// deterministic per-day hash rather than a real shuffle, so repeated calls on
+    /// the same day agree.
+    /// </summary>
     [HttpGet("gamification/member-spotlight")]
     [Authorize]
-    public async Task<IActionResult> GamificationMemberSpotlight() => Ok(new { data = await _db.Users.Where(u => u.TenantId == TenantId()).OrderByDescending(u => u.TotalXp).Select(u => new { u.Id, u.FirstName, u.LastName, u.TotalXp }).FirstOrDefaultAsync() });
+    public async Task<IActionResult> GamificationMemberSpotlight()
+    {
+        var tenantId = TenantId();
+        var limit = QueryInt("limit", 3, 1, 10);
 
+        var candidates = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.TenantId == tenantId
+                && u.IsApproved
+                && (u.TotalXp > 0 || _db.UserBadges.Any(b => b.UserId == u.Id)))
+            .Select(u => new { u.Id, u.FirstName, u.LastName, u.AvatarUrl, u.Bio, u.TotalXp, u.Level, u.CreatedAt })
+            .ToListAsync();
+
+        var daySeed = int.Parse(DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        var chosen = candidates
+            .OrderBy(u => unchecked(u.Id * 2654435761 ^ daySeed))
+            .Take(limit)
+            .ToList();
+
+        var chosenIds = chosen.Select(u => u.Id).ToList();
+        var badgeCounts = chosenIds.Count == 0
+            ? new Dictionary<int, int>()
+            : await _db.UserBadges
+                .AsNoTracking()
+                .Where(b => chosenIds.Contains(b.UserId))
+                .GroupBy(b => b.UserId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        var data = chosen.Select(u =>
+        {
+            var badges = badgeCounts.GetValueOrDefault(u.Id, 0);
+            return new
+            {
+                id = u.Id,
+                first_name = u.FirstName,
+                last_name = u.LastName,
+                avatar_url = u.AvatarUrl,
+                bio = string.IsNullOrEmpty(u.Bio)
+                    ? null
+                    : u.Bio.Length > 120 ? u.Bio[..120] : u.Bio,
+                member_since = u.CreatedAt.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                level = u.Level,
+                xp = u.TotalXp,
+                recent_activity = badges > 0
+                    ? $"Earned {badges} {(badges == 1 ? "badge" : "badges")}"
+                    : "Active community member",
+            };
+        }).ToList();
+
+        return Ok(new { data });
+    }
+
+    /// <summary>Laravel's level vocabulary — GamificationService::LEVEL_THRESHOLDS_V2.</summary>
+    private static readonly (int Xp, string Name)[] LevelNames =
+    {
+        (0, "Newcomer"), (100, "Explorer"), (500, "Contributor"), (1500, "Helper"),
+        (3500, "Builder"), (7000, "Advocate"), (15000, "Leader"), (30000, "Champion"),
+        (60000, "Pillar"), (100000, "Legend"),
+    };
+
+    private static string LevelName(int level) =>
+        LevelNames[Math.Clamp(level, 1, LevelNames.Length) - 1].Name;
+
+    /// <summary>
+    /// GET /api/v2/gamification/personal-journey — the member's own history.
+    ///
+    /// 🔴 Returned a flat list of raw XpLog entities. Laravel returns FOUR named
+    /// sections — `monthly_activity`, `badge_progression`, `milestones` and
+    /// `summary`. Nothing the page renders was present, and the entity carried
+    /// `tenant` and `user` navigation properties, null only because nothing
+    /// eager-loads them.
+    ///
+    /// Contract from CommunityDashboardService::getPersonalJourney:93-107 and its
+    /// four builders (:226-350). Notes worth keeping:
+    /// - the timeline is always TWELVE months, oldest first, with zeros filled in
+    ///   for months with no activity — not "months that happen to have rows";
+    /// - milestone thresholds are fixed ladders (badges 5/10/25/50/100,
+    ///   XP 100/500/1000/5000/10000/50000) and the threshold milestones carry a
+    ///   null date deliberately;
+    /// - date formats differ per section: "MMM yyyy" for months, "yyyy-MM-dd" for
+    ///   badges earned, "MMM dd, yyyy" for the first-badge milestone.
+    /// </summary>
     [HttpGet("gamification/personal-journey")]
     [Authorize]
-    public async Task<IActionResult> GamificationPersonalJourney() => Ok(new { data = await _db.XpLogs.Where(x => x.UserId == UserId()).OrderBy(x => x.CreatedAt).ToListAsync() });
+    public async Task<IActionResult> GamificationPersonalJourney()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+        var now = DateTime.UtcNow;
+        var since = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+
+        var badges = await _db.UserBadges
+            .AsNoTracking()
+            .Where(b => b.TenantId == tenantId && b.UserId == userId)
+            .Select(b => new
+            {
+                b.EarnedAt,
+                // Laravel's user_badges denormalises badge_key/name/icon onto the
+                // row; here they live on the joined Badge, and its `badge_key`
+                // equivalent is called Slug.
+                Key = b.Badge != null ? b.Badge.Slug : null,
+                Name = b.Badge != null ? b.Badge.Name : null,
+                Icon = b.Badge != null ? b.Badge.Icon : null,
+            })
+            .ToListAsync();
+
+        var xp = await _db.XpLogs
+            .AsNoTracking()
+            .Where(x => x.TenantId == tenantId && x.UserId == userId && x.CreatedAt >= since)
+            .Select(x => new { x.CreatedAt, x.Amount })
+            .ToListAsync();
+
+        // Twelve months, oldest first, zeros filled in.
+        var monthlyActivity = Enumerable.Range(0, 12).Select(i =>
+        {
+            var month = since.AddMonths(i);
+            return new
+            {
+                month = month.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                badges = badges.Count(b => b.EarnedAt.Year == month.Year && b.EarnedAt.Month == month.Month),
+                xp_earned = xp.Where(x => x.CreatedAt.Year == month.Year && x.CreatedAt.Month == month.Month)
+                    .Sum(x => x.Amount),
+            };
+        }).ToList();
+
+        var badgeProgression = badges
+            .OrderBy(b => b.EarnedAt)
+            .Select(b => new
+            {
+                badge_key = b.Key,
+                name = b.Name,
+                icon = b.Icon,
+                earned_at = b.EarnedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            })
+            .ToList();
+
+        var user = await _db.Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.TotalXp, u.Level, u.CreatedAt })
+            .FirstOrDefaultAsync();
+
+        var totalXp = user?.TotalXp ?? 0;
+        var milestones = new List<object>();
+
+        var firstBadge = badges.OrderBy(b => b.EarnedAt).FirstOrDefault();
+        if (firstBadge is not null)
+        {
+            milestones.Add(new
+            {
+                type = "first_badge",
+                label = $"Earned \"{firstBadge.Name}\" {firstBadge.Icon}",
+                date = firstBadge.EarnedAt.ToString("MMM dd, yyyy", CultureInfo.InvariantCulture),
+            });
+        }
+
+        foreach (var m in new[] { 5, 10, 25, 50, 100 }.Where(m => badges.Count >= m))
+        {
+            milestones.Add(new { type = "badge_milestone", label = $"{m} badges earned", date = (string?)null });
+        }
+
+        foreach (var m in new[] { 100, 500, 1000, 5000, 10000, 50000 }.Where(m => totalXp >= m))
+        {
+            milestones.Add(new
+            {
+                type = "xp_milestone",
+                label = $"{m.ToString("N0", CultureInfo.InvariantCulture)} XP reached",
+                date = (string?)null,
+            });
+        }
+
+        var firstListing = await _db.Listings.AsNoTracking()
+            .Where(l => l.TenantId == tenantId && l.UserId == userId)
+            .OrderBy(l => l.CreatedAt)
+            .Select(l => (DateTime?)l.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (firstListing is not null)
+        {
+            milestones.Add(new
+            {
+                type = "first_listing",
+                label = "First listing posted",
+                date = firstListing.Value.ToString("MMM dd, yyyy", CultureInfo.InvariantCulture),
+            });
+        }
+
+        var level = user?.Level ?? 1;
+        var summary = new
+        {
+            xp = totalXp,
+            level,
+            level_name = LevelName(level),
+            total_badges = badges.Count,
+            total_listings = await _db.Listings.CountAsync(l => l.TenantId == tenantId && l.UserId == userId),
+            volunteer_hours = Math.Round(
+                await _db.VolunteerLogs
+                    .Where(v => v.TenantId == tenantId && v.UserId == userId && v.Status == "approved")
+                    .SumAsync(v => (decimal?)v.Hours) ?? 0m, 1),
+            total_connections = await _db.Connections.CountAsync(c => c.TenantId == tenantId
+                && c.Status == Connection.Statuses.Accepted
+                && (c.RequesterId == userId || c.AddresseeId == userId)),
+            total_reviews = await _db.Reviews.CountAsync(r => r.TenantId == tenantId && r.ReviewerId == userId),
+            member_since = user?.CreatedAt.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+        };
+
+        return Ok(new
+        {
+            data = new
+            {
+                monthly_activity = monthlyActivity,
+                badge_progression = badgeProgression,
+                milestones,
+                summary,
+            }
+        });
+    }
 
     [HttpGet("gamification/share")]
     [Authorize]
