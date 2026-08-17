@@ -195,6 +195,26 @@ router.post('/:id(\\d+)/participants/:participantUserId(\\d+)/remove', asyncRout
   );
 }));
 
+// 🔴 This route DID NOT EXIST, which stalled the whole group-exchange workflow. Without
+// it the status never left `draft`, so GroupExchangeService::start() never ran — and start
+// is the ONLY caller of notifyParticipantsToConfirm(), so participants were expected to
+// confirm having been told nothing. React only shows its Confirm button on
+// `pending_confirmation`, so a React participant saw no way to act and the exchange
+// deadlocked. Nothing was broken in Laravel: POST /v2/group-exchanges/{id}/start has been
+// there all along (routes/api.php:3587).
+router.post('/:id(\\d+)/start', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return runAction(
+    req,
+    res,
+    'POST',
+    `/${id}/start`,
+    undefined,
+    exchangeRedirect(id, 'started'),
+    exchangeRedirect(id, 'start-failed')
+  );
+}));
+
 router.post('/:id(\\d+)/confirm', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   return runAction(

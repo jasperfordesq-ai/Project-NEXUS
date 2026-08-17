@@ -92,7 +92,29 @@
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.no_participants") }}</p></div>
   {% endif %}
 
-  {% if isParticipant and not isClosed %}
+  {# 🔴 Start was missing entirely, so the exchange never left draft and nobody was ever
+     notified to confirm. Offered only while the organiser can still change who is taking
+     part, and only once both roles have somebody in them — the same rule React uses. When
+     a role is empty the reason is stated rather than the button just being absent. #}
+  {% if canStart or startNeedsParticipants %}
+    <section aria-labelledby="start-heading" class="govuk-!-margin-top-6">
+      <h2 class="govuk-heading-l" id="start-heading">{{ t("group_exchanges.start_title") }}</h2>
+      <p class="govuk-body">{{ t("group_exchanges.start_body") }}</p>
+      {% if canStart %}
+        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/start') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("group_exchanges.start_button") }}</button>
+        </form>
+      {% else %}
+        <div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-0">{{ t("group_exchanges.states.start-failed") }}</p></div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {# Confirm belongs only to a STARTED exchange. This block used to render on a draft,
+     asking people to confirm something not yet under way — and their confirmation could
+     not lead anywhere, because Complete also requires the exchange to have started. #}
+  {% if isParticipant and isStarted %}
     <section aria-labelledby="confirm-heading" class="govuk-!-margin-top-6">
       <h2 class="govuk-heading-l" id="confirm-heading">{{ t("group_exchanges.confirm_title") }}</h2>
       {% if viewerConfirmed %}
@@ -150,21 +172,29 @@
   {% endif %}
 
   {% if isOrganizer and not isClosed %}
-    <section aria-labelledby="complete-heading" class="govuk-!-margin-top-7">
-      <h2 class="govuk-heading-l" id="complete-heading">{{ t("group_exchanges.complete_title") }}</h2>
-      <p class="govuk-body">{{ t("group_exchanges.complete_body") }}</p>
-      <div class="govuk-warning-text">
-        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-        <strong class="govuk-warning-text__text">
-          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
-          {{ t("group_exchanges.complete_warning") }}
-        </strong>
-      </div>
+    {# 🔴 Complete requires the exchange to have STARTED, as it does in React. Completing
+       moves the credits, and GroupExchangeService::complete() works from confirmations
+       that only exist once start() has asked for them — so on a draft this section shows
+       Cancel alone. Cancel is deliberately available in every open state, including
+       disputed: abandoning a disputed exchange is a legitimate organiser action, which is
+       why `disputed` is not treated as closed. #}
+    {% set canComplete = isStarted and not isDisputed %}
+    <section aria-labelledby="{% if canComplete %}complete-heading{% else %}cancel-heading{% endif %}" class="govuk-!-margin-top-7">
+      {% if canComplete %}
+        <h2 class="govuk-heading-l" id="complete-heading">{{ t("group_exchanges.complete_title") }}</h2>
+        <p class="govuk-body">{{ t("group_exchanges.complete_body") }}</p>
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("group_exchanges.complete_warning") }}
+          </strong>
+        </div>
+      {% else %}
+        <h2 class="govuk-heading-l" id="cancel-heading">{{ t("group_exchanges.cancel_button") }}</h2>
+      {% endif %}
       <div class="nexus-alpha-actions">
-        {# 🔴 Not offered on a DISPUTED exchange. The API would allow it once everyone
-           has confirmed, and completing moves the credits — so a disputed exchange must
-           be resolved or cancelled, never completed from here. Cancel stays available. #}
-        {% if not isDisputed %}
+        {% if canComplete %}
           <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/complete') }}" class="nexus-alpha-linkform">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" data-prevent-double-click="true" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>

@@ -1806,6 +1806,8 @@ return [
         'view_button' => 'Féach',
         'statuses' => [
             'draft' => 'Dréacht',
+
+            'pending_participants' => 'Ag fanacht le rannpháirtithe',
             'pending' => 'Ag feitheamh le ceadú',
             'approved' => 'Ceadaithe',
             'active' => 'Gníomhach',
@@ -1844,6 +1846,12 @@ return [
         'confirm_body' => 'Deimhnigh go n-aontaíonn tú glacadh páirt sa mhalartú grúpa seo.',
         'confirm_button' => 'Deimhnigh mo rannpháirtíocht',
         'confirmed_already' => 'Tá do rannpháirtíocht deimhnithe agat.',
+        'start_title' => 'Tosaigh an malartú',
+
+        'start_body' => 'Nuair a thosaíonn tú an malartú, iarrtar ar gach duine atá páirteach a gcuid uaireanta a dheimhniú. Ní féidir daoine a chur leis ná a bhaint as ina dhiaidh sin.',
+
+        'start_button' => 'Tosaigh agus iarr ar chách deimhniú',
+
         'complete_title' => 'Críochnaigh an malartú',
         'complete_body' => 'Nuair a bheidh gach duine tar éis deimhniú, aistreoidh an malartú iomlán na creidmheasanna ama. Ní féidir é seo a chur ar ceal.',
         'complete_warning' => 'Aistríonn críochnú an mhalartaithe seo na creidmheasanna ama láithreach agus ní féidir é a chur ar ais.',
@@ -1854,6 +1862,10 @@ return [
             'created' => 'Tá do mhalartú grúpa cruthaithe. Cuir na daoine atá ag glacadh páirt leis thíos.',
             'participant-added' => 'Duine curtha leis an malartú.',
             'participant-removed' => 'Duine bainte ón malartú.',
+            'started' => 'Thosaigh an malartú. Iarradh ar gach duine atá páirteach deimhniú a dhéanamh.',
+
+            'start-failed' => 'Níorbh fhéidir an malartú a thosú. Teastaíonn duine amháin ar a laghad a thugann am agus duine amháin a fhaigheann é, agus caithfidh na huaireanta a bheith cothrom.',
+
             'confirmed' => 'Go raibh maith agat — tá do rannpháirtíocht deimhnithe.',
             'completed' => 'Tá an malartú grúpa críochnaithe agus tá na creidmheasanna ama aistrithe.',
             'cancelled' => 'Tá an malartú grúpa cealaithe.',

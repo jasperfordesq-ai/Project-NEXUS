@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-17T17:24:57.541Z",
+  "generatedAt": "2026-08-17T17:56:39.531Z",
   "provenance": {
-    "generatedAt": "2026-08-17T17:24:57.541Z",
+    "generatedAt": "2026-08-17T17:56:39.531Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d",
+    "laravelCommitSha": "69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d",
+    "webUkRepositoryCommitSha": "69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-17T17:24:57.541Z",
+    "generatedAt": "2026-08-17T17:56:39.531Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 727,
+    "webUkRoutes": 728,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 17,
+    "extraWebUkRoutes": 18,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "cookie-consent": {
@@ -32,6 +32,12 @@
         "matched": 94,
         "missing": 0,
         "extraWebUk": 2,
+        "ignoredInfrastructure": 0
+      },
+      "group-exchanges": {
+        "matched": 9,
+        "missing": 0,
+        "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
       "legal-acceptance": {
@@ -252,12 +258,6 @@
       },
       "goals": {
         "matched": 27,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "group-exchanges": {
-        "matched": 9,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -542,6 +542,27 @@
       "webUkPath": "/events/{param}/rsvp/remove",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/group-exchanges/{param}/start",
+      "family": "group-exchanges",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/group-exchanges/{param}/start",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/group-exchange-actions.js",
       "webUkRouteKind": ""
     },
     {

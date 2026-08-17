@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-17T17:24:57.541Z
-Laravel commit SHA: `0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d`
-Web UK repository commit SHA: `0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d`
+Generated: 2026-08-17T17:56:39.531Z
+Laravel commit SHA: `69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8`
+Web UK repository commit SHA: `69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 727 |
+| web-uk routes | 728 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 17 |
+| Extra web-uk routes | 18 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -47,7 +47,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | federation | 28 | 0 | 0 | 0 |
 | feed | 22 | 0 | 0 | 0 |
 | goals | 27 | 0 | 0 | 0 |
-| group-exchanges | 9 | 0 | 0 | 0 |
+| group-exchanges | 9 | 0 | 1 | 0 |
 | groups | 36 | 0 | 0 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
@@ -112,6 +112,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
+| POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
 | GET | `/legal-acceptance` | legal-acceptance | legal/accept | web-uk/src/routes/legal-acceptance.js |
 | POST | `/legal-acceptance` | legal-acceptance |  | web-uk/src/routes/legal-acceptance.js |
 | GET | `/legal/{param}/versions` | legal | legal/versions | web-uk/src/routes/legal.js |

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-17T17:24:58.262Z",
+  "generatedAt": "2026-08-17T17:56:40.936Z",
   "provenance": {
-    "generatedAt": "2026-08-17T17:24:58.262Z",
+    "generatedAt": "2026-08-17T17:56:40.936Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d",
+    "laravelCommitSha": "69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d",
+    "webUkRepositoryCommitSha": "69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -21,13 +21,13 @@
     "laravelApiRoutesSha256": "bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a"
   },
   "summary": {
-    "contracts": 698,
+    "contracts": 699,
     "matchedOpenApi": 468,
-    "missingOpenApi": 230,
-    "routeDeclaredOpenApiOmissions": 230,
+    "missingOpenApi": 231,
+    "routeDeclaredOpenApiOmissions": 231,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 382,
+    "stateChanging": 383,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -10391,7 +10391,7 @@
       "method": "GET",
       "path": "/api/v2/group-exchanges?{query}",
       "apiHelper": "callGroupExchangeApi",
-      "source": "src/routes/group-exchanges.js:179",
+      "source": "src/routes/group-exchanges.js:207",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10427,7 +10427,7 @@
       "method": "DELETE",
       "path": "/api/v2/group-exchanges/{param}",
       "apiHelper": "callGroupExchangeApi",
-      "source": "src/routes/group-exchange-actions.js:226",
+      "source": "src/routes/group-exchange-actions.js:246",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10500,7 +10500,7 @@
       "method": "POST",
       "path": "/api/v2/group-exchanges/{param}/complete",
       "apiHelper": "callGroupExchangeApi",
-      "source": "src/routes/group-exchange-actions.js:213",
+      "source": "src/routes/group-exchange-actions.js:233",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10536,7 +10536,7 @@
       "method": "POST",
       "path": "/api/v2/group-exchanges/{param}/confirm",
       "apiHelper": "callGroupExchangeApi",
-      "source": "src/routes/group-exchange-actions.js:200",
+      "source": "src/routes/group-exchange-actions.js:220",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10628,6 +10628,38 @@
         "tags": [
           "Group-exchanges"
         ]
+      },
+      "frontendConsumers": [
+        "src/routes/group-exchange-actions.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/shared-accessible-shell.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/group-exchanges/{param}/start [callGroupExchangeApi]",
+      "method": "POST",
+      "path": "/api/v2/group-exchanges/{param}/start",
+      "apiHelper": "callGroupExchangeApi",
+      "source": "src/routes/group-exchange-actions.js:207",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/group-exchange-actions.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/group-exchanges/{id}/start",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
       },
       "frontendConsumers": [
         "src/routes/group-exchange-actions.js"

@@ -1806,6 +1806,8 @@ return [
         'view_button' => 'Ver',
         'statuses' => [
             'draft' => 'Borrador',
+
+            'pending_participants' => 'Esperando participantes',
             'pending' => 'Pendiente de aprobación',
             'approved' => 'Aprobado',
             'active' => 'Activo',
@@ -1844,6 +1846,12 @@ return [
         'confirm_body' => 'Confirme que acepta participar en este intercambio grupal.',
         'confirm_button' => 'Confirmar mi participación',
         'confirmed_already' => 'Ya ha confirmado su participación.',
+        'start_title' => 'Iniciar el intercambio',
+
+        'start_body' => 'Al iniciar el intercambio se pide a todas las personas participantes que confirmen sus horas. Después no podrá añadir ni quitar personas.',
+
+        'start_button' => 'Iniciar y pedir a todos que confirmen',
+
         'complete_title' => 'Completar el intercambio',
         'complete_body' => 'Una vez que todos hayan confirmado, completar el intercambio transfiere los créditos de tiempo. Esta acción no se puede deshacer.',
         'complete_warning' => 'Completar este intercambio transfiere los créditos de tiempo de inmediato y no se puede revertir.',
@@ -1854,6 +1862,10 @@ return [
             'created' => 'Su intercambio grupal ha sido creado. Añada a continuación a las personas que participan.',
             'participant-added' => 'Persona añadida al intercambio.',
             'participant-removed' => 'Persona eliminada del intercambio.',
+            'started' => 'El intercambio ha comenzado. Se ha pedido a todas las personas participantes que confirmen.',
+
+            'start-failed' => 'No se ha podido iniciar el intercambio. Hace falta al menos una persona que dé tiempo y otra que lo reciba, y las horas deben cuadrar.',
+
             'confirmed' => 'Gracias — su participación está confirmada.',
             'completed' => 'El intercambio grupal está completo y los créditos de tiempo han sido transferidos.',
             'cancelled' => 'El intercambio grupal ha sido cancelado.',

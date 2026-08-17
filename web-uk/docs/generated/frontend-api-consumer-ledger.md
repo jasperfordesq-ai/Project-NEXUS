@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-17T17:24:58.262Z
-- Laravel commit SHA: `0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d`
-- Web UK repository commit SHA: `0f7b251b2b9449bec83a7ed5344a9ed71dcfa85d`
+- Generated: 2026-08-17T17:56:40.936Z
+- Laravel commit SHA: `69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8`
+- Web UK repository commit SHA: `69bbdc72e5ca5fa9585681fcbcc4cc296cce2df8`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 698
+- Contracts: 699
 - Laravel OpenAPI matches: 468
-- Missing OpenAPI matches: 230
-- Direct Laravel route declarations omitted from OpenAPI: 230
+- Missing OpenAPI matches: 231
+- Direct Laravel route declarations omitted from OpenAPI: 231
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 382
+- State-changing contracts: 383
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
@@ -317,6 +317,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/v2/group-exchanges/{param}/confirm` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/group-exchanges/{param}/participants` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/group-exchanges/{param}/participants/{param}` | `callGroupExchangeApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/group-exchanges/{param}/start` | `callGroupExchangeApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/group-exchange-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/groups` | `createGroup` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/groups.js | tests/api.test.js<br>tests/runtime/group-management-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/groups?{query}` | `getGroups` | documented | read-only by HTTP method<br>not applicable | src/routes/groups.js | tests/api.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/groups/{param}` | `deleteGroup` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/groups.js | tests/api.test.js<br>tests/runtime/group-management-mutation.spec.js<br>tests/runtime/groups-mutation.spec.js<br>tests/shared-accessible-shell.test.js |

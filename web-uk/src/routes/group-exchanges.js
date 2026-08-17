@@ -79,24 +79,49 @@ function headline(value) {
     .join(' ');
 }
 
+// 🔴 The real `group_exchanges.status` enum is exactly: draft, pending_participants,
+// pending_broker, active, pending_confirmation, completed, cancelled, disputed.
+// `pending` and `approved` were invented here and are NOT statuses — they were in this
+// map and in the `editable` list, which is why an exchange sitting in the real
+// `pending_participants` state could not be edited. They are gone.
+//
+// Every status now has a translated label. Four of them used to fall through to
+// headline(), which produced English ("Pending Confirmation") in all eleven languages;
+// three reuse the reviewed wording already written for one-to-one exchanges, so the two
+// exchange types describe the same state the same way.
+const STATUS_TAG_CLASSES = {
+  draft: 'govuk-tag--grey',
+  pending_participants: 'govuk-tag--yellow',
+  pending_broker: 'govuk-tag--yellow',
+  active: 'govuk-tag--turquoise',
+  pending_confirmation: 'govuk-tag--yellow',
+  completed: 'govuk-tag--green',
+  cancelled: 'govuk-tag--red',
+  disputed: 'govuk-tag--orange'
+};
+
+const STATUS_LABEL_KEYS = {
+  draft: 'group_exchanges.statuses.draft',
+  pending_participants: 'group_exchanges.statuses.pending_participants',
+  pending_broker: 'exchanges.statuses.pending_broker',
+  active: 'group_exchanges.statuses.active',
+  pending_confirmation: 'exchanges.statuses.pending_confirmation',
+  completed: 'group_exchanges.statuses.completed',
+  cancelled: 'group_exchanges.statuses.cancelled',
+  disputed: 'exchanges.statuses.disputed'
+};
+
+/** Statuses in which the organiser may still change who is taking part, and start. */
+const OPEN_STATUSES = ['draft', 'pending_participants'];
+
 function statusDetails(status, t) {
   const normalized = trimmed(status).toLowerCase();
-  const classes = {
-    draft: 'govuk-tag--grey',
-    pending: 'govuk-tag--yellow',
-    approved: 'govuk-tag--blue',
-    active: 'govuk-tag--turquoise',
-    completed: 'govuk-tag--green',
-    cancelled: 'govuk-tag--red',
-    pending_participants: 'govuk-tag--yellow',
-    pending_broker: 'govuk-tag--yellow',
-    pending_confirmation: 'govuk-tag--yellow',
-    disputed: 'govuk-tag--orange'
+  const key = STATUS_TAG_CLASSES[normalized] ? normalized : 'draft';
+  return {
+    key,
+    label: t(STATUS_LABEL_KEYS[key]) || headline(key),
+    className: STATUS_TAG_CLASSES[key]
   };
-  const localizedStatuses = new Set(['draft', 'pending', 'approved', 'active', 'completed', 'cancelled']);
-  const key = classes[normalized] ? normalized : 'draft';
-  const label = localizedStatuses.has(key) ? t(`group_exchanges.statuses.${key}`) : headline(key);
-  return { key, label, className: classes[key] };
 }
 
 function normalizeExchange(item, t) {
@@ -155,7 +180,7 @@ function profileId(profileResult) {
 
 function stateMessage(status, t) {
   const key = trimmed(status);
-  return ['created', 'participant-added', 'participant-removed', 'confirmed', 'completed', 'cancelled'].includes(key)
+  return ['created', 'participant-added', 'participant-removed', 'started', 'confirmed', 'completed', 'cancelled'].includes(key)
     ? t(`group_exchanges.states.${key}`)
     : '';
 }
@@ -163,7 +188,10 @@ function stateMessage(status, t) {
 function errorMessage(status, t) {
   const key = trimmed(status);
   if (['create-invalid', 'create-failed'].includes(key)) return t('group_exchanges.states.failed');
-  return ['add-failed', 'complete-failed', 'failed'].includes(key)
+  // `start-failed` names the two things start() actually rejects for — a role with nobody
+  // in it, and a split that does not balance — so the organiser can act on it rather than
+  // being told "something went wrong".
+  return ['add-failed', 'start-failed', 'complete-failed', 'failed'].includes(key)
     ? t(`group_exchanges.states.${key}`)
     : '';
 }
@@ -237,8 +265,31 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   // to `isClosed` because Cancel lives in the same block and cancelling a disputed
   // exchange is a legitimate thing for an organiser to do.
   const isDisputed = exchange.statusKey === 'disputed';
-  const editable = isOrganizer && ['draft', 'pending', 'approved'].includes(exchange.statusKey);
+  const editable = isOrganizer && OPEN_STATUSES.includes(exchange.statusKey);
   const allConfirmed = participants.length > 0 && participants.every((participant) => participant.confirmed);
+
+  // 🔴 The exchange could not be STARTED from here at all — there was no /start route and
+  // no button. That left the workflow stuck: the status never left `draft`, so
+  // GroupExchangeService::start() never ran, and start is the ONLY caller of
+  // notifyParticipantsToConfirm(). Participants were therefore asked to confirm with no
+  // notification of any kind, and a React participant looking at the same exchange saw no
+  // Confirm button at all (React requires `pending_confirmation`), so it deadlocked.
+  //
+  // Gating mirrors React exactly: start needs at least one giver and one receiver, and
+  // confirm/complete require the exchange to have actually started. Offering Confirm on a
+  // draft — which this page did — asked people to confirm something not yet under way.
+  const providerCount = participants.filter((participant) => participant.role === 'provider').length;
+  const receiverCount = participants.filter((participant) => participant.role === 'receiver').length;
+  const canStart = isOrganizer
+    && OPEN_STATUSES.includes(exchange.statusKey)
+    && providerCount >= 1
+    && receiverCount >= 1;
+  // Shown when the organiser cannot start yet, so the reason is visible rather than the
+  // button silently missing.
+  const startNeedsParticipants = isOrganizer
+    && OPEN_STATUSES.includes(exchange.statusKey)
+    && !(providerCount >= 1 && receiverCount >= 1);
+  const isStarted = exchange.statusKey === 'pending_confirmation';
   const participantQuery = trimmed(req.query.participant_q);
   let participantResults = [];
 
@@ -259,6 +310,9 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     isParticipant,
     isClosed,
     isDisputed,
+    isStarted,
+    canStart,
+    startNeedsParticipants,
     editable,
     viewerConfirmed: viewerRow ? viewerRow.confirmed : false,
     allConfirmed,

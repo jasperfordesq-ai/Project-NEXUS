@@ -1806,6 +1806,8 @@ return [
         'view_button' => 'Anzeigen',
         'statuses' => [
             'draft' => 'Entwurf',
+
+            'pending_participants' => 'Warten auf Teilnehmende',
             'pending' => 'Wartet auf Genehmigung',
             'approved' => 'Genehmigt',
             'active' => 'Aktiv',
@@ -1844,6 +1846,12 @@ return [
         'confirm_body' => 'Bestätigen Sie, dass Sie an diesem Gruppenaustausch teilnehmen möchten.',
         'confirm_button' => 'Meine Teilnahme bestätigen',
         'confirmed_already' => 'Sie haben Ihre Teilnahme bereits bestätigt.',
+        'start_title' => 'Den Austausch starten',
+
+        'start_body' => 'Wenn Sie den Austausch starten, werden alle Beteiligten gebeten, ihre Stunden zu bestätigen. Danach können Sie keine Personen mehr hinzufügen oder entfernen.',
+
+        'start_button' => 'Starten und alle um Bestätigung bitten',
+
         'complete_title' => 'Den Austausch abschließen',
         'complete_body' => 'Sobald alle bestätigt haben, werden durch den Abschluss des Austauschs die Zeitgutschriften übertragen. Dies kann nicht rückgängig gemacht werden.',
         'complete_warning' => 'Der Abschluss dieses Austauschs überträgt die Zeitgutschriften sofort und kann nicht rückgängig gemacht werden.',
@@ -1854,6 +1862,10 @@ return [
             'created' => 'Ihr Gruppenaustausch wurde erstellt. Fügen Sie unten die teilnehmenden Personen hinzu.',
             'participant-added' => 'Person zum Austausch hinzugefügt.',
             'participant-removed' => 'Person aus dem Austausch entfernt.',
+            'started' => 'Der Austausch wurde gestartet. Alle Beteiligten wurden um Bestätigung gebeten.',
+
+            'start-failed' => 'Der Austausch konnte nicht gestartet werden. Es braucht mindestens eine Person, die Zeit gibt, und eine, die sie erhält, und die Stunden müssen ausgeglichen sein.',
+
             'confirmed' => 'Vielen Dank — Ihre Teilnahme ist bestätigt.',
             'completed' => 'Der Gruppenaustausch ist abgeschlossen und die Zeitgutschriften wurden übertragen.',
             'cancelled' => 'Der Gruppenaustausch wurde abgebrochen.',

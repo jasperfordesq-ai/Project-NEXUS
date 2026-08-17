@@ -21398,7 +21398,18 @@ describe('shared accessible frontend shell', () => {
     expect(detail.text).toContain('method="post" action="/group-exchanges/7/participants/55/remove"');
     expect(detail.text).toContain('method="post" action="/group-exchanges/7/participants"');
     expect(detail.text).toContain('Morgan Lee');
-    expect(detail.text).toContain('method="post" action="/group-exchanges/7/complete"');
+    // 🔴 This exchange is a DRAFT with one giver and one receiver, so what the organiser
+    // needs here is Start — the action that was missing altogether, leaving the workflow
+    // stuck in draft with participants never notified to confirm. Complete must NOT be
+    // offered yet: it moves the credits and works from confirmations that only exist once
+    // start() has asked for them. This test asserted the opposite and so recorded the
+    // broken workflow as correct.
+    expect(detail.text).toContain('method="post" action="/group-exchanges/7/start"');
+    expect(detail.text).toContain('Start and ask everyone to confirm');
+    expect(detail.text).not.toContain('method="post" action="/group-exchanges/7/complete"');
+    // Confirm belongs to a started exchange too, not a draft.
+    expect(detail.text).not.toContain('method="post" action="/group-exchanges/7/confirm"');
+    // Cancel stays available in every open state.
     expect(detail.text).toContain('method="post" action="/group-exchanges/7/cancel"');
 
     expect(create.status).toBe(200);
@@ -21468,18 +21479,27 @@ describe('shared accessible frontend shell', () => {
     ]) {
       expect(index.text).toContain(t(key));
     }
+    // 🔴 This fixture is a DRAFT with one provider and NO receiver. Confirm and Complete
+    // used to be asserted here, but neither belongs on an exchange that has not started —
+    // that was the broken workflow this test had absorbed. What the organiser should see
+    // is the Start section, stating why it cannot start yet (a role with nobody in it is
+    // exactly what GroupExchangeService::start() rejects), plus Cancel.
     for (const key of [
       'group_exchanges.states.participant-added',
       'group_exchanges.participants_title',
       'group_exchanges.role_provider',
       'group_exchanges.confirmed_yes',
-      'group_exchanges.confirm_title',
-      'group_exchanges.complete_title',
-      'group_exchanges.complete_warning',
+      'group_exchanges.start_title',
+      'group_exchanges.start_body',
+      'group_exchanges.states.start-failed',
+      'group_exchanges.cancel_button',
       'group_exchanges.remove_button'
     ]) {
       expect(detail.text).toContain(t(key));
     }
+    // And the actions that require a started exchange are absent, in Arabic too.
+    expect(detail.text).not.toContain(t('group_exchanges.confirm_button'));
+    expect(detail.text).not.toContain(t('group_exchanges.complete_button'));
     for (const key of [
       'group_exchanges.create_title',
       'group_exchanges.form_description_label',
@@ -34658,6 +34678,92 @@ describe('shared accessible frontend shell', () => {
     const order = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].listing_id);
     expect(order).toBeTruthy();
     expect(order[3].shipping_method).toBe('community_delivery');
+  });
+
+  it('starts a group exchange, which is what asks participants to confirm', async () => {
+    // 🔴 There was no /start route and no button, so a group exchange could never leave
+    // `draft`. GroupExchangeService::start() is the ONLY caller of
+    // notifyParticipantsToConfirm(), so participants were expected to confirm having been
+    // told nothing — and React only offers its Confirm button on `pending_confirmation`,
+    // so a React participant saw no way to act at all. The workflow deadlocked.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+    api.getProfile.mockResolvedValue({ data: { id: 101, name: 'Avery Stone' } });
+
+    const exchange = (status) => ({
+      data: {
+        id: 7,
+        title: 'Community garden build',
+        status,
+        total_hours: 12,
+        organizer_id: 101,
+        participants: [
+          { user_id: 101, name: 'Avery Stone', role: 'provider', hours: 12, confirmed: false },
+          { user_id: 55, name: 'Sam Taylor', role: 'receiver', hours: 12, confirmed: false }
+        ]
+      }
+    });
+
+    // A draft with both roles filled offers Start, and not the actions that need a
+    // started exchange.
+    api.callGroupExchangeApi.mockReset().mockResolvedValue(exchange('draft'));
+    const draft = await agent.get('/group-exchanges/7').set('Cookie', cookie);
+    expect(draft.status).toBe(200);
+    expect(draft.text).toContain('action="/group-exchanges/7/start"');
+    expect(draft.text).not.toContain('action="/group-exchanges/7/confirm"');
+    expect(draft.text).not.toContain('action="/group-exchanges/7/complete"');
+    // Double-submitting Start would ask everyone to confirm twice over.
+    expect(draft.text).toContain('data-prevent-double-click="true"');
+    const csrf = draft.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // `pending_participants` is a REAL status and must behave like draft. It used to be
+    // absent from the editable list — which carried the invented 'pending'/'approved'
+    // instead — so an exchange sitting there could be neither edited nor started.
+    api.callGroupExchangeApi.mockReset().mockResolvedValue(exchange('pending_participants'));
+    const pendingParticipants = await agent.get('/group-exchanges/7').set('Cookie', cookie);
+    expect(pendingParticipants.text).toContain('action="/group-exchanges/7/start"');
+    // The remove form only renders when the organiser may still change who takes part.
+    expect(pendingParticipants.text).toContain('action="/group-exchanges/7/participants/55/remove"');
+
+    // Start reaches the Laravel endpoint that has been there all along.
+    api.callGroupExchangeApi.mockReset().mockResolvedValue({ data: { id: 7 } });
+    const started = await agent
+      .post('/group-exchanges/7/start')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf });
+    expect(started.headers.location).toBe('/group-exchanges/7?status=started#group-exchange-top');
+    expect(api.callGroupExchangeApi).toHaveBeenLastCalledWith('test-token', 'POST', '/7/start');
+
+    // Once started, Confirm and Complete appear and Start does not.
+    api.callGroupExchangeApi.mockReset().mockResolvedValue(exchange('pending_confirmation'));
+    const running = await agent
+      .get('/group-exchanges/7?status=started')
+      .set('Cookie', cookie);
+    expect(running.text).toContain('action="/group-exchanges/7/confirm"');
+    expect(running.text).toContain('action="/group-exchanges/7/complete"');
+    expect(running.text).not.toContain('action="/group-exchanges/7/start"');
+    expect(running.text).toContain('The exchange has started.');
+    // The status label is translated, not the English headline() fallback it used to be.
+    expect(running.text).toContain('Waiting for confirmation');
+
+    // A refused start tells the organiser what start() actually rejects for.
+    api.callGroupExchangeApi.mockReset().mockRejectedValue(new Error('unbalanced split'));
+    const refused = await agent
+      .post('/group-exchanges/7/start')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf });
+    expect(refused.headers.location).toBe('/group-exchanges/7?status=start-failed#group-exchange-top');
+
+    api.callGroupExchangeApi.mockReset().mockResolvedValue(exchange('draft'));
+    const withError = await agent
+      .get('/group-exchanges/7?status=start-failed')
+      .set('Cookie', cookie);
+    expect(withError.text).toContain('at least one person giving time and one receiving it');
   });
 
   it('shows both ways to pay a hybrid listing, on the card and in the member language', async () => {

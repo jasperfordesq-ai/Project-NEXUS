@@ -2,6 +2,7 @@ status,method,path,family,laravelRouteName,laravelHandler,laravelView,laravelPar
 extra-web-uk,POST,/cookie-consent/hide,cookie-consent,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,GET,/events/my,events,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/events/{param}/rsvp/remove,events,,,,,,,,,,,,,web-uk/src/server.js,
+extra-web-uk,POST,/group-exchanges/{param}/start,group-exchanges,,,,,,,,,,,,,web-uk/src/routes/group-exchange-actions.js,
 extra-web-uk,GET,/legal-acceptance,legal-acceptance,,,,,,,,,legal/accept,,,,web-uk/src/routes/legal-acceptance.js,
 extra-web-uk,POST,/legal-acceptance,legal-acceptance,,,,,,,,,,,,,web-uk/src/routes/legal-acceptance.js,
 extra-web-uk,GET,/legal/{param}/versions,legal,,,,,,,,,legal/versions,,,,web-uk/src/routes/legal.js,
