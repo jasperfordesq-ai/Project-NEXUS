@@ -1,8 +1,9 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -44,6 +45,11 @@ public sealed class LaravelAuthEnvelopeFilter : IAlwaysRunResultFilter
 {
     public void OnResultExecuting(ResultExecutingContext context)
     {
+        if (DeclaresOwnContract(context))
+        {
+            return;
+        }
+
         switch (context.Result)
         {
             case UnauthorizedResult:
@@ -72,9 +78,25 @@ public sealed class LaravelAuthEnvelopeFilter : IAlwaysRunResultFilter
         // Nothing to do once the result has run.
     }
 
+    /// <summary>
+    /// True when the body already carries Laravel's <c>errors</c> array, so the
+    /// policy handler's richer messages ("Admin access required") survive.
+    /// </summary>
     private static bool AlreadyLaravelShaped(object? value)
         => value?.GetType().GetProperty("errors") is not null;
 
+    /// <summary>
+    /// True when the endpoint declares its errors are its own contract.
+    ///
+    /// 🔴 Declared, never inferred. Two attempts to infer it from the response
+    /// body failed in opposite directions: keying on `errors` overwrote the
+    /// prerender control plane's machine envelope, and keying on `code` then
+    /// spared group-exchanges, which Laravel DOES serve with the errors shape.
+    /// No property of a body distinguishes them — the real question is whether
+    /// Laravel serves that interface, which only a human knows.
+    /// </summary>
+    private static bool DeclaresOwnContract(FilterContext context)
+        => context.ActionDescriptor.EndpointMetadata.OfType<OwnErrorContractAttribute>().Any();
     private static ObjectResult Envelope() => new(new
     {
         errors = new[]

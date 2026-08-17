@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2026 Jasper Ford
+﻿// Copyright (c) 2024-2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -17,6 +17,10 @@ using Nexus.Api.Extensions;
 
 namespace Nexus.Api.Controllers;
 
+// 🔴 This is a machine-to-machine control plane: signed webhooks and
+// bearer-token callers, with no Laravel counterpart. Its refusals use its own
+// {success,error,code} envelope and must NOT be normalised towards Laravel's.
+[Nexus.Api.Filters.OwnErrorContract]
 [ApiController]
 [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
 public sealed class AdminPrerenderCompatibilityController : ControllerBase
