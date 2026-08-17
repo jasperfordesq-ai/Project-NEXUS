@@ -211,6 +211,26 @@ docker exec "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
   ON DUPLICATE KEY UPDATE federation_optin = 1, opted_in_at = NOW();
 " || echo "Could not set federation opt-in — federation endpoints stay uncomparable." >&2
 
+say "Adding the contract-parity fixture rows"
+# 🔴 Why. E2ETestDataSeeder leaves the fixture at 4 users, 1 listing and 8
+# categories — no event, no group, no post, no transaction. The response harness
+# therefore reported 39 endpoints as MATCH_BUT_LIST_EMPTY: the envelope agreed,
+# but Laravel had no rows, so the contract of the ROWS INSIDE was never compared.
+# Measured 2026-08-17, Laravel was the empty side in 35 of those 39.
+#
+# Adding rows makes MORE surface comparable, so a FALL in the identical count
+# would be the measurement getting honest rather than a regression. Measured
+# outcome on the 170-path React corpus: untestable 39 -> 17, differing 72 -> 92,
+# identical 59 -> 61. The 20 endpoints that moved into "differing" are row-level
+# defects that were previously invisible, not new breakage.
+#
+# Every filter the rows satisfy was read off the running Laravel's query log,
+# not guessed — see the header of parity-fixture.sql.
+docker exec -i "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  < "$REPO_ROOT/aspnet-backend/scripts/parity-fixture.sql" \
+  && echo "parity fixture applied" \
+  || echo "🔴 Parity fixture FAILED — 39 endpoints stay row-untested. Fix before measuring." >&2
+
 say "Ready"
 cat <<EOF
 Disposable Laravel : http://127.0.0.1:$APP_PORT

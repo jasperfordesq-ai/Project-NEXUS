@@ -142,7 +142,81 @@ inheriting the previous one.
 | + `meta` block added by shared filter | 31 | 21 | 118 |
 | + both fixtures fully featured | 42 | 21 | 107 |
 | + six authorisation/validation fixes | 47 | 21 | 102 |
-| + stray `success` flag removed | **57** | **31** | **82** |
+| + stray `success` flag removed | 57 | 31 | 82 |
+| + sixteen list endpoints reporting `meta` not `pagination` | 59 | 39 | 72 |
+| + **richer fixture rows in the disposable Laravel** | **61** | **17** | **92** |
+
+### 🔴 The fixture, not the backend, was the limit on what could be measured
+
+`E2ETestDataSeeder` leaves the disposable Laravel holding **4 users, 1 listing,
+8 categories and nothing else** — no event, no group, no post, no poll, no
+transaction. That is why 39 endpoints sat in the "envelope right, rows
+untestable" column: the two backends agreed on everything visible, and Laravel
+had no rows, so the contract of the rows INSIDE was never exercised. Measured
+per endpoint, **Laravel was the empty side in 35 of the 39** — ASP.NET already
+had content.
+
+`scripts/parity-fixture.sql`, applied by `start-disposable-laravel.sh`, seeds one
+realistic row per entity the React corpus reads. The measured effect:
+
+- untestable **39 → 17**
+- differing **72 → 92**
+- identical **59 → 61**
+
+🔴 **Read the middle number correctly.** The 20 endpoints that moved into
+"differing" are row-level defects that the thin fixture was hiding, not new
+breakage. This was the predicted direction — more surface compared — and the
+identical count happening to rise by 2 is incidental. Judge this change by the
+untestable column, not by the pass count.
+
+🔴 **Every filter was read off the running Laravel, not guessed.** The MariaDB
+general query log was captured per endpoint and the real `WHERE` clause read
+from it. This matters more than it sounds: a row that fails the real filter is
+invisible and seeds nothing, which is indistinguishable from never having run
+the fixture. Concrete cases that would each have silently seeded nothing —
+
+- `categories` is **one table serving three contracts** keyed by `type`. The 8
+  seeded rows are all `type='listing'`; `/blog/categories` filters
+  `type='blog'` and `/resources/categories` filters `type='resource'`.
+- `/blog/categories` counts posts but **excludes any post matching
+  `'%lorem ipsum%'`**, so filler text counts as zero.
+- `ideation_challenges` defaults to `status='draft'`, and the list shows only
+  `open/voting/evaluating/closed`.
+- `vol_opportunities` is visible only when its organisation is `approved` or
+  `active` — the `vol_organizations` default is `pending`.
+- `hashtags` needs `post_count > 0` **and** `last_used_at` inside 7 days.
+- The feed reads **`feed_activity`**, not `feed_posts`; a post with no activity
+  row never appears.
+- 🔴 The trace only works with `command_type='Execute'`. Laravel uses prepared
+  statements, so filtering the log on `'Query'` reports every endpoint as
+  touching no tables at all.
+
+**Not fixable by fixture data, and left alone deliberately:** `skills/search` and
+`listings/tags/autocomplete` return `[]` on Laravel because the corpus calls them
+with no `q` — Laravel short-circuits and queries nothing while ASP.NET answers
+with rows. `upload/list` reads the filesystem, `tenants` and
+`exchanges/needs-attention-count` query nothing. Those are per-endpoint work, not
+seeding.
+
+### 🔴 A hole in the harness that hides real envelope differences
+
+`compareSkeleton` returns `'unknown'` whenever either side is the empty-list
+marker, guarded by `a === b || a.startsWith('[') || b.startsWith('[')`. That
+guard is **tautological**: `UNKNOWN_LIST` is the literal `'[?]'`, which always
+starts with `[`, so once either side is an empty list the function can never
+return `'different'`.
+
+The consequence is not theoretical. Where Laravel returns an **object** and
+ASP.NET returns a **list**, the verdict is `MATCH_BUT_LIST_EMPTY` rather than a
+difference. Measured cases: `/coupons`, `/jobs/my-applications`,
+`/me/verein-dues`, `/volunteering/donations` and `/volunteering/training` all
+have Laravel on `{data:{items:[…]}}` against ASP.NET's `{data:[…]}`; and
+`/jobs/saved-profile` has Laravel's `{data:{profile:null}}` against ASP.NET's
+`{data:null}`. Those are envelope divergences a client would break on.
+
+Tightening the rule will move endpoints out of "untestable" and into
+"differing", so do it as its own measured step and report both numbers — not
+folded into a fix.
 
 ---
 

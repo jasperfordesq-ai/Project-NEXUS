@@ -135,6 +135,51 @@ untested because the fixture holds only three users and one listing — richer
 fixtures are the next thing that raises real confidence, not the next code
 change.
 
+## 2026-08-17 (later still) — richer fixture rows: the untestable column 39 -> 17
+
+The prediction in the paragraph above was right, and this is the measurement.
+Two changes since: sixteen list endpoints were corrected to report `meta` rather
+than `pagination` (57 -> 59), then the disposable Laravel was given realistic
+content.
+
+| | Before fixture | After fixture |
+| --- | --- | --- |
+| Same status AND same JSON shape | 59 | **61** |
+| Envelope matches, rows untestable | 39 | **17** |
+| Different | 72 | **92** |
+| Status disagreements | 0 | **0** |
+
+`E2ETestDataSeeder` leaves the fixture at **4 users, 1 listing, 8 categories and
+nothing else**. Endpoint by endpoint, **Laravel was the empty side in 35 of the
+39** — ASP.NET already had rows. `scripts/parity-fixture.sql` (applied by
+`start-disposable-laravel.sh`) seeds one realistic row per entity the React
+corpus reads.
+
+🔴 **The 20 endpoints that moved into "different" are pre-existing row-level
+defects the thin fixture was hiding, not new breakage.** Judge this change by the
+untestable column. The identical count rising by 2 is incidental, and quoting it
+as the win would misread what happened.
+
+🔴 **Every filter was read off the running Laravel's query log rather than
+guessed** — a row that fails the real `WHERE` clause seeds nothing, which looks
+exactly like not having run the fixture. `categories` alone serves three
+contracts keyed by `type`; the feed reads `feed_activity` and not `feed_posts`;
+`/blog/categories` discards any post containing "lorem ipsum". Full list of traps
+in [`CONTRACT_PARITY_PLAN.md`](CONTRACT_PARITY_PLAN.md).
+
+🔴 **A harness hole was found and is NOT yet fixed.** `compareSkeleton` can never
+return "different" once either side is an empty list, because its guard
+(`b.startsWith('[')`) is tautological against the `'[?]'` marker. Six endpoints
+are consequently reported as untestable when they are really envelope
+divergences — Laravel `{data:{items:[…]}}` against ASP.NET `{data:[…]}` on
+`/coupons`, `/jobs/my-applications`, `/me/verein-dues`,
+`/volunteering/donations`, `/volunteering/training`, and
+`{data:{profile:null}}` against `{data:null}` on `/jobs/saved-profile`. Fixing
+the rule will move these into the differing column; that is its own measured
+step.
+
+No ASP.NET source changed in this step, so the banked score is untouched.
+
 ---
 
 Evidence: `dotnet test Nexus.sln --configuration Release`. 🔴 Read the pass
