@@ -178,7 +178,40 @@ divergences — Laravel `{data:{items:[…]}}` against ASP.NET `{data:[…]}` on
 the rule will move these into the differing column; that is its own measured
 step.
 
-No ASP.NET source changed in this step, so the banked score is untouched.
+No ASP.NET source changed in that step, so the banked score is untouched.
+
+### 🔴 The richer fixture immediately found a credential disclosure
+
+`GET /api/v2/connections/suggestions` was
+`Ok(new { data = await _db.Users...ToListAsync() })` — **the whole `User` entity, to
+any signed-in ordinary member**. Verified live before the fix: every suggested
+member carried
+
+- `passwordHash` — the bcrypt hash, crackable offline
+- `totpSecretEncrypted` — the second factor
+- `emailVerificationCode`, `email`, `authenticationInvalidatedAt`
+- every admin flag (`isSuperAdmin`, `isGod`, …) and `suspensionReason`
+
+Laravel sends seven fields and not one is sensitive. This is the same defect class
+as the `users/search` leak: **returning an EF entity publishes whatever the entity
+happens to hold, so the disclosure grows silently as columns are added.** It sat
+behind the login, which is why the signed-out run never saw it, and behind an
+empty Laravel list, which is why it read as "envelope matches" until the fixture
+had rows.
+
+Fixed by projecting the exact Laravel field set, read off the running Laravel and
+`ConnectionSuggestionController.php` rather than inferred: `data` is an **object**
+holding `suggestions` (not a bare list), `limit` defaults to 5 and clamps to
+1..20, candidates exclude self/inactive/suspended, and `mutual_connections_count`
+and `connection_status` are the constants Laravel hard-codes. `shared_skills` is
+computed from the relational `UserSkills` because this backend has no
+`users.skills` JSON column — same meaning and shape, a deliberate internal
+difference.
+
+Pinned by `tests/Nexus.Api.Tests/ConnectionSuggestionsDisclosureTests.cs` (4
+tests, all passing). The disclosure test asserts against the **raw response text**
+rather than named properties, so a future entity column cannot leak past it.
+`AdminV2RouteAliasRuntimeTests` re-run green (234/234).
 
 ---
 

@@ -529,9 +529,101 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult ConnectionStatusMe() => Ok(new { data = new { connected = true } });
 
+    /// <summary>
+    /// GET /api/v2/connections/suggestions — "People You May Know".
+    ///
+    /// 🔴 This returned <c>_db.Users.ToListAsync()</c> — the WHOLE User entity — to
+    /// any signed-in ordinary member. Verified live on 2026-08-17: every suggested
+    /// member came back carrying <c>passwordHash</c> (the bcrypt hash, crackable
+    /// offline), <c>email</c>, <c>totpSecretEncrypted</c>, <c>emailVerificationCode</c>,
+    /// every admin flag and <c>suspensionReason</c>. Laravel sends seven fields and
+    /// none of them is sensitive.
+    ///
+    /// The lesson is the one `users/search` already taught: returning an EF entity
+    /// directly publishes whatever the entity happens to hold, so the disclosure
+    /// grows silently every time a column is added. Project explicitly; never
+    /// serialise the entity.
+    ///
+    /// Contract read off the live Laravel and
+    /// <c>app/Http/Controllers/Api/ConnectionSuggestionController.php</c>, not inferred:
+    /// <c>{data:{suggestions:[…]}}</c> — an OBJECT under <c>data</c>, not a bare list
+    /// (<c>respondWithData(['suggestions' => …])</c>); <c>limit</c> defaults to 5 and
+    /// clamps to 1..20; candidates exclude self, inactive and suspended members.
+    /// </summary>
     [HttpGet("connections/suggestions")]
     [Authorize]
-    public async Task<IActionResult> ConnectionSuggestions() => Ok(new { data = await _db.Users.Where(u => u.TenantId == TenantId() && u.Id != UserId()).Take(20).ToListAsync() });
+    public async Task<IActionResult> ConnectionSuggestions()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+        var limit = QueryInt("limit", 5, 1, 20);
+
+        var candidates = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.TenantId == tenantId
+                && u.Id != userId
+                && u.IsActive
+                && u.SuspendedAt == null)
+            // Laravel ranks by a score built from shared groups and recency; the
+            // ordering is not part of the response contract, so this uses the
+            // stable recency proxy this backend has rather than inventing one.
+            .OrderByDescending(u => u.LastLoginAt)
+            .ThenBy(u => u.Id)
+            .Take(limit)
+            .Select(u => new { u.Id, u.FirstName, u.LastName, u.AvatarUrl, u.Bio })
+            .ToListAsync();
+
+        // shared_skills is the case-insensitive intersection of the two members'
+        // skills, capped at five. Laravel reads a `users.skills` JSON column; this
+        // backend has no such column and models skills relationally in UserSkills,
+        // so the intersection is computed from there. Same field meaning, same
+        // shape (an array of names) — a deliberate internal difference, not a
+        // contract one.
+        var mySkills = await _db.UserSkills
+            .AsNoTracking()
+            .Where(us => us.TenantId == tenantId && us.UserId == userId && us.Skill != null)
+            .Select(us => us.Skill!.Name)
+            .ToListAsync();
+
+        var candidateIds = candidates.Select(c => c.Id).ToList();
+        var theirSkills = candidateIds.Count == 0
+            ? new List<(int UserId, string Name)>()
+            : (await _db.UserSkills
+                .AsNoTracking()
+                .Where(us => us.TenantId == tenantId && candidateIds.Contains(us.UserId) && us.Skill != null)
+                .Select(us => new { us.UserId, Name = us.Skill!.Name })
+                .ToListAsync())
+              .Select(x => (x.UserId, x.Name))
+              .ToList();
+
+        var mine = new HashSet<string>(mySkills, StringComparer.OrdinalIgnoreCase);
+
+        var suggestions = candidates.Select(c => new
+        {
+            id = c.Id,
+            // Laravel emits `$candidate->name ?: ''` — never null.
+            name = string.Join(' ', new[] { c.FirstName, c.LastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part))).Trim(),
+            avatar_url = c.AvatarUrl,
+            bio = c.Bio,
+            // 🔴 Laravel hard-codes 0 here, and its own complex-query branch
+            // selects the literal `0 AS mutual_connections_count`. Computing a real
+            // count would be more useful and would NOT match the production
+            // backend, so a client would show a different number depending on which
+            // backend answered. Kept at 0 deliberately.
+            mutual_connections_count = 0,
+            shared_skills = theirSkills
+                .Where(s => s.UserId == c.Id && mine.Contains(s.Name))
+                .Select(s => s.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(5)
+                .ToArray(),
+            // Laravel hard-codes 'none' (ConnectionSuggestionController.php:229).
+            connection_status = "none",
+        }).ToList();
+
+        return Ok(new { data = new { suggestions } });
+    }
 
     [HttpPost("connections/{id:int}/decline")]
     [Authorize]
