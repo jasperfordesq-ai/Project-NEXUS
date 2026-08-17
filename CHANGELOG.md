@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Dependency updates had stopped reaching the web app entirely, and nobody was told.** The automated service that proposes dependency updates — including security ones — had been failing on every run. It could not read the web app's dependency file, because `postcss` was listed twice: once as a normal dependency, and once in the block that forces a safe version on other packages that pull it in. Package managers reject that combination, so the service gave up before proposing anything, for **all** packages rather than just that one. The duplicate was removed, keeping the entry that does the real work (the forced-version one, added in May to close a security finding) and dropping the redundant one added later alongside the page builder. Confirmed afterwards that the safe version is still being forced on packages that pull it in, and that the site still builds.
+
+- **The mobile app's release check was failing on five packages that had drifted a patch version behind.** Nothing was broken by anyone: the Expo toolkit published new patch releases and the app's locked versions stayed where they were. It surfaced only because the mobile release check is normally skipped — it runs when the mobile folder changes, and the release gate counts a skipped check as passed, so the drift had been accumulating unseen. Brought back in line and verified: 18 of 18 toolkit checks pass, the mobile type check is clean, and all 1,563 mobile tests across 263 suites pass.
+
 ## [1.6.1] - 2026-08-17
 
 ### Changed
