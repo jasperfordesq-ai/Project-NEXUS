@@ -814,12 +814,21 @@ public class V15MemberParityController : ControllerBase
     /// <summary>
     /// GET /api/v2/wallet/categories — the community's transaction categories.
     ///
-    /// 🔴 The query had NO TENANT PREDICATE: `_db.TransactionCategories.ToListAsync()`
-    /// returned EVERY community's categories to any signed-in member. Category
-    /// names are a community's own wording, so this crossed the tenant boundary —
-    /// the one invariant this codebase treats as non-negotiable.
+    /// 🔴 CORRECTION. An earlier version of this comment said the query had no
+    /// tenant predicate and "returned every community's categories". That was
+    /// WRONG, and the mistake is worth recording so it is not repeated: an
+    /// explicit `Where(TenantId == …)` is not the only thing that scopes a query
+    /// here. `NexusDbContext.OnModelCreating` walks every entity type and applies
+    /// `ApplyTenantQueryFilter` to anything implementing `ITenantEntity` (the
+    /// reflection loop at :741-750), and `TransactionCategory` implements it. So
+    /// the bare `_db.TransactionCategories.ToListAsync()` was already tenant-scoped.
     ///
-    /// It also returned the raw entity, so the keys came out camelCase
+    /// Verified rather than argued: a row was inserted for another tenant and this
+    /// endpoint did not return it. The explicit `Where` below is kept because it
+    /// makes the scoping legible at the call site, but it changed no behaviour.
+    ///
+    /// The real defects here were the envelope and the missing feature gate. It
+    /// returned the raw entity, so the keys came out camelCase
     /// (`tenantId`, `isDefault`, `createdAt`) with a `tenant` navigation property
     /// attached, where Laravel sends snake_case and no tenant object.
     ///

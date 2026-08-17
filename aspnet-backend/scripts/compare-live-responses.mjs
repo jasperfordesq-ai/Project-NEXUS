@@ -250,7 +250,30 @@ function splitObject(s) {
  */
 function compareSkeleton(a, b) {
   if (a === UNKNOWN_LIST || b === UNKNOWN_LIST) {
-    return a === b || a.startsWith('[') || b.startsWith('[') ? 'unknown' : 'different';
+    // 🔴 This guard used to read
+    //     a === b || a.startsWith('[') || b.startsWith('[')
+    // which is ALWAYS TRUE, because UNKNOWN_LIST is the literal '[?]' and that
+    // always starts with '['. So once either side was an empty list the function
+    // could never return 'different', whatever the other side held.
+    //
+    // The consequence was not theoretical. Where Laravel returns an OBJECT and
+    // ASP.NET returns a LIST, the verdict came out MATCH_BUT_LIST_EMPTY instead of
+    // a difference — measured on /coupons, /jobs/my-applications, /me/verein-dues,
+    // /volunteering/donations and /volunteering/training, all of which had Laravel
+    // on {data:{items:[…]}} against ASP.NET's {data:[…]}. Those are envelope
+    // divergences a client breaks on, sitting in the "nothing to see here" column.
+    //
+    // An empty list is genuinely UNKNOWN only against another list: neither side
+    // can show its row contract. Against anything else the two disagree about the
+    // SHAPE, which is knowable and is a difference.
+    const other = a === UNKNOWN_LIST ? b : a;
+    if (a === b) return 'unknown';
+    if (other.startsWith('[')) return 'unknown';
+    // A list on one side and null on the other stays 'unknown' rather than
+    // 'different': that is the same nullable-field ambiguity handled below, and
+    // calling it a defect would invent one from a single sample.
+    if (other === 'null') return 'unknown';
+    return 'different';
   }
   if (a === b) return 'same';
 

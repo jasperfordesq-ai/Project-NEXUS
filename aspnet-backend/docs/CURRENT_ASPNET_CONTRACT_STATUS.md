@@ -277,15 +277,26 @@ Four were not formatting problems at all:
    row per month from `monthly_engagement`. A 200 with plausible content describing
    something else entirely, the same class as `skills/categories` answering from
    listing categories.
-2. 🔴 **`wallet/categories` had NO TENANT PREDICATE** —
-   `_db.TransactionCategories.ToListAsync()` returned every community's categories
-   to any signed-in member. Category names are a community's own wording, so this
-   crossed the tenant boundary. It also missed Laravel's feature-off early return,
-   which is `{"balance":0,"enabled":false}` rather than an empty list or a 403.
-3. 🔴 **`/api/v2/groups` listed private and secret groups**, plus inactive and child
-   groups. Laravel filters to `status='active'`, top-level-or-featured, and public
-   or where the caller is the owner/an active member. A secret group's name and
-   existence are what secrecy protects.
+2. **`wallet/categories` returned the raw entity and skipped Laravel's feature
+   gate** — Laravel answers `{"balance":0,"enabled":false}` when the community has
+   the wallet switched off, not an empty list or a 403.
+   🔴 **CORRECTION, issued 2026-08-17 after the fix was already committed
+   (`110effbe5`):** that commit and an earlier version of this entry claimed the
+   query "had NO TENANT PREDICATE" and "returned every community's categories to
+   any signed-in member". **That was wrong.** An explicit `Where(TenantId == …)` is
+   not the only thing that scopes a query in this backend:
+   `NexusDbContext.OnModelCreating` walks every entity type and applies
+   `ApplyTenantQueryFilter` to anything implementing `ITenantEntity` (:741-750), and
+   `TransactionCategory` implements it. Verified rather than argued — a row was
+   inserted for another tenant and the endpoint did not return it. **No data was
+   ever exposed.** The explicit `Where` was kept because it makes the scoping
+   legible at the call site, but it changed no behaviour.
+3. **`/api/v2/groups` had no visibility or status filter**, so private, secret,
+   inactive and child groups would all be listed. Laravel filters to
+   `status='active'`, top-level-or-featured, and public or where the caller is the
+   owner/an active member. Stated precisely: this is a **missing filter in the code
+   path**, not observed exposure — the demo tenant holds only public, active
+   groups, so nothing was actually disclosed here either.
 4. **`gamification/member-spotlight`** returned one member as an object where
    Laravel returns a list, and ranked purely by XP so the same person is spotlit
    for ever; Laravel picks at random, seeded by the day.
