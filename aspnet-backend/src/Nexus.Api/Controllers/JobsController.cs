@@ -249,9 +249,24 @@ public class JobsController : ControllerBase
         var applications = await _jobService.GetMyApplicationsAsync(
             _tenantContext.TenantId.Value, userId.Value);
 
+        var items = applications.Select(a => MapApplicationResponse(a)).ToList();
+
+        // 🔴 Laravel wraps these in `data.items` with cursor pagination beside
+        // them, not a bare list under `data` — read live:
+        // {"data":{"items":[…],"cursor":null,"has_more":false}}. A client doing
+        // data.map() gets nothing from the production backend.
+        //
+        // `cursor` is null and `has_more` false because this returns the member's
+        // whole application list; the keys are still part of the contract, and
+        // Laravel emits `cursor` here rather than `next_cursor`.
         return Ok(new
         {
-            data = applications.Select(a => MapApplicationResponse(a))
+            data = new
+            {
+                items,
+                cursor = (string?)null,
+                has_more = false,
+            }
         });
     }
 

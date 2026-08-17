@@ -2210,8 +2210,20 @@ public class V15SocialCompatibilityController : ControllerBase
     [HttpGet("/api/v2/coupons")]
     public async Task<IActionResult> Coupons()
     {
-        var data = await _db.MerchantCoupons.Where(c => c.IsActive && (c.ExpiresAt == null || c.ExpiresAt > DateTime.UtcNow)).ToListAsync();
-        return Ok(new { data });
+        var rows = await _db.MerchantCoupons
+            .Where(c => c.IsActive && (c.ExpiresAt == null || c.ExpiresAt > DateTime.UtcNow))
+            .ToListAsync();
+
+        // 🔴 Laravel wraps these in `data.items`, not a bare list under `data` —
+        // read live: {"data":{"items":[…]}}. A client doing data.map() gets nothing
+        // from the production backend.
+        //
+        // `items` alone here: no cursor, no total. That is NOT a shared rule —
+        // my-applications and volunteering/training use {items, cursor, has_more},
+        // verein-dues uses {items, total}, donations uses {items, next_cursor}.
+        // Which wrapper a Laravel route emits is not derivable from its response,
+        // so each was read live rather than inferred.
+        return Ok(new { data = new { items = rows } });
     }
 
     [HttpGet("/api/v2/coupons/{id:int}")]

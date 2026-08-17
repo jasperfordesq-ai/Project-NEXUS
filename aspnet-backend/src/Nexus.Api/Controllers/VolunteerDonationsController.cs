@@ -81,7 +81,15 @@ public class VolunteerDonationsController : ControllerBase
             created_at = d.CreatedAt,
         });
 
-        return Ok(new { data = donations });
+        // 🔴 Laravel wraps these in `data.items` with `next_cursor` beside them,
+        // not a bare list under `data` — read live:
+        // {"data":{"items":[…],"next_cursor":null}}. A client doing data.map()
+        // gets nothing from the production backend.
+        //
+        // Note this one says `next_cursor` where jobs/my-applications and
+        // volunteering/training say `cursor` + `has_more`. Not a rule to
+        // generalise — each of the five wrappers was read live.
+        return Ok(new { data = new { items = donations, next_cursor = (string?)null } });
     }
 
     /// <summary>POST /api/v2/volunteering/donations — record one.</summary>

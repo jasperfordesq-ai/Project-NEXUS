@@ -677,7 +677,16 @@ public class MemberParityController : ControllerBase
             .Select(d => ProjectDue(d))
             .ToListAsync(ct);
 
-        return Ok(new { data = dues });
+        // 🔴 Laravel wraps these in `data.items` with a `total` beside it, not a
+        // bare list under `data` — read live: {"data":{"items":[…],"total":N}}.
+        // A client doing data.map() gets nothing from the production backend.
+        //
+        // The wrapper is per endpoint, not a rule: my-applications and
+        // volunteering/training use {items, cursor, has_more}, donations uses
+        // {items, next_cursor}, coupons uses {items} alone. Which one a Laravel
+        // route emits is not derivable from its response — same lesson as the
+        // per_page/has_more over-generalisation that cost 22 endpoints.
+        return Ok(new { data = new { items = dues, total = dues.Count } });
     }
 
     /// <summary>GET /api/v2/me/verein-dues/{dueId} — one of the member's own dues.</summary>

@@ -1476,7 +1476,11 @@ public class VolunteeringParityController : ControllerBase
             };
         });
 
-        return Ok(new { data });
+        // 🔴 Laravel wraps these in `data.items` with cursor pagination beside
+        // them, not a bare list under `data` — read live:
+        // {"data":{"items":[…],"cursor":null,"has_more":false}}. A client doing
+        // data.map() gets nothing from the production backend.
+        return Ok(new { data = new { items = data, cursor = (string?)null, has_more = false } });
     }
 
     [HttpGet("wellbeing/my-status")]
