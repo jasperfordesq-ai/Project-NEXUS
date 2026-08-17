@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The one-value React Endorsements namespace has received Irish semantic review.** “Most Endorsed” now uses the Irish verb for endorsing rather than incorrectly saying that the greatest number of people agreed, and a complete-catalogue test locks the distinction in place.
+
 - **The complete 39-value React Connections namespace has received Irish semantic review.** Connection nouns no longer use an imperative verb, disconnect actions no longer imply dissolving something, empty and search states read naturally, and sent-request outcomes now preserve acceptance, refusal, cancellation and link-removal meaning. A whole-catalogue gate rejects English residue, whitespace and invisible corruption.
 
 - **The complete 289-value React Community namespace now has a whole-catalogue Irish semantic-review gate.** Every English source value is covered, all translated values are checked for surrounding whitespace and invisible corruption, and the only permitted exact-English values are the three functional email/URL examples. This closes the Community namespace review rather than relying on aggregate key coverage.
