@@ -72,6 +72,7 @@
   "super_admin_panel": "Super-Admin-Panel",
   "transactions": "Transaktionen",
   "events": "Veranstaltungen",
+  "event_settings": "Veranstaltungseinstellungen",
   "groups": "Gruppen",
   "organizations": "Organisationen",
   "volunteering": "Freiwilligenarbeit",
@@ -728,7 +729,8 @@
     "support_reports": "Fehler|Feedback|Diagnose|Sentry",
     "retention_policies": "Aufbewahrung|DSGVO|Entsorgung|Löschung|Archiv",
     "sso_providers": "einmalige Anmeldung|OpenID Connect|Entra|Identität|Anmeldung",
-    "categories": "Aktivitäten|Aktivitätskategorien|Angebotskategorien|Themen"
+    "categories": "Aktivitäten|Aktivitätskategorien|Angebotskategorien|Themen",
+    "event_settings": "wer kann veranstaltungen erstellen|erstellungsrichtlinie|veranstaltungsberechtigungen|standardkapazität|warteliste|erinnerungen"
   },
   "user_report": "Benutzerbericht",
   "municipal_impact": "Kommunale Wirkungsberichte",

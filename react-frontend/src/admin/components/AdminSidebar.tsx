@@ -66,6 +66,7 @@ import Wrench from 'lucide-react/icons/wrench';
 import Stethoscope from 'lucide-react/icons/stethoscope';
 import UserX from 'lucide-react/icons/user-x';
 import Calendar from 'lucide-react/icons/calendar';
+import CalendarCog from 'lucide-react/icons/calendar-cog';
 import BarChart2 from 'lucide-react/icons/chart-no-axes-column';
 import Lightbulb from 'lucide-react/icons/lightbulb';
 import Briefcase from 'lucide-react/icons/briefcase';
@@ -217,7 +218,13 @@ function useAdminNav(): NavSection[] {
         { label: t('group_ranking'), href: '/admin/groups/ranking', icon: Trophy },
         { label: t('group_organization'), href: '/admin/groups/organization', icon: Tags, keywords: keyword(t('search_keywords.group_organization')) },
       ] : []),
-      ...(hasFeature('events') ? [{ label: t('events'), href: '/admin/events', icon: Calendar }] : []),
+      // Event Settings holds the "Who can create Events" policy. It was
+      // previously reachable only via Module Configuration → Events → Configure,
+      // which made a community-wide creation restriction effectively unfindable.
+      ...(hasFeature('events') ? [
+        { label: t('events'), href: '/admin/events', icon: Calendar },
+        { label: t('event_settings'), href: '/admin/events/settings', icon: CalendarCog, keywords: keyword(t('search_keywords.event_settings')) },
+      ] : []),
       ...(hasFeature('polls') ? [{ label: t('polls'), href: '/admin/polls', icon: BarChart2 }] : []),
       ...(hasFeature('goals') ? [{ label: t('goals'), href: '/admin/goals', icon: Target }] : []),
       ...(hasFeature('podcasts') ? [{ label: t('podcasts'), href: '/admin/podcasts', icon: Podcast, keywords: keyword(t('search_keywords.podcasts')) }] : []),

@@ -44,8 +44,7 @@
       "TS2769": 1
     },
     "src/admin/components/AdminSidebar.test.tsx": {
-      "TS2322": 1,
-      "TS2345": 1
+      "TS2322": 1
     },
     "src/admin/components/BuilderToolbar.test.tsx": {
       "TS2739": 1
@@ -2216,6 +2215,6 @@
   },
   "totals": {
     "fileCount": 648,
-    "errorCount": 1933
+    "errorCount": 1932
   }
 }

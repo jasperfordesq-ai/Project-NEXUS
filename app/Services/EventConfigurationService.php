@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Enums\EventNotificationDeliveryMode;
 use App\Enums\EventSafetyEnforcementMode;
 use App\Jobs\RetractTenantEventFederationShares;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -72,22 +73,33 @@ final class EventConfigurationService
     public function canCreate(int $tenantId, int $userId): bool
     {
         $role = (string) $this->value('creation_role', 'members', $tenantId);
+
+        // Auth is GLOBAL; only resources are tenant-scoped. `$userId` comes from
+        // requireAuth(), so this resolves the actor's own row and there is no
+        // IDOR risk in dropping the tenant predicate. Scoping this lookup to the
+        // event's tenant refused every actor whose home tenant differs from the
+        // tenant they are acting in — platform and network admins, and anyone
+        // acting on a sub-tenant — even when `creation_role` was 'members' and
+        // the community allowed everyone. The miss returned false before the
+        // 'members' short-circuit was ever reached.
         $user = DB::table('users')
-            ->where('tenant_id', $tenantId)
             ->where('id', $userId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->first(['role', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
         if ($user === null) {
             return false;
         }
         if ($role === 'members') {
             return true;
         }
-        $isAdmin = in_array((string) $user->role, ['admin', 'tenant_admin'], true)
-            || (bool) $user->is_super_admin
-            || (bool) $user->is_tenant_super_admin
-            || (bool) $user->is_god;
+
+        // AdminTier is the canonical admin-tier predicate: it also honours the
+        // 'super_admin'/'god' role strings and `is_admin`, and fails closed for
+        // broker/coordinator carrying a stale admin flag. The 'staff' option is
+        // labelled "Brokers and administrators", so broker is additive here and
+        // coordinator stays out.
+        $isAdmin = AdminTier::allows($user);
 
         return $role === 'admins' ? $isAdmin : ($isAdmin || (string) $user->role === 'broker');
     }

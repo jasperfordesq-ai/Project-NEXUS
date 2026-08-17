@@ -72,6 +72,7 @@
   "super_admin_panel": "Pannello Super Admin",
   "transactions": "Transazioni",
   "events": "Eventi",
+  "event_settings": "Impostazioni eventi",
   "groups": "Gruppi",
   "organizations": "Organizzazioni",
   "volunteering": "Volontariato",
@@ -732,7 +733,8 @@
     "support_reports": "bug|feedback|diagnostica|Sentry",
     "retention_policies": "conservazione|GDPR|smaltimento|purga|archiviazione",
     "sso_providers": "accesso unico|OpenID Connect|Entra|identità|login",
-    "categories": "attività|categorie di attività|categorie di annunci|argomenti"
+    "categories": "attività|categorie di attività|categorie di annunci|argomenti",
+    "event_settings": "chi può creare eventi|criterio di creazione|autorizzazioni eventi|capienza predefinita|lista d’attesa|promemoria"
   },
   "user_report": "Rapporto utente",
   "municipal_impact": "Rapporti sull'impatto municipale",

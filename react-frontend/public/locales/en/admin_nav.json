@@ -20,7 +20,8 @@
     "support_reports": "bugs|feedback|diagnostics|Sentry",
     "retention_policies": "retention|GDPR|disposal|purge|archive",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identity|login",
-    "categories": "activities|activity categories|listing categories|offer categories|request categories|topics"
+    "categories": "activities|activity categories|listing categories|offer categories|request categories|topics",
+    "event_settings": "who can create events|creation policy|event permissions|default capacity|waitlist|reminders"
   },
   "community_fund": "Community Fund",
   "dashboard": "Dashboard",
@@ -93,6 +94,7 @@
   "super_admin_panel": "Super Admin Panel",
   "transactions": "Transactions",
   "events": "Events",
+  "event_settings": "Event Settings",
   "groups": "Groups",
   "organizations": "Organizations",
   "volunteering": "Volunteering",

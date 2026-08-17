@@ -72,6 +72,7 @@
   "super_admin_panel": "Super Admin Paneel",
   "transactions": "Transacties",
   "events": "Evenementen",
+  "event_settings": "Evenementinstellingen",
   "groups": "Groepen",
   "organizations": "Organisaties",
   "volunteering": "Vrijwilligerswerk",
@@ -728,7 +729,8 @@
     "support_reports": "bugs|feedback|diagnostiek|Sentry",
     "retention_policies": "bewaring|AVG|verwijdering|opschonen|archief",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identiteit|inloggen",
-    "categories": "activiteiten|activiteitencategorieën|aanbodcategorieën|onderwerpen"
+    "categories": "activiteiten|activiteitencategorieën|aanbodcategorieën|onderwerpen",
+    "event_settings": "wie kan evenementen maken|aanmaakbeleid|evenementrechten|standaardcapaciteit|wachtlijst|herinneringen"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",

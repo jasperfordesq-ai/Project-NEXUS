@@ -30,8 +30,11 @@ vi.mock('@/lib/safeStorage', () => ({
 }));
 
 // ─── Auth / Tenant ───────────────────────────────────────────────────────────
-const mockHasFeature = vi.fn(() => true);
-const mockHasModule = vi.fn(() => true);
+// Declared WITH the feature/module parameter: tests that narrow a single flag
+// use mockImplementation((feature) => feature !== 'x'), and a bare `() => true`
+// signature makes every one of those a TS2345 argument-type error.
+const mockHasFeature = vi.fn((_feature: string) => true);
+const mockHasModule = vi.fn((_module: string) => true);
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -201,6 +204,53 @@ describe('AdminSidebar', () => {
     expect(screen.queryByRole('button', { name: 'Marketing' })).not.toBeInTheDocument();
     // Control: the same query does reach links inside collapsed panels
     expect(allLinks.some((link) => link.getAttribute('href') === '/test/admin/settings')).toBe(true);
+  });
+
+  // Event Settings owns the "Who can create Events" policy. It used to be
+  // reachable only via Module Configuration → Events → Configure, so a community
+  // that had restricted event creation gave its admins no findable way back.
+  it('links Event Settings when the events feature is on', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const nav = screen.getByRole('navigation', { name: /admin navigation/i });
+    // hidden: true so links inside collapsed Accordion panels are included.
+    expect(
+      within(nav).getAllByRole('link', { hidden: true })
+        .some((link) => link.getAttribute('href') === '/test/admin/events/settings'),
+    ).toBe(true);
+  });
+
+  // The feature flag must be set BEFORE the first render: the section tree is
+  // memoized on a stable hasFeature reference, so re-rendering with a changed
+  // mock does not recompute it (an earlier version of this test passed
+  // vacuously against the stale first-render DOM).
+  it('hides Event Settings when the events feature is off', async () => {
+    mockHasFeature.mockImplementation((feature: string) => feature !== 'events');
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const nav = screen.getByRole('navigation', { name: /admin navigation/i });
+    const allLinks = within(nav).getAllByRole('link', { hidden: true });
+
+    expect(allLinks.filter((link) => link.getAttribute('href')?.includes('/admin/events'))).toHaveLength(0);
+    // Control: the same query does reach links inside collapsed panels.
+    expect(allLinks.some((link) => link.getAttribute('href') === '/test/admin/settings')).toBe(true);
+  });
+
+  it('surfaces Event Settings when searching for the creation policy', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+    // "who can create events" is a search keyword on the item, so an admin who
+    // remembers the restriction but not the page name still finds it.
+    await userEvent.type(screen.getByRole('searchbox'), 'who can create');
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole('link', { hidden: true })
+          .some((link) => link.getAttribute('href') === '/test/admin/events/settings'),
+      ).toBe(true);
+    });
   });
 
   it('filters navigation results when search query is entered', async () => {
