@@ -236,14 +236,82 @@ accessible domain exists), and `POST /v2/auth/oauth/exchange` trades a one-time 
 tokens. `web-uk` already stores `token`/`refresh_token`/`tenant_slug` in signed HTTP-only
 cookies, so the final step reuses existing plumbing.
 
-🔴 **One question still to answer before building:** where Laravel sends the browser *after*
-its own callback. If that target is built from `TenantContext::getFrontendUrl()` — as the
-Stripe `return_url` and every emailed link are — it points at React and the same blocker
-applies. Answer that first; do not assume the server-side callback makes the whole flow safe.
+**Contracts fully mapped 2026-08-17.** Providers are **Google and Facebook only** — Apple is
+explicitly refused (`app/Services/Auth/SocialAuthService.php:1078-1088`, and the route
+constraint is `provider =~ google|facebook`). Enablement is **two layers, both of which must
+pass**: the platform env kill switch `OAUTH_ENABLED`, and the per-tenant setting
+`auth.oauth.enabled_providers` (a JSON list). It fails closed, which is why the endpoint
+returns `[]` today. `GET /v2/auth/oauth/enabled-providers` is the ONLY source of that list —
+`tenant/bootstrap` does not carry it, and `bootstrap`'s `social_*` fields are social-*media*
+links, not OAuth.
 
-**Recommendation: leave this until a provider is configured.** Building it now delivers
-buttons that cannot appear, and costs new translation keys in eleven locales for copy no
-member can reach.
+**The provider side is genuinely fine.** The OAuth `redirect_uri` is a platform env var
+(`GOOGLE_REDIRECT_URI`) pointing at **Laravel's own** callback, not at any frontend and not
+tenant-derived. Nothing about `web-uk` ever needs registering with Google or Facebook — a
+real difference from the Stripe case.
+
+🔴 **The blocker is the LAST internal hop.** After a successful dance,
+`SocialAuthController.php:104`, `:121` and `:164-170` build the return target as
+`TenantContext::getFrontendUrl() . getSlugPrefix() . '/auth/oauth/callback?code=…&flow=…'`.
+That never consults `tenants.accessible_domain`, so a member who begins on the accessible
+domain is redirected to **React** at the final step — and because the one-time code is bound
+to their own browser, the exchange would *succeed there*, silently signing them into the
+React app instead. No amount of `web-uk` code prevents that.
+
+**Minimum backend change to unblock (small, and the pieces already exist):** make that base
+accessible-aware. `config('app.accessible_frontend_url')` already exists (`config/app.php:14`)
+and is already trusted elsewhere (`WebAuthnController`, `AuthenticationMethodGuard`,
+`TenantHierarchyService`). The clean form is to record the initiating surface in the signed
+`state` — `buildState()` already carries six fields and is HMAC-signed with `config('app.key')`,
+so it is tamper-proof — and pick the base from the verified state in the callback. This is
+outside `web-uk/**` and needs owner authorisation.
+
+**HTML-first IS achievable once that lands.** The buttons use no JS SDK and no popup: React
+fetches `/v2/auth/oauth/{provider}/redirect`, reads `redirect_url` from the JSON and does a
+top-level navigation, which an Express POST handler can replace with a `302`. The mandatory
+PKCE-style browser binding needs no browser: generate the verifier with Node
+`crypto.randomBytes(32)`, derive `base64url(sha256(verifier))` as the challenge, and hold the
+verifier in a **signed HTTP-only cookie with `sameSite: 'lax'`** (`strict` would be dropped by
+the cross-site redirect and break every sign-in). The final envelope from
+`POST /v2/auth/oauth/exchange` carries `access_token`, `refresh_token`, `expires_in` and
+`refresh_expires_in` — exactly the four fields `web-uk`'s existing `rotatingSessionFrom()` and
+`setAuthCookies()` need, so the session plumbing is reused unchanged.
+
+🔴 **A design problem specific to this frontend, worth solving before building.** The OAuth
+routes are throttled 30 requests/minute keyed by caller IP. React calls them from the
+member's browser, so each member gets their own budget. `web-uk` would call them from the
+Express server, so **every member shares one bucket keyed on the container IP** — 30 sign-in
+starts per minute for the entire accessible frontend — and `RouteServiceProvider` deliberately
+does not read forwarded-IP headers, so it cannot be fixed by forwarding the client IP. Two
+consequences: cache `enabled-providers` server-side (the `CACHE_TTL.BOOTSTRAP` pattern in
+`src/lib/api.js` is the model — do NOT call it on every login render), and ask for a
+per-tenant or higher limit on the start endpoint.
+
+**Behavioural limits to design the pages around, not to discover later:**
+
+- **Members with 2FA are hard-blocked** from social sign-in — it fails closed, because the
+  callback cannot complete the TOTP challenge contract.
+- **Every failure collapses into one opaque `oauth_failed`** — 2FA-required, gate-blocked,
+  unverified email, closed registration and tenant mismatch are indistinguishable. Plan one
+  honest generic error page with a clear route back to password sign-in.
+- **`intent=login` cannot create an account.** A first-time social user must arrive via
+  `intent=register`, so sign-in and sign-up need separate entry points or the new member hits
+  a dead end.
+- **Facebook can never auto-link or auto-register** — the email-ownership proof always fails
+  for it, so it works only for returning members who already have a linked identity.
+- **Google only qualifies for `@gmail.com` or Workspace accounts** carrying an `hd` claim; a
+  Google account on a personal custom domain is refused.
+- Identities are **tenant-scoped**; the same Google account already bound to another community
+  is refused.
+
+**Translations are cheaper than feared:** React already carries the whole `oauth.*` block in
+all eleven locales. Port those English strings into a new `oauth` section in
+`lang/en/govuk_alpha.php` and seed the other ten from React's existing translations — a
+mechanical port, not new copy. Drop the Apple strings.
+
+**Recommendation: do not build until BOTH a provider is configured AND the callback base is
+made accessible-aware.** Either one missing means the flow cannot complete for a member on the
+accessible frontend.
 
 ### 🔴 A correction that changes item 2's shape
 
