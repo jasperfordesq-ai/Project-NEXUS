@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-17T12:12:09.177Z
-Laravel commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
-Web UK repository commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
+Generated: 2026-08-17T13:32:16.492Z
+Laravel commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
+Web UK repository commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 725 |
+| web-uk routes | 726 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 15 |
+| Extra web-uk routes | 16 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -72,6 +72,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | notifications | 6 | 0 | 0 | 0 |
 | onboarding | 4 | 0 | 0 | 0 |
 | organisations | 9 | 0 | 0 | 0 |
+| page | 0 | 0 | 1 | 0 |
 | password | 2 | 0 | 0 | 0 |
 | podcasts | 14 | 0 | 1 | 0 |
 | polls | 13 | 0 | 0 | 0 |
@@ -119,6 +120,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
 | GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/podcasts/studio/{param}/episodes/{param}/delete` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-17T12:12:09.177Z",
+  "generatedAt": "2026-08-17T13:32:16.492Z",
   "provenance": {
-    "generatedAt": "2026-08-17T12:12:09.177Z",
+    "generatedAt": "2026-08-17T13:32:16.492Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "022ebda466a6d2307388248d2d6352c13ab11e77",
+    "laravelCommitSha": "43a1a000a92f54f58c90199b83a0a7a4455589b1",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "022ebda466a6d2307388248d2d6352c13ab11e77",
+    "webUkRepositoryCommitSha": "43a1a000a92f54f58c90199b83a0a7a4455589b1",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-17T12:12:09.177Z",
+    "generatedAt": "2026-08-17T13:32:16.492Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 725,
+    "webUkRoutes": 726,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 15,
+    "extraWebUkRoutes": 16,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "cookie-consent": {
@@ -60,6 +60,12 @@
       },
       "members": {
         "matched": 11,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "page": {
+        "matched": 0,
         "missing": 0,
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
@@ -704,6 +710,27 @@
       "webUkPath": "/members/{param}/connect",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/page/{param}",
+      "family": "page",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/page/{param}",
+      "webUkView": "custom-page",
+      "webUkFile": "web-uk/src/routes/static-pages.js",
       "webUkRouteKind": ""
     },
     {

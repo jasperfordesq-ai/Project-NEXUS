@@ -5,14 +5,14 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-17T12:12:09.771Z
-- Laravel commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
-- Web UK repository commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
+- Generated: 2026-08-17T13:32:32.774Z
+- Laravel commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
+- Web UK repository commit SHA: `43a1a000a92f54f58c90199b83a0a7a4455589b1`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 696
-- Laravel OpenAPI matches: 467
+- Contracts: 697
+- Laravel OpenAPI matches: 468
 - Missing OpenAPI matches: 229
 - Direct Laravel route declarations omitted from OpenAPI: 229
 - Without a direct Laravel route declaration: 0
@@ -23,7 +23,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `53f74c5ff807c97066b8bc83e27149e976badde9c4fa206378e8f534bfd2868a`
+- API source SHA-256: `161f04b5c6a7d52c059fe3d7548d07ee058586e5a00e309c2448462e6824ff0d`
 - Laravel OpenAPI SHA-256: `f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb`
 - Laravel API routes SHA-256: `bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a`
 
@@ -536,6 +536,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/v2/onboarding/safeguarding` | `saveOnboardingSafeguarding` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/onboarding-posts.js | tests/api.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/onboarding/safeguarding-options` | `getOnboardingSafeguardingOptions` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/onboarding-posts.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/onboarding/status` | `getOnboardingStatus` | documented | read-only by HTTP method<br>not applicable | src/routes/dashboard.js<br>src/routes/onboarding-posts.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/pages/{param}` | `getCustomPage` | documented | read-only by HTTP method<br>not applicable | src/routes/static-pages.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/partner-venues` | `getPartnerVenues` | PartnerVenueController_index<br>App\Http\Controllers\Api\PartnerVenueController@index | read-only by HTTP method<br>not applicable | src/routes/venues.js | tests/api.test.js<br>tests/venues-parity.test.js |
 | GET | `/api/v2/partner-venues/my-visits` | `getMyVenueVisits` | PartnerVenueController_myVisits<br>App\Http\Controllers\Api\PartnerVenueController@myVisits | read-only by HTTP method<br>not applicable | src/routes/venues.js | tests/api.test.js<br>tests/venues-parity.test.js |
 | GET | `/api/v2/partner-venues/pass` | `getVenuePass` | PartnerVenueController_pass<br>App\Http\Controllers\Api\PartnerVenueController@pass | read-only by HTTP method<br>not applicable | src/routes/venues.js | tests/api.test.js<br>tests/venues-parity.test.js |

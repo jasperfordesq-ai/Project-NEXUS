@@ -594,7 +594,22 @@ function parseWebUkRoutes(webUkRoot) {
 
     const routeFile = path.join(webRoot, 'routes', routeFileName);
     if (use.routeVar === 'staticPageRoutes') {
+      // 🔴 BOTH parsers, and the second one was missing until 2026-08-17.
+      //
+      // parseStaticPageRoutes only mines the `const pages = {…}` literal for keys.
+      // While that map was the file's whole content that was sufficient, but the
+      // file now also declares a REAL route (`/page/:slug`, a community's own CMS
+      // page). Mining the map alone reported ZERO routes for the file, so a live
+      // member-facing page was invisible to the matrix — and the matrix count feeds
+      // the readiness score, which is precisely the silent under-reporting the
+      // comments above `assertRouterIsConventionallyNamed` warn about.
+      //
+      // compressRoutes dedupes the two sources, and isFallbackRoute makes a real
+      // route win over a `static-page` fallback of the same path.
       routes.push(...parseStaticPageRoutes(routeFile, use.prefix));
+      if (fs.existsSync(routeFile)) {
+        routes.push(...parseRouterFile(routeFile, use.prefix));
+      }
     } else if (fs.existsSync(routeFile)) {
       routes.push(...parseRouterFile(routeFile, use.prefix));
     }
