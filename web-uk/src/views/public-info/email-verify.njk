@@ -25,6 +25,8 @@
                 <li>
                   {% if state == "missing" %}
                     {{ t("auth.verify_email_missing") }}
+                  {% elif state == "unavailable" %}
+                    {{ t("states.load_error") }}
                   {% else %}
                     {{ t("auth.verify_email_invalid") }}
                   {% endif %}
@@ -33,7 +35,11 @@
             </div>
           </div>
         </div>
-        <p class="govuk-body">{{ t("auth.verify_email_resend_hint") }}</p>
+        {% if state != "unavailable" %}
+          {# Requesting another link cannot help while the backend is the thing
+             that is unreachable, so the hint is withheld in that state. #}
+          <p class="govuk-body">{{ t("auth.verify_email_resend_hint") }}</p>
+        {% endif %}
         <p class="govuk-body">
           <a class="govuk-link" href="{{ urlFor('/login') }}">{{ t("auth.verify_email_back_to_sign_in") }}</a>
         </p>

@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { getContributors } = require('../lib/contributors');
-const { callNewsletterApi, getPlatformStats, verifyEmail } = require('../lib/api');
+const { ApiError, callNewsletterApi, getPlatformStats, verifyEmail } = require('../lib/api');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 
@@ -137,6 +137,24 @@ router.get('/faq', (req, res) => {
   });
 });
 
+/**
+ * Which failure state a token check should report.
+ *
+ * 🔴 Both of these pages used to answer 'invalid' for EVERY failure, so a
+ * backend that was merely unreachable told a member their perfectly good
+ * verification or unsubscribe link was broken — and the page then advised them
+ * to request another one, which would have failed the same way. Only the backend
+ * can judge a token, and it only does so on a 4xx; a timeout, an offline API or
+ * a 5xx says nothing about the link, and a 429 means try again shortly.
+ */
+function tokenFailureState(error) {
+  if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429) {
+    return 'invalid';
+  }
+
+  return 'unavailable';
+}
+
 router.get('/newsletter/unsubscribe', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
   let state = 'missing';
@@ -146,8 +164,8 @@ router.get('/newsletter/unsubscribe', async (req, res) => {
     try {
       await callNewsletterApi('GET', `?${query.toString()}`);
       state = 'success';
-    } catch {
-      state = 'invalid';
+    } catch (error) {
+      state = tokenFailureState(error);
     }
   }
 
@@ -166,9 +184,10 @@ router.get('/verify-email', async (req, res) => {
     try {
       const result = await verifyEmail(token, routedTenantSlug(req));
       const verified = Boolean(result?.data?.verified ?? result?.verified);
+      // A 200 that reports verified:false IS the backend judging the token.
       state = verified ? 'success' : 'invalid';
-    } catch {
-      state = 'invalid';
+    } catch (error) {
+      state = tokenFailureState(error);
     }
   }
 

@@ -2109,6 +2109,37 @@ describe('shared accessible frontend shell', () => {
     expect(invalid.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('does not call a good verification or unsubscribe link invalid when the backend is unreachable', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    const transientMessage = translate('en', 'states.load_error');
+
+    // Offline API, a 5xx and a rate-limit all say nothing about the member's token.
+    api.verifyEmail.mockRejectedValueOnce(new api.ApiOfflineError());
+    api.verifyEmail.mockRejectedValueOnce(new api.ApiError('Server error', 500, {}));
+    api.callNewsletterApi.mockRejectedValueOnce(new api.ApiError('Slow down', 429, {}));
+
+    const offline = await request(app).get('/verify-email?token=good-token');
+    const serverError = await request(app).get('/verify-email?token=good-token');
+    const rateLimited = await request(app).get('/newsletter/unsubscribe?token=good-token');
+
+    for (const response of [offline, serverError, rateLimited]) {
+      expect(response.status).toBe(200);
+      expect(response.text).toContain(transientMessage);
+      expect(response.text).not.toContain('invalid or has expired');
+    }
+
+    // Telling a member to request another link is useless while the backend is
+    // the unreachable part, so that hint is withheld.
+    expect(offline.text).not.toContain('You can request a new verification email from the sign-in page.');
+
+    // A 4xx IS the backend judging the token, and must still read as invalid.
+    api.verifyEmail.mockRejectedValueOnce(new api.ApiError('Gone', 410, {}));
+    const rejected = await request(app).get('/verify-email?token=expired-token');
+    expect(rejected.text).toContain('This verification link is invalid or has expired.');
+    expect(rejected.text).not.toContain(transientMessage);
+  });
+
   it('localizes cookie settings and missing email utility states from Laravel catalogs', async () => {
     const { translate } = require('../src/lib/localization');
     const [cookies, unsubscribe, verify] = await Promise.all([

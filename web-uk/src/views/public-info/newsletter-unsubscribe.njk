@@ -26,6 +26,8 @@
                 <li>
                   {% if state == "missing" %}
                     {{ t("auth.unsubscribe_missing") }}
+                  {% elif state == "unavailable" %}
+                    {{ t("states.load_error") }}
                   {% else %}
                     {{ t("auth.unsubscribe_invalid") }}
                   {% endif %}
