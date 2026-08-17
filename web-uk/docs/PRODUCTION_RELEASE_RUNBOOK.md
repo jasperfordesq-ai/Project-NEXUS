@@ -244,11 +244,40 @@ server:**
 1. The same `apachectl configtest` (both states) on the production **Plesk**
    Apache build — the rehearsal proves the logic on stock Apache 2.4, not that
    exact build. Now an expected pass, but run it before cutover, not during a
-   rollback.
+   rollback. **See the scheduled gate in §6b.**
 2. A full end-to-end `rollback` on the live two-colour stack — worker draining,
    health gating, the public-host smoke, and the Cloudflare purge in
    `cmd_rollback` are not exercised by the harness. This needs a live deploy
    window and explicit owner authorization.
+
+### 6b. 🔴 SCHEDULED GATE — on-prod configtest, next deploy window
+
+**Owner-scheduled 2026-08-17.** Before the first cutover or rollback that relies
+on the blue/green switch, confirm the `Define`/`<IfDefine>` behaviour on the
+**real** production Apache. This is a required step of the next deploy window; do
+not rely on rollback until it has passed and the result is recorded here.
+
+Run it on the production server, with sudo, while **no** deploy is in progress:
+
+```bash
+sudo bash scripts/deploy/verify-prod-apache-rollback-configtest.sh
+# expect: ON-PROD ROLLBACK CONFIGTEST: 3 passed, 0 failed
+```
+
+The helper is safe: it only runs `apachectl configtest` (it never reloads,
+restarts, or switches traffic), edits the routes file transiently for the second
+test, and restores it on exit via a trap. It confirms, in order: the live config
+tests clean; the config still tests clean with `Define NEXUS_WEBUK_PORT` removed
+(the pre-web-uk rollback state, via the `<IfDefine !...>` arm); and the routes
+file is restored and tests clean again.
+
+| Field | Value |
+|-------|-------|
+| Scheduled | Next deploy window (owner decision, 2026-08-17) |
+| Run by | Deploy operator, on the production host, with owner authorization |
+| Expected | `3 passed, 0 failed` |
+| Result | _record here after the window: PASS/FAIL, date, operator_ |
+| If it FAILS | Fix the accessible vhost include (`<IfDefine>` arms) **before** relying on any rollback — do not discover it during a rollback. |
 
 ## 7. Post-release evidence
 
