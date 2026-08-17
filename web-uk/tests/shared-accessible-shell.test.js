@@ -34503,6 +34503,164 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('keeps each accessibility need own details separate instead of collapsing them', async () => {
+    // 🔴 The regression this pins: the read path used to keep the FIRST non-empty
+    // description/accommodations/contact across all of a member's needs and show it
+    // once, and the save handler then wrote that single set back to every need. A
+    // member with a mobility need AND a sensory need lost one of them on save. The
+    // old fixture could not catch it because only one of its needs had any details.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    api.callVolunteeringApi.mockResolvedValueOnce({
+      data: [
+        {
+          need_type: 'mobility',
+          description: 'I use a wheelchair.',
+          accommodations_required: 'Step-free route to the room.',
+          emergency_contact_name: 'Mobility Contact',
+          emergency_contact_phone: '+1 555 000 0001'
+        },
+        {
+          need_type: 'hearing',
+          description: 'I lipread.',
+          accommodations_required: 'Face me when speaking.',
+          emergency_contact_name: 'Hearing Contact',
+          emergency_contact_phone: '+1 555 000 0002'
+        }
+      ]
+    });
+
+    const response = await request(app)
+      .get('/volunteering/accessibility')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(response.status).toBe(200);
+
+    const textareaFor = (field, needType) => {
+      const pattern = new RegExp(`name="${field}\\[${needType}\\]"[^>]*>([\\s\\S]*?)</textarea>`);
+      const match = response.text.match(pattern);
+      return match ? match[1].trim() : null;
+    };
+    const inputFor = (field, needType) => {
+      const pattern = new RegExp(`name="${field}\\[${needType}\\]"[^>]*value="([^"]*)"`);
+      const match = response.text.match(pattern);
+      return match ? match[1] : null;
+    };
+
+    // Each need renders its OWN values — no cross-contamination in either direction.
+    expect(textareaFor('description', 'mobility')).toBe('I use a wheelchair.');
+    expect(textareaFor('description', 'hearing')).toBe('I lipread.');
+    expect(textareaFor('accommodations_required', 'mobility')).toBe('Step-free route to the room.');
+    expect(textareaFor('accommodations_required', 'hearing')).toBe('Face me when speaking.');
+    expect(inputFor('emergency_contact_name', 'mobility')).toBe('Mobility Contact');
+    expect(inputFor('emergency_contact_name', 'hearing')).toBe('Hearing Contact');
+    expect(inputFor('emergency_contact_phone', 'mobility')).toBe('+1 555 000 0001');
+    expect(inputFor('emergency_contact_phone', 'hearing')).toBe('+1 555 000 0002');
+
+    // A need the member does not have renders an empty group, not someone else's text.
+    expect(textareaFor('description', 'dietary')).toBe('');
+  });
+
+  it('saves each accessibility need own details, and preserves an unrecognised need type', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    api.callVolunteeringApi.mockReset();
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: { success: true } });
+
+    const response = await agent
+      .post('/volunteering/accessibility')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        'need_types[]': ['mobility', 'hearing'],
+        'description[mobility]': 'I use a wheelchair.',
+        'description[hearing]': 'I lipread.',
+        'accommodations_required[mobility]': 'Step-free route.',
+        'accommodations_required[hearing]': 'Face me when speaking.',
+        'emergency_contact_name[mobility]': 'Mobility Contact',
+        'emergency_contact_name[hearing]': 'Hearing Contact',
+        'emergency_contact_phone[mobility]': '+1 555 000 0001',
+        'emergency_contact_phone[hearing]': '+1 555 000 0002',
+        // A type this build does not know, round-tripped from hidden fields. The API
+        // replaces the member's whole set, so dropping it would delete it.
+        'preserved_need_types[]': 'neurodivergence',
+        'description[neurodivergence]': 'Quiet space helps.',
+        'accommodations_required[neurodivergence]': 'A low-noise room.',
+        'emergency_contact_name[neurodivergence]': 'Other Contact',
+        'emergency_contact_phone[neurodivergence]': '+1 555 000 0003'
+      });
+
+    expect(response.headers.location).toContain('accessibility-saved');
+
+    const [, method, path, payload] = api.callVolunteeringApi.mock.calls[0];
+    expect(method).toBe('PUT');
+    expect(path).toBe('/accessibility-needs');
+
+    const byType = Object.fromEntries(payload.needs.map((need) => [need.need_type, need]));
+    expect(Object.keys(byType).sort()).toEqual(['hearing', 'mobility', 'neurodivergence']);
+
+    expect(byType.mobility.description).toBe('I use a wheelchair.');
+    expect(byType.hearing.description).toBe('I lipread.');
+    expect(byType.mobility.accommodations_required).toBe('Step-free route.');
+    expect(byType.hearing.accommodations_required).toBe('Face me when speaking.');
+    expect(byType.mobility.emergency_contact_name).toBe('Mobility Contact');
+    expect(byType.hearing.emergency_contact_name).toBe('Hearing Contact');
+    expect(byType.mobility.emergency_contact_phone).toBe('+1 555 000 0001');
+    expect(byType.hearing.emergency_contact_phone).toBe('+1 555 000 0002');
+
+    // The unrecognised need survives with its own details intact.
+    expect(byType.neurodivergence.description).toBe('Quiet space helps.');
+    expect(byType.neurodivergence.accommodations_required).toBe('A low-noise room.');
+  });
+
+  it('never fans one shared accessibility detail across every need', async () => {
+    // 🔴 This is the anti-regression assertion, and it FAILS on the old implementation.
+    // The old handler read a FLAT `description` and spread it into every selected
+    // need, so this exact request produced two needs both claiming "I use a
+    // wheelchair." Now a flat field carries no per-need meaning and is ignored, so
+    // neither need inherits another's details.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', cookie);
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    api.callVolunteeringApi.mockClear();
+
+    const response = await agent
+      .post('/volunteering/accessibility')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        'need_types[]': ['mobility', 'hearing'],
+        description: 'I use a wheelchair.',
+        accommodations_required: 'Step-free route.',
+        emergency_contact_name: 'Shared Contact',
+        emergency_contact_phone: '+1 555 999 9999'
+      });
+
+    // 🔴 The old form shape is REFUSED, not silently accepted. Two things would each
+    // have harmed the member: fanning that one description across both needs (the
+    // original bug), or writing nulls over details this handler no longer reads
+    // (the naive fix). Because the API replaces the member's whole set, a save that
+    // cannot be understood must not reach it at all.
+    expect(response.headers.location).toContain('accessibility-failed');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalled();
+  });
+
   it('keeps volunteering links, cursor pagination, and fragments inside the shared tenant mount', async () => {
     const api = require('../src/lib/api');
     api.callVolunteeringApi
@@ -36340,11 +36498,16 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({
         _csrf: csrfMatch[1],
+        // 🔴 Updated 2026-08-17 from FLAT detail fields to per-need ones. This test
+        // previously posted a single `description` and asserted it was applied to the
+        // need — which was the data-loss bug: one detail set was fanned across every
+        // selected need, overwriting the others. The alias-and-trimming intent of the
+        // test is unchanged; only the field shape is.
         need_types: ['mobility', 'sensory'],
-        description: ' Step-free access ',
-        accommodations_required: ' Ramp ',
-        emergency_contact_name: ' Alex ',
-        emergency_contact_phone: ' 12345 '
+        'description[mobility]': ' Step-free access ',
+        'accommodations_required[mobility]': ' Ramp ',
+        'emergency_contact_name[mobility]': ' Alex ',
+        'emergency_contact_phone[mobility]': ' 12345 '
       });
     expect(accessibilityResponse.headers.location).toBe('/volunteering/accessibility?status=accessibility-saved');
     expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/accessibility-needs', {

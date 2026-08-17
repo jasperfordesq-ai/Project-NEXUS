@@ -1847,36 +1847,56 @@ function normalizeCredential(row, t = null) {
   };
 }
 
+/**
+ * A member's accessibility needs, keyed by need type.
+ *
+ * 🔴 This used to collapse EVERY need into one shared detail set — it kept the
+ * first non-empty description, accommodations and emergency contact it saw across
+ * all rows, and the save handler then fanned that one set back across every
+ * selected need. A member who recorded a mobility need AND a separate sensory need
+ * saw one description here, and saving overwrote the other permanently. On the
+ * accessibility page of the frontend built for disabled members.
+ *
+ * The API has always stored these per need — `VolunteerFormService::updateAccessibilityNeeds`
+ * writes description / accommodations_required / emergency_contact_name /
+ * emergency_contact_phone on each row — so the collapse was purely this frontend's.
+ *
+ * 🔴 `unknownNeeds` matters because that API call is a DELETE-AND-REPLACE of every
+ * need for the member: anything not sent back is destroyed. A need whose type this
+ * build does not recognise (a type added server-side later) would therefore be
+ * silently deleted by an ordinary save, so those rows are carried through the form
+ * untouched instead.
+ */
 function accessibilityPayload(rows) {
   const selected = [];
-  const shared = {
-    description: '',
-    accommodations: '',
-    emergencyName: '',
-    emergencyPhone: ''
-  };
+  const detailsByType = {};
+  const unknownNeeds = [];
 
   for (const item of rows) {
     const row = item && typeof item === 'object' ? item : {};
     const needType = trimmed(row.need_type ?? row.needType);
-    if (ACCESSIBILITY_NEED_TYPES.some((type) => type.value === needType)) {
-      selected.push(needType);
+    if (!needType) continue;
+
+    const details = {
+      description: trimmed(row.description),
+      accommodations: trimmed(row.accommodations_required ?? row.accommodationsRequired),
+      emergencyName: trimmed(row.emergency_contact_name ?? row.emergencyContactName),
+      emergencyPhone: trimmed(row.emergency_contact_phone ?? row.emergencyContactPhone)
+    };
+
+    if (!ACCESSIBILITY_NEED_TYPES.some((type) => type.value === needType)) {
+      unknownNeeds.push({ needType, ...details });
+      continue;
     }
-    if (!shared.description && row.description) shared.description = trimmed(row.description);
-    if (!shared.accommodations && (row.accommodations_required ?? row.accommodationsRequired)) {
-      shared.accommodations = trimmed(row.accommodations_required ?? row.accommodationsRequired);
-    }
-    if (!shared.emergencyName && (row.emergency_contact_name ?? row.emergencyContactName)) {
-      shared.emergencyName = trimmed(row.emergency_contact_name ?? row.emergencyContactName);
-    }
-    if (!shared.emergencyPhone && (row.emergency_contact_phone ?? row.emergencyContactPhone)) {
-      shared.emergencyPhone = trimmed(row.emergency_contact_phone ?? row.emergencyContactPhone);
-    }
+
+    selected.push(needType);
+    detailsByType[needType] = details;
   }
 
   return {
     selectedTypes: [...new Set(selected)],
-    details: shared
+    detailsByType,
+    unknownNeeds
   };
 }
 
@@ -1944,7 +1964,8 @@ router.get('/accessibility', asyncRoute(async (req, res) => {
       label: res.locals.t(`govuk_alpha.volunteering.need_type_labels.${type.value}`)
     })),
     selectedTypes: accessibility.selectedTypes,
-    accessibility: accessibility.details,
+    accessibilityByType: accessibility.detailsByType,
+    unknownNeeds: accessibility.unknownNeeds,
     status: accessibilityStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2707,20 +2728,59 @@ router.post('/hours', asyncRoute(async (req, res) => {
   );
 }));
 
+// One posted field per need type, e.g. `description[mobility]`. Express is
+// configured with `extended: true`, so those arrive as an object keyed by need type.
+// A plain string is tolerated so an older cached form cannot 500.
+function keyedDetail(bag, needType, limit) {
+  if (bag && typeof bag === 'object' && !Array.isArray(bag)) {
+    return trimmed(bag[needType], limit);
+  }
+  return '';
+}
+
 router.post('/accessibility', asyncRoute(async (req, res) => {
   const selectedTypes = stringArray(req.body.need_types).filter((value) => (
     ACCESSIBILITY_NEED_TYPES.some((type) => type.value === value)
   ));
-  const sharedDetails = {
-    description: trimmed(req.body.description) || null,
-    accommodations_required: trimmed(req.body.accommodations_required) || null,
-    emergency_contact_name: trimmed(req.body.emergency_contact_name) || null,
-    emergency_contact_phone: trimmed(req.body.emergency_contact_phone) || null
-  };
+
+  // 🔴 Each need carries its OWN details. This used to build one shared detail set
+  // and spread it into every selected need, so saving overwrote a member's distinct
+  // entries with whichever one the read path had surfaced.
+  const detailsFor = (needType) => ({
+    description: keyedDetail(req.body.description, needType, 2000) || null,
+    accommodations_required: keyedDetail(req.body.accommodations_required, needType, 2000) || null,
+    emergency_contact_name: keyedDetail(req.body.emergency_contact_name, needType, 255) || null,
+    emergency_contact_phone: keyedDetail(req.body.emergency_contact_phone, needType, 32) || null
+  });
+
+  // 🔴 Refuse a submission from the OLD form shape rather than writing nulls over
+  // real details. Until 2026-08-17 this page posted flat `description`,
+  // `accommodations_required` and emergency-contact fields. A member holding that
+  // page in a browser tab or cache would otherwise submit values this handler no
+  // longer reads, and — because the API replaces the member's whole set — every
+  // detail they had recorded would be silently erased. Failing loudly is the only
+  // safe answer: they reload and their data is still there.
+  const DETAIL_FIELDS = ['description', 'accommodations_required', 'emergency_contact_name', 'emergency_contact_phone'];
+  const hasPerNeedFields = DETAIL_FIELDS.some((field) => {
+    const value = req.body[field];
+    return value && typeof value === 'object' && !Array.isArray(value);
+  });
+  const hasFlatDetail = DETAIL_FIELDS.some((field) => typeof req.body[field] === 'string' && trimmed(req.body[field]) !== '');
+  if (!hasPerNeedFields && hasFlatDetail) {
+    return redirectTo(res, '/volunteering/accessibility?status=accessibility-failed');
+  }
+
+  // Needs whose type this build does not recognise are round-tripped through hidden
+  // fields, because the API call replaces the member's whole set — omitting them
+  // would delete them.
+  const preservedTypes = stringArray(req.body.preserved_need_types).filter((value) => (
+    !ACCESSIBILITY_NEED_TYPES.some((type) => type.value === value)
+  ));
+
   const payload = {
-    needs: selectedTypes.map((needType) => ({
+    needs: [...new Set([...selectedTypes, ...preservedTypes])].map((needType) => ({
       need_type: needType,
-      ...sharedDetails
+      ...detailsFor(needType)
     }))
   };
 

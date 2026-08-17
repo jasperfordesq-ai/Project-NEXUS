@@ -54,36 +54,67 @@
       </fieldset>
     </div>
 
-    {% call characterCount(2000, characterCountMessages, "description") %}
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="description">{{ t("volunteering.accessibility_description_label") }}</label>
-      <div id="description-hint" class="govuk-hint">{{ t("volunteering.accessibility_description_hint") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-hint description-info">{{ accessibility.description }}</textarea>
-    </div>
-    {% endcall %}
+    {#
+      🔴 One detail group PER NEED, not one shared set.
+      Until 2026-08-17 this form had a single description, accommodations and
+      emergency contact. The read path surfaced the first non-empty value across all
+      of a member's needs and the save handler wrote it back to every one of them, so
+      a member with a mobility need and a separate sensory need lost one of them the
+      next time they pressed Save.
+      Every label and hint below is the one this page already used, reused inside each
+      need's own fieldset and legended with that need's existing translated name — so
+      this carries no new translation keys.
+      Groups are rendered for every need type, not only the ticked ones, because
+      without JavaScript there is nothing to reveal a hidden group when a member ticks
+      a box.
+    #}
+    {% for needType in needTypes %}
+      {% set detail = accessibilityByType[needType.value] or {} %}
+      <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ needType.label }}</h2>
+        </legend>
 
-    {% call characterCount(2000, characterCountMessages, "accommodations_required") %}
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="accommodations_required">{{ t("volunteering.accessibility_accommodations_label") }}</label>
-      <div id="accommodations-hint" class="govuk-hint">{{ t("volunteering.accessibility_accommodations_hint") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="accommodations_required" name="accommodations_required" rows="3" maxlength="2000" aria-describedby="accommodations-hint accommodations_required-info">{{ accessibility.accommodations }}</textarea>
-    </div>
-    {% endcall %}
+        {% call characterCount(2000, characterCountMessages, "description-" + needType.value) %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="description-{{ needType.value }}">{{ t("volunteering.accessibility_description_label") }}</label>
+          <div id="description-hint-{{ needType.value }}" class="govuk-hint">{{ t("volunteering.accessibility_description_hint") }}</div>
+          <textarea class="govuk-textarea govuk-js-character-count" id="description-{{ needType.value }}" name="description[{{ needType.value }}]" rows="3" maxlength="2000" aria-describedby="description-hint-{{ needType.value }} description-{{ needType.value }}-info">{{ detail.description }}</textarea>
+        </div>
+        {% endcall %}
 
-    <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-        <h2 class="govuk-fieldset__heading">{{ t("volunteering.emergency_contact_legend") }}</h2>
-      </legend>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="emergency_contact_name">{{ t("volunteering.emergency_name_label") }}</label>
-        <input class="govuk-input govuk-!-width-two-thirds" id="emergency_contact_name" name="emergency_contact_name" type="text" maxlength="255" value="{{ accessibility.emergencyName }}" autocomplete="name">
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="emergency_contact_phone">{{ t("volunteering.emergency_phone_label") }}</label>
-        <div id="emergency-phone-hint" class="govuk-hint">{{ t("volunteering.emergency_phone_hint") }}</div>
-        <input class="govuk-input govuk-input--width-20" id="emergency_contact_phone" name="emergency_contact_phone" type="tel" maxlength="32" value="{{ accessibility.emergencyPhone }}" autocomplete="tel" aria-describedby="emergency-phone-hint">
-      </div>
-    </fieldset>
+        {% call characterCount(2000, characterCountMessages, "accommodations_required-" + needType.value) %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="accommodations_required-{{ needType.value }}">{{ t("volunteering.accessibility_accommodations_label") }}</label>
+          <div id="accommodations-hint-{{ needType.value }}" class="govuk-hint">{{ t("volunteering.accessibility_accommodations_hint") }}</div>
+          <textarea class="govuk-textarea govuk-js-character-count" id="accommodations_required-{{ needType.value }}" name="accommodations_required[{{ needType.value }}]" rows="3" maxlength="2000" aria-describedby="accommodations-hint-{{ needType.value }} accommodations_required-{{ needType.value }}-info">{{ detail.accommodations }}</textarea>
+        </div>
+        {% endcall %}
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="emergency_contact_name-{{ needType.value }}">{{ t("volunteering.emergency_name_label") }}</label>
+          <input class="govuk-input govuk-!-width-two-thirds" id="emergency_contact_name-{{ needType.value }}" name="emergency_contact_name[{{ needType.value }}]" type="text" maxlength="255" value="{{ detail.emergencyName }}" autocomplete="name">
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="emergency_contact_phone-{{ needType.value }}">{{ t("volunteering.emergency_phone_label") }}</label>
+          <div id="emergency-phone-hint-{{ needType.value }}" class="govuk-hint">{{ t("volunteering.emergency_phone_hint") }}</div>
+          <input class="govuk-input govuk-input--width-20" id="emergency_contact_phone-{{ needType.value }}" name="emergency_contact_phone[{{ needType.value }}]" type="tel" maxlength="32" value="{{ detail.emergencyPhone }}" autocomplete="tel" aria-describedby="emergency-phone-hint-{{ needType.value }}">
+        </div>
+      </fieldset>
+    {% endfor %}
+
+    {#
+      A need recorded under a type this build does not know is carried through
+      untouched. The API call replaces the member's whole set, so omitting these
+      would delete them.
+    #}
+    {% for extra in unknownNeeds %}
+      <input type="hidden" name="preserved_need_types[]" value="{{ extra.needType }}">
+      <input type="hidden" name="description[{{ extra.needType }}]" value="{{ extra.description }}">
+      <input type="hidden" name="accommodations_required[{{ extra.needType }}]" value="{{ extra.accommodations }}">
+      <input type="hidden" name="emergency_contact_name[{{ extra.needType }}]" value="{{ extra.emergencyName }}">
+      <input type="hidden" name="emergency_contact_phone[{{ extra.needType }}]" value="{{ extra.emergencyPhone }}">
+    {% endfor %}
 
     <button class="govuk-button" data-module="govuk-button">{{ t("volunteering.accessibility_submit") }}</button>
   </form>

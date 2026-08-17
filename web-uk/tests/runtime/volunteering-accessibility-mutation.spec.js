@@ -70,13 +70,26 @@ test('changes and restores signed volunteering accessibility needs through Web U
   const token = auth.access_token;
   const initialNeeds = normalizedNeeds(await callVolunteeringApi(token, 'GET', '/accessibility-needs'));
   const marker = `Accessibility lifecycle proof ${Date.now()}`;
-  const changedNeeds = ['hearing', 'mobility'].map((needType) => ({
-    need_type: needType,
-    description: marker,
-    accommodations_required: 'Quiet step-free test space',
-    emergency_contact_name: 'Lifecycle Test Contact',
-    emergency_contact_phone: '0000000000'
-  }));
+  // 🔴 Each need carries DISTINCT details on purpose. Until 2026-08-17 this spec gave
+  // both needs the same values, which is exactly what the bug did: one detail set was
+  // fanned across every selected need and overwrote the others. Distinct values here
+  // make this an end-to-end proof against a real Laravel that they stay separate.
+  const changedNeeds = [
+    {
+      need_type: 'hearing',
+      description: `${marker} (hearing)`,
+      accommodations_required: 'Face me when speaking',
+      emergency_contact_name: 'Hearing Test Contact',
+      emergency_contact_phone: '0000000001'
+    },
+    {
+      need_type: 'mobility',
+      description: `${marker} (mobility)`,
+      accommodations_required: 'Quiet step-free test space',
+      emergency_contact_name: 'Mobility Test Contact',
+      emergency_contact_phone: '0000000002'
+    }
+  ];
   let changed = false;
 
   expect(token).toBeTruthy();
@@ -93,24 +106,29 @@ test('changes and restores signed volunteering accessibility needs through Web U
     }
     await page.locator('#need-hearing').check();
     await page.locator('#need-mobility').check();
-    await page.locator('#description').fill(marker);
-    await page.locator('#accommodations_required').fill('Quiet step-free test space');
-    await page.locator('#emergency_contact_name').fill('Lifecycle Test Contact');
-    await page.locator('#emergency_contact_phone').fill('0000000000');
+    // Per-need fields: `description[hearing]`, `description[mobility]`, and so on.
+    for (const need of changedNeeds) {
+      await page.locator(`#description-${need.need_type}`).fill(need.description);
+      await page.locator(`#accommodations_required-${need.need_type}`).fill(need.accommodations_required);
+      await page.locator(`#emergency_contact_name-${need.need_type}`).fill(need.emergency_contact_name);
+      await page.locator(`#emergency_contact_phone-${need.need_type}`).fill(need.emergency_contact_phone);
+    }
 
     const responsePromise = page.waitForResponse((response) => (
       response.request().method() === 'POST'
       && new URL(response.url()).pathname.endsWith('/volunteering/accessibility')
     ), { timeout: 300_000 });
     changed = true;
-    await page.locator('form:has(#description) button').click();
+    await page.locator('form:has(#description-mobility) button').click();
     expect((await responsePromise).status()).toBe(302);
     await page.waitForLoadState('domcontentloaded', { timeout: 300_000 });
 
     await expect(page.getByText('Your accessibility needs have been saved.', { exact: true })).toHaveCount(1);
     await expect(page.locator('#need-hearing')).toBeChecked();
     await expect(page.locator('#need-mobility')).toBeChecked();
-    await expect(page.locator('#description')).toHaveValue(marker);
+    for (const need of changedNeeds) {
+      await expect(page.locator(`#description-${need.need_type}`)).toHaveValue(need.description);
+    }
     expect(normalizedNeeds(await callVolunteeringApi(token, 'GET', '/accessibility-needs'))).toEqual(changedNeeds);
     await expectAccessibleReflow(page);
   } finally {
