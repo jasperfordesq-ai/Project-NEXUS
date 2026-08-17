@@ -71,6 +71,11 @@
 
   <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/exchange-request') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {# 🔴 Single-use: creating an exchange moves time credits, and this was the one
+       money form here with no protection at all. The server consumes this token, so a
+       double click or a back-button resubmit cannot create a second exchange even
+       without JavaScript. #}
+    <input type="hidden" name="submission_token" value="{{ submissionToken }}">
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="proposed_hours">{{ t("exchanges.hours_label") }}</label>
@@ -90,6 +95,6 @@
       <textarea class="govuk-textarea" id="message" name="message" rows="6" aria-describedby="message-hint"></textarea>
     </div>
 
-    <button class="govuk-button" data-module="govuk-button">{{ t("actions.send_request") }}</button>
+    <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("actions.send_request") }}</button>
   </form>
 {% endblock %}

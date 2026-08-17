@@ -5,6 +5,7 @@
 
 const express = require('express');
 const fs = require('fs/promises');
+const { randomUUID, timingSafeEqual } = require('node:crypto');
 const { requireAuth } = require('../middleware/auth');
 const {
   getListings,
@@ -515,6 +516,44 @@ async function listingExchangeContext(token, listingId) {
   };
 }
 
+/**
+ * 🔴 Single-use submission token for creating an exchange.
+ *
+ * Creating an exchange moves time credits once both sides confirm, and it was the ONE
+ * money form in web-uk with no protection of any kind: no double-click guard, no
+ * token, no idempotency key. `ExchangeWorkflowService::createRequest` inserts
+ * unconditionally and has no duplicate check, so two POSTs — a double click, a
+ * back-button resubmit, an impatient retry — created two `pending_provider` exchanges
+ * on the same listing, and confirming both moved the credits twice.
+ *
+ * A client-side `data-prevent-double-click` alone would not do: it needs JavaScript,
+ * and this frontend must work without it. So the guard is server-side and mirrors the
+ * marketplace direct-buy flow, which is the model implementation here — mint a token
+ * when the form is rendered, consume it on submit, compare in constant time.
+ */
+function exchangeSubmissionSessionKey(listingId) {
+  return `listingExchangeSubmission:${listingId}`;
+}
+
+function issueExchangeSubmissionToken(req, listingId) {
+  if (!req.session) return '';
+  const token = randomUUID();
+  req.session[exchangeSubmissionSessionKey(listingId)] = token;
+  return token;
+}
+
+/** Consumes the token: a second submission of the same form can never match. */
+function consumeExchangeSubmissionToken(req, listingId, submitted) {
+  if (!req.session) return true; // no session store: fall back to the duplicate check below
+  const key = exchangeSubmissionSessionKey(listingId);
+  const expected = trimmed(req.session[key]);
+  delete req.session[key];
+  if (expected === '' || trimmed(submitted) === '') return false;
+  const left = Buffer.from(trimmed(submitted));
+  const right = Buffer.from(expected);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
 function loginRedirect() {
   return '/login?status=auth-required';
 }
@@ -965,6 +1004,30 @@ router.post('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) =>
     return redirectTo(res, listingRedirect(listingId, 'exchange-disabled'));
   }
 
+  // 🔴 Consume the single-use token FIRST, before any await, so two submissions racing
+  // each other cannot both pass. A stale or replayed form goes back to the listing,
+  // which already shows an existing exchange and a link to it.
+  if (!consumeExchangeSubmissionToken(req, listingId, req.body?.submission_token)) {
+    return redirectTo(res, listingRedirect(listingId, 'exchange-failed'));
+  }
+
+  // 🔴 The second layer, and the one that catches a genuine duplicate rather than a
+  // double click: the API inserts unconditionally and has no duplicate check, so ask
+  // it whether this member already has an exchange on this listing. `listings.js`
+  // already imported this helper for the listing page and never called it here.
+  try {
+    const existing = dataFrom(await checkExchangeForListing(token, listingId));
+    if (existing && typeof existing === 'object' && positiveInteger(existing.id) !== null) {
+      // The listing page renders "You already have an active exchange for this
+      // listing." with a link to it — already translated in all eleven locales.
+      return redirectTo(res, `/listings/${listingId}`);
+    }
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // A failed check must not block a legitimate request; the token guard above still
+    // stands, and the API remains the final authority.
+  }
+
   const proposedHoursInput = Object.prototype.hasOwnProperty.call(req.body || {}, 'proposed_hours')
     ? req.body.proposed_hours
     : 1;
@@ -1042,6 +1105,7 @@ router.get('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) => 
     walletBalance,
     walletBalanceLabel: walletBalance === null ? '' : oneDecimal(walletBalance),
     status: exchangeRequestStatus(req.query.status, t),
+    submissionToken: issueExchangeSubmissionToken(req, listingId),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Listing not found' }));

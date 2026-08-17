@@ -28992,7 +28992,20 @@ describe('shared accessible frontend shell', () => {
       parent_id: 5
     });
 
+    // 🔴 Creating an exchange now requires the single-use token minted when the form is
+    // rendered, so this alias test follows the real journey: fetch the form, then post
+    // it. A fresh token is fetched per submission because the server consumes each one
+    // — that is the double-submit guard, and a test that posts blind would be asserting
+    // the unguarded behaviour this replaced.
+    const exchangeToken = async () => {
+      const form = await agent
+        .get('/listings/42/exchange-request')
+        .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+      return form.text.match(/name="submission_token" value="([^"]+)"/)[1];
+    };
+
     const exchangeResponse = await post('/listings/42/exchange-request', {
+      submission_token: await exchangeToken(),
       proposed_hours: '2.5',
       prep_time: '0.5',
       message: ' Could you help next week? '
@@ -29006,6 +29019,7 @@ describe('shared accessible frontend shell', () => {
     });
 
     const castExchangeResponse = await post('/listings/42/exchange-request', {
+      submission_token: await exchangeToken(),
       proposed_hours: 'not-a-number',
       prep_time: '30',
       message: '   '
@@ -34511,6 +34525,80 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="+1 555 123 4567"');
     expect(response.text).toContain('Save accessibility needs');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
+  });
+
+  it('cannot create a second exchange by resubmitting the same request form', async () => {
+    // 🔴 Creating an exchange moves time credits once both sides confirm, and this was
+    // the ONE money form in web-uk with no double-click guard, no token and no
+    // idempotency key. ExchangeWorkflowService inserts unconditionally, so two POSTs
+    // produced two pending exchanges on one listing and confirming both moved the
+    // credits twice. The token is consumed server-side, so it holds without JavaScript.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+
+    api.getExchangeConfig.mockResolvedValue({ data: { exchange_workflow_enabled: true, direct_messaging_enabled: true } });
+    api.callListingApi.mockResolvedValue({ data: { id: 77, title: 'Garden help', type: 'offer', user: { id: 99, name: 'Sam' } } });
+    api.checkExchangeForListing.mockResolvedValue({ data: null });
+    api.createExchangeRequest.mockResolvedValue({ data: { id: 4242 } });
+
+    const form = await agent.get('/listings/77/exchange-request').set('Cookie', cookie);
+    expect(form.status).toBe(200);
+    const submissionToken = form.text.match(/name="submission_token" value="([^"]+)"/)[1];
+    const csrf = form.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    expect(form.text).toContain('data-prevent-double-click="true"');
+
+    api.createExchangeRequest.mockClear();
+
+    const first = await agent
+      .post('/listings/77/exchange-request')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, submission_token: submissionToken, proposed_hours: '2' });
+    expect(first.headers.location).toBe('/exchanges/4242?status=exchange-created');
+    expect(api.createExchangeRequest).toHaveBeenCalledTimes(1);
+
+    // The same form posted again — a double click, a back-button resubmit, an
+    // impatient retry — must NOT reach the API a second time.
+    const replay = await agent
+      .post('/listings/77/exchange-request')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, submission_token: submissionToken, proposed_hours: '2' });
+    expect(replay.headers.location).toContain('/listings/77');
+    expect(api.createExchangeRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends a member to their existing exchange instead of creating a duplicate', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const cookie = `token=${encodeURIComponent(signedToken)}`;
+    const agent = request.agent(app);
+
+    api.getExchangeConfig.mockResolvedValue({ data: { exchange_workflow_enabled: true, direct_messaging_enabled: true } });
+    api.callListingApi.mockResolvedValue({ data: { id: 77, title: 'Garden help', type: 'offer', user: { id: 99, name: 'Sam' } } });
+    api.checkExchangeForListing.mockResolvedValue({ data: null });
+
+    const form = await agent.get('/listings/77/exchange-request').set('Cookie', cookie);
+    const submissionToken = form.text.match(/name="submission_token" value="([^"]+)"/)[1];
+    const csrf = form.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // A fresh token, but the member already has an exchange on this listing — the API
+    // has no duplicate check of its own, so this is the layer that catches it.
+    api.checkExchangeForListing.mockResolvedValue({ data: { id: 555, status: 'pending_provider' } });
+    api.createExchangeRequest.mockClear();
+
+    const response = await agent
+      .post('/listings/77/exchange-request')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({ _csrf: csrf, submission_token: submissionToken, proposed_hours: '2' });
+
+    expect(response.headers.location).toBe('/listings/77');
+    expect(api.createExchangeRequest).not.toHaveBeenCalled();
   });
 
   it('round-trips a fixed coupon amount without the hundredfold error', async () => {
