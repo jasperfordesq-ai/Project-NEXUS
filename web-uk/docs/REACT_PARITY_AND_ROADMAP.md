@@ -330,6 +330,102 @@ depends on the accessible frontend is emailed a React link.**
 `getFrontendUrl()` accessible-domain-aware first would route those members to pages
 `web-uk` does not yet have — turning a degraded experience into a broken one.
 
+## Payments on the accessible frontend — measured 2026-08-17
+
+The owner's instruction is explicit: **no free or zero-fee workarounds; both frontends must
+take real payments.** This section records what is actually true, because two earlier
+statements in this project's notes were wrong.
+
+### 🔴 Correction: `web-uk` ALREADY takes real card payments
+
+The claim that "the accessible frontend cannot take payment anywhere" is **false**. Member
+premium / support subscriptions work today, with no JavaScript, by redirecting to Stripe's
+**hosted** checkout: `POST /v2/member-premium/checkout` returns a `checkout_url`
+(`app/Services/MemberPremiumService.php:544-558`) and `web-uk/src/routes/premium.js` redirects
+to it. That pattern is live and is the model for everything below.
+
+### The state of every money path
+
+| Path | Stripe primitive | Works no-JS? |
+|---|---|---|
+| Member premium / support subscription | Checkout Session | **Yes — live in `web-uk`** |
+| Tenant SaaS plan (admin) | Checkout Session | Yes (admin only, out of scope) |
+| **Marketplace order** | PaymentIntent **and** an unrouted Checkout Session | **No — see below** |
+| Identity verification fee | PaymentIntent only | No |
+| Donations (money) | PaymentIntent only | No — `web-uk` offers bank/PayPal *pledges* only |
+| Verein / club dues | PaymentIntent only | No |
+| Event tickets, achievements shop, org wallet, wallet transfers | **not card money** — time credits or XP | n/a |
+
+### 🔴 The marketplace hosted checkout is already written, and was orphaned by the Blade deletion
+
+`MarketplacePaymentService::createCheckoutSession()` (`app/Services/MarketplacePaymentService.php:464`,
+Stripe call at `:634`) is a complete no-JS hosted-checkout path — its docblock still says it is
+"the NO-JS / accessible equivalent of createPaymentIntent". It carries the hard parts already:
+a stable idempotency key, resume-an-open-session with a full amount/fee/funds-flow equality
+check, a unique DB index on `checkout_session_id`, session expiry, a guard preventing an order
+being paid through both Elements and Checkout, and a `checkout.session.completed` webhook
+branch that resolves the order **from our own database, never from Stripe metadata**.
+
+**It has no route.** Its only caller —
+`app/Http/Controllers/GovukAlpha/Concerns/CommerceParity.php::commerceCheckoutCardPay()` — was
+deleted with the Blade accessible frontend in `d3dff1fa0` on 2026-08-14, and nothing replaced
+it. `web-uk` is otherwise ready: the pay button exists
+(`src/views/marketplace/orders.njk:100`) and every status message is already written and
+translated in all eleven locales (`src/routes/marketplace.js:137-175`). Restoring it is a
+route + a thin controller method + one call replacing the deliberate refusal at
+`src/routes/marketplace-actions.js:937-947`.
+
+🔴 **But measured in production, it would deliver nothing visible yet:** of **17 marketplace
+seller profiles, 0 have a Stripe account and 0 have completed onboarding** (16 orders total, 0
+awaiting payment). `createCheckoutSession` throws `marketplace_seller_onboarding_required`
+without one, so marketplace card payment is blocked for **everyone, on both frontends** — the
+real blocker is seller Connect onboarding, not the accessible frontend. Connect onboarding
+does use a hosted URL, so it is no-JS friendly and `web-uk` could carry it.
+
+### 🔴 A live bug: paying on the accessible site returns the member to React
+
+`MemberPremiumService::safeReturnUrl()` validates the return URL against
+`TenantContext::getFrontendUrl()`, which does not know `tenants.accessible_domain` exists. So
+an accessible-site member subscribes, **pays successfully, and lands on the React app's return
+page**. `StripeSubscriptionService` is worse — it hardcodes the React base with no caller
+override.
+
+**This is the same root cause as three other findings today**: emailed guardian/invite links,
+the Stripe Identity `return_url`, and the OAuth post-callback hop all resolve through
+`getFrontendUrl()`. One accessible-aware fix addresses all four, and it is the prerequisite
+for every payment option below.
+
+### Recommended order
+
+1. **Fix the return-URL allowlist** to accept accessible hosts. Prerequisite for everything,
+   and it repairs a live premium-payment journey.
+2. **Route the existing marketplace Checkout Session.** Small and tested — but pair it with
+   seller Connect onboarding, or it stays invisible.
+3. **Add hosted-checkout siblings** for the three PaymentIntent-only charges, easiest first:
+   **dues → donations → identity fee.** Do NOT build one shared endpoint: the four paths differ
+   in Stripe account (donations charge on the *tenant's* connected account; Identity uses a
+   different secret key), Connect shape, and reconciliation key. Share helpers, not endpoints.
+4. Fix the hardcoded `'eur'` at `OptionalIdentityVerificationController.php:174,285` — the fee
+   is charged in the tenant currency, so a GBP tenant is shown €5.00 and charged £5.00. Today
+   a display bug; with hosted checkout the member sees one currency on our page and another on
+   Stripe's, which reads as fraud.
+
+**Payment Links were considered and rejected** — every charge here is dynamic and per-record,
+so a link per transaction is a Checkout Session with worse idempotency and no expiry tie-in.
+Never used in this repo's history.
+
+### Owner decisions needed
+
+1. Does React keep Stripe Elements, or move to hosted checkout too? (Recommendation: keep
+   Elements — zero risk, better in-app UX — and add hosted only for the accessible site.)
+2. The identity fee would mean **two consecutive redirects** (pay at Stripe, return, then
+   redirect again to Stripe Identity). Acceptable, or reshape that flow first?
+3. Should the accessible site take **card donations** at all? It currently offers bank
+   transfer and PayPal *pledges*. Card donations there is a new capability, not a repair.
+4. Priority order across the four blocked paths.
+5. May a tenant set a currency its connected Stripe account cannot settle? Nothing validates
+   this today.
+
 ## 🔴 What this measurement does NOT prove
 
 - **It compared route existence, not capability.** The 179 matched routes are **not** proven
