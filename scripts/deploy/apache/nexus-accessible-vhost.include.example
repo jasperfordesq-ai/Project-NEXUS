@@ -59,7 +59,17 @@ ProxyPass /.well-known/acme-challenge/ !
 #
 # The whole cheap-rollback story rests on Define/<IfDefine> interacting the way
 # this file assumes, and that has NOT been confirmed against the production
-# Apache build. Confirm both arms before cutover:
+# Apache build.
+#
+# 2026-08-17: the Define/<IfDefine>/ProxyPass ${VAR} logic in this file IS now
+# rehearsed in a disposable Apache 2.4 container by
+# scripts/test/rehearse-bluegreen-rollback.sh (11/11 checks pass): the web-uk arm
+# and the PHP fallback arm both pass `apachectl configtest`, live traffic moves on
+# a colour switch, and a bad config auto-restores. That proves the *logic*. It is
+# NOT the production Plesk Apache build, so the on-server check below is still a
+# cutover step — but it is now expected to pass, not a leap of faith.
+#
+# Confirm both arms before cutover:
 #
 #   # with web-uk deployed — expect the webuk arm and a clean configtest
 #   sudo apachectl configtest
