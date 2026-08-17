@@ -151,7 +151,7 @@ Ordered. "Real gap" counts exclude everything in the deliberate-absences section
 | 4 | Clubs / Verein dues | 4 | `/clubs` index exists; dues, imports and membership invitations do not |
 | 5 | Marketplace remainder | 4 | Become-partner application, own reports list, seller shipping options |
 | 6 | Smaller singles | 5 | Wallet regional points, volunteering shift check-in token, donation receipt, municipality calendar, ad campaigns |
-| 7 | **Capability comparison of the 179 matched routes** | — | See the honesty note below. This is the largest unmeasured risk |
+| 7 | ✅ **Capability comparison of the matched routes — DONE 2026-08-17** | — | Found ~70 divergences inside "matched" routes, ~30 blocking, 12 moving money or destroying data. Results and fix order: [CAPABILITY_PARITY_FINDINGS.md](CAPABILITY_PARITY_FINDINGS.md). **This is now the work queue** |
 | 8 | Generated, CI-gated React-parity matrix | — | So this document stops being a manual exercise and becomes a number that CI watches |
 
 ### 🔴 Item 1 (identity verification) is BLOCKED, and the blocker is not in `web-uk`
