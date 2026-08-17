@@ -121,8 +121,15 @@ public sealed class V15FeedActivityCompatibilityTests : IntegrationTestBase
                 "created_at",
                 "updated_at"
             });
-        document.RootElement.GetProperty("meta").GetProperty("total").GetInt32()
-            .Should().BeGreaterThanOrEqualTo(3);
+        // 🔴 The feed's meta became `{per_page, has_more}` (plus base_url from the
+        // envelope filter) in 8582235b2, matching Laravel's respondWithCollection.
+        // There is no `total` — Laravel does not send one — so this threw
+        // KeyNotFoundException and left main red. The three merged entries are
+        // already proven by the `data` assertions above; the meta assertion now
+        // checks the keys Laravel actually sends.
+        var feedMeta = document.RootElement.GetProperty("meta");
+        feedMeta.GetProperty("per_page").GetInt32().Should().BeGreaterThan(0);
+        feedMeta.TryGetProperty("has_more", out _).Should().BeTrue();
     }
 
     [Fact]

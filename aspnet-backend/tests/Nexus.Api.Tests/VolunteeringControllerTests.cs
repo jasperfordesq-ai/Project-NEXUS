@@ -265,7 +265,17 @@ public class VolunteeringControllerTests : IntegrationTestBase
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
         content.GetProperty("data").EnumerateArray().Should().NotBeEmpty();
-        content.GetProperty("pagination").GetProperty("total").GetInt32().Should().BeGreaterThan(0);
+        // 🔴 This endpoint's `pagination:{page,limit,total,pages}` became
+        // `meta:{per_page,has_more}` in 8582235b2, because Laravel's
+        // respondWithCollection reports how many fit on a page and whether another
+        // page exists — not a page count. The assertion was not updated with it and
+        // left main red. Laravel sends no `total` here, so there is nothing to
+        // assert one against; the non-empty `data` above is what proves published
+        // opportunities are listed. (The sibling /applications test below still
+        // reads `pagination` because that endpoint was not part of that change.)
+        var meta = content.GetProperty("meta");
+        meta.GetProperty("per_page").GetInt32().Should().BeGreaterThan(0);
+        meta.TryGetProperty("has_more", out _).Should().BeTrue();
 
         // All returned opportunities should be published
         foreach (var opp in content.GetProperty("data").EnumerateArray())

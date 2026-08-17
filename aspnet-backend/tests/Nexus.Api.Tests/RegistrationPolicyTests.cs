@@ -45,8 +45,16 @@ public class RegistrationPolicyTests : IntegrationTestBase
         // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
         // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
         // send `success`, and none of those carry a `data` key.
-        content.TryGetProperty("success", out _).Should().BeFalse();
-        content.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 `/api/registration/config` is NOT a `/api/v2` path, and Laravel has no
+        // counterpart for it under either prefix. So the "a v2 GET carries no
+        // `success`" rule does not apply: LaravelDataEnvelopeFilter is deliberately
+        // scoped to `/api/v2/`, and this legacy alias keeps the v1 envelope.
+        //
+        // This asserted the opposite and left main red. Same mistake already
+        // corrected once in LaravelReactFrontendContractTests — a sweep that
+        // classified endpoints by HTTP VERB and missed that the PATH decides too.
+        // Corrected against the running backend rather than belief.
+        content.GetProperty("success").GetBoolean().Should().BeTrue();
         content.GetProperty("data").GetProperty("mode").GetString().Should().Be("Standard");
         content.GetProperty("data").GetProperty("requires_verification").GetBoolean().Should().BeFalse();
         content.GetProperty("data").GetProperty("requires_approval").GetBoolean().Should().BeFalse();
@@ -393,8 +401,12 @@ public class RegistrationPolicyTests : IntegrationTestBase
         // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
         // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
         // send `success`, and none of those carry a `data` key.
-        content.TryGetProperty("success", out _).Should().BeFalse();
-        content.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 `/api/registration/admin/policy` is NOT a `/api/v2` path and Laravel
+        // has no counterpart, so the "a v2 GET carries no `success`" rule does not
+        // apply — LaravelDataEnvelopeFilter is scoped to `/api/v2/`. Same
+        // verb-not-path mistake as the config test above; corrected against the
+        // running backend.
+        content.GetProperty("success").GetBoolean().Should().BeTrue();
         content.GetProperty("data").GetProperty("mode").GetString().Should().NotBeNullOrEmpty();
     }
 

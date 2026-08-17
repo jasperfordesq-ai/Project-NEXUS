@@ -130,11 +130,17 @@ public class UsersControllerTests : IntegrationTestBase
         r.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var user = await r.Content.ReadFromJsonAsync<JsonElement>();
-        // 🔴 A v2 GET returns `data` + `meta` and NO `success`. Laravel's v2
-        // read helpers never emit it: of Laravel's 1,129 /v2 GET routes only 8
-        // send `success`, and none of those carry a `data` key.
-        user.TryGetProperty("success", out _).Should().BeFalse();
-        user.GetProperty("meta").TryGetProperty("base_url", out _).Should().BeTrue();
+        // 🔴 `/api/users/me` is NOT a `/api/v2` path. Laravel has only the v2 form
+        // (routes/api.php:755), so this legacy alias has no Laravel counterpart and
+        // LaravelDataEnvelopeFilter — scoped to `/api/v2/` — never runs on it. The
+        // v1 envelope `{success, data}` is what it returns and what the contract
+        // for this path is.
+        //
+        // This asserted no `success` AND a `meta.base_url`, and got neither, which
+        // left main red. Same verb-not-path mistake corrected once already in
+        // LaravelReactFrontendContractTests. The v2 twin is the contract-bearing
+        // route and is covered separately.
+        user.GetProperty("success").GetBoolean().Should().BeTrue();
         user.GetProperty("data").GetProperty("onboarding_completed").GetBoolean().Should().BeTrue();
     }
 
