@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish Community organisation discovery, registration and detail pages have completed a 109-string semantic review.** `Eagraíocht` terminology is now consistent; loading, empty and retry states are complete; registration distinguishes administrative approval from generic permission; and public-listing terms state the organiser's authority and responsibilities clearly. Opportunity counts follow Irish numeral grammar, while applications and organisation reviews now distinguish reviews from administrative inspection and translate the remaining Rating and Comment labels.
+
 - **On the accessible frontend, 25 form and messaging texts now show real Irish instead of English.** The validation messages, the sign-in/password-reset prompts, the password-strength meter wording, and several direct-message labels had been added in English for Irish while the other ten languages got proper translations. A translation-quality check (which the earlier commits had not triggered) flagged them; they are now translated into Irish, matching the other languages. This also clears a failing check on the shared build so the whole build passes again.
 
 - **On the accessible frontend, the date-and-time fields on events, the event agenda, podcasts and marketplace pickup slots now work again.** The shared helper that reads and re-displays those "date + time" fields was missing its time-handling half in the committed code, so several organiser pages could error out. The helper is now complete, so those pages load and save correctly.

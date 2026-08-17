@@ -65,3 +65,35 @@ test('Irish waitlist and wellbeing copy preserves queue position, burnout, and s
   assert.equal(irish.wellbeing.hide_tips, 'Folaigh Leideanna Féinchúraim');
   assert.match(irish.wellbeing.tip_reduce, /má bhraitheann tú faoi léigear/u);
 });
+
+test('Irish organisation discovery, registration, and detail journeys have complete translated coverage', () => {
+  const invariants = new Map([
+    ['organisations.form_email_placeholder', 'contact@yourorg.com'],
+    ['organisations.form_website_placeholder', 'https://yourorg.com'],
+  ]);
+
+  for (const section of ['organisations', 'organisation_detail']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+    for (const [path, englishValue] of englishFlat) {
+      const fullPath = `${section}.${path}`;
+      assert.ok(irishFlat.has(path), `Missing Irish Community ${fullPath}`);
+      if (invariants.has(fullPath)) assert.equal(irishFlat.get(path), englishValue, fullPath);
+      else assert.notEqual(irishFlat.get(path), englishValue, fullPath);
+    }
+  }
+});
+
+test('Irish organisation journeys preserve registration, approval, opportunity, and review meaning', () => {
+  const reviewed = [...flatten(irish.organisations).values(), ...flatten(irish.organisation_detail).values()].join('\n');
+  assert.doesNotMatch(reviewed, /\b(?:Eagras|Eagrais|eagras|eagrais|Rating|Comment)\b|Ni Feidir|Ni bhfuarthas|Nil aon|Téarmaí Cláraithe/u);
+  assert.equal(irish.organisations.heading, 'Eagraíochtaí');
+  assert.match(irish.organisations.form_success_message, /Faomhfaidh riarthóir í/u);
+  assert.match(irish.organisations.pending_approval_notice, /ag fanacht le faomhadh riarthóra/u);
+  assert.match(irish.organisations.terms_item_3, /sula gcuirfear ar an liosta poiblí í/u);
+  assert.equal(irish.organisations.opportunity_count_many, '{{count}} deis');
+  assert.equal(irish.organisation_detail.rating_label, 'Rátáil');
+  assert.equal(irish.organisation_detail.comment_label, 'Trácht');
+  assert.equal(irish.organisation_detail.review_modal_title, 'Déan léirmheas ar an eagraíocht seo');
+  assert.match(irish.organisation_detail.error_load_retry, /Bain triail eile as/u);
+});
