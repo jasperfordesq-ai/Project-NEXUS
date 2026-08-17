@@ -46,8 +46,15 @@ Start with:
   separate backend bank and future switching evidence boundary;
 - [Blade component audit](docs/BLADE_COMPONENT_PORT_AUDIT.md) - detailed
   implementation evidence;
-- [backend switching contract](docs/BACKEND_SWITCHING_CONTRACT.md); and
-- [accessibility verification](docs/ACCESSIBILITY_CERTIFICATION.md).
+- [backend switching contract](docs/BACKEND_SWITCHING_CONTRACT.md);
+- [accessibility verification](docs/ACCESSIBILITY_CERTIFICATION.md); and
+- [React parity, deliberate absences and roadmap](docs/REACT_PARITY_AND_ROADMAP.md) -
+  🔴 **read this before quoting the 707/707 route figure.** That figure measures
+  parity with the DELETED Blade frontend, so anything React can do that Blade never
+  did is invisible to it. This document holds the first React comparison (71% of
+  member-facing routes), the decisions on what is deliberately absent (platform
+  admin: not required; Caring Community: experimental, deferred), and the ordered
+  roadmap of what is still needed.
 
 `docs/CURRENT_WEB_UK_HANDOFF.md` is historical and must not supply a current
 score, count, or resume queue.

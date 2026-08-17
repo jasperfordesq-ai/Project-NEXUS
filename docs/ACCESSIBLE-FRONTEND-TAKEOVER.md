@@ -21,6 +21,17 @@ Nothing else serves these addresses, so **a host that does not answer `/version`
 broken, not "still on the old frontend"** — that inference was valid before
 2026-08-14 and is actively misleading now.
 
+🔴 **"The takeover is complete" means Blade is gone and `web-uk` serves every accessible
+address. It does NOT mean `web-uk` does everything React does.** Measured for the first
+time on 2026-08-17: it covers **71% of member-facing React routes** (179 of 251). The
+route matrix's 707/707 cannot show this, because it measures parity with the deleted
+Blade frontend. What is missing, what is deliberately absent, and in what order the rest
+is being built are recorded once, in
+[web-uk/docs/REACT_PARITY_AND_ROADMAP.md](../web-uk/docs/REACT_PARITY_AND_ROADMAP.md).
+Two owner decisions from that date are load-bearing: a platform **admin panel is not
+required** on the accessible frontend, and the **Caring Community module is experimental
+and deferred** (on for 2 of 11 communities; on the roadmap for investigation).
+
 **What was deleted:** `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`,
 `routes/govuk-alpha.php`, `routes/govuk-alpha-parity/`, the `AlphaSetLocale` and
 `StripTenantSlugOnAccessibleDomain` middleware, `App\Support\AccessibleErrorPage`,
