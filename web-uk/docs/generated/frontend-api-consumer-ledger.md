@@ -5,9 +5,9 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-16T20:08:45.544Z
-- Laravel commit SHA: `75c06cb5cad3e5781fb11fb08ccffa7d9667fb67`
-- Web UK repository commit SHA: `75c06cb5cad3e5781fb11fb08ccffa7d9667fb67`
+- Generated: 2026-08-17T12:12:09.771Z
+- Laravel commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
+- Web UK repository commit SHA: `022ebda466a6d2307388248d2d6352c13ab11e77`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -23,7 +23,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `578b337ea5c40843e78376ceed20ff793cf8f81464c0a18e344f502f1f755133`
+- API source SHA-256: `53f74c5ff807c97066b8bc83e27149e976badde9c4fa206378e8f534bfd2868a`
 - Laravel OpenAPI SHA-256: `f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb`
 - Laravel API routes SHA-256: `bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a`
 
@@ -602,7 +602,7 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/skills/categories/{param}` | `getSkillCategory` | documented | read-only by HTTP method<br>not applicable | src/routes/skills.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/skills/members?{query}` | `getSkillMembers` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/skills.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/support/reports` | `submitSupportReport` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/contact-support.js | tests/api.test.js<br>tests/contact-turnstile-parity.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/tenant/bootstrap?{query}` | `getTenantBootstrap` | documented | read-only by HTTP method<br>not applicable | src/middleware/tenant-routing.js<br>src/routes/auth.js<br>src/server.js | tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/backend-contract.test.js<br>tests/gds-conventions.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/localization.test.js<br>tests/registration-contract.test.js<br>tests/routes.test.js<br>tests/runtime/tenant-module-gates.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/tenant-mount-authority.test.js<br>tests/tenant-routing-unknown-community.test.js |
+| GET | `/api/v2/tenant/bootstrap?{query}` | `getTenantBootstrap` | documented | read-only by HTTP method<br>not applicable | src/middleware/tenant-routing.js<br>src/routes/auth.js<br>src/server.js | tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/backend-contract.test.js<br>tests/gds-conventions.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/localization.test.js<br>tests/registration-contract.test.js<br>tests/routes.test.js<br>tests/runtime/tenant-module-gates.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/tenant-bootstrap-cache.test.js<br>tests/tenant-mount-authority.test.js<br>tests/tenant-routing-unknown-community.test.js |
 | GET | `/api/v2/tenants?{query}` | `getTenants` | documented | read-only by HTTP method<br>not applicable | src/server.js | tests/api.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/routes.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/ugc-translate` | `callUgcTranslateApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users?{query}` | `getMembersV2` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/jobs-owner-lookup.test.js<br>tests/shared-accessible-shell.test.js |
