@@ -58,6 +58,7 @@ return [
         'submit' => 'Składać',
         'free' => 'Bezpłatny',
         'credits_label' => 'kredyty czasowe',
+        'credits_price' => ':credits kredytów czasu',
         'view' => 'Pogląd',
         'no_image' => 'Brak obrazu',
     ],

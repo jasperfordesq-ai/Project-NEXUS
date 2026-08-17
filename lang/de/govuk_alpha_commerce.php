@@ -58,6 +58,7 @@ return [
         'submit' => 'Einreichen',
         'free' => 'Frei',
         'credits_label' => 'Zeitguthaben',
+        'credits_price' => ':credits Zeitguthaben',
         'view' => 'Sicht',
         'no_image' => 'Kein Bild',
     ],

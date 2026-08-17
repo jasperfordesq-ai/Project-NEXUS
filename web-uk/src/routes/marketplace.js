@@ -12,9 +12,14 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { splitDate, splitDateTime } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { translateForRequest } = require('../lib/request-translator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
+// 🔴 Pinned to English ON PURPOSE, and only for the `translate = fallbackTranslator`
+// default parameters below, which callers override with res.locals.t. Anything that
+// formats a value for display must use translateForRequest() instead — this translator
+// renders English to every member whatever language they chose.
 const fallbackTranslator = createTranslator('en');
 
 router.use((req, res, next) => {
@@ -407,10 +412,16 @@ function formatMoney(amount, currency = '') {
   return `${code} ${formatted}`.trim();
 }
 
+// 🔴 "time credits" used to be concatenated in English here, so every price tag on every
+// card and detail page read English in all eleven languages. `common.credits_price` puts
+// the number and the unit in one translated string, so a language that orders or inflects
+// them differently can say so.
 function formatCredits(amount) {
   const number = Number(amount);
   if (!Number.isFinite(number)) return '';
-  return `${number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })} time credits`;
+  return translateForRequest('govuk_alpha_commerce.common.credits_price', {
+    credits: number.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })
+  });
 }
 
 function formatCompactNumber(value) {
@@ -484,7 +495,7 @@ function buyTotalLabel(item, quantity) {
   const units = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
 
   if (credits > 0 && money > 0) {
-    return fallbackTranslator('govuk_alpha_commerce.buy.hybrid_price', {
+    return translateForRequest('govuk_alpha_commerce.buy.hybrid_price', {
       money: formatMoney(money * units, currency),
       credits: formatCompactNumber(credits * units)
     });
@@ -494,18 +505,28 @@ function buyTotalLabel(item, quantity) {
   return '';
 }
 
+/**
+ * The price of a listing, in one line.
+ *
+ * 🔴 A listing may carry BOTH a money price and a time-credit price, and the two are
+ * alternatives, not a sum: MarketplaceOrderService charges `price` OR
+ * `time_credit_price * quantity` depending on the buyer's chosen `payment_method`, never
+ * both. So a hybrid listing must show both options — showing one hides a way to pay,
+ * which for a member with no money or no credits is the difference between being able to
+ * buy and not.
+ */
 function priceLabel(row) {
   const credits = decimalNumber(row.time_credit_price);
   const money = decimalNumber(row.price);
   if (credits > 0 && money > 0) {
-    return fallbackTranslator('govuk_alpha_commerce.buy.hybrid_price', {
+    return translateForRequest('govuk_alpha_commerce.buy.hybrid_price', {
       money: formatMoney(money, row.price_currency),
       credits: formatCompactNumber(credits)
     });
   }
   if (credits > 0) return formatCredits(credits);
   if (money > 0) return formatMoney(money, row.price_currency);
-  return 'Free';
+  return translateForRequest('govuk_alpha_commerce.common.free');
 }
 
 function formatMonthYearLabel(value) {
@@ -529,21 +550,13 @@ function priceTagClass(row) {
   return 'govuk-tag--grey';
 }
 
-function cardPriceLabel(row) {
-  const credits = decimalNumber(row.time_credit_price);
-  const money = decimalNumber(row.price);
-  if (credits > 0) return formatCredits(credits);
-  if (money > 0) return formatMoney(money, row.price_currency);
-  return 'Free';
-}
-
-function cardPriceTagClass(row) {
-  const credits = decimalNumber(row.time_credit_price);
-  const money = decimalNumber(row.price);
-  if (credits > 0) return 'govuk-tag--blue';
-  if (money > 0) return 'govuk-tag--grey';
-  return 'govuk-tag--green';
-}
+// 🔴 There were TWO price labels and two tag-class functions — a detail one that handled
+// hybrid cash+credit listings and a card one that did not — so a €25-or-3-credit listing
+// read "3 time credits" on every card in every list, hiding the cash option from anyone
+// browsing, and then changed price when they clicked through. The card variants are gone;
+// `cardPriceLabel` / `cardPriceTagClass` are still exposed to the templates but are now
+// assigned from priceLabel / priceTagClass in decorateListing, so the two cannot drift
+// apart again. Do not reintroduce a second implementation.
 
 function cardImageUrl(row) {
   const image = row && row.image;
@@ -608,11 +621,13 @@ function decorateListing(listing) {
     priceType,
     priceTypeLabel: PRICE_TYPE_LABELS[priceType] || priceType,
     priceLabel: priceLabel(row),
-    cardPriceLabel: cardPriceLabel(row),
+    // One implementation, two template names — see the note above cardPriceLabel's
+    // deletion. A card and its detail page must never quote different prices.
+    cardPriceLabel: priceLabel(row),
     moneyLabel: formatMoney(money, row.price_currency),
     askingPriceLabel: money > 0 ? formatMoney(money, row.price_currency) : '',
     priceTagClass: priceTagClass(row),
-    cardPriceTagClass: cardPriceTagClass(row),
+    cardPriceTagClass: priceTagClass(row),
     price: row.price ?? '',
     priceCurrency: trimmed(row.price_currency || 'EUR', 3).toUpperCase() || 'EUR',
     timeCreditPrice: row.time_credit_price ?? '',

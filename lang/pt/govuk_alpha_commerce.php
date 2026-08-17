@@ -58,6 +58,7 @@ return [
         'submit' => 'Enviar',
         'free' => 'Livre',
         'credits_label' => 'créditos de tempo',
+        'credits_price' => ':credits créditos de tempo',
         'view' => 'Visualizar',
         'no_image' => 'Nenhuma imagem',
     ],

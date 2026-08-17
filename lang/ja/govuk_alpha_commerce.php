@@ -58,6 +58,7 @@ return [
         'submit' => '提出する',
         'free' => '無料',
         'credits_label' => 'タイムクレジット',
+        'credits_price' => ':credits 時間クレジット',
         'view' => 'ビュー',
         'no_image' => '画像なし',
     ],

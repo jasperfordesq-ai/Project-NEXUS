@@ -58,6 +58,7 @@ return [
         'submit' => 'Soumettre',
         'free' => 'Gratuit',
         'credits_label' => 'crédits de temps',
+        'credits_price' => ':credits crédits-temps',
         'view' => 'Voir',
         'no_image' => 'Aucune image',
     ],

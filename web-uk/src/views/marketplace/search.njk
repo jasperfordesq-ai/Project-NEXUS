@@ -122,7 +122,10 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ item.title }}</a></h3>
-            <strong class="govuk-tag govuk-tag--blue">{{ item.cardPriceLabel }}</strong>
+            {# The colour must follow the price type, as it does on the other two cards — a
+               hardcoded blue told a member a hybrid or money-only listing was priced in
+               time credits. #}
+            <strong class="govuk-tag {{ item.cardPriceTagClass }}">{{ item.cardPriceLabel }}</strong>
           </div>
         {% if item.conditionLabel %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.conditionLabel }}</p>

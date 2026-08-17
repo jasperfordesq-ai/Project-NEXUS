@@ -58,6 +58,8 @@ return [
         'submit' => 'Submit',
         'free' => 'Free',
         'credits_label' => 'time credits',
+
+        'credits_price' => ':credits time credits',
         'view' => 'View',
         'no_image' => 'No image',
     ],

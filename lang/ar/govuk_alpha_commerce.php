@@ -58,6 +58,7 @@ return [
         'submit' => 'يُقدِّم',
         'free' => 'حر',
         'credits_label' => 'الاعتمادات الزمنية',
+        'credits_price' => ':credits من الأرصدة الزمنية',
         'view' => 'منظر',
         'no_image' => 'لا توجد صورة',
     ],

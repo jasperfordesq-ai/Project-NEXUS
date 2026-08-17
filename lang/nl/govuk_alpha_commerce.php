@@ -58,6 +58,7 @@ return [
         'submit' => 'Indienen',
         'free' => 'Vrij',
         'credits_label' => 'tijdskredieten',
+        'credits_price' => ':credits tijdtegoeden',
         'view' => 'Weergave',
         'no_image' => 'Geen afbeelding',
     ],

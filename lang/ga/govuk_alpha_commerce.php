@@ -58,6 +58,8 @@ return [
         'submit' => 'Cuir isteach',
         'free' => 'Saor',
         'credits_label' => 'creidmheasanna ama',
+
+        'credits_price' => ':credits creidmheas ama',
         'view' => 'Amharc',
         'no_image' => 'Gan íomhá',
     ],

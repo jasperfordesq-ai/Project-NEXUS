@@ -32605,8 +32605,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('src="/uploads/bike-thumb.jpg"');
     expect(response.text).not.toContain('src="/uploads/bike-full.jpg"');
     expect(response.text).toContain('Hybrid tool kit');
-    expect(response.text).toContain('3 time credits');
-    expect(response.text).not.toContain('GBP 12.50 or 3 time credits');
+    // 🔴 This asserted the OPPOSITE — that the card must NOT show the hybrid price — and
+    // so pinned the bug in place. A listing priced at GBP 12.50 OR 3 time credits must
+    // offer both on the card, because the buyer chooses which to pay and showing only the
+    // credits hid the cash option from anyone browsing. It also disagreed with the detail
+    // page, which already showed both.
+    expect(response.text).toContain('GBP 12.50 or 3 time credits');
+    expect(response.text).toContain('govuk-tag--purple');
     expect(response.text).not.toContain('Your listing was deleted.');
     expect(response.text).toContain('Belfast');
     expect(response.text).toContain('href="/marketplace/42"');
@@ -34653,6 +34658,68 @@ describe('shared accessible frontend shell', () => {
     const order = api.callMarketplaceApi.mock.calls.find((call) => call[3] && call[3].listing_id);
     expect(order).toBeTruthy();
     expect(order[3].shipping_method).toBe('community_delivery');
+  });
+
+  it('shows both ways to pay a hybrid listing, on the card and in the member language', async () => {
+    // 🔴 Two faults with one visible symptom. There were TWO price-label implementations
+    // and only the detail one handled a listing priced in cash OR credits, so every card
+    // in every list showed the credits alone and hid the cash option — then the price
+    // changed on click-through. And both went through a translator pinned to English at
+    // module load, so the label was English in all eleven languages. MarketplaceOrderService
+    // charges price OR credits by the buyer's chosen payment_method, never both, so both
+    // must be offered.
+    const api = require('../src/lib/api');
+    const hybrid = {
+      data: [{
+        id: 43,
+        title: 'Hybrid tool kit',
+        price: 12.5,
+        price_currency: 'GBP',
+        time_credit_price: 3,
+        price_type: 'fixed',
+        status: 'active'
+      }],
+      meta: { cursor: null, has_more: false, per_page: 30 }
+    };
+
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue(hybrid);
+    const german = await request(app)
+      .get('/marketplace?locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(german.status).toBe(200);
+    // German for "or" in this catalogue is "oder"; the English "or" must be gone.
+    expect(german.text).toContain('oder');
+    expect(german.text).toContain('Zeitguthaben');
+    expect(german.text).not.toContain('3 time credits');
+
+    // A credits-only listing carries the unit in the member's language too — that word
+    // used to be concatenated in English regardless of locale.
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue({
+      data: [{ id: 44, title: 'Credits only', time_credit_price: 4, price_type: 'fixed', status: 'active' }],
+      meta: { cursor: null, has_more: false, per_page: 30 }
+    });
+    const creditsOnly = await request(app)
+      .get('/marketplace?locale=de')
+      .set('Cookie', signedCookieHeader());
+    expect(creditsOnly.text).toContain('Zeitguthaben');
+    expect(creditsOnly.text).not.toContain('4 time credits');
+
+    // And a free listing says so in the member's language rather than a hardcoded "Free".
+    api.callMarketplaceApi.mockReset();
+    api.callMarketplaceApi.mockResolvedValue({
+      data: [{ id: 45, title: 'Give away', price_type: 'free', status: 'active' }],
+      meta: { cursor: null, has_more: false, per_page: 30 }
+    });
+    const free = await request(app)
+      .get('/marketplace?locale=de')
+      .set('Cookie', signedCookieHeader());
+    // 🟡 "Frei" is the existing reviewed value for common.free. For a free-of-charge item
+    // German would more naturally say "Kostenlos" or "Gratis" — "frei" is free-as-in-
+    // unoccupied. Left as-is because it is a reviewed translation used elsewhere; raised
+    // in CAPABILITY_PARITY_FINDINGS rather than changed silently here.
+    expect(free.text).toContain('Frei');
   });
 
   it('gives a new participant the share the organiser typed on a weighted exchange', async () => {
