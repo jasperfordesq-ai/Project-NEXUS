@@ -91,13 +91,29 @@ async function probeOnce(target) {
     const expected = Array.isArray(target.expectStatus) && target.expectStatus.length
       ? target.expectStatus
       : [200];
+    const statusOk = expected.includes(response.status);
+
+    // 🔴 A status code cannot tell one service from another, and on this platform
+    // that is a real gap rather than a theoretical one: a React SPA answers 200 on
+    // ANY path, so a vhost pointed at the wrong container serves 200 at every URL
+    // while members get the wrong application. `expectBodyContains` lets a target
+    // assert WHICH service answered. Only the first 2 KB is inspected — these
+    // assertions identify a service from a small JSON body, and downloading whole
+    // pages every 15 minutes would be waste.
+    let bodyReason = null;
+    if (statusOk && typeof target.expectBodyContains === 'string' && target.expectBodyContains !== '') {
+      const body = (await response.text()).slice(0, 2048);
+      if (!body.includes(target.expectBodyContains)) {
+        bodyReason = `HTTP ${response.status} but the response did not identify itself as "${target.expectBodyContains}"`;
+      }
+    }
 
     return {
-      ok: expected.includes(response.status),
+      ok: statusOk && bodyReason === null,
       status: response.status,
       ms: Date.now() - startedAt,
-      reason: expected.includes(response.status)
-        ? null
+      reason: statusOk
+        ? bodyReason
         : `HTTP ${response.status} (expected ${expected.join(' or ')})`
     };
   } catch (error) {

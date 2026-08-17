@@ -16,7 +16,20 @@
     "",
     "Every entry MUST be an unauthenticated GET against a public URL. Do not",
     "add an endpoint that requires a credential, mutates state, or is not",
-    "already public - this file is committed to a PUBLIC repository."
+    "already public - this file is committed to a PUBLIC repository.",
+    "",
+    "🔴 The TWO community accessible domains were added on 2026-08-17. They have",
+    "served web-uk since 2026-08-14, and until this date only the main accessible",
+    "host was probed - so a fault affecting one community's own accessible address",
+    "(its vhost, its certificate) would not have been noticed. A fault that takes",
+    "the accessible frontend down platform-wide was already covered by the main",
+    "host; a per-host one was not.",
+    "",
+    "🔴 The /version entries now assert the response BODY says nexus-webuk, not",
+    "merely that something returned 200. The entry named 'not a silent fallback'",
+    "did not actually verify that: a React SPA answers 200 on any path, so a vhost",
+    "pointed at the wrong container would have passed a status-only check while",
+    "serving members the wrong application."
   ],
   "timeoutMs": 15000,
   "attempts": 3,
@@ -55,12 +68,47 @@
       ]
     },
     {
-      "name": "Accessible frontend is web-uk (not a silent fallback to Blade)",
+      "name": "Accessible frontend is web-uk (not a silent fallback)",
       "url": "https://accessible.project-nexus.ie/version",
       "track": "production",
       "expectStatus": [
         200
+      ],
+      "expectBodyContains": "nexus-webuk"
+    },
+    {
+      "name": "Accessible frontend (UK community domain)",
+      "url": "https://accessible-uk.timebank.global",
+      "track": "production",
+      "expectStatus": [
+        200
       ]
+    },
+    {
+      "name": "UK community accessible domain is web-uk",
+      "url": "https://accessible-uk.timebank.global/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ],
+      "expectBodyContains": "nexus-webuk"
+    },
+    {
+      "name": "Accessible frontend (Minehead and Coast community domain)",
+      "url": "https://accessible-minehead-and-coast.timebank.global",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "Minehead and Coast accessible domain is web-uk",
+      "url": "https://accessible-minehead-and-coast.timebank.global/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ],
+      "expectBodyContains": "nexus-webuk"
     }
   ]
 }
