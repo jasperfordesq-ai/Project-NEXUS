@@ -613,6 +613,41 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('getCustomPage', () => {
+    it('should read a community published CMS page by slug', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: { id: 7, slug: 'how-it-works', title: 'How it works', content: '<p>Hi</p>' } })
+      });
+
+      const result = await api.getCustomPage('how-it-works');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/pages/how-it-works',
+        expect.any(Object)
+      );
+      expect(result.data.slug).toBe('how-it-works');
+    });
+
+    it('should encode the slug rather than interpolating it raw', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: {} })
+      });
+
+      // The route constrains the slug, but the helper must not rely on that:
+      // it is the thing building an upstream URL.
+      await api.getCustomPage('a b/../c');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/pages/a%20b%2F..%2Fc',
+        expect.any(Object)
+      );
+    });
+  });
+
   describe('getPlatformStats', () => {
     it('should call the Laravel public platform stats endpoint', async () => {
       mockFetch.mockResolvedValueOnce({

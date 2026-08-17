@@ -396,6 +396,20 @@ async function getTenantBootstrap(options = {}) {
   return result;
 }
 
+/**
+ * A community's own published CMS page.
+ *
+ * Public by design (`withoutMiddleware('auth:sanctum')` on the Laravel route), so
+ * no bearer token is sent and the tenant is carried by the request-scoped
+ * `X-Tenant-Slug` header that `addRequestTenantHeader()` adds. Laravel returns 404
+ * both for an unknown/unpublished slug AND, deliberately, for a page whose content
+ * references member-account data — a fail-closed guard so a CMS page cannot become
+ * an anonymous member directory. Either way the caller shows "page not found".
+ */
+async function getCustomPage(slug) {
+  return request(`/api/v2/pages/${encodeURIComponent(String(slug))}`);
+}
+
 async function getPlatformStats(options = {}) {
   const slug = options.slug ? String(options.slug).trim() : '';
   const headers = {};
@@ -3848,6 +3862,7 @@ module.exports = {
   submitContact,
   getTenants,
   getTenantBootstrap,
+  getCustomPage,
   getPlatformStats,
   forgotPassword,
   resetPassword,

@@ -57,6 +57,7 @@ jest.mock('../src/lib/api', () => ({
       features: { connections: true, events: true, volunteering: true }
     }
   }),
+  getCustomPage: jest.fn(),
   getPlatformStats: jest.fn().mockResolvedValue({
     data: {
       members: 0,
@@ -2107,6 +2108,59 @@ describe('shared accessible frontend shell', () => {
     expect(invalid.text).toContain('This verification link is invalid or has expired.');
     expect(api.verifyEmail).toHaveBeenNthCalledWith(2, 'expired-token', '');
     expect(invalid.text).not.toContain('shared accessible frontend preparation page');
+  });
+
+  it('renders a community own CMS page, which used to be silently invisible', async () => {
+    // 🔴 static-pages.js registered NOTHING (its page map was an empty object), so
+    // every community-authored page 404'd on the accessible frontend while React
+    // served it. The retired Blade inventory never had this route either, which is
+    // why the route matrix could not see the gap.
+    const api = require('../src/lib/api');
+    api.getCustomPage.mockResolvedValueOnce({
+      data: {
+        id: 7,
+        title: 'How our timebank works',
+        slug: 'how-it-works',
+        content: '<h2>Getting started</h2><p>Swap an hour of your time.</p><script>alert(1)</script>',
+        content_format: 'richtext',
+        meta_description: 'A short guide',
+        updated_at: '2026-07-01T09:00:00Z'
+      }
+    });
+
+    const response = await request(app).get('/page/how-it-works');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('How our timebank works');
+    expect(response.text).toContain('Getting started');
+    expect(response.text).toContain('Swap an hour of your time.');
+    // Editorial HTML is sanitized, so a script tag in CMS content cannot execute.
+    expect(response.text).not.toContain('<script>alert(1)</script>');
+    // Real content must never carry the preparation-page furniture.
+    expect(response.text).not.toContain('shared accessible frontend preparation page');
+    expect(api.getCustomPage).toHaveBeenCalledWith('how-it-works');
+  });
+
+  it('shows page-not-found for an unknown or fail-closed CMS page', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    // Laravel answers 404 both for an unknown slug and, deliberately, for a page
+    // whose content references member-account data.
+    api.getCustomPage.mockRejectedValueOnce(new api.ApiError('Not found', 404, {}));
+
+    const response = await request(app).get('/page/no-such-page');
+
+    expect(response.status).toBe(404);
+    expect(response.text).toContain(translate('en', 'error_pages.404_title'));
+  });
+
+  it('does not disguise a backend fault as a missing CMS page', async () => {
+    const api = require('../src/lib/api');
+    api.getCustomPage.mockRejectedValueOnce(new api.ApiError('Server error', 500, {}));
+
+    const response = await request(app).get('/page/how-it-works');
+
+    expect(response.status).toBeGreaterThanOrEqual(500);
   });
 
   it('does not call a good verification or unsubscribe link invalid when the backend is unreachable', async () => {
