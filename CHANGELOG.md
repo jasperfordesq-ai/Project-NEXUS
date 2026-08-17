@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish localisation is now quality-gated across both maintained frontends without Google Translate.** The accessible frontend's course, federation, commerce, volunteering, event and safeguarding catalogues no longer contain unreviewed English fallbacks, broken question marks or misleading literal terms. React's Irish admin, federation, safeguarding, notification, account-support and commerce copy has also been repaired, including corrupted accented text and clearer wording for logging in as another user, vetted-member restrictions, read-only access and burnout. A shared terminology glossary and CI audits now block these regressions and explicitly prohibit Google Translate for Irish.
+
 - **The complete 24-value React Reviews namespace has received Irish semantic review.** Average ratings, anonymous reviewers, review deletion, empty states, completed exchanges, review recipients and star accessibility text now retain their actual meaning; malformed wording that referred to recruits or simply “more” reviews has been replaced. A whole-catalogue gate rejects English residue and corrupted values.
 
 - **The one-value React Endorsements namespace has received Irish semantic review.** “Most Endorsed” now uses the Irish verb for endorsing rather than incorrectly saying that the greatest number of people agreed, and a complete-catalogue test locks the distinction in place.

@@ -23,6 +23,6 @@
   "submit_error": "Earráid agus freagra á sheoladh. Déan iarracht eile le do thoil.",
   "load_error": "Theip ar lódáil na suirbhéanna. Déan iarracht eile le do thoil.",
   "yes": "Tá",
-  "no": "No",
+  "no": "Níl",
   "closes_on": "Dúnann: {{date}}"
 }

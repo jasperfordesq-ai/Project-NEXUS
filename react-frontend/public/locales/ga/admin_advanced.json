@@ -1100,7 +1100,7 @@
           "title": "Déan athnuachan"
         },
         "health": {
-          "cache_read_only": "Tá an taisce inléite amháin",
+          "cache_read_only": "Tá an taisce le léamh amháin",
           "cache_unreachable": "Ní féidir teacht ar thaisce",
           "healthy": "sláintiúil",
           "missing": "{{count}} in easnamh",
@@ -1325,7 +1325,7 @@
         "title": "Insamhlóir léarscáil an tsuímh"
       },
       "readonly": {
-        "prefix": "Amharc inléite amháin - díchumasaítear cnaipí gnímh toisc go n-oibríonn an t-inneall réamhreora thar gach tionónta. Sínigh isteach le a",
+        "prefix": "Amharc le léamh amháin — díchumasaítear cnaipí gnímh toisc go n-oibríonn an t-inneall réamhreora thar gach tionónta. Sínigh isteach le a",
         "role": "ardán super-admin",
         "suffix": "cuntas chun jabanna a chuartú, grianghraif a ghlanadh, nó braite srutha a spreagadh."
       },
@@ -1463,7 +1463,7 @@
     "top_matches_for_user_other": "Na cluichí is fearr do{{count}}do{{name}}",
     "next_public": {
       "title": "Next.js ullmhacht aghaidh phoiblí",
-      "description": "Stádas scáthmhóid inléite amháin don aghaidh phoiblí Next.js. Ní chumasaíonn an leathanach seo ródú poiblí ná ní athraíonn sé iompar réamhthairisceana.",
+      "description": "Stádas scáthmhóid le léamh amháin don aghaidh phoiblí Next.js. Ní chumasaíonn an leathanach seo ródú poiblí ná ní athraíonn sé iompar réamhthairisceana.",
       "loading": "Réiteach aghaidh phoiblí Next.js á lódáil",
       "error": "Níorbh fhéidir ullmhacht Next.js a luchtú.",
       "cards": {
@@ -2292,19 +2292,19 @@
       },
       "federation_connection_without_email_evidence": {
         "title": "Fianaise ríomhphoist nasc Cónaidhm in easnamh",
-        "body": "Níl aon fhianaise seachadta ríomhphoist rathúil ag imeachtaí cónasctha {{count}} sna huaireanta deireanacha {{window_hours}}."
+        "body": "Níl aon fhianaise ar sheachadadh ríomhphoist rathúil ag {{count}} imeacht comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "federation_connection_without_bell_evidence": {
         "title": "Fianaise fógra maidir le ceangal Cónaidhm in easnamh",
-        "body": "Níl aon fhianaise fógra in-app ag imeachtaí cónasctha {{count}} sna huaireanta deireanacha {{window_hours}}."
+        "body": "Níl aon fhianaise ar fhógra san aip ag {{count}} imeacht comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "federation_review_without_email_evidence": {
         "title": "Fianaise ríomhphoist athbhreithnithe Cónaidhm in easnamh",
-        "body": "Níor éirigh le hathbhreithnithe cónasctha {{count}} nó níor baineadh aon fhianaise ríomhphoist amach go hintinneach sna huaireanta {{window_hours}} deireanach."
+        "body": "Theip ar {{count}} athbhreithniú comhpháirtíochta, nó fágadh fianaise ríomhphoist ar lár d’aon ghnó, le {{window_hours}} uair an chloig anuas."
       },
       "federation_review_without_bell_evidence": {
         "title": "Fianaise fógra athbhreithnithe Cónaidhm in easnamh",
-        "body": "Níl aon fhianaise fógra in-app ag athbhreithnithe cónasctha {{count}} le huaireanta {{window_hours}} deireanach."
+        "body": "Níl aon fhianaise ar fhógra san aip ag {{count}} athbhreithniú comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "member_subscription_event_without_email_evidence": {
         "title": "Fianaise ríomhphoist síntiús ball in easnamh",

@@ -50,7 +50,7 @@
     "default": "Fógra"
   },
   "load_more": "Luchtaigh níos mó",
-  "undo": "Undo",
+  "undo": "Cealaigh",
   "toast": {
     "mark_read_failed": "Theip ar an bhfógra a mharcáil mar léite",
     "all_read": "Gach fógra marcáilte mar léite",
@@ -100,7 +100,7 @@
     "toast_default": "Fógra"
   },
   "page_meta": {
-    "title": "Notifications"
+    "title": "Fógraí"
   },
   "unread_badge_few": "{{count}} nua",
   "unread_badge_many": "{{count}} nua",

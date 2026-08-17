@@ -208,8 +208,8 @@
       "title": "Cruthaigh Malartú Grúpa"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver",
+  "role_provider": "Soláthraí",
+  "role_receiver": "Faighteoir",
   "participants_count_few": "{{count}} rannpháirtithe",
   "participants_count_many": "{{count}} rannpháirtithe",
   "participants_count_two": "{{count}} rannpháirtithe",

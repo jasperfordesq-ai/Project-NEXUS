@@ -206,7 +206,7 @@
         "self_identification_prefix": "Chuir an comhalta tic le rogha amháin nó níos mó ar an gcéim chosanta le linn clárúcháin (m.sh.",
         "or": "nó",
         "example_vulnerable": "Measaim gur duine fásta leochaileach mé féin",
-        "example_vetted": "Is fearr liom idirghníomhú le baill ghrinnfhiosrúcháin amháin",
+        "example_vetted": "Is fearr liom idirghníomhú le baill a bhfuil an grinnfhiosrúchán riachtanach críochnaithe acu amháin",
         "self_identification_suffix": "Léann an córas na truicear atá ceangailte le gach rogha roghnaithe agus OR- chumasc iad i sraith amháin cosaintí scríofa chuig",
         "self_revoke_prefix": "Toisc gur féinroghnaithe iad seo, is féidir leis an gcomhalta aon cheann acu a chúlghairm",
         "settings_safeguarding": "Socruithe -> Cosaint",
@@ -228,7 +228,7 @@
         "effects": {
           "notify_admin_on_selection": "Gheobhaidh tú fógra fíor-ama nuair a chuirtear tic leis an rogha.",
           "requires_broker_approval": "Gach teachtaireacht amach a chóipeáiltear le haghaidh athbhreithniú bróicéir; ní mór cluichí a shíniú.",
-          "requires_vetted_interaction": "Tá baill neamh-ghrinnfhiosrúcháin folaithe ó fhotha fionnachtana an bhaill.",
+          "requires_vetted_interaction": "Ní thaispeántar i bhfotha fionnachtana an bhaill ach daoine a bhfuil an grinnfhiosrúchán riachtanach críochnaithe acu.",
           "restricts_matching": "Gabhann sreabhadh oibre formheasa meaitseála - gan aon réamhrá isteach uathoibríoch.",
           "restricts_messaging": "Marcáil an comhalta atá faoi mhonatóireacht; tosaíonn cóipeanna teachtaireachta.",
           "vetting_type_required": "Sonraíonn sé cén t-seiceáil a chaithfidh ball teagmhála a bheith aige, mar shampla garda_vetting."
@@ -418,7 +418,7 @@
     "trigger_labels": {
       "notify_admin_on_selection": "Cuir an fhoireann cosanta ar an eolas",
       "requires_broker_approval": "Faomhadh comhordaitheora de dhíth",
-      "requires_vetted_interaction": "Baill ghrinnfhiosraithe amháin",
+      "requires_vetted_interaction": "Baill a bhfuil an grinnfhiosrúchán riachtanach críochnaithe acu amháin",
       "restricts_matching": "Srian a chur le meaitseáil",
       "restricts_messaging": "Monatóireacht a dhéanamh ar theachtaireachtaí"
     },

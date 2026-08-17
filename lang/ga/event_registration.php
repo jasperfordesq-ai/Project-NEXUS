@@ -226,7 +226,7 @@ return [
         'notifications_allowed' => 'Ceadaíodh fógraí aoi',
         'notifications_not_allowed' => 'Níor thoiligh fógraí aoi',
         'check_in' => 'Seiceáil isteach',
-        'check_out' => 'Seiceáil amach',
+        'check_out' => 'Taifead an t-imeacht',
         'no_show' => 'Marcáil gan seó',
         'undo' => 'Cealaigh an t-athrú deiridh',
         'cancel' => 'Cealaigh aoi',

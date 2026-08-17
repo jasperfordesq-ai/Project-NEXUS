@@ -155,7 +155,7 @@ return [
         'start_date_hint' => 'Mar shampla, 2026-09-01.',
         'end_date_label' => 'Dáta deiridh',
         'federated_label' => 'Roinn an deis seo leis an líonra pobail níos leithne',
-        'federated_hint' => 'Is féidir le hoibrithe deonacha i bpobail chomhpháirtíochta deiseanna cónasctha a fheiceáil.',
+        'federated_hint' => 'Is féidir le hoibrithe deonacha i bpobail chomhpháirtíochta deiseanna idirphobail a fheiceáil.',
         'submit_button' => 'Deis postála',
         'created' => 'Tá do dheis curtha sa phost.',
         'create_failed' => 'Níorbh fhéidir an deis a phostáil. Bain triail eile as.',
@@ -250,7 +250,7 @@ return [
     ],
     'wellbeing' => [
         'title' => 'Mo leas',
-        'description' => 'Achoimre phríobháideach ar d’iarmhéid obair dheonach, chun cabhrú leat dóiteán a sheachaint. Ní féidir ach leat é seo a fheiceáil.',
+        'description' => 'Achoimre phríobháideach ar d’iarmhéid oibre deonaí, chun cabhrú leat ídiú a sheachaint. Ní féidir ach leatsa é seo a fheiceáil.',
         'score_label' => 'Scór folláine',
         'score_out_of' => 'as 100',
         'risk_label' => 'Riosca dóite',

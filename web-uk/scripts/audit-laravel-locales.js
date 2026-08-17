@@ -9,6 +9,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { SUPPORTED_LOCALES } = require('../src/lib/localization');
+const { auditIrishLocale } = require('./audit-irish-locale');
 
 const catalogDirectory = path.join(__dirname, '..', 'src', 'lib', 'localization', 'generated');
 
@@ -66,11 +67,22 @@ const result = {
   supportedLocales: SUPPORTED_LOCALES.length,
   authoritativeNamespaces: namespaceNames.length,
   authoritativeEnglishStringKeys: englishKeys.length,
-  locales: localeResults
+  locales: localeResults,
+  irishIntegrity: (() => {
+    const audit = auditIrishLocale({ catalogDirectory });
+    return {
+      unreviewedEnglishFallbacks: audit.unreviewedEnglishFallbacks.length,
+      questionMarkMismatches: audit.questionMarkMismatches.length,
+      terminologyViolations: audit.terminologyViolations.length
+    };
+  })()
 };
 
 process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 
-if (localeResults.some(({ missingKeys, extraKeys }) => missingKeys > 0 || extraKeys > 0)) {
+if (localeResults.some(({ missingKeys, extraKeys }) => missingKeys > 0 || extraKeys > 0)
+  || result.irishIntegrity.unreviewedEnglishFallbacks > 0
+  || result.irishIntegrity.questionMarkMismatches > 0
+  || result.irishIntegrity.terminologyViolations > 0) {
   process.exitCode = 1;
 }

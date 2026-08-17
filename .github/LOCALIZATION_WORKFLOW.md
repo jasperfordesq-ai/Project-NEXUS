@@ -64,8 +64,8 @@ Use these states mentally when reviewing locale work:
 4. Run `node scripts/check-i18n-gap-regression.mjs` and confirm the baseline does not regress.
 5. If translation credentials are available, run `node scripts/translate-i18n-gaps.mjs`.
 6. If the change touched `lang/en/*.php`, run `node scripts/check-php-lang-parity.mjs` and
-   `node scripts/check-php-lang-untranslated.mjs`, and fill the new values with
-   `node scripts/translate-php-lang-gaps.mjs --google --namespace <file>`.
+   `node scripts/check-php-lang-untranslated.mjs`. The Google-backed PHP helper
+   may fill supported non-Irish locales; author and review `lang/ga` directly.
 7. Add `Translation Status:` and `Translation Reviewer:` to the PR description before merge.
 8. Review the changed locale files before merge.
 
@@ -78,10 +78,12 @@ Use these states mentally when reviewing locale work:
   `SKIP_NAMESPACES` set, and `check-i18n-gap-regression.mjs` additionally skips `admin.json`. Only
   `admin.json` is filled by `translate-i18n-gaps.mjs`; new keys in the other three must be filled
   another way rather than by re-running that script.
-- Irish (`ga`) is not translatable through DeepL, so it needs either the OpenAI path
-  (`OPENAI_API_KEY` set) or the Google path (`--google`). Both cover `ga` normally — this is a
-  DeepL limitation, not a blanket Irish exclusion. `translate-i18n-gaps.mjs` skips `ga` only when
-  neither backend is selected.
+- **Never use Google Translate for Irish.** `translate-i18n-gaps.mjs` allows
+  `ga` only through its OpenAI path, and that output remains a draft until it
+  has been context-reviewed and rewritten as natural Irish.
+  `translate-php-lang-gaps.mjs` is Google-only, so it always skips `ga`; author
+  and review PHP Irish directly. If no reviewer is available, report the gap
+  rather than presenting machine Irish as complete.
 
 ## Acceptable residual English
 

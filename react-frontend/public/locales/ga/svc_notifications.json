@@ -86,7 +86,7 @@
     "reaction": "D’fhreagair {{name}} {{emoji}} le do scéal"
   },
   "sub_account": {
-    "management_request": "{{name}} has requested to manage your account as a {{type}}"
+    "management_request": "D’iarr {{name}} do chuntas a bhainistiú mar {{type}}"
   },
   "totp": {
     "rate_limited": "An iomarca iarrachtaí ar theip orthu. Bain triail eile as i gceann {{minutes}} nóiméad."

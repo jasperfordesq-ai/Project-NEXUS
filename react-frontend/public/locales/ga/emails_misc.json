@@ -421,7 +421,7 @@
     "renewal_reminder_subject": "Athnuafar do shíntiús i gceann 7 lá",
     "renewal_reminder_title": "Athnuachan le teacht",
     "renewal_reminder_preview": "Athnuafar do shíntiús :plan go luath",
-    "renewal_reminder_body": "Your <strong>:plan</strong> subscription is set to automatically renew on <strong>:date</strong>. No action is needed — we will charge your card on file.",
+    "renewal_reminder_body": "Tá do shíntiús <strong>:plan</strong> socraithe le hathnuachan go huathoibríoch ar <strong>:date</strong>. Ní gá duit aon rud a dhéanamh — gearrfaimid an táille ar an gcárta atá ar comhad againn.",
     "renewal_reminder_cta": "Bainistigh síntiús",
     "plan_changed_subject": "Tá do phlean síntiúis athraithe go :new_plan",
     "plan_changed_title": "Plean síntiúis athraithe",

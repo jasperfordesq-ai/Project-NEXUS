@@ -10,7 +10,7 @@
   "restored": "Athchóiríodh socruithe imeachta go réamhshocruithe",
   "version": "Leagan cumraíochta {{version}}",
   "readiness_title": "Ullmhacht ardán",
-  "readiness_desc": "Tá na cumais oibriúcháin seo á rialú ag an ardán agus tá siad inléite amháin anseo.",
+  "readiness_desc": "Tá na cumais oibriúcháin seo á rialú ag an ardán; is féidir iad a léamh anseo ach ní féidir iad a athrú.",
   "available": "Ar fáil",
   "platform_off": "Ardán as",
   "capability_recurrence_v2": "Atarlú V2",

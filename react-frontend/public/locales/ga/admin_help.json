@@ -378,7 +378,7 @@
         }
       ],
       "tips": [
-        "AGPL Public features must remain publicly available under AGPL-3.0 — you cannot restrict access to them in any deployment.",
+        "Ní mór gnéithe poiblí AGPL a choinneáil ar fáil go poiblí faoi AGPL-3.0 — ní féidir rochtain orthu a shrianadh in aon imscaradh.",
         "Teastaíonn comhaontú scríofa ar leith le Caring Community nó le hoibreoir ardáin NEXUS maidir le gnéithe tráchtála."
       ],
       "relatedPaths": [
@@ -1384,7 +1384,7 @@
     },
     "/caring/research": {
       "title": "Comhpháirtíochtaí Taighde — Comhoibriú Acadúil",
-      "summary": "Comhpháirtíochtaí taighde foirmiúla a bhainistiú le hollscoileanna, le hinstitiúidí sláinte poiblí, agus le heagraíochtaí taighde sóisialta. Is féidir rochtain inléite amháin a thabhairt do chomhpháirtithe ar shonraí comhiomlána gan ainm le haghaidh staidéir acadúla, faoi réir comhaontú sonraí sínithe.",
+      "summary": "Comhpháirtíochtaí taighde foirmiúla a bhainistiú le hollscoileanna, le hinstitiúidí sláinte poiblí agus le heagraíochtaí taighde sóisialta. Is féidir rochtain léite amháin ar shonraí comhiomlána gan ainm a thabhairt do chomhpháirtithe le haghaidh staidéir acadúla, faoi réir comhaontú sonraí sínithe.",
       "steps": [
         {
           "label": "Cruthaigh taifead comhpháirtíochta taighde",
@@ -1400,7 +1400,7 @@
         },
         {
           "label": "Eisigh dintiúir rochtana an taighdeora",
-          "detail": "Nuair a bheidh sé gníomhachtaithe, bain úsáid as \"Rochtain Eisiúint\" chun eochair API inléite amháin nó sceideal easpórtála sonraí a sheoladh chuig an taighdeoir."
+          "detail": "Nuair a bheidh sé gníomhachtaithe, bain úsáid as \"Eisigh rochtain\" chun eochair API léite amháin nó sceideal easpórtála sonraí a sheoladh chuig an taighdeoir."
         },
         {
           "label": "Athbhreithniú agus athnuachan",
@@ -1508,7 +1508,7 @@
         },
         {
           "label": "Druileáil isteach i comharchumann ar leith",
-          "detail": "Cliceáil ar ró aon comharchumann sa tábla chun a dheais mhionsonraithe a oscailt. Tá rochtain inléite amháin agat ar a gcuid sonraí."
+          "detail": "Cliceáil ar ró aon chomharchumainn sa tábla chun a dheais mhionsonraithe a oscailt. Is féidir leat a gcuid sonraí a léamh ach ní féidir leat iad a athrú."
         },
         {
           "label": "Athbhreithniú a dhéanamh ar shláinte an chónaidhm",

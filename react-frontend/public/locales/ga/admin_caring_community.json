@@ -270,7 +270,7 @@
         "seller_label": "Ceannaí",
         "seller_placeholder": "Cuardaigh ceannaithe…",
         "title": "Socruithe dílseachta",
-        "view_only": "Tá rochtain inléite amháin agat ar an socrú seo."
+        "view_only": "Is féidir leat an socrú seo a léamh ach ní féidir leat é a athrú."
       },
       "stats": {
         "hours_redeemed": "Uaireanta fuascailte",
@@ -1995,7 +1995,7 @@
     },
     "about": {
       "title": "Maidir leis an leathanach seo",
-      "body": "Is comharchumainn NEXUS eile iad Peers na Cónaidhme a bhfuil sé aontaithe ag do phobal baill agus uaireanta a roinnt leo. Nuair a bhíonn nasc piaraí bunaithe, is féidir le baill uaireanta a aistriú idir pobail agus féachaint ar liostaí cónasctha. Éilíonn gach nasc piaraí rún comhroinnte a chaithfidh an dá thaobh a chumrú - déan teagmháil le riarthóir an chomhoibrithe piaraí chun dintiúir a mhalartú.",
+      "body": "Is comharchumainn NEXUS eile iad piaraí sa líonra comhpháirtíochta ar aontaigh do phobal baill agus uaireanta a roinnt leo. Nuair a bhunaítear comhpháirtíocht, is féidir le baill uaireanta a aistriú idir pobail agus liostaí idirphobail a fheiceáil. Teastaíonn rún comhroinnte ó gach comhpháirtíocht agus caithfidh an dá thaobh é a chumrú — déan teagmháil le riarthóir an phobail chomhpháirtíochta chun dintiúir a mhalartú.",
       "shared_secret_label": "Rún comhroinnte:",
       "shared_secret_body": "Eochair phríobháideach a úsáideann an dá chomharchumann lena chruthú cé hiad féin. Ní mór é a iontráil díreach mar an gcéanna ar an dá thaobh. Déan é a athsholáthar gach 6-12 mhí, agus láithreach má cheapann tú go bhfaca aon duine eile é.",
       "pending_body": "Dintiúir socraithe, ag fanacht leis an gcéad ghlao API rathúil.",
@@ -2202,7 +2202,7 @@
     },
     "about": {
       "title": "Maidir leis an leathanach seo",
-      "body": "Bain úsáid as an leathanach seo agus tú ag bunú comhtháthú le seirbhís tríú páirtí, le córas sonraí bardais, nó le líonra NEXUS cónasctha. Déantar gach críochphointe a liostaítear anseo a scóipeáil don imscaradh seo, ach ní chuirtear a bhformhór ar siúl: díchumasaítear an API Comhpháirtí agus an long cónaidhme seachtrach agus freagraíonn siad le freagra nach bhfuil ar fáil go sealadach go dtí go gcumasóidh oibreoir iad, agus is socrú in aghaidh an phobail é an Comhpháirtí API freisin a thosaíonn. Seiceáil le riarthóir do ardáin roimh é seo a roinnt le páirtí. Léiriúcháin is ea ualaí pá samplacha - braitheann luachanna réadúla ar do dhúthracht pobail agus ar dhintiúir do pháirtí.",
+      "body": "Bain úsáid as an leathanach seo agus comhtháthú á bhunú agat le seirbhís tríú páirtí, le córas sonraí bardais nó le líonra comhpháirtíochta NEXUS. Baineann gach críochphointe anseo leis an imscaradh seo, ach tá an chuid is mó díobh múchta: tá an API Comhpháirtí agus an líonra comhpháirtíochta seachtrach díchumasaithe de réir réamhshocraithe agus tugann siad freagra nach bhfuil an tseirbhís ar fáil go sealadach go dtí go gcumasaíonn oibreoir iad. Is socrú ar leith do gach pobal é an API Comhpháirtí freisin agus bíonn sé múchta ar dtús. Seiceáil le riarthóir an ardáin sula roinneann tú é seo le comhpháirtí. Samplaí léiriúcháin iad na hualaí pá; braitheann na fíorluachanna ar shluga do phobail agus ar dhintiúir an chomhpháirtí.",
       "last_refreshed": "{{date}}athnuaite go deireanach."
     },
     "sections": {

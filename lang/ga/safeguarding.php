@@ -47,7 +47,7 @@ return [
     ],
     'jurisdictions' => [
         'unconfigured' => 'Níl an dlínse cosanta cumraithe',
-        'united_kingdom' => 'United Kingdom ? national policy package',
+        'united_kingdom' => 'An Ríocht Aontaithe — pacáiste beartais náisiúnta',
         'england_wales' => 'Sasana agus an Bhreatain Bheag',
         'scotland' => 'Albain',
         'northern_ireland' => 'Tuaisceart Éireann',

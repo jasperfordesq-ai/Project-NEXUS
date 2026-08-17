@@ -145,7 +145,7 @@
     "config_locale": "locale réamhshocraithe",
     "config_locale_desc": "Teanga a úsáidtear do bhaill nua go dtí go roghnaíonn siad a gceann féin.",
     "config_maintenance_mode": "Modh cothabhála",
-    "config_maintenance_mode_desc": "Inléite amháin. Scoránaigh trí scripteanna/maintenance.sh ar an bhfreastalaí.",
+    "config_maintenance_mode_desc": "Le léamh amháin. Athraigh é trí scripts/maintenance.sh ar an bhfreastalaí.",
     "config_max_file_upload_mb": "Uasmhéid uaslódála (MB)",
     "config_max_file_upload_mb_desc": "Teorainn méide in aghaidh an chomhaid. Diúltaítear comhaid níos mó ag an bhfreastalaí.",
     "config_max_groups_per_user": "Uasmhéid grúpaí in aghaidh an bhaill",

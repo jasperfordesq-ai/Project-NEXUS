@@ -23,7 +23,7 @@ return [
     ],
     'actions' => [
         'check_in' => 'Seiceáil isteach',
-        'check_out' => 'Seiceáil amach',
+        'check_out' => 'Taifead an t-imeacht',
         'no_show' => 'Marcáil mar dhuine nár fhreastail',
         'undo' => 'Cealaigh an gníomh is déanaí',
     ],

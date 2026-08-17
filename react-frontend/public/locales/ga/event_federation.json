@@ -2,8 +2,8 @@
   "manage": {
     "federation": {
       "title": "Comhroinnt chónasctha imeachta",
-      "tab": "Cónascadh",
-      "overview": "Seiceáil seachadadh cónasctha",
+      "tab": "Líonra comhpháirtíochta",
+      "overview": "Seiceáil seachadadh idirphobail",
       "description": "Déan monatóireacht ar an gcaoi a roinntear an t-imeacht seo le pobail chomhpháirtíochta gan sonraí príobháideacha lucht freastail a nochtadh.",
       "refresh": "Athnuaigh",
       "loading": "Stádas an chónaisc á lódáil...",
@@ -11,13 +11,13 @@
       "load_error_description": "Níorbh fhéidir diagnóisic seachadta a lódáil. Bain triail eile as.",
       "try_again": "Bain triail eile as",
       "not_configured_title": "Níl aon phobal comhpháirtíochta cumraithe",
-      "not_configured_description": "Níl an t-imeacht seo á sheachadadh chuig comhpháirtí cónasctha ar bith faoi láthair.",
+      "not_configured_description": "Níl an t-imeacht seo á sheachadadh chuig aon phobal comhpháirtíochta faoi láthair.",
       "degraded_title": "Tá aird de dhíth ar roinnt seachadtaí",
       "degraded_description": "Shroich seachadadh amháin nó níos mó an teorainn atrialacha. Úsáid an cód diagnóiseach agus tú i dteagmháil le riarthóir.",
       "metrics": {
         "configured_partners": "Comhpháirtithe cumraithe",
         "recipient_partners": "Stair seachadta",
-        "federation_version": "Leagan cónasctha",
+        "federation_version": "Leagan an líonra comhpháirtíochta",
         "visibility": "Infheictheacht roinnte"
       },
       "visibility": {
@@ -33,7 +33,7 @@
         "delivered": "Seachadta",
         "dead_letter": "Aird de dhíth"
       },
-      "partners_table_aria": "Seachadadh cónasctha imeachta de réir comhpháirtí",
+      "partners_table_aria": "Seachadadh idirphobail an imeachta de réir comhpháirtí",
       "columns": {
         "partner": "Comhpháirtí",
         "action": "Gníomh",
@@ -41,7 +41,7 @@
         "attempts": "Iarrachtaí",
         "activity": "Gníomhaíocht is déanaí"
       },
-      "no_deliveries": "Níor taifeadadh aon seachadadh cónasctha don imeacht seo.",
+      "no_deliveries": "Níor taifeadadh aon seachadadh idirphobail don imeacht seo.",
       "removed_partner": "Comhpháirtí bainte",
       "partner_status": {
         "active": "Gníomhach",
