@@ -85,10 +85,14 @@ public class ReviewTrustController : ControllerBase
             }
         }
 
+        // 🔴 Laravel sends meta{base_url, total} on this endpoint — the count belongs in
+        // META, not at the root. Verified live 2026-08-18. base_url is filled in by
+        // LaravelDataEnvelopeFilter, which preserves an existing meta rather than
+        // replacing it. Row-field differences remain and are separate work.
         return Ok(new
         {
             data = pendingReviews,
-            total = pendingReviews.Count
+            meta = new { total = pendingReviews.Count }
         });
     }
 

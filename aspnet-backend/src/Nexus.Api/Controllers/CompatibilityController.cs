@@ -554,7 +554,11 @@ public class CompatibilityController : ControllerBase
                 responded_at = m.RespondedAt,
                 created_at = m.CreatedAt
             }),
-            pagination = new { page, limit, total, pages = totalPages }
+            // 🔴 The `pagination` block is not Laravel's here. Laravel sends
+            // meta{base_url} alone on this endpoint — verified live 2026-08-18. It
+            // reports page size and whether more exists under `meta`, never a page
+            // count under `pagination`, so a client building a pager from
+            // pagination.pages finds nothing on the production backend.
         });
     }
 
@@ -775,7 +779,10 @@ public class CompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = categories, total = categories.Count });
+        // 🔴 Root-level `total` removed: Laravel sends {data, meta{base_url}} on this
+        // endpoint — verified live 2026-08-18. Row-field differences remain and are
+        // separate work.
+        return Ok(new { data = categories });
     }
 
     /// <summary>
@@ -816,7 +823,10 @@ public class CompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = hashtags, total = hashtags.Count });
+        // 🔴 Root-level `total` removed: Laravel sends {data, meta} and puts nothing
+        // at the root beside them — verified live 2026-08-18. base_url is filled in
+        // by LaravelDataEnvelopeFilter.
+        return Ok(new { data = hashtags });
     }
 
     /// <summary>
@@ -1460,7 +1470,11 @@ public class CompatibilityController : ControllerBase
         return Ok(new
         {
             data = seasons,
-            pagination = new { page, limit, total, pages = totalPages }
+            // 🔴 The `pagination` block is not Laravel's here. Laravel sends
+            // meta{base_url} alone on this endpoint — verified live 2026-08-18. It
+            // reports page size and whether more exists under `meta`, never a page
+            // count under `pagination`, so a client building a pager from
+            // pagination.pages finds nothing on the production backend.
         });
     }
 
@@ -1585,7 +1599,10 @@ public class CompatibilityController : ControllerBase
             expires_at = s.ExpiresAt
         }).ToList();
 
-        return Ok(new { success = true, data = sessions, total = sessions.Count });
+        // 🔴 Root-level `total` removed: Laravel sends {data, meta} and puts nothing
+        // at the root beside them — verified live 2026-08-18. base_url is filled in
+        // by LaravelDataEnvelopeFilter.
+        return Ok(new { success = true, data = sessions });
     }
 
     /// <summary>
@@ -1641,7 +1658,10 @@ public class CompatibilityController : ControllerBase
             })
             .ToList();
 
-        return Ok(new { data, total = data.Count });
+        // 🔴 Root-level `total` removed: Laravel sends {data, meta} and puts nothing
+        // at the root beside them — verified live 2026-08-18. base_url is filled in
+        // by LaravelDataEnvelopeFilter.
+        return Ok(new { data });
     }
 
     /// <summary>
