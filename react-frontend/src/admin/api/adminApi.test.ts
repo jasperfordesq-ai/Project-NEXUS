@@ -1246,10 +1246,13 @@ describe('adminNewsletters', () => {
     expect(mockPost).toHaveBeenCalledWith('/v2/admin/newsletters', { subject: 'Hello', content: 'body' });
   });
 
-  it('sendNewsletter posts to /send', async () => {
+  it('sendNewsletter posts to /send with a raised timeout', async () => {
     mockPost.mockResolvedValueOnce({ success: true, data: {} });
     await adminNewsletters.sendNewsletter(4);
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/newsletters/4/send', {});
+    // The send resolves recipients and delivers a first batch inline, so it needs
+    // longer than the 30s default — that default is what reported 'Request Timed
+    // Out' for sends that had actually gone out.
+    expect(mockPost).toHaveBeenCalledWith('/v2/admin/newsletters/4/send', {}, { timeout: 60000 });
   });
 
   it('sendTest posts to /send-test', async () => {

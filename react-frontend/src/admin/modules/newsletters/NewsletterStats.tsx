@@ -178,9 +178,9 @@ export function NewsletterStats() {
   const [resendOpen, setResendOpen] = useState(false);
   const [emailClients, setEmailClients] = useState<Array<{ client: string; count: number }>>([]);
 
-  const loadStats = useCallback(async () => {
+  const loadStats = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!id) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const nid = Number(id);
@@ -200,11 +200,22 @@ export function NewsletterStats() {
     } catch {
       setError(t('newsletters.error_failed_to_load_stats'));
     }
-    setLoading(false);
+    if (!silent) setLoading(false);
   }, [id, t])
 
 
   useEffect(() => { loadStats(); }, [loadStats]);
+
+  // A send is delivered over several minutes: the request hands off a first batch
+  // and the every-minute cron drainer finishes the rest. Refresh quietly while the
+  // newsletter is still sending so the admin watches the count climb instead of
+  // staring at a part-finished total and assuming the send failed.
+  const isSending = data?.newsletter?.status === 'sending';
+  useEffect(() => {
+    if (!isSending) return;
+    const timer = setInterval(() => { void loadStats({ silent: true }); }, 10000);
+    return () => clearInterval(timer);
+  }, [isSending, loadStats]);
 
   const handleSelectWinner = async (winner: 'a' | 'b') => {
     if (!id) return;
@@ -832,7 +843,7 @@ export function NewsletterStats() {
           isOpen={resendOpen}
           onClose={() => setResendOpen(false)}
           newsletterId={Number(id)}
-          onSuccess={loadStats}
+          onSuccess={() => { void loadStats(); }}
         />
       )}
     </div>

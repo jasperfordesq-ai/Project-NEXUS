@@ -50,6 +50,38 @@ class NewsletterService
      */
     private const MAX_SEND_ATTEMPTS = 5;
 
+    /**
+     * How long sendNow() is allowed to keep sending inside the caller's request
+     * before handing the rest of the queue to the every-minute cron drainer.
+     *
+     * sendNow() used to drain the WHOLE queue inline. At 250ms throttle per email
+     * plus provider latency that is ~0.7s per recipient, so a 256-recipient send
+     * held the HTTP request open for 184s (measured on production, newsletter 35,
+     * 2026-08-18). The React admin aborts at 30s, so the admin saw "Request Timed
+     * Out" while the send actually completed — and a scheduled send held the global
+     * cron mutex for the same duration, skipping other exact-minute jobs.
+     *
+     * The budget is checked between batches, so a send can overshoot it by up to
+     * one batch. Keep INLINE_SEND_BATCH_SIZE small enough that
+     * budget + (batch * 0.7s) still leaves headroom under the frontend timeout
+     * (30s default, raised to 60s for this one call in adminApi.ts).
+     */
+    private const INLINE_SEND_BUDGET_SECONDS = 10;
+
+    /**
+     * Batch size for the inline portion of a send. Deliberately much smaller than
+     * the cron drainer's batch: it bounds how far past INLINE_SEND_BUDGET_SECONDS
+     * the request can run, because the budget is only checked between batches.
+     *
+     * Worst case is one batch, and a batch is only as fast as the mail provider.
+     * Postmark answers in ~0.7s per email in production (so ~3.5s per batch), but a
+     * dead/slow SMTP host makes each attempt cost its connection timeout instead —
+     * measured at ~4s per email against an unreachable host locally, i.e. ~21s for
+     * one batch. That is why the frontend allows 60s for this call rather than
+     * trimming the margin to the happy path.
+     */
+    private const INLINE_SEND_BATCH_SIZE = 5;
+
     public function __construct(
         private readonly Newsletter $newsletter,
     ) {}
@@ -235,8 +267,12 @@ class NewsletterService
                 'segment_id' => $segmentId,
             ]);
 
-            // Process queue
-            self::processQueue($newsletterId);
+            // Send what fits in a short budget so small lists finish during the
+            // caller's request, then leave the rest to the every-minute cron
+            // drainer (CronJobRunner::processNewsletterQueueInternal). Draining
+            // the whole queue here is what produced the 184s request / "Request
+            // Timed Out" toast — see INLINE_SEND_BUDGET_SECONDS.
+            self::processQueue($newsletterId, self::INLINE_SEND_BATCH_SIZE, self::INLINE_SEND_BUDGET_SECONDS);
 
             return $queued;
             });
@@ -249,8 +285,18 @@ class NewsletterService
      * Process the send queue for a newsletter.
      *
      * Sends emails in batches using App\Core\Mailer with rate limiting.
+     *
+     * @param int|null $maxSeconds Stop claiming new batches once this many seconds
+     *                             have elapsed, leaving the remainder for the next
+     *                             caller (the every-minute cron drainer). null means
+     *                             drain the whole queue however long that takes —
+     *                             only safe off the HTTP path. At least one batch
+     *                             always runs, whatever the budget.
+     * @return array{sent: int, failed: int, remaining?: int, locked?: bool}
+     *         `remaining` counts rows still to be delivered (pending + in-flight +
+     *         retry-eligible failures) when this call returned.
      */
-    public static function processQueue(int $newsletterId, int $batchSize = 50): array
+    public static function processQueue(int $newsletterId, int $batchSize = 50, ?int $maxSeconds = null): array
     {
         $lockKey = "newsletter_queue:{$newsletterId}:runner_lock";
         if (!Cache::add($lockKey, getmypid() ?: uniqid('newsletter_', true), 300)) {
@@ -264,7 +310,7 @@ class NewsletterService
         }
 
         $tenantId = (int) ($newsletter->tenant_id ?: TenantContext::getId());
-        return TenantContext::runForTenant($tenantId, function () use ($newsletter, $newsletterId, $batchSize, $tenantId): array {
+        return TenantContext::runForTenant($tenantId, function () use ($newsletter, $newsletterId, $batchSize, $tenantId, $maxSeconds): array {
         $tenantName = DB::table('tenants')
             ->where('id', $tenantId)
             ->value('name') ?? 'Community';
@@ -272,6 +318,7 @@ class NewsletterService
         $sent = 0;
         $failed = 0;
         $suppressedEmails = self::getSuppressedEmails($tenantId);
+        $deadline = $maxSeconds !== null ? microtime(true) + $maxSeconds : null;
 
         // Process all pending items in batches with ATOMIC CLAIMING.
         // Step 1: UPDATE status to 'processing' (claim) — prevents other runners
@@ -411,6 +458,12 @@ class NewsletterService
                     Log::error("Newsletter send error for {$item->email}: " . $e->getMessage());
                 }
             }
+
+            // Budget spent — hand the rest of the queue to the next drainer tick.
+            // Checked after the batch so at least one batch always goes out.
+            if ($deadline !== null && microtime(true) >= $deadline) {
+                break;
+            }
         } while (true);
 
         // Update newsletter stats
@@ -446,7 +499,13 @@ class NewsletterService
             ]);
         }
 
-        return ['sent' => $sent, 'failed' => $failed];
+        return [
+            'sent' => $sent,
+            'failed' => $failed,
+            'remaining' => (int) ($stats->pending ?? 0)
+                + (int) ($stats->processing ?? 0)
+                + (int) ($stats->retryable_failed ?? 0),
+        ];
         });
         } finally {
             Cache::forget($lockKey);

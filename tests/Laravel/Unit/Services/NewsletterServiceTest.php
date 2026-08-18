@@ -180,7 +180,8 @@ class NewsletterServiceTest extends TestCase
 
         $result = TenantContext::runForTenant($tenantId, fn () => NewsletterService::processQueue($newsletterId, 10));
 
-        $this->assertSame(['sent' => 0, 'failed' => 0], $result);
+        $this->assertSame(0, $result['sent']);
+        $this->assertSame(0, $result['failed']);
         $this->assertDatabaseHas('newsletter_queue', [
             'tenant_id' => $tenantId,
             'newsletter_id' => $newsletterId,
@@ -237,7 +238,8 @@ class NewsletterServiceTest extends TestCase
 
         $result = TenantContext::runForTenant($tenantId, fn () => NewsletterService::processQueue($newsletterId, 10));
 
-        $this->assertSame(['sent' => 0, 'failed' => 0], $result);
+        $this->assertSame(0, $result['sent']);
+        $this->assertSame(0, $result['failed']);
         $this->assertDatabaseHas('newsletter_queue', [
             'tenant_id' => $tenantId,
             'newsletter_id' => $newsletterId,
@@ -345,5 +347,94 @@ class NewsletterServiceTest extends TestCase
         $this->assertStringContainsString('processing_batch_id', $migration);
         $this->assertStringContainsString('processing_started_at', $migration);
         $this->assertStringContainsString('idx_newsletter_queue_processing_batch', $migration);
+    }
+
+    /**
+     * Regression: sending a newsletter used to drain the ENTIRE queue inside the
+     * caller's request. On production (newsletter 35, 2026-08-18) that held a
+     * 256-recipient send open for 184s; the React admin aborts at 30s, so the admin
+     * saw "Request Timed Out" for a send that had in fact worked.
+     *
+     * processQueue() must stop claiming batches once its time budget is spent and
+     * report the leftover work, leaving the newsletter in 'sending' so the
+     * every-minute cron drainer finishes it.
+     */
+    public function test_process_queue_stops_at_its_time_budget_and_leaves_the_rest_queued(): void
+    {
+        $tenantId = $this->useIsolatedTenant();
+        $newsletterId = $this->createSendingNewsletterWithQueuedRecipients($tenantId, 3);
+
+        // Budget 0 = stop as soon as the first batch is done. Batch size 1, so
+        // exactly one row is claimed and the other two are never touched.
+        $result = TenantContext::runForTenant(
+            $tenantId,
+            fn () => NewsletterService::processQueue($newsletterId, 1, 0)
+        );
+
+        $this->assertSame(2, $this->countQueueRowsWithStatus($tenantId, $newsletterId, 'pending'), 'two recipients should still be waiting for the cron drainer');
+        $this->assertGreaterThanOrEqual(2, $result['remaining'], 'processQueue must report the work it left behind');
+        $this->assertSame(
+            'sending',
+            DB::table('newsletters')->where('id', $newsletterId)->value('status'),
+            "newsletter must stay 'sending' or the cron drainer will not claim it"
+        );
+    }
+
+    /**
+     * The budget is opt-in: off the HTTP path (a manual admin drain) a null budget
+     * must still empty the queue in one call.
+     */
+    public function test_process_queue_without_a_budget_drains_the_whole_queue(): void
+    {
+        $tenantId = $this->useIsolatedTenant();
+        $newsletterId = $this->createSendingNewsletterWithQueuedRecipients($tenantId, 3);
+
+        TenantContext::runForTenant(
+            $tenantId,
+            fn () => NewsletterService::processQueue($newsletterId, 1, null)
+        );
+
+        $this->assertSame(0, $this->countQueueRowsWithStatus($tenantId, $newsletterId, 'pending'));
+    }
+
+    private function createSendingNewsletterWithQueuedRecipients(int $tenantId, int $recipients): int
+    {
+        $admin = User::factory()->forTenant($tenantId)->admin()->create();
+
+        $newsletterId = (int) DB::table('newsletters')->insertGetId([
+            'tenant_id' => $tenantId,
+            'name' => 'Send budget guard',
+            'subject' => 'Send budget guard',
+            'content' => '<p>Hello</p>',
+            'status' => 'sending',
+            'target_audience' => 'subscribers_only',
+            'total_recipients' => $recipients,
+            'created_by' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        for ($i = 0; $i < $recipients; $i++) {
+            DB::table('newsletter_queue')->insert([
+                'tenant_id' => $tenantId,
+                'newsletter_id' => $newsletterId,
+                'email' => "budget-guard-{$i}@example.test",
+                'status' => 'pending',
+                'unsubscribe_token' => Str::random(64),
+                'tracking_token' => Str::random(64),
+                'created_at' => now(),
+            ]);
+        }
+
+        return $newsletterId;
+    }
+
+    private function countQueueRowsWithStatus(int $tenantId, int $newsletterId, string $status): int
+    {
+        return (int) DB::table('newsletter_queue')
+            ->where('tenant_id', $tenantId)
+            ->where('newsletter_id', $newsletterId)
+            ->where('status', $status)
+            ->count();
     }
 }

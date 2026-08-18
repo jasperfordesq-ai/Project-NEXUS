@@ -2162,7 +2162,20 @@ class AdminNewsletterController extends BaseApiController
                 $queuedCount++;
             }
 
-            $processed = NewsletterService::processQueue($newsletterId);
+            // Mark the newsletter as sending again BEFORE the time-boxed drain below.
+            // The cron drainer only claims newsletters whose status is 'sending', so
+            // without this any resend rows left over when the budget expires would
+            // never be delivered. processQueue() restores 'sent' + sent_at once the
+            // queue empties.
+            DB::update(
+                "UPDATE newsletters SET status = 'sending', updated_at = NOW() WHERE id = ? AND tenant_id = ?",
+                [$newsletterId, $tenantId]
+            );
+
+            // Time-boxed for the same reason as sendNewsletter(): an unbounded drain
+            // here outlives the frontend request timeout on any sizeable resend.
+            // The every-minute cron drainer finishes the remainder.
+            $processed = NewsletterService::processQueue($newsletterId, 5, 10);
 
             return $this->respondWithData([
                 'success' => true,
@@ -2340,9 +2353,20 @@ class AdminNewsletterController extends BaseApiController
 
             $queued = NewsletterService::sendNow($id, $targetAudience, $segmentId, $targeting);
 
+            // sendNow() sends only what fits in a short time budget and leaves the
+            // rest to the every-minute cron drainer, so report the real state rather
+            // than assuming the whole list went out during this request.
+            $after = DB::selectOne(
+                "SELECT status, total_sent FROM newsletters WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
+            $sent = (int) ($after->total_sent ?? 0);
+
             return $this->respondWithData([
                 'queued' => $queued,
-                'status' => 'sending',
+                'sent' => $sent,
+                'remaining' => max(0, $queued - $sent),
+                'status' => $after->status ?? 'sending',
                 'message' => __('api_controllers_1.admin_newsletter.newsletter_queued', ['count' => $queued]),
             ]);
         } catch (\Exception $e) {

@@ -1502,8 +1502,11 @@ export const adminNewsletters = {
   getResendInfo: (newsletterId: number) =>
     api.get<ResendInfo>(`/v2/admin/newsletters/${newsletterId}/resend-info`),
 
+  // Same slow-by-design path as sendNewsletter — see the note there.
   resend: (newsletterId: number, options: { target: string; segment_id?: number; subject_override?: string }) =>
-    api.post<{ success: boolean }>(`/v2/admin/newsletters/${newsletterId}/resend`, options),
+    api.post<{ success: boolean }>(`/v2/admin/newsletters/${newsletterId}/resend`, options, {
+      timeout: 60000,
+    }),
 
   // Send-time optimizer
   getSendTimeData: (params?: { days?: number }) =>
@@ -1531,8 +1534,16 @@ export const adminNewsletters = {
     api.post<{ success: boolean }>(`/v2/admin/newsletters/${id}/ab-winner`, { winner }),
 
   // Send workflow
+  // Sending resolves the recipient list and delivers a first batch inline before
+  // handing the remainder to the every-minute cron drainer, so this request is
+  // legitimately slower than a normal call. The default 30s timeout used to abort
+  // it mid-send and report 'Request Timed Out' for a send that had in fact worked.
   sendNewsletter: (id: number) =>
-    api.post<{ queued: number; status: string; message: string }>(`/v2/admin/newsletters/${id}/send`, {}),
+    api.post<{ queued: number; sent: number; remaining: number; status: string; message: string }>(
+      `/v2/admin/newsletters/${id}/send`,
+      {},
+      { timeout: 60000 }
+    ),
 
   sendTest: (id: number) =>
     api.post<{ sent_to: string; message: string }>(`/v2/admin/newsletters/${id}/send-test`, {}),

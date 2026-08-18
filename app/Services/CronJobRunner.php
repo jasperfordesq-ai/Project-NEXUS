@@ -2068,7 +2068,16 @@ class CronJobRunner
                     $newsletterFailed = 0;
 
                     do {
-                        $result = NewsletterService::processQueue($row['newsletter_id'], $batchSize);
+                        // Pass the REMAINING budget down. processQueue() loops over
+                        // batches internally until the queue is empty, so without a
+                        // budget the first call drains everything and the deadline
+                        // check below never gets a turn - the time-box described
+                        // above was ineffective until this was plumbed through.
+                        $result = NewsletterService::processQueue(
+                            $row['newsletter_id'],
+                            $batchSize,
+                            max(1, $deadline - time())
+                        );
                         $batchSent = $result['sent'] ?? 0;
                         $batchFailed = $result['failed'] ?? 0;
                         $newsletterSent += $batchSent;
