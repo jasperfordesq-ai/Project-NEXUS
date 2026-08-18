@@ -59,9 +59,12 @@
   </div>
 
   {% if notifications and notifications.length > 0 %}
+    {# The card-list wrapper supplies the top rule; without it the first
+       notification had no line above it. #}
+    <div class="nexus-alpha-card-list">
     {% for notification in notifications %}
       {% set notificationLink = notification.link if notification.link else null %}
-      <div class="nexus-alpha-card govuk-!-margin-bottom-3">
+      <div class="nexus-alpha-card">
         <div class="nexus-alpha-module-row">
           <p class="govuk-body govuk-!-margin-bottom-1">
             <strong class="govuk-tag govuk-tag--{{ notification.categoryColour }}">{{ notification.categoryLabel }}</strong>
@@ -99,6 +102,7 @@
         {% if notification.displayWhen %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ notification.displayWhen }}</p>{% endif %}
       </div>
     {% endfor %}
+    </div>
 
     {% if meta.has_more and meta.cursor %}
       <p class="govuk-body govuk-!-margin-top-4">

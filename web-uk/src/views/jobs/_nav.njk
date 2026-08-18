@@ -14,7 +14,10 @@
   { key: "create", label: t("govuk_alpha.jobs_t3.nav_create"), href: "/jobs/create" }
 ] %}
 
-<div class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+{# <nav> with a label, matching courses/marketplace/federation. As a bare <div>
+   this cross-page navigation was not a landmark, so it could not be jumped to
+   or announced as navigation. The label reuses the heading below — no new key. #}
+<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ t("govuk_alpha.jobs.title") }}">
   <h2 class="govuk-tabs__title">{{ t("govuk_alpha.jobs.title") }}</h2>
   <ul class="govuk-tabs__list">
     {% for tab in jobsTabs %}
@@ -23,4 +26,4 @@
       </li>
     {% endfor %}
   </ul>
-</div>
+</nav>

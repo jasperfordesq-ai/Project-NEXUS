@@ -16819,7 +16819,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('4 unread');
     expect(response.text).toContain('Unread (4)');
     expect(response.text).toContain('<h1 class="govuk-heading-xl">Notifications</h1>');
-    expect(response.text).toContain('class="nexus-alpha-card govuk-!-margin-bottom-3"');
+    // Cards sit in a card-list wrapper, which supplies the rule above the first
+    // one; they are separated by their own borders rather than a margin utility,
+    // matching every other card list in the service.
+    expect(response.text).toContain('class="nexus-alpha-card-list"');
+    expect(response.text).toContain('class="nexus-alpha-card"');
     expect(response.text).toContain('&middot;');
     expect(response.text).not.toContain('app-notification-icon');
     expect(response.text).toContain('Avery and two others liked your post');

@@ -73,7 +73,7 @@
       {% endif %}
 
       <nav class="govuk-!-margin-bottom-4" aria-label="{{ t('messages.tabs_title') }}">
-        <ul class="govuk-list" style="display:flex;gap:1rem;list-style:none;padding:0;margin:0 0 1rem">
+        <ul class="govuk-list nexus-alpha-filter-nav">
           <li><a class="govuk-link{% if not showArchived %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/messages') }}"{% if not showArchived %} aria-current="page"{% endif %}>{{ t("messages.inbox") }}</a></li>
           <li><a class="govuk-link{% if showArchived %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/messages?archived=1') }}"{% if showArchived %} aria-current="page"{% endif %}>{{ t("messages.archived") }}</a></li>
         </ul>

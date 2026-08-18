@@ -48,7 +48,10 @@
   {% elif not results or results.length == 0 %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("search.empty") }}</p></div>
   {% else %}
-    <p class="govuk-body">{{ t("search.results_count", { count: totalResults }) }}</p>
+    <p class="govuk-body nexus-alpha-result-count">{{ t("search.results_count", { count: totalResults }) }}</p>
+    {# The card-list wrapper supplies the top rule; without it the first result
+       had no line above it and the set did not read as one list. #}
+    <div class="nexus-alpha-card-list">
     {% for item in results %}
       {% set itemTitle = item.displayTitle %}
       {% if itemTitle %}
@@ -72,7 +75,7 @@
           {% set itemTag = t("search.tag_group") %}
           {% set itemTagClass = 'govuk-tag--turquoise' %}
         {% endif %}
-        <div class="nexus-alpha-card govuk-!-margin-bottom-3">
+        <div class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-0">
               {% if itemHref %}<a class="govuk-link" href="{{ urlFor(itemHref) }}">{{ itemTitle }}</a>{% else %}{{ itemTitle }}{% endif %}
@@ -82,5 +85,6 @@
         </div>
       {% endif %}
     {% endfor %}
+    </div>
   {% endif %}
 {% endblock %}
