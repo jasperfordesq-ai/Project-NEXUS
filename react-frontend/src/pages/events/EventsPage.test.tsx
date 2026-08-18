@@ -178,6 +178,49 @@ describe('EventsPage', () => {
     expect(screen.getByText(expectedDay)).toBeInTheDocument();
   });
 
+  // Unpublished events reach the list only for their own organiser (and tenant
+  // admins). Without a state chip a freshly created draft is indistinguishable
+  // from a live event, which is how drafts came to look lost.
+  it('badges a draft event card', async () => {
+    const event = createCanonicalEventFixture({
+      schedule: {
+        ...createCanonicalEventFixture().schedule,
+        publication_state: 'draft',
+        state: 'draft',
+      },
+    });
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [event],
+      meta: { has_more: false, total_items: 1 },
+    });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    expect(screen.getByText('Draft event')).toBeInTheDocument();
+  });
+
+  it('badges a pending-review event card', async () => {
+    const event = createCanonicalEventFixture({
+      schedule: {
+        ...createCanonicalEventFixture().schedule,
+        publication_state: 'pending_review',
+        state: 'pending_review',
+      },
+    });
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [event],
+      meta: { has_more: false, total_items: 1 },
+    });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Community Garden Day' });
+
+    expect(screen.getByText('Pending review')).toBeInTheDocument();
+  });
+
   describe('phone layout', () => {
     beforeEach(() => {
       isPhoneViewport = true;

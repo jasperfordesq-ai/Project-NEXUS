@@ -37,6 +37,8 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Tag from 'lucide-react/icons/tag';
 import Ban from 'lucide-react/icons/ban';
+import PencilLine from 'lucide-react/icons/pencil-line';
+import Hourglass from 'lucide-react/icons/hourglass';
 import X from 'lucide-react/icons/x';
 import Repeat from 'lucide-react/icons/repeat';
 import List from 'lucide-react/icons/list';
@@ -904,6 +906,10 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
   }
   const isPast = event.schedule.state === 'ended' || event.schedule.state === 'completed';
   const isCancelled = event.schedule.state === 'cancelled';
+  // Unpublished events only reach the list for their own organiser (and tenant
+  // admins), so a state chip here is what stops a fresh draft looking lost.
+  const isDraft = event.schedule.publication_state === 'draft';
+  const isPendingReview = event.schedule.publication_state === 'pending_review';
   const eventDateLabel = formatDateValue(startDate, {
     year: 'numeric',
     month: 'long',
@@ -1008,6 +1014,16 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                     {seriesCount > 1
                       ? `${repeatsLabel} · ${t('card.series_dates', { count: seriesCount })}`
                       : repeatsLabel}
+                  </Chip>
+                )}
+                {isDraft && (
+                  <Chip size="sm" variant="flat" color="warning" startContent={<PencilLine className="h-3.5 w-3.5" aria-hidden="true" />}>
+                    {t('detail.event_draft')}
+                  </Chip>
+                )}
+                {isPendingReview && (
+                  <Chip size="sm" variant="flat" color="warning" startContent={<Hourglass className="h-3.5 w-3.5" aria-hidden="true" />}>
+                    {t('detail.event_pending_review')}
                   </Chip>
                 )}
                 {isCancelled && (

@@ -114,9 +114,12 @@ final class EventLifecycleService
                 throw new EventLifecycleTransitionException('event_lifecycle_event_not_found');
             }
 
+            // Auth is GLOBAL; only resources are tenant-scoped. The actor's
+            // own row is resolved by authenticated id alone — a tenant
+            // predicate here refused organisers and admins whose account row
+            // lives on another tenant. EventPolicy decides authority.
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->whereKey((int) $actor->getKey())
                 ->where('status', 'active')
                 ->whereNull('deleted_at')

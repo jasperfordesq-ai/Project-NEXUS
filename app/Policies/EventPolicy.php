@@ -331,10 +331,14 @@ class EventPolicy
     {
         $tenantId = TenantContext::currentId();
 
+        // Auth is GLOBAL; only resources are tenant-scoped. The EVENT must
+        // belong to the current tenant, but the ACTING user's home tenant must
+        // not be compared against it: that refused organisers and admins whose
+        // account row lives on another tenant (network admins, anyone acting on
+        // a sub-tenant) — including the creator of the very event being checked.
         if ($tenantId === null || $tenantId <= 0
             || (int) $user->getKey() <= 0
             || (int) $event->getKey() <= 0
-            || (int) $user->getAttribute('tenant_id') !== $tenantId
             || (int) $event->getAttribute('tenant_id') !== $tenantId
             || (string) $user->getAttribute('status') !== 'active'
             || $user->getAttribute('deleted_at') !== null) {
@@ -619,9 +623,11 @@ class EventPolicy
     private function primeFacts(User $user, array $events): void
     {
         $tenantId = TenantContext::currentId();
+        // Same rule as hasValidContext(): never compare the ACTING user's home
+        // tenant against the current tenant. Skipping the prime here would only
+        // cost lazy lookups, but the predicates must stay aligned.
         if ($tenantId === null
             || (int) $user->getKey() <= 0
-            || (int) $user->getAttribute('tenant_id') !== $tenantId
             || (string) $user->getAttribute('status') !== 'active'
             || $user->getAttribute('deleted_at') !== null) {
             return;

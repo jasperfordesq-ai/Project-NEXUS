@@ -1232,6 +1232,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             && ($recipient->deleted_at ?? null) === null;
         $recipientDescriptor = $descriptor;
         $recipientDescriptor['preference_event_id'] = $preferenceEventId;
+        $recipientDescriptor['audience'] = $audience;
         $recipientDescriptor['offer_secret'] = $descriptor['offer_secret']
             && $audience === 'member'
             && $userId === (int) ($payload['user_id'] ?? 0);
@@ -1866,11 +1867,23 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
         // Resolve cadence against the concrete event at dispatch time for every
         // Event email. An event/category/global `off` veto must not be bypassed
         // by lifecycle, registration, waitlist, staff, or update messages.
-        $frequency = EventNotificationPreferenceResolver::resolveForEvent(
+        $resolution = EventNotificationPreferenceResolver::resolveForEvent(
             $userId,
             $tenantId,
             $preferenceEventId,
-        )['cadence'];
+        );
+        $frequency = $resolution['cadence'];
+        // Admin review alerts are operational mail: a pending event is waiting
+        // on this admin's decision. The tenant/platform default cadence ('off'
+        // out of the box, source 'tenant') expresses no choice by this admin
+        // and must not silence or digest-delay the alert. Explicit member-level
+        // cadence choices (event/category/global) and the email_events opt-out
+        // above still win.
+        if ($descriptor['notification_type'] === 'event_moderation'
+            && ($descriptor['audience'] ?? null) === 'admin'
+            && $resolution['cadence_source'] === 'tenant') {
+            $frequency = 'instant';
+        }
         if ($frequency === 'off') {
             $service->markSuppressed($tenantId, $deliveryId, 'email_frequency_off', 'frequency');
             return;

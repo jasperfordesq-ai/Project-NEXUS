@@ -1004,10 +1004,12 @@ class EventsController extends BaseApiController
     {
         $userId = $this->requireAuth();
         $this->rateLimit('events_publish', 10, 60);
-        $tenantId = (int) TenantContext::getId();
+        // Auth is GLOBAL; only resources are tenant-scoped. `$userId` comes
+        // from requireAuth(), so this resolves the caller's own row — a tenant
+        // predicate here 403'd every actor whose home tenant differs from the
+        // tenant being acted in, before the workflow could even authorize.
         /** @var User|null $actor */
         $actor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($userId)
             ->where('status', 'active')
             ->whereNull('deleted_at')

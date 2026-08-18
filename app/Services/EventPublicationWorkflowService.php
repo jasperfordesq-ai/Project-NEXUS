@@ -176,9 +176,13 @@ final class EventPublicationWorkflowService
             throw new EventLifecycleTransitionException('event_lifecycle_tenant_context_missing');
         }
 
+        // Auth is GLOBAL; only resources are tenant-scoped. Resolving the
+        // ACTING user's own row with a tenant predicate refused every actor
+        // whose home tenant differs from the tenant being acted in — including
+        // the organiser who just created the event. The Event lookup below
+        // stays tenant-scoped; authority is decided by EventPolicy.
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey((int) $actor->getKey())
             ->where('status', 'active')
             ->whereNull('deleted_at')
@@ -269,9 +273,10 @@ final class EventPublicationWorkflowService
             // queued or direct moderation decision fails closed.
             $transactionActor = $actor;
             if (in_array($action, ['approve', 'reject'], true)) {
+                // Actor re-read is by authenticated id alone — never
+                // tenant-scoped (see authorizedActorAndEvent).
                 /** @var User|null $lockedActor */
                 $lockedActor = User::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
                     ->whereKey((int) $actor->getKey())
                     ->where('status', 'active')
                     ->whereNull('deleted_at')

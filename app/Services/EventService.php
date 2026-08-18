@@ -235,11 +235,30 @@ class EventService
                 'category:id,name,slug,color,type',
                 'group:id,name',
             ])
-            ->where(function (Builder $q) {
+            ->where(function (Builder $q) use ($viewerId) {
                 $q->whereNull('status')->orWhere('status', 'active');
+                // Draft and pending-review events mirror to legacy 'draft', so
+                // without this clause the publication-visibility block below
+                // ("members see their OWN drafts/pending") could never match:
+                // the creator's unpublished event vanished from every list and
+                // looked lost. Only the creator's own rows pass; the
+                // publication clause still hides them from everyone else.
+                if ($viewerId !== null) {
+                    $q->orWhere(function (Builder $own) use ($viewerId) {
+                        $own->where('events.status', 'draft')
+                            ->where('events.user_id', $viewerId)
+                            // Series child occurrences are represented by their
+                            // template row; a draft sibling must not surface as
+                            // its own list entry (recurring collapse contract).
+                            ->where(function (Builder $standalone) {
+                                $standalone->whereNull('events.parent_event_id')
+                                    ->orWhere('events.parent_event_id', 0);
+                            });
+                    });
+                }
             });
 
-        $isTenantAdmin = self::isTenantAdmin($viewerId, $tenantId);
+        $isTenantAdmin = self::isTenantAdmin($viewerId);
         self::applyDiscoveryVisibility($query, $viewerId, $tenantId, $isTenantAdmin);
 
         // Anonymous (public) discovery sees only published events.
@@ -882,7 +901,7 @@ class EventService
             ->find($id);
 
         $tenantId = (int) TenantContext::getId();
-        $viewer = self::policyUser($currentUserId, $tenantId);
+        $viewer = self::policyUser($currentUserId);
         $policy = app(EventPolicy::class);
         if (! $event || $viewer === null || ! $policy->view($viewer, $event)) {
             return null;
@@ -2066,7 +2085,7 @@ class EventService
 
         if ($actorId !== null
             && (int) $series->created_by !== $actorId
-            && !self::isTenantAdmin($actorId, (int) TenantContext::getId())) {
+            && !self::isTenantAdmin($actorId)) {
             throw new AuthorizationException(__('api.event_modify_forbidden'));
         }
 
@@ -2338,7 +2357,7 @@ class EventService
                 'start_time',
             ])
             ->keyBy('id');
-        $viewer = self::policyUser($viewerId, $tenantId);
+        $viewer = self::policyUser($viewerId);
         $eventPolicy = app(EventPolicy::class);
         $policyAbilities = $viewer === null
             ? []
@@ -2348,7 +2367,7 @@ class EventService
             false,
             $tenantId,
         );
-        $viewerIsTenantAdmin = self::isTenantAdmin($viewerId, $tenantId);
+        $viewerIsTenantAdmin = self::isTenantAdmin($viewerId);
         $rsvpMap = $viewerId !== null ? self::getUserRsvpsBatch($eventIds, $viewerId) : [];
 
         $canonicalRegistrations = collect();
@@ -2852,7 +2871,7 @@ class EventService
             $events
         )));
         $abilities = [];
-        $viewer = self::policyUser($viewerId, $tenantId);
+        $viewer = self::policyUser($viewerId);
         if ($viewer !== null && $eventIds !== []) {
             $policyEvents = Event::query()
                 ->whereIn('id', $eventIds)
@@ -3431,9 +3450,10 @@ class EventService
             throw new EventLifecycleTransitionException('event_lifecycle_subject_invalid');
         }
 
+        // The actor's own row — never tenant-scoped (see policyUser()).
+        // EventPolicy::manage() decides authority against the tenant's event.
         /** @var User|null $actor */
         $actor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
@@ -4428,15 +4448,20 @@ class EventService
         }
     }
 
-    private static function policyUser(?int $userId, int $tenantId): ?User
+    private static function policyUser(?int $userId): ?User
     {
         if ($userId === null || $userId <= 0) {
             return null;
         }
 
+        // Auth is GLOBAL; only resources are tenant-scoped. The viewer's own
+        // row is resolved by authenticated id alone — a tenant predicate here
+        // made EventPolicy treat cross-tenant organisers and admins as
+        // anonymous, hiding their own drafts and every management action.
+        // The model's global TenantScope must be lifted for the same reason.
         return User::query()
+            ->withoutGlobalScope(\App\Scopes\TenantScope::class)
             ->where('id', $userId)
-            ->where('tenant_id', $tenantId)
             ->first([
                 'id',
                 'tenant_id',
@@ -4494,7 +4519,7 @@ class EventService
         ?EventPolicy $policy = null,
     ): bool {
         $tenantId = (int) TenantContext::getId();
-        $user ??= self::policyUser($userId, $tenantId);
+        $user ??= self::policyUser($userId);
         if ($user === null) {
             return false;
         }
@@ -4534,7 +4559,7 @@ class EventService
                   AND visible_event_groups.status = ?";
         $bindings = [$tenantId, GroupStatus::Active->value];
 
-        if (!self::isTenantAdmin($viewerId, $tenantId)) {
+        if (!self::isTenantAdmin($viewerId)) {
             $sql .= "
                   AND (
                       visible_event_groups.visibility IS NULL
@@ -4564,15 +4589,15 @@ class EventService
         return [$sql, $bindings];
     }
 
-    private static function isTenantAdmin(?int $userId, int $tenantId): bool
+    private static function isTenantAdmin(?int $userId): bool
     {
         if ($userId === null) {
             return false;
         }
 
+        // The viewer's own row — never tenant-scoped (see policyUser()).
         $user = DB::table('users')
             ->where('id', $userId)
-            ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->select([
