@@ -139,6 +139,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   A new automatic check now fails the build if any page ever again asks for a style that hasn't been written — and it reads the finished stylesheet, so a rule that exists but never reaches the browser still counts as missing.
 
+- **The accessible site's pages now agree with each other — the back link stops moving, and long pages stop running the full width of the screen.**
+
+  **The back link sat in two different places depending on the page.** The Design System puts it above the main content; only 22 pages did that, and the rest opened it inside the page body, which renders it about 40px lower. Walking between two otherwise identical pages made the link jump. 137 pages moved; the link now sits in the same place everywhere. A further 79 were deliberately left alone because their back link isn't a simple single line and moving it mechanically would have risked breaking the page — those are listed rather than guessed at.
+
+  **60 text and form pages now hold their text to a readable column width** instead of running the full width of the screen. This is a large part of the "wall of text" feeling. It was applied carefully rather than everywhere: 108 pages that contain tables, card lists or tabs were left full width on purpose, because narrowing those would make them worse, not better.
+
+  **Two section menus (Jobs and Ideation) are now proper navigation landmarks**, matching Courses, Marketplace and Federation. Someone navigating by landmark could previously jump to the section menu on three of those areas and not the other two.
+
+  **Search results and notifications now read as one list** — they were missing the line above the first item that every other list on the site has — and the messages screens no longer carry two copies of a hand-written layout style that also made their filter links too small to tap comfortably.
+
+  **A hidden fault found on the way.** The phase banner at the top of every page was stored in the same slot the back link belongs in, so any page putting its back link there deleted the banner unless it remembered a specific extra line. One page — the AI chat page — had already lost its banner this way. Moving 137 back links into that slot would have spread the problem across the site, so the banner was made impossible to delete first. That page has its banner back.
+
 - **Five faults on the accessible site where a control looked fine and quietly did nothing.** Found by a fresh audit and fixed together. Each one was invisible in the page itself, which is why none had been noticed.
 
   **Choosing "Private" or "Secret" when turning an idea into a group gave you a public group.** The privacy choice was never sent to the server at all, and the group name you typed was discarded too (the group silently took the idea's title instead). Anyone who used this expecting a private space did not get one. This is the most serious of the five and was fixed first.
