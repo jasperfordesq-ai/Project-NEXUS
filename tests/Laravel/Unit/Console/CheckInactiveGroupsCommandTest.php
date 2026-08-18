@@ -189,10 +189,109 @@ final class CheckInactiveGroupsCommandTest extends TestCase
         self::assertTrue((bool) $stored->is_active);
     }
 
+    public function test_parent_group_is_never_auto_demoted(): void
+    {
+        $parentId = $this->insertGroup();
+        $this->insertMemberActivity($parentId, now()->subDays(181));
+        $this->insertGroup(['parent_id' => $parentId]);
+
+        $this->runCommand();
+
+        $this->assertLifecycle($parentId, GroupStatus::Active, true);
+    }
+
+    public function test_group_with_real_membership_is_never_auto_demoted(): void
+    {
+        $groupId = $this->insertGroup();
+        $this->insertMemberActivity($groupId, now()->subDays(181));
+        $this->insertMemberActivity($groupId, now()->subDays(181), $this->insertUser('second-member'));
+
+        $this->runCommand();
+
+        $this->assertLifecycle($groupId, GroupStatus::Active, true);
+    }
+
+    public function test_featured_group_is_never_auto_demoted(): void
+    {
+        $groupId = $this->insertGroup(['is_featured' => 1]);
+        $this->insertMemberActivity($groupId, now()->subDays(181));
+
+        $this->runCommand();
+
+        $this->assertLifecycle($groupId, GroupStatus::Active, true);
+    }
+
+    public function test_announcement_activity_counts_as_activity(): void
+    {
+        $groupId = $this->insertGroup(['created_at' => now()->subDays(400)]);
+        $this->insertMemberActivity($groupId, now()->subDays(181));
+        DB::table('group_announcements')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'group_id' => $groupId,
+            'title' => 'Still running',
+            'content' => 'Monthly meet-up is still on.',
+            'created_by' => $this->ownerId,
+            'created_at' => now()->subDays(10),
+            'updated_at' => now()->subDays(10),
+        ]);
+
+        $this->runCommand();
+
+        $this->assertLifecycle($groupId, GroupStatus::Active, true);
+    }
+
+    public function test_feed_post_activity_counts_as_activity(): void
+    {
+        $groupId = $this->insertGroup(['created_at' => now()->subDays(400)]);
+        $this->insertMemberActivity($groupId, now()->subDays(181));
+        DB::table('feed_posts')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'group_id' => $groupId,
+            'user_id' => $this->ownerId,
+            'content' => 'Anyone free on Saturday?',
+            'created_at' => now()->subDays(10),
+            'updated_at' => now()->subDays(10),
+        ]);
+
+        $this->runCommand();
+
+        $this->assertLifecycle($groupId, GroupStatus::Active, true);
+    }
+
+    public function test_run_that_would_sweep_the_directory_is_refused_and_changes_nothing(): void
+    {
+        $groupIds = [];
+        for ($i = 0; $i < 12; $i++) {
+            $groupId = $this->insertGroup();
+            $this->insertMemberActivity($groupId, now()->subDays(181));
+            $groupIds[] = $groupId;
+        }
+
+        $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID])
+            ->assertExitCode(1);
+
+        foreach ($groupIds as $groupId) {
+            $this->assertLifecycle($groupId, GroupStatus::Active, true);
+        }
+    }
+
     private function runCommand(): void
     {
         $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID])
             ->assertExitCode(0);
+    }
+
+    private function insertUser(string $handle): int
+    {
+        return (int) DB::table('users')->insertGetId([
+            'tenant_id' => self::TENANT_ID,
+            'name' => 'Lifecycle ' . $handle,
+            'email' => "lifecycle-{$handle}-99733@example.com",
+            'role' => 'member',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function insertGroup(array $overrides = []): int
@@ -211,13 +310,13 @@ final class CheckInactiveGroupsCommandTest extends TestCase
         return (int) DB::table('groups')->insertGetId($attributes);
     }
 
-    private function insertMemberActivity(int $groupId, Carbon $createdAt): void
+    private function insertMemberActivity(int $groupId, Carbon $createdAt, ?int $userId = null): void
     {
         DB::table('group_members')->insert([
             'tenant_id' => self::TENANT_ID,
             'group_id' => $groupId,
-            'user_id' => $this->ownerId,
-            'role' => 'owner',
+            'user_id' => $userId ?? $this->ownerId,
+            'role' => $userId === null ? 'owner' : 'member',
             'status' => 'active',
             'created_at' => $createdAt,
             'updated_at' => $createdAt,

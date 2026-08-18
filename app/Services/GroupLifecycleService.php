@@ -41,6 +41,23 @@ class GroupLifecycleService
     const ARCHIVE_THRESHOLD_DAYS = 180;
 
     /**
+     * A group with more than this many active members is never auto-demoted.
+     * Dormancy and archival both hide a group from the directory, from search
+     * and from its own members, so they are reserved for groups nobody is in.
+     */
+    const AUTO_DEMOTE_MAX_ACTIVE_MEMBERS = 1;
+
+    /**
+     * Largest share of a tenant's groups a single automatic run may transition.
+     * A run that would sweep most of a community's directory is a defect in the
+     * activity signal, not a cleanup, so it is refused and logged instead.
+     */
+    const AUTO_LIFECYCLE_MAX_SHARE = 0.2;
+
+    /** Automatic runs may always transition at least this many groups. */
+    const AUTO_LIFECYCLE_MIN_BATCH = 5;
+
+    /**
      * Get the current lifecycle status of a group.
      */
     public static function getStatus(int $groupId): ?string
@@ -574,43 +591,122 @@ class GroupLifecycleService
         $dormantThreshold = now()->subDays(self::DORMANT_THRESHOLD_DAYS);
         $archiveThreshold = now()->subDays(self::ARCHIVE_THRESHOLD_DAYS);
 
-        $stats = ['dormant' => 0, 'archived' => 0, 'warned' => 0];
+        $stats = ['dormant' => 0, 'archived' => 0, 'protected' => 0, 'halted' => false];
 
         // Dormant groups remain in the scan so they can advance to archived.
         $groups = DB::table('groups')
             ->where('tenant_id', $tenantId)
             ->whereIn('status', [GroupStatus::Active->value, GroupStatus::Dormant->value])
-            ->select(['id', 'owner_id', 'status', 'created_at'])
+            ->select(['id', 'owner_id', 'status', 'created_at', 'is_featured'])
             ->get();
 
+        if ($groups->isEmpty()) {
+            return $stats;
+        }
+
+        $protectedIds = self::autoDemotionProtectedGroupIds($tenantId, $groups->pluck('id')->all());
+
+        // Decide the whole run before writing anything, so the blast-radius
+        // guard below sees the true size of the sweep.
+        $planned = [];
         foreach ($groups as $group) {
-            $lastActivity = self::getLastActivityDate((int) $group->id, $tenantId)
+            $groupId = (int) $group->id;
+            $lastActivity = self::getLastActivityDate($groupId, $tenantId)
                 ?? new \DateTimeImmutable((string) $group->created_at);
 
-            if ($lastActivity && $lastActivity < $archiveThreshold) {
-                if (self::transition(
-                    (int) $group->id,
-                    GroupStatus::Archived->value,
-                    (int) $group->owner_id,
-                    'Automatic inactivity archive',
-                )) {
-                    $stats['archived']++;
-                }
-            } elseif (
-                $group->status === GroupStatus::Active->value
-                && $lastActivity < $dormantThreshold
-                && self::transition(
-                    (int) $group->id,
-                    GroupStatus::Dormant->value,
-                    (int) $group->owner_id,
-                    'Automatic inactivity dormancy',
-                )
-            ) {
-                $stats['dormant']++;
+            if ($lastActivity >= $dormantThreshold) {
+                continue;
+            }
+
+            if (isset($protectedIds[$groupId])) {
+                $stats['protected']++;
+                continue;
+            }
+
+            if ($lastActivity < $archiveThreshold) {
+                $planned[] = [$groupId, (int) $group->owner_id, GroupStatus::Archived->value, 'Automatic inactivity archive'];
+                continue;
+            }
+
+            if ($group->status === GroupStatus::Active->value) {
+                $planned[] = [$groupId, (int) $group->owner_id, GroupStatus::Dormant->value, 'Automatic inactivity dormancy'];
             }
         }
 
+        $limit = max(self::AUTO_LIFECYCLE_MIN_BATCH, (int) floor($groups->count() * self::AUTO_LIFECYCLE_MAX_SHARE));
+        if (count($planned) > $limit) {
+            $stats['halted'] = true;
+            Log::error('Automatic group lifecycle run refused: sweep too large', [
+                'tenant_id' => $tenantId,
+                'planned' => count($planned),
+                'limit' => $limit,
+                'candidates' => $groups->count(),
+            ]);
+
+            return $stats;
+        }
+
+        foreach ($planned as [$groupId, $ownerId, $target, $reason]) {
+            if (! self::transition($groupId, $target, $ownerId, $reason)) {
+                continue;
+            }
+            $stats[$target === GroupStatus::Archived->value ? 'archived' : 'dormant']++;
+        }
+
         return $stats;
+    }
+
+    /**
+     * Groups that inactivity must never demote, keyed by id.
+     *
+     * Both dormant and archived drop a group out of the directory and out of
+     * sub-group lists, so neither is safe to apply automatically to a group
+     * that is structural rather than conversational. Three kinds go quiet by
+     * design: featured groups a community chose to promote, parent groups
+     * whose demotion would hide an entire subtree, and groups that still have
+     * real membership.
+     *
+     * @param  list<int|string>  $groupIds
+     * @return array<int, true>
+     */
+    private static function autoDemotionProtectedGroupIds(int $tenantId, array $groupIds): array
+    {
+        if ($groupIds === []) {
+            return [];
+        }
+
+        $protected = [];
+
+        $featured = DB::table('groups')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $groupIds)
+            ->where('is_featured', true)
+            ->pluck('id');
+        foreach ($featured as $id) {
+            $protected[(int) $id] = true;
+        }
+
+        $parents = DB::table('groups')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('parent_id', $groupIds)
+            ->distinct()
+            ->pluck('parent_id');
+        foreach ($parents as $id) {
+            $protected[(int) $id] = true;
+        }
+
+        $populated = DB::table('group_members')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('group_id', $groupIds)
+            ->where('status', 'active')
+            ->groupBy('group_id')
+            ->havingRaw('COUNT(*) > ?', [self::AUTO_DEMOTE_MAX_ACTIVE_MEMBERS])
+            ->pluck('group_id');
+        foreach ($populated as $id) {
+            $protected[(int) $id] = true;
+        }
+
+        return $protected;
     }
 
     /**
@@ -639,6 +735,16 @@ class GroupLifecycleService
             ->where('status', 'active')
             ->max('created_at');
         if ($lastMember) $dates[] = $lastMember;
+
+        // A group is not dead just because nobody used the discussions tab.
+        // Events, feed posts, announcements and shared material all count.
+        foreach (['events', 'feed_posts', 'group_announcements', 'group_files', 'group_media'] as $table) {
+            $latest = DB::table($table)
+                ->where('tenant_id', $tenantId)
+                ->where('group_id', $groupId)
+                ->max('created_at');
+            if ($latest) $dates[] = $latest;
+        }
 
         if (empty($dates)) {
             return null;

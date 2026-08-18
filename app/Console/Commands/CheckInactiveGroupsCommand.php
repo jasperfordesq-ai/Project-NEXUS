@@ -34,20 +34,34 @@ class CheckInactiveGroupsCommand extends Command
                 ->toArray();
         }
 
-        $totalStats = ['dormant' => 0, 'archived' => 0];
+        $totalStats = ['dormant' => 0, 'archived' => 0, 'protected' => 0];
+        $halted = [];
 
         foreach ($tenantIds as $tenantId) {
             TenantContext::setById($tenantId);
             $stats = GroupLifecycleService::checkInactiveGroups($tenantId);
             $totalStats['dormant'] += $stats['dormant'];
             $totalStats['archived'] += $stats['archived'];
+            $totalStats['protected'] += $stats['protected'];
+
+            if (! empty($stats['halted'])) {
+                $halted[] = $tenantId;
+                $this->error("Tenant {$tenantId}: refused — the run would have transitioned too large a share of the directory. No group was changed.");
+                continue;
+            }
 
             if ($stats['dormant'] > 0 || $stats['archived'] > 0) {
-                $this->info("Tenant {$tenantId}: {$stats['dormant']} dormant, {$stats['archived']} archived");
+                $this->info("Tenant {$tenantId}: {$stats['dormant']} dormant, {$stats['archived']} archived, {$stats['protected']} protected");
             }
         }
 
-        $this->info("Done. Total: {$totalStats['dormant']} dormant, {$totalStats['archived']} archived.");
+        $this->info("Done. Total: {$totalStats['dormant']} dormant, {$totalStats['archived']} archived, {$totalStats['protected']} protected.");
+
+        if ($halted !== []) {
+            $this->error('Refused for tenant(s): ' . implode(', ', $halted));
+
+            return Command::FAILURE;
+        }
 
         return Command::SUCCESS;
     }
