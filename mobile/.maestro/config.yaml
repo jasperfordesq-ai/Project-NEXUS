@@ -38,7 +38,18 @@
 #   The default tenant for the test environment is "hour-timebank".
 #
 # ── CI integration ───────────────────────────────────────────────────────────
-#   See .github/workflows/mobile-eas-build.yml for EAS build configuration.
-#   Maestro flows can be wired into a separate CI step after a preview build
-#   is distributed to a device farm (e.g., BrowserStack App Automate):
+#   🔴 This block pointed at .github/workflows/mobile-eas-build.yml, which DOES
+#      NOT EXIST and never has. Corrected 2026-08-18.
+#
+#   Nothing runs these flows automatically. They are operator-run on a device or
+#   emulator. The real mobile CI job is `mobile-release` in
+#   .github/workflows/ci.yml: release/OTA policy, typecheck, Jest, expo-doctor,
+#   route-parity and API-contract drift, the coverage ratchet, and inspection of
+#   the generated Android manifest. It never launches an emulator, so a green CI
+#   run is NOT evidence that the app starts on a phone.
+#
+#   To wire a device-farm gate later, start from a preview APK and pass
+#   credentials only through repository secrets:
 #     maestro cloud --apiKey $MAESTRO_API_KEY .maestro/
+#   Required secrets: MAESTRO_API_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD.
+#   See docs/TESTING.md.

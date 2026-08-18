@@ -28,16 +28,22 @@ cp .env.example .env.local
 # Edit .env.local and set EXPO_PUBLIC_API_URL to your API endpoint
 ```
 
-### Asset Placeholders
+### Assets
 
-Before building (not required for Expo Go dev):
+🔴 This section told you to replace `assets/` placeholders before building. That
+is **stale** — `icon.png`, `splash.png`, `adaptive-icon.png` and
+`notification-icon.png` are all real artwork (verified 2026-08-18). Nothing needs
+replacing, and the same stale warning still appears in the Notes at the foot of
+this file.
 
-```bash
-# Replace assets/ placeholders with real images:
-#   icon.png          1024x1024
-#   splash.png        1284x2778
-#   adaptive-icon.png 1024x1024 (Android)
-```
+Expected dimensions, if any of them is ever regenerated:
+
+| File | Size |
+| --- | --- |
+| `icon.png` | 1024x1024 |
+| `splash.png` | 1284x2778 |
+| `adaptive-icon.png` | 1024x1024 (Android) |
+| `notification-icon.png` | 96x96, white on transparent |
 
 ---
 
@@ -159,14 +165,23 @@ cd mobile
 npm run verify:release
 npm run type-check
 npm test -- --runInBand --silent
+npm run drift:check        # route parity + API contract
+npm run coverage:check     # coverage + per-area shrink-only ratchet
 ```
 
 Focused route/component tests are useful during migration work, but run the commands above before considering a HeroUI Native or parity pass complete. The Jest suite may emit known Uniwind/HeroUI Native test-environment warnings; document any command timeout or open-handle behavior in the parity audit.
+
+🔴 The Jest suite mocks the HTTP client, so it can never tell you that an endpoint
+was renamed or that the React app grew a member route mobile knows nothing about.
+`drift:check` is what covers that; it found a live defect the first time it ran.
+Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 
 ## Maintained Mobile Documentation
 
 | Guide | Purpose |
 | --- | --- |
+| [PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) | Readiness rubric and the current measured score per dimension. |
+| [TESTING.md](docs/TESTING.md) | How to verify a change, what each check proves, and what cannot be tested here. |
 | [DISTRIBUTION.md](docs/DISTRIBUTION.md) | Package identity, release channels, stores, and distribution policy. |
 | [SECURITY.md](docs/SECURITY.md) | Token handling, Android certificate pins, OTA policy, and native hardening. |
 | [NATIVE_UI_CONTRACT.md](docs/NATIVE_UI_CONTRACT.md) | Supported native UI contract and parity boundaries. |

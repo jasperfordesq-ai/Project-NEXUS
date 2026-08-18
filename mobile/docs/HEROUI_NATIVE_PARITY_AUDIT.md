@@ -13,6 +13,17 @@ This is the maintained parity map for the Expo client. It records durable produc
 
 Scope: `mobile/` compared with the member-facing React application. React administration, broker/caring workspaces, legacy PHP views, and deployment tooling are intentionally out of scope.
 
+🔴 **This document records product judgement per area, and it is not falsifiable.**
+Every row below can stay true while React ships a whole new member route. The
+route-level companion is
+[generated/mobile-parity-matrix.md](generated/mobile-parity-matrix.md), generated
+by `npm run parity:matrix` from declarations in `mobile/parity-map.json`, and
+`npm run parity:check` FAILS when a React member route has no recorded mobile
+decision. Use both: this file for why, that file for whether. As of 2026-08-18 it
+reports 125 native, 65 out-of-scope, 33 gaps and 31 awaiting review across 254
+React member routes. Readiness scoring lives in
+[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md).
+
 ## UI foundation
 
 | Area | Current contract | Source |
@@ -67,6 +78,8 @@ npm run verify:release
 npm run type-check
 npm test -- --runInBand
 npx expo-doctor
+npm run drift:check      # route parity + API contract — see TESTING.md
+npm run coverage:check   # per-area shrink-only coverage ratchet
 ```
 
 For a focused change, run the owning screen/API tests first, then the full baseline before release. A timeout, non-zero exit, open-handle failure, or generated-native-policy mismatch is not a pass.
@@ -74,6 +87,7 @@ For a focused change, run the owning screen/API tests first, then the full basel
 ## Maintenance rules
 
 - Update the relevant matrix row in the same change that adds or deliberately removes a native journey.
+- Update `mobile/parity-map.json` in the same change too. The prose row and the machine-checked declaration must not disagree; the declaration is the one CI reads.
 - Keep user-facing text in mobile locale namespaces; never use an untranslated inline fallback as completed parity.
 - Prefer the local wrappers and compound HeroUI Native APIs documented in [WRAPPER_POLICY.md](WRAPPER_POLICY.md).
 - Record detailed one-off verification output in CI logs or `.local-docs-archive/`, not in this maintained public guide.

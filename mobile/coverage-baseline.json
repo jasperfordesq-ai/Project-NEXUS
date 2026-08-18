@@ -1,0 +1,116 @@
+{
+  "note": "Shrink-only coverage floors for the Expo client, by area. Raise a floor only after a real improvement; never lower one to make a red check green. Regenerate with `node scripts/check-coverage-ratchet.mjs --write-baseline` after running `npm run test:coverage`.",
+  "measured_on_files": 276,
+  "global_floor": {
+    "lines": 71.18,
+    "statements": 68.11,
+    "branches": 61.47,
+    "functions": 65.41
+  },
+  "area_floors": {
+    "app": {
+      "lines_pct": 78.72,
+      "instrumented_lines": 77
+    },
+    "app/_layout.tsx": {
+      "lines_pct": 0,
+      "instrumented_lines": 67
+    },
+    "app/(auth)": {
+      "lines_pct": 88.5,
+      "instrumented_lines": 209
+    },
+    "app/(modals)": {
+      "lines_pct": 72.91,
+      "instrumented_lines": 10343
+    },
+    "app/(tabs)": {
+      "lines_pct": 68.15,
+      "instrumented_lines": 740
+    },
+    "components": {
+      "lines_pct": 54.78,
+      "instrumented_lines": 398
+    },
+    "components/comments": {
+      "lines_pct": 87.44,
+      "instrumented_lines": 141
+    },
+    "components/events": {
+      "lines_pct": 50.33,
+      "instrumented_lines": 484
+    },
+    "components/federation": {
+      "lines_pct": 88.53,
+      "instrumented_lines": 383
+    },
+    "components/marketplace": {
+      "lines_pct": 0,
+      "instrumented_lines": 19
+    },
+    "components/reactions": {
+      "lines_pct": 38.69,
+      "instrumented_lines": 74
+    },
+    "components/ui": {
+      "lines_pct": 71.41,
+      "instrumented_lines": 235
+    },
+    "components/verification": {
+      "lines_pct": 75.06,
+      "instrumented_lines": 45
+    },
+    "lib": {
+      "lines_pct": 48.34,
+      "instrumented_lines": 86
+    },
+    "lib/api": {
+      "lines_pct": 73.18,
+      "instrumented_lines": 1474
+    },
+    "lib/context": {
+      "lines_pct": 82.06,
+      "instrumented_lines": 258
+    },
+    "lib/eventOfflineCheckinStore.ts": {
+      "lines_pct": 32.67,
+      "instrumented_lines": 199
+    },
+    "lib/events": {
+      "lines_pct": 94.09,
+      "instrumented_lines": 74
+    },
+    "lib/hooks": {
+      "lines_pct": 89.95,
+      "instrumented_lines": 199
+    },
+    "lib/notifications.ts": {
+      "lines_pct": 55.38,
+      "instrumented_lines": 34
+    },
+    "lib/payments": {
+      "lines_pct": 0,
+      "instrumented_lines": 29
+    },
+    "lib/realtime.ts": {
+      "lines_pct": 0,
+      "instrumented_lines": 25
+    },
+    "lib/security": {
+      "lines_pct": 70.93,
+      "instrumented_lines": 21
+    },
+    "lib/storage.ts": {
+      "lines_pct": 25.21,
+      "instrumented_lines": 35
+    },
+    "lib/theme": {
+      "lines_pct": 99.5,
+      "instrumented_lines": 43
+    },
+    "lib/utils": {
+      "lines_pct": 69.64,
+      "instrumented_lines": 365
+    }
+  }
+}

@@ -1,0 +1,7179 @@
+{
+  "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
+  "source": "docker exec nexus-php-app php artisan route:list --json",
+  "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
+  "total_registered_routes": 2721,
+  "api_route_rows": 2686,
+  "distinct_api_paths": 2232,
+  "route_source_fingerprint": {
+    "digest": "394bc89b2a93539f9c7051d01c5834a0b3ff78f050e03fe68adb822b3fc78604",
+    "files": [
+      {
+        "file": "routes/api.php",
+        "sha256": "bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a"
+      },
+      {
+        "file": "routes/channels.php",
+        "sha256": "78775cdb20cf4121fb97915141c2292f9804917402a918b99423bc941b9bd186"
+      },
+      {
+        "file": "bootstrap/app.php",
+        "sha256": "18793b225a7c9b277d1531049cf3ea67f3be0ca0896ab0725ae88c505eb2c201"
+      }
+    ]
+  },
+  "paths": {
+    "/api/achievements": [
+      "GET"
+    ],
+    "/api/achievements/progress": [
+      "GET"
+    ],
+    "/api/admin/users/search": [
+      "GET"
+    ],
+    "/api/ai/chat": [
+      "POST"
+    ],
+    "/api/ai/chat/feedback": [
+      "POST"
+    ],
+    "/api/ai/chat/starters": [
+      "GET"
+    ],
+    "/api/ai/chat/stream": [
+      "POST"
+    ],
+    "/api/ai/conversations": [
+      "GET",
+      "POST"
+    ],
+    "/api/ai/conversations/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/ai/generate/bio": [
+      "POST"
+    ],
+    "/api/ai/generate/blog": [
+      "POST"
+    ],
+    "/api/ai/generate/event": [
+      "POST"
+    ],
+    "/api/ai/generate/listing": [
+      "POST"
+    ],
+    "/api/ai/generate/message": [
+      "POST"
+    ],
+    "/api/ai/generate/newsletter": [
+      "POST"
+    ],
+    "/api/ai/generate/page": [
+      "POST"
+    ],
+    "/api/ai/limits": [
+      "GET"
+    ],
+    "/api/ai/providers": [
+      "GET"
+    ],
+    "/api/ai/test-provider": [
+      "POST"
+    ],
+    "/api/app/check-version": [
+      "POST"
+    ],
+    "/api/app/log": [
+      "POST"
+    ],
+    "/api/app/version": [
+      "GET"
+    ],
+    "/api/auth/admin-session": [
+      "GET",
+      "POST"
+    ],
+    "/api/auth/check-session": [
+      "GET"
+    ],
+    "/api/auth/csrf-token": [
+      "GET"
+    ],
+    "/api/auth/forgot-password": [
+      "POST"
+    ],
+    "/api/auth/heartbeat": [
+      "POST"
+    ],
+    "/api/auth/login": [
+      "POST"
+    ],
+    "/api/auth/logout": [
+      "POST"
+    ],
+    "/api/auth/refresh-session": [
+      "POST"
+    ],
+    "/api/auth/refresh-token": [
+      "POST"
+    ],
+    "/api/auth/resend-verification": [
+      "POST"
+    ],
+    "/api/auth/resend-verification-by-email": [
+      "POST"
+    ],
+    "/api/auth/reset-password": [
+      "POST"
+    ],
+    "/api/auth/restore-session": [
+      "POST"
+    ],
+    "/api/auth/revoke": [
+      "POST"
+    ],
+    "/api/auth/revoke-all": [
+      "POST"
+    ],
+    "/api/auth/validate-token": [
+      "GET",
+      "POST"
+    ],
+    "/api/auth/verify-email": [
+      "POST"
+    ],
+    "/api/cookie-consent": [
+      "GET",
+      "POST"
+    ],
+    "/api/cookie-consent/check/{category}": [
+      "GET"
+    ],
+    "/api/cookie-consent/inventory": [
+      "GET"
+    ],
+    "/api/cookie-consent/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/csp-report": [
+      "POST"
+    ],
+    "/api/csrf-token": [
+      "GET"
+    ],
+    "/api/daily-reward/check": [
+      "POST"
+    ],
+    "/api/daily-reward/status": [
+      "GET"
+    ],
+    "/api/docs": [
+      "GET"
+    ],
+    "/api/docs/openapi.json": [
+      "GET"
+    ],
+    "/api/docs/openapi.yaml": [
+      "GET"
+    ],
+    "/api/events": [
+      "GET"
+    ],
+    "/api/feed/hide": [
+      "POST"
+    ],
+    "/api/feed/mute": [
+      "POST"
+    ],
+    "/api/feed/report": [
+      "POST"
+    ],
+    "/api/gamification/challenges": [
+      "GET"
+    ],
+    "/api/gamification/collections": [
+      "GET"
+    ],
+    "/api/gamification/seasons": [
+      "GET"
+    ],
+    "/api/gamification/seasons/current": [
+      "GET"
+    ],
+    "/api/gamification/share": [
+      "GET"
+    ],
+    "/api/gamification/shop": [
+      "GET"
+    ],
+    "/api/gamification/shop/purchase": [
+      "POST"
+    ],
+    "/api/gamification/showcase": [
+      "POST"
+    ],
+    "/api/gamification/showcased": [
+      "GET"
+    ],
+    "/api/gamification/summary": [
+      "GET"
+    ],
+    "/api/gdpr/consent": [
+      "POST"
+    ],
+    "/api/gdpr/delete-account": [
+      "POST"
+    ],
+    "/api/gdpr/request": [
+      "POST"
+    ],
+    "/api/goals": [
+      "GET"
+    ],
+    "/api/groups": [
+      "GET"
+    ],
+    "/api/groups/{id}/analytics": [
+      "GET"
+    ],
+    "/api/help/feedback": [
+      "POST"
+    ],
+    "/api/insights": [
+      "GET"
+    ],
+    "/api/laravel/health": [
+      "GET"
+    ],
+    "/api/leaderboard": [
+      "GET"
+    ],
+    "/api/leaderboard/widget": [
+      "GET"
+    ],
+    "/api/legal/accept": [
+      "POST"
+    ],
+    "/api/legal/accept-all": [
+      "POST"
+    ],
+    "/api/legal/status": [
+      "GET"
+    ],
+    "/api/listings": [
+      "GET"
+    ],
+    "/api/listings/delete": [
+      "POST"
+    ],
+    "/api/members": [
+      "GET"
+    ],
+    "/api/menus": [
+      "GET"
+    ],
+    "/api/menus/clear-cache": [
+      "POST"
+    ],
+    "/api/menus/config": [
+      "GET"
+    ],
+    "/api/menus/mobile": [
+      "GET"
+    ],
+    "/api/menus/{slug}": [
+      "GET"
+    ],
+    "/api/messages/delete": [
+      "POST"
+    ],
+    "/api/messages/delete-conversation": [
+      "POST"
+    ],
+    "/api/messages/reaction": [
+      "POST"
+    ],
+    "/api/messages/reactions-batch": [
+      "GET"
+    ],
+    "/api/messages/voice": [
+      "POST"
+    ],
+    "/api/nexus-score": [
+      "GET"
+    ],
+    "/api/nexus-score/recalculate": [
+      "POST"
+    ],
+    "/api/notifications": [
+      "GET"
+    ],
+    "/api/notifications/check": [
+      "GET"
+    ],
+    "/api/notifications/delete": [
+      "POST"
+    ],
+    "/api/notifications/poll": [
+      "GET"
+    ],
+    "/api/notifications/read": [
+      "POST"
+    ],
+    "/api/notifications/settings": [
+      "GET",
+      "POST"
+    ],
+    "/api/notifications/unread-count": [
+      "GET"
+    ],
+    "/api/partner-analytics/me/dashboard": [
+      "GET"
+    ],
+    "/api/partner-analytics/me/reports": [
+      "GET"
+    ],
+    "/api/partner-analytics/me/reports/{id}/download": [
+      "GET"
+    ],
+    "/api/partner/v1/aggregates/community": [
+      "GET"
+    ],
+    "/api/partner/v1/listings": [
+      "GET"
+    ],
+    "/api/partner/v1/oauth/revoke": [
+      "POST"
+    ],
+    "/api/partner/v1/oauth/token": [
+      "POST"
+    ],
+    "/api/partner/v1/users": [
+      "GET"
+    ],
+    "/api/partner/v1/users/{id}": [
+      "GET"
+    ],
+    "/api/partner/v1/wallet/balance/{userId}": [
+      "GET"
+    ],
+    "/api/partner/v1/wallet/credit": [
+      "POST"
+    ],
+    "/api/partner/v1/webhooks/subscriptions": [
+      "GET",
+      "POST"
+    ],
+    "/api/polls": [
+      "GET"
+    ],
+    "/api/polls/vote": [
+      "POST"
+    ],
+    "/api/push/register-device": [
+      "POST"
+    ],
+    "/api/push/send": [
+      "POST"
+    ],
+    "/api/push/status": [
+      "GET"
+    ],
+    "/api/push/subscribe": [
+      "POST"
+    ],
+    "/api/push/unregister-device": [
+      "POST"
+    ],
+    "/api/push/unsubscribe": [
+      "POST"
+    ],
+    "/api/push/vapid-key": [
+      "GET"
+    ],
+    "/api/push/vapid-public-key": [
+      "GET"
+    ],
+    "/api/pusher/auth": [
+      "GET",
+      "POST"
+    ],
+    "/api/pusher/config": [
+      "GET"
+    ],
+    "/api/recommendations/groups": [
+      "GET"
+    ],
+    "/api/recommendations/metrics": [
+      "GET"
+    ],
+    "/api/recommendations/similar/{id}": [
+      "GET"
+    ],
+    "/api/recommendations/track": [
+      "POST"
+    ],
+    "/api/shop/purchase": [
+      "POST"
+    ],
+    "/api/social/comments": [
+      "POST"
+    ],
+    "/api/social/create-post": [
+      "POST"
+    ],
+    "/api/social/delete": [
+      "POST"
+    ],
+    "/api/social/delete-comment": [
+      "POST"
+    ],
+    "/api/social/edit-comment": [
+      "POST"
+    ],
+    "/api/social/feed": [
+      "POST"
+    ],
+    "/api/social/like": [
+      "POST"
+    ],
+    "/api/social/likers": [
+      "POST"
+    ],
+    "/api/social/mention-search": [
+      "POST"
+    ],
+    "/api/social/reaction": [
+      "POST"
+    ],
+    "/api/social/reply": [
+      "POST"
+    ],
+    "/api/social/share": [
+      "POST"
+    ],
+    "/api/social/test": [
+      "GET"
+    ],
+    "/api/streaks": [
+      "GET"
+    ],
+    "/api/super-admin/regional-analytics/access-log": [
+      "GET"
+    ],
+    "/api/super-admin/regional-analytics/subscriptions": [
+      "GET",
+      "POST"
+    ],
+    "/api/super-admin/regional-analytics/subscriptions/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/super-admin/regional-analytics/subscriptions/{id}/generate-report": [
+      "POST"
+    ],
+    "/api/totp/status": [
+      "GET"
+    ],
+    "/api/totp/verify": [
+      "POST"
+    ],
+    "/api/upload": [
+      "POST"
+    ],
+    "/api/v1/federation": [
+      "GET"
+    ],
+    "/api/v1/federation/health": [
+      "GET"
+    ],
+    "/api/v1/federation/listings": [
+      "GET"
+    ],
+    "/api/v1/federation/listings/{id}": [
+      "GET"
+    ],
+    "/api/v1/federation/members": [
+      "GET"
+    ],
+    "/api/v1/federation/members/{id}": [
+      "GET"
+    ],
+    "/api/v1/federation/messages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v1/federation/oauth/token": [
+      "POST"
+    ],
+    "/api/v1/federation/reviews": [
+      "GET",
+      "POST"
+    ],
+    "/api/v1/federation/timebanks": [
+      "GET"
+    ],
+    "/api/v1/federation/transactions": [
+      "POST"
+    ],
+    "/api/v1/federation/transactions/{id}": [
+      "GET"
+    ],
+    "/api/v1/federation/webhooks/test": [
+      "POST"
+    ],
+    "/api/v2/admin/ad-campaigns": [
+      "GET"
+    ],
+    "/api/v2/admin/ad-campaigns/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/ad-campaigns/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/ad-campaigns/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/ad-campaigns/{id}/pause": [
+      "POST"
+    ],
+    "/api/v2/admin/ad-campaigns/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/agents": [
+      "GET"
+    ],
+    "/api/v2/admin/agents/proposals": [
+      "GET"
+    ],
+    "/api/v2/admin/agents/proposals/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/agents/proposals/{id}/edit-approve": [
+      "POST"
+    ],
+    "/api/v2/admin/agents/proposals/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/agents/runs": [
+      "GET"
+    ],
+    "/api/v2/admin/agents/{id}": [
+      "PATCH"
+    ],
+    "/api/v2/admin/agents/{id}/run-now": [
+      "POST"
+    ],
+    "/api/v2/admin/agents/{id}/toggle": [
+      "POST"
+    ],
+    "/api/v2/admin/ai-module-docs": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/ai-module-docs/seed-defaults": [
+      "POST"
+    ],
+    "/api/v2/admin/ai-module-docs/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/ai-traces/metrics": [
+      "GET"
+    ],
+    "/api/v2/admin/api-partners": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/api-partners/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/api-partners/{id}/activate": [
+      "POST"
+    ],
+    "/api/v2/admin/api-partners/{id}/call-log": [
+      "GET"
+    ],
+    "/api/v2/admin/api-partners/{id}/regenerate-credentials": [
+      "POST"
+    ],
+    "/api/v2/admin/api-partners/{id}/suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/attributes": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/attributes/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/audit-log/export.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/background-jobs": [
+      "GET"
+    ],
+    "/api/v2/admin/background-jobs/{id}/run": [
+      "POST"
+    ],
+    "/api/v2/admin/badge-counts": [
+      "GET"
+    ],
+    "/api/v2/admin/billing/checkout": [
+      "POST"
+    ],
+    "/api/v2/admin/billing/invoices": [
+      "GET"
+    ],
+    "/api/v2/admin/billing/portal": [
+      "POST"
+    ],
+    "/api/v2/admin/billing/subscription": [
+      "GET"
+    ],
+    "/api/v2/admin/billing/upgrade-request": [
+      "POST"
+    ],
+    "/api/v2/admin/blog": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/blog/bulk-delete": [
+      "POST"
+    ],
+    "/api/v2/admin/blog/bulk-publish": [
+      "POST"
+    ],
+    "/api/v2/admin/blog/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/blog/{id}/toggle-status": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/archives": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/archives/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/configuration": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/broker/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/exchanges": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/exchanges/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/exchanges/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/exchanges/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/exchanges/{id}/resolve-dispute": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/exchanges/{id}/reverse": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/messages": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/messages/unreviewed-count": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/messages/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/messages/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/messages/{id}/flag": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/messages/{id}/review": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/monitoring": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/monitoring/{userId}": [
+      "POST"
+    ],
+    "/api/v2/admin/broker/risk-tags": [
+      "GET"
+    ],
+    "/api/v2/admin/broker/risk-tags/{listingId}": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/admin/cache/clear": [
+      "POST"
+    ],
+    "/api/v2/admin/cache/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/assisted-onboarding": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/category-coefficients": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/category-coefficients/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/commercial-boundary": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/commercial-boundary/override": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/copilot/proposals": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/copilot/proposals/{proposalId}/accept": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/copilot/proposals/{proposalId}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/data-quality/checks/{checkKey}/rows": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/data-quality/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/digest/cadence": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/disclosure-pack": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/disclosure-pack/export": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/emergency-alerts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/emergency-alerts/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/caring-community/external-integrations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/external-integrations/seed-defaults": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/external-integrations/{itemId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/favours": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/federation-peers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/federation-peers/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/caring-community/federation-peers/{id}/rotate-secret": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/federation-peers/{id}/status": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/feedback": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/feedback/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/feedback/export.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/feedback/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/feedback/{id}/close": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/feedback/{id}/resolve": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/feedback/{id}/triage": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/forecast": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/hour-estates": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/hour-estates/{id}/report-deceased": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/hour-estates/{id}/settle": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/hour-transfer/inbound": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/hour-transfer/pending": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/hour-transfer/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/hour-transfer/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/integration-showcase": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/invite-codes": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/isolated-node": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/isolated-node/items/{itemKey}": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/kiss-treffen/{eventId}": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/kiss-treffen/{eventId}/minutes": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/kpi-baselines": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/kpi-baselines/{id}/compare": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/launch-readiness": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/launch-readiness/acknowledge-boundary": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/launch-readiness/launch": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/leads": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/leads/export.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/leads/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/leads/{contactId}": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/leads/{contactId}/unsubscribe": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/loyalty/redemptions": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/loyalty/redemptions/{id}/reverse": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/loyalty/seller-settings": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/loyalty/seller-settings/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/member-statements/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/municipal-roi": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/municipal-roi/export": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/nudges/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/nudges/config": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/nudges/dispatch": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/operating-policy": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/paper-onboarding": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/paper-onboarding/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/pilot-scoreboard": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/pilot-scoreboard/baselines": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/pilot-scoreboard/pre-pilot": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/pilot-scoreboard/quarterly": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/project-updates/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/projects": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/projects/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/projects/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/projects/{id}/updates": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/providers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/providers/duplicates": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/providers/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/providers/{id}/verify": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/recipient/{userId}/circle": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/regional-points/adjust": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/regional-points/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/regional-points/issue": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/regional-points/ledger": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/regional-points/seller-settings": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/regional-points/seller-settings/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/research/agreement-templates": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/research/agreement-templates/{key}/render": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/research/dataset-exports": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/research/dataset-exports/{exportId}/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/research/partners": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/research/partners/{partnerId}/dataset-exports": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/role-presets": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/role-presets/install": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports/{id}/assign": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports/{id}/escalate": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports/{id}/note": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/safeguarding/reports/{id}/status": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/sla-dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/sub-regions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/sub-regions/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/success-stories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/success-stories/seed-demo": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/success-stories/{storyId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/success-stories/{storyId}/refresh-live": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/support-relationships": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/support-relationships/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/support-relationships/{id}/hours": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/surveys": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/surveys/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/surveys/{id}/close": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/surveys/{id}/export": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/surveys/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/tandem-suggestions": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/tandem-suggestions/dismiss": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/trust-tier/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/trust-tier/recompute": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/vereine/{organizationId}/admins": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/vereine/{organizationId}/members/import": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/vereine/{organizationId}/members/import/preview": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/warmth-pass/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/workflow": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/workflow/policy": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/workflow/reviews/{id}/assign": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/workflow/reviews/{id}/decision": [
+      "PUT"
+    ],
+    "/api/v2/admin/caring-community/workflow/reviews/{id}/escalate": [
+      "PUT"
+    ],
+    "/api/v2/admin/categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/categories/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/comments": [
+      "GET"
+    ],
+    "/api/v2/admin/comments/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/comments/{id}/hide": [
+      "POST"
+    ],
+    "/api/v2/admin/community-analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/community-analytics/export": [
+      "GET"
+    ],
+    "/api/v2/admin/community-analytics/geography": [
+      "GET"
+    ],
+    "/api/v2/admin/config": [
+      "GET"
+    ],
+    "/api/v2/admin/config/ai": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/algorithm-health": [
+      "GET"
+    ],
+    "/api/v2/admin/config/algorithm/{area}": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/algorithms": [
+      "GET"
+    ],
+    "/api/v2/admin/config/authentication": [
+      "GET"
+    ],
+    "/api/v2/admin/config/authentication/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/events": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/events/audit-log": [
+      "GET"
+    ],
+    "/api/v2/admin/config/events/restore-defaults": [
+      "POST"
+    ],
+    "/api/v2/admin/config/features": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/feed-algorithm": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/groups": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/groups/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/identity": [
+      "GET"
+    ],
+    "/api/v2/admin/config/identity/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/images": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/jobs": [
+      "GET"
+    ],
+    "/api/v2/admin/config/jobs/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/landing-page": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/languages": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/listings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/listings/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/modules": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/native-app": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/native-app/build-manifest": [
+      "GET"
+    ],
+    "/api/v2/admin/config/onboarding": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/onboarding/apply-preset": [
+      "POST"
+    ],
+    "/api/v2/admin/config/onboarding/presets": [
+      "GET"
+    ],
+    "/api/v2/admin/config/podcasts": [
+      "GET"
+    ],
+    "/api/v2/admin/config/podcasts/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/registration-policy": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/seo": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/sitemap-clear-cache": [
+      "POST"
+    ],
+    "/api/v2/admin/config/sitemap-stats": [
+      "GET"
+    ],
+    "/api/v2/admin/config/translation": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/config/translation/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/config/volunteering": [
+      "GET"
+    ],
+    "/api/v2/admin/config/volunteering/bulk": [
+      "PUT"
+    ],
+    "/api/v2/admin/courses": [
+      "GET"
+    ],
+    "/api/v2/admin/courses/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/courses/categories": [
+      "POST"
+    ],
+    "/api/v2/admin/courses/categories/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/courses/discussions/{id}/hide": [
+      "POST"
+    ],
+    "/api/v2/admin/courses/instructors": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/courses/instructors/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/courses/{id}/moderate": [
+      "POST"
+    ],
+    "/api/v2/admin/crm/admins": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/export/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/export/notes": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/export/tasks": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/funnel": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/notes": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/crm/notes/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/crm/tags": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/crm/tags/bulk": [
+      "DELETE"
+    ],
+    "/api/v2/admin/crm/tags/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/crm/tasks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/crm/tasks/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/crm/timeline": [
+      "GET"
+    ],
+    "/api/v2/admin/dashboard/activity": [
+      "GET"
+    ],
+    "/api/v2/admin/dashboard/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/dashboard/trends": [
+      "GET"
+    ],
+    "/api/v2/admin/deliverability": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/deliverability/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/deliverability/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/deliverability/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/deliverability/{id}/comments": [
+      "POST"
+    ],
+    "/api/v2/admin/donations/{id}/refund": [
+      "POST"
+    ],
+    "/api/v2/admin/email-deliverability/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/push-summary": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/queues": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/suppressions": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/suppressions/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/email-deliverability/trigger-audit": [
+      "GET"
+    ],
+    "/api/v2/admin/email-deliverability/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/email/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/email/status": [
+      "GET"
+    ],
+    "/api/v2/admin/email/test": [
+      "POST"
+    ],
+    "/api/v2/admin/email/test-gmail": [
+      "POST"
+    ],
+    "/api/v2/admin/email/test-provider": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/enterprise/config/features": [
+      "GET",
+      "PATCH"
+    ],
+    "/api/v2/admin/enterprise/config/reset": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/config/secrets": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/config/secrets/test-vault": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/config/secrets/{key}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/enterprise/config/secrets/{key}/rotate": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/audit": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/audit/export": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/breaches": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/breaches/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/enterprise/gdpr/breaches/{id}/notify-dpa": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/consent-types": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/consent-types/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/enterprise/gdpr/consent-types/{slug}/export": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/consent-types/{slug}/users": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/consents": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/requests": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/requests/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/enterprise/gdpr/requests/{id}/assign": [
+      "PUT"
+    ],
+    "/api/v2/admin/enterprise/gdpr/requests/{id}/export": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/requests/{id}/notes": [
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/gdpr/statistics": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/gdpr/trends": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/health": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/health-history": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/log-files": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/log-files/{filename}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/requirements": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/permissions": [
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/roles": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/enterprise/roles/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/events": [
+      "GET"
+    ],
+    "/api/v2/admin/events/attendance-claims": [
+      "GET"
+    ],
+    "/api/v2/admin/events/attendance-claims/{claimId}/retry": [
+      "POST"
+    ],
+    "/api/v2/admin/events/attendance-claims/{claimId}/reverse": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/events/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/archive": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/attendance-reward": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/events/{id}/cancel": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/complete": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/postpone": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/reschedule": [
+      "POST"
+    ],
+    "/api/v2/admin/events/{id}/restore": [
+      "POST"
+    ],
+    "/api/v2/admin/fadp/consent-ledger": [
+      "GET"
+    ],
+    "/api/v2/admin/fadp/disclosure-pack": [
+      "GET"
+    ],
+    "/api/v2/admin/fadp/processing-activities": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/fadp/processing-activities/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/fadp/processing-register": [
+      "GET"
+    ],
+    "/api/v2/admin/fadp/processing-register.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/fadp/retention-config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/activity": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/aggregate-consent": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/aggregate-consent/audit-log": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/aggregate-consent/preview": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/aggregate-consent/rotate-secret": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/analytics/overview": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/api-keys": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/federation/api-keys/{id}/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/available-tenants": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/cc-config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/credit-agreements": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/federation/credit-agreements/{id}/transactions": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/credit-agreements/{id}/{action}": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/credit-balances": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/data": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/data/export": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/data/import": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/data/purge": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/directory": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/directory/profile": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/export/{type}": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/external-partners": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/federation/external-partners/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/external-partners/{id}/health-check": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/external-partners/{id}/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/neighborhoods": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/federation/neighborhoods/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/federation/neighborhoods/{id}/tenants": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/neighborhoods/{id}/tenants/{tenantId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/federation/partners": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/partnerships": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/partnerships/request": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/audit-log": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/counter-propose": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/permissions": [
+      "PUT"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/reactivate": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/partnerships/{id}/terminate": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/topics": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/topics/mine": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/webhook-logs/{id}/retry": [
+      "POST"
+    ],
+    "/api/v2/admin/federation/webhooks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/federation/webhooks/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/federation/webhooks/{id}/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/federation/webhooks/{id}/test": [
+      "POST"
+    ],
+    "/api/v2/admin/feed/grant-announcer": [
+      "POST"
+    ],
+    "/api/v2/admin/feed/posts": [
+      "GET"
+    ],
+    "/api/v2/admin/feed/posts/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/feed/posts/{id}/hide": [
+      "POST"
+    ],
+    "/api/v2/admin/feed/revoke-announcer/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/feed/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/gamification/badge-config": [
+      "GET"
+    ],
+    "/api/v2/admin/gamification/badge-config/{badgeKey}": [
+      "PUT"
+    ],
+    "/api/v2/admin/gamification/badge-config/{badgeKey}/reset": [
+      "POST"
+    ],
+    "/api/v2/admin/gamification/badges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/gamification/badges/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/gamification/bulk-award": [
+      "POST"
+    ],
+    "/api/v2/admin/gamification/campaigns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/gamification/campaigns/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/gamification/challenges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/gamification/challenges/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/gamification/recheck-all": [
+      "POST"
+    ],
+    "/api/v2/admin/gamification/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/goals": [
+      "GET"
+    ],
+    "/api/v2/admin/goals/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/group-auto-assign-rules": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/group-auto-assign-rules/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/group-collections": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/group-collections/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/group-collections/{id}/groups": [
+      "PUT"
+    ],
+    "/api/v2/admin/group-tags": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/group-tags/{tagId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/groups": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/approvals": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/approvals/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/approvals/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/batch-geocode": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/bulk-archive": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/bulk-unarchive": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/featured": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/featured/update": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/moderation": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/recommendations": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/types": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/groups/types/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/groups/{groupId}/members": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/{groupId}/members/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/groups/{groupId}/members/{userId}/demote": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{groupId}/members/{userId}/promote": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/groups/{id}/archive": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}/audit-log": [
+      "GET"
+    ],
+    "/api/v2/admin/groups/{id}/clone": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}/geocode": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}/merge": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}/status": [
+      "PUT"
+    ],
+    "/api/v2/admin/groups/{id}/toggle-featured": [
+      "PUT"
+    ],
+    "/api/v2/admin/groups/{id}/transfer-ownership": [
+      "POST"
+    ],
+    "/api/v2/admin/groups/{id}/unarchive": [
+      "POST"
+    ],
+    "/api/v2/admin/help/faqs": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/help/faqs/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/ideation": [
+      "GET"
+    ],
+    "/api/v2/admin/ideation/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/ideation/{id}/status": [
+      "POST"
+    ],
+    "/api/v2/admin/identity/audit-log": [
+      "GET"
+    ],
+    "/api/v2/admin/identity/provider-credentials": [
+      "GET"
+    ],
+    "/api/v2/admin/identity/provider-credentials/{slug}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/identity/provider-health": [
+      "GET"
+    ],
+    "/api/v2/admin/identity/providers": [
+      "GET"
+    ],
+    "/api/v2/admin/identity/sessions": [
+      "GET"
+    ],
+    "/api/v2/admin/identity/sessions/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/identity/sessions/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/impact-report": [
+      "GET"
+    ],
+    "/api/v2/admin/impact-report/config": [
+      "PUT"
+    ],
+    "/api/v2/admin/insurance": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/insurance/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/insurance/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/insurance/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/insurance/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/insurance/{id}/verify": [
+      "POST"
+    ],
+    "/api/v2/admin/invite-codes": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/invite-codes/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/jobs": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/applications/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/jobs/bias-audit": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/interviews": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/moderation-queue": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/moderation-stats": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/offers": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/spam-stats": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/templates": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/templates/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/jobs/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/jobs/{id}/applications": [
+      "GET"
+    ],
+    "/api/v2/admin/jobs/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/jobs/{id}/feature": [
+      "POST"
+    ],
+    "/api/v2/admin/jobs/{id}/flag": [
+      "POST"
+    ],
+    "/api/v2/admin/jobs/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/jobs/{id}/unfeature": [
+      "POST"
+    ],
+    "/api/v2/admin/ki-agents/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/ki-agents/proposals": [
+      "GET"
+    ],
+    "/api/v2/admin/ki-agents/proposals/approve-eligible": [
+      "POST"
+    ],
+    "/api/v2/admin/ki-agents/proposals/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/ki-agents/proposals/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/ki-agents/runs": [
+      "GET"
+    ],
+    "/api/v2/admin/ki-agents/runs/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/ki-agents/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/ki-agents/trigger": [
+      "POST"
+    ],
+    "/api/v2/admin/legal-documents": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/legal-documents/compliance": [
+      "GET"
+    ],
+    "/api/v2/admin/legal-documents/versions/{versionId}/acceptances": [
+      "GET"
+    ],
+    "/api/v2/admin/legal-documents/versions/{versionId}/publish": [
+      "POST"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/acceptances/export": [
+      "GET"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/versions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/versions/compare": [
+      "GET"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/versions/{versionId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/versions/{versionId}/notify": [
+      "POST"
+    ],
+    "/api/v2/admin/legal-documents/{docId}/versions/{versionId}/pending-count": [
+      "GET"
+    ],
+    "/api/v2/admin/legal-documents/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/listings": [
+      "GET"
+    ],
+    "/api/v2/admin/listings/featured": [
+      "GET"
+    ],
+    "/api/v2/admin/listings/moderation-queue": [
+      "GET"
+    ],
+    "/api/v2/admin/listings/moderation-stats": [
+      "GET"
+    ],
+    "/api/v2/admin/listings/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/listings/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/listings/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/listings/{id}/feature": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/admin/listings/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/bulk-reject": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/coupons": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/coupons/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/marketplace/coupons/{id}/suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/disputes": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/disputes/{id}/resolve": [
+      "PUT"
+    ],
+    "/api/v2/admin/marketplace/listings": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/listings/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/marketplace/listings/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/listings/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/listings/{id}/reports": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/reports": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/reports/{id}/acknowledge": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/reports/{id}/resolve": [
+      "PUT"
+    ],
+    "/api/v2/admin/marketplace/reports/{id}/resolve-appeal": [
+      "PUT"
+    ],
+    "/api/v2/admin/marketplace/sellers": [
+      "GET"
+    ],
+    "/api/v2/admin/marketplace/sellers/{id}/suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/sellers/{id}/verify": [
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/transparency": [
+      "GET"
+    ],
+    "/api/v2/admin/matching/approvals": [
+      "GET"
+    ],
+    "/api/v2/admin/matching/approvals/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/matching/approvals/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/matching/approvals/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/matching/approvals/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/matching/cache/clear": [
+      "POST"
+    ],
+    "/api/v2/admin/matching/config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/matching/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/connect/onboarding": [
+      "POST"
+    ],
+    "/api/v2/admin/member-premium/finance/annual-receipts": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/finance/disputes": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/finance/gift-aid-export": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/finance/overview": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/member-premium/subscribers": [
+      "GET"
+    ],
+    "/api/v2/admin/member-premium/tiers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/member-premium/tiers/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/member-premium/tiers/{id}/sync-stripe": [
+      "POST"
+    ],
+    "/api/v2/admin/members/inactive": [
+      "GET"
+    ],
+    "/api/v2/admin/members/inactive/detect": [
+      "POST"
+    ],
+    "/api/v2/admin/members/inactive/notify": [
+      "POST"
+    ],
+    "/api/v2/admin/menu-items/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/menus": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/menus/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/menus/{id}/items": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/menus/{id}/items/reorder": [
+      "POST"
+    ],
+    "/api/v2/admin/moderation/queue": [
+      "GET"
+    ],
+    "/api/v2/admin/moderation/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/moderation/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/moderation/{id}/review": [
+      "POST"
+    ],
+    "/api/v2/admin/national/kiss/comparative": [
+      "GET"
+    ],
+    "/api/v2/admin/national/kiss/cooperatives": [
+      "GET"
+    ],
+    "/api/v2/admin/national/kiss/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/national/kiss/trend": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/bounce-trends": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/bounces": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/diagnostics": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/preview": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/recipient-count": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/segments": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/segments/preview": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/segments/suggestions": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/segments/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/newsletters/send-time-optimizer": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/subscribers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/subscribers/export": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/subscribers/import": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/subscribers/sync": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/subscribers/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/newsletters/suppression-list": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/suppression-list/{email}/suppress": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/suppression-list/{email}/unsuppress": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/templates/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/newsletters/templates/{id}/duplicate": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/templates/{id}/preview": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/newsletters/{id}/ab-winner": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/{id}/activity": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/clickers": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/duplicate": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/{id}/email-clients": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/non-openers": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/openers": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/openers-no-click": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/resend": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/{id}/resend-info": [
+      "GET"
+    ],
+    "/api/v2/admin/newsletters/{id}/send": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/{id}/send-test": [
+      "POST"
+    ],
+    "/api/v2/admin/newsletters/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/pages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/pages/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/partner-venues": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/partner-venues/reports/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/partner-venues/visits/export.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/partner-venues/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/partner-venues/{id}/archive": [
+      "POST"
+    ],
+    "/api/v2/admin/partner-venues/{id}/staff": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/partner-venues/{id}/staff/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/performance/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/pilot-inquiries": [
+      "GET"
+    ],
+    "/api/v2/admin/pilot-inquiries/export": [
+      "GET"
+    ],
+    "/api/v2/admin/pilot-inquiries/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/pilot-inquiries/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/pilot-inquiries/{id}/assign": [
+      "POST"
+    ],
+    "/api/v2/admin/pilot-inquiries/{id}/notes": [
+      "POST"
+    ],
+    "/api/v2/admin/pilot-inquiries/{id}/stage": [
+      "POST"
+    ],
+    "/api/v2/admin/plans": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/plans/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/plans/{id}/sync-stripe": [
+      "POST"
+    ],
+    "/api/v2/admin/podcasts": [
+      "GET"
+    ],
+    "/api/v2/admin/podcasts/episodes/{id}/moderate": [
+      "POST"
+    ],
+    "/api/v2/admin/podcasts/reports/{reportId}/resolve": [
+      "POST"
+    ],
+    "/api/v2/admin/podcasts/shows/{id}/moderate": [
+      "POST"
+    ],
+    "/api/v2/admin/podcasts/shows/{id}/validate-feed": [
+      "GET"
+    ],
+    "/api/v2/admin/podcasts/storage/verify": [
+      "POST"
+    ],
+    "/api/v2/admin/polls": [
+      "GET"
+    ],
+    "/api/v2/admin/polls/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/prerender/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/audit": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/auto-recache": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/coverage": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/detect-drift": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/events": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/export/{kind}.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/failures": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/health": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/inspect": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/invalidate": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/inventory": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/jobs": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/prerender/jobs/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/jobs/{id}/cancel": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/jobs/{id}/retry": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/metrics": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/purge": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/purge-unexpected": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/realtime-channel": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/reset-all": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/reset-breaker": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/reset-queue": [
+      "POST"
+    ],
+    "/api/v2/admin/prerender/sitemap-explorer": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/summary": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/tenant-safety": [
+      "GET"
+    ],
+    "/api/v2/admin/prerender/ttl-inspector": [
+      "GET"
+    ],
+    "/api/v2/admin/push-campaigns": [
+      "GET"
+    ],
+    "/api/v2/admin/push-campaigns/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/push-campaigns/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/push-campaigns/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/push-campaigns/{id}/dispatch": [
+      "POST"
+    ],
+    "/api/v2/admin/push-campaigns/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/regional-analytics/demand-supply": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/demographics": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/engagement-trends": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/export": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/heatmap": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/help-requests": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/invalidate-cache": [
+      "POST"
+    ],
+    "/api/v2/admin/regional-analytics/overview": [
+      "GET"
+    ],
+    "/api/v2/admin/regional-analytics/volunteer-breakdown": [
+      "GET"
+    ],
+    "/api/v2/admin/registration/breaker": [
+      "GET"
+    ],
+    "/api/v2/admin/registration/resume-signups": [
+      "POST"
+    ],
+    "/api/v2/admin/reports": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/export-types": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/hours": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/members": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/municipal-impact": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/municipal-impact/templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/reports/municipal-impact/templates/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/reports/municipal-impact/verification": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/municipal-impact/verification/attest": [
+      "POST"
+    ],
+    "/api/v2/admin/reports/municipal-impact/verification/dns": [
+      "POST"
+    ],
+    "/api/v2/admin/reports/municipal-impact/verification/{id}/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/reports/social-value": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/social-value/config": [
+      "PUT"
+    ],
+    "/api/v2/admin/reports/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/reports/{id}/dismiss": [
+      "POST"
+    ],
+    "/api/v2/admin/reports/{id}/resolve": [
+      "POST"
+    ],
+    "/api/v2/admin/reports/{type}/export": [
+      "GET"
+    ],
+    "/api/v2/admin/residency-verifications": [
+      "GET"
+    ],
+    "/api/v2/admin/residency-verifications/{id}/attest": [
+      "POST"
+    ],
+    "/api/v2/admin/resources": [
+      "GET"
+    ],
+    "/api/v2/admin/resources/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/retention/policies": [
+      "GET"
+    ],
+    "/api/v2/admin/retention/policies/{dataType}": [
+      "PUT"
+    ],
+    "/api/v2/admin/retention/runs": [
+      "GET"
+    ],
+    "/api/v2/admin/reviews": [
+      "GET"
+    ],
+    "/api/v2/admin/reviews/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/reviews/{id}/flag": [
+      "POST"
+    ],
+    "/api/v2/admin/reviews/{id}/hide": [
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/assignments": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/assignments/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/safeguarding/authority-attestations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/authority-attestations/{id}/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/flagged-messages": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/flagged-messages/{id}/review": [
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/member-preferences": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/members/{userId}/activity": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/members/{userId}/activity.csv": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/options": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/options/reorder": [
+      "PUT"
+    ],
+    "/api/v2/admin/safeguarding/options/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/safeguarding/statement": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/safeguarding/statement/download": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/support-actions": [
+      "GET"
+    ],
+    "/api/v2/admin/safeguarding/support-actions/{id}/attest": [
+      "POST"
+    ],
+    "/api/v2/admin/search/analytics": [
+      "GET"
+    ],
+    "/api/v2/admin/search/trending": [
+      "GET"
+    ],
+    "/api/v2/admin/search/zero-results": [
+      "GET"
+    ],
+    "/api/v2/admin/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/settings/header-colors": [
+      "PUT"
+    ],
+    "/api/v2/admin/settings/header-logo": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/admin/settings/header-logo-dark": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/admin/settings/partner-logo": [
+      "POST"
+    ],
+    "/api/v2/admin/settings/powered-by-image-dark": [
+      "POST"
+    ],
+    "/api/v2/admin/settings/powered-by-image-light": [
+      "POST"
+    ],
+    "/api/v2/admin/sso/providers": [
+      "GET"
+    ],
+    "/api/v2/admin/sso/providers/{providerKey}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/sso/providers/{providerKey}/test": [
+      "POST"
+    ],
+    "/api/v2/admin/subscriptions": [
+      "GET"
+    ],
+    "/api/v2/admin/super/audit": [
+      "GET"
+    ],
+    "/api/v2/admin/super/billing/assign-plan": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/delegate/grant": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/delegate/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/export": [
+      "GET"
+    ],
+    "/api/v2/admin/super/billing/grace-period": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/pause": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/resume": [
+      "POST"
+    ],
+    "/api/v2/admin/super/billing/revenue": [
+      "GET"
+    ],
+    "/api/v2/admin/super/billing/snapshot": [
+      "GET"
+    ],
+    "/api/v2/admin/super/bulk/move-users": [
+      "POST"
+    ],
+    "/api/v2/admin/super/bulk/update-tenants": [
+      "POST"
+    ],
+    "/api/v2/admin/super/dashboard": [
+      "GET"
+    ],
+    "/api/v2/admin/super/federation": [
+      "GET"
+    ],
+    "/api/v2/admin/super/federation/emergency-lockdown": [
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/external-status": [
+      "GET"
+    ],
+    "/api/v2/admin/super/federation/jwt-status": [
+      "GET"
+    ],
+    "/api/v2/admin/super/federation/lift-lockdown": [
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/partnerships": [
+      "GET"
+    ],
+    "/api/v2/admin/super/federation/partnerships/{id}/reactivate": [
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/partnerships/{id}/suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/partnerships/{id}/terminate": [
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/system-controls": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/super/federation/tenant/{id}/features": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/super/federation/whitelist": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/super/federation/whitelist/{tenantId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/super/identity/fee": [
+      "PUT"
+    ],
+    "/api/v2/admin/super/platform-capabilities": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/super/tenants": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/super/tenants/hierarchy": [
+      "GET"
+    ],
+    "/api/v2/admin/super/tenants/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/super/tenants/{id}/move": [
+      "POST"
+    ],
+    "/api/v2/admin/super/tenants/{id}/purge": [
+      "POST"
+    ],
+    "/api/v2/admin/super/tenants/{id}/purge-preview": [
+      "GET"
+    ],
+    "/api/v2/admin/super/tenants/{id}/reactivate": [
+      "POST"
+    ],
+    "/api/v2/admin/super/tenants/{id}/toggle-hub": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/super/users/{id}/grant-global-super-admin": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/grant-super-admin": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/impersonate": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/move-and-promote": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/move-tenant": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/revoke-global-super-admin": [
+      "POST"
+    ],
+    "/api/v2/admin/super/users/{id}/revoke-super-admin": [
+      "POST"
+    ],
+    "/api/v2/admin/support-reports": [
+      "GET"
+    ],
+    "/api/v2/admin/support-reports/assignees": [
+      "GET"
+    ],
+    "/api/v2/admin/support-reports/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/support-reports/{id}": [
+      "GET",
+      "PATCH",
+      "PUT"
+    ],
+    "/api/v2/admin/system/activity-log": [
+      "GET"
+    ],
+    "/api/v2/admin/system/cron-jobs": [
+      "GET"
+    ],
+    "/api/v2/admin/system/cron-jobs/health": [
+      "GET"
+    ],
+    "/api/v2/admin/system/cron-jobs/logs": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/system/cron-jobs/logs/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/system/cron-jobs/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/system/cron-jobs/{id}/run": [
+      "POST"
+    ],
+    "/api/v2/admin/system/cron-jobs/{jobId}/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/timebanking/adjust-balance": [
+      "POST"
+    ],
+    "/api/v2/admin/timebanking/alerts": [
+      "GET"
+    ],
+    "/api/v2/admin/timebanking/alerts/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/timebanking/org-wallets": [
+      "GET"
+    ],
+    "/api/v2/admin/timebanking/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/timebanking/user-report": [
+      "GET"
+    ],
+    "/api/v2/admin/timebanking/user-statement": [
+      "GET"
+    ],
+    "/api/v2/admin/tools/404-errors": [
+      "GET"
+    ],
+    "/api/v2/admin/tools/404-errors/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/tools/blog-backups": [
+      "GET"
+    ],
+    "/api/v2/admin/tools/blog-backups/{id}/restore": [
+      "POST"
+    ],
+    "/api/v2/admin/tools/health-check": [
+      "POST"
+    ],
+    "/api/v2/admin/tools/ip-debug": [
+      "GET"
+    ],
+    "/api/v2/admin/tools/redirects": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/tools/redirects/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/tools/seed": [
+      "POST"
+    ],
+    "/api/v2/admin/tools/seo-audit": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/tools/webp-convert": [
+      "POST"
+    ],
+    "/api/v2/admin/tools/webp-stats": [
+      "GET"
+    ],
+    "/api/v2/admin/translation/glossary": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/translation/glossary/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/users": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/users/badges/recheck-all": [
+      "POST"
+    ],
+    "/api/v2/admin/users/bulk-approve": [
+      "POST"
+    ],
+    "/api/v2/admin/users/bulk-suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/users/import": [
+      "POST"
+    ],
+    "/api/v2/admin/users/import/template": [
+      "GET"
+    ],
+    "/api/v2/admin/users/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/users/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/badges": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/badges/recheck": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/badges/{badgeId}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/users/{id}/ban": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/consents": [
+      "GET"
+    ],
+    "/api/v2/admin/users/{id}/global-super-admin": [
+      "PUT"
+    ],
+    "/api/v2/admin/users/{id}/impersonate": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/password": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/reactivate": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/reset-2fa": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/send-password-reset": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/send-verification-email": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/send-welcome-email": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/super-admin": [
+      "PUT"
+    ],
+    "/api/v2/admin/users/{id}/suspend": [
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/verification-badges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/users/{id}/verification-badges/{type}": [
+      "DELETE"
+    ],
+    "/api/v2/admin/vetting": [
+      "GET"
+    ],
+    "/api/v2/admin/vetting/policy": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/vetting/policy/rotate": [
+      "POST"
+    ],
+    "/api/v2/admin/vetting/reviews/{reviewId}/resolve": [
+      "POST"
+    ],
+    "/api/v2/admin/vetting/stats": [
+      "GET"
+    ],
+    "/api/v2/admin/vetting/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/admin/vetting/user/{userId}/confirm": [
+      "POST"
+    ],
+    "/api/v2/admin/vetting/user/{userId}/revoke": [
+      "POST"
+    ],
+    "/api/v2/admin/vetting/{id}": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/activity-feed": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/applications": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/approvals": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/approvals/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/approvals/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/community-projects": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/community-projects/{id}/review": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/custom-fields": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/custom-fields/reorder": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/custom-fields/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/donations": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/donations/export": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/donations/{id}/complete": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/expenses": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/expenses/export": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/expenses/policies": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/expenses/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/expenses/{id}/receipt": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/giving-days": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/giving-days/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/giving-days/{id}/donors": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/giving-days/{id}/trends": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/guardian-consents": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/hours": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/hours/{id}/verify": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/incidents": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/incidents/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/opportunities": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/organizations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}/dlp": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}/members": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}/status": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}/wallet/adjust": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/organizations/{id}/wallet/transactions": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/reminder-logs": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/reminder-settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/send-shift-reminders": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/training": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/training/{id}/reject": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/training/{id}/verify": [
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/trends": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/webhooks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/webhooks/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/volunteering/webhooks/{id}/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/webhooks/{id}/test": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/wellbeing/alerts": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/wellbeing/alerts/{id}": [
+      "PUT"
+    ],
+    "/api/v2/admin/wallet/grant": [
+      "POST"
+    ],
+    "/api/v2/admin/wallet/grants": [
+      "GET"
+    ],
+    "/api/v2/ads/active": [
+      "GET"
+    ],
+    "/api/v2/ads/impression": [
+      "POST"
+    ],
+    "/api/v2/ads/impression/{impressionId}/click": [
+      "POST"
+    ],
+    "/api/v2/appreciations": [
+      "POST"
+    ],
+    "/api/v2/appreciations/most-appreciated": [
+      "GET"
+    ],
+    "/api/v2/appreciations/{id}/react": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/auth/2fa/disable": [
+      "POST"
+    ],
+    "/api/v2/auth/2fa/setup": [
+      "POST"
+    ],
+    "/api/v2/auth/2fa/status": [
+      "GET"
+    ],
+    "/api/v2/auth/2fa/verify": [
+      "POST"
+    ],
+    "/api/v2/auth/impersonate/end": [
+      "POST"
+    ],
+    "/api/v2/auth/impersonate/exchange": [
+      "POST"
+    ],
+    "/api/v2/auth/oauth/enabled-providers": [
+      "GET"
+    ],
+    "/api/v2/auth/oauth/exchange": [
+      "POST"
+    ],
+    "/api/v2/auth/oauth/me/identities": [
+      "GET"
+    ],
+    "/api/v2/auth/oauth/{provider}/callback": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/auth/oauth/{provider}/link": [
+      "POST"
+    ],
+    "/api/v2/auth/oauth/{provider}/redirect": [
+      "GET"
+    ],
+    "/api/v2/auth/oauth/{provider}/unlink": [
+      "DELETE"
+    ],
+    "/api/v2/auth/register": [
+      "POST"
+    ],
+    "/api/v2/auth/registration-info": [
+      "GET"
+    ],
+    "/api/v2/auth/sso/callback": [
+      "GET"
+    ],
+    "/api/v2/auth/sso/providers": [
+      "GET"
+    ],
+    "/api/v2/auth/sso/{provider}/redirect": [
+      "GET"
+    ],
+    "/api/v2/auth/start-verification": [
+      "POST"
+    ],
+    "/api/v2/auth/validate-invite": [
+      "POST"
+    ],
+    "/api/v2/auth/verification-status": [
+      "GET"
+    ],
+    "/api/v2/billing/plans": [
+      "GET"
+    ],
+    "/api/v2/blog": [
+      "GET"
+    ],
+    "/api/v2/blog/categories": [
+      "GET"
+    ],
+    "/api/v2/blog/{slug}": [
+      "GET"
+    ],
+    "/api/v2/bookmark-collections": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/bookmark-collections/{id}": [
+      "DELETE",
+      "PATCH",
+      "PUT"
+    ],
+    "/api/v2/bookmarks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/bookmarks/status": [
+      "GET"
+    ],
+    "/api/v2/bookmarks/{id}/move": [
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/burnout-check": [
+      "GET"
+    ],
+    "/api/v2/caring-community/caregiver/cover-requests": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/cover-requests/{id}/assign": [
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/cover-requests/{id}/candidates": [
+      "GET"
+    ],
+    "/api/v2/caring-community/caregiver/links": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/links/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/caring-community/caregiver/request-on-behalf": [
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/schedule/{caredForId}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/digest": [
+      "GET"
+    ],
+    "/api/v2/caring-community/digest/prefs": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/caring-community/emergency-alerts": [
+      "GET"
+    ],
+    "/api/v2/caring-community/emergency-alerts/{id}/dismiss": [
+      "POST"
+    ],
+    "/api/v2/caring-community/federation-directory": [
+      "GET"
+    ],
+    "/api/v2/caring-community/feedback": [
+      "POST"
+    ],
+    "/api/v2/caring-community/feedback/mine": [
+      "GET"
+    ],
+    "/api/v2/caring-community/hour-estate": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/caring-community/hour-gifts/inbox": [
+      "GET"
+    ],
+    "/api/v2/caring-community/hour-gifts/send": [
+      "POST"
+    ],
+    "/api/v2/caring-community/hour-gifts/sent": [
+      "GET"
+    ],
+    "/api/v2/caring-community/hour-gifts/{id}/accept": [
+      "POST"
+    ],
+    "/api/v2/caring-community/hour-gifts/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/caring-community/hour-gifts/{id}/revert": [
+      "POST"
+    ],
+    "/api/v2/caring-community/hour-transfer/initiate": [
+      "POST"
+    ],
+    "/api/v2/caring-community/hour-transfer/my-history": [
+      "GET"
+    ],
+    "/api/v2/caring-community/invite/{code}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/kiss-treffen": [
+      "GET"
+    ],
+    "/api/v2/caring-community/kiss-treffen/{eventId}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/leads/capture": [
+      "POST"
+    ],
+    "/api/v2/caring-community/loyalty/my-history": [
+      "GET"
+    ],
+    "/api/v2/caring-community/loyalty/quote": [
+      "GET"
+    ],
+    "/api/v2/caring-community/loyalty/redeem": [
+      "POST"
+    ],
+    "/api/v2/caring-community/markt": [
+      "GET"
+    ],
+    "/api/v2/caring-community/me/data-export": [
+      "GET"
+    ],
+    "/api/v2/caring-community/me/onboarding-choice": [
+      "PUT"
+    ],
+    "/api/v2/caring-community/me/trust-tier/breakdown": [
+      "GET"
+    ],
+    "/api/v2/caring-community/my-ahv-pension-export": [
+      "GET"
+    ],
+    "/api/v2/caring-community/my-future-care-fund": [
+      "GET"
+    ],
+    "/api/v2/caring-community/my-relationships": [
+      "GET"
+    ],
+    "/api/v2/caring-community/my-relationships/{id}/end": [
+      "POST"
+    ],
+    "/api/v2/caring-community/my-relationships/{id}/pause": [
+      "POST"
+    ],
+    "/api/v2/caring-community/my-relationships/{id}/resume": [
+      "POST"
+    ],
+    "/api/v2/caring-community/my-trust-tier": [
+      "GET"
+    ],
+    "/api/v2/caring-community/my-warmth-pass": [
+      "GET"
+    ],
+    "/api/v2/caring-community/offer-favour": [
+      "POST"
+    ],
+    "/api/v2/caring-community/projects": [
+      "GET"
+    ],
+    "/api/v2/caring-community/projects/{id}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/projects/{id}/subscribe": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/caring-community/providers": [
+      "GET"
+    ],
+    "/api/v2/caring-community/providers/{id}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/regional-points/history": [
+      "GET"
+    ],
+    "/api/v2/caring-community/regional-points/marketplace/quote": [
+      "GET"
+    ],
+    "/api/v2/caring-community/regional-points/marketplace/redeem": [
+      "POST"
+    ],
+    "/api/v2/caring-community/regional-points/summary": [
+      "GET"
+    ],
+    "/api/v2/caring-community/regional-points/transfer": [
+      "POST"
+    ],
+    "/api/v2/caring-community/request-help": [
+      "POST"
+    ],
+    "/api/v2/caring-community/request-help/voice": [
+      "POST"
+    ],
+    "/api/v2/caring-community/research/consent": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/caring-community/safeguarding/my-reports": [
+      "GET"
+    ],
+    "/api/v2/caring-community/safeguarding/report": [
+      "POST"
+    ],
+    "/api/v2/caring-community/sub-regions": [
+      "GET"
+    ],
+    "/api/v2/caring-community/success-stories": [
+      "GET"
+    ],
+    "/api/v2/caring-community/surveys": [
+      "GET"
+    ],
+    "/api/v2/caring-community/surveys/{id}": [
+      "GET"
+    ],
+    "/api/v2/caring-community/surveys/{id}/respond": [
+      "POST"
+    ],
+    "/api/v2/caring-community/vereine/{organizationId}/members/import": [
+      "POST"
+    ],
+    "/api/v2/caring-community/vereine/{organizationId}/members/import/preview": [
+      "POST"
+    ],
+    "/api/v2/categories": [
+      "GET"
+    ],
+    "/api/v2/clubs": [
+      "GET"
+    ],
+    "/api/v2/comments": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/comments/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/comments/{id}/reactions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/community/stats": [
+      "GET"
+    ],
+    "/api/v2/config/algorithms": [
+      "GET"
+    ],
+    "/api/v2/config/google-maps": [
+      "GET"
+    ],
+    "/api/v2/connections": [
+      "GET"
+    ],
+    "/api/v2/connections/pending": [
+      "GET"
+    ],
+    "/api/v2/connections/request": [
+      "POST"
+    ],
+    "/api/v2/connections/status/me": [
+      "GET"
+    ],
+    "/api/v2/connections/status/{userId}": [
+      "GET"
+    ],
+    "/api/v2/connections/suggestions": [
+      "GET"
+    ],
+    "/api/v2/connections/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/connections/{id}/accept": [
+      "POST"
+    ],
+    "/api/v2/connections/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/contact": [
+      "POST"
+    ],
+    "/api/v2/conversations/groups": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/conversations/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/conversations/{id}/group": [
+      "PATCH"
+    ],
+    "/api/v2/conversations/{id}/messages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/conversations/{id}/participants": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/conversations/{id}/participants/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/cookie-consent": [
+      "POST"
+    ],
+    "/api/v2/coupons": [
+      "GET"
+    ],
+    "/api/v2/coupons/redeem-qr": [
+      "POST"
+    ],
+    "/api/v2/coupons/validate": [
+      "POST"
+    ],
+    "/api/v2/coupons/{id}": [
+      "GET"
+    ],
+    "/api/v2/coupons/{id}/qr": [
+      "POST"
+    ],
+    "/api/v2/courses": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/courses/attempts/{attemptId}/grade": [
+      "POST"
+    ],
+    "/api/v2/courses/categories": [
+      "GET"
+    ],
+    "/api/v2/courses/discussions/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/courses/mine": [
+      "GET"
+    ],
+    "/api/v2/courses/quizzes/{quizId}": [
+      "GET"
+    ],
+    "/api/v2/courses/quizzes/{quizId}/attempt": [
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/cohorts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/cohorts/{cohortId}": [
+      "DELETE"
+    ],
+    "/api/v2/courses/{courseId}/grading": [
+      "GET"
+    ],
+    "/api/v2/courses/{courseId}/groups": [
+      "GET"
+    ],
+    "/api/v2/courses/{courseId}/groups/{groupId}": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/lessons": [
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/lessons/{lessonId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/courses/{courseId}/lessons/{lessonId}/discussions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/quizzes": [
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/quizzes/{quizId}/questions": [
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/quizzes/{quizId}/questions/{questionId}": [
+      "DELETE"
+    ],
+    "/api/v2/courses/{courseId}/sections": [
+      "POST"
+    ],
+    "/api/v2/courses/{courseId}/sections/{sectionId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/courses/{idOrSlug}": [
+      "GET"
+    ],
+    "/api/v2/courses/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/courses/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/courses/{id}/certificate": [
+      "GET"
+    ],
+    "/api/v2/courses/{id}/enroll": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/courses/{id}/lessons/{lessonId}/complete": [
+      "POST"
+    ],
+    "/api/v2/courses/{id}/prerequisites": [
+      "GET"
+    ],
+    "/api/v2/courses/{id}/progress": [
+      "GET"
+    ],
+    "/api/v2/courses/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/courses/{id}/reviews": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/courses/{id}/unpublish": [
+      "POST"
+    ],
+    "/api/v2/csrf-token": [
+      "GET"
+    ],
+    "/api/v2/donations/payment-intent": [
+      "POST"
+    ],
+    "/api/v2/donations/{id}/receipt": [
+      "GET"
+    ],
+    "/api/v2/event-broadcasts/{broadcastId}": [
+      "GET"
+    ],
+    "/api/v2/event-broadcasts/{broadcastId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/event-broadcasts/{broadcastId}/retry": [
+      "POST"
+    ],
+    "/api/v2/event-broadcasts/{broadcastId}/revisions": [
+      "POST"
+    ],
+    "/api/v2/event-broadcasts/{broadcastId}/schedule": [
+      "POST"
+    ],
+    "/api/v2/event-templates": [
+      "GET"
+    ],
+    "/api/v2/event-templates/{templateId}": [
+      "GET"
+    ],
+    "/api/v2/event-templates/{templateId}/archive": [
+      "POST"
+    ],
+    "/api/v2/event-templates/{templateId}/history": [
+      "GET"
+    ],
+    "/api/v2/event-templates/{templateId}/materialization-preview": [
+      "POST"
+    ],
+    "/api/v2/event-templates/{templateId}/materializations": [
+      "POST"
+    ],
+    "/api/v2/event-templates/{templateId}/revisions": [
+      "POST"
+    ],
+    "/api/v2/events": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/calendar": [
+      "GET"
+    ],
+    "/api/v2/events/calendar/feed-tokens": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/calendar/feed-tokens/{tokenId}": [
+      "DELETE"
+    ],
+    "/api/v2/events/calendar/feed.ics": [
+      "GET"
+    ],
+    "/api/v2/events/calendar/personal/{tenantSlug}/{secret}.ics": [
+      "GET"
+    ],
+    "/api/v2/events/nearby": [
+      "GET"
+    ],
+    "/api/v2/events/recurrence-capabilities": [
+      "GET"
+    ],
+    "/api/v2/events/recurring": [
+      "POST"
+    ],
+    "/api/v2/events/safety/guardian-consents/grant": [
+      "POST"
+    ],
+    "/api/v2/events/series": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/series/{seriesId}": [
+      "GET"
+    ],
+    "/api/v2/events/{eventId}/broadcasts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/{eventId}/broadcasts/preview": [
+      "POST"
+    ],
+    "/api/v2/events/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/events/{id}/agenda": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/agenda/order": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/agenda/sessions": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/agenda/sessions/{sessionId}": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/agenda/sessions/{sessionId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/agenda/sessions/{sessionId}/registration": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/agenda/sessions/{sessionId}/registration/withdraw": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/analytics/export.csv": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/attendance": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/{id}/attendance/bulk": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/attendance/code": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/attendees": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/attendees/{attendeeId}/check-in": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/calendar-actions": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/calendar.ics": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/federation-status": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/image": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/lifecycle-history": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/offline-checkin": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/offline-checkin/batches/{batchId}": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/offline-checkin/conflicts": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/offline-checkin/conflicts/{itemId}": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/credentials": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/credentials/me": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/offline-checkin/credentials/{credentialId}/revoke": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/credentials/{credentialId}/rotate": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/devices": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/devices/{deviceId}/revoke": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/devices/{deviceId}/rotate": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/manifest": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/scan": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/offline-checkin/sync": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/people": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/people/bulk": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/people/export.csv": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/people/{userId}/approve": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/people/{userId}/attendance": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/people/{userId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/people/{userId}/history": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/people/{userId}/reject": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/recurrence-definition-blueprints": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/recurrence-definition-blueprints/commit": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/recurrence-definition-blueprints/preview": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/recurrence-revisions/commit": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/recurrence-revisions/preview": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/recurring": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/registration-product": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/registration-product/campaigns/preview": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/campaigns/{campaignId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/campaigns/{campaignId}/issue": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/campaigns/{campaignId}/schedule": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/forms": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/forms/{formId}": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/registration-product/forms/{formId}/fork": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/forms/{formId}/publish": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/guests/{guestId}/attendance/{action}": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/guests/{guestId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/invitations/accept": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/invitations/{invitationId}/accept": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/invitations/{invitationId}/revoke": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/manage": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/registration-product/registrations/{registrationId}/guests": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/retention/dry-run": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/retention/{dryRunId}/apply": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/settings": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/registration-product/settings/publish": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/submissions": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/submissions/export": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/submissions/{submissionId}/amend": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/submissions/{submissionId}/answers": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/submissions/{submissionId}/submit": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration/confirm": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration/waitlist": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration/waitlist/accept": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration/waitlist/leave": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/registration/withdraw": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/relationship": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/reminders": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/events/{id}/rsvp": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/safety/code-of-conduct/acknowledgements": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety/code-of-conduct/acknowledgements/{acknowledgementId}": [
+      "DELETE"
+    ],
+    "/api/v2/events/{id}/safety/guardian-consents": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety/guardian-consents/{consentId}": [
+      "DELETE"
+    ],
+    "/api/v2/events/{id}/safety/requirements": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/safety/requirements/archive": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety/requirements/publish": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety/reviews": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/{id}/safety/reviews/{denialId}": [
+      "DELETE"
+    ],
+    "/api/v2/events/{id}/series": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/staff": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/{id}/staff/{assignmentId}": [
+      "DELETE"
+    ],
+    "/api/v2/events/{id}/submit": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/ticket-entitlements/{entitlementId}/cancel": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/ticket-types": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/ticket-types/{ticketTypeId}": [
+      "PUT"
+    ],
+    "/api/v2/events/{id}/ticket-types/{ticketTypeId}/{action}": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/tickets": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/tickets/reconciliation": [
+      "GET"
+    ],
+    "/api/v2/events/{id}/tickets/{ticketTypeId}/allocate": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/tickets/{ticketTypeId}/allocate/{userId}": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/tickets/{ticketTypeId}/quote": [
+      "POST"
+    ],
+    "/api/v2/events/{id}/waitlist": [
+      "DELETE",
+      "GET",
+      "POST"
+    ],
+    "/api/v2/events/{sourceEventId}/template-preview": [
+      "POST"
+    ],
+    "/api/v2/events/{sourceEventId}/templates": [
+      "POST"
+    ],
+    "/api/v2/exchanges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/exchanges/check": [
+      "GET"
+    ],
+    "/api/v2/exchanges/config": [
+      "GET"
+    ],
+    "/api/v2/exchanges/needs-attention-count": [
+      "GET"
+    ],
+    "/api/v2/exchanges/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/exchanges/{id}/accept": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/complete": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/rate": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/ratings": [
+      "GET"
+    ],
+    "/api/v2/exchanges/{id}/start": [
+      "POST"
+    ],
+    "/api/v2/explore": [
+      "GET"
+    ],
+    "/api/v2/explore/analytics": [
+      "GET"
+    ],
+    "/api/v2/explore/category/{slug}": [
+      "GET"
+    ],
+    "/api/v2/explore/dismiss": [
+      "POST"
+    ],
+    "/api/v2/explore/experiments": [
+      "GET"
+    ],
+    "/api/v2/explore/for-you": [
+      "GET"
+    ],
+    "/api/v2/explore/popular-listings": [
+      "GET"
+    ],
+    "/api/v2/explore/track": [
+      "POST"
+    ],
+    "/api/v2/explore/trending": [
+      "GET"
+    ],
+    "/api/v2/federation/activity": [
+      "GET"
+    ],
+    "/api/v2/federation/aggregates": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/about": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/account": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/account/history": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/account/history/{acc_id}": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/account/{acc_id}": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/accounts": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/entries": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/entries/{uuid}": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/forms": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/transaction": [
+      "POST"
+    ],
+    "/api/v2/federation/cc/transaction/relay": [
+      "POST"
+    ],
+    "/api/v2/federation/cc/transaction/{uuid}": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/transaction/{uuid}/{state}": [
+      "PATCH"
+    ],
+    "/api/v2/federation/cc/transactions": [
+      "GET"
+    ],
+    "/api/v2/federation/cc/transactions/propose": [
+      "POST"
+    ],
+    "/api/v2/federation/cc/transactions/{uuid}/commit": [
+      "POST"
+    ],
+    "/api/v2/federation/cc/transactions/{uuid}/validate": [
+      "POST"
+    ],
+    "/api/v2/federation/connections": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/federation/connections/status/{userId}/{tenantId}": [
+      "GET"
+    ],
+    "/api/v2/federation/connections/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/federation/connections/{id}/accept": [
+      "POST"
+    ],
+    "/api/v2/federation/connections/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/federation/events": [
+      "GET"
+    ],
+    "/api/v2/federation/external/webhooks/receive": [
+      "POST"
+    ],
+    "/api/v2/federation/groups": [
+      "GET"
+    ],
+    "/api/v2/federation/hour-transfer/inbound": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/connections": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/events": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/groups": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/listings": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/members/sync": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/reviews": [
+      "POST"
+    ],
+    "/api/v2/federation/ingest/volunteering": [
+      "POST"
+    ],
+    "/api/v2/federation/komunitin/currencies": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/federation/komunitin/{code}/accounts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/federation/komunitin/{code}/accounts/{id}": [
+      "DELETE",
+      "GET",
+      "PATCH"
+    ],
+    "/api/v2/federation/komunitin/{code}/currency": [
+      "DELETE",
+      "GET",
+      "PATCH"
+    ],
+    "/api/v2/federation/komunitin/{code}/currency/settings": [
+      "GET",
+      "PATCH"
+    ],
+    "/api/v2/federation/komunitin/{code}/transfers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/federation/komunitin/{code}/transfers/{id}": [
+      "DELETE",
+      "GET",
+      "PATCH"
+    ],
+    "/api/v2/federation/listings": [
+      "GET"
+    ],
+    "/api/v2/federation/members": [
+      "GET"
+    ],
+    "/api/v2/federation/members/{id}": [
+      "GET"
+    ],
+    "/api/v2/federation/members/{id}/reviews": [
+      "GET"
+    ],
+    "/api/v2/federation/messages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/federation/messages/mark-read-batch": [
+      "POST"
+    ],
+    "/api/v2/federation/messages/{id}/mark-read": [
+      "POST"
+    ],
+    "/api/v2/federation/messages/{id}/translate": [
+      "POST"
+    ],
+    "/api/v2/federation/opt-in": [
+      "POST"
+    ],
+    "/api/v2/federation/opt-out": [
+      "POST"
+    ],
+    "/api/v2/federation/partners": [
+      "GET"
+    ],
+    "/api/v2/federation/partners/{id}": [
+      "GET"
+    ],
+    "/api/v2/federation/settings": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/federation/setup": [
+      "POST"
+    ],
+    "/api/v2/federation/status": [
+      "GET"
+    ],
+    "/api/v2/federation/transactions": [
+      "POST"
+    ],
+    "/api/v2/feed": [
+      "GET"
+    ],
+    "/api/v2/feed/click": [
+      "POST"
+    ],
+    "/api/v2/feed/hashtags/search": [
+      "GET"
+    ],
+    "/api/v2/feed/hashtags/trending": [
+      "GET"
+    ],
+    "/api/v2/feed/hashtags/{tag}": [
+      "GET"
+    ],
+    "/api/v2/feed/impression": [
+      "POST"
+    ],
+    "/api/v2/feed/items/{type}/{id}": [
+      "GET"
+    ],
+    "/api/v2/feed/items/{type}/{id}/report": [
+      "POST"
+    ],
+    "/api/v2/feed/like": [
+      "POST"
+    ],
+    "/api/v2/feed/polls": [
+      "POST"
+    ],
+    "/api/v2/feed/polls/{id}": [
+      "GET"
+    ],
+    "/api/v2/feed/polls/{id}/vote": [
+      "POST"
+    ],
+    "/api/v2/feed/posts": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/scheduled": [
+      "GET"
+    ],
+    "/api/v2/feed/posts/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/feed/posts/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/feed/posts/{id}/click": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/delete": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/hide": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/impression": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/not-interested": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/report": [
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/share": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/feed/posts/{id}/sharers": [
+      "GET"
+    ],
+    "/api/v2/feed/posts/{id}/view": [
+      "POST"
+    ],
+    "/api/v2/feed/sidebar": [
+      "GET"
+    ],
+    "/api/v2/feed/users/{id}/mute": [
+      "POST"
+    ],
+    "/api/v2/gamification/badges": [
+      "GET"
+    ],
+    "/api/v2/gamification/badges/{key}": [
+      "GET"
+    ],
+    "/api/v2/gamification/challenges": [
+      "GET"
+    ],
+    "/api/v2/gamification/challenges/{id}/claim": [
+      "POST"
+    ],
+    "/api/v2/gamification/collections": [
+      "GET"
+    ],
+    "/api/v2/gamification/community-dashboard": [
+      "GET"
+    ],
+    "/api/v2/gamification/daily-reward": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/gamification/engagement-history": [
+      "GET"
+    ],
+    "/api/v2/gamification/leaderboard": [
+      "GET"
+    ],
+    "/api/v2/gamification/member-spotlight": [
+      "GET"
+    ],
+    "/api/v2/gamification/nexus-score": [
+      "GET"
+    ],
+    "/api/v2/gamification/personal-journey": [
+      "GET"
+    ],
+    "/api/v2/gamification/profile": [
+      "GET"
+    ],
+    "/api/v2/gamification/seasons": [
+      "GET"
+    ],
+    "/api/v2/gamification/seasons/current": [
+      "GET"
+    ],
+    "/api/v2/gamification/shop": [
+      "GET"
+    ],
+    "/api/v2/gamification/shop/purchase": [
+      "POST"
+    ],
+    "/api/v2/gamification/showcase": [
+      "PUT"
+    ],
+    "/api/v2/geo/os-places/search": [
+      "GET"
+    ],
+    "/api/v2/goals": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/goals/discover": [
+      "GET"
+    ],
+    "/api/v2/goals/from-template/{templateId}": [
+      "POST"
+    ],
+    "/api/v2/goals/mentoring": [
+      "GET"
+    ],
+    "/api/v2/goals/templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/goals/templates/categories": [
+      "GET"
+    ],
+    "/api/v2/goals/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/goals/{id}/buddy": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/buddy/nudge": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/checkins": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/goals/{id}/complete": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/history": [
+      "GET"
+    ],
+    "/api/v2/goals/{id}/history/summary": [
+      "GET"
+    ],
+    "/api/v2/goals/{id}/insights": [
+      "GET"
+    ],
+    "/api/v2/goals/{id}/progress": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/reminder": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/group-chatroom-messages/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/group-chatrooms/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/group-chatrooms/{id}/messages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/group-collections": [
+      "GET"
+    ],
+    "/api/v2/group-collections/{id}": [
+      "GET"
+    ],
+    "/api/v2/group-exchanges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/group-exchanges/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/group-exchanges/{id}/complete": [
+      "POST"
+    ],
+    "/api/v2/group-exchanges/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/group-exchanges/{id}/participants": [
+      "POST"
+    ],
+    "/api/v2/group-exchanges/{id}/participants/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/group-exchanges/{id}/start": [
+      "POST"
+    ],
+    "/api/v2/group-tags": [
+      "GET"
+    ],
+    "/api/v2/group-tags/popular": [
+      "GET"
+    ],
+    "/api/v2/group-tags/suggest": [
+      "GET"
+    ],
+    "/api/v2/group-templates": [
+      "GET"
+    ],
+    "/api/v2/groups": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/form-capabilities": [
+      "GET"
+    ],
+    "/api/v2/groups/invite/{token}": [
+      "GET"
+    ],
+    "/api/v2/groups/invite/{token}/accept": [
+      "POST"
+    ],
+    "/api/v2/groups/recommendations": [
+      "GET"
+    ],
+    "/api/v2/groups/recommendations/metrics": [
+      "GET"
+    ],
+    "/api/v2/groups/recommendations/track": [
+      "POST"
+    ],
+    "/api/v2/groups/{groupId}/chatrooms/{chatroomId}/pin/{messageId}": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/groups/{groupId}/chatrooms/{chatroomId}/pinned": [
+      "GET"
+    ],
+    "/api/v2/groups/{groupId}/courses": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/comparative": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/contributors": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/engagement": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/export/activity": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/export/members": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/growth": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/analytics/retention": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/announcements": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/announcements/{announcementId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/answers/{answerId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/answers/{answerId}/accept": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/challenges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/challenges/{challengeId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/chatrooms": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/custom-fields": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/discussions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/discussions/{discussionId}": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/discussions/{discussionId}/messages": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/documents": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/export": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/exports": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/exports/{exportId}": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/exports/{exportId}/download": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/files": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/files/folders": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/files/stats": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/files/{fileId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/files/{fileId}/download": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/image": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/invites": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/invites/email": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/invites/link": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/invites/{inviteId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/join": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/media": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/media/{mediaId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/members": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/members/{userId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/membership": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/mentions/suggest": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/notification-prefs": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/qa/vote": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/questions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/questions/{questionId}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/questions/{questionId}/answers": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/requests": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/requests/{userId}": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/scheduled-posts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/scheduled-posts/{postId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/settings": [
+      "POST"
+    ],
+    "/api/v2/groups/{id}/similar": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/tags": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/task-stats": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/tasks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/webhooks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/webhooks/{webhookId}": [
+      "DELETE"
+    ],
+    "/api/v2/groups/{id}/webhooks/{webhookId}/toggle": [
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/welcome": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/wiki": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/groups/{id}/wiki/{pageId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/groups/{id}/wiki/{pageId}/revisions": [
+      "GET"
+    ],
+    "/api/v2/groups/{id}/wiki/{slug}": [
+      "GET"
+    ],
+    "/api/v2/health": [
+      "GET"
+    ],
+    "/api/v2/help/faqs": [
+      "GET"
+    ],
+    "/api/v2/ideation-campaigns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-campaigns/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/ideation-campaigns/{id}/challenges": [
+      "POST"
+    ],
+    "/api/v2/ideation-campaigns/{id}/challenges/{challengeId}": [
+      "DELETE"
+    ],
+    "/api/v2/ideation-categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-categories/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/ideation-challenges": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-challenges/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/ideation-challenges/{id}/duplicate": [
+      "POST"
+    ],
+    "/api/v2/ideation-challenges/{id}/favorite": [
+      "POST"
+    ],
+    "/api/v2/ideation-challenges/{id}/ideas": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-challenges/{id}/ideas/drafts": [
+      "GET"
+    ],
+    "/api/v2/ideation-challenges/{id}/outcome": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/ideation-challenges/{id}/status": [
+      "PUT"
+    ],
+    "/api/v2/ideation-challenges/{id}/team-links": [
+      "GET"
+    ],
+    "/api/v2/ideation-comments/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/ideation-ideas/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/ideation-ideas/{id}/comments": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-ideas/{id}/convert-to-group": [
+      "POST"
+    ],
+    "/api/v2/ideation-ideas/{id}/draft": [
+      "PUT"
+    ],
+    "/api/v2/ideation-ideas/{id}/media": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-ideas/{id}/status": [
+      "PUT"
+    ],
+    "/api/v2/ideation-ideas/{id}/vote": [
+      "POST"
+    ],
+    "/api/v2/ideation-media/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/ideation-outcomes/dashboard": [
+      "GET"
+    ],
+    "/api/v2/ideation-tags": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-tags/popular": [
+      "GET"
+    ],
+    "/api/v2/ideation-tags/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/ideation-templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/ideation-templates/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/ideation-templates/{id}/data": [
+      "GET"
+    ],
+    "/api/v2/identity/create-payment": [
+      "POST"
+    ],
+    "/api/v2/identity/save-dob": [
+      "POST"
+    ],
+    "/api/v2/identity/start": [
+      "POST"
+    ],
+    "/api/v2/identity/status": [
+      "GET"
+    ],
+    "/api/v2/jobs": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/alerts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/alerts/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/alerts/{id}/resubscribe": [
+      "PUT"
+    ],
+    "/api/v2/jobs/alerts/{id}/unsubscribe": [
+      "PUT"
+    ],
+    "/api/v2/jobs/applications/{id}": [
+      "PUT"
+    ],
+    "/api/v2/jobs/applications/{id}/cv": [
+      "GET"
+    ],
+    "/api/v2/jobs/applications/{id}/history": [
+      "GET"
+    ],
+    "/api/v2/jobs/applications/{id}/interview": [
+      "POST"
+    ],
+    "/api/v2/jobs/applications/{id}/offer": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/applications/{id}/parse-cv": [
+      "GET"
+    ],
+    "/api/v2/jobs/applications/{id}/scorecard": [
+      "PUT"
+    ],
+    "/api/v2/jobs/applications/{id}/scorecards": [
+      "GET"
+    ],
+    "/api/v2/jobs/check-duplicate": [
+      "POST"
+    ],
+    "/api/v2/jobs/employer-reviews": [
+      "POST"
+    ],
+    "/api/v2/jobs/employer-reviews/{userId}": [
+      "GET"
+    ],
+    "/api/v2/jobs/feed.json": [
+      "GET"
+    ],
+    "/api/v2/jobs/feed.xml": [
+      "GET"
+    ],
+    "/api/v2/jobs/feed/indeed.xml": [
+      "GET"
+    ],
+    "/api/v2/jobs/gdpr-erase-me": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/gdpr-export": [
+      "GET"
+    ],
+    "/api/v2/jobs/generate-description": [
+      "POST"
+    ],
+    "/api/v2/jobs/interview-slots/{slotId}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/interview-slots/{slotId}/book": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/jobs/interviews/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/interviews/{id}/accept": [
+      "PUT"
+    ],
+    "/api/v2/jobs/interviews/{id}/decline": [
+      "PUT"
+    ],
+    "/api/v2/jobs/interviews/{interviewId}/calendar": [
+      "GET"
+    ],
+    "/api/v2/jobs/interviews/{interviewId}/calendar-links": [
+      "GET"
+    ],
+    "/api/v2/jobs/my-applications": [
+      "GET"
+    ],
+    "/api/v2/jobs/my-interviews": [
+      "GET"
+    ],
+    "/api/v2/jobs/my-offers": [
+      "GET"
+    ],
+    "/api/v2/jobs/my-postings": [
+      "GET"
+    ],
+    "/api/v2/jobs/offer-templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/offer-templates/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/offer-templates/{id}/render": [
+      "POST"
+    ],
+    "/api/v2/jobs/offers/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/offers/{id}/accept": [
+      "PUT"
+    ],
+    "/api/v2/jobs/offers/{id}/reject": [
+      "PUT"
+    ],
+    "/api/v2/jobs/pipeline-rules/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/jobs/recommended": [
+      "GET"
+    ],
+    "/api/v2/jobs/salary-benchmark": [
+      "GET"
+    ],
+    "/api/v2/jobs/saved": [
+      "GET"
+    ],
+    "/api/v2/jobs/saved-profile": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/jobs/talent-search": [
+      "GET"
+    ],
+    "/api/v2/jobs/talent-search/{id}": [
+      "GET"
+    ],
+    "/api/v2/jobs/templates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/templates/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/jobs/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/jobs/{id}/ai-chat": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/ai-rank": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/applications": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/applications/bulk-status": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/applications/export-csv": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/apply": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/audit-trail": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/feature": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/interview-slots": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/interview-slots/bulk": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/interviews": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/match": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/pipeline-rules": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/pipeline-rules/run": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/predictions": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/qualified": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/referral": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/referral-stats": [
+      "GET"
+    ],
+    "/api/v2/jobs/{id}/renew": [
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/save": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/team": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/jobs/{id}/team/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/kb": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/kb/search": [
+      "GET"
+    ],
+    "/api/v2/kb/slug/{slug}": [
+      "GET"
+    ],
+    "/api/v2/kb/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/kb/{id}/attachments": [
+      "POST"
+    ],
+    "/api/v2/kb/{id}/attachments/{attachmentId}": [
+      "DELETE"
+    ],
+    "/api/v2/kb/{id}/attachments/{attachmentId}/download": [
+      "GET"
+    ],
+    "/api/v2/kb/{id}/feedback": [
+      "POST"
+    ],
+    "/api/v2/legal/acceptance/accept-all": [
+      "POST"
+    ],
+    "/api/v2/legal/acceptance/status": [
+      "GET"
+    ],
+    "/api/v2/legal/version/{versionId}": [
+      "GET"
+    ],
+    "/api/v2/legal/versions/compare": [
+      "GET"
+    ],
+    "/api/v2/legal/{type}": [
+      "GET"
+    ],
+    "/api/v2/legal/{type}/versions": [
+      "GET"
+    ],
+    "/api/v2/link-preview": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/listings": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/listings/featured": [
+      "GET"
+    ],
+    "/api/v2/listings/generate-description": [
+      "POST"
+    ],
+    "/api/v2/listings/nearby": [
+      "GET"
+    ],
+    "/api/v2/listings/saved": [
+      "GET"
+    ],
+    "/api/v2/listings/tags/autocomplete": [
+      "GET"
+    ],
+    "/api/v2/listings/tags/popular": [
+      "GET"
+    ],
+    "/api/v2/listings/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/listings/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/listings/{id}/image": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/listings/{id}/images": [
+      "POST"
+    ],
+    "/api/v2/listings/{id}/images/reorder": [
+      "PUT"
+    ],
+    "/api/v2/listings/{id}/images/{imageId}": [
+      "DELETE"
+    ],
+    "/api/v2/listings/{id}/renew": [
+      "POST"
+    ],
+    "/api/v2/listings/{id}/report": [
+      "POST"
+    ],
+    "/api/v2/listings/{id}/save": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/listings/{id}/tags": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/categories": [
+      "GET"
+    ],
+    "/api/v2/marketplace/categories/{id}/template": [
+      "GET"
+    ],
+    "/api/v2/marketplace/categories/{slug}/listings": [
+      "GET"
+    ],
+    "/api/v2/marketplace/collections": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/collections/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/marketplace/collections/{id}/items": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/collections/{id}/items/{listingId}": [
+      "DELETE"
+    ],
+    "/api/v2/marketplace/groups/{groupId}/listings": [
+      "GET"
+    ],
+    "/api/v2/marketplace/groups/{groupId}/stats": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/bulk-action": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/export-csv": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/featured": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/free": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/generate-description": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/import-csv": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/nearby": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/saved": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/marketplace/listings/{id}/analytics": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/{id}/auto-reply": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/images": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/images/reorder": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/listings/{id}/images/{imageId}": [
+      "DELETE"
+    ],
+    "/api/v2/marketplace/listings/{id}/offers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/pickup-slots": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/{id}/promote": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/promotion": [
+      "GET"
+    ],
+    "/api/v2/marketplace/listings/{id}/renew": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/report": [
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/save": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/marketplace/listings/{id}/video": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/marketplace/me/pickups": [
+      "GET"
+    ],
+    "/api/v2/marketplace/my-offers/received": [
+      "GET"
+    ],
+    "/api/v2/marketplace/my-offers/sent": [
+      "GET"
+    ],
+    "/api/v2/marketplace/offers/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/marketplace/offers/{id}/accept": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/offers/{id}/accept-counter": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/offers/{id}/counter": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/offers/{id}/decline": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/orders": [
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/purchases": [
+      "GET"
+    ],
+    "/api/v2/marketplace/orders/sales": [
+      "GET"
+    ],
+    "/api/v2/marketplace/orders/{id}": [
+      "GET"
+    ],
+    "/api/v2/marketplace/orders/{id}/cancel": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/orders/{id}/confirm-delivery": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/orders/{id}/dispute": [
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/{id}/pickup-reservation": [
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/{id}/rate": [
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/{id}/ratings": [
+      "GET"
+    ],
+    "/api/v2/marketplace/orders/{id}/ship": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/orders/{orderId}/delivery-offers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/{orderId}/delivery-offers/{delivererId}/accept": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/orders/{orderId}/delivery-offers/{delivererId}/confirm": [
+      "PUT"
+    ],
+    "/api/v2/marketplace/payments/confirm": [
+      "POST"
+    ],
+    "/api/v2/marketplace/payments/create-intent": [
+      "POST"
+    ],
+    "/api/v2/marketplace/payments/{id}/status": [
+      "GET"
+    ],
+    "/api/v2/marketplace/promotions/mine": [
+      "GET"
+    ],
+    "/api/v2/marketplace/promotions/products": [
+      "GET"
+    ],
+    "/api/v2/marketplace/reports": [
+      "GET"
+    ],
+    "/api/v2/marketplace/reports/{id}": [
+      "GET"
+    ],
+    "/api/v2/marketplace/reports/{id}/appeal": [
+      "POST"
+    ],
+    "/api/v2/marketplace/saved-searches": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/saved-searches/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/marketplace/seller/balance": [
+      "GET"
+    ],
+    "/api/v2/marketplace/seller/coupons": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/coupons/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/marketplace/seller/coupons/{id}/redemptions": [
+      "GET"
+    ],
+    "/api/v2/marketplace/seller/dashboard": [
+      "GET"
+    ],
+    "/api/v2/marketplace/seller/listings/{id}/inventory": [
+      "PATCH"
+    ],
+    "/api/v2/marketplace/seller/onboard": [
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/onboard/status": [
+      "GET"
+    ],
+    "/api/v2/marketplace/seller/payouts": [
+      "GET"
+    ],
+    "/api/v2/marketplace/seller/pickup-scan": [
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/pickup-slots": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/pickup-slots/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/marketplace/seller/profile": [
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/shipping-options": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/marketplace/seller/shipping-options/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/marketplace/sellers/{id}": [
+      "GET"
+    ],
+    "/api/v2/marketplace/sellers/{id}/listings": [
+      "GET"
+    ],
+    "/api/v2/marketplace/sellers/{id}/shipping-options": [
+      "GET"
+    ],
+    "/api/v2/marketplace/webhooks/stripe": [
+      "POST"
+    ],
+    "/api/v2/matches/all": [
+      "GET"
+    ],
+    "/api/v2/matches/{id}/dismiss": [
+      "POST"
+    ],
+    "/api/v2/matches/{sourceType}/{sourceId}/dismiss": [
+      "POST"
+    ],
+    "/api/v2/me/ad-campaigns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/me/ad-campaigns/{campaignId}/creatives": [
+      "POST"
+    ],
+    "/api/v2/me/ad-campaigns/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/me/appreciations": [
+      "GET"
+    ],
+    "/api/v2/me/collections": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/me/collections/{id}": [
+      "DELETE",
+      "PATCH"
+    ],
+    "/api/v2/me/collections/{id}/items": [
+      "GET"
+    ],
+    "/api/v2/me/courses": [
+      "GET"
+    ],
+    "/api/v2/me/data-export": [
+      "POST"
+    ],
+    "/api/v2/me/data-export/history": [
+      "GET"
+    ],
+    "/api/v2/me/fadp/consent": [
+      "POST"
+    ],
+    "/api/v2/me/fadp/consent-history": [
+      "GET"
+    ],
+    "/api/v2/me/push-campaigns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/me/push-campaigns/estimate-audience": [
+      "POST"
+    ],
+    "/api/v2/me/push-campaigns/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/me/push-campaigns/{id}/submit": [
+      "POST"
+    ],
+    "/api/v2/me/residency-verification": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/me/saved-items": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/me/saved-items/check": [
+      "GET"
+    ],
+    "/api/v2/me/saved-items/check-bulk": [
+      "POST"
+    ],
+    "/api/v2/me/saved-items/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/me/stats": [
+      "GET"
+    ],
+    "/api/v2/me/verein-dues": [
+      "GET"
+    ],
+    "/api/v2/me/verein-dues/{duesId}": [
+      "GET"
+    ],
+    "/api/v2/me/verein-dues/{duesId}/pay": [
+      "POST"
+    ],
+    "/api/v2/me/verein-invitations": [
+      "GET"
+    ],
+    "/api/v2/me/verein-invitations/{id}/respond": [
+      "POST"
+    ],
+    "/api/v2/media/thumbnail": [
+      "GET"
+    ],
+    "/api/v2/member-premium/billing-portal": [
+      "POST"
+    ],
+    "/api/v2/member-premium/cancel": [
+      "POST"
+    ],
+    "/api/v2/member-premium/checkout": [
+      "POST"
+    ],
+    "/api/v2/member-premium/me": [
+      "GET"
+    ],
+    "/api/v2/member-premium/tiers": [
+      "GET"
+    ],
+    "/api/v2/members/availability/available": [
+      "GET"
+    ],
+    "/api/v2/members/availability/compatible": [
+      "GET"
+    ],
+    "/api/v2/members/nearby": [
+      "GET"
+    ],
+    "/api/v2/members/suggested": [
+      "GET"
+    ],
+    "/api/v2/members/top-endorsed": [
+      "GET"
+    ],
+    "/api/v2/members/{id}/endorse": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/members/{id}/endorsements": [
+      "GET"
+    ],
+    "/api/v2/members/{id}/peer-endorse": [
+      "POST"
+    ],
+    "/api/v2/mentions/me": [
+      "GET"
+    ],
+    "/api/v2/mentions/search": [
+      "GET"
+    ],
+    "/api/v2/merchant-onboarding/complete": [
+      "POST"
+    ],
+    "/api/v2/merchant-onboarding/image": [
+      "POST"
+    ],
+    "/api/v2/merchant-onboarding/status": [
+      "GET"
+    ],
+    "/api/v2/merchant-onboarding/step-1": [
+      "POST"
+    ],
+    "/api/v2/merchant-onboarding/step-2": [
+      "POST"
+    ],
+    "/api/v2/merchant-onboarding/step-3": [
+      "POST"
+    ],
+    "/api/v2/messages": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/messages/conversations/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/messages/conversations/{id}/restore": [
+      "POST"
+    ],
+    "/api/v2/messages/reactions/batch": [
+      "GET"
+    ],
+    "/api/v2/messages/restriction-status": [
+      "GET"
+    ],
+    "/api/v2/messages/typing": [
+      "POST"
+    ],
+    "/api/v2/messages/unread-count": [
+      "GET"
+    ],
+    "/api/v2/messages/voice": [
+      "POST"
+    ],
+    "/api/v2/messages/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/messages/{id}/reactions": [
+      "POST"
+    ],
+    "/api/v2/messages/{id}/read": [
+      "PUT"
+    ],
+    "/api/v2/messages/{id}/request-coordinator": [
+      "POST"
+    ],
+    "/api/v2/messages/{id}/translate": [
+      "POST"
+    ],
+    "/api/v2/messages/{message}/attachments/{attachment}": [
+      "GET"
+    ],
+    "/api/v2/messages/{message}/voice": [
+      "GET"
+    ],
+    "/api/v2/metrics": [
+      "POST"
+    ],
+    "/api/v2/metrics/summary": [
+      "GET"
+    ],
+    "/api/v2/municipality/events-calendar": [
+      "GET"
+    ],
+    "/api/v2/municipality/{municipalityCode}/events-calendar": [
+      "GET"
+    ],
+    "/api/v2/newsletter/click/{token}": [
+      "GET"
+    ],
+    "/api/v2/newsletter/pixel/{token}": [
+      "GET"
+    ],
+    "/api/v2/newsletter/unsubscribe": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/notifications": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/notifications/counts": [
+      "GET"
+    ],
+    "/api/v2/notifications/group/read": [
+      "POST"
+    ],
+    "/api/v2/notifications/group/{groupKey}/read": [
+      "POST"
+    ],
+    "/api/v2/notifications/grouped": [
+      "GET"
+    ],
+    "/api/v2/notifications/read-all": [
+      "POST"
+    ],
+    "/api/v2/notifications/settings": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/notifications/unsubscribe": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/notifications/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/notifications/{id}/read": [
+      "POST"
+    ],
+    "/api/v2/onboarding/categories": [
+      "GET"
+    ],
+    "/api/v2/onboarding/complete": [
+      "POST"
+    ],
+    "/api/v2/onboarding/config": [
+      "GET"
+    ],
+    "/api/v2/onboarding/safeguarding": [
+      "POST"
+    ],
+    "/api/v2/onboarding/safeguarding-options": [
+      "GET"
+    ],
+    "/api/v2/onboarding/status": [
+      "GET"
+    ],
+    "/api/v2/pages/{slug}": [
+      "GET"
+    ],
+    "/api/v2/partner-venues": [
+      "GET"
+    ],
+    "/api/v2/partner-venues/my-visits": [
+      "GET"
+    ],
+    "/api/v2/partner-venues/pass": [
+      "GET"
+    ],
+    "/api/v2/partner-venues/pass/rotate": [
+      "POST"
+    ],
+    "/api/v2/partner-venues/visits/verify/{token}": [
+      "POST"
+    ],
+    "/api/v2/pilot-inquiry": [
+      "POST"
+    ],
+    "/api/v2/platform/stats": [
+      "GET"
+    ],
+    "/api/v2/podcasts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/podcasts/chapters/{tenantId}/{episodeId}.json": [
+      "GET"
+    ],
+    "/api/v2/podcasts/episodes/{episodeId}/listen": [
+      "POST"
+    ],
+    "/api/v2/podcasts/episodes/{episodeId}/reaction": [
+      "POST"
+    ],
+    "/api/v2/podcasts/episodes/{episodeId}/report": [
+      "POST"
+    ],
+    "/api/v2/podcasts/feed/{tenantId}/{showSlug}.xml": [
+      "GET"
+    ],
+    "/api/v2/podcasts/media/{tenantId}/{episodeId}/audio": [
+      "GET"
+    ],
+    "/api/v2/podcasts/mine": [
+      "GET"
+    ],
+    "/api/v2/podcasts/transcripts/{tenantId}/{episodeId}.txt": [
+      "GET"
+    ],
+    "/api/v2/podcasts/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/podcasts/{id}/archive": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{id}/artwork": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{id}/publish": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/podcasts/{id}/validate-feed": [
+      "GET"
+    ],
+    "/api/v2/podcasts/{showId}/episodes": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{showId}/episodes/{episodeId}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/podcasts/{showId}/episodes/{episodeId}/archive": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{showId}/episodes/{episodeId}/cover": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{showId}/episodes/{episodeId}/publish": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{showId}/subscribe": [
+      "POST"
+    ],
+    "/api/v2/podcasts/{showSlug}": [
+      "GET"
+    ],
+    "/api/v2/podcasts/{showSlug}/feed.xml": [
+      "GET"
+    ],
+    "/api/v2/podcasts/{showSlug}/{episodeSlug}": [
+      "GET"
+    ],
+    "/api/v2/polls": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/polls/categories": [
+      "GET"
+    ],
+    "/api/v2/polls/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/polls/{id}/export": [
+      "GET"
+    ],
+    "/api/v2/polls/{id}/rank": [
+      "POST"
+    ],
+    "/api/v2/polls/{id}/ranked-results": [
+      "GET"
+    ],
+    "/api/v2/polls/{id}/vote": [
+      "POST"
+    ],
+    "/api/v2/posts/media/{mediaId}": [
+      "DELETE"
+    ],
+    "/api/v2/posts/media/{mediaId}/alt": [
+      "PUT"
+    ],
+    "/api/v2/posts/{id}/media": [
+      "POST"
+    ],
+    "/api/v2/posts/{id}/media/reorder": [
+      "PUT"
+    ],
+    "/api/v2/posts/{id}/reactions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/posts/{id}/reactions/{type}/users": [
+      "GET"
+    ],
+    "/api/v2/prerender/invalidate": [
+      "POST"
+    ],
+    "/api/v2/presence/heartbeat": [
+      "POST"
+    ],
+    "/api/v2/presence/online-count": [
+      "GET"
+    ],
+    "/api/v2/presence/privacy": [
+      "PUT"
+    ],
+    "/api/v2/presence/status": [
+      "PUT"
+    ],
+    "/api/v2/presence/users": [
+      "GET"
+    ],
+    "/api/v2/provisioning-requests": [
+      "POST"
+    ],
+    "/api/v2/provisioning-requests/check-slug/{slug}": [
+      "GET"
+    ],
+    "/api/v2/provisioning-requests/status/{token}": [
+      "GET"
+    ],
+    "/api/v2/public-changelog": [
+      "GET"
+    ],
+    "/api/v2/public-page-content/{pageKey}": [
+      "GET"
+    ],
+    "/api/v2/public-static-route-content/{pageKey}": [
+      "GET"
+    ],
+    "/api/v2/public/events": [
+      "GET"
+    ],
+    "/api/v2/public/events/{id}": [
+      "GET"
+    ],
+    "/api/v2/pusher/config": [
+      "GET"
+    ],
+    "/api/v2/pwa/manifest": [
+      "GET"
+    ],
+    "/api/v2/reactions": [
+      "POST"
+    ],
+    "/api/v2/reactions/{type}/{id}": [
+      "GET"
+    ],
+    "/api/v2/reactions/{type}/{id}/users/{reactionType}": [
+      "GET"
+    ],
+    "/api/v2/realtime/config": [
+      "GET"
+    ],
+    "/api/v2/resources": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/resources/categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/resources/categories/tree": [
+      "GET"
+    ],
+    "/api/v2/resources/categories/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/resources/reorder": [
+      "PUT"
+    ],
+    "/api/v2/resources/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/resources/{id}/download": [
+      "GET"
+    ],
+    "/api/v2/reviews": [
+      "POST"
+    ],
+    "/api/v2/reviews/given": [
+      "GET"
+    ],
+    "/api/v2/reviews/pending": [
+      "GET"
+    ],
+    "/api/v2/reviews/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/reviews/user/{userId}/stats": [
+      "GET"
+    ],
+    "/api/v2/reviews/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/safeguarding/confirm-policy-review": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/consent-to-guardian": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/decline-guardian": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/guardian-permissions": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/my-guardians": [
+      "GET"
+    ],
+    "/api/v2/safeguarding/my-preferences": [
+      "GET"
+    ],
+    "/api/v2/safeguarding/my-vetting-status": [
+      "GET"
+    ],
+    "/api/v2/safeguarding/my-wards": [
+      "GET"
+    ],
+    "/api/v2/safeguarding/revoke": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/vetting-review-request": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/withdraw-guardian-consent": [
+      "POST"
+    ],
+    "/api/v2/sales/orders": [
+      "POST"
+    ],
+    "/api/v2/search": [
+      "GET"
+    ],
+    "/api/v2/search/saved": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/search/saved/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/search/saved/{id}/run": [
+      "POST"
+    ],
+    "/api/v2/search/suggestions": [
+      "GET"
+    ],
+    "/api/v2/search/trending": [
+      "GET"
+    ],
+    "/api/v2/seo/metadata/{slug}": [
+      "GET"
+    ],
+    "/api/v2/seo/redirects": [
+      "GET"
+    ],
+    "/api/v2/shares": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/skills/categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/skills/categories/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/skills/members": [
+      "GET"
+    ],
+    "/api/v2/skills/search": [
+      "GET"
+    ],
+    "/api/v2/stories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/stories/archive": [
+      "GET"
+    ],
+    "/api/v2/stories/close-friends": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/stories/close-friends/{friendId}": [
+      "DELETE"
+    ],
+    "/api/v2/stories/highlights": [
+      "POST"
+    ],
+    "/api/v2/stories/highlights/reorder": [
+      "PUT"
+    ],
+    "/api/v2/stories/highlights/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/stories/highlights/{id}/items": [
+      "POST"
+    ],
+    "/api/v2/stories/highlights/{id}/items/{storyId}": [
+      "DELETE"
+    ],
+    "/api/v2/stories/highlights/{id}/stories": [
+      "GET"
+    ],
+    "/api/v2/stories/highlights/{userId}": [
+      "GET"
+    ],
+    "/api/v2/stories/user/{userId}": [
+      "GET"
+    ],
+    "/api/v2/stories/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/stories/{id}/analytics": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/stories/{id}/poll/vote": [
+      "POST"
+    ],
+    "/api/v2/stories/{id}/react": [
+      "POST"
+    ],
+    "/api/v2/stories/{id}/reply": [
+      "POST"
+    ],
+    "/api/v2/stories/{id}/stickers": [
+      "POST"
+    ],
+    "/api/v2/stories/{id}/view": [
+      "POST"
+    ],
+    "/api/v2/stories/{id}/viewers": [
+      "GET"
+    ],
+    "/api/v2/super-admin/provisioning-requests": [
+      "GET"
+    ],
+    "/api/v2/super-admin/provisioning-requests/{id}": [
+      "GET"
+    ],
+    "/api/v2/super-admin/provisioning-requests/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/super-admin/provisioning-requests/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/super-admin/provisioning-requests/{id}/retry": [
+      "POST"
+    ],
+    "/api/v2/support-actions/confirm/{token}": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/support/reports": [
+      "POST"
+    ],
+    "/api/v2/team-documents/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/team-tasks/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/tenant/bootstrap": [
+      "GET"
+    ],
+    "/api/v2/tenants": [
+      "GET"
+    ],
+    "/api/v2/ugc-translate": [
+      "POST"
+    ],
+    "/api/v2/upload": [
+      "POST"
+    ],
+    "/api/v2/upload/list": [
+      "GET"
+    ],
+    "/api/v2/users": [
+      "GET"
+    ],
+    "/api/v2/users/blocked": [
+      "GET"
+    ],
+    "/api/v2/users/me": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/activity/dashboard": [
+      "GET"
+    ],
+    "/api/v2/users/me/activity/hours": [
+      "GET"
+    ],
+    "/api/v2/users/me/activity/monthly": [
+      "GET"
+    ],
+    "/api/v2/users/me/activity/timeline": [
+      "GET"
+    ],
+    "/api/v2/users/me/availability": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/availability/date": [
+      "POST"
+    ],
+    "/api/v2/users/me/availability/{day}": [
+      "PUT"
+    ],
+    "/api/v2/users/me/availability/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/users/me/avatar": [
+      "POST"
+    ],
+    "/api/v2/users/me/consent": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/gdpr-request": [
+      "POST"
+    ],
+    "/api/v2/users/me/insurance": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/users/me/language": [
+      "PUT"
+    ],
+    "/api/v2/users/me/listings": [
+      "GET"
+    ],
+    "/api/v2/users/me/match-preferences": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/notification-settings": [
+      "PUT"
+    ],
+    "/api/v2/users/me/notifications": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/parent-accounts": [
+      "GET"
+    ],
+    "/api/v2/users/me/parent-accounts/{id}/message-access/withdraw": [
+      "POST"
+    ],
+    "/api/v2/users/me/parent-accounts/{id}/permissions": [
+      "PUT"
+    ],
+    "/api/v2/users/me/password": [
+      "POST"
+    ],
+    "/api/v2/users/me/preferences": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/users/me/resume-visibility": [
+      "PUT"
+    ],
+    "/api/v2/users/me/sessions": [
+      "GET"
+    ],
+    "/api/v2/users/me/skills": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/users/me/skills/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/users/me/sub-accounts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/activity": [
+      "GET"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/listings": [
+      "POST"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/listings/{listingId}/image": [
+      "POST"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/messages": [
+      "GET"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/messages/{partnerId}": [
+      "GET"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/transfer": [
+      "POST"
+    ],
+    "/api/v2/users/me/sub-accounts/{childId}/wallet": [
+      "GET"
+    ],
+    "/api/v2/users/me/sub-accounts/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/users/me/sub-accounts/{id}/approve": [
+      "PUT"
+    ],
+    "/api/v2/users/me/sub-accounts/{id}/permissions": [
+      "PUT"
+    ],
+    "/api/v2/users/me/support-actions": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/users/me/support-actions/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/users/me/support-actions/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/users/me/support-actions/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/users/me/theme": [
+      "PUT"
+    ],
+    "/api/v2/users/me/theme-preferences": [
+      "PUT"
+    ],
+    "/api/v2/users/search": [
+      "GET"
+    ],
+    "/api/v2/users/{id}": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/activity/dashboard": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/availability": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/block": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/users/{id}/block-status": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/listings": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/rating": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/skills": [
+      "GET"
+    ],
+    "/api/v2/users/{id}/verification-badges": [
+      "GET"
+    ],
+    "/api/v2/users/{userId}/appreciations": [
+      "GET"
+    ],
+    "/api/v2/users/{userId}/public-collections": [
+      "GET"
+    ],
+    "/api/v2/users/{userId}/reviews": [
+      "GET"
+    ],
+    "/api/v2/users/{userId}/verein-membership-status": [
+      "GET"
+    ],
+    "/api/v2/vereine/cross-invite-targets/{userId}": [
+      "GET"
+    ],
+    "/api/v2/vereine/{organizationId}/cross-invitations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/vereine/{organizationId}/dues": [
+      "GET"
+    ],
+    "/api/v2/vereine/{organizationId}/dues/fee-config": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/vereine/{organizationId}/dues/generate": [
+      "POST"
+    ],
+    "/api/v2/vereine/{organizationId}/dues/overdue": [
+      "GET"
+    ],
+    "/api/v2/vereine/{organizationId}/dues/{duesId}/remind": [
+      "POST"
+    ],
+    "/api/v2/vereine/{organizationId}/dues/{duesId}/waive": [
+      "POST"
+    ],
+    "/api/v2/vereine/{organizationId}/event-shares/{shareId}": [
+      "DELETE"
+    ],
+    "/api/v2/vereine/{organizationId}/federation-consent": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/vereine/{organizationId}/network": [
+      "GET"
+    ],
+    "/api/v2/vereine/{organizationId}/share-event": [
+      "POST"
+    ],
+    "/api/v2/vereine/{organizationId}/shared-events": [
+      "GET"
+    ],
+    "/api/v2/volunteering/accessibility-needs": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/volunteering/admin/swaps": [
+      "GET"
+    ],
+    "/api/v2/volunteering/admin/swaps/{id}": [
+      "PUT"
+    ],
+    "/api/v2/volunteering/applications": [
+      "GET"
+    ],
+    "/api/v2/volunteering/applications/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/volunteering/certificates": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/certificates/verify/{code}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/certificates/{code}/html": [
+      "GET"
+    ],
+    "/api/v2/volunteering/checkin/checkout/{token}": [
+      "POST"
+    ],
+    "/api/v2/volunteering/checkin/verify/{token}": [
+      "POST"
+    ],
+    "/api/v2/volunteering/community-projects": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/community-projects/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/volunteering/community-projects/{id}/support": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/volunteering/credentials": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/credentials/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/volunteering/credentials/{id}/download": [
+      "GET"
+    ],
+    "/api/v2/volunteering/custom-fields": [
+      "GET"
+    ],
+    "/api/v2/volunteering/donations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/emergency-alerts": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/emergency-alerts/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/volunteering/expenses": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/expenses/{id}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/giving-days": [
+      "GET"
+    ],
+    "/api/v2/volunteering/giving-days/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/volunteering/group-reservations": [
+      "GET"
+    ],
+    "/api/v2/volunteering/group-reservations/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/volunteering/group-reservations/{id}/members": [
+      "POST"
+    ],
+    "/api/v2/volunteering/group-reservations/{id}/members/{userId}": [
+      "DELETE"
+    ],
+    "/api/v2/volunteering/guardian-consents": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/guardian-consents/verify/{token}": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/guardian-consents/{id}": [
+      "DELETE"
+    ],
+    "/api/v2/volunteering/hours": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/hours/pending-review": [
+      "GET"
+    ],
+    "/api/v2/volunteering/hours/summary": [
+      "GET"
+    ],
+    "/api/v2/volunteering/hours/{id}/verify": [
+      "PUT"
+    ],
+    "/api/v2/volunteering/incidents": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/incidents/{id}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/my-organisations": [
+      "GET"
+    ],
+    "/api/v2/volunteering/my-waitlists": [
+      "GET"
+    ],
+    "/api/v2/volunteering/opportunities": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/opportunities/{id}": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/volunteering/opportunities/{id}/applications": [
+      "GET"
+    ],
+    "/api/v2/volunteering/opportunities/{id}/apply": [
+      "POST"
+    ],
+    "/api/v2/volunteering/opportunities/{id}/recurring-patterns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/opportunities/{id}/shifts": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/organisations/{id}": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/volunteering/organisations/{id}/applications": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/hours/pending": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/stats": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/volunteers": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/wallet": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/wallet/deposit": [
+      "POST"
+    ],
+    "/api/v2/volunteering/organisations/{id}/wallet/transactions": [
+      "GET"
+    ],
+    "/api/v2/volunteering/recommended-shifts": [
+      "GET"
+    ],
+    "/api/v2/volunteering/recurring-patterns/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/volunteering/reviews": [
+      "POST"
+    ],
+    "/api/v2/volunteering/reviews/organization/{id}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/reviews/{type}/{id}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/shifts": [
+      "GET"
+    ],
+    "/api/v2/volunteering/shifts/{id}/checkin": [
+      "GET"
+    ],
+    "/api/v2/volunteering/shifts/{id}/checkins": [
+      "GET"
+    ],
+    "/api/v2/volunteering/shifts/{id}/group-reserve": [
+      "POST"
+    ],
+    "/api/v2/volunteering/shifts/{id}/signup": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/volunteering/shifts/{id}/waitlist": [
+      "DELETE",
+      "POST"
+    ],
+    "/api/v2/volunteering/shifts/{id}/waitlist/promote": [
+      "POST"
+    ],
+    "/api/v2/volunteering/swaps": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/swaps/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/volunteering/training": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/wellbeing": [
+      "GET"
+    ],
+    "/api/v2/volunteering/wellbeing/checkin": [
+      "POST"
+    ],
+    "/api/v2/volunteering/wellbeing/my-status": [
+      "GET"
+    ],
+    "/api/v2/wallet/balance": [
+      "GET"
+    ],
+    "/api/v2/wallet/categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/wallet/categories/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/wallet/community-fund": [
+      "GET"
+    ],
+    "/api/v2/wallet/community-fund/deposit": [
+      "POST"
+    ],
+    "/api/v2/wallet/community-fund/donate": [
+      "POST"
+    ],
+    "/api/v2/wallet/community-fund/transactions": [
+      "GET"
+    ],
+    "/api/v2/wallet/community-fund/withdraw": [
+      "POST"
+    ],
+    "/api/v2/wallet/config": [
+      "GET"
+    ],
+    "/api/v2/wallet/donate": [
+      "POST"
+    ],
+    "/api/v2/wallet/donations": [
+      "GET"
+    ],
+    "/api/v2/wallet/pending-count": [
+      "GET"
+    ],
+    "/api/v2/wallet/starting-balance": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/wallet/statement": [
+      "GET"
+    ],
+    "/api/v2/wallet/transactions": [
+      "GET"
+    ],
+    "/api/v2/wallet/transactions/{id}": [
+      "DELETE",
+      "GET"
+    ],
+    "/api/v2/wallet/transfer": [
+      "POST"
+    ],
+    "/api/v2/wallet/user-search": [
+      "GET"
+    ],
+    "/api/v2/webhooks/identity/{provider_slug}": [
+      "POST"
+    ],
+    "/api/v2/webhooks/postmark": [
+      "POST"
+    ],
+    "/api/v2/webhooks/stripe": [
+      "POST"
+    ],
+    "/api/vol_opportunities": [
+      "GET"
+    ],
+    "/api/wallet/balance": [
+      "GET"
+    ],
+    "/api/wallet/pending-count": [
+      "GET"
+    ],
+    "/api/wallet/transactions": [
+      "GET"
+    ],
+    "/api/wallet/transfer": [
+      "POST"
+    ],
+    "/api/wallet/user-search": [
+      "POST"
+    ],
+    "/api/webauthn/auth-challenge": [
+      "POST"
+    ],
+    "/api/webauthn/auth-verify": [
+      "POST"
+    ],
+    "/api/webauthn/credentials": [
+      "GET"
+    ],
+    "/api/webauthn/register-challenge": [
+      "POST"
+    ],
+    "/api/webauthn/register-verify": [
+      "POST"
+    ],
+    "/api/webauthn/remove": [
+      "POST"
+    ],
+    "/api/webauthn/remove-all": [
+      "POST"
+    ],
+    "/api/webauthn/rename": [
+      "POST"
+    ],
+    "/api/webauthn/security-confirm": [
+      "POST"
+    ],
+    "/api/webauthn/status": [
+      "GET"
+    ]
+  }
+}

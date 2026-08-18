@@ -1,0 +1,4035 @@
+{
+  "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)",
+  "route_inventory_state": "fresh",
+  "route_inventory_changed_files": [],
+  "summary": {
+    "api_modules": 46,
+    "call_sites": 492,
+    "distinct_endpoints": 403,
+    "verified": 402,
+    "unverified": 0,
+    "missing_from_routes": 1,
+    "method_mismatch": 0,
+    "dynamic_unverifiable": 74,
+    "inline_fetch_offenders": 0
+  },
+  "missing_from_routes": [
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/auto-pay",
+      "sites": [
+        "volunteering.ts:542"
+      ]
+    }
+  ],
+  "method_mismatch": [],
+  "dynamic_unverifiable": [
+    {
+      "at": "eventCommunications.ts:157",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:169",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:179",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:189",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:203",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:217",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:231",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventCommunications.ts:244",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:234",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:241",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:249",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:263",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:275",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:287",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:302",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:313",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:335",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:345",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:356",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:190",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:204",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:220",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:233",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:245",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:263",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:284",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:306",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafety.ts:138",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafety.ts:148",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafety.ts:160",
+      "http": "DELETE",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafety.ts:174",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafety.ts:188",
+      "http": "DELETE",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:164",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:172",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:181",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:191",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTickets.ts:137",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTickets.ts:148",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTickets.ts:160",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:920",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1095",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1108",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1120",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1132",
+      "http": "DELETE",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1146",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1168",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1187",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1198",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1212",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1225",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1248",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1254",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1270",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1286",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1297",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1303",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1309",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1315",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1327",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1337",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1352",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1369",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1375",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1384",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1393",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1404",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1415",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1421",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1472",
+      "http": "POST",
+      "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
+    },
+    {
+      "at": "feed.ts:214",
+      "http": "GET",
+      "reason": "variable \"path\" is not a literal endpoint in this module"
+    },
+    {
+      "at": "marketplace.ts:605",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "marketplace.ts:606",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "marketplace.ts:835",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "marketplace.ts:836",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    }
+  ],
+  "inline_fetch_offenders": [],
+  "endpoints": [
+    {
+      "http": "POST",
+      "endpoint": "/api/ai/chat",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "chat.ts:85"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/ai/chat/feedback",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "chat.ts:130"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/ai/chat/starters",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "chat.ts:120"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/ai/conversations/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "chat.ts:116"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/forgot-password",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:158"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/login",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:140"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/logout",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:173"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/refresh-token",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:183"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/reset-password",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:163"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/auth/verify-email",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:168"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/appreciations/{param}/react",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "appreciations.ts:53"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/auth/register",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:149"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/blog",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "blog.ts:45"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/blog/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "blog.ts:56"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/bookmarks",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:325"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:180"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/comments",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "comments.ts:74",
+        "exchanges.ts:228"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/comments",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "comments.ts:86",
+        "exchanges.ts:235"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/comments/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "comments.ts:106"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/comments/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "comments.ts:98"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/comments/{param}/reactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "comments.ts:113"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/connections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "connections.ts:54"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/connections/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "connections.ts:74"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/connections/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "connections.ts:69"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/connections/request",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "connections.ts:64"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/connections/status/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "connections.ts:59"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/coupons",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1164"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/coupons/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1168"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/coupons/{param}/qr",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1172"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/coupons/redeem-qr",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1176"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/coupons/validate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:855"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/analytics",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventAnalytics.ts:119"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/lifecycle-history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventLifecycleHistory.ts:61"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/events/{param}/rsvp",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "events.ts:1100"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/events/{param}/waitlist",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "events.ts:1217"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/waitlist",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "events.ts:1203"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "client.ts:401",
+        "exchanges.ts:205"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/exchanges/check",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:200"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/exchanges/config",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:195"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/explore",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "explore.ts:184"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/activity",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:276"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/connections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:390"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/connections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:410"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/federation/connections/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:402"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/connections/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:394"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/connections/{param}/reject",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:398"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/connections/status/{param}/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:406"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/events",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:315"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/groups",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:311"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:307"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/members",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:287"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/members/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:295"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/members/{param}/reviews",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:303"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/messages",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:319"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/messages",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:329"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/messages/{param}/mark-read",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:345"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/messages/{param}/translate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:353"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/messages/mark-read-batch",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:349"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/opt-in",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:337"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/opt-out",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:341"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/partners",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:250"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/partners/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:283"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/settings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:359"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/federation/settings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:363"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/setup",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:367"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/federation/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:257",
+        "federation.ts:272"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/federation/transactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "federation.ts:333"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/feed",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:205"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/feed/hashtags/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:236"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/feed/hashtags/search",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:224"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/feed/hashtags/trending",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:218"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/like",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:221",
+        "feed.ts:311"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/feed/polls/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:335"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/polls/{param}/vote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:342"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/badges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:166",
+        "gamification.ts:168"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/challenges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:216"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/gamification/challenges/{param}/claim",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:224"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:232"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/daily-reward",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:200"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/gamification/daily-reward",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:208"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/leaderboard",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:181"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/nexus-score",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:190",
+        "gamification.ts:192"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/profile",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:155",
+        "gamification.ts:157"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/gamification/shop",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:240"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/gamification/shop/purchase",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:248"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/gamification/showcase",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "gamification.ts:256"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:131"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/goals",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:150"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:135"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/goals/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:175"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/{param}/history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:183"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/{param}/insights",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:187"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/goals/{param}/progress",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:179"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/goals/{param}/reminder",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:199"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/{param}/reminder",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:191"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/goals/{param}/reminder",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:195"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/goals/from-template/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:164"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/templates",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:156"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/goals/templates/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "goals.ts:160"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/group-exchanges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:83"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/group-exchanges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:91"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/group-exchanges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:103"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/group-exchanges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:87"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/group-exchanges/{param}/complete",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:99"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/group-exchanges/{param}/confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groupExchanges.ts:95"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/group-templates",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:399"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:377"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:391"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:384"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/groups/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:395"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/analytics",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:576"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/analytics/comparative",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:588"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/analytics/retention",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:582"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/announcements",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:526"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/announcements",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:730"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:748"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:741"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/answers/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:634"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/discussions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:514"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/discussions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:720"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/files",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:538"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/files/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:542"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/image",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:484"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/join",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:755"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/media",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:555"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/media",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:565"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/media/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:559"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/members",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:502"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/membership",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:762"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/qa/vote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:630"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/questions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:601"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/questions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:612"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/questions/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:605"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/questions/{param}/answers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:620"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/task-stats",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:685"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/tasks",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:681"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/tasks",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:699"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/wiki",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:641"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/{param}/wiki",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:652"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/wiki/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:664"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/wiki/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:645"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/groups/{param}/wiki/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:660"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/groups/{param}/wiki/{param}/revisions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:668"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:118"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-challenges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:113"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/ideation-challenges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:131"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-challenges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:123"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-challenges/{param}/ideas",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:139"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/ideation-challenges/{param}/ideas",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:147"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/ideation-ideas/{param}/vote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:155"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/identity/create-payment",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "verification.ts:112"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/identity/save-dob",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "verification.ts:102"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/identity/start",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "verification.ts:108"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/identity/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "verification.ts:98"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:242"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/jobs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:246"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:277"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:250",
+        "jobs.ts:254"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/{param}/analytics",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:285"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/{param}/applications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:281"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/jobs/{param}/apply",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:314"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/{param}/match",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:396"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/{param}/predictions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:289"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/jobs/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:328"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/jobs/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:321"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/alerts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:359"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/jobs/alerts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:366"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/jobs/alerts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:373"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/alerts/{param}/resubscribe",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:387"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/alerts/{param}/unsubscribe",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:380"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/applications/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:296",
+        "jobs.ts:304"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/applications/{param}/history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:300"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/jobs/generate-description",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:263"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/interviews/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:412"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/interviews/{param}/decline",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:424"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/my-applications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:341"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/my-interviews",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:403"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/my-offers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:435"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/my-postings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:352"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/offers/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:444"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/jobs/offers/{param}/reject",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:456"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/recommended",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:270"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/jobs/saved-profile",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "jobs.ts:468"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/kb",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:100"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/kb/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:110"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/kb/search",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:105"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/legal/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "legal.ts:104"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/legal/acceptance/accept-all",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "legal.ts:94"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/legal/acceptance/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "legal.ts:82"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:168"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:185"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/listings/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:321"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/listings/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:176"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/listings/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:255"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/listings/{param}/image",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:316"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings/{param}/image",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:305"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings/{param}/renew",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:217"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:243"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/listings/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:213"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:209"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/listings/{param}/tags",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:190"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/listings/generate-description",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchanges.ts:247"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:592"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/categories/{param}/template",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:596"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:980"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:988"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/collections/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:992"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/collections/{param}/items",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1003"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/collections/{param}/items",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1007"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/collections/{param}/items/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1014"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/groups/{param}/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:954"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/groups/{param}/stats",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:958"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:562"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:612"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/listings/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:631"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/listings/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:619"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/images",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:656"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/listings/{param}/images/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:660"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/offers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:685"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/promote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1026"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/renew",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:650"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:642"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/listings/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:646"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/save",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:635"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/listings/{param}/video",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:670"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/{param}/video",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:666"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/listings/featured",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:580"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/listings/free",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:588"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/listings/generate-description",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:627"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/listings/nearby",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:576"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/me/pickups",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1107"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/my-offers/{param}",
+      "status": "verified",
+      "matched_via": "parameter-matches-literal-segment",
+      "sites": [
+        "marketplace.ts:695"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/offers/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:718"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/offers/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:699"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/offers/{param}/accept-counter",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:710"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/offers/{param}/counter",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:706"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/offers/{param}/decline",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:714"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:802"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/orders/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:730"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/orders/{param}/cancel",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:745"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/orders/{param}/confirm-delivery",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:741"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/orders/{param}/delivery-offers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:767"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders/{param}/delivery-offers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:774"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:781"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:788"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders/{param}/dispute",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:759"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders/{param}/pickup-reservation",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:840"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders/{param}/rate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:752"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/orders/{param}/ratings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:763"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/orders/{param}/ship",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:737"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/payments/confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:818"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/payments/create-intent",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:806"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/promotions/mine",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1022"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/promotions/products",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1018"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/saved-searches",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:962"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/saved-searches",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:972"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/saved-searches/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:976"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/balance",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:899"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/coupons",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1115"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/coupons",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1132"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/seller/coupons/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1156"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/seller/coupons/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1152"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/coupons/{param}/redemptions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1160"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/dashboard",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:929"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/onboard",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:910"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/onboard/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:895"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/payouts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:906"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/pickup-scan",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1111"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/pickup-slots",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1032"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/pickup-slots",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1085"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/seller/pickup-slots/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1103"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/seller/pickup-slots/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1099"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/seller/shipping-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1036"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/seller/shipping-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1055"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/marketplace/seller/shipping-options/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1074"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/marketplace/seller/shipping-options/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1070"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/sellers/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:914"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/sellers/{param}/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:925"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/marketplace/sellers/{param}/shipping-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:1042"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/matches/{param}/dismiss",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "matches.ts:57"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/matches/all",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "matches.ts:45"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/me/collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "savedCollections.ts:55"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/me/collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "savedCollections.ts:63"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/me/collections/{param}/items",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "savedCollections.ts:67"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/me/data-export",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:91"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/me/data-export/history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:86"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/me/saved-items/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "savedCollections.ts:74"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/members/{param}/endorse",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:188"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/members/{param}/endorsements",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:152"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/merchant-onboarding/complete",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:891"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/merchant-onboarding/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:863"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/merchant-onboarding/step-1",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:873"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/merchant-onboarding/step-2",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:880"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/merchant-onboarding/step-3",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:887"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/messages",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:142"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:204",
+        "messages.ts:230"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/messages/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:199"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/messages/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:149"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/messages/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:195"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages/{param}/reactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:191"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/messages/{param}/read",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:183"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/messages/conversations/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:175"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages/conversations/{param}/restore",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:179"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/messages/restriction-status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:187"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages/voice",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:247"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/notifications/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:83"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/notifications/{param}/read",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:69"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/notifications/counts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:64"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/notifications/group/read",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:78"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/notifications/grouped",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:59"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/notifications/read-all",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "notifications.ts:74"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/polls",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "events.ts:1235"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/polls",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "polls.ts:20"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/polls/{param}/vote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "events.ts:1243"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/reactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:266"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/reactions/{param}/{param}/users/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:291"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/resources",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:90"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/resources/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:95"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/reviews",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "reviews.ts:98"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/reviews/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "reviews.ts:102"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/reviews/pending",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "reviews.ts:87"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/reviews/user/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "members.ts:85",
+        "reviews.ts:74"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/search",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "search.ts:50"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/search/saved",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "search.ts:63"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/search/saved",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "search.ts:71"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/search/saved/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "search.ts:78"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/search/saved/{param}/run",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "search.ts:82"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/skills/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:228"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/skills/categories/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:232"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/skills/members",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:236"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/skills/search",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:223"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/team-tasks/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:710"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/team-tasks/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:706"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/tenant/bootstrap",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "tenant.ts:43"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/tenants",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "tenant.ts:48"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "client.ts:400",
+        "members.ts:70"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "members.ts:75"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/{param}/appreciations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "appreciations.ts:46"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/users/{param}/block",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:100"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/{param}/listings",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "members.ts:80"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/{param}/public-collections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "savedCollections.ts:59"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/blocked",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:95"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "auth.ts:178"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "profile.ts:24"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/activity/dashboard",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "activity.ts:72"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/users/me/avatar",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "profile.ts:94"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/parent-accounts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:118"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me/parent-accounts/{param}/permissions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:159"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/users/me/password",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "profile.ts:37"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/preferences",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:104"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me/preferences",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:109"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/skills",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:171"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/users/me/skills",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:198"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/users/me/skills/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "endorsements.ts:211"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/sub-accounts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:113"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/users/me/sub-accounts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:123"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/users/me/sub-accounts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:190"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/sub-accounts/{param}/activity",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:231"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me/sub-accounts/{param}/approve",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:127"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me/sub-accounts/{param}/permissions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:134",
+        "settings.ts:150"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/applications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:456"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/applications/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:487"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/applications/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:479"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/certificates",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:559"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/certificates",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:563"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/donations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:579"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/donations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:597"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/expenses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:567"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/expenses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:571"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/giving-days",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:575"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/hours",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:614"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/hours/{param}/verify",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:483"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/hours/summary",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:491"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/my-organisations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:495"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/opportunities",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:439"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/opportunities",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:601"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:449"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:605"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/applications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:466"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/apply",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:618"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "organisations.ts:52"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/organisations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "organisations.ts:69"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "organisations.ts:62",
+        "volunteering.ts:499"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/organisations/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:551"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/applications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:510"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/hours/pending",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:517"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/stats",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:503"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/volunteers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:523"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/deposit",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:535"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/transactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:529"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/shifts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:555"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/signup",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:626"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/signup",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:622"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/swaps",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:583"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/swaps/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:593"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/swaps/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:589"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/wallet/balance",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:125"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/wallet/community-fund",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:156"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/wallet/donate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:183"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/wallet/transactions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:148"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/wallet/transfer",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:175"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/wallet/user-search",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:164"
+      ]
+    }
+  ]
+}

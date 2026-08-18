@@ -1903,12 +1903,39 @@ jobs:
         working-directory: mobile
         run: npm run verify:release
 
-      - name: "BLOCKING: Mobile typecheck and tests"
+      # The suite runs ONCE, under coverage. Running `npm test` and then the
+      # coverage run separately doubled a ~90s serial job for no extra signal.
+      # `--runInBand` is deliberate: ubuntu-latest is 4 vCPU, where parallel buys
+      # little, and it keeps CI reproducible with `npx jest --runInBand` locally.
+      # (Measured 2026-08-18 on the dev workstation: parallel 16s vs serial 71s,
+      # identical 263-suite / 1,563-test pass counts. Parallel is for laptops.)
+      - name: "BLOCKING: Mobile typecheck, tests and coverage ratchet"
         working-directory: mobile
         run: |
           npm run type-check
-          npm test -- --runInBand
+          npm run test:coverage -- --runInBand
+          npm run coverage:ratchet
           npx expo-doctor
+
+      # The Jest suite mocks the HTTP client, so it cannot see that an endpoint
+      # was renamed or that React grew a member route mobile knows nothing about.
+      # These two checks are the compensating controls. Both are static — no PHP,
+      # no database, no device — so they run on this bare Node runner.
+      #
+      # api:check verifies against mobile/docs/generated/laravel-api-route-inventory.json
+      # (from `artisan route:list`), NOT openapi.json, which documents only 862 of
+      # the 2,232 paths the app registers. It exits 2 if that snapshot's fingerprint
+      # no longer matches routes/**, so a stale snapshot fails rather than passing
+      # vacuously — refresh it with `npm run api:routes`.
+      - name: "BLOCKING: Mobile drift — route parity and API contract"
+        working-directory: mobile
+        run: npm run drift:check
+
+      # coverage:ratchet above enforces per-area shrink-only line floors from
+      # mobile/coverage-baseline.json. A single global percentage cannot gate this
+      # codebase: app/(modals)/ is 10,343 of 16,057 instrumented lines, so every
+      # native-integration seam (secure storage, Pusher, Stripe, the root layout)
+      # could go to zero while the global figure moved under two points.
 
       - name: "BLOCKING: Generate and inspect native Android policy"
         working-directory: mobile

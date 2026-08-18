@@ -1,0 +1,1044 @@
+{
+  "$comment": [
+    "Declaration of mobile intent for every React member route. Read by",
+    "scripts/generate-parity-matrix.mjs; never written by it.",
+    "",
+    "A route absent from this file makes `npm run parity:check` FAIL. That is the",
+    "point: when React gains a member route, someone has to record what mobile is",
+    "going to do about it. \"out-of-scope\" with a reason is a perfectly good answer.",
+    "Saying nothing is not, because that is how a native client drifts a whole",
+    "release behind without anyone noticing.",
+    "",
+    "Statuses:",
+    "  native        a mobile screen covers it; `mobile` names the Expo Router route,",
+    "                and the check fails if that screen does not exist.",
+    "  gap           member-facing, wanted, not built. `reason` says what is absent.",
+    "  needs-review  declared but not yet judged. Shrink-only against",
+    "                needs_review_budget below — lower the budget as these are",
+    "                resolved, never raise it.",
+    "  out-of-scope  deliberately not a phone surface. `reason` is required.",
+    "",
+    "Scope note: this file covers MEMBER routes. Admin, broker, super-admin, caring",
+    "and partner workspaces appear once each as a wildcard entry, because they are",
+    "whole applications rather than pages, and none of them belongs in a member app."
+  ],
+  "needs_review_budget": 31,
+  "routes": {
+    "achievements": {
+      "status": "native",
+      "mobile": "achievements"
+    },
+    "activity": {
+      "status": "native",
+      "mobile": "activity"
+    },
+    "blog": {
+      "status": "native",
+      "mobile": "blog"
+    },
+    "blog/:slug": {
+      "status": "native",
+      "mobile": "blog-post"
+    },
+    "chat": {
+      "status": "native",
+      "mobile": "chat"
+    },
+    "connections": {
+      "status": "native",
+      "mobile": "connections"
+    },
+    "coupons": {
+      "status": "native",
+      "mobile": "marketplace-coupons"
+    },
+    "coupons/:id": {
+      "status": "native",
+      "mobile": "marketplace-coupon-detail"
+    },
+    "dashboard": {
+      "status": "native",
+      "mobile": "home"
+    },
+    "events": {
+      "status": "native",
+      "mobile": "events"
+    },
+    "events/:id": {
+      "status": "native",
+      "mobile": "event-detail"
+    },
+    "events/:id/edit": {
+      "status": "native",
+      "mobile": "edit-event"
+    },
+    "events/create": {
+      "status": "native",
+      "mobile": "new-event"
+    },
+    "events/edit/:id": {
+      "status": "native",
+      "mobile": "edit-event"
+    },
+    "exchanges": {
+      "status": "native",
+      "mobile": "exchanges"
+    },
+    "exchanges/:id": {
+      "status": "native",
+      "mobile": "exchange-detail"
+    },
+    "explore": {
+      "status": "native",
+      "mobile": "explore"
+    },
+    "federation": {
+      "status": "native",
+      "mobile": "federation"
+    },
+    "federation/connections": {
+      "status": "native",
+      "mobile": "federation-connections"
+    },
+    "federation/events": {
+      "status": "native",
+      "mobile": "federation-events"
+    },
+    "federation/groups": {
+      "status": "native",
+      "mobile": "federation-groups"
+    },
+    "federation/listings": {
+      "status": "native",
+      "mobile": "federation-listings"
+    },
+    "federation/members": {
+      "status": "native",
+      "mobile": "federation-members"
+    },
+    "federation/members/:id": {
+      "status": "native",
+      "mobile": "federation-member"
+    },
+    "federation/messages": {
+      "status": "native",
+      "mobile": "federation-messages"
+    },
+    "federation/onboarding": {
+      "status": "native",
+      "mobile": "federation-onboarding"
+    },
+    "federation/partners": {
+      "status": "native",
+      "mobile": "federation-partners"
+    },
+    "federation/partners/:id": {
+      "status": "native",
+      "mobile": "federation-partner"
+    },
+    "federation/settings": {
+      "status": "native",
+      "mobile": "federation-settings"
+    },
+    "feed": {
+      "status": "native",
+      "mobile": "home"
+    },
+    "feed/hashtag/:tag": {
+      "status": "native",
+      "mobile": "feed-hashtag"
+    },
+    "feed/hashtags": {
+      "status": "native",
+      "mobile": "feed-hashtags"
+    },
+    "feed/item/:type/:id": {
+      "status": "native",
+      "mobile": "feed-item-detail"
+    },
+    "feed/posts/:id": {
+      "status": "native",
+      "mobile": "feed-item-detail"
+    },
+    "goals": {
+      "status": "native",
+      "mobile": "goals"
+    },
+    "goals/:id": {
+      "status": "native",
+      "mobile": "goal-detail"
+    },
+    "group-exchanges": {
+      "status": "native",
+      "mobile": "group-exchanges"
+    },
+    "group-exchanges/:id": {
+      "status": "native",
+      "mobile": "group-exchange-detail"
+    },
+    "group-exchanges/create": {
+      "status": "native",
+      "mobile": "new-group-exchange"
+    },
+    "groups": {
+      "status": "native",
+      "mobile": "groups"
+    },
+    "groups/:id": {
+      "status": "native",
+      "mobile": "group-detail"
+    },
+    "groups/create": {
+      "status": "native",
+      "mobile": "new-group"
+    },
+    "groups/edit/:id": {
+      "status": "native",
+      "mobile": "edit-group"
+    },
+    "help": {
+      "status": "native",
+      "mobile": "support"
+    },
+    "ideation": {
+      "status": "native",
+      "mobile": "ideation"
+    },
+    "ideation/:id": {
+      "status": "native",
+      "mobile": "ideation-detail"
+    },
+    "ideation/create": {
+      "status": "native",
+      "mobile": "new-challenge"
+    },
+    "jobs": {
+      "status": "native",
+      "mobile": "jobs"
+    },
+    "jobs/:id": {
+      "status": "native",
+      "mobile": "job-detail"
+    },
+    "jobs/:id/analytics": {
+      "status": "native",
+      "mobile": "job-analytics"
+    },
+    "jobs/:id/edit": {
+      "status": "native",
+      "mobile": "edit-job"
+    },
+    "jobs/:id/kanban": {
+      "status": "native",
+      "mobile": "job-pipeline"
+    },
+    "jobs/alerts": {
+      "status": "native",
+      "mobile": "jobs"
+    },
+    "jobs/create": {
+      "status": "native",
+      "mobile": "new-job"
+    },
+    "kb": {
+      "status": "native",
+      "mobile": "resources"
+    },
+    "kb/:id": {
+      "status": "native",
+      "mobile": "kb-article"
+    },
+    "leaderboard": {
+      "status": "native",
+      "mobile": "leaderboard"
+    },
+    "legal": {
+      "status": "native",
+      "mobile": "legal-document"
+    },
+    "legal/:slug": {
+      "status": "native",
+      "mobile": "legal-document"
+    },
+    "linked-accounts/:childId/messages": {
+      "status": "native",
+      "mobile": "settings-linked-accounts"
+    },
+    "listings": {
+      "status": "native",
+      "mobile": "exchanges"
+    },
+    "listings/:id": {
+      "status": "native",
+      "mobile": "exchange-detail"
+    },
+    "listings/:id/request-exchange": {
+      "status": "native",
+      "mobile": "exchange-detail"
+    },
+    "listings/create": {
+      "status": "native",
+      "mobile": "new-exchange"
+    },
+    "listings/edit/:id": {
+      "status": "native",
+      "mobile": "edit-exchange"
+    },
+    "login": {
+      "status": "native",
+      "mobile": "login"
+    },
+    "marketplace": {
+      "status": "native",
+      "mobile": "marketplace"
+    },
+    "marketplace/:id": {
+      "status": "native",
+      "mobile": "marketplace-detail"
+    },
+    "marketplace/:id/edit": {
+      "status": "native",
+      "mobile": "edit-marketplace-listing"
+    },
+    "marketplace/become-partner": {
+      "status": "native",
+      "mobile": "marketplace-become-partner"
+    },
+    "marketplace/category/:slug": {
+      "status": "native",
+      "mobile": "marketplace-category"
+    },
+    "marketplace/collections": {
+      "status": "native",
+      "mobile": "marketplace-collections"
+    },
+    "marketplace/free": {
+      "status": "native",
+      "mobile": "marketplace-free"
+    },
+    "marketplace/map": {
+      "status": "native",
+      "mobile": "marketplace-map"
+    },
+    "marketplace/me/pickups": {
+      "status": "native",
+      "mobile": "marketplace-pickups"
+    },
+    "marketplace/my-listings": {
+      "status": "native",
+      "mobile": "marketplace-my-listings"
+    },
+    "marketplace/my-offers": {
+      "status": "native",
+      "mobile": "marketplace-offers"
+    },
+    "marketplace/orders": {
+      "status": "native",
+      "mobile": "marketplace-orders"
+    },
+    "marketplace/orders/sales": {
+      "status": "native",
+      "mobile": "marketplace-sales-orders"
+    },
+    "marketplace/search": {
+      "status": "native",
+      "mobile": "marketplace-search"
+    },
+    "marketplace/sell": {
+      "status": "native",
+      "mobile": "new-marketplace-listing"
+    },
+    "marketplace/seller/:id": {
+      "status": "native",
+      "mobile": "marketplace-seller"
+    },
+    "marketplace/seller/coupons": {
+      "status": "native",
+      "mobile": "marketplace-coupons"
+    },
+    "marketplace/seller/coupons/:id/edit": {
+      "status": "native",
+      "mobile": "marketplace-coupon-edit"
+    },
+    "marketplace/seller/coupons/new": {
+      "status": "native",
+      "mobile": "marketplace-coupon-edit"
+    },
+    "marketplace/seller/onboard": {
+      "status": "native",
+      "mobile": "marketplace-seller-onboarding"
+    },
+    "marketplace/seller/onboarding": {
+      "status": "native",
+      "mobile": "marketplace-stripe-onboarding"
+    },
+    "marketplace/seller/pickup-scan": {
+      "status": "native",
+      "mobile": "marketplace-pickup-scan"
+    },
+    "marketplace/seller/pickup-slots": {
+      "status": "native",
+      "mobile": "marketplace-pickup-slots"
+    },
+    "marketplace/seller/shipping-options": {
+      "status": "native",
+      "mobile": "marketplace-shipping-options"
+    },
+    "matches": {
+      "status": "native",
+      "mobile": "matches"
+    },
+    "me/collections": {
+      "status": "native",
+      "mobile": "profile-collections"
+    },
+    "me/collections/:id": {
+      "status": "native",
+      "mobile": "profile-collections"
+    },
+    "members": {
+      "status": "native",
+      "mobile": "members"
+    },
+    "messages": {
+      "status": "native",
+      "mobile": "messages"
+    },
+    "messages/:id": {
+      "status": "native",
+      "mobile": "thread"
+    },
+    "messages/new/:userId": {
+      "status": "native",
+      "mobile": "new-message"
+    },
+    "nexus-score": {
+      "status": "native",
+      "mobile": "nexus-score"
+    },
+    "notifications": {
+      "status": "native",
+      "mobile": "notifications"
+    },
+    "organisations": {
+      "status": "native",
+      "mobile": "organisations"
+    },
+    "organisations/:id": {
+      "status": "native",
+      "mobile": "organisation-detail"
+    },
+    "organisations/register": {
+      "status": "native",
+      "mobile": "new-organisation"
+    },
+    "password/forgot": {
+      "status": "native",
+      "mobile": "forgot-password"
+    },
+    "password/reset": {
+      "status": "native",
+      "mobile": "reset-password"
+    },
+    "polls": {
+      "status": "native",
+      "mobile": "polls"
+    },
+    "profile": {
+      "status": "native",
+      "mobile": "profile"
+    },
+    "profile/:id": {
+      "status": "native",
+      "mobile": "member-profile"
+    },
+    "register": {
+      "status": "native",
+      "mobile": "register"
+    },
+    "resources": {
+      "status": "native",
+      "mobile": "resources"
+    },
+    "reviews": {
+      "status": "native",
+      "mobile": "reviews"
+    },
+    "saved": {
+      "status": "native",
+      "mobile": "profile-collections"
+    },
+    "search": {
+      "status": "native",
+      "mobile": "search"
+    },
+    "settings": {
+      "status": "native",
+      "mobile": "settings"
+    },
+    "settings/blocked": {
+      "status": "native",
+      "mobile": "settings-blocked-users"
+    },
+    "settings/data-export": {
+      "status": "native",
+      "mobile": "settings-data-export"
+    },
+    "skills": {
+      "status": "native",
+      "mobile": "skills"
+    },
+    "users/:userId/appreciations": {
+      "status": "native",
+      "mobile": "appreciations"
+    },
+    "users/:userId/collections": {
+      "status": "native",
+      "mobile": "profile-collections"
+    },
+    "verify-email": {
+      "status": "native",
+      "mobile": "verify-email"
+    },
+    "verify-identity": {
+      "status": "native",
+      "mobile": "verify-identity"
+    },
+    "volunteering": {
+      "status": "native",
+      "mobile": "volunteering"
+    },
+    "volunteering/create": {
+      "status": "native",
+      "mobile": "new-volunteering"
+    },
+    "volunteering/opportunities/:id": {
+      "status": "native",
+      "mobile": "volunteering-detail"
+    },
+    "volunteering/org/:orgId/dashboard": {
+      "status": "native",
+      "mobile": "volunteering-org-dashboard"
+    },
+    "wallet": {
+      "status": "native",
+      "mobile": "wallet"
+    },
+    "clubs": {
+      "status": "gap",
+      "reason": "Clubs have no native route."
+    },
+    "courses": {
+      "status": "gap",
+      "reason": "Courses have no native route. Parity audit records this as partial by design."
+    },
+    "courses/:id/learn": {
+      "status": "gap",
+      "reason": "Course player has no native route."
+    },
+    "courses/:idOrSlug": {
+      "status": "gap",
+      "reason": "Courses have no native route."
+    },
+    "courses/my-learning": {
+      "status": "gap",
+      "reason": "Course enrolment list has no native route."
+    },
+    "donations/:id/receipt": {
+      "status": "gap",
+      "reason": "Donation receipts have no native route."
+    },
+    "events/:id/guardian-consent": {
+      "status": "gap",
+      "reason": "Guardian consent flow has no native route; safeguarding-sensitive."
+    },
+    "events/:id/manage/:section?": {
+      "status": "gap",
+      "reason": "Event organiser management console has no single native equivalent."
+    },
+    "ideation/:challengeId/ideas/:id": {
+      "status": "gap",
+      "reason": "Individual idea detail has no native route."
+    },
+    "ideation/:id/edit": {
+      "status": "gap",
+      "reason": "Ideation editing has no native route."
+    },
+    "ideation/campaigns": {
+      "status": "gap",
+      "reason": "Ideation campaigns have no native route."
+    },
+    "ideation/campaigns/:id": {
+      "status": "gap",
+      "reason": "Ideation campaigns have no native route."
+    },
+    "ideation/outcomes": {
+      "status": "gap",
+      "reason": "Ideation outcomes have no native route."
+    },
+    "jobs/my-applications": {
+      "status": "gap",
+      "reason": "No native \"my applications\" list; applications are reachable only per job."
+    },
+    "matches/preferences": {
+      "status": "gap",
+      "reason": "Match preferences cannot be edited natively."
+    },
+    "me/verein-dues": {
+      "status": "gap",
+      "reason": "Club dues have no native route."
+    },
+    "me/verein-invitations": {
+      "status": "gap",
+      "reason": "Club invitations have no native route."
+    },
+    "onboarding": {
+      "status": "gap",
+      "reason": "No native member onboarding flow; new members land on the tabs."
+    },
+    "podcasts": {
+      "status": "gap",
+      "reason": "Podcasts have no native route. Parity audit records this as partial by design."
+    },
+    "podcasts/:showSlug": {
+      "status": "gap",
+      "reason": "Podcasts have no native route."
+    },
+    "podcasts/:showSlug/:episodeSlug": {
+      "status": "gap",
+      "reason": "Podcast episode player has no native route."
+    },
+    "premium": {
+      "status": "gap",
+      "reason": "Donations and support (member_premium) has no native surface."
+    },
+    "premium/manage": {
+      "status": "gap",
+      "reason": "Premium management has no native surface."
+    },
+    "premium/return": {
+      "status": "gap",
+      "reason": "Premium payment return page has no native surface."
+    },
+    "reviews/create": {
+      "status": "gap",
+      "reason": "No native review composer; reviews are read-only on mobile."
+    },
+    "venues": {
+      "status": "gap",
+      "reason": "Venues have no native route."
+    },
+    "venues/pass": {
+      "status": "gap",
+      "reason": "Venue pass has no native route."
+    },
+    "verify-identity-optional": {
+      "status": "gap",
+      "reason": "Optional identity-verification prompt has no native route."
+    },
+    "volunteering/my-applications": {
+      "status": "gap",
+      "reason": "No native volunteering applications list."
+    },
+    "volunteering/my-organisations": {
+      "status": "gap",
+      "reason": "No native list of the organisations a member belongs to."
+    },
+    "wallet/regional-points": {
+      "status": "gap",
+      "reason": "Regional points wallet view has no native route."
+    },
+    "whats-on": {
+      "status": "gap",
+      "reason": "Public What's On listing has no native route."
+    },
+    "whats-on/:id": {
+      "status": "gap",
+      "reason": "Public What's On detail has no native route."
+    },
+    "caring-community/caregiver": {
+      "status": "needs-review",
+      "reason": "Caring Community member surfaces — feature gate is off by default and the module has no guide yet."
+    },
+    "caring-community/caregiver/cover": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/caregiver/link": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/civic-digest": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/feedback": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/future-care-fund": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/hour-gift": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/hour-transfer": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/loyalty/history": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/markt": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/my-data-export": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/my-relationships": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/my-trust-tier": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/offer-favour": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/projects": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/projects/:id": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/providers": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/request-help": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/safeguarding/my-reports": {
+      "status": "needs-review",
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default."
+    },
+    "caring-community/safeguarding/report": {
+      "status": "needs-review",
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default."
+    },
+    "caring-community/success-stories": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/surveys": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/surveys/:id": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "caring-community/warmth-pass": {
+      "status": "needs-review",
+      "reason": "Caring Community member surface."
+    },
+    "groups/invite/:token": {
+      "status": "needs-review",
+      "reason": "Group invite token link. Same deep-link decision as join/:code."
+    },
+    "jobs/employers/:userId": {
+      "status": "needs-review",
+      "reason": "Employer public profile; unclear whether it is a member journey."
+    },
+    "join/:code": {
+      "status": "needs-review",
+      "reason": "Invite-code join. Decide whether +native-intent should handle it or it stays web."
+    },
+    "linked-accounts/:childId/messages/:partnerId": {
+      "status": "needs-review",
+      "reason": "Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that."
+    },
+    "support-actions/confirm/:token": {
+      "status": "needs-review",
+      "reason": "Support-action confirmation token link; needs a deep-link decision."
+    },
+    "venues/checkin/:token": {
+      "status": "needs-review",
+      "reason": "Venue check-in token link; needs a deep-link decision."
+    },
+    "volunteering/checkin/:token": {
+      "status": "needs-review",
+      "reason": "Volunteering check-in token link; needs a deep-link decision."
+    },
+    "about": {
+      "status": "out-of-scope",
+      "reason": "Marketing page."
+    },
+    "acceptable-use": {
+      "status": "out-of-scope",
+      "reason": "Legal document; mobile uses legal-document."
+    },
+    "acceptable-use/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "accessibility": {
+      "status": "out-of-scope",
+      "reason": "Accessibility statement; web-first."
+    },
+    "accessibility/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "admin/*": {
+      "status": "out-of-scope",
+      "reason": "Tenant administration workspace; the member app has no admin surface."
+    },
+    "advertise/campaigns": {
+      "status": "out-of-scope",
+      "reason": "Tenant advertising administration."
+    },
+    "advertise/push-campaigns": {
+      "status": "out-of-scope",
+      "reason": "Tenant push-campaign administration."
+    },
+    "auth/oauth/callback": {
+      "status": "out-of-scope",
+      "reason": "Browser OAuth redirect target; native OAuth needs its own deep-link design."
+    },
+    "broker/*": {
+      "status": "out-of-scope",
+      "reason": "Broker workspace — an operational role with its own React application."
+    },
+    "caring/*": {
+      "status": "out-of-scope",
+      "reason": "Caring Community staff workspace."
+    },
+    "changelog": {
+      "status": "out-of-scope",
+      "reason": "Marketing/release page."
+    },
+    "clubs/:id/admin/dues": {
+      "status": "out-of-scope",
+      "reason": "Club administration."
+    },
+    "clubs/:id/admin/import": {
+      "status": "out-of-scope",
+      "reason": "Club administration."
+    },
+    "community-guidelines": {
+      "status": "out-of-scope",
+      "reason": "Legal document; mobile uses legal-document."
+    },
+    "community-guidelines/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "contact": {
+      "status": "out-of-scope",
+      "reason": "Marketing page."
+    },
+    "cookies": {
+      "status": "out-of-scope",
+      "reason": "Cookie policy is a web-browser concern."
+    },
+    "cookies/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "courses/instructor": {
+      "status": "out-of-scope",
+      "reason": "Course authoring workspace."
+    },
+    "courses/instructor/:id/analytics": {
+      "status": "out-of-scope",
+      "reason": "Course authoring workspace."
+    },
+    "courses/instructor/:id/edit": {
+      "status": "out-of-scope",
+      "reason": "Course authoring workspace."
+    },
+    "courses/instructor/:id/grading": {
+      "status": "out-of-scope",
+      "reason": "Course authoring workspace."
+    },
+    "courses/instructor/new": {
+      "status": "out-of-scope",
+      "reason": "Course authoring workspace."
+    },
+    "developers": {
+      "status": "out-of-scope",
+      "reason": "Developer API documentation; a web reference, not a member journey."
+    },
+    "developers/auth": {
+      "status": "out-of-scope",
+      "reason": "Developer API documentation."
+    },
+    "developers/endpoints": {
+      "status": "out-of-scope",
+      "reason": "Developer API documentation."
+    },
+    "developers/webhooks": {
+      "status": "out-of-scope",
+      "reason": "Developer API documentation."
+    },
+    "development-status": {
+      "status": "out-of-scope",
+      "reason": "Marketing/release page."
+    },
+    "faq": {
+      "status": "out-of-scope",
+      "reason": "Marketing page."
+    },
+    "features": {
+      "status": "out-of-scope",
+      "reason": "Marketing page — a platform catalogue, not a tenant inventory."
+    },
+    "impact-report": {
+      "status": "out-of-scope",
+      "reason": "Marketing/organisational page."
+    },
+    "impact-summary": {
+      "status": "out-of-scope",
+      "reason": "Marketing/organisational page."
+    },
+    "install-app": {
+      "status": "out-of-scope",
+      "reason": "Exists to send web visitors to the app stores."
+    },
+    "jobs/bias-audit": {
+      "status": "out-of-scope",
+      "reason": "Employer administration depth; web-first per the parity audit."
+    },
+    "jobs/employer-onboarding": {
+      "status": "out-of-scope",
+      "reason": "Employer administration depth; web-first per the parity audit."
+    },
+    "jobs/talent-search": {
+      "status": "out-of-scope",
+      "reason": "Employer administration depth; web-first per the parity audit."
+    },
+    "legal/:slug/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "marketplace/reports": {
+      "status": "out-of-scope",
+      "reason": "Marketplace moderation; administration surface."
+    },
+    "marketplace/reports/:id": {
+      "status": "out-of-scope",
+      "reason": "Marketplace moderation; administration surface."
+    },
+    "municipality-calendar": {
+      "status": "out-of-scope",
+      "reason": "Municipality-specific web surface."
+    },
+    "newsletter/unsubscribe": {
+      "status": "out-of-scope",
+      "reason": "Reached from an email link; must work without the app installed."
+    },
+    "page/:slug": {
+      "status": "out-of-scope",
+      "reason": "Tenant-authored static CMS pages; web-first."
+    },
+    "partner": {
+      "status": "out-of-scope",
+      "reason": "Partner-facing web workspace."
+    },
+    "partner-analytics/dashboard": {
+      "status": "out-of-scope",
+      "reason": "Partner analytics; dense reporting, web-first."
+    },
+    "partner-timebanks/*": {
+      "status": "out-of-scope",
+      "reason": "Partner timebank workspace."
+    },
+    "pilot-apply": {
+      "status": "out-of-scope",
+      "reason": "Sales and onboarding funnel, not a member journey."
+    },
+    "pilot-apply/status/:token": {
+      "status": "out-of-scope",
+      "reason": "Sales and onboarding funnel."
+    },
+    "pilot-inquiry": {
+      "status": "out-of-scope",
+      "reason": "Sales and onboarding funnel."
+    },
+    "platform/disclaimer": {
+      "status": "out-of-scope",
+      "reason": "Platform legal document; web-first."
+    },
+    "platform/privacy": {
+      "status": "out-of-scope",
+      "reason": "Platform legal document; web-first."
+    },
+    "platform/terms": {
+      "status": "out-of-scope",
+      "reason": "Platform legal document; web-first."
+    },
+    "podcasts/studio": {
+      "status": "out-of-scope",
+      "reason": "Podcast authoring workspace."
+    },
+    "pricing": {
+      "status": "out-of-scope",
+      "reason": "Marketing page."
+    },
+    "privacy": {
+      "status": "out-of-scope",
+      "reason": "Legal document; mobile uses legal-document."
+    },
+    "privacy/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "regional-analytics": {
+      "status": "out-of-scope",
+      "reason": "Regional analytics; dense reporting, web-first."
+    },
+    "social-prescribing": {
+      "status": "out-of-scope",
+      "reason": "Long-form editorial page; web-first."
+    },
+    "strategic-plan": {
+      "status": "out-of-scope",
+      "reason": "Marketing/organisational page."
+    },
+    "super-admin/*": {
+      "status": "out-of-scope",
+      "reason": "Platform super-admin workspace."
+    },
+    "terms": {
+      "status": "out-of-scope",
+      "reason": "Legal document; mobile reads legal documents through legal-document."
+    },
+    "terms/versions": {
+      "status": "out-of-scope",
+      "reason": "Legal version history; web-first."
+    },
+    "timebanking-guide": {
+      "status": "out-of-scope",
+      "reason": "Long-form editorial guide; web-first."
+    },
+    "trust-and-safety": {
+      "status": "out-of-scope",
+      "reason": "Long-form editorial page; web-first."
+    },
+    "verify-identity/callback": {
+      "status": "out-of-scope",
+      "reason": "Stripe Identity browser redirect target."
+    }
+  }
+}

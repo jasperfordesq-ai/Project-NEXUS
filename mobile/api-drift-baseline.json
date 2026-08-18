@@ -1,0 +1,31 @@
+{
+  "$comment": [
+    "Endpoints mobile calls that Laravel does not serve, accepted temporarily.",
+    "",
+    "This file exists so `npm run api:check` could become a blocking gate on the day",
+    "it was written instead of 'once the backlog is clear'. A gate deferred until the",
+    "code is perfect never lands.",
+    "",
+    "Shrink-only, enforced in BOTH directions:",
+    "  - a new drift not listed here FAILS the check",
+    "  - an entry that no longer drifts ALSO fails, with 'STALE BASELINE'",
+    "",
+    "So a fix cannot land without deleting its entry, and the list cannot quietly",
+    "become a graveyard of forgotten breakage. Same contract as",
+    ".github/db-column-reference-baseline.json.",
+    "",
+    "Do NOT add an entry to make a red check green. Every addition is a member-facing",
+    "action that fails on a real phone."
+  ],
+  "accepted": [
+    {
+      "method": "PUT",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/auto-pay",
+      "call_site": "lib/api/volunteering.ts:542",
+      "surfaced_at": "app/(modals)/volunteering-org-dashboard.tsx:410",
+      "found": "2026-08-18",
+      "reason": "Laravel registers no auto-pay route. React DELIBERATELY removed this toggle — under auto-mint, approving hours always pays, so the control was meaningless (react-frontend/src/pages/volunteering/OrgWalletTab.test.tsx). Mobile kept it. Needs a product decision: mirror React and remove the toggle, or add the endpoint. Not a mechanical fix, so it is not being made silently.",
+      "member_impact": "An organisation owner toggling auto-pay on the mobile org dashboard gets a failure. lib/api/volunteering.test.ts:305 asserts the call against a mock, so CI stays green."
+    }
+  ]
+}

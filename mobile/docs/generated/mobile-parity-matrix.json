@@ -1,0 +1,2962 @@
+{
+  "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
+  "summary": {
+    "react_member_routes": 254,
+    "mobile_routes": 137,
+    "native": 125,
+    "out_of_scope": 65,
+    "gap": 33,
+    "needs_review": 31,
+    "needs_review_budget": 31,
+    "undeclared": 0,
+    "mobile_routes_not_claimed_by_any_react_route": 23,
+    "broken_declarations": 0
+  },
+  "undeclared": [],
+  "broken_declarations": [],
+  "gaps": [
+    {
+      "route": "clubs",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Clubs have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Courses have no native route. Parity audit records this as partial by design.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/:id/learn",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Course player has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/:idOrSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Courses have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/my-learning",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Course enrolment list has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "donations/:id/receipt",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Donation receipts have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id/guardian-consent",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Guardian consent flow has no native route; safeguarding-sensitive.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id/manage/:section?",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Event organiser management console has no single native equivalent.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/:challengeId/ideas/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Individual idea detail has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/:id/edit",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation editing has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/campaigns",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation campaigns have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/campaigns/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation campaigns have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/outcomes",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation outcomes have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/my-applications",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native \"my applications\" list; applications are reachable only per job.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "matches/preferences",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Match preferences cannot be edited natively.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/verein-dues",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Club dues have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/verein-invitations",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Club invitations have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "onboarding",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native member onboarding flow; new members land on the tabs.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcasts have no native route. Parity audit records this as partial by design.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts/:showSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcasts have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts/:showSlug/:episodeSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcast episode player has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Donations and support (member_premium) has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium/manage",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Premium management has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium/return",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Premium payment return page has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "reviews/create",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native review composer; reviews are read-only on mobile.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Venues have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues/pass",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Venue pass has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-identity-optional",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Optional identity-verification prompt has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/my-applications",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native volunteering applications list.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/my-organisations",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native list of the organisations a member belongs to.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "wallet/regional-points",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Regional points wallet view has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "whats-on",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Public What's On listing has no native route.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "whats-on/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Public What's On detail has no native route.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    }
+  ],
+  "needs_review": [
+    {
+      "route": "caring-community/caregiver",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surfaces — feature gate is off by default and the module has no guide yet.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/caregiver/cover",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/caregiver/link",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/civic-digest",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/feedback",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/future-care-fund",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/hour-gift",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/hour-transfer",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/loyalty/history",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/markt",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-data-export",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-relationships",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-trust-tier",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/offer-favour",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/projects",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/projects/:id",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/providers",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/request-help",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/safeguarding/my-reports",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/safeguarding/report",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/success-stories",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/surveys",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/surveys/:id",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/warmth-pass",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups/invite/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Group invite token link. Same deep-link decision as join/:code.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/employers/:userId",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Employer public profile; unclear whether it is a member journey.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "join/:code",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Invite-code join. Decide whether +native-intent should handle it or it stays web.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "linked-accounts/:childId/messages/:partnerId",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "support-actions/confirm/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Support-action confirmation token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues/checkin/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Venue check-in token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/checkin/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Volunteering check-in token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    }
+  ],
+  "mobile_only": [
+    "select-tenant",
+    "change-password",
+    "edit-profile",
+    "edit-volunteering",
+    "endorsements",
+    "event-attendance",
+    "event-communications",
+    "event-lifecycle-history",
+    "event-recurrence-blueprints",
+    "event-templates",
+    "event-tickets",
+    "gamification",
+    "image-viewer",
+    "legal-acceptance",
+    "marketplace-coupon-redemptions",
+    "marketplace-merchant-onboarding",
+    "marketplace-promotions",
+    "marketplace-saved-searches",
+    "marketplace-tools",
+    "quick-create",
+    "settings-translation",
+    "create",
+    "index"
+  ],
+  "rows": [
+    {
+      "route": "about",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "acceptable-use",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal document; mobile uses legal-document.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "acceptable-use/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "accessibility",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Accessibility statement; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "accessibility/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "achievements",
+      "status": "native",
+      "mobile": "achievements",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "activity",
+      "status": "native",
+      "mobile": "activity",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "admin/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Tenant administration workspace; the member app has no admin surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "advertise/campaigns",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Tenant advertising administration.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "advertise/push-campaigns",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Tenant push-campaign administration.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "auth/oauth/callback",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Browser OAuth redirect target; native OAuth needs its own deep-link design.",
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "blog",
+      "status": "native",
+      "mobile": "blog",
+      "reason": null,
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "blog/:slug",
+      "status": "native",
+      "mobile": "blog-post",
+      "reason": null,
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "broker/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Broker workspace — an operational role with its own React application.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/caregiver",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surfaces — feature gate is off by default and the module has no guide yet.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/caregiver/cover",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/caregiver/link",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/civic-digest",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/feedback",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/future-care-fund",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/hour-gift",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/hour-transfer",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/loyalty/history",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/markt",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-data-export",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-relationships",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/my-trust-tier",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/offer-favour",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/projects",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/projects/:id",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/providers",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/request-help",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/safeguarding/my-reports",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/safeguarding/report",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Safeguarding surface — needs a deliberate decision, not a default.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/success-stories",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/surveys",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/surveys/:id",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring-community/warmth-pass",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Caring Community member surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "caring/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Caring Community staff workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "changelog",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing/release page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "chat",
+      "status": "native",
+      "mobile": "chat",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "clubs",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Clubs have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "clubs/:id/admin/dues",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Club administration.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "clubs/:id/admin/import",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Club administration.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "community-guidelines",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal document; mobile uses legal-document.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "community-guidelines/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "connections",
+      "status": "native",
+      "mobile": "connections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "contact",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "cookies",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Cookie policy is a web-browser concern.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "cookies/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "coupons",
+      "status": "native",
+      "mobile": "marketplace-coupons",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "coupons/:id",
+      "status": "native",
+      "mobile": "marketplace-coupon-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Courses have no native route. Parity audit records this as partial by design.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/:id/learn",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Course player has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/:idOrSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Courses have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/instructor",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Course authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/instructor/:id/analytics",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Course authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/instructor/:id/edit",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Course authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/instructor/:id/grading",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Course authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/instructor/new",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Course authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "courses/my-learning",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Course enrolment list has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "dashboard",
+      "status": "native",
+      "mobile": "home",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "developers",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Developer API documentation; a web reference, not a member journey.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "developers/auth",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Developer API documentation.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "developers/endpoints",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Developer API documentation.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "developers/webhooks",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Developer API documentation.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "development-status",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing/release page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "donations/:id/receipt",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Donation receipts have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events",
+      "status": "native",
+      "mobile": "events",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id",
+      "status": "native",
+      "mobile": "event-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id/edit",
+      "status": "native",
+      "mobile": "edit-event",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id/guardian-consent",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Guardian consent flow has no native route; safeguarding-sensitive.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/:id/manage/:section?",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Event organiser management console has no single native equivalent.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/create",
+      "status": "native",
+      "mobile": "new-event",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "events/edit/:id",
+      "status": "native",
+      "mobile": "edit-event",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "exchanges",
+      "status": "native",
+      "mobile": "exchanges",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "exchanges/:id",
+      "status": "native",
+      "mobile": "exchange-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "explore",
+      "status": "native",
+      "mobile": "explore",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "faq",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "features",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing page — a platform catalogue, not a tenant inventory.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation",
+      "status": "native",
+      "mobile": "federation",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/connections",
+      "status": "native",
+      "mobile": "federation-connections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/events",
+      "status": "native",
+      "mobile": "federation-events",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/groups",
+      "status": "native",
+      "mobile": "federation-groups",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/listings",
+      "status": "native",
+      "mobile": "federation-listings",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/members",
+      "status": "native",
+      "mobile": "federation-members",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/members/:id",
+      "status": "native",
+      "mobile": "federation-member",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/messages",
+      "status": "native",
+      "mobile": "federation-messages",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/onboarding",
+      "status": "native",
+      "mobile": "federation-onboarding",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/partners",
+      "status": "native",
+      "mobile": "federation-partners",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/partners/:id",
+      "status": "native",
+      "mobile": "federation-partner",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "federation/settings",
+      "status": "native",
+      "mobile": "federation-settings",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "feed",
+      "status": "native",
+      "mobile": "home",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "feed/hashtag/:tag",
+      "status": "native",
+      "mobile": "feed-hashtag",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "feed/hashtags",
+      "status": "native",
+      "mobile": "feed-hashtags",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "feed/item/:type/:id",
+      "status": "native",
+      "mobile": "feed-item-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "feed/posts/:id",
+      "status": "native",
+      "mobile": "feed-item-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "goals",
+      "status": "native",
+      "mobile": "goals",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "goals/:id",
+      "status": "native",
+      "mobile": "goal-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "group-exchanges",
+      "status": "native",
+      "mobile": "group-exchanges",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "group-exchanges/:id",
+      "status": "native",
+      "mobile": "group-exchange-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "group-exchanges/create",
+      "status": "native",
+      "mobile": "new-group-exchange",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups",
+      "status": "native",
+      "mobile": "groups",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups/:id",
+      "status": "native",
+      "mobile": "group-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups/create",
+      "status": "native",
+      "mobile": "new-group",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups/edit/:id",
+      "status": "native",
+      "mobile": "edit-group",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "groups/invite/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Group invite token link. Same deep-link decision as join/:code.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "help",
+      "status": "native",
+      "mobile": "support",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation",
+      "status": "native",
+      "mobile": "ideation",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/:challengeId/ideas/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Individual idea detail has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/:id",
+      "status": "native",
+      "mobile": "ideation-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/:id/edit",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation editing has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/campaigns",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation campaigns have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/campaigns/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation campaigns have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/create",
+      "status": "native",
+      "mobile": "new-challenge",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "ideation/outcomes",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Ideation outcomes have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "impact-report",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing/organisational page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "impact-summary",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing/organisational page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "install-app",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Exists to send web visitors to the app stores.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs",
+      "status": "native",
+      "mobile": "jobs",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/:id",
+      "status": "native",
+      "mobile": "job-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/:id/analytics",
+      "status": "native",
+      "mobile": "job-analytics",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/:id/edit",
+      "status": "native",
+      "mobile": "edit-job",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/:id/kanban",
+      "status": "native",
+      "mobile": "job-pipeline",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/alerts",
+      "status": "native",
+      "mobile": "jobs",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/bias-audit",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Employer administration depth; web-first per the parity audit.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/create",
+      "status": "native",
+      "mobile": "new-job",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/employer-onboarding",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Employer administration depth; web-first per the parity audit.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/employers/:userId",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Employer public profile; unclear whether it is a member journey.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/my-applications",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native \"my applications\" list; applications are reachable only per job.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "jobs/talent-search",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Employer administration depth; web-first per the parity audit.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "join/:code",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Invite-code join. Decide whether +native-intent should handle it or it stays web.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "kb",
+      "status": "native",
+      "mobile": "resources",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "kb/:id",
+      "status": "native",
+      "mobile": "kb-article",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "leaderboard",
+      "status": "native",
+      "mobile": "leaderboard",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "legal",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "legal/:slug",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "legal/:slug/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "linked-accounts/:childId/messages",
+      "status": "native",
+      "mobile": "settings-linked-accounts",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "linked-accounts/:childId/messages/:partnerId",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings",
+      "status": "native",
+      "mobile": "exchanges",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings/:id",
+      "status": "native",
+      "mobile": "exchange-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings/:id/request-exchange",
+      "status": "native",
+      "mobile": "exchange-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings/create",
+      "status": "native",
+      "mobile": "new-exchange",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings/edit/:id",
+      "status": "native",
+      "mobile": "edit-exchange",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "login",
+      "status": "native",
+      "mobile": "login",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace",
+      "status": "native",
+      "mobile": "marketplace",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/:id",
+      "status": "native",
+      "mobile": "marketplace-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/:id/edit",
+      "status": "native",
+      "mobile": "edit-marketplace-listing",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/become-partner",
+      "status": "native",
+      "mobile": "marketplace-become-partner",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/category/:slug",
+      "status": "native",
+      "mobile": "marketplace-category",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/collections",
+      "status": "native",
+      "mobile": "marketplace-collections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/free",
+      "status": "native",
+      "mobile": "marketplace-free",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/map",
+      "status": "native",
+      "mobile": "marketplace-map",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/me/pickups",
+      "status": "native",
+      "mobile": "marketplace-pickups",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/my-listings",
+      "status": "native",
+      "mobile": "marketplace-my-listings",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/my-offers",
+      "status": "native",
+      "mobile": "marketplace-offers",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/orders",
+      "status": "native",
+      "mobile": "marketplace-orders",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/orders/sales",
+      "status": "native",
+      "mobile": "marketplace-sales-orders",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/reports",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketplace moderation; administration surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/reports/:id",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketplace moderation; administration surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/search",
+      "status": "native",
+      "mobile": "marketplace-search",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/sell",
+      "status": "native",
+      "mobile": "new-marketplace-listing",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/:id",
+      "status": "native",
+      "mobile": "marketplace-seller",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/coupons",
+      "status": "native",
+      "mobile": "marketplace-coupons",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/coupons/:id/edit",
+      "status": "native",
+      "mobile": "marketplace-coupon-edit",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/coupons/new",
+      "status": "native",
+      "mobile": "marketplace-coupon-edit",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/onboard",
+      "status": "native",
+      "mobile": "marketplace-seller-onboarding",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/onboarding",
+      "status": "native",
+      "mobile": "marketplace-stripe-onboarding",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/pickup-scan",
+      "status": "native",
+      "mobile": "marketplace-pickup-scan",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/pickup-slots",
+      "status": "native",
+      "mobile": "marketplace-pickup-slots",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "marketplace/seller/shipping-options",
+      "status": "native",
+      "mobile": "marketplace-shipping-options",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "matches",
+      "status": "native",
+      "mobile": "matches",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "matches/preferences",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Match preferences cannot be edited natively.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/collections",
+      "status": "native",
+      "mobile": "profile-collections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/collections/:id",
+      "status": "native",
+      "mobile": "profile-collections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/verein-dues",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Club dues have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "me/verein-invitations",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Club invitations have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "members",
+      "status": "native",
+      "mobile": "members",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "messages",
+      "status": "native",
+      "mobile": "messages",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "messages/:id",
+      "status": "native",
+      "mobile": "thread",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "messages/new/:userId",
+      "status": "native",
+      "mobile": "new-message",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "municipality-calendar",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Municipality-specific web surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "newsletter/unsubscribe",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Reached from an email link; must work without the app installed.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "nexus-score",
+      "status": "native",
+      "mobile": "nexus-score",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "notifications",
+      "status": "native",
+      "mobile": "notifications",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "onboarding",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native member onboarding flow; new members land on the tabs.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "organisations",
+      "status": "native",
+      "mobile": "organisations",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "organisations/:id",
+      "status": "native",
+      "mobile": "organisation-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "organisations/register",
+      "status": "native",
+      "mobile": "new-organisation",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "page/:slug",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Tenant-authored static CMS pages; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "partner",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Partner-facing web workspace.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "partner-analytics/dashboard",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Partner analytics; dense reporting, web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "partner-timebanks/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Partner timebank workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "password/forgot",
+      "status": "native",
+      "mobile": "forgot-password",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "password/reset",
+      "status": "native",
+      "mobile": "reset-password",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "pilot-apply",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Sales and onboarding funnel, not a member journey.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "pilot-apply/status/:token",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Sales and onboarding funnel.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "pilot-inquiry",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Sales and onboarding funnel.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "platform/disclaimer",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Platform legal document; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "platform/privacy",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Platform legal document; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "platform/terms",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Platform legal document; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcasts have no native route. Parity audit records this as partial by design.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts/:showSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcasts have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts/:showSlug/:episodeSlug",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Podcast episode player has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "podcasts/studio",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Podcast authoring workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "polls",
+      "status": "native",
+      "mobile": "polls",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Donations and support (member_premium) has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium/manage",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Premium management has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "premium/return",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Premium payment return page has no native surface.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "pricing",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing page.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "privacy",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal document; mobile uses legal-document.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "privacy/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "profile",
+      "status": "native",
+      "mobile": "profile",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "profile/:id",
+      "status": "native",
+      "mobile": "member-profile",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "regional-analytics",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Regional analytics; dense reporting, web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "register",
+      "status": "native",
+      "mobile": "register",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "resources",
+      "status": "native",
+      "mobile": "resources",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "reviews",
+      "status": "native",
+      "mobile": "reviews",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "reviews/create",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native review composer; reviews are read-only on mobile.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "saved",
+      "status": "native",
+      "mobile": "profile-collections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "search",
+      "status": "native",
+      "mobile": "search",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "settings",
+      "status": "native",
+      "mobile": "settings",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "settings/blocked",
+      "status": "native",
+      "mobile": "settings-blocked-users",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "settings/data-export",
+      "status": "native",
+      "mobile": "settings-data-export",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "skills",
+      "status": "native",
+      "mobile": "skills",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "social-prescribing",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Long-form editorial page; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "strategic-plan",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Marketing/organisational page.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "super-admin/*",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Platform super-admin workspace.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "support-actions/confirm/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Support-action confirmation token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "terms",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal document; mobile reads legal documents through legal-document.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "terms/versions",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Legal version history; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "timebanking-guide",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Long-form editorial guide; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "trust-and-safety",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Long-form editorial page; web-first.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "users/:userId/appreciations",
+      "status": "native",
+      "mobile": "appreciations",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "users/:userId/collections",
+      "status": "native",
+      "mobile": "profile-collections",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Venues have no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues/checkin/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Venue check-in token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "venues/pass",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Venue pass has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-email",
+      "status": "native",
+      "mobile": "verify-email",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-identity",
+      "status": "native",
+      "mobile": "verify-identity",
+      "reason": null,
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-identity-optional",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Optional identity-verification prompt has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-identity/callback",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Stripe Identity browser redirect target.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering",
+      "status": "native",
+      "mobile": "volunteering",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/checkin/:token",
+      "status": "needs-review",
+      "mobile": null,
+      "reason": "Volunteering check-in token link; needs a deep-link decision.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/create",
+      "status": "native",
+      "mobile": "new-volunteering",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/my-applications",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native volunteering applications list.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/my-organisations",
+      "status": "gap",
+      "mobile": null,
+      "reason": "No native list of the organisations a member belongs to.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/opportunities/:id",
+      "status": "native",
+      "mobile": "volunteering-detail",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/org/:orgId/dashboard",
+      "status": "native",
+      "mobile": "volunteering-org-dashboard",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "wallet",
+      "status": "native",
+      "mobile": "wallet",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "wallet/regional-points",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Regional points wallet view has no native route.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "whats-on",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Public What's On listing has no native route.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "whats-on/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "Public What's On detail has no native route.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    }
+  ]
+}

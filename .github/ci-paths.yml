@@ -56,6 +56,24 @@ frontend:
 mobile:
   - 'mobile/**'
   - 'contracts/**'
+  # 🔴 The two SOURCES the mobile drift checks compare against. Without these the
+  # gates are decorative: `parity:check` fails when React gains a member route
+  # mobile has not classified, and `api:check` fails when a route mobile calls
+  # disappears — but a change to EITHER source lands outside `mobile/**`, so the
+  # mobile job would stay asleep through exactly the commit that caused the drift,
+  # and only the nightly sweep would ever notice.
+  #
+  # This is the same blind spot web-uk paid for: Laravel shipped 18 accessible
+  # routes while nothing woke a Web UK check, and the deficit went from 1 route to
+  # 19 with no report for over a week.
+  #
+  # Deliberately narrow. `react-frontend/src/routes/**` is the route registry only,
+  # not the whole frontend, so ordinary component work does not drag the mobile job
+  # in. `routes/**` is what the committed Laravel route inventory is fingerprinted
+  # against, so a route change makes the snapshot stale and the check must run to
+  # say so.
+  - 'react-frontend/src/routes/**'
+  - 'routes/**'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 

@@ -21,6 +21,15 @@
     "test": "jest",
     "test:ci": "jest --ci --bail --coverage",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --coverageReporters=text-summary --coverageReporters=json-summary",
+    "coverage:ratchet": "node scripts/check-coverage-ratchet.mjs",
+    "coverage:check": "npm run test:coverage && node scripts/check-coverage-ratchet.mjs",
+    "api:routes": "node scripts/refresh-laravel-route-inventory.mjs",
+    "api:ledger": "node scripts/generate-api-consumer-ledger.mjs",
+    "api:check": "node scripts/generate-api-consumer-ledger.mjs --check",
+    "parity:matrix": "node scripts/generate-parity-matrix.mjs",
+    "parity:check": "node scripts/generate-parity-matrix.mjs --check",
+    "drift:check": "npm run parity:check && npm run api:check",
     "prepare": "cd .. && husky mobile/.husky || true"
   },
   "dependencies": {

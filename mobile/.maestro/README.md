@@ -80,7 +80,11 @@ On a completely fresh install (`clearState: true`) the app may show a **"Select 
 
 ## CI status
 
-Maestro is currently an operator-run device test, not a GitHub Actions gate. The main CI workflow runs the blocking Android release-policy check, typecheck, Jest suite, Expo Doctor, and generated-native-policy inspection; it does not launch an emulator or submit an EAS build. EAS build and submission commands remain deliberate operator actions documented in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
+Maestro is currently an operator-run device test, not a GitHub Actions gate. The main CI workflow (`mobile-release` in `.github/workflows/ci.yml`) runs the blocking Android release-policy check, typecheck, Jest suite, Expo Doctor, route-parity and API-contract drift checks, the coverage ratchet, and generated-native-policy inspection; it does not launch an emulator or submit an EAS build.
+
+🔴 So nothing automated proves the app launches on a device. That is the largest
+hole in mobile verification after visual testing — see
+[`../docs/PRODUCTION_READINESS.md`](../docs/PRODUCTION_READINESS.md) §8. EAS build and submission commands remain deliberate operator actions documented in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
 
 If a device-farm gate is added later, start from a preview APK and pass credentials only through repository secrets. For example:
 

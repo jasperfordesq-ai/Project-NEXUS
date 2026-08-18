@@ -19,6 +19,21 @@ module.exports = {
     '^react-native-worklets$': '<rootDir>/__mocks__/react-native-worklets.js',
   },
 
+  // Coverage must count files NO test imports. Without this, jest only
+  // instruments modules a test actually pulls in, so an entirely untested
+  // screen or API module is invisible to the percentage rather than dragging
+  // it down — the metric silently rewards not writing the test at all.
+  // Measured on 2026-08-18: 37 source files (~3.2k lines, including the
+  // 759-line root layout and the 473-line jobs API client) were absent from
+  // the report for exactly this reason.
+  collectCoverageFrom: [
+    'app/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    'lib/**/*.{ts,tsx}',
+    '!**/*.test.{ts,tsx}',
+    '!**/*.d.ts',
+  ],
+
   // heroui-native and its peer deps ship as ESM — must be transformed by Babel.
   // IMPORTANT: No trailing `/` after the alternation group — bare `expo` matches
   // expo-modules-core, expo-router, etc. (same pattern as jest-expo's own preset).
