@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-l">{{ t("govuk_alpha_events.browse.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.browse.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_events.browse.intro") }}</p>
@@ -50,4 +52,6 @@
       <a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.browse.view_all_link") }}</a>
     </p>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

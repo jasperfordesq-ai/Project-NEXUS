@@ -13,6 +13,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ templateTitle }}</span>
   <h1 class="govuk-heading-xl">{{ t("event_templates.audit_title") }}</h1>
   <p class="govuk-body-l">{{ t("event_templates.audit_intro") }}</p>
@@ -49,4 +51,6 @@
       <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?cursor=' + (pagination.next_cursor | urlencode) + '&filter=' + filter + (('&library_cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}"><span class="govuk-pagination__link-title">{{ t("event_templates.audit_load_more") }}</span></a></div>
     </nav>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

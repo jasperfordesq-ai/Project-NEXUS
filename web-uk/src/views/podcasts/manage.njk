@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status %}
     {% if status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="podcast-manage-status-heading" data-module="govuk-notification-banner">
@@ -153,4 +155,6 @@
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

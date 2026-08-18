@@ -6,6 +6,8 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ tenantName }}</span>
   <h1 class="govuk-heading-xl">{{ title }}</h1>
   <p class="govuk-body-l">{{ body }}</p>
@@ -21,4 +23,6 @@
       <a class="govuk-link" href="{{ returnUrl }}">{{ t("report_problem.back") }}</a>
     </p>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

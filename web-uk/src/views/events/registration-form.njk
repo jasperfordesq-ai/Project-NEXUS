@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
 <h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
 <p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
 {% if formErrors and (formErrors | length) %}
@@ -128,4 +130,6 @@
   <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.common.save") }}</button>
   <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.common.cancel") }}</a>
 </form>
+    </div>
+  </div>
 {% endblock %}

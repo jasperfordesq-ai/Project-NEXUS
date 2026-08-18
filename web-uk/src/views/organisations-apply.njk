@@ -11,6 +11,8 @@
 {% set organisationId = opportunity.organisationId or 0 %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if organisationId %}
     <a class="govuk-back-link" href="{{ urlFor('/organisations/' + (organisationId | string)) }}">{{ organisationName or t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
   {% else %}
@@ -62,4 +64,6 @@
       </div>
     </form>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if statusMessage or successMessage %}
     {% if status == 'exchange-action-failed' or status == 'exchange-hours-invalid' or status == 'rating-failed' or status == 'rating-invalid' %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -282,4 +284,6 @@
       {% endfor %}
     </ol>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

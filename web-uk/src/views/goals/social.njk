@@ -103,6 +103,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -173,4 +175,6 @@
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_goals.social.comment_submit") }}</button>
     </form>
   </section>
+    </div>
+  </div>
 {% endblock %}

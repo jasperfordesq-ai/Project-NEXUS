@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status %}
     {% if status.type == 'success' %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="course-grading-status" data-module="govuk-notification-banner">
@@ -94,4 +96,6 @@
       </article>
     {% endfor %}
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -99,4 +101,6 @@
 
     <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("actions.send_request") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

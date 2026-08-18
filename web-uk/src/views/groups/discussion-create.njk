@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-l">{{ group.name }}</span>
   <h1 class="govuk-heading-xl">{{ t("groups.discussions.new_title") }}</h1>
   <p class="govuk-body-l">{{ t("groups.discussions.new_description") }}</p>
@@ -56,4 +58,6 @@
 
     <button class="govuk-button" data-module="govuk-button">{{ t("groups.discussions.create_submit") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

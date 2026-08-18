@@ -6,6 +6,8 @@
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% set isEdit = mode == "edit" %}
   {% set backHref = isEdit and challenge.id and urlFor('/ideation/' ~ challenge.id) or urlFor('/ideation') %}
   {% set formAction = isEdit and challenge.id and urlFor('/ideation/' ~ challenge.id ~ '/edit') or urlFor('/ideation/new') %}
@@ -171,4 +173,6 @@
       <a class="govuk-link" href="{{ backHref }}">{{ t("polish_federation.transfer_cancel") }}</a>
     </div>
   </form>
+    </div>
+  </div>
 {% endblock %}

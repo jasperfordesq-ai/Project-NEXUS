@@ -12,6 +12,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% set messages = { "agenda-created": "govuk_alpha.events.agenda.created", "agenda-updated": "govuk_alpha.events.agenda.updated", "agenda-cancelled": "govuk_alpha.events.agenda.cancelled_success", "agenda-reordered": "govuk_alpha.events.agenda.reordered", "agenda-session-registered": "event_agenda.registered_success", "agenda-session-withdrawn": "event_agenda.withdrawn_success" } %}
   {% if status == "agenda-failed" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.agenda.save_error") }}</p></div></div></div>
@@ -71,4 +73,6 @@
   {% endif %}
 
   {% if agenda.permissions.manage and cancelledSessions.length %}<h2 class="govuk-heading-l">{{ t("govuk_alpha.events.agenda.cancelled_sessions") }}</h2><ul class="govuk-list govuk-list--bullet">{% for session in cancelledSessions %}<li><strong>{{ session.title }}</strong>{% if session.cancellation_reason %} — {{ t("govuk_alpha.events.agenda.cancelled_reason", { reason: session.cancellation_reason }) }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  </div>
 {% endblock %}

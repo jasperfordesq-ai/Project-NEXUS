@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("federation.partner.caption") }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ partner.name }}</h1>
@@ -86,4 +88,6 @@
       {% endif %}
     {% endif %}
   </ul>
+    </div>
+  </div>
 {% endblock %}

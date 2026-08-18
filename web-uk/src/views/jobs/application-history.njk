@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ vacancyTitle or tenantName }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.history.title") }}</h1>
 
@@ -39,4 +41,6 @@
       {% endfor %}
     </ol>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -11,6 +11,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -63,4 +65,6 @@
       <a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("actions.cancel") }}</a>
     </div>
   </form>
+    </div>
+  </div>
 {% endblock %}

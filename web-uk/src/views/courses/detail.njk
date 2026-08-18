@@ -11,6 +11,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status %}
     {% if status.key == 'enrolled' %}
       <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">
@@ -164,4 +166,6 @@
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("courses.enrol_button") }}</button>
     </form>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

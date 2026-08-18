@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.badge.caption", { community: communityName }) }}</span>
   <h1 class="govuk-heading-xl">{% if badge.icon %}{{ badge.icon }} {% endif %}{{ badge.name }}</h1>
 
@@ -62,4 +64,6 @@
   <p class="govuk-body govuk-!-margin-top-4">
     <a class="govuk-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.badge.view_all") }}</a>
   </p>
+    </div>
+  </div>
 {% endblock %}

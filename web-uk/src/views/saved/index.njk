@@ -5,6 +5,8 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("saved.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("saved.title") }}</h1>
   <p class="govuk-body-l">{{ t("saved.description") }}</p>
@@ -56,4 +58,6 @@
       {% endfor %}
     </ul>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if buyError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -118,4 +120,6 @@
 
     <div class="govuk-button-group">{% if item.deliveryMethod != 'shipping' or shippingOptions.length %}<button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.buy.confirm") }}</button>{% endif %}<a class="govuk-link" href="{{ urlFor(cancelUrl or ('/marketplace/' + (item.id | string))) }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a></div>
   </form>
+    </div>
+  </div>
 {% endblock %}

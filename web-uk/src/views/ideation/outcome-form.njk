@@ -6,6 +6,8 @@
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% set statusOptions = [
     { value: "not_started", label: t("govuk_alpha_ideation.outcomes.status_not_started") },
     { value: "in_progress", label: t("govuk_alpha_ideation.outcomes.status_in_progress") },
@@ -76,4 +78,6 @@
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_ideation.outcomes.submit") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

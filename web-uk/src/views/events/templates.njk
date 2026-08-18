@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status in ['captured', 'revised'] %}
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner" aria-labelledby="templates-status-title">
       <div class="govuk-notification-banner__header">
@@ -72,4 +74,6 @@
   {% if pagination.has_more and pagination.next_cursor %}
     <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/templates?filter=' + filter + '&cursor=' + (pagination.next_cursor | urlencode)) }}">{{ t("event_templates.load_more") }}</a>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_search.saved.delete_title") }}</h1>
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
@@ -37,5 +39,7 @@
       <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_search.saved.delete_confirm") }}</button>
     </form>
     <a class="govuk-link" href="{{ urlFor('/search/advanced') }}">{{ t("govuk_alpha_search.saved.delete_cancel") }}</a>
+  </div>
+    </div>
   </div>
 {% endblock %}

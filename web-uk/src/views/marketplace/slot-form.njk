@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% include "marketplace/_nav.njk" %}
   {% set marketplaceStatusSuccessHeadingKey = "states.success_title" %}
   {% include "marketplace/_status-banner.njk" %}
@@ -32,4 +34,6 @@
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.action_delete") }}</button>
     </form>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

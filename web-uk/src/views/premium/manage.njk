@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.premium_manage.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.premium_manage.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>
@@ -71,4 +73,6 @@
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.premium_manage.cancel_button") }}</button>
     </form>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-l">{{ event.title }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.polls.title") }}</h1>
 
@@ -65,4 +67,6 @@
       <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button" type="submit">{{ t("govuk_alpha_events.polls.save_button") }}</button>
     </form>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

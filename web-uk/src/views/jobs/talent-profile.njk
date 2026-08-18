@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
     {% if candidate.avatarUrl %}
       <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl | thumb(80, 80) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">
@@ -48,4 +50,6 @@
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.talent.about_heading") }}</h2>
     <div class="govuk-body govuk-!-margin-bottom-6">{{ candidate.bio | nl2br | safe }}</div>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

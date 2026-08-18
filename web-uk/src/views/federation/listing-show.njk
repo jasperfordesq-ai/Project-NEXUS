@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("federation.listings_browse.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ listing.title }}</h1>
 
@@ -79,4 +81,6 @@
       {% endif %}
     </div>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -12,6 +12,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.notifications.caption", { group: group.name }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.notifications.title") }}</h1>
 
@@ -81,4 +83,6 @@
 
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.notifications.save_button") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

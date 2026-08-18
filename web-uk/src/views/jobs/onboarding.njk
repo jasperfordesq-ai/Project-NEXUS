@@ -6,6 +6,8 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.onboarding.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.onboarding.title") }}</h1>
 
@@ -47,4 +49,6 @@
   <p class="govuk-body">
     <a class="govuk-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.onboarding.browse_link") }}</a>
   </p>
+    </div>
+  </div>
 {% endblock %}

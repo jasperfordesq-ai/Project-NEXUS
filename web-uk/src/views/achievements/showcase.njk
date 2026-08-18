@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.showcase.caption", { community: communityName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.showcase.title") }}</h1>
 
@@ -82,4 +84,6 @@
       <p class="govuk-body">{{ t("govuk_alpha_gamification.showcase.empty") }}</p>
     </div>
   {% endif %}
+    </div>
+  </div>
 {% endblock %}

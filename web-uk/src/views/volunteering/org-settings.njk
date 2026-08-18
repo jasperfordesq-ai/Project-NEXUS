@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% if status and status.type == "success" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-settings-success-title">
       <div class="govuk-notification-banner__header">
@@ -82,4 +84,6 @@
 
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_settings.save_button") }}</button>
   </form>
+    </div>
+  </div>
 {% endblock %}

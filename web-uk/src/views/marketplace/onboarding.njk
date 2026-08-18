@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   {% include "marketplace/_nav.njk" %}
   {% if status and status.type == "success" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
@@ -128,4 +130,6 @@
       <a class="govuk-link" href="{{ urlFor('/marketplace') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
     </div>
   </form>
+    </div>
+  </div>
 {% endblock %}
