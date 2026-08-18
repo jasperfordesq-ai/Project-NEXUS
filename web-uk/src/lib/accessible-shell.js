@@ -547,6 +547,70 @@ function resolveBackendMediaUrl(value) {
   return resolveBackendAssetUrl(asset);
 }
 
+/**
+ * Ask the API for a member-content image at the size it will actually be shown.
+ *
+ * Mirrors `resolveThumbnailUrl` in the React frontend (react-frontend/src/lib/helpers.ts),
+ * which routes local uploads through `GET /api/v2/media/thumbnail`. Measured against
+ * production on 2026-08-18: a real avatar is 160,561 bytes at source and 2,260 bytes
+ * through the endpoint, returned as WebP — a 71× saving on a picture displayed at 64px.
+ *
+ * Sizing is a rendering decision, so it belongs with the markup that decides the size
+ * rather than with the route that fetched the record. This is exposed to templates as
+ * the `thumb` filter (see lib/template-filters.js).
+ *
+ * The rules are deliberately the same as React's, and each one matters:
+ *
+ *   - Only `/uploads/` and `/storage/` on OUR API origin are rewritten. Those are the
+ *     only paths `MediaThumbnailService::resolveSourcePath()` will serve; anything else
+ *     404s, so rewriting it would replace a working image with a broken one.
+ *   - A federation partner's absolute URL is returned untouched. Proxying a partner's
+ *     asset through our server would both break it and route their traffic through us.
+ *   - Anything unparseable falls back to the resolved original rather than to nothing.
+ *     A correctly-sized image is an improvement; no image is a regression.
+ *
+ * Ask for the DISPLAYED pixel size. Retina sizing is the caller's decision — pass 2× when
+ * the image is small enough that the extra bytes are cheap, as the React avatar does (96px
+ * for a 48px avatar).
+ *
+ * @param {string} value  A relative upload path, or a URL already resolved to the API origin.
+ * @param {{ width?: number, height?: number, fit?: 'cover'|'contain' }} options
+ * @returns {string} A thumbnail URL, the resolved original, or '' when there is no image.
+ */
+function resolveBackendThumbnailUrl(value, options = {}) {
+  const resolved = resolveBackendMediaUrl(value);
+  if (!resolved) return '';
+
+  const width = Number.parseInt(options.width, 10);
+  const height = Number.parseInt(options.height, 10);
+  if (!Number.isFinite(width) || width <= 0) return resolved;
+
+  const targetHeight = Number.isFinite(height) && height > 0 ? height : width;
+  const fit = options.fit === 'contain' ? 'contain' : 'cover';
+
+  try {
+    const assetBaseUrl = getPublicAssetBaseUrl();
+    const base = new URL(assetBaseUrl);
+    const asset = new URL(resolved, `${assetBaseUrl}/`);
+
+    if (asset.origin !== base.origin) return resolved;
+    if (!asset.pathname.startsWith('/uploads/') && !asset.pathname.startsWith('/storage/')) {
+      return resolved;
+    }
+
+    const params = new URLSearchParams({
+      src: asset.pathname,
+      w: String(width),
+      h: String(targetHeight),
+      fit
+    });
+
+    return `${base.origin}/api/v2/media/thumbnail?${params.toString()}`;
+  } catch {
+    return resolved;
+  }
+}
+
 function normalizeLogoShape(value) {
   return ['wide', 'landscape', 'square'].includes(value) ? value : 'landscape';
 }
@@ -663,5 +727,6 @@ module.exports = {
   prefixLocalPath,
   resolveBackendAssetUrl,
   resolveBackendMediaUrl,
+  resolveBackendThumbnailUrl,
   serviceName
 };

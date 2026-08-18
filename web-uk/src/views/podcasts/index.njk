@@ -63,7 +63,7 @@
       {% for show in shows %}
         <article class="nexus-alpha-card">
           {% if show.artworkUrl %}
-            <img class="nexus-alpha-avatar" src="{{ show.artworkUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            <img class="nexus-alpha-avatar" src="{{ show.artworkUrl | thumb(96, 96) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="48" height="48">
           {% endif %}
           <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
             <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string)) }}">{{ show.title }}</a>

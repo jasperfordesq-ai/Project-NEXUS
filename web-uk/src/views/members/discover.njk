@@ -62,7 +62,7 @@
               <div class="nexus-alpha-member-row">
                 <div class="nexus-alpha-member-row__media">
                   {% if member.avatar %}
-                    <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ member.avatar }}" alt="{{ t('members.avatar_alt', { name: member.name }) }}">
+                    <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ member.avatar | thumb(128, 128) }}" alt="{{ t('members.avatar_alt', { name: member.name }) }}" width="64" height="64">
                   {% else %}
                     <span class="nexus-alpha-avatar nexus-alpha-avatar--large nexus-alpha-avatar--placeholder" aria-hidden="true">{{ member.initial }}</span>
                   {% endif %}

@@ -33,7 +33,7 @@
   {% endif %}
 
   {% if show.artworkUrl %}
-    <img class="nexus-alpha-avatar nexus-alpha-avatar--xl govuk-!-margin-bottom-4" src="{{ show.artworkUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+    <img class="nexus-alpha-avatar nexus-alpha-avatar--xl govuk-!-margin-bottom-4" src="{{ show.artworkUrl | thumb(240, 240) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="120" height="120">
   {% endif %}
 
   <span class="govuk-caption-xl">{% if show.byLabel %}{{ show.byLabel }}{% else %}{{ tenantName }}{% endif %}</span>

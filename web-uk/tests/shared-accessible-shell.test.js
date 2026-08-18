@@ -7398,7 +7398,8 @@ describe('shared accessible frontend shell', () => {
       cursor: 'abc'
     });
     expect(response.text).toContain('Avery Stone');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/avery.jpg" alt="" loading="lazy" decoding="async" width="48" height="48"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Favery.jpg`);
+    expect(response.text).toContain('alt="" loading="lazy" decoding="async" width="48" height="48"');
     expect(response.text).toContain('Can we confirm Saturday?');
     expect(response.text).toContain(`${longMessage.slice(0, 177)}...`);
     expect(response.text).not.toContain(longMessage);
@@ -11000,7 +11001,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain(t('govuk_alpha_search.results.listing_offering'));
     expect(signed.text).toContain('Avery Stone');
     expect(signed.text).toContain(t('govuk_alpha_search.results.image_alt', { title: 'Avery Stone' }));
-    expect(signed.text).toContain(`src="${getApiBaseUrl()}/uploads/search/avery.jpg"`);
+    expect(signed.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Fsearch%2Favery.jpg`);
     expect(signed.text).toContain('Seed swap');
     expect(signed.text).toContain('Garden circle');
     expect(signed.text).toContain(t('govuk_alpha_search.results.view_group'));
@@ -14378,7 +14379,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Posted by Ada Lovelace');
     expect(response.text).toContain('Repair cafe is open.');
     expect(response.text).toContain('Bring your bike lights.');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/repair-thumb.jpg"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Ffeed%2Frepair-thumb.jpg`);
     expect(response.text).toContain('alt="A repaired bicycle wheel"');
     expect(response.text).toContain('2 likes');
     expect(response.text).toContain('1 comment');
@@ -14466,7 +14467,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Posted by Ada Lovelace');
     expect(response.text).toContain('Repair cafe is open.');
     expect(response.text).toContain('Bring your bike lights.');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/repair-thumb.jpg"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Ffeed%2Frepair-thumb.jpg`);
     expect(response.text).toContain('alt="A repaired bicycle wheel"');
     expect(response.text).toContain('2 likes');
     expect(response.text).toContain('1 comment');
@@ -14516,7 +14517,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="feed-item-listing-42"');
     expect(response.text).toContain('Posted by Grace Hopper');
     expect(response.text).toContain('Available for local errands.');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/listings/cargo-bike.jpg"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Flistings%2Fcargo-bike.jpg`);
     expect(response.text).toContain('alt="Image attached to this feed item"');
     expect(response.text).toContain('href="/listings/42"');
     expect(response.text).toContain('View listing');
@@ -14916,7 +14917,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Cargo bike available');
     expect(response.text).toContain('href="/acme/accessible/listings/42"');
     expect(response.text).toContain('View this listing<span class="govuk-visually-hidden"> for Cargo bike available</span>');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/cargo-bike-thumb.jpg"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Ffeed%2Fcargo-bike-thumb.jpg`);
     expect(response.text).toContain('alt="A cargo bicycle parked outside a library"');
     expect(response.text).toContain('class="nexus-alpha-feed-image"');
     expect(response.text).toContain('action="/acme/accessible/feed/items/listing/42/like"');
@@ -17896,7 +17897,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/organisations/opportunities/77/apply"');
     expect(response.text).toContain('Apply to volunteer');
     expect(response.text).toContain('Aisha Khan');
-    expect(response.text).toContain('src="http://127.0.0.1:8090/storage/reviews/aisha.png"');
+    expect(response.text).toContain('src="http://127.0.0.1:8090/api/v2/media/thumbnail?src=%2Fstorage%2Freviews%2Faisha.png');
     expect(response.text).toContain('Rated 5 out of 5');
     expect(response.text).toContain('Helpful and welcoming.');
     expect(response.text).not.toContain('There are no current volunteering opportunities at this organisation.');
@@ -22189,7 +22190,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Group avatar');
     expect(signed.text).toContain('A small square image shown next to the group name.');
     expect(signed.text).toContain(t('govuk_alpha_groups.image.avatar_hint'));
-    expect(signed.text).toContain(`src="${getApiBaseUrl()}/storage/images/group-avatar.webp"`);
+    expect(signed.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fstorage%2Fimages%2Fgroup-avatar.webp`);
     expect(signed.text).toContain('alt="Current group avatar"');
     expect(signed.text).toContain('id="avatar-image" name="image" type="file"');
     expect(signed.text).toContain('name="type" value="avatar"');
@@ -27434,7 +27435,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Who is going');
     expect(response.text).toContain('Alex Morgan');
     expect(response.text).toContain('Sam Green');
-    expect(response.text).toContain('/uploads/avatars/alex.png"');
+    expect(response.text).toContain('/api/v2/media/thumbnail?src=%2Fuploads%2Favatars%2Falex.png');
     expect(response.text).toContain('govuk-tag--green');
     expect(response.text).toContain('govuk-tag--grey');
     expect(response.text).not.toContain('href="/members/55"');
@@ -27775,7 +27776,8 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Bring gloves.');
     expect(response.text).toContain('13 July 2026, 10:30');
     expect(response.text).not.toContain('&lt;p&gt;');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/avatars/ada.png" alt=""`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Favatars%2Fada.png`);
+    expect(response.text).toContain('alt=""');
     expect(response.text).toContain(`href="${getApiBaseUrl()}/uploads/feed/garden.jpg"`);
     expect(response.text).toContain('alt="Volunteers planting herbs"');
   });
@@ -29805,7 +29807,8 @@ describe('shared accessible frontend shell', () => {
     expect(groupsMain).not.toContain('govuk-grid-column-two-thirds');
     expect(response.text).toContain('data-module="govuk-button" href="/messages/groups/new"');
     expect(response.text).toContain('Local helpers');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/local-helpers.jpg" alt="" loading="lazy" decoding="async" width="48" height="48"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Flocal-helpers.jpg`);
+    expect(response.text).toContain('alt="" loading="lazy" decoding="async" width="48" height="48"');
     expect(response.text).toContain('class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">G</span>');
     expect(response.text).toContain('3 members');
     expect(response.text).toContain('2 unread messages');
@@ -30094,7 +30097,8 @@ describe('shared accessible frontend shell', () => {
     const mainHtml = response.text.match(/<main[^>]*>([\s\S]*?)<\/main>/)[1];
     expect(mainHtml).not.toContain('govuk-grid-column-two-thirds');
     expect(response.text).toContain('<li class="govuk-!-margin-bottom-2" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">');
-    expect(response.text).toContain(`<img class="nexus-alpha-avatar" src="${getApiBaseUrl()}/uploads/55/casey.jpg" alt="" loading="lazy" decoding="async" width="48" height="48">`);
+    expect(response.text).toContain(`<img class="nexus-alpha-avatar" src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2F55%2Fcasey.jpg`);
+    expect(response.text).toContain('alt="" loading="lazy" decoding="async" width="48" height="48">');
     expect(response.text).toContain('<span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">Y</span>');
     expect(response.text).toContain('<details class="govuk-details" data-module="govuk-details">');
     expect(response.text).toContain('<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Add a reaction</legend>');
@@ -30353,7 +30357,8 @@ describe('shared accessible frontend shell', () => {
     expect(directMain).not.toContain('govuk-grid-column-two-thirds');
     expect(response.text).toContain('class="nexus-alpha-card"');
     expect(response.text).toContain('class="nexus-alpha-card-head"');
-    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/morgan-avatar.jpg" alt="" loading="lazy" decoding="async" width="48" height="48"`);
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/api/v2/media/thumbnail?src=%2Fuploads%2Fmorgan-avatar.jpg`);
+    expect(response.text).toContain('alt="" loading="lazy" decoding="async" width="48" height="48"');
     expect(response.text).toContain('class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">Y</span>');
     expect(response.text.indexOf('Thanks, that would help.')).toBeLessThan(response.text.indexOf('Search messages'));
     expect(response.text).toContain('href="/messages/77?listing=42&amp;q=tools&amp;cursor=next-page"');
@@ -30681,7 +30686,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community voices');
     expect(response.text).toContain('By Aisha Khan');
     expect(response.text).toContain('4 episodes');
-    expect(response.text).toContain('src="http://127.0.0.1:8090/uploads/podcast.png"');
+    expect(response.text).toContain('src="http://127.0.0.1:8090/api/v2/media/thumbnail?src=%2Fuploads%2Fpodcast.png');
     expect(response.text).toContain('href="/podcasts/7"');
     expect(response.text).toContain('href="/podcasts/studio"');
     expect(response.text).toContain('<option value="Environment" selected>Environment</option>');

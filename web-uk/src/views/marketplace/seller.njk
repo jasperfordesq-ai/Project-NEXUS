@@ -13,7 +13,7 @@
 
   <div class="nexus-alpha-card govuk-!-margin-bottom-6">
     {% if seller.avatarUrl %}
-      <img class="nexus-alpha-avatar" src="{{ seller.avatarUrl }}" alt="{{ seller.name }}" width="64" height="64" loading="lazy" decoding="async">
+      <img class="nexus-alpha-avatar" src="{{ seller.avatarUrl | thumb(80, 80) }}" alt="{{ seller.name }}" width="64" height="64" loading="lazy" decoding="async">
     {% endif %}
     <dl class="govuk-summary-list govuk-!-margin-bottom-0">
       {% if seller.verified %}

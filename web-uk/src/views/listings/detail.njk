@@ -176,7 +176,7 @@
         <div class="nexus-alpha-summary govuk-!-margin-bottom-7">
           <div>
             {% if listingAuthor.avatarUrl %}
-              <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ listingAuthor.avatarUrl }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+              <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ listingAuthor.avatarUrl | thumb(128, 128) }}" alt="" width="64" height="64" loading="lazy" decoding="async">
             {% else %}
               <span class="nexus-alpha-avatar nexus-alpha-avatar--large nexus-alpha-avatar--placeholder" aria-hidden="true">{{ listingAuthor.initial }}</span>
             {% endif %}

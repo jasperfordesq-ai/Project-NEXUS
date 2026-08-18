@@ -70,7 +70,7 @@
             {% endif %}
             {% if onboardingUser.avatar_url %}
               <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha.onboarding.profile.current_photo") }}</p>
-              <img class="nexus-alpha-avatar nexus-alpha-avatar--large govuk-!-margin-bottom-2" src="{{ onboardingUser.avatar_url }}" alt="" width="96" height="96">
+              <img class="nexus-alpha-avatar nexus-alpha-avatar--large govuk-!-margin-bottom-2" src="{{ onboardingUser.avatar_url | thumb(128, 128) }}" alt="" width="96" height="96">
             {% endif %}
             <input class="govuk-file-upload" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="avatar-hint{% if statusBanner and statusBanner.anchor == 'avatar' %} avatar-error{% endif %}">
           </div>

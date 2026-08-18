@@ -11,7 +11,7 @@
       {% set ownComment = currentUserId and commentAuthorId == currentUserId and comment.id %}
       <li class="nexus-alpha-comment">
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-          {% if comment.author.avatarAssetUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ comment.author.avatarAssetUrl }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+          {% if comment.author.avatarAssetUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ comment.author.avatarAssetUrl | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
           <strong>{{ authorName }}</strong>
           {% if comment.created_at %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("feed.comment_posted_on_prefix") }}</span><time datetime="{{ comment.created_at }}">{{ comment.created_at | formatDate }}</time>{% endif %}
         </p>

@@ -27,7 +27,7 @@
         <article class="nexus-alpha-card" id="club-{{ club.id }}">
           <div class="nexus-alpha-module-row">
             {% if club.logoUrl %}
-              <img class="nexus-alpha-avatar" src="{{ club.logoUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <img class="nexus-alpha-avatar" src="{{ club.logoUrl | thumb(96, 96) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="48" height="48">
             {% endif %}
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ club.name }}</h2>
             <strong class="govuk-tag govuk-tag--blue">{{ t("clubs.members_count", { count: club.memberCount }) }}</strong>

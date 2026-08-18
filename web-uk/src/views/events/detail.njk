@@ -447,7 +447,7 @@
             {% for attendee in attendees %}
               <li>
                 {% if attendee.avatarUrl %}
-                  <img class="nexus-alpha-avatar" src="{{ attendee.avatarUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+                  <img class="nexus-alpha-avatar" src="{{ attendee.avatarUrl | thumb(80, 80) }}" alt="" loading="lazy" decoding="async" width="48" height="48">
                 {% else %}
                   <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ attendee.initial }}</span>
                 {% endif %}

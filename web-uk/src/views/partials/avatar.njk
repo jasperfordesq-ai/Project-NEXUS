@@ -4,11 +4,29 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {#
-  User avatar partial - displays initials in a circular badge
+  User avatar — the member's photo when there is one, their initials when there is not.
+
+  🔴 This partial rendered initials ONLY, with no <img> in it at all, which is why the
+  member profile page never showed a photo while the members directory did: the directory
+  writes its own <img> inline. Anything using this partial was silently initials-only.
 
   Parameters:
-    - user: User object with first_name/firstName and last_name/lastName
-    - size: Optional size variant ('small', 'large', or omit for default)
+    - user: object with first_name/firstName, last_name/lastName, and an avatar field
+    - size: 'small' (32px), 'large' (64px), or omit for the 40px default
+
+  The photo is requested from the API at twice its displayed size so it stays sharp on a
+  high-density screen while still being a few kilobytes rather than the full upload — see
+  the `thumb` filter in src/lib/template-filters.js.
+
+  width/height are set on the element as well as in CSS. That is deliberate: it lets the
+  browser reserve the right space before the stylesheet arrives, so the page does not jump
+  as avatars load. It matters more on this frontend than most, because its audience skews
+  towards slow connections and assistive technology, where reflow is disorienting.
+
+  alt is empty because every use of this partial sits directly beside the member's name in
+  text. A screen reader announcing the name twice is worse than not describing a decorative
+  photo — where an avatar stands alone without a visible name, write markup with a real alt
+  instead of using this partial.
 #}
 {% set firstName = (user.first_name or user.firstName or '') | string %}
 {% set lastName = (user.last_name or user.lastName or '') | string %}
@@ -17,6 +35,16 @@
 {% set initials = firstInitial + lastInitial %}
 {% set fullName = firstName + ' ' + lastName %}
 
-<span class="app-avatar{% if size %} app-avatar--{{ size }}{% endif %}" aria-hidden="true" title="{{ fullName | trim }}">
-  {{ initials | upper if initials else '?' }}
-</span>
+{% set avatarSource = user.avatarUrl or user.avatar_url or user.avatar or user.profile_image or '' %}
+{% set avatarPx = 32 if size == 'small' else (64 if size == 'large' else 40) %}
+
+{% if avatarSource %}
+  <img class="app-avatar{% if size %} app-avatar--{{ size }}{% endif %} app-avatar--image"
+       src="{{ avatarSource | thumb(avatarPx * 2, avatarPx * 2) }}"
+       width="{{ avatarPx }}" height="{{ avatarPx }}"
+       alt="" loading="lazy" decoding="async">
+{% else %}
+  <span class="app-avatar{% if size %} app-avatar--{{ size }}{% endif %}" aria-hidden="true" title="{{ fullName | trim }}">
+    {{ initials | upper if initials else '?' }}
+  </span>
+{% endif %}

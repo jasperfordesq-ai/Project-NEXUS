@@ -342,14 +342,46 @@
   align-items: flex-start;
 }
 
+// ---------------------------------------------------------------------------
+// Member-uploaded images
+//
+// 🔴 Every rule in this block was MISSING while the markup already used the
+// class. `.nexus-alpha-feed-image` (5 templates), `.nexus-alpha-card-image`,
+// `.nexus-alpha-org-logo`, `.nexus-alpha-qr` and `.nexus-alpha-avatar--xl` had
+// no definition anywhere in this stylesheet, and `.nexus-alpha-avatar` set a
+// round frame with no size and no `object-fit`.
+//
+// That is a real accessibility failure, not untidiness. A member's upload can be
+// several thousand pixels wide; an <img> with no display size renders at its
+// intrinsic size and pushes the page sideways, which is a WCAG 2.2 reflow
+// failure (1.4.10) and disproportionately hurts this frontend's audience. And a
+// round frame without `object-fit` squashes any photo that is not already square.
+//
+// The pattern below is the one to follow for any new member-content image: pin
+// the display box here, let `object-fit` decide how the picture sits in it
+// (`cover` crops, `contain` never crops), and set width/height attributes in the
+// markup so the space is reserved before this stylesheet arrives. Then ask the
+// API for the image AT that size with the `thumb` filter — the box stops the
+// layout breaking, the filter stops us shipping a 160KB file into a 64px circle.
+// ---------------------------------------------------------------------------
+
 .nexus-alpha-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  // Base size: the modifiers below override it. Without this, an <img> carrying
+  // only the base class had no dimensions at all. 48px is the size nine templates
+  // already declare in their markup, and matches the React avatar's 96px (2x)
+  // thumbnail request — so all three now agree instead of each picking a number.
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: govuk-colour("black", $variant: "tint-95");
   color: $govuk-text-colour;
   font-weight: bold;
+  // Crop a non-square photo into the circle rather than distorting the face.
+  object-fit: cover;
 }
 
 .nexus-alpha-avatar--small {
@@ -358,11 +390,117 @@
   margin-inline-end: govuk-spacing(1);
   border-radius: 50%;
   vertical-align: middle;
+  font-size: 14px;
 }
 
 .nexus-alpha-avatar--large {
   width: 64px;
   height: 64px;
+  font-size: 20px;
+}
+
+.nexus-alpha-avatar--xl {
+  width: 120px;
+  height: 120px;
+  font-size: 36px;
+}
+
+// The initials variant is a <span>, so it needs no object-fit; it exists as a
+// hook and to keep the lettering centred at every size.
+.nexus-alpha-avatar--placeholder {
+  overflow: hidden;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+// A photo in the initials frame: the brand-coloured background must not show
+// through a transparent PNG's edges.
+.app-avatar--image {
+  object-fit: cover;
+  background: none;
+}
+
+// Feed, group and gallery photos.
+//
+// These are a deliberate CROP, following what the React frontend already does:
+// its feed cards request 960×540 and its media grid 640×640, both cropped, with
+// the uncropped picture reachable in a viewer. Every one of these images is
+// already wrapped in a link to the full file, so nothing is hidden — and a fixed
+// tile keeps a row of photos from stepping up and down as they load.
+.nexus-alpha-feed-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid $govuk-border-colour;
+  background-color: govuk-colour("black", $variant: "tint-95");
+}
+
+// The media list had NO styles, so photos sat in a bulleted list at whatever size
+// they were uploaded at. `data-count` was already in the markup waiting for this.
+.nexus-alpha-feed-media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: govuk-spacing(2);
+  max-width: 480px;
+  margin: govuk-spacing(2) 0;
+  padding-inline-start: 0;
+  list-style: none;
+
+  > li {
+    position: relative;
+    margin: 0;
+  }
+
+  a {
+    display: block;
+  }
+
+  // A lone photo gets the full width instead of half of it. The tile stays
+  // square: the markup's width/height attributes must describe the box the
+  // browser will actually draw, or reserving space causes the jump it was meant
+  // to prevent.
+  &[data-count="1"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// "+2" overlay on the last tile when a post has more photos than are shown.
+.nexus-alpha-feed-media__more {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  padding: govuk-spacing(1) govuk-spacing(2);
+  background-color: rgba(0, 0, 0, 0.76);
+  color: govuk-colour("white");
+  font-weight: bold;
+}
+
+// Card covers are a deliberate crop: every card in a list must be the same
+// height or the grid steps up and down as images load.
+.nexus-alpha-card-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid $govuk-border-colour;
+  background-color: govuk-colour("black", $variant: "tint-95");
+}
+
+// A logo is never cropped — a cropped logo misrepresents an organisation.
+.nexus-alpha-org-logo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+// The 2FA QR code must stay square and sharp; smoothing it can make it unreadable.
+.nexus-alpha-qr {
+  display: block;
+  width: 200px;
+  height: 200px;
+  background-color: govuk-colour("white");
 }
 
 .nexus-alpha-share-url {

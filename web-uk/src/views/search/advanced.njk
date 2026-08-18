@@ -267,7 +267,7 @@
             <article class="nexus-alpha-card">
               {% set userName = user.displayName or t("govuk_alpha.members.unknown_member") %}
               <div class="nexus-alpha-module-row"><div class="nexus-alpha-actions">
-                {% if user.avatarAssetUrl %}<img class="nexus-alpha-avatar" src="{{ user.avatarAssetUrl }}" alt="{{ t('govuk_alpha_search.results.image_alt', { title: userName }) }}">{% else %}<span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ userName | first | upper }}</span>{% endif %}
+                {% if user.avatarAssetUrl %}<img class="nexus-alpha-avatar" src="{{ user.avatarAssetUrl | thumb(96, 96) }}" alt="{{ t('govuk_alpha_search.results.image_alt', { title: userName }) }}" width="48" height="48">{% else %}<span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ userName | first | upper }}</span>{% endif %}
                 <div><h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if user.linkId %}<a class="govuk-link" href="{{ urlFor('/members/' + (user.linkId | string)) }}">{{ userName }}</a>{% else %}{{ userName }}{% endif %}</h3>{% if user.displayLocation %}<span class="govuk-body-s nexus-alpha-meta">{{ user.displayLocation }}</span>{% endif %}</div>
               </div></div>
               {% if user.displayTagline %}<p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-2">{{ truncate(user.displayTagline, 180) }}</p>{% endif %}

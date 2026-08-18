@@ -178,7 +178,7 @@
               </h3>
 
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
-                {% if post.authorAvatar %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ post.authorAvatar }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+                {% if post.authorAvatar %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ post.authorAvatar | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
                 {{ t("feed.posted_by", { name: post.authorName }) }}
                 {% if post.createdAt %}
                   <span aria-hidden="true"> | </span>
@@ -209,7 +209,7 @@
                       <li>
                         <a href="{{ media.fileUrl }}" target="_blank" rel="noopener noreferrer">
                           <span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span>
-                          <img src="{{ media.thumbnailUrl }}" alt="{{ media.altText or t('feed.image_alt', { title: post.title or post.typeLabel }) }}" class="nexus-alpha-feed-image" loading="lazy" decoding="async">
+                          <img src="{{ media.thumbnailUrl | thumb(640, 640) }}" width="320" height="320" alt="{{ media.altText or t('feed.image_alt', { title: post.title or post.typeLabel }) }}" class="nexus-alpha-feed-image" loading="lazy" decoding="async">
                           {% if loop.last and post.mediaExtra > 0 %}
                             <span class="nexus-alpha-feed-media__more" aria-hidden="true">+{{ post.mediaExtra }}</span>
                             <span class="govuk-visually-hidden">{{ t("feed.media_more", { count: post.mediaExtra }) }}</span>

@@ -48,7 +48,7 @@
       <article class="nexus-alpha-card" id="feed-item-post-{{ item.id }}">
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
           {% if item.authorAvatar %}
-            <img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ item.authorAvatar }}" alt="" loading="lazy" decoding="async" width="32" height="32">
+            <img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ item.authorAvatar | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">
           {% endif %}
           {{ t("feed.posted_by", { name: item.authorName }) }}
           {% if item.createdAt %}
@@ -68,7 +68,7 @@
               <li>
                 <a href="{{ media.fileUrl }}" target="_blank" rel="noopener noreferrer">
                   <span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span>
-                  <img src="{{ media.thumbnailUrl }}" alt="{{ media.altText or t('govuk_alpha_feed.item.image_alt') }}" class="nexus-alpha-feed-image" loading="lazy">
+                  <img src="{{ media.thumbnailUrl | thumb(640, 640) }}" width="320" height="320" alt="{{ media.altText or t('govuk_alpha_feed.item.image_alt') }}" class="nexus-alpha-feed-image" loading="lazy">
                 </a>
               </li>
             {% endfor %}

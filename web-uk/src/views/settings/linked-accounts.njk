@@ -9,7 +9,7 @@
   <li class="nexus-alpha-card">
     <div class="nexus-alpha-card-head">
       {% if relationship.avatarUrl %}
-        <img class="nexus-alpha-avatar" src="{{ relationship.avatarUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+        <img class="nexus-alpha-avatar" src="{{ relationship.avatarUrl | thumb(80, 80) }}" alt="" loading="lazy" decoding="async" width="48" height="48">
       {% else %}
         <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ relationship.name | first | upper }}</span>
       {% endif %}

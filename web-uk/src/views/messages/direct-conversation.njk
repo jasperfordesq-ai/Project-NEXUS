@@ -99,7 +99,7 @@
             <li id="m-{{ message.id }}" class="nexus-alpha-card">
               <div class="nexus-alpha-card-head">
                 {% if message.sender and message.sender.avatarAssetUrl %}
-                  <img class="nexus-alpha-avatar" src="{{ message.sender.avatarAssetUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+                  <img class="nexus-alpha-avatar" src="{{ message.sender.avatarAssetUrl | thumb(80, 80) }}" alt="" loading="lazy" decoding="async" width="48" height="48">
                 {% else %}
                   <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ message.displaySenderName | first | upper }}</span>
                 {% endif %}

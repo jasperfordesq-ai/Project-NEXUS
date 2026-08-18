@@ -33,7 +33,7 @@
   <p class="govuk-body">{{ t("govuk_alpha_groups.image.avatar_description") }}</p>
   {% if group.imageUrl %}
     <p class="govuk-body">
-      <img class="nexus-alpha-avatar" src="{{ group.imageUrl }}" alt="{{ t('govuk_alpha_groups.image.avatar_current_alt') }}" width="96" height="96" loading="lazy" decoding="async">
+      <img class="nexus-alpha-avatar" src="{{ group.imageUrl | thumb(80, 80) }}" alt="{{ t('govuk_alpha_groups.image.avatar_current_alt') }}" width="96" height="96" loading="lazy" decoding="async">
     </p>
   {% else %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.image.avatar_none") }}</p></div>

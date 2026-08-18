@@ -120,7 +120,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-card-head">
             {% if review.authorAvatar %}
-              <img class="nexus-alpha-avatar" src="{{ review.authorAvatar }}" alt="" width="48" height="48" loading="lazy" decoding="async">
+              <img class="nexus-alpha-avatar" src="{{ review.authorAvatar | thumb(80, 80) }}" alt="" width="48" height="48" loading="lazy" decoding="async">
             {% else %}
               <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ review.authorName | first | upper }}</span>
             {% endif %}

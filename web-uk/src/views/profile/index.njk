@@ -15,7 +15,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-quarter">
       {% if avatarUrl %}
-        <img class="nexus-alpha-avatar nexus-alpha-avatar--xl" src="{{ avatarUrl }}" alt="{{ t('members.avatar_alt', { name: displayName }) }}" width="120" height="120">
+        <img class="nexus-alpha-avatar nexus-alpha-avatar--xl" src="{{ avatarUrl | thumb(240, 240) }}" alt="{{ t('members.avatar_alt', { name: displayName }) }}" width="120" height="120">
       {% else %}
         <span class="nexus-alpha-avatar nexus-alpha-avatar--xl nexus-alpha-avatar--placeholder" aria-hidden="true">{{ initials }}</span>
       {% endif %}

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const { splitDate } = require('./date-input');
+const { resolveBackendThumbnailUrl } = require('./accessible-shell');
 
 /**
  * Filters that TEMPLATES DEPEND ON, registered from one place.
@@ -29,6 +30,19 @@ function registerTemplateFilters(env) {
   // (the route was never updated), and leaked one view-only field into an API request body
   // because it was added to an object that doubles as the outgoing payload.
   env.addFilter('dateParts', (value) => splitDate(value));
+
+  // Ask the API for a member-uploaded image at the size it is displayed at:
+  //   <img src="{{ member.avatar | thumb(96, 96) }}" width="48" height="48" ...>
+  //
+  // 🔴 The size belongs HERE, in the markup, not in the route. The route does not know
+  // whether its avatar lands in a 32px comment badge or a 128px profile header, and the
+  // same record feeds both — which is why every image was being served at full upload
+  // size regardless of how small it was drawn. Height defaults to width (square), and a
+  // missing or unsupported image passes through unchanged rather than breaking.
+  //
+  // Pass the RENDERED pixel size, doubled where the file is small enough to make a sharp
+  // retina image cheap; the CSS still decides the layout box.
+  env.addFilter('thumb', (value, width, height, fit) => resolveBackendThumbnailUrl(value, { width, height, fit }));
 
   return env;
 }

@@ -31,7 +31,7 @@
             <li class="nexus-alpha-card">
               <div class="nexus-alpha-card-head">
                 {% if member.avatar_url %}
-                  <img class="nexus-alpha-avatar" src="{{ member.avatar_url }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+                  <img class="nexus-alpha-avatar" src="{{ member.avatar_url | thumb(80, 80) }}" alt="" loading="lazy" decoding="async" width="48" height="48">
                 {% else %}
                   <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ member.initial }}</span>
                 {% endif %}

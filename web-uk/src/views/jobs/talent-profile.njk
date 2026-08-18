@@ -10,7 +10,7 @@
 
   <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
     {% if candidate.avatarUrl %}
-      <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">
+      <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl | thumb(80, 80) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">
     {% else %}
       <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ candidate.initial }}</span>
     {% endif %}
