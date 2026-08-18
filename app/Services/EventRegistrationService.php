@@ -848,9 +848,16 @@ final class EventRegistrationService
 
     private function lockActor(int $tenantId, User $actor): User
     {
+        // Auth is GLOBAL; only resources are tenant-scoped. The actor's own
+        // row is re-read by authenticated id alone — a tenant predicate here
+        // refused managers whose account row lives on another tenant, and it
+        // refused them AFTER the controller had already authorised them, so
+        // fixing only the outer lookup would have changed nothing. The
+        // registration SUBJECT stays tenant-scoped in lockParticipants();
+        // authority is decided by EventPolicy::manageRegistration in
+        // assertActorAuthorized() against the tenant-scoped event.
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey((int) $actor->getKey())
             ->where('status', 'active')
             ->whereNull('deleted_at')

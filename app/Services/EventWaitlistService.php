@@ -1284,9 +1284,11 @@ final class EventWaitlistService
 
     private function lockActor(int $tenantId, User $actor): User
     {
+        // The actor's own row — never tenant-scoped (see
+        // EventRegistrationService::lockActor()). The waitlist SUBJECT stays
+        // tenant-scoped in lockParticipants().
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey((int) $actor->getKey())
             ->where('status', 'active')
             ->whereNull('deleted_at')

@@ -724,9 +724,13 @@ SQL,
 
     private function assertActorScope(Event $event, User $actor): void
     {
-        $tenantId = $this->assertScope($event);
-        if ((int) $actor->tenant_id !== $tenantId
-            || (int) $actor->getKey() <= 0
+        // Auth is GLOBAL; only resources are tenant-scoped. This compared the
+        // ACTOR's home tenant against the event's and so hid the roster from
+        // network admins, platform admins and an event's own cross-tenant
+        // organiser. The event is still scope-asserted, and EventPolicy still
+        // decides which projection the actor may see.
+        $this->assertScope($event);
+        if ((int) $actor->getKey() <= 0
             || (string) $actor->status !== 'active'
             || $actor->deleted_at !== null) {
             throw new EventRegistrationException('event_registration_authorization_denied');

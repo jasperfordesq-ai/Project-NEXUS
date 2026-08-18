@@ -74,6 +74,24 @@ class EventsController extends BaseApiController
         return $this->eventContractVersion() === 2;
     }
 
+    /**
+     * Resolve the actor for the legacy RSVP / waitlist endpoints.
+     *
+     * The tenant predicate below is DELIBERATE. It is not an instance of the
+     * cross-tenant actor bug cleared by 5373940c8 and 766b867d2: every caller
+     * passes the authenticated id as BOTH actor and subject, because these
+     * endpoints are pure self-service (RSVP, cancel RSVP, join/leave
+     * waitlist) and never management-on-behalf-of. A registrant is the
+     * SUBJECT of a participation write, and a subject must belong to the
+     * event's tenant — EventParticipationEligibilityService::assertCanParticipate()
+     * enforces exactly that (`(int) $subject->tenant_id !== $tenantId` =>
+     * event_participation_scope_invalid) and then applies safeguarding contact
+     * checks that are tenant-local by construction. Dropping the predicate
+     * here would change no outcome: the subject lookup in
+     * EventRegistrationService::lockParticipants() refuses the same caller a
+     * moment later. Management actors ARE global — see
+     * EventRegistrationController::actor() vs ::selfActor().
+     */
     private function legacyRegistrationActor(int $userId): User
     {
         $actor = User::withoutGlobalScopes()

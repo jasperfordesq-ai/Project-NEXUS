@@ -661,7 +661,7 @@ final class EventRegistrationController extends BaseApiController
     /** @return array{Event,User} */
     private function selfContext(int $eventId): array
     {
-        $actor = $this->actor();
+        $actor = $this->selfActor();
         $event = $this->event($eventId);
         if (! $this->policy->view($actor, $event)) {
             throw new EventRegistrationException('event_registration_event_not_found');
@@ -673,7 +673,7 @@ final class EventRegistrationController extends BaseApiController
     /** @return array{Event,User} */
     private function exitContext(int $eventId, bool $waitlist): array
     {
-        $actor = $this->actor();
+        $actor = $this->selfActor();
         $event = $this->event($eventId);
         $state = $waitlist
             ? $this->waitlist->stateFor($eventId, (int) $actor->getKey())
@@ -719,18 +719,51 @@ final class EventRegistrationController extends BaseApiController
         return [$event, $actor];
     }
 
+    /**
+     * Resolve the acting user by authenticated id alone.
+     *
+     * Auth is GLOBAL; only resources are tenant-scoped. This lookup carried
+     * `AND tenant_id = ?` against the current tenant and therefore refused
+     * every actor whose account row lives on another tenant — network admins,
+     * platform admins, and an event's own cross-tenant organiser were locked
+     * out of approve / reject / cancel, the bulk people endpoint, the roster
+     * and the participation history. Same bug family as 5373940c8 and
+     * 766b867d2. There is no IDOR risk: the id comes from requireUserId().
+     * Authority is still decided by EventPolicy against the tenant-scoped
+     * event, and the SUBJECT of a write stays tenant-scoped in member() and
+     * in the services' lockParticipants().
+     */
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        $actor = $tenantId === null
+        $actor = $tenantId === null || $tenantId <= 0
             ? null
             : User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());
         if (! $actor instanceof User) {
             throw new EventRegistrationException('event_registration_actor_invalid');
+        }
+
+        return $actor;
+    }
+
+    /**
+     * Resolve the actor for a SELF-service registration write.
+     *
+     * Here the actor is also the subject, and a participation subject must
+     * belong to the event's tenant: EventParticipationEligibilityService
+     * enforces it, and the safeguarding contact checks it runs are
+     * tenant-local by construction. Asserting it at the boundary keeps a
+     * cross-tenant member's refusal a truthful 403 rather than the 404
+     * "member not found" the subject lookup would raise deeper in the stack.
+     */
+    private function selfActor(): User
+    {
+        $actor = $this->actor();
+        if ((int) $actor->getAttribute('tenant_id') !== (int) TenantContext::currentId()) {
+            throw new EventParticipationException('event_participation_scope_invalid');
         }
 
         return $actor;
