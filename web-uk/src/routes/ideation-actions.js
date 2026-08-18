@@ -253,6 +253,23 @@ function ideaPayload(body) {
   return payload;
 }
 
+// The drafts form posts draft_title/draft_description/draft_action, which
+// ideaPayload does not read — every save arrived at Laravel with an empty title
+// and was rejected, and Publish could never publish because nothing set the
+// `publish` flag updateDraftIdea checks.
+function draftPayload(body) {
+  const payload = {
+    title: trimmed(body.draft_title || body.title, 255),
+    description: trimmed(body.draft_description || body.description, 10000)
+  };
+
+  if (trimmed(body.draft_action, 64) === 'publish') {
+    payload.publish = true;
+  }
+
+  return payload;
+}
+
 function campaignPayload(body) {
   const payload = {
     title: trimmed(body.title, 255),
@@ -295,10 +312,26 @@ function mediaPayload(body) {
 }
 
 function convertPayload(body) {
-  return {
-    group_name: trimmed(body.group_name, 200),
+  // Laravel reads name/visibility/description (IdeaTeamConversionService::convert),
+  // NOT group_name — a group_name key is silently ignored and the visibility the
+  // member chose was never sent at all, so private/secret produced a public group.
+  const payload = {
     description: trimmed(body.group_description || body.description, 10000)
   };
+
+  // Omitted when blank so Laravel falls back to the idea title rather than
+  // creating a group with an empty name.
+  const name = trimmed(body.group_name || body.name, 200);
+  if (name !== '') {
+    payload.name = name;
+  }
+
+  const visibility = trimmed(body.group_visibility || body.visibility, 32);
+  if (['public', 'private', 'secret'].includes(visibility)) {
+    payload.visibility = visibility;
+  }
+
+  return payload;
 }
 
 router.post('/campaigns', asyncRoute(async (req, res) => {
@@ -500,12 +533,18 @@ router.post('/:id(\\d+)/outcome', asyncRoute(async (req, res) => {
 router.post('/:id(\\d+)/drafts/:ideaId(\\d+)', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const ideaId = Number(req.params.ideaId);
+  const payload = draftPayload(req.body);
+
+  if (payload.title === '') {
+    return redirectTo(res, challengeSubpageRedirect(id, 'drafts', 'draft-invalid'));
+  }
+
   return runAction(
     req,
     res,
     'PUT',
     `/ideation-ideas/${ideaId}/draft`,
-    ideaPayload(req.body),
+    payload,
     challengeSubpageRedirect(id, 'drafts', 'draft-saved'),
     challengeSubpageRedirect(id, 'drafts', 'draft-failed')
   );

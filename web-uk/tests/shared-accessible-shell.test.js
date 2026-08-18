@@ -21088,17 +21088,43 @@ describe('shared accessible frontend shell', () => {
       description: 'Add more benches near the park entrance.'
     });
 
+    // Field names must match src/views/ideation/drafts.njk exactly. This test
+    // previously posted idea_title/idea_content/action — names the form never
+    // sends — so it passed while every real save failed validation at Laravel.
     const draftResponse = await post('/ideation/7/drafts/12', {
-      idea_title: ' Draft title ',
-      idea_content: ' Draft content ',
-      action: 'publish'
+      draft_title: ' Draft title ',
+      draft_description: ' Draft content ',
+      draft_action: 'publish'
     });
     expect(draftResponse.headers.location).toBe('/ideation/7/drafts?status=draft-saved');
     expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/ideation-ideas/12/draft', {
       title: 'Draft title',
       description: 'Draft content',
-      action: 'publish'
+      publish: true
     });
+
+    // Saving (rather than publishing) must not set the publish flag.
+    const draftSaveResponse = await post('/ideation/7/drafts/12', {
+      draft_title: 'Draft title',
+      draft_description: 'Draft content',
+      draft_action: 'save'
+    });
+    expect(draftSaveResponse.headers.location).toBe('/ideation/7/drafts?status=draft-saved');
+    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/ideation-ideas/12/draft', {
+      title: 'Draft title',
+      description: 'Draft content'
+    });
+
+    // A blank title is rejected locally so the drafts page can show its
+    // draft-invalid message instead of the generic "could not be saved".
+    api.callIdeationApi.mockClear();
+    const draftInvalidResponse = await post('/ideation/7/drafts/12', {
+      draft_title: '   ',
+      draft_description: 'Draft content',
+      draft_action: 'save'
+    });
+    expect(draftInvalidResponse.headers.location).toBe('/ideation/7/drafts?status=draft-invalid');
+    expect(api.callIdeationApi).not.toHaveBeenCalled();
 
     const commentResponse = await post('/ideation/7/ideas/12/comments', {
       comment_body: ' Strong local support. '
@@ -21138,14 +21164,45 @@ describe('shared accessible frontend shell', () => {
       caption: 'Proposal'
     });
 
+    // Laravel's IdeaTeamConversionService reads name/visibility/description.
+    // Sending group_name meant the chosen name was discarded, and omitting
+    // visibility entirely made every private/secret request a PUBLIC group.
     const convertResponse = await post('/ideation/7/ideas/12/convert', {
       group_name: ' Parks delivery team ',
-      group_description: ' Coordinate delivery. '
+      group_description: ' Coordinate delivery. ',
+      group_visibility: 'secret'
     });
     expect(convertResponse.headers.location).toBe('/ideation/7/ideas/12?status=converted');
     expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'POST', '/ideation-ideas/12/convert-to-group', {
+      name: 'Parks delivery team',
+      description: 'Coordinate delivery.',
+      visibility: 'secret'
+    });
+
+    // An unrecognised visibility must not be forwarded; Laravel then applies
+    // its own 'public' default rather than trusting arbitrary input.
+    const convertOddVisibility = await post('/ideation/7/ideas/12/convert', {
       group_name: 'Parks delivery team',
+      group_description: 'Coordinate delivery.',
+      group_visibility: 'everyone'
+    });
+    expect(convertOddVisibility.headers.location).toBe('/ideation/7/ideas/12?status=converted');
+    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'POST', '/ideation-ideas/12/convert-to-group', {
+      name: 'Parks delivery team',
       description: 'Coordinate delivery.'
+    });
+
+    // A blank name is omitted so Laravel falls back to the idea title instead
+    // of creating a group with an empty name.
+    const convertBlankName = await post('/ideation/7/ideas/12/convert', {
+      group_name: '  ',
+      group_description: 'Coordinate delivery.',
+      group_visibility: 'private'
+    });
+    expect(convertBlankName.headers.location).toBe('/ideation/7/ideas/12?status=converted');
+    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'POST', '/ideation-ideas/12/convert-to-group', {
+      description: 'Coordinate delivery.',
+      visibility: 'private'
     });
 
     const deleteIdeaResponse = await post('/ideation/7/ideas/12/delete');
