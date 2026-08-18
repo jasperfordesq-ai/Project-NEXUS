@@ -2146,6 +2146,23 @@ body.app-timeout-modal--open {
 }
 
 // -----------------------------------------------------------------------------
+// Print trigger button
+// -----------------------------------------------------------------------------
+// Printing can only be started from script, so this button is hidden unless
+// JavaScript is running. layouts/base.njk adds js-enabled to <body>; the
+// behaviour itself is in public/js/print-trigger.js. Without this the control
+// would be offered to people for whom it cannot possibly work — which is what
+// the previous inline onclick did for EVERYONE, because the Content Security
+// Policy blocked it.
+.nexus-alpha-print-button {
+  display: none;
+}
+
+.js-enabled .nexus-alpha-print-button {
+  display: inline-block;
+}
+
+// -----------------------------------------------------------------------------
 // Print styles
 // -----------------------------------------------------------------------------
 // Everything here lives inside @media print, so it can never affect the on-screen

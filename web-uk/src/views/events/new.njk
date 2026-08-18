@@ -328,26 +328,7 @@
 
 {% block bodyEnd %}
   {{ super() }}
-  <script>
-    (function () {
-      var intervalInput = document.getElementById('recurrence_interval');
-      var frequencyInputs = document.querySelectorAll('input[name="recurrence_frequency"][data-recurrence-interval]');
-
-      if (!intervalInput || !frequencyInputs.length) {
-        return;
-      }
-
-      function syncRecurrenceInterval(event) {
-        var input = event && event.target ? event.target : document.querySelector('input[name="recurrence_frequency"]:checked');
-        if (input && input.dataset.recurrenceInterval) {
-          intervalInput.value = input.dataset.recurrenceInterval;
-        }
-      }
-
-      frequencyInputs.forEach(function (input) {
-        input.addEventListener('change', syncRecurrenceInterval);
-      });
-      syncRecurrenceInterval();
-    }());
-  </script>
+  {# Must stay an external file: the CSP blocks inline scripts, which silently
+     turned every "Every 2 weeks" series into a weekly one. #}
+  <script src="/js/event-recurrence.js" defer></script>
 {% endblock %}
