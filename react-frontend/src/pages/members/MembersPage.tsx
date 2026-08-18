@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { Alert } from '@/components/ui/Alert';
 import { AlgorithmLabel, useAlgorithmInfo } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -157,6 +158,13 @@ export function MembersPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState<number | null>(null);
+  // Size of the whole community, for the note explaining why the directory is
+  // smaller. The note deliberately reuses totalCount as its "listed" figure
+  // rather than the API's directory_total: CommunityRank caches its result for
+  // three minutes while the count is live, so the two can briefly disagree, and
+  // one screen must never show two different answers to the same question.
+  const [communityTotal, setCommunityTotal] = useState<number | null>(null);
+  const [directoryCriteria, setDirectoryCriteria] = useState<string[]>([]);
 
   // Quick filter state
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
@@ -203,6 +211,20 @@ export function MembersPage() {
       : null;
   const activeSortBy = sortBy ?? defaultSort;
   const isNearbyMode = nearMeEnabled && user?.latitude != null && user?.longitude != null;
+
+  /**
+   * Explain the gap between "people who have joined" and "people this directory
+   * may list" — but only when there is a gap. A community holding nobody back
+   * gets no apology for an absence that does not exist, and a member who is
+   * searching or using Near me is looking at their own filter, not at this.
+   */
+  const showCoverageNote =
+    !isNearbyMode &&
+    !debouncedQuery &&
+    !isLoading &&
+    totalCount !== null &&
+    communityTotal !== null &&
+    totalCount < communityTotal;
 
   // Refs
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -320,6 +342,11 @@ export function MembersPage() {
         if (response.meta?.total_items !== undefined) {
           setTotalCount(response.meta.total_items);
         }
+        // Community-wide context. Only /v2/users returns these — the nearby
+        // endpoint does not, and leaving the last values in place there would
+        // caption a distance-limited list with directory-wide numbers.
+        setCommunityTotal(response.meta?.community_total ?? null);
+        setDirectoryCriteria(response.meta?.directory_criteria ?? []);
       } else {
         if (!append) {
           setError(t('members.load_failed'));
@@ -894,6 +921,10 @@ export function MembersPage() {
                     <p role="status" className="text-sm text-theme-muted">
                       {t('members.results_matching', { shown: members.length.toLocaleString(getFormattingLocale()), total: totalCount.toLocaleString(getFormattingLocale()), query: debouncedQuery })}
                     </p>
+                  ) : totalCount !== null && totalCount > members.length ? (
+                    <p role="status" className="text-sm text-theme-muted">
+                      {t('members.results_showing_of', { shown: members.length.toLocaleString(getFormattingLocale()), total: totalCount.toLocaleString(getFormattingLocale()) })}
+                    </p>
                   ) : (
                     <p role="status" className="text-sm text-theme-muted">
                       {t('members.results_count', { count: members.length })}
@@ -905,6 +936,41 @@ export function MembersPage() {
                     </Button>
                   )}
                 </div>
+              )}
+
+              {/* Why the directory is smaller than the community. Shown only
+                  when members really are held back, so a community with nothing
+                  hidden never explains an absence that isn't there. Suppressed
+                  while searching or in Near me, where the shortfall the member
+                  is looking at is their own filter, not this. */}
+              {showCoverageNote && (
+                <Alert
+                  color="secondary"
+                  icon={<Users className="h-4 w-4" aria-hidden="true" />}
+                  title={t('members.coverage_title', {
+                    listed: totalCount!.toLocaleString(getFormattingLocale()),
+                    joined: communityTotal!.toLocaleString(getFormattingLocale()),
+                  })}
+                  description={
+                    <div className="space-y-2">
+                      <p>{t('members.coverage_intro')}</p>
+                      <ul className="list-disc list-outside ms-5 space-y-1">
+                        {directoryCriteria.map((criterion) => (
+                          <li key={criterion}>{t(`members.coverage_criteria.${criterion}`)}</li>
+                        ))}
+                      </ul>
+                      <p>{t('members.coverage_outro')}</p>
+                      {isAuthenticated && (
+                        <Link
+                          to={tenantPath('/settings?tab=privacy')}
+                          className="inline-block font-medium text-accent underline underline-offset-2"
+                        >
+                          {t('members.coverage_check_own')}
+                        </Link>
+                      )}
+                    </div>
+                  }
+                />
               )}
 
               {viewMode === 'map' ? (

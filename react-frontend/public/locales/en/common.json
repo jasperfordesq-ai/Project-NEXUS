@@ -374,6 +374,17 @@
     "load_more": "Load More",
     "results_matching": "{{shown}} of {{total}} members matching \"{{query}}\"",
     "results_count": "{{count}} members shown",
+    "results_showing_of": "Showing {{shown}} of {{total}} members",
+    "coverage_title": "You are seeing {{listed}} of the {{joined}} people who have joined",
+    "coverage_intro": "Not everyone chooses to be listed. A member appears in this directory when:",
+    "coverage_criteria": {
+      "directory_opt_in": "they are happy to be found — anyone can turn this off in their privacy settings",
+      "profile_complete": "they have finished setting up their profile",
+      "avatar": "they have added a profile photo",
+      "bio": "they have written a short introduction"
+    },
+    "coverage_outro": "Everyone else is still a full member of the community. They just are not shown here.",
+    "coverage_check_own": "Check whether you are listed",
     "no_location": "No members with location data",
     "fallback_name": "Member",
     "avatar_alt": "{{name}} avatar",

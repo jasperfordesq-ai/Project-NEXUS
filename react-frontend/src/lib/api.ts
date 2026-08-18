@@ -284,6 +284,13 @@ export interface PaginationMeta {
   };
   // Gamification API returns available badge types in meta
   available_types?: string[];
+  // Member directory (/v2/users) reports how much of the community it is able
+  // to list, so the page can explain the gap instead of looking half-empty.
+  // Both counts exclude the viewer, so they are directly comparable.
+  community_total?: number;
+  directory_total?: number;
+  /** Visibility rules in force for this tenant, e.g. 'directory_opt_in'. */
+  directory_criteria?: string[];
   // Admin performance summary states whether recording is switched on, so an
   // empty report can say WHY it is empty instead of implying the platform is fast
   recording_enabled?: boolean;

@@ -374,6 +374,17 @@
     "load_more": "Meer laden",
     "results_matching": "{{shown}} van {{total}} leden die overeenkomen met \"{{query}}\"",
     "results_count": "{{count}} leden getoond",
+    "results_showing_of": "Toont {{shown}} van {{total}} leden",
+    "coverage_title": "Je ziet {{listed}} van de {{joined}} mensen die zich hebben aangemeld",
+    "coverage_intro": "Niet iedereen kiest ervoor om vermeld te worden. Een lid verschijnt in deze directory wanneer:",
+    "coverage_criteria": {
+      "directory_opt_in": "ze zijn blij om gevonden te worden; iedereen kan dit uitschakelen in zijn privacy-instellingen",
+      "profile_complete": "ze zijn klaar met het instellen van hun profiel",
+      "avatar": "ze hebben een profielfoto toegevoegd",
+      "bio": "ze hebben een korte introductie geschreven"
+    },
+    "coverage_outro": "Alle anderen zijn nog steeds een volwaardig lid van de gemeenschap. Ze worden hier alleen niet getoond.",
+    "coverage_check_own": "Controleer of u vermeld staat",
     "no_location": "Geen leden met locatiegegevens",
     "fallback_name": "Lid",
     "avatar_alt": "Avatar van {{name}}",

@@ -374,6 +374,17 @@
     "load_more": "Mehr laden",
     "results_matching": "{{shown}} von {{total}} Mitgliedern, die \"{{query}}\" entsprechen",
     "results_count": "{{count}} Mitglieder angezeigt",
+    "results_showing_of": "Es werden {{shown}} von {{total}} Mitgliedern angezeigt",
+    "coverage_title": "Sie sehen {{listed}} der {{joined}} Personen, die beigetreten sind",
+    "coverage_intro": "Nicht jeder möchte in die Liste aufgenommen werden. Ein Mitglied erscheint in diesem Verzeichnis, wenn:",
+    "coverage_criteria": {
+      "directory_opt_in": "Sie freuen sich, gefunden zu werden – jeder kann dies in seinen Datenschutzeinstellungen deaktivieren",
+      "profile_complete": "Sie haben die Einrichtung ihres Profils abgeschlossen",
+      "avatar": "Sie haben ein Profilfoto hinzugefügt",
+      "bio": "Sie haben eine kurze Einführung geschrieben"
+    },
+    "coverage_outro": "Alle anderen sind weiterhin vollwertiges Mitglied der Community. Sie werden hier einfach nicht angezeigt.",
+    "coverage_check_own": "Prüfen Sie, ob Sie gelistet sind",
     "no_location": "Keine Mitglieder mit Standortdaten",
     "fallback_name": "Mitglied",
     "avatar_alt": "Profilbild von {{name}}",

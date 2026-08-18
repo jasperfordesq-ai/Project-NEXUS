@@ -375,6 +375,17 @@
     "load_more": "Cargar Más",
     "results_matching": "{{shown}} de {{total}} miembros que coinciden con \"{{query}}\"",
     "results_count": "{{count}} miembros mostrados",
+    "results_showing_of": "Mostrando {{shown}} de {{total}} miembros",
+    "coverage_title": "Estás viendo {{listed}} de las {{joined}} personas que se han unido",
+    "coverage_intro": "No todo el mundo elige figurar en la lista. Un miembro aparece en este directorio cuando:",
+    "coverage_criteria": {
+      "directory_opt_in": "están felices de que los encuentren; cualquiera puede desactivar esto en su configuración de privacidad",
+      "profile_complete": "han terminado de configurar su perfil",
+      "avatar": "han añadido una foto de perfil",
+      "bio": "han escrito una breve introducción"
+    },
+    "coverage_outro": "Todos los demás siguen siendo miembros de pleno derecho de la comunidad. Simplemente no se muestran aquí.",
+    "coverage_check_own": "Comprueba si estás en la lista",
     "no_location": "No hay miembros con datos de ubicación",
     "fallback_name": "Miembro",
     "avatar_alt": "Avatar de {{name}}",

@@ -1591,12 +1591,12 @@ class UsersController extends BaseApiController
                 return $u;
             }, $users);
 
-            return $this->respondWithData($users, [
+            return $this->respondWithData($users, array_merge([
                 'total_items' => $totalCount,
                 'per_page'    => $limit,
                 'offset'      => $offset,
                 'has_more'    => ($offset + $limit) < $totalCount,
-            ]);
+            ], $this->directoryVisibilityStats($tenantId, $viewerId)));
         }
 
         $validSorts = [
@@ -1748,12 +1748,72 @@ class UsersController extends BaseApiController
             return $u;
         }, $users);
 
-        return $this->respondWithData($users, [
+        return $this->respondWithData($users, array_merge([
             'total_items' => $totalCount,
             'per_page'    => $limit,
             'offset'      => $offset,
             'has_more'    => ($offset + $limit) < $totalCount,
-        ]);
+        ], $this->directoryVisibilityStats($tenantId, $viewerId)));
+    }
+
+    /**
+     * Community-wide counts behind the member directory, so the directory can
+     * explain in plain words why it lists fewer people than have joined.
+     *
+     * `community_total` is every active member of the tenant; `directory_total`
+     * is the subset the directory is allowed to list. Both exclude the viewer,
+     * exactly as the listing query does, so the two are directly comparable and
+     * are equal when nothing is being held back.
+     *
+     * `directory_criteria` names the rules actually in force for this tenant —
+     * the frontend turns each key into a sentence. There is deliberately no
+     * "recently active" rule here: the directory has never filtered on last
+     * login, and the copy must not claim it does.
+     *
+     * @return array{community_total: int, directory_total: int, directory_criteria: list<string>}
+     */
+    private function directoryVisibilityStats(int $tenantId, ?int $viewerId): array
+    {
+        $where  = 'u.tenant_id = ? AND u.status = ?';
+        $params = [$tenantId, 'active'];
+
+        if ($viewerId) {
+            $where .= ' AND u.id != ?';
+            $params[] = $viewerId;
+        }
+
+        // Mirrors the listing query's own visibility rules, in the same order.
+        $listed = ['(u.privacy_search = 1 OR u.privacy_search IS NULL)'];
+        foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId) as $condition) {
+            $listed[] = "($condition)";
+        }
+        $listedSql = implode(' AND ', $listed);
+
+        $row = DB::selectOne(
+            "SELECT COUNT(*) AS community_total,
+                    SUM(CASE WHEN $listedSql THEN 1 ELSE 0 END) AS directory_total
+             FROM users u
+             WHERE $where",
+            $params
+        );
+
+        $config   = OnboardingConfigService::getConfig($tenantId);
+        $criteria = ['directory_opt_in'];
+        if ($config['require_completion_for_visibility']) {
+            $criteria[] = 'profile_complete';
+        }
+        if ($config['require_avatar_for_visibility']) {
+            $criteria[] = 'avatar';
+        }
+        if ($config['require_bio_for_visibility']) {
+            $criteria[] = 'bio';
+        }
+
+        return [
+            'community_total'    => (int) ($row->community_total ?? 0),
+            'directory_total'    => (int) ($row->directory_total ?? 0),
+            'directory_criteria' => $criteria,
+        ];
     }
 
 }

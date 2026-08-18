@@ -376,6 +376,17 @@
     "load_more": "Załaduj więcej",
     "results_matching": "{{shown}} z {{total}} członków pasujących do \"{{query}}\"",
     "results_count": "Wyświetlono {{count}} członków",
+    "results_showing_of": "Wyświetlanie {{shown}} z {{total}} członków",
+    "coverage_title": "Widzisz {{listed}} z {{joined}} osób, które dołączyły",
+    "coverage_intro": "Nie każdy decyduje się na umieszczenie na liście. Członek pojawia się w tym katalogu, gdy:",
+    "coverage_criteria": {
+      "directory_opt_in": "cieszą się, że je odnaleziono — każdy może wyłączyć tę opcję w swoich ustawieniach prywatności",
+      "profile_complete": "zakończyli konfigurowanie swojego profilu",
+      "avatar": "dodali zdjęcie profilowe",
+      "bio": "napisali krótkie wprowadzenie"
+    },
+    "coverage_outro": "Wszyscy pozostali nadal są pełnoprawnymi członkami społeczności. Po prostu nie są tu pokazane.",
+    "coverage_check_own": "Sprawdź, czy jesteś na liście",
     "no_location": "Brak członków z danymi lokalizacyjnymi",
     "fallback_name": "Członek",
     "avatar_alt": "Awatar {{name}}",

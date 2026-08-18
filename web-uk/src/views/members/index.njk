@@ -94,6 +94,26 @@
         <h2 class="govuk-heading-l">{{ t("members.results_title") }}</h2>
         <p class="govuk-body nexus-alpha-result-count" aria-live="polite">{{ totalItemsLabel }}</p>
 
+        {# Why the directory is smaller than the community. Rendered only when
+           members really are held back — see directoryCoverage() in the route. #}
+        {% if coverage %}
+          <div class="govuk-inset-text">
+            <h3 class="govuk-heading-s">{{ coverage.title }}</h3>
+            <p class="govuk-body">{{ coverage.intro }}</p>
+            {% if coverage.criteria.length %}
+              <ul class="govuk-list govuk-list--bullet">
+                {% for criterion in coverage.criteria %}
+                  <li>{{ criterion }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            <p class="govuk-body">{{ coverage.outro }}</p>
+            <p class="govuk-body">
+              <a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ coverage.checkOwnLabel }}</a>
+            </p>
+          </div>
+        {% endif %}
+
         {% if errorMessage %}
           <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
             <div role="alert">

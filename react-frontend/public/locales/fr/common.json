@@ -375,6 +375,17 @@
     "load_more": "Charger plus",
     "results_matching": "{{shown}} sur {{total}} membres correspondant à \"{{query}}\"",
     "results_count": "{{count}} membres affichés",
+    "results_showing_of": "Affichage de {{shown}} sur {{total}} membres",
+    "coverage_title": "Vous voyez {{listed}} des {{joined}} personnes qui ont rejoint",
+    "coverage_intro": "Tout le monde ne choisit pas d’être répertorié. Un membre apparaît dans cet annuaire lorsque :",
+    "coverage_criteria": {
+      "directory_opt_in": "ils sont heureux d'être retrouvés - n'importe qui peut désactiver cette fonctionnalité dans ses paramètres de confidentialité",
+      "profile_complete": "ils ont fini de créer leur profil",
+      "avatar": "ils ont ajouté une photo de profil",
+      "bio": "ils ont écrit une courte introduction"
+    },
+    "coverage_outro": "Tout le monde est toujours un membre à part entière de la communauté. Ils ne sont tout simplement pas présentés ici.",
+    "coverage_check_own": "Vérifiez si vous êtes répertorié",
     "no_location": "Aucun membre avec des données de localisation",
     "fallback_name": "Membre",
     "avatar_alt": "Avatar de {{name}}",

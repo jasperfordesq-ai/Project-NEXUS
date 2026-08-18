@@ -223,6 +223,62 @@ class UsersControllerTest extends TestCase
         $response->assertJsonStructure(['data', 'meta']);
     }
 
+    /**
+     * The directory tells members how many of the community it is showing.
+     * `community_total` counts everyone active, `directory_total` only those it
+     * may list — here one of the three has opted out of appearing in search, so
+     * the two numbers must differ by exactly that member. Both exclude the
+     * viewer, so they are directly comparable.
+     */
+    public function test_index_meta_reports_community_and_directory_totals(): void
+    {
+        $this->authenticatedUser();
+
+        // The tenant is seeded, so assert on the movement these three cause
+        // rather than on absolute totals.
+        $before = $this->apiGet('/v2/users')->assertStatus(200)->json('meta');
+
+        User::factory()->forTenant($this->testTenantId)->count(2)->create([
+            'status' => 'active',
+            'privacy_search' => 1,
+        ]);
+        $optedOut = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'privacy_search' => 0,
+        ]);
+
+        $after = $this->apiGet('/v2/users')->assertStatus(200)->json('meta');
+
+        $this->assertSame(3, $after['community_total'] - $before['community_total']);
+        $this->assertSame(2, $after['directory_total'] - $before['directory_total']);
+        $this->assertContains('directory_opt_in', $after['directory_criteria']);
+
+        // The opted-out member is counted in the community but never listed.
+        $listed = array_column($this->apiGet('/v2/users?sort=name&limit=100')->json('data'), 'id');
+        $this->assertNotContains($optedOut->id, $listed);
+    }
+
+    /**
+     * The directory has never filtered on last login, and the explanation shown
+     * to members must not imply it does. A member who has not signed in for
+     * years is still listed.
+     */
+    public function test_index_lists_members_who_have_not_logged_in_recently(): void
+    {
+        $this->authenticatedUser();
+
+        $dormant = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'privacy_search' => 1,
+            'last_login_at' => now()->subYears(3),
+        ]);
+
+        $response = $this->apiGet('/v2/users?sort=name&limit=100');
+
+        $response->assertStatus(200);
+        $this->assertContains($dormant->id, array_column($response->json('data'), 'id'));
+    }
+
     // ================================================================
     // STATS
     // ================================================================

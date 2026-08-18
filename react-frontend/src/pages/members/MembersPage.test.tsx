@@ -355,4 +355,65 @@ describe('MembersPage', () => {
       expect(await screen.findByText('Show 42 results', {}, { timeout: 3000 })).toBeInTheDocument();
     });
   });
+
+  describe('directory coverage note', () => {
+    /** Serves the directory with `listed` members out of a `joined` community. */
+    function withCoverage(meta: Record<string, unknown>) {
+      mockApiGet.mockImplementation((url: string) => {
+        if (url.includes('/v2/config/algorithms')) {
+          return Promise.resolve(algorithmsResponse);
+        }
+        return Promise.resolve({
+          success: true,
+          data: [{ id: 1, name: 'Ada', first_name: 'Ada' }],
+          meta,
+        });
+      });
+    }
+
+    it('explains the shortfall when the community is larger than the directory', async () => {
+      withCoverage({
+        total_items: 12,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in'],
+      });
+
+      render(<MembersPage />);
+
+      expect(
+        await screen.findByText('You are seeing 12 of the 369 people who have joined'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/anyone can turn this off in their privacy settings/),
+      ).toBeInTheDocument();
+    });
+
+    it('stays silent when every member is listed', async () => {
+      withCoverage({
+        total_items: 369,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in'],
+      });
+
+      render(<MembersPage />);
+
+      await waitFor(() => expect(screen.getByText('Ada')).toBeInTheDocument());
+      expect(screen.queryByText(/people who have joined/)).not.toBeInTheDocument();
+    });
+
+    it('lists only the visibility rules this community actually applies', async () => {
+      withCoverage({
+        total_items: 12,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in', 'avatar'],
+      });
+
+      render(<MembersPage />);
+
+      expect(await screen.findByText('they have added a profile photo')).toBeInTheDocument();
+      expect(
+        screen.queryByText('they have written a short introduction'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

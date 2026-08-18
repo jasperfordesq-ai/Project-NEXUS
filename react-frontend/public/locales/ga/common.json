@@ -408,7 +408,18 @@
     "hours_exchanged_aria_two": "{{count}} uair an chloig malartaithe",
     "hours_short_few": "{{count}} u",
     "hours_short_many": "{{count}} u",
-    "hours_short_two": "{{count}} u"
+    "hours_short_two": "{{count}} u",
+    "results_showing_of": "{{shown}} as {{total}} ball á dtaispeáint",
+    "coverage_title": "Tá {{listed}} as {{joined}} duine a chláraigh le feiceáil agat",
+    "coverage_intro": "Ní roghnaíonn gach duine a bheith ar an liosta. Bíonn ball le feiceáil san eolaire seo nuair:",
+    "coverage_outro": "Is baill iomlána den phobal iad gach duine eile fós. Níl siad le feiceáil anseo, sin an méid.",
+    "coverage_check_own": "Seiceáil an bhfuil tú ar an liosta",
+    "coverage_criteria": {
+      "directory_opt_in": "atá siad sásta go bhfaighfí iad — is féidir le duine ar bith é seo a mhúchadh ina socruithe príobháideachta",
+      "profile_complete": "atá a bpróifíl curtha ar bun acu",
+      "avatar": "atá grianghraf próifíle curtha leis acu",
+      "bio": "atá réamhrá gearr scríofa acu"
+    }
   },
   "error_boundary": {
     "title": "Chuaigh rud éigin amú",
@@ -1419,7 +1430,7 @@
   },
   "push_campaign": {
     "meta": {
-    "title": "Mo Fheachtais Brúfhógraí",
+      "title": "Mo Fheachtais Brúfhógraí",
       "description": "Cruthaigh agus bainistigh feachtais íoctha brúfhógraí"
     },
     "subtitle": "Seol brúfhógraí spriocdhírithe go díreach chuig baill an phobail.",
@@ -2136,7 +2147,7 @@
     "calendar": {
       "title": "Féilire imeachtaí an bhardais",
       "subtitle": "Imeachtaí ó gach cumann comhpháirtíochta i {{municipality}}.",
-    "no_municipality": "Cuir cód bardais ar fáil trí ?code= nó socraigh ceann ar do phróifíl, le do thoil.",
+      "no_municipality": "Cuir cód bardais ar fáil trí ?code= nó socraigh ceann ar do phróifíl, le do thoil.",
       "empty": "Gan imeachtaí amach romhainn sa bhardas seo.",
       "prev": "Roimhe",
       "next": "Ar aghaidh",

@@ -140,6 +140,34 @@ function metaFrom(result) {
   return result && result.meta && typeof result.meta === 'object' ? result.meta : {};
 }
 
+/**
+ * Explain why the directory lists fewer people than have joined the community.
+ *
+ * Returns null unless members really are being held back, so a community that
+ * hides nobody never apologises for an absence that does not exist. Suppressed
+ * during a search, where the shortfall the member sees is their own query.
+ *
+ * `listed` deliberately reuses the directory's own total rather than the API's
+ * directory_total: the CommunityRank listing is cached for three minutes while
+ * the count is live, and one page must never show two answers to one question.
+ */
+function directoryCoverage(meta, listed, searchQuery, t) {
+  if (searchQuery) return null;
+
+  const joined = Number(meta.community_total);
+  if (!Number.isFinite(joined) || joined <= listed) return null;
+
+  const criteria = Array.isArray(meta.directory_criteria) ? meta.directory_criteria : [];
+
+  return {
+    title: t('members.coverage_title', { listed: String(listed), joined: String(joined) }),
+    intro: t('members.coverage_intro'),
+    criteria: criteria.map((key) => t(`members.coverage_criteria_${key}`)),
+    outro: t('members.coverage_outro'),
+    checkOwnLabel: t('members.coverage_check_own')
+  };
+}
+
 function memberConnectionFrom(result) {
   const current = dataFrom(result);
   if (!current || typeof current !== 'object') return null;
@@ -859,6 +887,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   const rawUsers = rowsFrom(usersResult);
   const directoryMeta = metaFrom(usersResult);
   const total = boundedInteger(directoryMeta.total_items, rawUsers.length, 0, Number.MAX_SAFE_INTEGER);
+  const coverage = directoryCoverage(directoryMeta, total, searchQuery, res.locals.t);
   const perPage = boundedInteger(directoryMeta.per_page, limit, 1, 100);
   const offset = boundedInteger(directoryMeta.offset, requestedOffset, 0, Number.MAX_SAFE_INTEGER);
   const page = Math.floor(offset / perPage) + 1;
@@ -897,6 +926,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     sort,
     order,
     hasFilters,
+    coverage,
     totalItemsLabel: res.locals.tc('members.result_count', total, { count: total }),
     nextHref: directoryMeta.has_more
       ? `/members?q=${encodeURIComponent(searchQuery)}&sort=${encodeURIComponent(sort)}&order=${encodeURIComponent(order)}&offset=${offset + perPage}`
@@ -1028,3 +1058,6 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
 }, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH, notFoundTitle: 'User not found' }));
 
 module.exports = router;
+// Exported for tests — the directory-coverage wording is the part most likely to
+// go wrong quietly, so it is exercised directly rather than through the route.
+module.exports.directoryCoverage = directoryCoverage;

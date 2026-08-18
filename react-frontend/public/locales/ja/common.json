@@ -374,6 +374,17 @@
     "load_more": "もっと読み込む",
     "results_matching": "\"{{query}}\"に一致する{{total}}人中{{shown}}人のメンバー",
     "results_count": "{{count}}人のメンバーを表示",
+    "results_showing_of": "{{total}} メンバー中 {{shown}} を表示しています",
+    "coverage_title": "{{joined}} 人中 {{listed}} 人が参加しています",
+    "coverage_intro": "誰もが上場を選択するわけではありません。メンバーは次の場合にこのディレクトリに表示されます。",
+    "coverage_criteria": {
+      "directory_opt_in": "彼らは見つけられると嬉しいです — 誰でもプライバシー設定でこれをオフにすることができます",
+      "profile_complete": "彼らはプロフィールの設定を完了しました",
+      "avatar": "彼らはプロフィール写真を追加しました",
+      "bio": "彼らは短い紹介文を書きました"
+    },
+    "coverage_outro": "他の全員は依然としてコミュニティの正メンバーです。それらはここには示されていないだけです。",
+    "coverage_check_own": "自分がリストに載っているかどうかを確認する",
     "no_location": "位置情報のあるメンバーがいません",
     "fallback_name": "メンバー",
     "avatar_alt": "{{name}}のアバター",
