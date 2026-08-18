@@ -79,7 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Groups are no longer hidden automatically, by your decision — and the 431 groups hOUR Timebank lost in July are back.**
+- **The accessible frontend's "your session is about to end" warning now works properly — and its "stay signed in" button no longer signs you out.** Three faults were found and fixed together, all verified in a live browser and covered by new automatic tests.
+
+  **The warning now appears on time, even after you've been in another tab.** It used to be run entirely off browser timers, and browsers deliberately slow those down in background tabs (and pause them while a laptop sleeps). So the warning fired minutes late — usually at the exact moment you came back to the tab, which is why it seemed to "only activate sometimes when activating a tab". The warning is now anchored to the actual clock: the moment you return to a tab it checks the real time. If the session has already run out it signs you out immediately; if the warning is due it shows it with the *true* time remaining, not a fresh countdown it can't honour. This matters most for shared council machines: before this fix, a signed-in tab left in the background was never signed out at all.
+
+  **"Stay signed in" actually worked against you.** The button called a server endpoint that had a naming clash with the session library's own internals, so every call crashed mid-response and never finished. The page treated that as "the session could not be extended" and sent you to the login screen — the button did the opposite of its label. A new test proved the crash first, then proved the fix.
+
+  **Being active now genuinely keeps you signed in.** The session cookie previously kept its original 30-minute expiry from the moment you signed in, no matter how active you were. It now renews with activity, activity in one tab counts for your other tabs too, and the page quietly confirms with the server every few minutes while you're working so the two never disagree.
 
   **The restore is done and verified.** All **431** groups are active again, each returned to exactly the status it held before the faulty job touched it, read from the group history log rather than guessed. hOUR Timebank now has 434 active groups and none archived. The whole geographic structure is back with its membership intact — Munster (170 members), Co. Cork (151), West Cork (114), Leinster, Ulster, and every county and town group beneath them. Every restore was itself written to the history log, so this change is as reversible as the one it undid. Not one group had been touched by hand since July, so nothing anybody decided was overwritten.
 

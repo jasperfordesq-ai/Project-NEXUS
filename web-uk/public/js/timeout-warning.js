@@ -7,6 +7,22 @@
  * Session Timeout Warning
  * Based on GOV.UK Design System timeout warning pattern
  * https://design-system.service.gov.uk/components/timeout-warning/
+ *
+ * 🔴 Scheduling is WALL-CLOCK based, not timer based. The first version armed
+ * a plain setTimeout for "warn in 25 minutes". Browsers throttle and batch
+ * timers in background tabs (Chrome batches them to once a minute after five
+ * minutes hidden, and suspends them entirely during OS sleep), so the warning
+ * fired minutes late — usually at the moment the member re-activated the tab,
+ * and sometimes not at all. Because this script is also what actually signs an
+ * idle member out (the auth cookies themselves auto-refresh), a throttled
+ * timer meant an unattended signed-in tab could stay signed in for hours.
+ *
+ * The fix: an absolute deadline (Date.now() based) is the single source of
+ * truth. A once-a-second check compares the clock against it, and the check
+ * also runs immediately on visibilitychange / focus / pageshow, so a
+ * re-activated or bfcache-restored tab reconciles with reality at once:
+ * past the deadline → sign out now; inside the warning window → show the
+ * modal with the TRUE remaining time.
  */
 (function() {
   'use strict';
@@ -28,6 +44,16 @@
   // ACTUAL lead is clamped to fit the session below, so a short server-declared
   // session still gets a warning that fires before it expires.
   var WARNING_LEAD_MAX_MINUTES = 5;
+  // How often user activity is allowed to ping /session/touch so the server's
+  // session window rolls alongside the local one. Local activity (scrolling,
+  // typing) does not otherwise reach the server, and the express session
+  // carries state (language choice, sign-in flow) that must not die mid-use.
+  var KEEP_ALIVE_INTERVAL_MS = 5 * 60 * 1000;
+  // Cross-tab activity broadcast. Activity in one tab extends the session for
+  // every tab sharing it, so another tab must not count down to a sign-out the
+  // server no longer intends. localStorage is per-origin, and so is the
+  // session cookie, so the scopes match.
+  var ACTIVITY_STORAGE_KEY = 'nexusWebukSessionActivityAt';
 
   function resolveSessionTimeoutMinutes() {
     var marker = document.querySelector('[data-session-timeout-minutes]');
@@ -58,15 +84,19 @@
   var COUNTDOWN_SECONDS = WARNING_BEFORE_MINUTES * 60;
 
   var sessionTimeoutMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
-  var warningTimeMs = (SESSION_TIMEOUT_MINUTES - WARNING_BEFORE_MINUTES) * 60 * 1000;
+  var warningLeadMs = COUNTDOWN_SECONDS * 1000;
 
-  var warningTimer = null;
-  var logoutTimer = null;
-  var countdownTimer = null;
+  // Absolute wall-clock deadline for the session, and the single scheduling
+  // source of truth. Timers only decide how often we LOOK at the clock; they
+  // never carry the deadline themselves.
+  var deadlineAt = 0;
+  var checkTimer = null;
   var countdownSeconds = COUNTDOWN_SECONDS;
   var modalOpen = false;
   var lastFocusedElement = null;
   var loggingOut = false;
+  var lastKeepAliveAt = 0;
+  var announcedThresholds = {};
 
   function timeoutMarker() {
     return document.querySelector('[data-authenticated="true"]');
@@ -119,6 +149,86 @@
     element.appendChild(document.createTextNode(parts.slice(1).join(':time')));
   }
 
+  // ------------------------------------------------------------------
+  // Deadline bookkeeping
+  // ------------------------------------------------------------------
+
+  function readSharedActivityAt() {
+    try {
+      var raw = window.localStorage.getItem(ACTIVITY_STORAGE_KEY);
+      var value = raw ? parseInt(raw, 10) : 0;
+      // Ignore garbage and clock-skewed future values (another tab cannot have
+      // been active later than "now").
+      if (isFinite(value) && value > 0 && value <= Date.now()) {
+        return value;
+      }
+    } catch (error) {
+      // localStorage unavailable (private mode, storage policy) — single-tab
+      // behaviour still works without it.
+    }
+    return 0;
+  }
+
+  function broadcastActivity(activityAt) {
+    try {
+      window.localStorage.setItem(ACTIVITY_STORAGE_KEY, String(activityAt));
+    } catch (error) {
+      // Ignore — cross-tab sync is an enhancement, not a requirement.
+    }
+  }
+
+  function resetDeadline() {
+    deadlineAt = Date.now() + sessionTimeoutMs;
+    announcedThresholds = {};
+  }
+
+  // Adopt activity another tab broadcast, so this tab never signs the member
+  // out while they are demonstrably working in a sibling tab.
+  function adoptSharedActivity() {
+    var sharedActivityAt = readSharedActivityAt();
+    if (sharedActivityAt && sharedActivityAt + sessionTimeoutMs > deadlineAt) {
+      deadlineAt = sharedActivityAt + sessionTimeoutMs;
+      announcedThresholds = {};
+    }
+  }
+
+  function remainingSeconds() {
+    return Math.max(0, Math.ceil((deadlineAt - Date.now()) / 1000));
+  }
+
+  // ------------------------------------------------------------------
+  // The clock check — the heart of the component
+  // ------------------------------------------------------------------
+
+  function check() {
+    if (loggingOut) {
+      return;
+    }
+
+    adoptSharedActivity();
+
+    var now = Date.now();
+
+    if (now >= deadlineAt) {
+      submitLogout();
+      return;
+    }
+
+    if (now >= deadlineAt - warningLeadMs) {
+      if (!modalOpen) {
+        showModal();
+      }
+      updateCountdown();
+      return;
+    }
+
+    // Deadline moved forward (another tab extended, or a keep-alive landed)
+    // while the modal was showing — stand down.
+    if (modalOpen) {
+      hideModal();
+    }
+  }
+
   // Create modal HTML
   function createModal() {
     var modal = document.createElement('div');
@@ -167,8 +277,10 @@
     // Store last focused element
     lastFocusedElement = document.activeElement;
 
-    // Reset countdown
-    countdownSeconds = COUNTDOWN_SECONDS;
+    // The displayed time comes from the deadline, so a modal that appears late
+    // (throttled background tab) shows the TRUE remaining time, not a full
+    // countdown it cannot honour.
+    announcedThresholds = {};
     updateCountdown();
 
     // Show modal
@@ -181,17 +293,6 @@
     if (extendButton) {
       extendButton.focus();
     }
-
-    // Start countdown
-    countdownTimer = setInterval(function() {
-      countdownSeconds--;
-      updateCountdown();
-
-      if (countdownSeconds <= 0) {
-        clearInterval(countdownTimer);
-        submitLogout();
-      }
-    }, 1000);
 
     // Add event listeners (remove first to prevent duplicates on repeated show/hide)
     extendButton.removeEventListener('click', extendSession);
@@ -211,12 +312,6 @@
       modalOpen = false;
       document.body.classList.remove('app-timeout-modal--open');
 
-      // Clear countdown
-      if (countdownTimer) {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-      }
-
       // Restore focus
       if (lastFocusedElement) {
         lastFocusedElement.focus();
@@ -224,17 +319,23 @@
     }
   }
 
-  // Update countdown display
+  // Update countdown display from the wall-clock deadline
   function updateCountdown() {
+    countdownSeconds = remainingSeconds();
     var countdownEl = document.getElementById('timeout-countdown');
     if (countdownEl) {
       var text = formatCountdownText(countdownSeconds);
       countdownEl.textContent = text;
 
-      // Announce to screen readers at key intervals
-      if (countdownSeconds === 30 || countdownSeconds === 10) {
-        announceToScreenReader(timeoutText('data-timeout-announcement').replace(':time', text));
-      }
+      // Announce to screen readers as key thresholds are crossed. Threshold
+      // CROSSING (not equality) because a throttled tab can skip individual
+      // second values entirely.
+      [30, 10].forEach(function(threshold) {
+        if (countdownSeconds <= threshold && !announcedThresholds[threshold]) {
+          announcedThresholds[threshold] = true;
+          announceToScreenReader(timeoutText('data-timeout-announcement').replace(':time', text));
+        }
+      });
     }
   }
 
@@ -254,14 +355,42 @@
       }
     }).then(function(response) {
       if (response.ok) {
+        lastKeepAliveAt = Date.now();
+        resetDeadline();
+        broadcastActivity(Date.now());
         hideModal();
-        resetTimers();
       } else {
         redirectToLogin();
       }
     }).catch(function() {
       // If request fails, redirect to login
       redirectToLogin();
+    });
+  }
+
+  // Fire-and-forget keep-alive so the SERVER session window rolls with local
+  // activity (scrolling and typing never reach the server on their own).
+  // Throttled; a transient failure is ignored — the modal's explicit extend
+  // path above is the one that must be honest about errors.
+  function keepAlive() {
+    var now = Date.now();
+    if (now - lastKeepAliveAt < KEEP_ALIVE_INTERVAL_MS) {
+      return;
+    }
+    lastKeepAliveAt = now;
+
+    var authEl = document.querySelector('[data-authenticated="true"]');
+    var csrfToken = authEl ? authEl.getAttribute('data-csrf-token') : '';
+    fetch('/session/touch', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-csrf-token': csrfToken
+      }
+    }).catch(function() {
+      // Allow a retry sooner than the full interval after a failure.
+      lastKeepAliveAt = now - KEEP_ALIVE_INTERVAL_MS + 60 * 1000;
     });
   }
 
@@ -275,16 +404,15 @@
   }
 
   function submitLogout() {
-    // The countdown now ends exactly at the session timeout, so it and the backup
-    // logoutTimer fire at the same instant — guard against a double submit.
+    // The countdown end and the clock check can coincide — guard against a
+    // double submit.
     if (loggingOut) {
       return;
     }
     loggingOut = true;
-    clearTimeout(warningTimer);
-    clearTimeout(logoutTimer);
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
+    if (checkTimer) {
+      clearInterval(checkTimer);
+      checkTimer = null;
     }
 
     var logoutForm = document.getElementById('session-timeout-logout-form');
@@ -299,20 +427,6 @@
     }
 
     logoutForm.submit();
-  }
-
-  // Reset timers
-  function resetTimers() {
-    clearTimeout(warningTimer);
-    clearTimeout(logoutTimer);
-
-    // Set warning timer
-    warningTimer = setTimeout(showModal, warningTimeMs);
-
-    // Set logout timer (backup)
-    logoutTimer = setTimeout(function() {
-      submitLogout();
-    }, sessionTimeoutMs);
   }
 
   // Handle keyboard events in modal
@@ -370,10 +484,13 @@
     announcer.textContent = message;
   }
 
-  // Reset timers on user activity
+  // Reset the deadline on user activity. While the modal is open the member
+  // must choose explicitly — background activity does not extend.
   function onUserActivity() {
-    if (!modalOpen) {
-      resetTimers();
+    if (!modalOpen && !loggingOut) {
+      resetDeadline();
+      broadcastActivity(Date.now());
+      keepAlive();
     }
   }
 
@@ -383,8 +500,37 @@
     var isAuthenticated = document.querySelector('[data-authenticated="true"]');
     if (!isAuthenticated) return;
 
-    // Start timers
-    resetTimers();
+    // Page load is real server contact (the rolling session cookie was just
+    // re-issued), so it both starts the local window and counts as activity
+    // for sibling tabs.
+    resetDeadline();
+    broadcastActivity(Date.now());
+
+    // Look at the clock once a second. Background throttling can slow this to
+    // roughly once a minute — acceptable, because the deadline is absolute and
+    // the visibility/focus hooks below reconcile immediately on re-activation.
+    checkTimer = setInterval(check, 1000);
+
+    // A tab coming back to life must reconcile with the wall clock at once:
+    // past the deadline → sign out, inside the warning window → warn with the
+    // true remaining time. pageshow also covers bfcache restores, where no
+    // load event fires.
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        check();
+      }
+    });
+    window.addEventListener('focus', check);
+    window.addEventListener('pageshow', function() {
+      check();
+    });
+
+    // Activity in another tab extends this one too.
+    window.addEventListener('storage', function(event) {
+      if (event.key === ACTIVITY_STORAGE_KEY) {
+        check();
+      }
+    });
 
     // Reset on user activity (debounced)
     var activityTimeout = null;

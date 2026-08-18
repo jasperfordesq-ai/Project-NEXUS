@@ -49,4 +49,48 @@ describe('session timeout source contract', () => {
     expect(timeoutSource).toContain('loginLink.click();');
     expect(timeoutSource).not.toContain("getAttribute('data-login-url')");
   });
+
+  /**
+   * 🔴 Browsers throttle and batch setTimeout/setInterval in background tabs
+   * (and suspend them during OS sleep). The original implementation carried the
+   * schedule IN the timers ("warn in 25 minutes"), so a backgrounded tab warned
+   * minutes late — usually the moment the member re-activated the tab, and
+   * sometimes not at all. Because this script is also what signs an idle member
+   * out, that left unattended signed-in tabs signed in indefinitely.
+   */
+  it('schedules against a wall-clock deadline, not timer durations', () => {
+    // The deadline is absolute (epoch ms) and checked against Date.now().
+    expect(timeoutSource).toMatch(/deadlineAt\s*=\s*Date\.now\(\)\s*\+\s*sessionTimeoutMs/);
+    expect(timeoutSource).toMatch(/now\s*>=\s*deadlineAt/);
+    // No timer carries the warning or logout schedule.
+    expect(timeoutSource).not.toMatch(/setTimeout\(\s*showModal/);
+    expect(timeoutSource).not.toMatch(/setTimeout\(\s*submitLogout/);
+    expect(timeoutSource).not.toContain('warningTimer');
+    expect(timeoutSource).not.toContain('logoutTimer');
+    // The displayed countdown derives from the deadline rather than
+    // decrementing a counter, so a throttled tab cannot display more time than
+    // truly remains.
+    expect(timeoutSource).toMatch(/countdownSeconds\s*=\s*remainingSeconds\(\)/);
+    expect(timeoutSource).not.toMatch(/countdownSeconds--/);
+  });
+
+  it('reconciles immediately when a tab is re-activated or restored', () => {
+    // visibilitychange covers tab switches, focus covers window switches, and
+    // pageshow covers back/forward-cache restores where no load event fires.
+    expect(timeoutSource).toContain("addEventListener('visibilitychange'");
+    expect(timeoutSource).toMatch(/addEventListener\('focus',\s*check\)/);
+    expect(timeoutSource).toContain("addEventListener('pageshow'");
+  });
+
+  it('keeps sibling tabs in step and rolls the server window with activity', () => {
+    // Activity in one tab extends every tab sharing the session.
+    expect(timeoutSource).toContain('nexusWebukSessionActivityAt');
+    expect(timeoutSource).toContain("addEventListener('storage'");
+    // Local activity pings /session/touch (throttled) so the SERVER session
+    // rolls too — scrolling and typing never reach the server on their own.
+    expect(timeoutSource).toContain('KEEP_ALIVE_INTERVAL_MS');
+    // While the modal is open the member must choose explicitly; background
+    // activity must not extend the session.
+    expect(timeoutSource).toMatch(/if\s*\(!modalOpen\s*&&\s*!loggingOut\)/);
+  });
 });

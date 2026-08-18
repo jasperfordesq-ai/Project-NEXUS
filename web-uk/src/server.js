@@ -482,6 +482,13 @@ app.use(session({
   store: sessionStore.store,
   resave: false,
   saveUninitialized: false,
+  // Re-send the session cookie on every response so the browser-side expiry
+  // rolls with activity. Without this the cookie kept the absolute expiry from
+  // when it was first set, so an ACTIVE member's session still died 30 minutes
+  // after sign-in while the timeout warning believed it had been extended.
+  // Static asset mounts are registered above this middleware, so assets are
+  // unaffected.
+  rolling: true,
   cookie: {
     secure: NODE_ENV === 'production',
     httpOnly: true,
@@ -861,12 +868,19 @@ app.get('/', async (req, res, next) => {
   }
 });
 
-// Session touch endpoint - called by timeout-warning.js to extend the session
-// Touching this endpoint is enough to reset the express-session rolling window
+// Session touch endpoint - called by timeout-warning.js to extend the session.
+// With rolling:true the session middleware re-sends the cookie on any request;
+// marking the session dirty here also forces a store save.
 app.post('/session/touch', doubleCsrfProtection, (req, res) => {
-  // express-session resave:false means we must mark it dirty to reset maxAge
+  // 🔴 Never assign to req.session.touch — that property name shadows
+  // express-session's own Session.prototype.touch() METHOD, which the library
+  // itself calls when the response ends. With a number stored there, every
+  // /session/touch response threw "req.session.touch is not a function" and
+  // never completed, so the timeout modal's extend request failed and
+  // redirected the member to the login page instead of extending the session.
+  // Regression test: tests/session-touch.test.js.
   if (req.session) {
-    req.session.touch = Date.now();
+    req.session.lastTouchedAt = Date.now();
   }
   res.json({ ok: true });
 });
