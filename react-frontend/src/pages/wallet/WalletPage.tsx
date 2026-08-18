@@ -307,7 +307,7 @@ export function WalletPage() {
                 <Chip
                   size="sm"
                   variant="tertiary"
-                  className="bg-amber-500/10 text-amber-600 dark:text-amber-300"
+                  className="bg-amber-500/10 text-amber-700 dark:text-amber-300"
                   startContent={<Clock className="h-3.5 w-3.5" aria-hidden="true" />}
                 >
                   {(balance?.pending_in || balance?.pending_incoming) ? t('pending_in', { count: balance?.pending_in ?? balance?.pending_incoming ?? 0 }) : t('no_pending')}
@@ -329,7 +329,7 @@ export function WalletPage() {
               <Button
                 variant="secondary"
                 size="lg"
-                className="w-full bg-rose-500/10 px-6 font-medium text-rose-500 dark:text-rose-300"
+                className="w-full bg-rose-500/10 px-6 font-medium text-rose-700 dark:text-rose-300"
                 startContent={<ArrowDownLeft className="h-5 w-5" aria-hidden="true" />}
                 onPress={() => setIsDonateModalOpen(true)}
                 isDisabled={isLoading || !balance || balance.balance <= 0}
@@ -524,10 +524,16 @@ interface StatCardProps {
   isLoading?: boolean;
 }
 
+// 🔴 The light-mode text is the -700 shade, NOT -600, and must stay there. Each
+// of these sits on its own colour at 10% over white, and at -600 none of the
+// three reaches the 4.5:1 WCAG AA minimum: amber 2.95, rose 3.89, emerald 3.33.
+// At -700 they measure 4.67, 5.22 and 4.88. Only amber and rose were reported by
+// the accessibility gate — the emerald card did not render in that run, so it
+// was a latent failure found by calculation rather than by the test.
 const colorClasses = {
-  emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-  rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-300',
-  amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-300',
+  emerald: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  rose: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
+  amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
 };
 
 function StatCard({ icon, label, value, color, isLoading }: StatCardProps) {
@@ -601,7 +607,7 @@ function TransactionCard({ transaction }: TransactionCardProps) {
           </div>
         </div>
 
-        <div className={`col-span-2 max-w-full justify-self-end break-words text-right text-lg font-bold leading-tight [overflow-wrap:anywhere] sm:col-span-1 sm:text-xl ${isCredit ? 'text-emerald-500 dark:text-emerald-300' : 'text-rose-500 dark:text-rose-300'}`}>
+        <div className={`col-span-2 max-w-full justify-self-end break-words text-right text-lg font-bold leading-tight [overflow-wrap:anywhere] sm:col-span-1 sm:text-xl ${isCredit ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
           {t('signed_hours_value', { sign: isCredit ? '+' : '-', count: transaction.amount })}
         </div>
       </div>
