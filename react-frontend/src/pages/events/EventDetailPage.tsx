@@ -1109,7 +1109,7 @@ export function EventDetailPage() {
             <div className="flex items-center gap-3">
               <Ban className="w-5 h-5 text-red-400 flex-shrink-0" aria-hidden="true" />
               <div>
-                <p className="text-red-700 dark:text-red-400 font-semibold">{t('detail.event_cancelled')}</p>
+                <p className="text-theme-danger font-semibold">{t('detail.event_cancelled')}</p>
                 {event.schedule.cancellation_reason && (
                   <p className="text-red-300/80 text-sm mt-1">{t('detail.cancellation_reason', { reason: event.schedule.cancellation_reason })}</p>
                 )}
@@ -1121,7 +1121,7 @@ export function EventDetailPage() {
           <div role="status" className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-              <p className="font-semibold text-amber-700 dark:text-amber-300">
+              <p className="font-semibold text-theme-warning">
                 {t('detail.event_postponed')}
               </p>
             </div>
@@ -2000,7 +2000,7 @@ export function EventDetailPage() {
                       <CardBody className="flex flex-row items-center gap-4 p-3">
                         {/* Mini Date Badge */}
                         <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg p-2 text-center min-w-[48px]">
-                          <div className="text-amber-700 dark:text-amber-400 text-[10px] font-medium uppercase leading-none">
+                          <div className="text-theme-warning text-[10px] font-medium uppercase leading-none">
                             {monthLabel}
                           </div>
                           <div className="text-theme-primary text-lg font-bold leading-tight">

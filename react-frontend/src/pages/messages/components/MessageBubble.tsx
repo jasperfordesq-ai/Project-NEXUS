@@ -329,7 +329,7 @@ export const MessageBubble = memo(function MessageBubble({
                     </p>
                   )}
                   {translationError && !translatedText && (
-                    <p className="text-xs text-red-700 dark:text-red-400 mt-1">{translationError}</p>
+                    <p className="text-xs text-theme-danger mt-1">{translationError}</p>
                   )}
                 </div>
               )}
@@ -375,7 +375,7 @@ export const MessageBubble = memo(function MessageBubble({
                     </span>
                   )}
                   {translationError && !translatedText && (
-                    <span className="text-xs text-red-700 dark:text-red-400">{translationError}</span>
+                    <span className="text-xs text-theme-danger">{translationError}</span>
                   )}
                 </div>
               )}

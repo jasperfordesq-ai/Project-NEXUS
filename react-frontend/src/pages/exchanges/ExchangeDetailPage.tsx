@@ -476,7 +476,7 @@ export function ExchangeDetailPage() {
                 </p>
                 {exchange.requester?.id && <VerificationBadgeRow userId={exchange.requester.id} size="sm" />}
                 {exchange.requester_confirmed_at && (
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                  <p className="text-xs text-theme-success flex items-center gap-1">
                     <CheckCircle className="w-3 h-3" aria-hidden="true" />
                     {t('detail.confirmed_hours', { hours: exchange.requester_confirmed_hours })}
                   </p>
@@ -500,7 +500,7 @@ export function ExchangeDetailPage() {
                 </p>
                 {exchange.provider?.id && <VerificationBadgeRow userId={exchange.provider.id} size="sm" />}
                 {exchange.provider_confirmed_at && (
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                  <p className="text-xs text-theme-success flex items-center gap-1">
                     <CheckCircle className="w-3 h-3" aria-hidden="true" />
                     {t('detail.confirmed_hours', { hours: exchange.provider_confirmed_hours })}
                   </p>
@@ -531,8 +531,8 @@ export function ExchangeDetailPage() {
           </div>
           {exchange.final_hours && (
             <div className="bg-emerald-500/10 rounded-lg p-4">
-              <p className="text-sm text-emerald-700 dark:text-emerald-400">{t('detail.final_hours')}</p>
-              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{exchange.final_hours}</p>
+              <p className="text-sm text-theme-success">{t('detail.final_hours')}</p>
+              <p className="text-2xl font-bold text-theme-success">{exchange.final_hours}</p>
             </div>
           )}
           <div className="bg-theme-elevated rounded-lg p-4">
@@ -567,7 +567,7 @@ export function ExchangeDetailPage() {
         {/* Broker Notes */}
         {exchange.broker_notes && (
           <div className="bg-amber-500/10 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">{t('detail.broker_notes')}</h3>
+            <h3 className="text-sm font-medium text-theme-warning mb-2">{t('detail.broker_notes')}</h3>
             <p className="text-theme-primary">{exchange.broker_notes}</p>
           </div>
         )}

@@ -347,7 +347,7 @@ export function RequestHelpPage() {
               </Button>
 
               {voiceFilledHint && (
-                <p className="mt-3 rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+                <p className="mt-3 rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-theme-success">
                   {t('request_help.voice.filled_hint')}
                 </p>
               )}

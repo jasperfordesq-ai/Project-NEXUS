@@ -441,7 +441,7 @@ function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
       {/* Search only covers loaded applications — offer to pull the rest. */}
       {nameSearch.trim() && hasMore && (
         <div className="flex flex-col gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+          <p className="text-xs text-theme-warning">
             {t('applications.search_partial_hint')}
           </p>
           <Button

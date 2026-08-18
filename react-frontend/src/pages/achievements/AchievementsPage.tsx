@@ -1310,7 +1310,7 @@ function BadgeDetailModal({ isOpen, onClose, badgeKey }: BadgeDetailModalProps) 
                 {badge.earned && badge.earned_at ? (
                   <div className="flex items-center gap-2 mb-5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <CheckCircle className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                    <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+                    <span className="text-sm text-theme-success font-medium">
                       {t('achievements.badge_detail.earned_on', { date: new Date(badge.earned_at).toLocaleDateString(getFormattingLocale()) })}
                     </span>
                   </div>
@@ -1343,7 +1343,7 @@ function BadgeDetailModal({ isOpen, onClose, badgeKey }: BadgeDetailModalProps) 
                       <p className="text-xs text-theme-subtle mb-1">{t('achievements.badge_detail.xp_reward')}</p>
                       <div className="flex items-center gap-1">
                         <Zap className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                        <p className="text-sm font-medium text-theme-warning">
                           {t('achievements.badge_detail.xp_value', { xp: badge.xp_value })}
                         </p>
                       </div>
@@ -1718,7 +1718,7 @@ export function AchievementsPage() {
                     </div>
                     <div className="flex gap-4">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{profile.badges_count}</p>
+                        <p className="text-2xl font-bold text-theme-warning">{profile.badges_count}</p>
                         <p className="text-xs text-theme-subtle">{t('achievements.badges_label')}</p>
                       </div>
                     </div>

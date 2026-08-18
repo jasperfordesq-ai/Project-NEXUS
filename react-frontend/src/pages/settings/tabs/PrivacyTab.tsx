@@ -323,7 +323,7 @@ export function PrivacyTab({
             onPress={onOpenDeleteModal}
           >
             <div className={rowContentClass}>
-              <p className="font-medium text-red-700 dark:text-red-400">{t('gdpr.deletion_title')}</p>
+              <p className="font-medium text-theme-danger">{t('gdpr.deletion_title')}</p>
               <p className={rowDescriptionClass}>{t('gdpr.deletion_desc')}</p>
             </div>
           </Button>

@@ -730,7 +730,7 @@ export function ListingForm({
               submits. Aimed at the SERP/discovery quality regression where
               titles like "I can help with Events" indexed as thin content. */}
           {isGenericTitle && (
-            <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-300">
+            <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-theme-warning">
               <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
               <span>{t('form.title_too_generic_hint')}</span>
             </p>

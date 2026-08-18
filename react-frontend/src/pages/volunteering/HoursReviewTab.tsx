@@ -282,7 +282,7 @@ export function HoursReviewTab() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="flex items-center gap-1 text-rose-700 font-medium">
+                <span className="flex items-center gap-1 text-theme-danger font-medium">
                   <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   {entry.hours} {entry.hours === 1 ? t('hour') : t('hours')}
                 </span>

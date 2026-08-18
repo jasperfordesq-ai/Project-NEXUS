@@ -960,7 +960,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
             {/* Date Box */}
             <div className="flex-shrink-0 w-14 sm:w-16 text-center">
               <time dateTime={event.schedule.start_at ?? undefined} className="block rounded-lg border border-amber-500/25 bg-amber-500/10 p-2">
-                <span className="text-amber-700 dark:text-amber-400 text-xs font-medium uppercase block">
+                <span className="text-theme-warning text-xs font-medium uppercase block">
                   {monthLabel}
                 </span>
                 <span className="text-theme-primary text-xl sm:text-2xl font-bold block">

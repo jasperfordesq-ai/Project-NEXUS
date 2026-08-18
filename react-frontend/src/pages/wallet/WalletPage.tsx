@@ -329,7 +329,7 @@ export function WalletPage() {
               <Button
                 variant="secondary"
                 size="lg"
-                className="w-full bg-rose-500/10 px-6 font-medium text-rose-700 dark:text-rose-300"
+                className="w-full bg-rose-500/10 px-6 font-medium text-theme-danger"
                 startContent={<ArrowDownLeft className="h-5 w-5" aria-hidden="true" />}
                 onPress={() => setIsDonateModalOpen(true)}
                 isDisabled={isLoading || !balance || balance.balance <= 0}

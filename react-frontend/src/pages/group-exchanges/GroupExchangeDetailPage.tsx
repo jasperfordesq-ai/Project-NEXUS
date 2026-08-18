@@ -512,11 +512,11 @@ export function GroupExchangeDetailPage() {
           </div>
           <div className="bg-theme-elevated rounded-lg p-4">
             <p className="text-sm text-theme-muted">{t('detail.providers')}</p>
-            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{providers.length}</p>
+            <p className="text-2xl font-bold text-theme-success">{providers.length}</p>
           </div>
           <div className="bg-theme-elevated rounded-lg p-4">
             <p className="text-sm text-theme-muted">{t('detail.receivers')}</p>
-            <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{receivers.length}</p>
+            <p className="text-2xl font-bold text-theme-warning">{receivers.length}</p>
           </div>
           <div className="bg-theme-elevated rounded-lg p-4">
             <p className="text-sm text-theme-muted">{t('detail.created')}</p>
@@ -531,7 +531,7 @@ export function GroupExchangeDetailPage() {
         {/* Broker Notes */}
         {exchange.broker_notes && (
           <div className="bg-amber-500/10 rounded-lg p-4 mt-4">
-            <h3 className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">{t('detail.broker_notes')}</h3>
+            <h3 className="text-sm font-medium text-theme-warning mb-2">{t('detail.broker_notes')}</h3>
             <p className="text-theme-primary">{exchange.broker_notes}</p>
           </div>
         )}
@@ -539,7 +539,7 @@ export function GroupExchangeDetailPage() {
         {/* Completed notice */}
         {exchange.status === 'completed' && exchange.completed_at && (
           <div className="bg-emerald-500/10 rounded-lg p-4 mt-4">
-            <h3 className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-theme-success mb-1 flex items-center gap-2">
               <CheckCircle className="w-4 h-4" aria-hidden="true" />
               {t('detail.exchange_completed')}
             </h3>
@@ -552,7 +552,7 @@ export function GroupExchangeDetailPage() {
         {/* Cancelled notice */}
         {exchange.status === 'cancelled' && (
           <div className="bg-red-500/10 rounded-lg p-4 mt-4">
-            <h3 className="text-sm font-medium text-red-700 dark:text-red-400 mb-1 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-theme-danger mb-1 flex items-center gap-2">
               <XCircle className="w-4 h-4" aria-hidden="true" />
               {t('detail.exchange_cancelled')}
             </h3>
@@ -688,7 +688,7 @@ export function GroupExchangeDetailPage() {
                 </TableCell>
                 <TableCell className="text-center">
                   {p.confirmed ? (
-                    <span className="flex items-center justify-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs">
+                    <span className="flex items-center justify-center gap-1 text-theme-success text-xs">
                       <CheckCircle className="w-4 h-4" aria-hidden="true" />
                       {t('detail.confirmed')}
                     </span>

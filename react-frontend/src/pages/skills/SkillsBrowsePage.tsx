@@ -276,7 +276,7 @@ export function SkillsBrowsePage() {
             <div className="flex items-start gap-2">
               <HandHelping className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
               <p className="text-xs text-theme-subtle">
-                <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                <span className="font-medium text-theme-success">
                   {t('skills.offering_label')}
                 </span>
                 {' - '}
@@ -526,7 +526,7 @@ export function SkillsBrowsePage() {
                                           </div>
                                           <div className="flex items-center gap-3 mt-1.5">
                                             {skill.offering_count > 0 && (
-                                              <span className="text-xs text-emerald-700 flex items-center gap-1">
+                                              <span className="text-xs text-theme-success flex items-center gap-1">
                                                 <HandHelping className="w-3 h-3" aria-hidden="true" />
                                                 {skill.offering_count} {t('skills.offering')}
                                               </span>

@@ -327,7 +327,7 @@ export function PrivacyPage() {
           </ul>
 
           <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            <p className="text-sm font-medium text-theme-success">
               {t('privacy.no_sell_data')}
             </p>
           </div>

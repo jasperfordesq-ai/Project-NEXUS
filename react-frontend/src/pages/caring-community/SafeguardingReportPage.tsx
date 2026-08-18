@@ -260,7 +260,7 @@ export default function SafeguardingReportPage(): ReactNode {
             />
 
             {error && (
-              <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
+              <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-theme-danger">
                 {error}
               </div>
             )}

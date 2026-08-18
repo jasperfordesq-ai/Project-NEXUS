@@ -156,7 +156,7 @@ export function AccessibilityPage() {
             </p>
 
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-2">
+              <p className="text-sm font-medium text-theme-success mb-2">
                 {t('accessibility.standards_label')}
               </p>
               <ul className="space-y-2 text-sm text-theme-muted">

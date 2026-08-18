@@ -2309,7 +2309,7 @@ export function ConversationPage() {
           </div>
           <div className="hidden shrink-0 items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 sm:flex" role="alert">
             <AlertTriangle className="w-5 h-5 text-[var(--color-warning)] flex-shrink-0 mt-0.5" aria-hidden="true" />
-            <p className="text-amber-700 dark:text-amber-300 text-sm flex-1">
+            <p className="text-theme-warning text-sm flex-1">
               {t('safeguarding_notice')}
             </p>
             <Button
@@ -2348,7 +2348,7 @@ export function ConversationPage() {
             <AlertTriangle className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-200">
+            <p className="text-sm font-semibold text-theme-danger">
               {safeguardingBlockNotice.title || t(`${safeguardingBlockNotice.translationKey}.title`)}
             </p>
             <p className="mt-1 text-sm text-red-700/90 dark:text-red-200/90">
@@ -2378,14 +2378,14 @@ export function ConversationPage() {
             </p>
             {coordinatorRequestSent && (
               <p
-                className="mt-3 text-sm font-medium text-emerald-700 dark:text-emerald-300"
+                className="mt-3 text-sm font-medium text-theme-success"
                 role="status"
               >
                 {t('coordinator_request.sent')}
               </p>
             )}
             {vettingReviewRequested && (
-              <p className="mt-3 text-sm font-medium text-emerald-700 dark:text-emerald-300" role="status">
+              <p className="mt-3 text-sm font-medium text-theme-success" role="status">
                 {t('vetting_review_request.sent')}
               </p>
             )}

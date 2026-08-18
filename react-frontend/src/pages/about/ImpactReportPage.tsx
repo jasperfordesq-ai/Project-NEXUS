@@ -414,7 +414,7 @@ export function ImpactReportPage() {
                       </div>
                       <h3 className="font-semibold text-theme-primary">{t('impact_report.outcome_connection_heading')}</h3>
                     </div>
-                    <p className="text-4xl font-bold text-emerald-700 dark:text-emerald-400 mb-1">
+                    <p className="text-4xl font-bold text-theme-success mb-1">
                       {formatNumber(0.95, { style: 'percent', maximumFractionDigits: 0 })}
                     </p>
                     <p className="text-sm text-theme-muted">
@@ -432,7 +432,7 @@ export function ImpactReportPage() {
                       </div>
                       <h3 className="font-semibold text-theme-primary">{t('impact_report.outcome_wellbeing_heading')}</h3>
                     </div>
-                    <p className="text-4xl font-bold text-rose-700 dark:text-rose-400 mb-1">
+                    <p className="text-4xl font-bold text-theme-danger mb-1">
                       {formatNumber(1, { style: 'percent', maximumFractionDigits: 0 })}
                     </p>
                     <p className="text-sm text-theme-muted">
@@ -502,15 +502,15 @@ export function ImpactReportPage() {
                     </TableRow>
                     <TableRow>
                       <TableCell className="text-theme-muted">{t('impact_report.sroi_total_present_value')}</TableCell>
-                      <TableCell className="text-right font-semibold text-emerald-700 dark:text-emerald-400">{t('impact_report.sroi_total_present_value_amount')}</TableCell>
+                      <TableCell className="text-right font-semibold text-theme-success">{t('impact_report.sroi_total_present_value_amount')}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-semibold text-theme-primary">{t('impact_report.sroi_net_social_value')}</TableCell>
-                      <TableCell className="text-right font-bold text-emerald-700 dark:text-emerald-400">{t('impact_report.sroi_net_social_value_amount')}</TableCell>
+                      <TableCell className="text-right font-bold text-theme-success">{t('impact_report.sroi_net_social_value_amount')}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-bold text-theme-primary">{t('impact_report.sroi_ratio_label')}</TableCell>
-                      <TableCell className="text-right font-extrabold text-emerald-700 dark:text-emerald-400 text-lg">{t('impact_report.sroi_ratio_value')}</TableCell>
+                      <TableCell className="text-right font-extrabold text-theme-success text-lg">{t('impact_report.sroi_ratio_value')}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>

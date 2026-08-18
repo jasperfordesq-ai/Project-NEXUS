@@ -1182,6 +1182,13 @@ jobs:
       - name: "BLOCKING: e2e assertions that cannot fail, or do not wait"
         run: node scripts/check-e2e-assertion-quality.mjs
 
+      # Raw palette shades used as TEXT fail WCAG AA on their own tinted
+      # backgrounds. The real-browser accessibility gate only covers the handful
+      # of routes it audits, and found these on the Wallet page purely by
+      # accident; this catches them everywhere, at the source.
+      - name: "BLOCKING: status colours as text must use the theme tokens"
+        run: node scripts/check-status-color-tokens.mjs
+
       - name: "WARNING: Count 'as any' type assertions"
         run: |
           echo "Counting 'as any' type assertions in React source..."

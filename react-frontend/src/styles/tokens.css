@@ -45,6 +45,25 @@
   --text-subtle: rgba(255, 255, 255, 0.55);   /* ↑ was 0.4 — lifted to pass WCAG 4.5:1 on dark bg */
   --text-inverse: #0a0a0f;
 
+  /* STATUS TEXT COLORS — use these, never a raw palette class.
+     🔴 Raw `text-emerald-500`/`-600` etc. FAIL WCAG AA as text: on a /10 tint of
+     their own hue they measure 2.7–3.9 against a 4.5 minimum, and one step
+     darker is still short on a /20 tint (amber 4.32, green 4.13). These values
+     were derived, not picked: each is the LIGHTEST shade of its hue that still
+     reaches 4.8:1 on the DARKEST surface it is used on (a /20 tint over the
+     base), so it keeps maximum colour for the contrast required.
+     🔴 The DARK values are deliberately the -400 shades already used across the
+     app, NOT a newly derived colour: they were measured and already pass
+     comfortably, so keeping them leaves dark mode looking exactly as it does
+     today and confines this change to the light-mode defect that was actually
+     broken. Measured on --surface-base #0a0a0f — base / on a /20 tint:
+       success 10.22 / 7.64   warning 11.50 / 8.29
+       danger   6.91 / 5.79   info     7.49 / 6.05 */
+  --text-success: #00d492;   /* emerald-400 */
+  --text-warning: #ffb900;   /* amber-400   */
+  --text-danger:  #ff637e;   /* rose-400    */
+  --text-info:    #51a2ff;   /* blue-400    */
+
   /* SEMANTIC SURFACE COLORS */
   --surface-base: #0a0a0f;
   --surface-elevated: rgba(255, 255, 255, 0.05);
@@ -170,6 +189,15 @@
   --text-muted: #64748b;
   --text-subtle: #475569;          /* ↑ was #94a3b8 (2.3:1) — Slate-600 gives 6.5:1 on light bg */
   --text-inverse: #ffffff;
+
+  /* STATUS TEXT COLORS — see the note in the dark block above.
+     Light mode, measured on white / on a /10 tint / on a /20 tint of the hue:
+       success 5.81 / 5.28 / 4.80   warning 5.61 / 5.19 / 4.80
+       danger  6.48 / 5.59 / 4.80   info    6.10 / 5.42 / 4.80 */
+  --text-success: #00753c;
+  --text-warning: #aa4c00;
+  --text-danger:  #bf0025;
+  --text-info:    #0059db;
 
   /* SEMANTIC SURFACE COLORS */
   --surface-base: #f8fafc;

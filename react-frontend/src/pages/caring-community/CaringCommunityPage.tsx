@@ -345,7 +345,7 @@ export function CaringCommunityPage() {
                           <span className="flex items-center gap-2 text-sm font-semibold leading-5 break-words">
                             {t(`caring_community.actions.${item.key}`)}
                             {item.preview && (
-                              <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                              <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-theme-warning">
                                 {t('caring_community.preview_tag')}
                               </span>
                             )}

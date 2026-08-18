@@ -325,7 +325,7 @@ export function FederationSettingsPage() {
                   <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="font-medium text-emerald-700 dark:text-emerald-300">{t('settings.federation_active')}</p>
+                  <p className="font-medium text-theme-success">{t('settings.federation_active')}</p>
                   <p className="text-sm text-theme-subtle">
                     {t('settings.federation_active_description')}
                   </p>
@@ -349,7 +349,7 @@ export function FederationSettingsPage() {
                   <ShieldOff className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="font-medium text-amber-700 dark:text-amber-300">{t('settings.federation_disabled')}</p>
+                  <p className="font-medium text-theme-warning">{t('settings.federation_disabled')}</p>
                   <p className="text-sm text-theme-subtle">
                     {t('settings.federation_disabled_description')}
                   </p>

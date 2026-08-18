@@ -267,7 +267,7 @@ export default function RegisterOrganisationPage() {
 
           {/* Info notice */}
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4">
-            <p className="text-sm text-amber-700 dark:text-amber-400">
+            <p className="text-sm text-theme-warning">
               {t('organisations.pending_approval_notice')}
             </p>
           </div>

@@ -155,7 +155,7 @@ export function ResetPasswordPage() {
 
           {/* Error */}
           {error && (
-            <div role="alert" className="p-3 mb-6 rounded-lg bg-red-500/20 border border-red-500/30 text-red-800 dark:text-red-400 text-sm">
+            <div role="alert" className="p-3 mb-6 rounded-lg bg-red-500/20 border border-red-500/30 text-theme-danger text-sm">
               {error}
             </div>
           )}

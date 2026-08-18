@@ -455,7 +455,7 @@ export function MessagesPage() {
           <div className="flex items-start gap-3" role="alert">
             <AlertTriangle className="w-5 h-5 text-[var(--color-error)] flex-shrink-0 mt-0.5" aria-hidden="true" />
             <div className="flex-1">
-              <h3 className="font-semibold text-red-700 dark:text-red-300">{t('messaging_restricted_title')}</h3>
+              <h3 className="font-semibold text-theme-danger">{t('messaging_restricted_title')}</h3>
               <p className="text-sm text-red-600/80 dark:text-red-400/80 mt-1">
                 {t('messaging_restricted_desc')}
               </p>

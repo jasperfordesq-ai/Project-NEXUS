@@ -209,7 +209,7 @@ function DefaultTermsContent({ branding, tenantPath }: { branding: { name: strin
           <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4 flex items-start gap-3">
             <Info className="w-5 h-5 text-[var(--color-warning)] mt-0.5 flex-shrink-0" aria-hidden="true" />
             <div>
-              <h4 className="font-medium text-amber-700 dark:text-amber-400 text-sm mb-1">{t('terms.important')}</h4>
+              <h4 className="font-medium text-theme-warning text-sm mb-1">{t('terms.important')}</h4>
               <p className="text-sm text-theme-muted">
                 {t('terms.credits_no_monetary_value')}
               </p>

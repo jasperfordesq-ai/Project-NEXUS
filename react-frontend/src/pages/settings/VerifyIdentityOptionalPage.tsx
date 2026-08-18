@@ -286,7 +286,7 @@ export function VerifyIdentityOptionalPage() {
             <p className="text-theme-muted mb-2">{t('identity.verified_body')}</p>
             <div className="flex items-center justify-center gap-2 mt-4 mb-6 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-              <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{t('identity.verified_badge_label')}</span>
+              <span className="text-sm font-semibold text-theme-success">{t('identity.verified_badge_label')}</span>
             </div>
             <div className="flex flex-col gap-3">
               <Button className="w-full" onPress={() => navigate(tenantPath('/settings'))}>{t('identity.go_to_settings')}</Button>
@@ -309,7 +309,7 @@ export function VerifyIdentityOptionalPage() {
             </div>
             <h1 className="text-2xl font-bold text-theme-primary mb-2">{t('identity.failed_title')}</h1>
             <p className="text-theme-muted mb-2">{t('identity.failed_body')}</p>
-            {failureReason && <p className="text-red-700 dark:text-red-400 text-sm mb-4">{failureReason}</p>}
+            {failureReason && <p className="text-theme-danger text-sm mb-4">{failureReason}</p>}
             <p className="text-theme-subtle text-sm mb-6">{t('identity.failed_hint')}</p>
             <div className="flex flex-col gap-3">
               <Button onPress={handleStartVerification} isLoading={isStarting} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white" startContent={!isStarting ? <RefreshCw className="w-4 h-4" /> : undefined}>{t('identity.try_again')}</Button>
@@ -357,7 +357,7 @@ export function VerifyIdentityOptionalPage() {
             </div>
 
             {errorMessage && (
-              <div role="alert" className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-700 dark:text-red-400">{errorMessage}</div>
+              <div role="alert" className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-theme-danger">{errorMessage}</div>
             )}
 
             <div className="space-y-4">
@@ -408,7 +408,7 @@ export function VerifyIdentityOptionalPage() {
             </div>
 
             {errorMessage && (
-              <div role="alert" className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-700 dark:text-red-400">{errorMessage}</div>
+              <div role="alert" className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-theme-danger">{errorMessage}</div>
             )}
 
             {!clientSecret ? (
@@ -477,7 +477,7 @@ export function VerifyIdentityOptionalPage() {
           </div>
 
           {errorMessage && (
-            <motion.div role="alert" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-700 dark:text-red-400">{errorMessage}</motion.div>
+            <motion.div role="alert" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-theme-danger">{errorMessage}</motion.div>
           )}
 
           {pageState === 'start' && (

@@ -663,7 +663,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
             {featured && (
               <div className="flex items-center gap-1.5 mb-2" role="img" aria-label={t('featured_badge')}>
                 <Star className="w-3.5 h-3.5 text-[var(--color-warning)] fill-amber-500" aria-hidden="true" />
-                <span className="text-xs font-medium text-amber-700 dark:text-amber-400" aria-hidden="true">
+                <span className="text-xs font-medium text-theme-warning" aria-hidden="true">
                   {t('featured_badge')}
                 </span>
               </div>

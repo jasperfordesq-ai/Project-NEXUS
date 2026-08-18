@@ -152,7 +152,7 @@ function ReciprocityBar({ given, received, t }: ReciprocityBarProps) {
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-medium text-emerald-700 dark:text-emerald-400">
+        <span className="font-medium text-theme-success">
           {t('future_care_fund.reciprocity.given_label')}: {formatHoursShort(given, t)}
         </span>
         <span className="font-medium text-sky-600 dark:text-sky-400">
@@ -202,7 +202,7 @@ function ByYearChart({ rows, t }: ByYearChartProps) {
             <div className="flex items-center justify-between gap-2 text-sm">
               <span className="font-medium text-theme-primary">{row.year}</span>
               <span className="text-theme-muted">
-                <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                <span className="font-medium text-theme-success">
                   {t('future_care_fund.by_year.given')} {formatHoursShort(row.hours_given, t)}
                 </span>
                 {' · '}

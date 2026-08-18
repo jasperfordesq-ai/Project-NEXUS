@@ -119,7 +119,7 @@ export function MessageInputArea({
       {/* Messaging disabled notice (feature flag) */}
       {!isDirectMessagingEnabled && (
         <div className="flex flex-col items-stretch gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center sm:flex-row sm:items-center">
-          <span className="text-amber-700 dark:text-amber-400 text-sm flex-1">
+          <span className="text-theme-warning text-sm flex-1">
             {t('disabled_inline')}
           </span>
           <Button
@@ -137,7 +137,7 @@ export function MessageInputArea({
         <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg" role="alert">
           <AlertTriangle className="w-5 h-5 text-[var(--color-error)] flex-shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1">
-            <p className="text-red-700 dark:text-red-300 text-sm font-medium">
+            <p className="text-theme-danger text-sm font-medium">
               {t('messaging_restricted_title')}
             </p>
             <p className="text-red-600/80 dark:text-red-400/80 text-xs mt-1">
@@ -153,7 +153,7 @@ export function MessageInputArea({
       {isDirectMessagingEnabled && !messagingRestriction?.messaging_disabled && isSafeguardingBlocked && (
         <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg" role="status">
           <AlertTriangle className="w-5 h-5 text-[var(--color-warning)] flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-amber-700 dark:text-amber-300 text-sm flex-1">
+          <p className="text-theme-warning text-sm flex-1">
             {t(safeguardingPolicyStatus === 'unavailable'
               ? 'composer_blocked_safeguarding_unavailable'
               : 'composer_blocked_safeguarding')}

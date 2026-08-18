@@ -1283,12 +1283,12 @@ const FeedCard = React.memo(function FeedCard({
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/20">
                           <BarChart3 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-theme-warning">
                             {t('card.type_poll')}
                           </span>
                         </div>
                         {!pollExpired && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-theme-success">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
                               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1375,7 +1375,7 @@ const FeedCard = React.memo(function FeedCard({
                                     </span>
                                   )}
                                   {isVoted && resultsHidden && (
-                                    <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                                    <span className="text-[10px] font-semibold text-theme-warning uppercase tracking-wide">
                                       {t('poll.your_vote')}
                                     </span>
                                   )}
@@ -1464,7 +1464,7 @@ const FeedCard = React.memo(function FeedCard({
                     className="ring-2 ring-amber-500/30 flex-shrink-0"
                   />
                   <div className="min-w-0">
-                    <div className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider leading-none">
+                    <div className="text-[10px] font-semibold text-theme-warning uppercase tracking-wider leading-none">
                       {t('card.reviewed')}
                     </div>
                     <div className="text-sm font-semibold text-theme-primary group-hover/receiver:text-accent transition-colors truncate">
@@ -1500,7 +1500,7 @@ const FeedCard = React.memo(function FeedCard({
               <div className="mx-auto mb-3 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-lg shadow-amber-500/30 text-5xl" aria-hidden="true">
                 {item.badge_icon || '\uD83C\uDFC6'}
               </div>
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-[0.2em] mb-1">
+              <p className="text-xs font-semibold text-theme-warning uppercase tracking-[0.2em] mb-1">
                 {t('card.milestone.badge_unlocked')}
               </p>
               <p className="text-base font-bold text-theme-primary leading-snug">
@@ -1521,7 +1521,7 @@ const FeedCard = React.memo(function FeedCard({
               <div className="mx-auto mb-3 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30" aria-hidden="true">
                 <Zap className="w-10 h-10 text-white fill-white" />
               </div>
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-[0.2em] mb-1">
+              <p className="text-xs font-semibold text-theme-success uppercase tracking-[0.2em] mb-1">
                 {t('card.milestone.level_reached')}
               </p>
               <p className="text-base font-bold text-theme-primary leading-snug">

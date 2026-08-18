@@ -155,6 +155,19 @@
 .text-theme-subtle { color: var(--text-subtle); }
 .text-theme-inverse { color: var(--text-inverse); }
 
+/* Status text — theme-aware and contrast-checked in BOTH modes.
+   Use these for TEXT instead of the raw palette classes (emerald, green, amber,
+   rose, red, blue at the 500 and 600 steps); those fail WCAG AA on their own
+   tinted backgrounds. Decorative icons are exempt and may keep palette classes.
+   Enforced by scripts/check-status-color-tokens.mjs.
+   NOTE: do not write a palette class with a trailing wildcard in this file — the
+   slash-star sequence closes the comment and the build fails with a confusing
+   "Invalid declaration" error. */
+.text-theme-success { color: var(--text-success); }
+.text-theme-warning { color: var(--text-warning); }
+.text-theme-danger  { color: var(--text-danger); }
+.text-theme-info    { color: var(--text-info); }
+
 /* Surface/background colors */
 .bg-theme-base { background-color: var(--surface-base); }
 .bg-theme-elevated { background-color: var(--surface-elevated); }

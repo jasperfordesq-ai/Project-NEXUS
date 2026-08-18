@@ -418,7 +418,7 @@ function FederatedEventCard({ event }: FederatedEventCardProps) {
                 dateTime={event.start_date}
                 className="block bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg p-2"
               >
-                <span className="text-amber-700 dark:text-amber-400 text-xs font-medium uppercase block">
+                <span className="text-theme-warning text-xs font-medium uppercase block">
                   {startDate.toLocaleString(getFormattingLocale(), { month: 'short' })}
                 </span>
                 <span className="text-theme-primary text-xl sm:text-2xl font-bold block">

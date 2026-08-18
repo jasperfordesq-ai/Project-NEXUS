@@ -81,6 +81,7 @@ CLAUDE.md
 !/scripts/add-spdx-headers.mjs
 !/scripts/check-spdx.mjs
 !/scripts/check-docs-hygiene.mjs
+!/scripts/check-status-color-tokens.mjs
 !/scripts/check-db-column-references.mjs
 !/scripts/check-openapi-route-contract.mjs
 !/scripts/check-version-consistency.mjs

@@ -257,7 +257,7 @@ export function WaitlistTab() {
                     </div>
 
                     {entry.status === 'notified' && (
-                      <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium mb-2">
+                      <p className="text-sm text-theme-success font-medium mb-2">
                         {t('waitlist.claim_hint')}
                       </p>
                     )}

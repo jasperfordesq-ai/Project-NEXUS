@@ -172,7 +172,7 @@ export default function MyOrganisationsPage() {
           {/* Pending orgs */}
           {pendingOrgs.length > 0 && (
             <GlassCard className="p-4 border-amber-500/30">
-              <p className="text-sm text-amber-700 dark:text-amber-400 font-medium mb-2">
+              <p className="text-sm text-theme-warning font-medium mb-2">
                 {t('my_organisations_pending')}
               </p>
               {pendingOrgs.map((org) => (
@@ -192,7 +192,7 @@ export default function MyOrganisationsPage() {
               neither the pending section nor the active-status filter. */}
           {declinedOrgs.length > 0 && (
             <GlassCard className="p-4 border-red-500/30">
-              <p className="text-sm text-red-700 dark:text-red-400 font-medium mb-2">
+              <p className="text-sm text-theme-danger font-medium mb-2">
                 {t('my_organisations_declined')}
               </p>
               {declinedOrgs.map((org) => (

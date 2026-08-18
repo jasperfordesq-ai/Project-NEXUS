@@ -1001,11 +1001,11 @@ export function ChallengeDetailPage() {
           <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center gap-2 mb-1">
               <Trophy className="w-4 h-4 text-[var(--color-warning)]" />
-              <span className="font-semibold text-amber-700 dark:text-amber-400">
+              <span className="font-semibold text-theme-warning">
                 {t('challenge.prize')}
               </span>
             </div>
-            <p className="text-sm text-amber-800 dark:text-amber-300">
+            <p className="text-sm text-theme-warning">
               {challenge.prize_description}
             </p>
           </div>

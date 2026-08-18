@@ -498,7 +498,7 @@ export function LoginPage() {
                       )}
                       {/* Rate limit: show retry_after seconds if available */}
                       {loginErrorCode === 'RATE_LIMITED' && (
-                        <p className="text-red-700 dark:text-red-400 text-xs mt-1">
+                        <p className="text-theme-danger text-xs mt-1">
                           {loginRetryAfter && loginRetryAfter > 0
                             ? t('login.rate_limited_seconds', { seconds: loginRetryAfter })
                             : t('login.rate_limited')}
@@ -508,7 +508,7 @@ export function LoginPage() {
                       {loginErrorCode === 'AUTH_EMAIL_NOT_VERIFIED' && (
                         <div className="mt-3">
                           {resendVerificationSent ? (
-                            <p className="text-emerald-700 dark:text-emerald-400 text-xs">
+                            <p className="text-theme-success text-xs">
                               {t('login.verification_email_sent')}
                             </p>
                           ) : (
@@ -529,7 +529,7 @@ export function LoginPage() {
                         <div className="mt-3 flex items-start gap-2">
                           <ShieldAlert className="w-4 h-4 text-[var(--color-warning)] mt-0.5 flex-shrink-0" aria-hidden="true" />
                           <div>
-                            <p className="text-amber-700 dark:text-amber-400 text-xs">
+                            <p className="text-theme-warning text-xs">
                               {t('login.pending_verification')}
                             </p>
                             <Button
@@ -558,10 +558,10 @@ export function LoginPage() {
                         <div className="flex items-start gap-2">
                           <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
                           <div>
-                            <p className="text-emerald-700 dark:text-emerald-300 font-medium">
+                            <p className="text-theme-success font-medium">
                               {t('login.pending_approval_title')}
                             </p>
-                            <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">
+                            <p className="text-theme-success text-xs mt-1">
                               {t('login.pending_approval')}
                             </p>
                             {/*
@@ -607,7 +607,7 @@ export function LoginPage() {
                         <div className="mt-3 flex items-start gap-2">
                           <ShieldX className="w-4 h-4 text-[var(--color-error)] mt-0.5 flex-shrink-0" aria-hidden="true" />
                           <div>
-                            <p className="text-red-700 dark:text-red-400 text-xs">
+                            <p className="text-theme-danger text-xs">
                               {t('login.verification_failed')}
                             </p>
                             <Button
@@ -852,7 +852,7 @@ export function LoginPage() {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm"
+                      className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-theme-danger text-sm"
                       role="alert"
                     >
                       {error}
