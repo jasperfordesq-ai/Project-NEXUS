@@ -189,6 +189,34 @@ describe('MobileTabBar', () => {
       });
     });
 
+    // Regression: the ACTIVE label must not inherit the wrapper's `text-accent`.
+    // At 10px the default accent (#6366f1) on white measures 4.46:1 against a
+    // 4.5:1 requirement, which failed the real-browser accessibility gate, and
+    // 10px cannot reach the large-text exemption so a heavier weight would not
+    // rescue it. Body text colour is safe for EVERY tenant accent, not just the
+    // default one.
+    it('gives the active tab label body text colour rather than the accent', () => {
+      // This describe's beforeEach sets '/dashboard', which matches no tab, so
+      // pick a route that actually marks one active.
+      mockPathname = '/listings';
+      render(<MobileTabBar />);
+
+      const navigation = screen.getByLabelText('Mobile navigation');
+      const activeTab = navigation.querySelector('[aria-current="page"]');
+      expect(activeTab).not.toBeNull();
+
+      const activeLabel = activeTab?.querySelector('[data-mobile-tab-label]');
+      expect(activeLabel).toBeTruthy();
+      expect(activeLabel).toHaveClass('text-theme-primary');
+
+      // Inactive labels are unchanged — they inherit the muted colour and must
+      // not silently pick up the active treatment.
+      navigation.querySelectorAll('[data-mobile-tab-label]').forEach((label) => {
+        if (label === activeLabel) return;
+        expect(label).not.toHaveClass('text-theme-primary');
+      });
+    });
+
     it('reserves horizontal safe areas for landscape devices', () => {
       render(<MobileTabBar />);
 

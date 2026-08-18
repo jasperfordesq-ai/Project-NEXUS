@@ -225,7 +225,20 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
                     />
                     <span
                       data-mobile-tab-label
-                      className="pointer-events-none absolute inset-x-0 bottom-4 truncate px-1 text-center text-[10px] font-medium leading-none"
+                      // 🔴 The ACTIVE label deliberately does NOT inherit the
+                      // wrapper's `text-accent`. At 10px the default accent
+                      // (#6366f1) on white measures 4.46:1 against a 4.5:1
+                      // requirement, and 10px cannot qualify for the large-text
+                      // exemption (that needs ~19px bold / 24px), so a heavier
+                      // weight would not rescue it. Body text colour is safe for
+                      // EVERY tenant accent, not just the default — a community
+                      // with a lighter brand colour would fail harder. The tab
+                      // still reads as active from the accent icon, the accent
+                      // pill behind it, the heavier stroke, the scale, and
+                      // aria-current="page".
+                      className={`pointer-events-none absolute inset-x-0 bottom-4 truncate px-1 text-center text-[10px] font-medium leading-none${
+                        active ? ' text-theme-primary' : ''
+                      }`}
                     >
                       {tab.label}
                     </span>
