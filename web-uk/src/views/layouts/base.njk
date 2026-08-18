@@ -221,7 +221,19 @@
 
         {% block main %}
           <main class="govuk-main-wrapper{% if mainClasses %} {{ mainClasses }}{% endif %}" id="main-content" tabindex="-1"{% if mainLang %} lang="{{ mainLang }}"{% endif %}{{ govukAttributes(mainAttributes) }}>
-            {% block content %}
+            {#
+              🔴 These two markers sit OUTSIDE {% block content %} on purpose.
+              They used to be inside it, and 110 templates override `content`
+              rather than `mainContent` — overriding a block replaces its whole
+              body, so every one of those pages silently dropped both markers.
+              The consequences were invisible in the markup: signed-in members
+              got NO session-timeout warning on those 110 pages (the modal keys
+              off data-authenticated), and the 22 of them with a character count
+              fell back to govuk-frontend's hardcoded English in all 11 locales.
+              Keep them here, above the block, so a page cannot lose them by
+              choosing one perfectly reasonable block name over another.
+              Contract test: tests/base-layout-shared-markers.test.js.
+            #}
               {% if isAuthenticated %}
                 {#
                   🔴 data-session-timeout-minutes carries the SERVER's real session
@@ -276,6 +288,7 @@
                 data-i18n.characters-over-limit.other="{{ t('web_uk.character_count.characters_over_limit.other') }}"
                 hidden
               ></div>
+            {% block content %}
               {% block mainContent %}{% endblock %}
             {% endblock %}
           </main>
