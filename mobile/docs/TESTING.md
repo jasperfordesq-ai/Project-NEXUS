@@ -228,9 +228,15 @@ Being explicit, so nobody assumes coverage that isn't there:
 
 - **Never run mobile Jest from the repository root.** It has its own
   `node_modules`, resolver and jest-expo preset. Always `cd mobile`.
-- **`api.ts` never throws.** The client returns a result object, so a
-  `catch (err)` block around an API call in a screen is usually dead code hiding
-  a missing `res.success` check. Same trap as the React frontend.
+- 🔴 **The mobile API client DOES throw — do not carry the React frontend's rule
+  across.** `react-frontend`'s `api.ts` never throws, so a `catch` around a call
+  there is usually dead code hiding a missing `res.success` check. `mobile/lib/api/client.ts`
+  is a different implementation: it throws `ApiResponseError` on a non-2xx
+  response, on a network failure, on a timeout, and on an unrecoverable 401
+  (after one silent refresh attempt). So `try { await api.put(...) } catch { return false }`
+  in a mobile API module is **working error handling, not dead code.** Deleting
+  those blocks would convert a failed request into a reported success. Assert on
+  a rejected promise in mobile tests, not on a falsy result field.
 - **Coverage needs `collectCoverageFrom`.** Without it Jest only instruments what
   a test imported, so an entirely untested file leaves the report instead of
   lowering the number. It is configured now — do not remove it.

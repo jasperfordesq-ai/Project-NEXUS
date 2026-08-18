@@ -2,10 +2,10 @@
   "note": "Shrink-only coverage floors for the Expo client, by area. Raise a floor only after a real improvement; never lower one to make a red check green. Regenerate with `node scripts/check-coverage-ratchet.mjs --write-baseline` after running `npm run test:coverage`.",
   "measured_on_files": 276,
   "global_floor": {
-    "lines": 71.18,
-    "statements": 68.11,
-    "branches": 61.47,
-    "functions": 65.41
+    "lines": 72.33,
+    "statements": 69.23,
+    "branches": 62.06,
+    "functions": 66.59
   },
   "area_floors": {
     "app": {
@@ -29,7 +29,7 @@
       "instrumented_lines": 740
     },
     "components": {
-      "lines_pct": 54.78,
+      "lines_pct": 58.55,
       "instrumented_lines": 398
     },
     "components/comments": {
@@ -61,11 +61,11 @@
       "instrumented_lines": 45
     },
     "lib": {
-      "lines_pct": 48.34,
+      "lines_pct": 85.55,
       "instrumented_lines": 86
     },
     "lib/api": {
-      "lines_pct": 73.18,
+      "lines_pct": 77.11,
       "instrumented_lines": 1474
     },
     "lib/context": {
@@ -89,11 +89,11 @@
       "instrumented_lines": 34
     },
     "lib/payments": {
-      "lines_pct": 0,
+      "lines_pct": 99.5,
       "instrumented_lines": 29
     },
     "lib/realtime.ts": {
-      "lines_pct": 0,
+      "lines_pct": 99.5,
       "instrumented_lines": 25
     },
     "lib/security": {
@@ -101,7 +101,7 @@
       "instrumented_lines": 21
     },
     "lib/storage.ts": {
-      "lines_pct": 25.21,
+      "lines_pct": 99.5,
       "instrumented_lines": 35
     },
     "lib/theme": {
