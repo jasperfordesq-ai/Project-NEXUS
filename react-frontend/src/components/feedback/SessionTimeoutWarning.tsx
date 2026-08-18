@@ -12,6 +12,13 @@
  * Listens for SESSION_EXPIRING_EVENT dispatched by AuthContext after each
  * successful login/token refresh. On "Extend session" it calls the token
  * refresh endpoint and reschedules the warning timer.
+ *
+ * The countdown is derived from an absolute wall-clock deadline, never by
+ * decrementing a counter: browsers throttle setInterval in background tabs
+ * (to once a minute or slower), so a decrementing counter drifts late and a
+ * hidden tab could show "30 seconds" long after the JWT actually expired.
+ * Timers only decide how often we LOOK at the clock; visibilitychange/focus
+ * reconcile a re-activated tab with reality immediately.
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -58,6 +65,7 @@ export function SessionTimeoutWarning() {
   const [isExtending, setIsExtending] = useState(false);
 
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const deadlineRef = useRef<number | null>(null);
   const observedAccessTokenRef = useRef<string | null>(null);
   const isAuthenticatedRef = useRef(isAuthenticated);
   isAuthenticatedRef.current = isAuthenticated;
@@ -67,21 +75,29 @@ export function SessionTimeoutWarning() {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
+    deadlineRef.current = null;
   }, []);
+
+  // Recompute the displayed seconds from the wall-clock deadline. Safe to call
+  // at any frequency — a throttled interval and an eager visibilitychange both
+  // land on the same truth.
+  const syncCountdown = useCallback(() => {
+    const deadline = deadlineRef.current;
+    if (deadline === null) return;
+    const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    if (remaining <= 0) {
+      stopCountdown();
+    }
+    setCountdown(remaining);
+  }, [stopCountdown]);
 
   const startCountdown = useCallback((initialSeconds = COUNTDOWN_SECONDS) => {
     stopCountdown();
-    setCountdown(Math.max(1, Math.ceil(initialSeconds)));
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          stopCountdown();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [stopCountdown]);
+    const seconds = Math.max(1, Math.ceil(initialSeconds));
+    deadlineRef.current = Date.now() + seconds * 1000;
+    setCountdown(seconds);
+    countdownRef.current = setInterval(syncCountdown, 1000);
+  }, [stopCountdown, syncCountdown]);
 
   const handleClose = useCallback(() => {
     stopCountdown();
@@ -156,6 +172,23 @@ export function SessionTimeoutWarning() {
       stopCountdown();
     };
   }, [startCountdown, stopCountdown]);
+
+  // A tab coming back to life must reconcile with the wall clock at once:
+  // past the deadline → countdown hits 0 and the auto-logout effect fires,
+  // otherwise → show the TRUE remaining time instead of the stale throttled one.
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncCountdown();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', syncCountdown);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', syncCountdown);
+    };
+  }, [syncCountdown]);
 
   // Interactive login flows are scheduled by AuthContext. Restored sessions
   // and API-client refreshes do not carry that callback, so observe the JWT

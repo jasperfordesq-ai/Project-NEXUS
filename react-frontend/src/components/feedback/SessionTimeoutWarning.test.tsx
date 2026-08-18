@@ -9,6 +9,11 @@
  * The component listens for `nexus:session_expiring` on window and shows a
  * HeroUI Modal countdown when the user's session is about to expire.
  *
+ * The countdown is derived from a wall-clock deadline (Date.now()), not from
+ * decrementing a counter — browsers throttle intervals in background tabs.
+ * The wall-clock tests below freeze Date.now with a spy and jump it forward
+ * to simulate a hidden tab whose interval ticks were never delivered.
+ *
  * Important notes on fake timers and waitFor:
  * - Testing-library's waitFor uses setInterval internally, which is faked when
  *   vi.useFakeTimers() is active.  This means waitFor will never retry while
@@ -271,18 +276,19 @@ describe('SessionTimeoutWarning — opens on event (real timers)', () => {
   });
 });
 
-// ─── Countdown decrement (real timers, small wait) ────────────────────────────
+// ─── Countdown ticks down (real timers, small wait) ───────────────────────────
 //
 // Fake timers + runAllTimersAsync trigger the infinite-loop guard because
 // setInterval keeps re-queuing itself.  We use real timers and wait > 1 second
-// for at least one tick to fire.
+// for at least one tick to fire.  The tick recomputes from the wall-clock
+// deadline, so ~1.1 real seconds after opening the badge must read 29.
 
-describe('SessionTimeoutWarning — countdown decrement (real timers)', () => {
+describe('SessionTimeoutWarning — countdown ticks down (real timers)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('decrements the countdown badge after ~1.1 seconds', async () => {
+  it('shows one second less after ~1.1 seconds', async () => {
     render(<SessionTimeoutWarning />);
 
     await act(async () => {
@@ -296,9 +302,92 @@ describe('SessionTimeoutWarning — countdown decrement (real timers)', () => {
     await new Promise((resolve) => setTimeout(resolve, 1100));
 
     const bodyText = document.body.textContent ?? '';
-    // After 1 tick the countdown shows 29
+    // ceil((30s deadline − 1.1s elapsed) / 1s) = 29
     expect(bodyText).toContain('29');
   }, 10000); // 10-second test timeout (covers 1.1s real wait + render overhead)
+});
+
+// ─── Wall-clock deadline (real timers, frozen Date.now) ───────────────────────
+//
+// Browsers throttle setInterval in background tabs (to once a minute or
+// slower), so the displayed seconds and the auto-logout must be DERIVED from
+// a Date.now() deadline, never from counting ticks.  These tests freeze
+// Date.now, jump it forward the way a hidden tab experiences time, and assert
+// that a single visibilitychange reconciles the display / fires the logout
+// without any interval ticks having been delivered.
+
+describe('SessionTimeoutWarning — wall-clock deadline', () => {
+  let nowSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    nowSpy?.mockRestore();
+    nowSpy = undefined;
+  });
+
+  it('shows the true remaining time on tab activation after throttled ticks', async () => {
+    const t0 = Date.now();
+    nowSpy = vi.spyOn(Date, 'now').mockReturnValue(t0);
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {
+      dispatchExpiringEvent();
+    });
+    await waitForText('30');
+
+    // Hidden tab: 10 wall-clock seconds pass while no interval tick ran.
+    nowSpy.mockReturnValue(t0 + 10_000);
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    // ceil((30s − 10s) / 1s) = 20 — not the stale 30 a decrementing counter
+    // would still be showing.
+    expect(document.body.textContent).toContain('20');
+    expect(logoutSpy).not.toHaveBeenCalled();
+  });
+
+  it('logs out immediately on tab activation when the deadline passed while hidden', async () => {
+    const t0 = Date.now();
+    nowSpy = vi.spyOn(Date, 'now').mockReturnValue(t0);
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {
+      dispatchExpiringEvent();
+    });
+    await waitForText('30');
+
+    // Hidden tab slept straight past the 30-second deadline.
+    nowSpy.mockReturnValue(t0 + 31_000);
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    await waitFor(() => expect(logoutSpy).toHaveBeenCalled());
+  });
+
+  it('reconciles on window focus as well', async () => {
+    const t0 = Date.now();
+    nowSpy = vi.spyOn(Date, 'now').mockReturnValue(t0);
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {
+      dispatchExpiringEvent();
+    });
+    await waitForText('30');
+
+    nowSpy.mockReturnValue(t0 + 15_000);
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    expect(document.body.textContent).toContain('15');
+    expect(logoutSpy).not.toHaveBeenCalled();
+  });
 });
 
 // ─── Unauthenticated — no modal ───────────────────────────────────────────────
