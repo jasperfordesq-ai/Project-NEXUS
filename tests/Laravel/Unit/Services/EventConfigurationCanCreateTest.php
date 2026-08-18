@@ -69,6 +69,21 @@ final class EventConfigurationCanCreateTest extends TestCase
         ], $overrides));
     }
 
+    /**
+     * An actor whose account row lives on the tenant being acted on.
+     *
+     * Every test in this file used crossTenantUser(), so the restricted policies
+     * had no positive coverage from a LOCAL admin at all — nothing here would have
+     * noticed 'admins' refusing the community's own administrators.
+     */
+    private function localUser(array $overrides = []): User
+    {
+        return User::factory()->forTenant(self::ACTING_TENANT)->create(array_merge([
+            'status' => 'active',
+            'is_approved' => true,
+        ], $overrides));
+    }
+
     public function test_open_policy_admits_an_actor_whose_home_tenant_differs(): void
     {
         $this->setCreationRole('members');
@@ -137,12 +152,50 @@ final class EventConfigurationCanCreateTest extends TestCase
         self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
-    public function test_admins_only_policy_admits_an_admin(): void
+    /** The community's own administrators must keep working — the positive case. */
+    public function test_admins_only_policy_admits_a_local_admin(): void
     {
         $this->setCreationRole('admins');
-        $actor = $this->crossTenantUser(['role' => 'admin']);
+        $actor = $this->localUser(['role' => 'admin']);
 
         self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /** A platform admin is platform-wide, wherever their account row sits. */
+    public function test_admins_only_policy_admits_a_platform_admin_from_elsewhere(): void
+    {
+        $this->setCreationRole('admins');
+        $actor = $this->crossTenantUser(['role' => 'admin', 'is_super_admin' => 1]);
+
+        self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /**
+     * A plain admin of an UNRELATED community may not create events here.
+     *
+     * 🔴 This assertion was reversed, and the reversal is deliberate. It read
+     * assertTrue — a bare role='admin' on tenant 999 admitted to tenant 2 — which
+     * made "is an admin somewhere" sufficient to create events in a community that
+     * had explicitly restricted creation to its own administrators. That is the
+     * same cross-tenant escalation TenantAdminScope closed in EventPolicy, where a
+     * tenant 999 admin held all nineteen abilities on a tenant 2 event.
+     *
+     * What the surrounding tests legitimately pin is unchanged and still passes:
+     * the actor LOOKUP is global, so a cross-tenant actor is found rather than
+     * missed before the 'members' short-circuit (that was the real bug), and
+     * platform and network admins still reach this tenant. Only "any admin, any
+     * community" is refused.
+     */
+    public function test_admins_only_policy_refuses_a_plain_admin_of_another_community(): void
+    {
+        $this->setCreationRole('admins');
+        $actor = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 0,
+        ]);
+
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
     public function test_staff_policy_admits_a_broker_but_not_a_plain_member(): void
