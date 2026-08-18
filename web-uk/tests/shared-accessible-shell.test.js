@@ -4092,8 +4092,13 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Object to how my data is used');
     expect(signed.text).toContain('Tell us more (optional)');
     expect(signed.text).toContain('Submit request');
-    expect(signed.text).toContain('Requests you have made');
-    expect(signed.text).toContain('You have not made any data rights requests yet.');
+    // This page is rendered in the just-submitted state, and it used to assert
+    // BOTH the confirmation above AND "You have not made any data rights
+    // requests yet" — the contradiction a real member saw. There is no
+    // member-facing endpoint to list your own requests (only admin ones), so
+    // that section always rendered its empty state and has been removed.
+    expect(signed.text).not.toContain('Requests you have made');
+    expect(signed.text).not.toContain('You have not made any data rights requests yet.');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
 
@@ -29526,7 +29531,9 @@ describe('shared accessible frontend shell', () => {
       request_type: 'portability',
       notes: ' Send me portable account data '
     });
-    expect(dataRightsResponse.headers.location).toBe('/settings/data-rights?status=gdpr-requested#your-requests');
+    // No #your-requests fragment: that section no longer exists, and the member
+    // needs to land on the confirmation banner at the top of the page.
+    expect(dataRightsResponse.headers.location).toBe('/settings/data-rights?status=gdpr-requested');
     expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'POST', '/gdpr-request', {
       type: 'portability',
       notes: 'Send me portable account data'

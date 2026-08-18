@@ -623,7 +623,9 @@ router.post('/data-rights', asyncRoute(async (req, res) => {
 
   const notes = trimmed(req.body.notes, 2000);
   let status = 'gdpr-requested';
-  let fragment = '#your-requests';
+  // Top of page, not '#your-requests': that section is gone (see the template),
+  // and the member needs to land on the confirmation banner anyway.
+  let fragment = '';
   try {
     await callSettings(token, 'POST', '/gdpr-request', {
       type,
@@ -643,7 +645,6 @@ router.get('/data-rights', (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
-  const requests = [];
 
   return res.render('settings/data-rights', {
     title: res.locals.t('govuk_alpha_settings.gdpr.title'),
@@ -657,8 +658,7 @@ router.get('/data-rights', (req, res) => {
       value: type,
       label: res.locals.t(`govuk_alpha_settings.gdpr.types.${type}`),
       hint: res.locals.t(`govuk_alpha_settings.gdpr.type_descriptions.${type}`)
-    })),
-    requests
+    }))
   });
 });
 

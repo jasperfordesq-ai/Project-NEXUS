@@ -82,36 +82,17 @@
         </form>
       </section>
 
-      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-
-      <section aria-labelledby="your-requests-heading" id="your-requests">
-        <h2 class="govuk-heading-l" id="your-requests-heading">{{ t("govuk_alpha_settings.gdpr.your_requests_heading") }}</h2>
-        {% if not requests.length %}
-          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.gdpr.your_requests_empty") }}</p></div>
-        {% else %}
-          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_settings.gdpr.your_requests_heading') }}">
-          <table class="govuk-table">
-            <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_settings.gdpr.your_requests_heading") }}</caption>
-            <thead class="govuk-table__head">
-              <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.type_label") }}</th>
-                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.request_status_label") }}</th>
-                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.request_date_label") }}</th>
-              </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-              {% for request in requests %}
-                <tr class="govuk-table__row">
-                  <td class="govuk-table__cell">{{ request.type }}</td>
-                  <td class="govuk-table__cell">{{ request.status }}</td>
-                  <td class="govuk-table__cell">{{ request.requested_at or "-" }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          </div>
-        {% endif %}
-      </section>
+      {# A "Requests you have made" table stood here. Laravel exposes no
+         member-facing read for a member's own data-rights requests — only the
+         admin endpoints under /v2/admin/enterprise/gdpr/requests — so the route
+         passed a permanently empty list and the section always rendered "You
+         have not made any data rights requests yet." That statement was shown
+         to a member who had just submitted one, which risks them submitting the
+         same request over and over. The submit confirmation already tells them
+         the request is in and that we will be in touch. Restore this section
+         only alongside a real member-scoped read endpoint; the table's
+         translation keys (your_requests_*, request_status.*) are deliberately
+         left in place for that. #}
     </div>
   </div>
 {% endblock %}
