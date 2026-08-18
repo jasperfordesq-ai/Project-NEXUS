@@ -157,8 +157,21 @@ class EventsControllerTest extends TestCase
         $user = $this->authenticatedUser();
         $this->createEvent($user->id, ['title' => 'Visible active event', 'status' => 'active']);
         $this->createEvent($user->id, ['title' => 'Cancelled event', 'status' => 'cancelled']);
-        $this->createEvent($user->id, ['title' => 'Draft event', 'status' => 'draft']);
         $this->createEvent($user->id, ['title' => 'Completed event', 'status' => 'completed']);
+
+        // The draft belongs to somebody else on purpose. Since 5373940c8 a
+        // creator deliberately DOES see their own unpublished events in the
+        // list (badged "Draft event"), because hiding them made a newly
+        // created event look lost. Owning this draft with the authenticated
+        // user would therefore assert the opposite of the intended behaviour.
+        // What must stay true — and is what this test is about — is that a
+        // draft is invisible to everyone else. Owner-side visibility and the
+        // anonymous case are pinned by EventOwnDraftListingVisibilityTest.
+        $otherMember = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->createEvent((int) $otherMember->id, ['title' => 'Draft event', 'status' => 'draft']);
 
         $response = $this->apiGet('/v2/events?per_page=20');
 
