@@ -4713,8 +4713,12 @@ class EventService
             throw new EventAttendanceException('event_attendance_tenant_context_missing');
         }
 
+        // Auth is GLOBAL; only resources are tenant-scoped. The actor's own
+        // row is resolved by authenticated id alone — a tenant predicate here
+        // refused check-in/attendance marking to organisers and admins whose
+        // account row lives on another tenant. EventPolicy::manageAttendance
+        // decides authority against the tenant-scoped event.
         $actor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
             ->where('status', 'active')
             ->whereNull('deleted_at')

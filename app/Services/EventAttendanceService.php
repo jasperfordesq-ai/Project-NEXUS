@@ -85,9 +85,13 @@ final class EventAttendanceService
                 throw new EventAttendanceException('event_attendance_event_not_found');
             }
 
+            // Auth is GLOBAL; only resources are tenant-scoped. The actor's
+            // own row is re-read by authenticated id alone — a tenant
+            // predicate here refused organisers and admins whose account row
+            // lives on another tenant. The policy decides authority against
+            // the tenant-scoped event.
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->whereKey((int) $actor->getKey())
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
@@ -325,9 +329,9 @@ final class EventAttendanceService
                 throw new EventAttendanceException('event_attendance_event_not_found');
             }
 
+            // The actor's own row — never tenant-scoped (see record()).
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->whereKey((int) $actor->getKey())
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
