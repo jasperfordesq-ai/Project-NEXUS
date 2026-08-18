@@ -77,7 +77,18 @@ public class MarketplaceController : ControllerBase
         {
             success = true,
             data = items.Select(l => MapListing(l, detailed: false, currentUserId, savedIds)),
-            meta = new { per_page = limit, cursor = nextCursor, next_cursor = nextCursor, has_more = hasMore, total }
+            // 🔴 Laravel's respondWithCollection emits {per_page, has_more} plus `cursor`
+            // ONLY WHEN THE CURSOR IS NON-NULL — it omits the key rather than sending
+            // null — and has no `next_cursor` at all. Observed live 2026-08-18 as
+            // {base_url, per_page, has_more} on a last page; the conditional below is
+            // what makes a page that HAS a next page match too.
+            //
+            // 🔴 A dictionary, not an anonymous type, because an anonymous type cannot
+            // omit a property conditionally. LaravelDataEnvelopeFilter handles
+            // IDictionary and fills base_url into it.
+            //
+            // `total` was also removed: Laravel does not send one here.
+            meta = BuildCollectionMeta(limit, hasMore, nextCursor)
         });
     }
 
@@ -180,13 +191,37 @@ public class MarketplaceController : ControllerBase
     /// wins in ASP.NET Core regardless of which is more specific. The endpoint
     /// stayed open while the source looked protected. Remove the AllowAnonymous —
     /// never just add an Authorize beside it.
+    /// <summary>
+    /// Laravel's <c>respondWithCollection</c> meta: <c>per_page</c> and <c>has_more</c>
+    /// always, <c>cursor</c> only when it is non-null.
+    ///
+    /// 🔴 Omitting the key is the contract, not sending null. A client testing
+    /// <c>'cursor' in meta</c> gets the wrong answer if null is sent, which is exactly
+    /// what this backend used to do — and it also invented a <c>next_cursor</c> Laravel
+    /// has never had. <c>base_url</c> is added by LaravelDataEnvelopeFilter.
+    /// </summary>
+    private static Dictionary<string, object?> BuildCollectionMeta(int perPage, bool hasMore, string? cursor)
+    {
+        var meta = new Dictionary<string, object?>
+        {
+            ["per_page"] = perPage,
+            ["has_more"] = hasMore,
+        };
+        if (!string.IsNullOrEmpty(cursor)) meta["cursor"] = cursor;
+        return meta;
+    }
+
     [HttpGet("listings/featured")]
     [Authorize]
     public async Task<IActionResult> FeaturedListings([FromQuery] int limit = 20)
     {
         var (items, total) = await _marketplace.ListListingsAsync(null, null, null, null, null, null, null, null, null, null, true, false, 1, Math.Clamp(limit, 1, 100));
         var savedIds = await LoadSavedListingIdsAsync(User.GetUserId(), items.Select(l => l.Id));
-        return Ok(new { success = true, data = items.Select(l => MapListing(l, currentUserId: User.GetUserId(), savedListingIds: savedIds)), meta = new { total } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data = items.Select(l => MapListing(l, currentUserId: User.GetUserId(), savedListingIds: savedIds)) });
     }
 
     [HttpGet("listings/free")]
@@ -840,7 +875,11 @@ public class MarketplaceController : ControllerBase
     {
         var userId = RequireUserId();
         var rows = await _db.MarketplaceSavedSearches.Where(s => s.UserId == userId).OrderByDescending(s => s.CreatedAt).ToListAsync();
-        return Ok(new { success = true, data = rows.Select(MapSavedSearch), meta = new { total = rows.Count } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data = rows.Select(MapSavedSearch) });
     }
 
     [HttpPost("saved-searches")]
@@ -883,7 +922,11 @@ public class MarketplaceController : ControllerBase
             .GroupBy(i => i.MarketplaceCollectionId)
             .Select(g => new { CollectionId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.CollectionId, g => g.Count);
-        return Ok(new { success = true, data = rows.Select(c => MapCollection(c, itemCounts.GetValueOrDefault(c.Id))), meta = new { total = rows.Count } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data = rows.Select(c => MapCollection(c, itemCounts.GetValueOrDefault(c.Id))) });
     }
 
     [HttpPost("collections")]
@@ -1301,7 +1344,11 @@ public class MarketplaceController : ControllerBase
             .Where(c => c.SellerUserId == userId)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
-        return Ok(new { success = true, data = new { items = rows.Select(MapMerchantCoupon) }, meta = new { total = rows.Count } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data = new { items = rows.Select(MapMerchantCoupon) } });
     }
 
     [HttpPost("seller/coupons")]
@@ -1490,7 +1537,11 @@ public class MarketplaceController : ControllerBase
     public async Task<IActionResult> PickupSlots()
     {
         var rows = await _db.MarketplacePickupSlots.Where(s => s.UserId == RequireUserId()).ToListAsync();
-        return Ok(new { success = true, data = rows.Select(MapPickupSlot), meta = new { total = rows.Count } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data = rows.Select(MapPickupSlot) });
     }
 
     [HttpPost("seller/pickup-slots")]
@@ -1652,8 +1703,10 @@ public class MarketplaceController : ControllerBase
             data = rows.Select(r => MapPickupReservation(
                 r,
                 slots.GetValueOrDefault(r.MarketplacePickupSlotId),
-                r.MarketplaceListingId.HasValue ? listings.GetValueOrDefault(r.MarketplaceListingId.Value) : null)),
-            meta = new { total = rows.Count }
+                r.MarketplaceListingId.HasValue ? listings.GetValueOrDefault(r.MarketplaceListingId.Value) : null))
+            // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone here —
+            // verified live 2026-08-18. Dropping the meta lets LaravelDataEnvelopeFilter
+            // create {base_url}, which is exactly Laravel's shape.
         });
     }
 
@@ -1713,7 +1766,11 @@ public class MarketplaceController : ControllerBase
             listing_count = counts.GetValueOrDefault(c.Id)
         });
 
-        return Ok(new { success = true, data, meta = new { total = rows.Count } });
+        // 🔴 `meta.total` removed: Laravel sends meta {base_url} alone on this
+        // endpoint — verified live 2026-08-18 across all eight measured marketplace
+        // reads, none of which carries a total. Dropping the meta entirely lets
+        // LaravelDataEnvelopeFilter create {base_url}, which is exactly Laravel's shape.
+        return Ok(new { success = true, data });
     }
 
     [HttpGet("categories/{slug}/listings")]

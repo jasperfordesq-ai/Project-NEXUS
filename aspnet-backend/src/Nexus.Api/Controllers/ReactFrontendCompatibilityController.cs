@@ -309,7 +309,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = partners, partners });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `partners`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = partners });
     }
 
     [HttpGet("api/federation/members")]
@@ -386,7 +390,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = messages, messages });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `messages`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = messages });
     }
 
     [HttpGet("api/federation/activity")]
@@ -408,7 +416,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = activity, activity });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `activity`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = activity });
     }
 
     [HttpPost("api/federation/opt-in")]
@@ -607,7 +619,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = items, items });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `items`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = items });
     }
 
     [HttpGet("api/messages/restriction-status")]
@@ -724,7 +740,12 @@ public class ReactFrontendCompatibilityController : ControllerBase
         // Laravel on 2026-08-18. The duplicate `applications` key is this backend's own
         // legacy habit; a client reading it breaks the day it is removed, and a
         // client reading `data` never needed it.
-        return Ok(new { data = applications });
+        // 🔴 Laravel sends meta {base_url, per_page, has_more} on this endpoint —
+        // verified live 2026-08-18. Read PER ENDPOINT, never inferred: goals/templates/
+        // categories and polls/categories send {base_url} ALONE, which is exactly why
+        // the "a list means per_page" rule failed before and must not come back.
+        // base_url is filled in by LaravelDataEnvelopeFilter.
+        return Ok(new { data = applications, meta = new { per_page = applications.Count, has_more = false } });
     }
 
     [HttpGet("api/volunteering/my-organisations")]
@@ -926,18 +947,20 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Select(c => ProjectIdeationCampaign(c, includeChallenges: false))
             .ToList();
 
+        // 🔴 Laravel sends {data, meta:{base_url, per_page, has_more}} — verified live
+        // 2026-08-18. Three things were wrong here: the duplicate `campaigns` key, and
+        // `current_page` + `total` + `next_cursor` in meta, none of which Laravel sends
+        // on this endpoint. `next_cursor` is the documented trap — Laravel emits
+        // `cursor` and only when non-null, so a client testing for next_cursor gets the
+        // wrong answer. base_url is filled in by LaravelDataEnvelopeFilter.
         return Ok(new
         {
             success = true,
             data,
-            campaigns = data,
             meta = new
             {
-                current_page = 1,
                 per_page = data.Count,
-                total = data.Count,
-                has_more = false,
-                next_cursor = (string?)null
+                has_more = false
             }
         });
     }
@@ -1112,7 +1135,12 @@ public class ReactFrontendCompatibilityController : ControllerBase
         // Laravel on 2026-08-18. The duplicate `templates` key is this backend's own
         // legacy habit; a client reading it breaks the day it is removed, and a
         // client reading `data` never needed it.
-        return Ok(new { data = templates });
+        // 🔴 Laravel sends meta {base_url, per_page, has_more} on this endpoint —
+        // verified live 2026-08-18. Read PER ENDPOINT, never inferred: goals/templates/
+        // categories and polls/categories send {base_url} ALONE, which is exactly why
+        // the "a list means per_page" rule failed before and must not come back.
+        // base_url is filled in by LaravelDataEnvelopeFilter.
+        return Ok(new { data = templates, meta = new { per_page = templates.Length, has_more = false } });
     }
 
     [HttpGet("api/goals/templates/categories")]
@@ -1962,7 +1990,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Select(g => new { slug = g.Key, name = g.Key, badges = g.ToList(), count = g.Count() })
             .ToList();
 
-        return Ok(new { data = collections, collections });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `collections`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = collections });
     }
 
     [HttpGet("api/jobs/my-postings")]
@@ -1991,7 +2023,12 @@ public class ReactFrontendCompatibilityController : ControllerBase
         // Laravel on 2026-08-18. The duplicate `jobs` key is this backend's own
         // legacy habit; a client reading it breaks the day it is removed, and a
         // client reading `data` never needed it.
-        return Ok(new { data = jobs });
+        // 🔴 Laravel sends meta {base_url, per_page, has_more} on this endpoint —
+        // verified live 2026-08-18. Read PER ENDPOINT, never inferred: goals/templates/
+        // categories and polls/categories send {base_url} ALONE, which is exactly why
+        // the "a list means per_page" rule failed before and must not come back.
+        // base_url is filled in by LaravelDataEnvelopeFilter.
+        return Ok(new { data = jobs, meta = new { per_page = jobs.Count, has_more = false } });
     }
 
     [HttpGet("api/legal/acceptance/status")]
@@ -2189,7 +2226,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             volunteer_hours = await _db.VolunteerCheckIns.Where(c => c.UserId == userId.Value).SumAsync(c => c.HoursLogged) ?? 0m
         };
 
-        return Ok(new { data = stats, stats });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `stats`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = stats });
     }
 
     [HttpGet("api/members/top-endorsed")]
@@ -2212,7 +2253,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = members, members });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18 (wp2-envelope-evidence.json). The duplicate `members`
+        // key is this backend's own legacy habit; a client reading `data` never
+        // needed it, and one reading the duplicate breaks when it is removed.
+        return Ok(new { data = members });
     }
 
     [HttpGet("api/reviews")]
@@ -2295,7 +2340,9 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Select(o => new { id = o.Id, title = o.Title, starts_at = o.StartsAt, ends_at = o.EndsAt, location = o.Location, credit_reward = o.CreditReward })
             .ToListAsync();
 
-        return Ok(new { data = opportunities, giving_days = opportunities });
+        // 🔴 Laravel sends {data, meta:{base_url}} only — verified live 2026-08-18.
+        // The duplicate `giving_days` key is this backend's own legacy habit.
+        return Ok(new { data = opportunities });
     }
 
     [HttpGet("api/volunteering/giving-days/stats")]

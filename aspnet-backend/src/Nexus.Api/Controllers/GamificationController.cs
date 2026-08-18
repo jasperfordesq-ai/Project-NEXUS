@@ -246,13 +246,12 @@ public class GamificationController : ControllerBase
                 total = rows.Count,
                 available_types = availableTypes,
                 base_url = $"{Request.Scheme}://{Request.Host}"
-            },
-            summary = new
-            {
-                total = rows.Count,
-                earned = earnedCount,
-                progress_percent = rows.Count > 0 ? Math.Round((double)earnedCount / rows.Count * 100, 1) : 0
             }
+            // 🔴 The `summary` block is removed. Laravel sends
+            // {data, meta:{base_url, total, available_types}} on this endpoint and no
+            // summary at all — verified live against the disposable Laravel 2026-08-18.
+            // `meta.total` and `meta.available_types` ARE Laravel's, so they stay; it is
+            // only the extra top-level block that this backend invented.
         });
     }
 

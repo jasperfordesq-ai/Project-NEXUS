@@ -99,7 +99,11 @@ public class MarketplaceCategoryListingsControllerUnitTests
         data[1].GetProperty("description").GetString().Should().Be("Shared tools");
         data[1].GetProperty("icon").GetString().Should().Be("wrench");
         data[1].GetProperty("listing_count").GetInt32().Should().Be(2);
-        root.GetProperty("meta").GetProperty("total").GetInt32().Should().Be(2);
+        // 🔴 `meta.total` is NOT Laravel's here (meta {base_url} alone, verified live
+        // 2026-08-18), so the action builds no meta and LaravelDataEnvelopeFilter adds
+        // {base_url} on the /api/v2 path. This test invokes the controller DIRECTLY, so
+        // no filter runs and there is no meta to inspect.
+        root.TryGetProperty("meta", out _).Should().BeFalse();
     }
 
     [Fact]

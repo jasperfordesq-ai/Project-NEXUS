@@ -38,7 +38,15 @@ public class MarketplaceControllerTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
         content.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
-        content.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThan(0);
+        // 🔴 `meta.total` is NOT Laravel's on this endpoint (all eight measured
+        // marketplace reads send meta {base_url} alone, verified live 2026-08-18), so
+        // the action no longer builds a meta at all — LaravelDataEnvelopeFilter creates
+        // {base_url} on the /api/v2 path, which is exactly Laravel's shape.
+        //
+        // 🔴 This call is NOT on /api/v2, and the filter is deliberately scoped to
+        // /api/v2, so there is no meta here at all. Same verb-not-path distinction that
+        // has now bitten this suite five times: the envelope depends on the PATH.
+        content.TryGetProperty("meta", out _).Should().BeFalse();
     }
 
     [Fact]

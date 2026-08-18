@@ -131,7 +131,11 @@ public class GamificationControllerTests : IntegrationTestBase
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
         content.GetProperty("data").GetArrayLength().Should().BeGreaterThan(0);
-        content.GetProperty("summary").GetProperty("total").GetInt32().Should().BeGreaterThan(0);
+        // 🔴 Laravel sends no `summary` block on this endpoint — it puts `total` and
+        // `available_types` in meta instead. Verified live 2026-08-18. The summary was
+        // this backend's own invention, so the assertion moves to Laravel's location.
+        content.TryGetProperty("summary", out _).Should().BeFalse();
+        content.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThan(0);
     }
 
     [Fact]
