@@ -103,7 +103,10 @@ export function CommunityFundCard({ onDonateClick, compact = false }: CommunityF
             <Button
               size="sm"
               variant="secondary"
-              className="bg-rose-500/10 text-rose-600 dark:text-rose-400"
+              // 🔴 -700, not -600. On rose-500/10 over white (#ffe9ee) the -600
+              // shade measures 3.89 against the 4.5:1 WCAG AA minimum; -700
+              // measures 5.22. Matches the wallet page's own colour map.
+              className="bg-rose-500/10 text-rose-700 dark:text-rose-400"
               startContent={<Heart className="w-3 h-3" />}
               onPress={onDonateClick}
             >
