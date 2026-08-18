@@ -344,10 +344,20 @@ between light and dark and is invisible to the gate above. A blanket check would
 report 1,506 findings on day one, which is not a check anybody would act on —
 triaging them is real work, and is listed in the plan rather than pretended away.
 
-Pixel-level testing needs an emulator. 🔴 The development workstation has
-`ANDROID_HOME` set but **no Android SDK installed** — no emulator binary, no
-`adb`, no Maestro — so screenshot work cannot be verified here at all today. That
-is the first blocker to clear for genuine visual testing.
+Pixel-level testing needs an emulator, and **that blocker is now cleared**
+(2026-08-18). The SDK, an API 36 system image, an AVD (`nexus_test`) and Maestro
+2.8.0 are installed and verified: the emulator boots headless to
+`sys.boot_completed=1`, `adb` sees it, and `adb exec-out screencap` returns a
+valid 1080x2400 PNG. Setup and commands are in [TESTING.md](TESTING.md).
+
+🔴 The earlier edition of this section said there was no Android SDK and implied
+Android Studio was missing. Studio was installed all along — only its SDK had
+never been downloaded, while `ANDROID_HOME` and a `platform-tools` PATH entry both
+pointed confidently at the absent directory. The lesson generalises: test that a
+tool's directory *exists* rather than that its variable is set.
+
+So screenshot testing is now buildable and verifiable on this machine. It is still
+not built — what exists is the capability, not the coverage.
 
 ## 10. iOS — Unmeasured
 

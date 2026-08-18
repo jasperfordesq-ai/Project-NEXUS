@@ -30,6 +30,11 @@
     "parity:matrix": "node scripts/generate-parity-matrix.mjs",
     "parity:check": "node scripts/generate-parity-matrix.mjs --check",
     "drift:check": "npm run parity:check && npm run api:check",
+    "emulator:start": "node scripts/emulator.mjs start",
+    "emulator:stop": "node scripts/emulator.mjs stop",
+    "screenshot:capture": "node scripts/screenshots.mjs capture",
+    "screenshot:compare": "node scripts/screenshots.mjs compare",
+    "screenshot:approve": "node scripts/screenshots.mjs approve",
     "prepare": "cd .. && husky mobile/.husky || true"
   },
   "dependencies": {
@@ -98,6 +103,8 @@
     "jest": "^29.7.0",
     "jest-expo": "~54.0.18",
     "lint-staged": "^15.2.10",
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0",
     "react-test-renderer": "^19.1.0",
     "typescript": "^5.3.3"
   },

@@ -34,3 +34,9 @@ firebase-service-account*.json
 expo-env.d.ts
 # @end expo-cli
 emu*.png
+
+# Screenshot testing: the BASELINE is the assertion and must be committed.
+# `current/` and `diff/` are per-run output and must not be — committing them
+# would make every capture a diff and bury the one that matters.
+screenshots/current/
+screenshots/diff/

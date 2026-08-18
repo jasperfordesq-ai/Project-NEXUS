@@ -26,6 +26,10 @@ not:
 3. **iOS cannot be built here at all.** The workstation is Windows. *Not fixable
    without a Mac or a cloud build.*
 
+Reason 1 is now much less painful than it was: the Android toolchain is installed
+and an emulator boots headless in about a minute (see below). It was previously
+impossible here.
+
 ---
 
 ## The fast loop — run this on every change
@@ -34,7 +38,7 @@ From `mobile/`. Nothing here needs a device, an emulator or a running API.
 
 ```bash
 npm run type-check                  # tsc --noEmit, strict
-npm test                            # 263 suites / 1,563 tests
+npm test                            # 271 suites / 1,694 tests
 npm run lint                        # expo lint
 ```
 
@@ -45,6 +49,8 @@ Measured on this workstation (Ryzen 9 9950X3D, 16c/32t) on 2026-08-18:
 | --- | --- | --- |
 | `npx jest` (parallel, the default) | **16s** | 263 suites / 1,563 tests passed |
 | `npx jest --runInBand` | 71s | 263 suites / 1,563 tests passed |
+
+(Measured at 263/1,563; the suite is now 271/1,694 and the ratio holds.)
 
 Same pass counts both ways, so nothing is being skipped to get the speed. This
 matches the platform-wide retirement of the old "never run more than one heavy
@@ -119,9 +125,101 @@ mismatch is **not** a pass. Say "it could not run" rather than reporting green.
 
 ## Running the app on a device
 
-### Android emulator against the local API
+### Android emulator — installed and working
+
+The full native toolchain is installed and verified (2026-08-18):
+
+| Piece | Where | Verified by |
+| --- | --- | --- |
+| Android Studio | `C:\Program Files\Android\Android Studio` | was already installed |
+| SDK | `%LOCALAPPDATA%\Android\Sdk` (~5.8 GB) | `sdkmanager --list` |
+| Platform / build tools | API 36, build-tools 36.0.0 | `adb version` → 1.0.41 |
+| Emulator + system image | `android-36;google_apis;x86_64` | booted to `sys.boot_completed=1` |
+| AVD | `nexus_test` (Pixel 7, 4 GB RAM) | `emulator -list-avds` |
+| Maestro | `~/.maestro/bin` | `maestro -v` → 2.8.0 |
+
+🔴 **Android Studio was installed all along; the SDK had never been downloaded.**
+`ANDROID_HOME` pointed at a directory that did not exist, and `platform-tools` was
+already on PATH for that missing directory — so every path looked configured while
+nothing was actually present. Check that the directory *exists*, not just that the
+variable is set.
+
+Start the emulator headless and wait for it properly:
+
+```bash
+emulator -avd nexus_test -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do sleep 5; done
+adb devices          # emulator-5554  device
+```
+
+`-gpu swiftshader_indirect` renders on the CPU. That is slower than the host GPU
+and **deliberate**: software rendering is deterministic, so a graphics-driver
+update cannot shift pixels and produce phantom screenshot differences. The AVD
+config pins the same setting.
+
+Capture a screenshot — this is the primitive screenshot testing is built on:
+
+```bash
+adb exec-out screencap -p > shot.png
+```
+
+🔴 `expo run:android --device emulator-5554` fails with
+`Could not find device with name`. Omit `--device` when one emulator is running.
+
+🔴 **A local `assembleRelease` fails on the Sentry sourcemap upload** unless you
+disable it:
+
+```text
+error: An organization ID or slug is required (provide with --org)
+> Task :app:createBundleReleaseJsAndAssets_SentryUpload_... FAILED
+```
+
+The JS bundle itself builds fine — only the upload step fails, because there is no
+Sentry org configured locally. Every profile in `eas.json` already sets
+`SENTRY_DISABLE_AUTO_UPLOAD=true` for exactly this reason; do the same by hand:
+
+```bash
+SENTRY_DISABLE_AUTO_UPLOAD=true ./gradlew.bat app:assembleRelease -x lint -x test
+```
+
+Debug builds are unaffected — they do not upload sourcemaps, which is why
+`expo run:android` succeeds and `assembleRelease` does not.
+
+**Build only the architecture the emulator uses.** `expo run:android` defaults to
+`x86_64,arm64-v8a`, which compiles the native C++ in reanimated, worklets and
+expo-modules-core **twice**. An x86_64 emulator cannot run the arm64 slice, so on a
+first build that is a large amount of wasted compilation — it roughly doubles the
+long pole. Set it once in `android/gradle.properties`:
+
+```properties
+reactNativeArchitectures=x86_64
+```
+
+Keep both architectures for anything destined for a real device or a store build.
+`android/` is generated and gitignored, so this is a local-only change that
+`expo prebuild --clean` will discard.
+
+🔴 **Build with JDK 17, NOT Android Studio's bundled JDK.** Studio ships JBR 25,
+and Gradle 8.14.3 (what `expo prebuild` generates) rejects it outright:
+
+```text
+BUG! exception in phase 'semantic analysis' ... Unsupported class file major version 69
+```
+
+"Major version 69" is Java 25. Adoptium JDK 17 is installed at
+`C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot` and is what the
+persisted `JAVA_HOME` points at — so a fresh shell is correct by default. Only an
+explicit `JAVA_HOME=...Android Studio\jbr` breaks it, which is an easy mistake to
+make precisely because that JDK is the one sitting next to the SDK.
+
+### Pointing the emulator at the local API
 
 The emulator reaches the host through `10.0.2.2`, not `localhost`.
+
+🔴 `.env.local` on this machine pointed at **port 8088**, where nothing listens.
+The Docker API is on **8090**. Corrected 2026-08-18. `.env.local` is gitignored, so
+each machine can carry its own stale copy of this mistake — check the port against
+`docker ps` before concluding the app cannot reach the API.
 
 ```bash
 cd mobile
@@ -167,11 +265,18 @@ maestro test --env TEST_EMAIL=user@example.com --env TEST_PASSWORD=secret .maest
 
 Credentials are always injected with `--env` and never written into a flow file.
 
-🔴 **On Windows, Maestro needs WSL2** (or the JAR run by hand). Install inside
-WSL2 with `curl -Ls "https://get.maestro.mobile.dev" | bash`.
+**Maestro is installed and runs natively on Windows** — `~/.maestro/bin/maestro.bat`,
+version 2.8.0, on the user PATH. Verified 2026-08-18.
 
-🔴 **Nothing runs these automatically.** They are operator-run. A green CI run is
-no evidence that the app launches on a device.
+🔴 This document previously said Windows needs WSL2, echoing Maestro's own install
+page. That is **not true for the 2.x release**: the distributed archive ships a
+working `maestro.bat`, it finds the system JDK, and `maestro -v` returns `2.8.0`
+with no Linux subsystem involved. Do not install a second copy inside WSL2 on the
+strength of the docs — check the `.bat` first.
+
+🔴 **Nothing runs these flows automatically.** They are operator-run. A green CI
+run is no evidence that the app launches on a device. What has changed is that
+they *can* now be run here at all — see the emulator section below.
 
 🔴 `.maestro/config.yaml` refers to `.github/workflows/mobile-eas-build.yml` for
 CI configuration. **That workflow does not exist** and never has. The real mobile
