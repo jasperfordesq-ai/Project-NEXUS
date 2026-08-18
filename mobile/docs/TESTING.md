@@ -132,7 +132,7 @@ The full native toolchain is installed and verified (2026-08-18):
 | Piece | Where | Verified by |
 | --- | --- | --- |
 | Android Studio | `C:\Program Files\Android\Android Studio` | was already installed |
-| SDK | `%LOCALAPPDATA%\Android\Sdk` (~5.8 GB) | `sdkmanager --list` |
+| SDK | `%LOCALAPPDATA%\Android\Sdk` (~8.2 GB incl. NDK + CMake) | `sdkmanager --list` |
 | Platform / build tools | API 36, build-tools 36.0.0 | `adb version` → 1.0.41 |
 | Emulator + system image | `android-36;google_apis;x86_64` | booted to `sys.boot_completed=1` |
 | AVD | `nexus_test` (Pixel 7, 4 GB RAM) | `emulator -list-avds` |
@@ -157,7 +157,49 @@ and **deliberate**: software rendering is deterministic, so a graphics-driver
 update cannot shift pixels and produce phantom screenshot differences. The AVD
 config pins the same setting.
 
-Capture a screenshot — this is the primitive screenshot testing is built on:
+### Screenshot testing
+
+```bash
+npm run emulator:start                     # boots and WAITS for sys.boot_completed
+npm run screenshot:capture                 # writes screenshots/current/light/
+npm run screenshot:capture -- --scheme dark
+npm run screenshot:compare                 # fails if a screen changed
+npm run screenshot:approve                 # promote current to baseline
+```
+
+🔴 **Use a RELEASE build, not a debug build.** A debug APK loads its JavaScript
+from Metro at runtime. If the emulator cannot reach the dev server the app shows a
+bare background colour and nothing else — and a capture of that will happily
+become a baseline, at which point every later comparison is meaningless. A release
+APK has the bundle inside it and needs no server:
+
+```bash
+SENTRY_DISABLE_AUTO_UPLOAD=true ./gradlew.bat app:assembleRelease -x lint -x test
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+This is not a workaround — no dev server is the correct architecture for visual
+testing, in CI or locally.
+
+**Determinism is measured, not hoped for.** Two independent captures of the same
+screen differ by **0 pixels** (verified 2026-08-18, both schemes). Three things buy
+that, and all three matter:
+
+| Pinned | Why |
+| --- | --- |
+| `swiftshader_indirect` (CPU rendering) | A host GPU driver update would otherwise shift pixels and produce phantom diffs |
+| Animation scales set to 0 | Stops a capture landing mid-transition, which reads as an intermittent regression |
+| Status bar cropped (top 96px) | Its clock changes every run. Cropping is honest; a loose global threshold would also hide real regressions |
+
+**Sensitivity is measured too.** Comparing a dark-mode render against a light-mode
+baseline reports **97.4% of pixels changed** and exits 1. A gate that cannot fail
+is decoration, so both directions were checked.
+
+🔴 **Never `approve` without looking at the image.** That is precisely how a visual
+bug becomes the baseline and stops being reportable. The first baselines here were
+each viewed before being promoted.
+
+Raw capture, if you want one by hand:
 
 ```bash
 adb exec-out screencap -p > shot.png

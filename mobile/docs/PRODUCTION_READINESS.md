@@ -48,7 +48,7 @@ statement about attention, not about the app.
 | 6 | Release & native policy | **Strong** | `verify:release` plus generated-manifest inspection, both blocking |
 | 7 | Crash reporting | **Adequate** | Sentry React Native wired; no release-health gate after a rollout |
 | 8 | End-to-end journeys | **Weak** | 9 Maestro flows exist but are operator-run; nothing runs them in CI |
-| 9 | Visual correctness | **Weak** | Theme contrast now gated (37 assertions, found 5 real light-mode failures); still no screenshot or visual-diff testing |
+| 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures) AND screenshot diffing now works (0px repeatable, 97.4% sensitive) — but only 1 screen has a baseline |
 | 10 | iOS | **Unmeasured** | Never built or run in CI or locally; App Store Connect ID is still a placeholder |
 | 11 | Accessibility | **Weak** | 683 a11y props over 119 of 189 screens (63%); WCAG AA contrast now gated, but no label-coverage gate |
 | 12 | Internationalisation | **Weak** | 7 locales against the platform's 11; namespace content is test-enforced |
@@ -344,6 +344,30 @@ between light and dark and is invisible to the gate above. A blanket check would
 report 1,506 findings on day one, which is not a check anybody would act on —
 triaging them is real work, and is listed in the plan rather than pretended away.
 
+### Screenshot testing now exists and works
+
+`scripts/screenshots.mjs` (capture / compare / approve) plus `scripts/emulator.mjs`.
+Verified end to end on 2026-08-18: SDK installed, emulator booted headless, release
+APK built (`BUILD SUCCESSFUL in 2m 50s`), installed, launched, and the login screen
+captured in both light and dark.
+
+| Property | Measured |
+| --- | --- |
+| Repeatability | **0 pixels** differ between two captures of the same screen, both schemes |
+| Sensitivity | Dark render vs light baseline → **97.4%** changed, exit 1 |
+| Baselines committed | `screenshots/baseline/{light,dark}/01-launch.png`, ~100 KB each |
+
+🔴 **One screen, not a suite.** The login screen needs no credentials, which makes
+it a reliable first baseline; every signed-in screen needs a Maestro flow to
+navigate there and a seeded local API. So this is a working mechanism with almost
+no coverage yet — the honest state is "the gate exists and fires", not "the app is
+visually tested".
+
+🔴 A debug APK is unusable for this: it fetches its JavaScript from Metro, and when
+the emulator cannot reach the dev server the app renders a bare background colour.
+That was captured first and would have become a baseline of a blank screen. Release
+builds only.
+
 Pixel-level testing needs an emulator, and **that blocker is now cleared**
 (2026-08-18). The SDK, an API 36 system image, an AVD (`nexus_test`) and Maestro
 2.8.0 are installed and verified: the emulator boots headless to
@@ -356,8 +380,8 @@ never been downloaded, while `ANDROID_HOME` and a `platform-tools` PATH entry bo
 pointed confidently at the absent directory. The lesson generalises: test that a
 tool's directory *exists* rather than that its variable is set.
 
-So screenshot testing is now buildable and verifiable on this machine. It is still
-not built — what exists is the capability, not the coverage.
+So screenshot testing is built and verified on this machine. What is thin is the
+coverage: one screen in two schemes.
 
 ## 10. iOS — Unmeasured
 
