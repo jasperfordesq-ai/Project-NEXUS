@@ -118,17 +118,40 @@ function fail(...lines) {
   process.exit(2);
 }
 
+const ANIMATION_SCALE_KEYS = [
+  'window_animation_scale',
+  'transition_animation_scale',
+  'animator_duration_scale',
+];
+
+/**
+ * Restore normal animation timing.
+ *
+ * 🔴 This exists because leaving the scales at 0 has a consequence beyond this
+ * script: Android then reports "reduced motion", Reanimated logs a development
+ * warning about it, and React Native's LogBox draws a banner across the BOTTOM of
+ * the screen — directly over the tab bar. Maestro's taps on the "More" tab then
+ * hit the banner instead, and three flows failed on a missing "View wallet" that
+ * was simply never navigated to. The device is shared state; a script that
+ * changes it must put it back.
+ */
+export function restoreAnimations() {
+  for (const key of ANIMATION_SCALE_KEYS) {
+    try {
+      adb(['shell', 'settings', 'put', 'global', key, '1']);
+    } catch {
+      // Best effort — a disconnected device is not worth failing a capture over.
+    }
+  }
+}
+
 /**
  * Disable the three animation scales. A capture taken mid-transition differs from
  * one taken after it settles, which shows up as an intermittent diff that looks
  * like a real regression and wastes an afternoon.
  */
 function stabiliseDevice() {
-  for (const key of [
-    'window_animation_scale',
-    'transition_animation_scale',
-    'animator_duration_scale',
-  ]) {
+  for (const key of ANIMATION_SCALE_KEYS) {
     adb(['shell', 'settings', 'put', 'global', key, '0']);
   }
   // A fixed demo status bar removes the clock and signal icons from the frame.
@@ -218,6 +241,10 @@ function doCapture() {
 
   const shot = capture('01-launch', dir);
   console.log(`screenshots: wrote ${path.relative(MOBILE_ROOT, shot.file)} (${shot.width}x${shot.height})`);
+
+  // Put the device back. See restoreAnimations() for why this is not optional.
+  restoreAnimations();
+  console.log('screenshots: animation scales restored');
 
   console.log('');
   console.log('screenshots: ONE screen captured. This is the launch screen only —');
@@ -318,7 +345,15 @@ switch (mode) {
   case 'approve':
     doApprove();
     break;
+  case 'restore-animations':
+    // Exposed so a Maestro run can guarantee normal timing without capturing.
+    requireDevice();
+    restoreAnimations();
+    console.log('screenshots: animation scales restored to 1');
+    break;
   default:
-    console.error('usage: node scripts/screenshots.mjs <capture|compare|approve> [--scheme light|dark]');
+    console.error(
+      'usage: node scripts/screenshots.mjs <capture|compare|approve|restore-animations> [--scheme light|dark]'
+    );
     process.exit(2);
 }

@@ -29,6 +29,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The nine end-to-end tests now all pass, driving the real app on a phone emulator against your local server.** They had never been run. Getting there meant fixing four separate things, each of which failed silently — which is almost certainly why nobody ran them.
+
+  **What was wrong.** The test suite's own settings file contained nothing but comments, and the test tool refuses to start on that — so running the whole suite had never worked, though running one test at a time skipped the file and seemed fine. The app was forbidden from talking to your local server at all: a security rule blocks unencrypted connections for *every* build, and it silently overrides the development exemption that was supposed to allow them. That same rule was also why the app showed a blank screen earlier — it could not fetch its own code. And a release build **deliberately refuses** a local server address and uses the live one instead (a sensible guard added in June after a stale setting shipped to production), so the tests were logging into the live site where the test accounts do not exist.
+
+  **What changed.** Development builds may now make unencrypted connections **to local addresses only** — not a blanket exemption, so a test build still cannot quietly send plain traffic to any server on the internet. **Production is untouched**: it keeps its certificate pinning and still refuses unencrypted connections entirely. Because that split is one careless edit away from disabling production's protection, a new automatic check asserts both halves and blocks the build if either slips; I confirmed it fails when I deliberately weakened production.
+
+  There is also a new one-command runner that checks all four prerequisites **before** running anything and names whichever one is wrong, rather than reporting a missing button nine times. If a prerequisite is unmet it says plainly that nothing was tested — which is not the same as passing.
+
+  **A trap worth knowing:** the screenshot tooling turns animations off to make images comparable. That makes Android report "reduced motion", which makes a warning banner appear across the bottom of the screen — directly over the tab bar. Five tests then failed because taps meant for the "More" tab hit the banner instead. The tooling now puts animations back, and the test runner restores them defensively.
+
+  Result: **9 of 9 passing**, covering sign-in, sign-out, browsing listings and groups, viewing events, messages, profile, search and registration.
+
 - **The mobile app can now be built and run on a phone emulator on your machine, and a check now catches it looking wrong.** You were right that Android Studio was installed — I had only checked for the toolkit it downloads separately, found that missing, and reported the two as the same thing. Studio was there; its toolkit had never been downloaded, and confusingly the settings pointing at it were already in place, aimed at a folder that did not exist.
 
   Everything needed is now installed and, importantly, **proven by using it rather than assumed**: the phone emulator starts, the app compiles (first build 6 minutes), installs, launches, and shows its real sign-in screen. Also installed: the app-driving test tool the nine existing end-to-end tests need.

@@ -300,12 +300,43 @@ search, registration. Flows `03`–`08` re-authenticate inline, so any of them c
 run alone.
 
 ```bash
-maestro test .maestro/
-maestro test .maestro/01-auth-login.yaml
-maestro test --env TEST_EMAIL=user@example.com --env TEST_PASSWORD=secret .maestro/
+npm run e2e                                    # checks preconditions, then runs all nine
+node scripts/e2e.mjs --flow .maestro/01-auth-login.yaml
 ```
 
-Credentials are always injected with `--env` and never written into a flow file.
+`scripts/e2e.mjs` checks the preconditions FIRST and tells you which one is wrong,
+because every one of them fails silently and each cost an afternoon to find. If a
+precondition is unmet it exits 2 and says plainly that nothing was tested — that is
+not a test failure.
+
+### The four preconditions, and why each matters
+
+| Precondition | What happens without it |
+| --- | --- |
+| **A DEBUG build** | `lib/constants.ts` refuses a loopback API URL when `__DEV__` is false and uses **production** instead. Every flow then fails on "Invalid credentials", because the seeded accounts do not exist there. |
+| **Cleartext permitted** | The app reaches neither the API on `:8090` nor Metro on `:8081`. See the network-security section above. |
+| **Metro running** | A debug build fetches its JS at runtime; without it you get a blank screen. |
+| **Animations ON** | With scales at 0, Android reports reduced motion → Reanimated warns → LogBox draws a banner across the **bottom**, over the tab bar. Taps on "More" hit the banner, and five flows fail on a "View wallet" they never navigated to. |
+
+🔴 That last one is a trap the screenshot tooling sets itself: `screenshot:capture`
+disables animations for determinism. It now restores them afterwards, and
+`npm run e2e` restores them defensively. If you ever see several flows failing on a
+missing element that plainly exists, check the animation scales first.
+
+Full local setup:
+
+```bash
+npm run dev:docker                             # from the repo root: API on :8090
+docker exec nexus-php-app php artisan db:seed --class=E2ETestDataSeeder
+npm run emulator:start
+npx expo run:android                           # DEBUG build, JDK 17
+npx expo start                                 # Metro, in another terminal
+npm run e2e
+```
+
+Credentials default to the seeded `e2e.user.a@project-nexus.local`. Override with
+`--email` / `--password` or `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD`; they are passed
+to Maestro via `--env` and never written into a flow file.
 
 **Maestro is installed and runs natively on Windows** — `~/.maestro/bin/maestro.bat`,
 version 2.8.0, on the user PATH. Verified 2026-08-18.

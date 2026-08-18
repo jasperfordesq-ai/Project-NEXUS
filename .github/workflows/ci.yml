@@ -1903,6 +1903,16 @@ jobs:
         working-directory: mobile
         run: npm run verify:release
 
+      # The debug build permits cleartext to local dev hosts so the app can reach
+      # a local API and Metro (without it, local device testing is impossible —
+      # a network security config overrides android:usesCleartextTraffic on API
+      # 24+, so the debug manifest's exemption alone did nothing). That split is
+      # one careless edit away from disabling certificate pinning in production,
+      # so it is asserted rather than trusted.
+      - name: "BLOCKING: Verify the network security split (production still pinned)"
+        working-directory: mobile
+        run: npm run verify:network-security
+
       # The suite runs ONCE, under coverage. Running `npm test` and then the
       # coverage run separately doubled a ~90s serial job for no extra signal.
       # `--runInBand` is deliberate: ubuntu-latest is 4 vCPU, where parallel buys
