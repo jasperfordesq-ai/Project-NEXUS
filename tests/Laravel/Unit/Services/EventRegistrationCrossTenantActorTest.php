@@ -21,6 +21,7 @@ use App\Services\EventWaitlistService;
 use App\Support\Events\EventPeopleQuery;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
@@ -73,6 +74,7 @@ use Tests\Laravel\TestCase;
 final class EventRegistrationCrossTenantActorTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesNetworkAdminHierarchy;
 
     /** Tenant the Event lives on. The cross-tenant actor's home tenant is 999. */
     private const ACTING_TENANT = 2;
@@ -86,6 +88,13 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         $this->registrations = app(EventRegistrationService::class);
+        // The actor in these tests is a NETWORK admin — an admin who oversees the
+        // community being acted on from a different home tenant. Build that
+        // relationship for real: the home tenant becomes the parent of the acting
+        // tenant, so the actor's authority over it is genuine rather than assumed
+        // from an admin flag alone. Rolls back with the transaction.
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+
         $this->waitlist = app(EventWaitlistService::class);
     }
 

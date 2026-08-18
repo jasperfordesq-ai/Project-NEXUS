@@ -17,6 +17,7 @@ use App\Services\EventService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
@@ -44,6 +45,7 @@ use Tests\Laravel\TestCase;
 final class EventAttendanceCrossTenantActorTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesNetworkAdminHierarchy;
 
     /** Tenant the Event lives on. The actor's home tenant is 999. */
     private const ACTING_TENANT = 2;
@@ -56,6 +58,13 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         Config::set('events.attendance_credit_mode', 'off');
+        // The actor in these tests is a NETWORK admin — an admin who oversees the
+        // community being acted on from a different home tenant. Build that
+        // relationship for real: the home tenant becomes the parent of the acting
+        // tenant, so the actor's authority over it is genuine rather than assumed
+        // from an admin flag alone. Rolls back with the transaction.
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+
         $this->service = app(EventAttendanceService::class);
     }
 

@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\EventPublicationWorkflowService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
@@ -42,6 +43,7 @@ use Tests\Laravel\TestCase;
 final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesNetworkAdminHierarchy;
 
     /** Tenant the Events live on. The actor's home tenant is 999. */
     private const ACTING_TENANT = 2;
@@ -54,6 +56,13 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         $this->workflow = app(EventPublicationWorkflowService::class);
+        // The actor in these tests is a NETWORK admin — an admin who oversees the
+        // community being acted on from a different home tenant. Build that
+        // relationship for real: the home tenant becomes the parent of the acting
+        // tenant, so the actor's authority over it is genuine rather than assumed
+        // from an admin flag alone. Rolls back with the transaction.
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+
     }
 
     private function setModerationRequired(bool $required): void
@@ -145,6 +154,32 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
         $this->workflow->publish((int) $event->id, $stranger);
     }
 
+    /**
+     * The security property the network-admin cases above must not blur.
+     *
+     * This actor is an admin of the PARENT community, but a plain one — no
+     * is_tenant_super_admin. Being an admin of a community above this one is not
+     * authority over this one; only the network tier reaches down the tree. Note
+     * setUp() has made the home tenant the parent, so this is the strongest form
+     * of the case: even the closest possible relationship is not enough without
+     * the network flag. Before TenantAdminScope this actor could publish, and so
+     * could an admin of a completely unrelated community.
+     */
+    public function test_plain_admin_of_another_community_cannot_publish_here(): void
+    {
+        $this->setModerationRequired(false);
+        $organizer = User::factory()->forTenant(self::ACTING_TENANT)->create(['status' => 'active']);
+        $event = $this->draftEvent((int) $organizer->id);
+        $outsideAdmin = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 0,
+        ]);
+
+        $this->expectException(EventLifecycleTransitionException::class);
+        $this->workflow->publish((int) $event->id, $outsideAdmin);
+    }
+
     public function test_suspended_cross_tenant_organizer_is_refused(): void
     {
         $this->setModerationRequired(false);
@@ -164,7 +199,18 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
         $this->setModerationRequired(true);
         $organizer = User::factory()->forTenant(self::ACTING_TENANT)->create(['status' => 'active']);
         $event = $this->draftEvent((int) $organizer->id, 'pending_review');
-        $admin = $this->crossTenantUser(['role' => 'admin']);
+        // A network admin, not a bare role='admin' on an unrelated tenant. What
+        // this test exists to pin is the LOCKED ACTOR RE-READ — that it does not
+        // refuse an actor authorisation has already granted — and the persona is
+        // incidental to that. It has to be someone who genuinely holds authority
+        // here, or the test passes for the wrong reason: a plain admin of another
+        // community has no authority over this one (TenantAdminScope), so using
+        // one would assert a cross-tenant escalation rather than the re-read.
+        $admin = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
 
         $this->workflow->approve((int) $event->id, $admin);
 
