@@ -71,6 +71,22 @@ const PATHS_FILE = path.join(ROOT, '.github', 'ci-paths.yml');
 // there — everything else in that workflow is ignored entirely. A new `Web UK …`
 // job that this file does not know still refuses (see the unknown-job rule), so
 // fresh accessible-frontend coverage cannot go silently unverified.
+// 🔴 `mobile-device-tests.yml` is DELIBERATELY ABSENT, and that is not an
+// oversight. Three reasons, all of which still hold:
+//
+//   1. It is nightly-only and takes ~35 minutes. Required-job evidence would
+//      routinely be absent for a deploy commit, so every deploy would either
+//      block or force a 35-minute dispatch run before it could proceed.
+//   2. `scripts/deploy.sh` deploys the LARAVEL/REACT web platform. The mobile app
+//      ships separately through EAS, so whether an Android emulator ran the
+//      Maestro flows is not a precondition for a web release.
+//   3. Mobile IS still gated here — by `Android Native Release Gate` below, the
+//      fast ci.yml job (typecheck, Jest, drift, coverage floors, native policy).
+//      What is excluded is only the slow device half.
+//
+// Adding it would block every deploy on a workflow that has never had a green run.
+// If that ever becomes desirable, it needs a `workflow:` entry AND its own
+// freshness bound — not just a line in REQUIRED_JOBS.
 const WORKFLOWS = [
   { file: 'ci.yml', inScope: () => true },
   { file: 'platform-contracts.yml', inScope: (name) => name.startsWith('Web UK') },
