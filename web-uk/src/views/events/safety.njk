@@ -2,8 +2,12 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
-{% block content %}
+
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("event_safety.govuk.back") }}</a>
+{% endblock %}
+
+{% block content %}
   <span class="govuk-caption-l">{{ event.title }}</span>
   <h1 class="govuk-heading-xl">{{ t("event_safety.govuk.title") }}</h1>
   <p class="govuk-body-l">{{ t("event_safety.govuk.intro") }}</p>

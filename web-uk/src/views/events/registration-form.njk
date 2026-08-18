@@ -4,8 +4,11 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.title") }}</a>
+{% endblock %}
+
 {% block content %}
-<a class="govuk-back-link" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.title") }}</a>
 <h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
 <p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
 {% if formErrors and (formErrors | length) %}

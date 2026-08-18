@@ -6,9 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-l">{{ group.name }}</span>
   <h1 class="govuk-heading-xl">{{ discussion.title }}</h1>
 

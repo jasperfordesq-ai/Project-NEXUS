@@ -7,9 +7,11 @@
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.invite.caption", { group: group.name }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.invite.title") }}</h1>
 

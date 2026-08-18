@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/podcasts/studio') }}">{{ t("govuk_alpha_commerce.podcast_studio.back_to_studio") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if status %}
     {% if status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="podcast-manage-status-heading" data-module="govuk-notification-banner">

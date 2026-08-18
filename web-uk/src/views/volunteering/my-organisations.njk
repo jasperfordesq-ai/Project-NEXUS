@@ -4,9 +4,11 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=organisations') }}">{{ t("actions.back_to_volunteering") }}</a>
+{% endblock %}
 
+{% block content %}
   <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.my_orgs.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.my_orgs.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.my_orgs.description") }}</p>

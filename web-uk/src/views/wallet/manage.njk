@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/wallet') }}">{{ t("govuk_alpha_wallet.manage.back_to_wallet") }}</a>
+{% endblock %}
 
+{% block content %}
   {% if status %}
     {% if status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="wallet-manage-success-title">

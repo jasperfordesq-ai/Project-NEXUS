@@ -5,8 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace/mine') }}">{{ t("govuk_alpha_commerce.common.back_to_my_listings") }}</a>
+{% endblock %}
+
+{% block mainContent %}
   {% include "marketplace/_nav.njk" %}
 
   {% if formErrors and formErrors.length %}

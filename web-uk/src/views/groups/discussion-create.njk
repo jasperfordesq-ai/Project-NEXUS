@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-l">{{ group.name }}</span>
   <h1 class="govuk-heading-xl">{{ t("groups.discussions.new_title") }}</h1>
   <p class="govuk-body-l">{{ t("groups.discussions.new_description") }}</p>

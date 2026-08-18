@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.history.caption") }}: {{ goal.title }}</span>
   <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.history.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_goals.history.intro") }}</p>

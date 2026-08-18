@@ -4,9 +4,11 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+{% endblock %}
 
+{% block content %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.collections.caption", { community: communityName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.collections.title") }}</h1>
 

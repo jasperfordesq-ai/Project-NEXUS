@@ -5,9 +5,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block content %}
+{% block beforeContent %}
   <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.idea.back_to_challenge") }}</a>
+{% endblock %}
 
+{% block content %}
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}

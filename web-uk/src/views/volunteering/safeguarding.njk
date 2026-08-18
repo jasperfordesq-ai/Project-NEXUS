@@ -6,9 +6,11 @@
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+{% endblock %}
 
+{% block content %}
   {% if status %}
     {% if status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="safeguarding-success-title">

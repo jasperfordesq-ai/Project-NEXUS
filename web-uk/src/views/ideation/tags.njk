@@ -4,9 +4,11 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.tags.back_to_challenges") }}</a>
+{% endblock %}
 
+{% block content %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
   <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.tags.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_ideation.tags.intro") }}</p>

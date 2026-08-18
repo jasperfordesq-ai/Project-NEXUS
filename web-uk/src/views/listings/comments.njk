@@ -6,9 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("govuk_alpha_listings.comments.back_to_listing") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if status and status.type == "error" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">

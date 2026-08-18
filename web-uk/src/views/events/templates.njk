@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("event_templates.back_to_events") }}</a>
+{% endblock %}
 
+{% block content %}
   {% if status in ['captured', 'revised'] %}
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner" aria-labelledby="templates-status-title">
       <div class="govuk-notification-banner__header">

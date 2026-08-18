@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/courses/instructor') }}">{{ t("govuk_alpha_courses.back_to_teaching") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% set activeTab = 'teaching' %}
   {% include "courses/_nav.njk" %}
 

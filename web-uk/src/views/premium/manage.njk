@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/premium') }}" class="govuk-back-link">{{ t("govuk_alpha_commerce.common.back_to_premium") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.premium_manage.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.premium_manage.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>

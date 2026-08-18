@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/federation/settings') }}" class="govuk-back-link">{{ t("federation.optout.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("federation.optout.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("federation.optout.title") }}</h1>
 

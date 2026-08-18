@@ -15,9 +15,11 @@
   {% endif %}
 {% endmacro %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/organisations/browse') }}">{{ t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.manage.title") }}</h1>
 

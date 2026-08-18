@@ -6,9 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/courses') }}" class="govuk-back-link">{{ t("courses.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if status %}
     {% if status.key == 'enrolled' %}
       <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">

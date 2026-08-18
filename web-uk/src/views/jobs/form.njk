@@ -7,9 +7,11 @@
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/jobs/mine') }}" class="govuk-back-link">{{ t("govuk_alpha.jobs_t3.nav_mine") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t3.create_caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_title") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_title") }}{% endif %}</h1>
   <p class="govuk-body-l">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_description") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_description") }}{% endif %}</p>

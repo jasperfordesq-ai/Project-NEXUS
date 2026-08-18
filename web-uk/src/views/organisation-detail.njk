@@ -10,9 +10,11 @@
 {% set opportunities = orgOpportunities or [] %}
 {% set reviews = orgReviews or [] %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/organisations') }}">{{ t("govuk_alpha.organisations.title") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha.organisations.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ organisationName }}</h1>
 

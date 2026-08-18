@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/podcasts/' + (show.id | string)) }}" class="govuk-back-link">{{ t("govuk_alpha.polish_commerce.podcast_episode_back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ show.title }}</span>
   <h1 class="govuk-heading-xl">{{ episode.title }}</h1>
 

@@ -8,9 +8,11 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if errorMessage %}
     {{ govukErrorSummary({
       titleText: t("states.error_title"),

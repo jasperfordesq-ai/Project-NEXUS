@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/exchanges') }}">{{ t("actions.back_to_exchanges") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if statusMessage or successMessage %}
     {% if status == 'exchange-action-failed' or status == 'exchange-hours-invalid' or status == 'rating-failed' or status == 'rating-invalid' %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

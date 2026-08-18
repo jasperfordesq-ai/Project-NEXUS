@@ -8,8 +8,11 @@
 {% set configuration = template.version.configuration or {} %}
 {% set templateTitle = configuration.title or template.source_event.title %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events/templates?filter=' + filter + (('&cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}">{{ t("event_templates.back_to_library") }}</a>
+{% endblock %}
+
+{% block content %}
   <span class="govuk-caption-xl">{{ templateTitle }}</span>
   <h1 class="govuk-heading-xl">{{ t("event_templates.audit_title") }}</h1>
   <p class="govuk-body-l">{{ t("event_templates.audit_intro") }}</p>

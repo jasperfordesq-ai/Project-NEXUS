@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("govuk_alpha_federation.onboarding.back_link") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-xl">{{ t("govuk_alpha_federation.onboarding.caption", { community: tenantName }) }}</span>

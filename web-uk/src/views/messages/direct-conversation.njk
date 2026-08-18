@@ -10,9 +10,11 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/messages') }}" class="govuk-back-link">{{ t("govuk_alpha.actions.back_to_messages") }}</a>
+{% endblock %}
 
+{% block mainContent %}
       {% if directStatus and directStatus.type == "success" %}
         {% set notificationMessage = directStatus.message %}
         {% set notificationType = "success" %}

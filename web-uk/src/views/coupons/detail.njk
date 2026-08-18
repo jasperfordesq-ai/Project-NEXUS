@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a href="{{ urlFor('/coupons') }}" class="govuk-back-link">{{ t("polish_commerce.coupon_detail_back") }}</a>
+{% endblock %}
 
+{% block content %}
   <span class="govuk-caption-xl">{{ t("coupons.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ coupon.title }}</h1>
 

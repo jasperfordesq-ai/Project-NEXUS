@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs/mine') }}">{{ t("govuk_alpha_jobs.shared.back_to_my_postings") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.talent.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_jobs.talent.description") }}</p>
 

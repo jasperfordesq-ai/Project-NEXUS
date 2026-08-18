@@ -11,9 +11,11 @@
   { id: "sent", labelKey: "fed2.connections.tab_sent", emptyKey: "fed2.connections.empty_sent" }
 ] %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("fed2.connections.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("fed2.connections.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("fed2.connections.title") }}</h1>
   <p class="govuk-body-l">{{ t("fed2.connections.description") }}</p>

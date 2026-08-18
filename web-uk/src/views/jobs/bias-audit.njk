@@ -6,9 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.shared.back_to_jobs") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.bias_audit.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_jobs.bias_audit.description") }}</p>
 

@@ -4,9 +4,11 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
-{% block content %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.common.back_to_events") }}</a>
+{% endblock %}
 
+{% block content %}
   <span class="govuk-caption-l">{{ t("govuk_alpha_events.browse.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.browse.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_events.browse.intro") }}</p>

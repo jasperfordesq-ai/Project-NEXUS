@@ -5,8 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace/slots') }}">{{ t("govuk_alpha_commerce.slots.back_to_slots") }}</a>
+{% endblock %}
+
+{% block mainContent %}
   {% include "marketplace/_nav.njk" %}
   {% set marketplaceStatusSuccessHeadingKey = "states.success_title" %}
   {% include "marketplace/_status-banner.njk" %}

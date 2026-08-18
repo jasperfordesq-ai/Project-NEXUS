@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/courses/instructor/' + (courseId | string) + '/edit') }}">{{ t("govuk_alpha_courses.back_to_course") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if status %}
     {% if status.type == 'success' %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="course-grading-status" data-module="govuk-notification-banner">

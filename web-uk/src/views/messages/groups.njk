@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
-      <a class="govuk-back-link" href="{{ urlFor('/messages') }}">{{ t("govuk_alpha_messages.groups.back_to_messages") }}</a>
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/messages') }}">{{ t("govuk_alpha_messages.groups.back_to_messages") }}</a>
+{% endblock %}
 
+{% block mainContent %}
       {% if groupStatus and groupStatus.type == "success" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-groups-status-title">
           <div class="govuk-notification-banner__header">

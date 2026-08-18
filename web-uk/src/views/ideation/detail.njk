@@ -6,9 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
 
-{% block content %}
+{% block beforeContent %}
   <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">{{ t("ideation.back") }}</a>
+{% endblock %}
 
+{% block content %}
   {% if successMessage %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="idea-status">
       <div class="govuk-notification-banner__header">

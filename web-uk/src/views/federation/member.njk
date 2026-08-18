@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/federation/members') }}" class="govuk-back-link">{{ t("federation.member.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if statusBanner %}
     {% if statusBanner.type == "error" %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

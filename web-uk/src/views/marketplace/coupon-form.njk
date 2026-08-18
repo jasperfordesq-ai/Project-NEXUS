@@ -6,8 +6,11 @@
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace/coupons') }}">{{ t("govuk_alpha_commerce.coupons.back_to_coupons") }}</a>
+{% endblock %}
+
+{% block mainContent %}
   {% include "marketplace/_nav.njk" %}
   {% if status and status.type == "success" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">

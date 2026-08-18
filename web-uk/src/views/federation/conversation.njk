@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/federation/messages') }}" class="govuk-back-link">{{ t("fed2.messages.back_to_conversations") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("fed2.messages.conversation_with", { name: conversation.partnerName }) }}</span>
   <h1 class="govuk-heading-xl">{{ conversation.partnerName }}</h1>
 

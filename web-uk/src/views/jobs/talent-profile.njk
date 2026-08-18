@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs/talent-search') }}">{{ t("govuk_alpha_jobs.talent.title") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
     {% if candidate.avatarUrl %}
       <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl | thumb(80, 80) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">

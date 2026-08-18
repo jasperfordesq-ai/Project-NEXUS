@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/courses/' + (course.id | string)) }}" class="govuk-back-link">{{ t("courses.back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.learning_caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ course.title }}</h1>
 

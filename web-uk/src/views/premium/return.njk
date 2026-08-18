@@ -5,9 +5,11 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block mainContent %}
+{% block beforeContent %}
   <a href="{{ urlFor('/premium') }}" class="govuk-back-link">{{ t("polish_commerce.premium_return_back") }}</a>
+{% endblock %}
 
+{% block mainContent %}
   {% if returnStatus == 'success' %}
     <div class="govuk-panel govuk-panel--confirmation">
       <h1 class="govuk-panel__title">{{ t("polish_commerce.premium_success_title") }}</h1>
