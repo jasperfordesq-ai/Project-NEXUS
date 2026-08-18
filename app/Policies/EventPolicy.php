@@ -15,7 +15,7 @@ use App\Enums\EventStaffRole;
 use App\Enums\EventPublicationState;
 use App\Models\Event;
 use App\Models\User;
-use App\Support\Authorization\AdminTier;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -407,13 +407,13 @@ class EventPolicy
             return false;
         }
 
-        return $this->isTenantAdmin($user)
+        return $this->isTenantAdmin($user, $event)
             || $this->hasGroupAudienceAccess($user, $groupId, $group);
     }
 
     private function hasImplicitFullAuthority(User $user, Event $event): bool
     {
-        if ($this->isTenantAdmin($user)) {
+        if ($this->isTenantAdmin($user, $event)) {
             return true;
         }
 
@@ -436,7 +436,7 @@ class EventPolicy
             return false;
         }
 
-        if ($this->isTenantAdmin($user) || (string) ($group->visibility ?? '') === 'public') {
+        if ($this->isTenantAdmin($user, $event) || (string) ($group->visibility ?? '') === 'public') {
             return true;
         }
 
@@ -471,9 +471,20 @@ class EventPolicy
         }
     }
 
-    private function isTenantAdmin(User $user): bool
+    /**
+     * Admin authority over THIS event's community — not "is an admin somewhere".
+     *
+     * AdminTier alone is tenant-unaware, and hasValidContext() deliberately no
+     * longer compares the actor's home tenant (an organiser whose account row
+     * lives elsewhere must still reach their own event). Those two facts together
+     * gave every community's admin full authority over every other community's
+     * events, so the tenant comparison belongs here, on the authority decision,
+     * rather than back on the identity check. Ownership stays separate — see the
+     * owner branch in hasImplicitFullAuthority().
+     */
+    private function isTenantAdmin(User $user, Event $event): bool
     {
-        return AdminTier::allows($user);
+        return TenantAdminScope::allows($user, (int) $event->getAttribute('tenant_id'));
     }
 
     private function hasConfirmedRegistration(User $user, Event $event): bool

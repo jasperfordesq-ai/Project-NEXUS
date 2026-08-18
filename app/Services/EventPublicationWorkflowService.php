@@ -14,7 +14,7 @@ use App\Exceptions\EventLifecycleTransitionException;
 use App\Models\Event;
 use App\Models\User;
 use App\Policies\EventPolicy;
-use App\Support\Authorization\AdminTier;
+use App\Support\Authorization\TenantAdminScope;
 use App\Support\Events\EventLifecycleTransitionContext;
 use App\Support\Events\EventLifecycleTransitionGuard;
 use App\Support\Events\EventLifecycleTransitionResult;
@@ -58,7 +58,7 @@ final class EventPublicationWorkflowService
     public function submit(int $eventId, User $actor): array
     {
         [$persistedActor, $root, $requestedEventId] = $this->authorizedActorAndEvent($eventId, $actor);
-        if (! $this->moderationRequired((int) $root->tenant_id) || $this->isTenantAdmin($persistedActor)) {
+        if (! $this->moderationRequired((int) $root->tenant_id) || $this->isTenantAdmin($persistedActor, (int) $root->tenant_id)) {
             throw new EventLifecycleTransitionException('event_publication_review_not_required');
         }
 
@@ -80,7 +80,7 @@ final class EventPublicationWorkflowService
     public function publish(int $eventId, User $actor): array
     {
         [$persistedActor, $root, $requestedEventId] = $this->authorizedActorAndEvent($eventId, $actor);
-        if ($this->moderationRequired((int) $root->tenant_id) && ! $this->isTenantAdmin($persistedActor)) {
+        if ($this->moderationRequired((int) $root->tenant_id) && ! $this->isTenantAdmin($persistedActor, (int) $root->tenant_id)) {
             throw new EventLifecycleTransitionException('event_publication_review_required');
         }
 
@@ -224,7 +224,7 @@ final class EventPublicationWorkflowService
     private function authorizedAdminAndEvent(int $eventId, User $actor): array
     {
         [$persistedActor, $event, $requestedEventId] = $this->authorizedActorAndEvent($eventId, $actor);
-        if (! $this->isTenantAdmin($persistedActor)) {
+        if (! $this->isTenantAdmin($persistedActor, (int) $event->getAttribute('tenant_id'))) {
             throw new EventLifecycleTransitionException('event_lifecycle_authorization_denied');
         }
 
@@ -282,7 +282,8 @@ final class EventPublicationWorkflowService
                     ->whereNull('deleted_at')
                     ->lockForUpdate()
                     ->first();
-                if ($lockedActor === null || ! AdminTier::allows($lockedActor)) {
+                if ($lockedActor === null
+                    || ! TenantAdminScope::allows($lockedActor, (int) $lockedRoot->getAttribute('tenant_id'))) {
                     throw new EventLifecycleTransitionException('event_lifecycle_authorization_denied');
                 }
                 $transactionActor = $lockedActor;
@@ -549,8 +550,16 @@ final class EventPublicationWorkflowService
         )));
     }
 
-    private function isTenantAdmin(User $user): bool
+    /**
+     * Admin authority over the event's OWN community.
+     *
+     * AdminTier is tenant-unaware, so on its own it let an admin of any community
+     * approve, reject and publish another community's events. The actor lookup
+     * stays global on purpose (an organiser's account row may live elsewhere) —
+     * the tenant comparison belongs on this authority decision instead.
+     */
+    private function isTenantAdmin(User $user, int $tenantId): bool
     {
-        return AdminTier::allows($user);
+        return TenantAdminScope::allows($user, $tenantId);
     }
 }

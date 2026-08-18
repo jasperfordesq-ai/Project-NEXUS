@@ -304,7 +304,24 @@ final class EventPolicyTest extends TestCase
         $this->assertOnlyAbilities(self::ABILITIES, $this->policy, $platformAdmin, $event, 'platform admin');
         $this->assertOnlyAbilities(self::ABILITIES, $this->policy, $godAdmin, $event, 'god admin');
         $this->assertOnlyAbilities([], $this->policy, $suspended, $event, 'suspended member');
-        $this->assertOnlyAbilities([], $this->policy, $crossTenantAdmin, $event, 'cross-tenant admin');
+        // An admin of ANOTHER community holds no authority here, so it lands on
+        // exactly what a plain member gets: 'view' on a published event, and
+        // nothing else. Not [] — this event is published, and a published event is
+        // visible to any viewer (the public index shows it to anonymous visitors
+        // too), so withholding 'view' would be stricter than the public contract.
+        // What matters is the other eighteen abilities, all refused: assertOnlyAbilities
+        // checks the full matrix, so viewRoster, exportPeople, manageFinance and
+        // transferOwnership are being asserted false right here.
+        //
+        // 🔴 This expectation was [] and had been failing on main since 5373940c8,
+        // which dropped the actor's home-tenant comparison from hasValidContext()
+        // and thereby handed this persona ALL NINETEEN abilities. Two commits read
+        // the red as stale-test noise; it was a live cross-tenant escalation. The
+        // tenant question now lives on the authority decision (TenantAdminScope,
+        // via EventPolicy::isTenantAdmin) instead of on the identity check, so an
+        // organiser whose account row is on another tenant still keeps full
+        // authority over their own event. Tiers: TenantAdminScopeTest.
+        $this->assertOnlyAbilities(['view'], $this->policy, $crossTenantAdmin, $event, 'cross-tenant admin');
     }
 
     public function test_active_waitlist_state_outranks_a_stale_confirmed_rsvp_for_meeting_access(): void

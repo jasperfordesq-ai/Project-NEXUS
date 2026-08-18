@@ -21,7 +21,7 @@ use App\Models\EventSeries;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use App\Support\Events\EventContractMapper;
-use App\Support\Authorization\AdminTier;
+use App\Support\Authorization\TenantAdminScope;
 use App\Support\Events\EventDiscoveryCursor;
 use App\Support\Events\EventAttendanceResult;
 use App\Support\Events\EventLifecycleCompatibility;
@@ -4595,12 +4595,15 @@ class EventService
             return false;
         }
 
-        // The viewer's own row — never tenant-scoped (see policyUser()).
+        // The viewer's own row — never tenant-scoped (see policyUser()). tenant_id
+        // is selected because TenantAdminScope needs it to scope the AUTHORITY
+        // decision below; a partial SELECT without it fails closed.
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->select([
+                'tenant_id',
                 'role',
                 'is_admin',
                 'is_super_admin',
@@ -4609,7 +4612,9 @@ class EventService
             ])
             ->first();
 
-        return AdminTier::allows($user);
+        // Admin authority is per tenant. AdminTier alone would let any community's
+        // admin see every other community's unpublished events in this listing.
+        return TenantAdminScope::allows($user, (int) TenantContext::currentId());
     }
 
     /**

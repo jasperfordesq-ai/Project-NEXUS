@@ -12,7 +12,7 @@ use App\Core\TenantContext;
 use App\Enums\EventNotificationDeliveryMode;
 use App\Enums\EventSafetyEnforcementMode;
 use App\Jobs\RetractTenantEventFederationShares;
-use App\Support\Authorization\AdminTier;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -86,7 +86,7 @@ final class EventConfigurationService
             ->where('id', $userId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            ->first(['tenant_id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
         if ($user === null) {
             return false;
         }
@@ -94,12 +94,17 @@ final class EventConfigurationService
             return true;
         }
 
-        // AdminTier is the canonical admin-tier predicate: it also honours the
-        // 'super_admin'/'god' role strings and `is_admin`, and fails closed for
-        // broker/coordinator carrying a stale admin flag. The 'staff' option is
-        // labelled "Brokers and administrators", so broker is additive here and
+        // TenantAdminScope is AdminTier plus the tenant question: it honours the
+        // 'super_admin'/'god' role strings and `is_admin`, fails closed for
+        // broker/coordinator carrying a stale admin flag, AND confines a plain
+        // community admin to their own community. AdminTier alone would let a
+        // different community's admin create events here whenever this community
+        // restricted creation to admins. Note the 'members' setting above still
+        // short-circuits to true for everyone by design — the tenant question
+        // only arises once creation is restricted. The 'staff' option is labelled
+        // "Brokers and administrators", so broker is additive here and
         // coordinator stays out.
-        $isAdmin = AdminTier::allows($user);
+        $isAdmin = TenantAdminScope::allows($user, $tenantId);
 
         return $role === 'admins' ? $isAdmin : ($isAdmin || (string) $user->role === 'broker');
     }
