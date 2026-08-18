@@ -6,19 +6,19 @@
   "api_route_rows": 2686,
   "distinct_api_paths": 2232,
   "route_source_fingerprint": {
-    "digest": "394bc89b2a93539f9c7051d01c5834a0b3ff78f050e03fe68adb822b3fc78604",
+    "digest": "0b0be4f47377e4610b87b6ff59e03d2f77a0975f39d96c4970269b19e1fd84ae",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a"
+        "sha256": "262ddbb432dbe361a0933b9783a5eb8477fb4b68f976c0609128293ac7f39fdd"
       },
       {
         "file": "routes/channels.php",
-        "sha256": "78775cdb20cf4121fb97915141c2292f9804917402a918b99423bc941b9bd186"
+        "sha256": "f567011dec970156fb3d575a2d32afc49e6877b4a9d0e899622d53c22a4690af"
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "18793b225a7c9b277d1531049cf3ea67f3be0ca0896ab0725ae88c505eb2c201"
+        "sha256": "835d1f0531f159daf291f2824f2086d4da0d95cbe97886dee0ea5cddee1a7a6d"
       }
     ]
   },

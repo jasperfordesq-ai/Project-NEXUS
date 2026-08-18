@@ -44,12 +44,20 @@ function routeSourceFiles(repoRoot) {
  * A digest over the content of every route-defining file, plus the per-file
  * digests so a mismatch report can name which file moved rather than only
  * saying "something changed".
+ *
+ * Line endings are normalised to LF before hashing, and that is load-bearing
+ * rather than tidiness. The Windows dev checkout stores these files with CRLF
+ * while the CI runner checks them out with LF, so hashing raw bytes produced a
+ * digest that could only ever match on the machine that wrote it: the snapshot
+ * validated locally and reported "the route inventory is stale" on every single
+ * CI run, which is a checker that reports danger it cannot see — the mirror of
+ * the failure this fingerprint exists to prevent.
  */
 export function fingerprintRouteSources(repoRoot) {
   const files = routeSourceFiles(repoRoot);
   const perFile = files.map((rel) => {
-    const buf = fs.readFileSync(path.join(repoRoot, rel));
-    return { file: rel.split(path.sep).join('/'), sha256: crypto.createHash('sha256').update(buf).digest('hex') };
+    const text = fs.readFileSync(path.join(repoRoot, rel), 'utf8').replace(/\r\n/g, '\n');
+    return { file: rel.split(path.sep).join('/'), sha256: crypto.createHash('sha256').update(text, 'utf8').digest('hex') };
   });
   const combined = crypto
     .createHash('sha256')
