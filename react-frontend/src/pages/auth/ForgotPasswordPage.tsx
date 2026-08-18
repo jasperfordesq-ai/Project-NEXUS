@@ -136,7 +136,7 @@ export function ForgotPasswordPage() {
           {submitError && (
             <div
               role="alert"
-              className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-600 dark:text-red-400"
+              className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-700 dark:text-red-400"
             >
               {submitError}
             </div>

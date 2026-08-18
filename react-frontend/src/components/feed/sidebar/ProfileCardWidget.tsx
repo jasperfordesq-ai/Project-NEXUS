@@ -103,7 +103,7 @@ export function ProfileCardWidget() {
               <p className="text-xs text-[var(--text-muted)]">{t('sidebar.profile.listings')}</p>
             </Link>
             <div className="text-center">
-              <p className="text-sm font-bold text-emerald-500">{stats.given_count}</p>
+              <p className="text-sm font-bold text-emerald-700">{stats.given_count}</p>
               <p className="text-xs text-[var(--text-muted)]">{t('sidebar.profile.given')}</p>
             </div>
             <div className="text-center">
@@ -120,7 +120,7 @@ export function ProfileCardWidget() {
             >
               <Heart className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
               <div>
-                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                   {stats.offers_count}
                 </p>
                 <p className="text-[10px] text-[var(--text-muted)]">{t('sidebar.profile.offers')}</p>

@@ -313,7 +313,7 @@ export function DonationsTab() {
           </GlassCard>
           <GlassCard className="p-3 text-center">
             <p className="text-xs text-theme-muted">{t('donations.stats.total_donors')}</p>
-            <p className="text-lg font-bold text-rose-500">{stats.total_donors}</p>
+            <p className="text-lg font-bold text-rose-700">{stats.total_donors}</p>
           </GlassCard>
           <GlassCard className="p-3 text-center">
             <p className="text-xs text-theme-muted">{t('donations.stats.active_campaigns')}</p>

@@ -170,7 +170,7 @@ export function ImpactSummaryPage() {
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                           {formatNumber(1, { style: 'percent', maximumFractionDigits: 0 })}
                         </span>
                       </div>
@@ -181,7 +181,7 @@ export function ImpactSummaryPage() {
 
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                           {formatNumber(0.95, { style: 'percent', maximumFractionDigits: 0 })}
                         </span>
                       </div>
@@ -293,7 +293,7 @@ export function ImpactSummaryPage() {
                   <p className="text-sm text-theme-muted mb-4">
                     {t('impact_summary.impact_report_description')}
                   </p>
-                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover:gap-3 transition-all">
+                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400 group-hover:gap-3 transition-all">
                     {t('impact_summary.read_report')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
                   </div>
                 </GlassCard>

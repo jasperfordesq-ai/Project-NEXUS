@@ -1494,7 +1494,7 @@ export function SettingsPage() {
           <ModalBody>
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="text-red-600 dark:text-red-400 font-medium">{t('delete_modal.warning')}</p>
+                <p className="text-red-700 dark:text-red-400 font-medium">{t('delete_modal.warning')}</p>
                 <p className="text-theme-muted text-sm mt-1">
                   {t('delete_modal.warning_desc')}
                 </p>

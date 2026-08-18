@@ -1146,7 +1146,7 @@ export function ListingDetailPage() {
           </h2>
           {(listing.member_offers?.length ?? 0) > 0 && (
             <div className="mb-3">
-              <h3 className="text-sm font-medium text-emerald-500 mb-2">{t('detail_also_offers')}</h3>
+              <h3 className="text-sm font-medium text-emerald-700 mb-2">{t('detail_also_offers')}</h3>
               <div className="flex flex-wrap gap-2">
                 {listing.member_offers!.map((l) => (
                   <Link key={l.id} to={tenantPath(`/listings/${l.id}`)}>

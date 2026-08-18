@@ -382,7 +382,7 @@ export function GroupChallengesTab({ groupId, isAdmin }: GroupChallengesTabProps
             {/* XP reward badge */}
             <div className="flex w-fit flex-shrink-0 items-center gap-1 rounded-lg bg-warning/10 px-2 py-1">
               <Flame className="w-3.5 h-3.5 text-[var(--color-warning)]" aria-hidden="true" />
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
                 {t('challenges.xp_reward', { xp: challenge.reward_xp })}
               </span>
             </div>

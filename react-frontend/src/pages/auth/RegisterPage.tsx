@@ -1287,7 +1287,7 @@ export function RegisterPage() {
                     <div className="flex items-start gap-3">
                       <ShieldCheck aria-hidden="true" className="w-5 h-5 text-[var(--color-warning)] flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-amber-600 dark:text-amber-400">{t('register.approval_title')}</p>
+                        <p className="font-medium text-amber-700 dark:text-amber-400">{t('register.approval_title')}</p>
                         <p className="text-amber-600/80 dark:text-amber-300/80 mt-1">
                           {t('register.approval_body')}
                         </p>
@@ -1354,7 +1354,7 @@ export function RegisterPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm"
+              className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm"
               role="alert"
             >
               {error}

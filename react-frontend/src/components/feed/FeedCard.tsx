@@ -1288,7 +1288,7 @@ const FeedCard = React.memo(function FeedCard({
                           </span>
                         </div>
                         {!pollExpired && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
                               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1375,7 +1375,7 @@ const FeedCard = React.memo(function FeedCard({
                                     </span>
                                   )}
                                   {isVoted && resultsHidden && (
-                                    <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                                    <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
                                       {t('poll.your_vote')}
                                     </span>
                                   )}

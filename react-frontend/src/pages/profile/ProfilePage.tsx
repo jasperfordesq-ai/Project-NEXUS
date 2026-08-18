@@ -730,7 +730,7 @@ export function ProfilePage() {
                 ) : isBlocked ? (
                   // Blocked state — show only unblock option and a notice
                   <>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-sm">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 text-sm">
                       <ShieldOff className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                       <span>{t('blocked_by_you')}</span>
                     </div>
@@ -1307,7 +1307,7 @@ export function ProfilePage() {
                         </Tooltip>
                         <p className="text-xs text-theme-subtle mt-1 line-clamp-2">{badge.description}</p>
                         {badge.earned ? (
-                          <span className="inline-block mt-2 text-xs text-emerald-500 font-medium">{t('achievements.badge_earned')}</span>
+                          <span className="inline-block mt-2 text-xs text-emerald-700 font-medium">{t('achievements.badge_earned')}</span>
                         ) : (
                           <span className="inline-flex items-center gap-1 mt-2 text-xs text-theme-subtle">
                             <Lock className="w-3 h-3" aria-hidden="true" /> {t('achievements.badge_locked')}

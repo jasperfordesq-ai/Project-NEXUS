@@ -824,7 +824,7 @@ export function OnboardingPage() {
                     </p>
                   ) : hasAvatar ? (
                     <div className="text-center">
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 justify-center font-medium">
+                      <p className="text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 justify-center font-medium">
                         <CheckCircle className="w-4 h-4" aria-hidden="true" />
                         {t('photo_uploaded')}
                       </p>
@@ -1048,7 +1048,7 @@ export function OnboardingPage() {
                 )}
 
                 {skillOffers.length > 0 && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-3 font-medium">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-3 font-medium">
                     {t('skills_to_offer_count', { count: skillOffers.length })}
                   </p>
                 )}
@@ -1097,7 +1097,7 @@ export function OnboardingPage() {
                 )}
 
                 {skillNeeds.length > 0 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 font-medium">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-3 font-medium">
                     {t('skills_needed_count', { count: skillNeeds.length })}
                   </p>
                 )}

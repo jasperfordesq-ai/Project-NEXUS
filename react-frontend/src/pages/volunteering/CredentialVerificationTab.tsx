@@ -546,7 +546,7 @@ export function CredentialVerificationTab() {
 
                     {credential.status === 'rejected' && credential.rejection_reason && (
                       <div className="mt-2 p-2 rounded-lg bg-rose-500/10">
-                        <p className="text-xs text-rose-600 dark:text-rose-400">
+                        <p className="text-xs text-rose-700 dark:text-rose-400">
                           <strong>{t('credentials.reason')}:</strong> {credential.rejection_reason}
                         </p>
                       </div>
@@ -686,7 +686,7 @@ export function CredentialVerificationTab() {
             {/* Upload Error */}
             {uploadError && (
               <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30">
-                <p className="text-sm text-rose-600 dark:text-rose-400">{uploadError}</p>
+                <p className="text-sm text-rose-700 dark:text-rose-400">{uploadError}</p>
               </div>
             )}
           </ModalBody>

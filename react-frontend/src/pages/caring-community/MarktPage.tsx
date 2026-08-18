@@ -122,7 +122,7 @@ function MarktCard({ item }: MarktCardProps) {
     }
     // marketplace
     if (item.price_type === 'free' || item.price_cash === 0) {
-      return <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm">{t('markt.free')}</span>;
+      return <span className="text-emerald-700 dark:text-emerald-400 font-semibold text-sm">{t('markt.free')}</span>;
     }
     if (item.price_cash != null && item.price_cash > 0) {
       const currency = item.price_currency ?? 'EUR';

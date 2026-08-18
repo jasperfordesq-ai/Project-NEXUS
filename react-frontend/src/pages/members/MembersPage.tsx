@@ -1182,7 +1182,7 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
           <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
             {member.rating != null && (
               <span
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-medium"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium"
                 aria-label={t('members.rating_aria', { rating: member.rating.toFixed(1) })}
               >
                 <Star className="w-3 h-3 fill-amber-500 text-[var(--color-warning)]" aria-hidden="true" />

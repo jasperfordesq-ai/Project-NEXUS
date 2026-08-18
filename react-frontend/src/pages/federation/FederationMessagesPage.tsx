@@ -1222,7 +1222,7 @@ export function FederationMessagesPage() {
                                             </span>
                                           )}
                                           {error && !translatedText && (
-                                            <span className="text-xs text-red-600 dark:text-red-400" role="alert">{error}</span>
+                                            <span className="text-xs text-red-700 dark:text-red-400" role="alert">{error}</span>
                                           )}
                                         </div>
                                       )}

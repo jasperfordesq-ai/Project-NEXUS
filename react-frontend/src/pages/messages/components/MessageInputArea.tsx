@@ -119,7 +119,7 @@ export function MessageInputArea({
       {/* Messaging disabled notice (feature flag) */}
       {!isDirectMessagingEnabled && (
         <div className="flex flex-col items-stretch gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center sm:flex-row sm:items-center">
-          <span className="text-amber-600 dark:text-amber-400 text-sm flex-1">
+          <span className="text-amber-700 dark:text-amber-400 text-sm flex-1">
             {t('disabled_inline')}
           </span>
           <Button

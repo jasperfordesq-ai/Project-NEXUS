@@ -176,7 +176,7 @@ export function VerifyEmailPage() {
                 <div className="flex items-start gap-3">
                   <ShieldCheck aria-hidden="true" className="w-5 h-5 text-[var(--color-warning)] shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-amber-600 dark:text-amber-400">{t('verify_email.awaiting_approval_title')}</p>
+                    <p className="font-medium text-amber-700 dark:text-amber-400">{t('verify_email.awaiting_approval_title')}</p>
                     <p className="text-amber-600/80 dark:text-amber-300/80 mt-1">
                       {t('verify_email.awaiting_approval_body')}
                     </p>
@@ -226,7 +226,7 @@ export function VerifyEmailPage() {
             {/* Resend verification — only available when authenticated */}
             {isAuthenticated ? (
               resendSuccess ? (
-                <div role="status" className="p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-sm">
+                <div role="status" className="p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-800 dark:text-emerald-400 text-sm">
                   {t('verify_email.resend_success')}
                 </div>
               ) : (

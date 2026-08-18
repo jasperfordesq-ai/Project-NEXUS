@@ -155,7 +155,7 @@ export function ContactPage() {
           ) : (
             <form onSubmit={handleSubmit} onFocusCapture={() => setTurnstileArmed(true)} className="space-y-5">
               {error && (
-                <div role="alert" className="p-3 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-sm">
+                <div role="alert" className="p-3 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 text-sm">
                   {error}
                 </div>
               )}
@@ -223,7 +223,7 @@ export function ContactPage() {
                 <div>
                   <div ref={turnstileRef} className="my-2 min-h-[1px]" />
                   {turnstileStatus === 'error' && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
                       {t('contact.turnstile_error')}
                     </p>
                   )}

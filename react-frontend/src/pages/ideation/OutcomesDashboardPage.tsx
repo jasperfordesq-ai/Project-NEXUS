@@ -178,12 +178,12 @@ export function OutcomesDashboardPage() {
             </GlassCard>
             <GlassCard className="p-4 text-center">
               <CheckCircle className="w-6 h-6 mx-auto mb-2 text-[var(--color-success)]" />
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{dashboard.implemented}</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">{dashboard.implemented}</p>
               <p className="text-xs text-[var(--color-text-tertiary)]">{t('outcomes.implemented_count')}</p>
             </GlassCard>
             <GlassCard className="p-4 text-center">
               <Clock className="w-6 h-6 mx-auto mb-2 text-[var(--color-warning)]" />
-              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{dashboard.in_progress}</p>
+              <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{dashboard.in_progress}</p>
               <p className="text-xs text-[var(--color-text-tertiary)]">{t('outcomes.in_progress_count')}</p>
             </GlassCard>
             <GlassCard className="p-4 text-center">

@@ -343,7 +343,7 @@ export default function VolOrgDashboardPage() {
               )}
             </div>
             <div className="text-left sm:text-right sm:flex-shrink-0">
-              <p className="text-2xl font-bold text-emerald-500">{t('hours_abbrev', { hours: org.balance })}</p>
+              <p className="text-2xl font-bold text-emerald-700">{t('hours_abbrev', { hours: org.balance })}</p>
               <p className="text-xs text-theme-muted">{t('org_dashboard.wallet_balance')}</p>
             </div>
           </div>

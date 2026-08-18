@@ -258,16 +258,16 @@ export function TeamTasks({ groupId, members = [] }: TeamTasksProps) {
           </GlassCard>
           <GlassCard className="px-3 py-2 flex items-center gap-2">
             <CheckSquare className="w-4 h-4 text-[var(--color-success)]" />
-            <span className="text-sm text-green-600 dark:text-green-400">{stats.done}</span>
+            <span className="text-sm text-green-700 dark:text-green-400">{stats.done}</span>
           </GlassCard>
           <GlassCard className="px-3 py-2 flex items-center gap-2">
             <Clock className="w-4 h-4 text-[var(--color-warning)]" />
-            <span className="text-sm text-amber-600 dark:text-amber-400">{stats.in_progress}</span>
+            <span className="text-sm text-amber-700 dark:text-amber-400">{stats.in_progress}</span>
           </GlassCard>
           {stats.overdue > 0 && (
             <GlassCard className="px-3 py-2 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-[var(--color-error)]" />
-              <span className="text-sm text-red-600 dark:text-red-400">
+              <span className="text-sm text-red-700 dark:text-red-400">
                 {stats.overdue} {t('tasks.overdue')}
               </span>
             </GlassCard>

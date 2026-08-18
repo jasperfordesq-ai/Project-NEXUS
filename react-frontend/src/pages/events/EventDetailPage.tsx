@@ -1109,7 +1109,7 @@ export function EventDetailPage() {
             <div className="flex items-center gap-3">
               <Ban className="w-5 h-5 text-red-400 flex-shrink-0" aria-hidden="true" />
               <div>
-                <p className="text-red-600 dark:text-red-400 font-semibold">{t('detail.event_cancelled')}</p>
+                <p className="text-red-700 dark:text-red-400 font-semibold">{t('detail.event_cancelled')}</p>
                 {event.schedule.cancellation_reason && (
                   <p className="text-red-300/80 text-sm mt-1">{t('detail.cancellation_reason', { reason: event.schedule.cancellation_reason })}</p>
                 )}

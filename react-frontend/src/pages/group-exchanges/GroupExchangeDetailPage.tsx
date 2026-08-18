@@ -552,7 +552,7 @@ export function GroupExchangeDetailPage() {
         {/* Cancelled notice */}
         {exchange.status === 'cancelled' && (
           <div className="bg-red-500/10 rounded-lg p-4 mt-4">
-            <h3 className="text-sm font-medium text-red-600 dark:text-red-400 mb-1 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-red-700 dark:text-red-400 mb-1 flex items-center gap-2">
               <XCircle className="w-4 h-4" aria-hidden="true" />
               {t('detail.exchange_cancelled')}
             </h3>

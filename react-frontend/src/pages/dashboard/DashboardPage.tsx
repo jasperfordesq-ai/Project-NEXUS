@@ -564,7 +564,7 @@ export function DashboardPage() {
                         return (
                           <Link key={event.id} to={tenantPath(`/events/${event.id}`)} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0 group">
                             <div className="w-12 h-14 rounded-lg bg-gradient-to-br from-rose-500/20 to-pink-500/20 flex flex-col items-center justify-center shrink-0">
-                              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 leading-none">{month}</span>
+                              <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 leading-none">{month}</span>
                               <span className="text-lg font-bold text-theme-primary leading-none mt-0.5">{day}</span>
                             </div>
                             <div className="min-w-0 flex-1">

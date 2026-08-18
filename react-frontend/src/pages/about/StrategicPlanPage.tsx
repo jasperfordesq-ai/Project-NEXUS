@@ -262,7 +262,7 @@ export function StrategicPlanPage() {
                     <div className="p-2 rounded-lg bg-emerald-500/15">
                       <Eye className="w-5 h-5 text-emerald-500 dark:text-emerald-400" aria-hidden="true" />
                     </div>
-                    <h3 className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{t('strategic_plan.vision_heading')}</h3>
+                    <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{t('strategic_plan.vision_heading')}</h3>
                   </div>
                   <p className="text-sm text-theme-muted leading-relaxed">
                     {t('strategic_plan.vision_text')}
@@ -356,7 +356,7 @@ export function StrategicPlanPage() {
                       <TableRow key={idx}>
                         <TableCell className="text-theme-muted">{t(`strategic_plan.pillar_1_row_${idx}_initiative`)}</TableCell>
                         <TableCell>
-                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-800 dark:text-emerald-400">
                             {t(`strategic_plan.pillar_1_row_${idx}_priority`)}
                           </span>
                         </TableCell>

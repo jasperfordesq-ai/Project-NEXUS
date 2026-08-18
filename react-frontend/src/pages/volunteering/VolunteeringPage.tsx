@@ -452,7 +452,7 @@ export function VolunteeringPage() {
                 <Building2 className="w-5 h-5" aria-hidden="true" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">{t('for_organisations')}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">{t('for_organisations')}</p>
                 <h2 className="text-base font-semibold text-theme-primary">
                   {soleManagedOrg
                     ? t('org_callout_you_manage_one', { name: soleManagedOrg.name })

@@ -581,7 +581,7 @@ export function SecurityTab({
           <ModalBody>
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="text-amber-600 dark:text-amber-400 font-medium">{t('twofa_disable_warning')}</p>
+                <p className="text-amber-700 dark:text-amber-400 font-medium">{t('twofa_disable_warning')}</p>
                 <p className="text-theme-muted text-sm mt-1">
                   {t('twofa_disable_desc')}
                 </p>
@@ -622,7 +622,7 @@ export function SecurityTab({
           <ModalBody>
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="text-amber-600 dark:text-amber-400 font-medium">{t('backup_codes_warning')}</p>
+                <p className="text-amber-700 dark:text-amber-400 font-medium">{t('backup_codes_warning')}</p>
                 <p className="text-theme-muted text-sm mt-1">
                   {t('backup_codes_desc')}
                 </p>

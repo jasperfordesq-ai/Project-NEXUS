@@ -236,7 +236,7 @@ export function PilotApplyPage() {
         <p className="text-sm text-theme-muted mb-5">{t('provisioning.intro')}</p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-sm" role="alert">
+          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 text-sm" role="alert">
             {error}
           </div>
         )}
@@ -312,10 +312,10 @@ export function PilotApplyPage() {
               <p className="text-xs text-theme-subtle mt-1">{t('provisioning.slug_status.checking')}</p>
             )}
             {slugStatus.state === 'available' && (
-              <p className="text-xs text-emerald-500 mt-1">{t('provisioning.slug_status.available')}</p>
+              <p className="text-xs text-emerald-700 mt-1">{t('provisioning.slug_status.available')}</p>
             )}
             {slugStatus.state === 'unavailable' && (
-              <p className="text-xs text-rose-500 mt-1">
+              <p className="text-xs text-rose-700 mt-1">
                 {t(`provisioning.slug_status.${slugStatus.reason}`)}
               </p>
             )}
