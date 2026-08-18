@@ -1,0 +1,123 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# SCREENSHOT TOUR — not a pass/fail test.
+#
+# Signs in and visits the main signed-in screens, photographing each one. The
+# images are then collected by `node scripts/screenshots.mjs tour` and compared
+# against the committed baselines, which is where a layout regression is caught.
+#
+# 🔴 IT LIVES IN A SUBDIRECTORY ON PURPOSE. `.maestro/config.yaml` declares
+# `flows: - "*.yaml"`, which matches the top level only — so `npm run e2e` runs
+# the nine behaviour flows and does NOT run this tour. Moving this file up one
+# level would put screenshot capture inside the E2E suite, where a layout change
+# would start failing the behaviour tests.
+#
+# Screen names are stable and must not be renamed casually: they are the baseline
+# filenames, so renaming one orphans its baseline and reads as a new screen with
+# no history.
+#
+# Run:
+#   node scripts/screenshots.mjs tour
+#   node scripts/screenshots.mjs tour --scheme dark
+
+appId: ie.project.nexus
+---
+- launchApp:
+    clearState: true
+
+# ── Sign in ───────────────────────────────────────────────────────────────────
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - extendedWaitUntil:
+          visible: "Select your timebank"
+          timeout: 5000
+      - tapOn: "hour-timebank"
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000
+
+# The signed-out screen is worth a baseline of its own — it is the first thing a
+# new member sees, and the only screen reachable with no account.
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 01-login
+
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    id: "password-input"
+- inputText: "${TEST_PASSWORD}"
+# Dismiss the keyboard, or it covers the lower half of every capture.
+- back
+- tapOn:
+    id: "login-submit"
+
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 20000
+
+# ── The five tab-bar destinations ─────────────────────────────────────────────
+#
+# 🔴 `waitForAnimationToEnd` precedes EVERY capture. Waiting for an element to be
+# visible is not the same as the screen having settled: on the first attempt the
+# profile and messages screens were photographed mid-settle and came out
+# vertically offset from the previous run — 8.5% and 5.6% of pixels different,
+# with the entire content shifted. That reads as a layout regression and is
+# nothing of the sort. Animations cannot simply be disabled here, because that
+# brings back the LogBox banner that covers the tab bar.
+# A settle wait before each capture: the tab content loads asynchronously, and a
+# screenshot taken mid-load photographs a skeleton placeholder, which then
+# becomes a baseline that never reproduces.
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 02-home-feed
+
+- tapOn: "Listings"
+- extendedWaitUntil:
+    visible: "Listings|Browse|Search"
+    timeout: 15000
+# 🔴 Listings needs TWO settle passes. Its cards animate in after the header is
+# already present, so a single wait returns while the list is still moving: the
+# header compared clean while the card region differed by 8.3%. A second pass
+# covers the staggered card entrance.
+- waitForAnimationToEnd:
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 03-listings
+
+- tapOn: "Messages"
+- extendedWaitUntil:
+    visible: "Messages|Conversations|No messages"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 04-messages
+
+- tapOn: "More"
+- extendedWaitUntil:
+    visible: "View wallet"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 05-profile
+
+# ── One screen behind the tab bar ─────────────────────────────────────────────
+# The wallet is the highest-consequence member screen (balances and time
+# credits), and it was where the web platform's contrast failures were first
+# noticed, so it earns a baseline.
+- tapOn: "View wallet"
+- extendedWaitUntil:
+    visible: "Wallet|Balance|Transactions"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 06-wallet

@@ -33,6 +33,7 @@
     "drift:check": "npm run parity:check && npm run api:check",
     "emulator:start": "node scripts/emulator.mjs start",
     "emulator:stop": "node scripts/emulator.mjs stop",
+    "screenshot:tour": "node scripts/screenshots.mjs tour",
     "screenshot:capture": "node scripts/screenshots.mjs capture",
     "screenshot:compare": "node scripts/screenshots.mjs compare",
     "screenshot:approve": "node scripts/screenshots.mjs approve",

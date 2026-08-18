@@ -31,8 +31,9 @@
  *   node scripts/screenshots.mjs capture --scheme dark
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import url from 'node:url';
 
@@ -51,6 +52,44 @@ const APP_ID = 'ie.project.nexus';
  * elsewhere on the screen. 96px at 420dpi covers the Pixel 7 status bar.
  */
 const STATUS_BAR_PX = 96;
+
+/**
+ * The right edge carries the scroll indicator, which fades in and out and is
+ * therefore present in some captures and not others. On the dark login screen that
+ * alone produced a 1.0% difference between two otherwise identical runs — the diff
+ * was a single vertical stripe down the right edge and nothing else.
+ *
+ * Cropping it is the same judgement as cropping the status bar: a transient overlay
+ * is excluded, rather than raising the global threshold and blunting the gate
+ * everywhere. 24px at 420dpi clears the indicator with a margin.
+ */
+const SCROLLBAR_PX = 24;
+
+/**
+ * Screens captured for eyeballing but NOT compared, because they are not
+ * reproducible and a gate that fires at random is worse than no gate.
+ *
+ * Measured across repeated tours on 2026-08-18: `01-login`, `05-profile` and
+ * `06-wallet` reproduce at **0 pixels** difference, run after run. These three do
+ * not, and the reasons are in the app rather than the tooling:
+ *
+ *   02-home-feed   the "For You" feed is algorithmically ordered, so the same
+ *                  request can return a different sequence. Differed by 18% between
+ *                  two runs that were otherwise identical.
+ *   03-listings    cards animate in on a stagger AFTER the header is present, so a
+ *                  settle wait returns while the list is still moving. Two settle
+ *                  passes did not fix it (8.3% then 8.9%).
+ *   04-messages    same staggered-content pattern.
+ *
+ * All three also render relative timestamps ("6d ago"), which drift daily
+ * regardless of animation.
+ *
+ * Making them comparable needs fixed-date seed data and a deterministic sort — real
+ * work, worth doing, and not pretended to be done here. Until then they are
+ * captured (looking at them by hand still catches a broken layout) and skipped by
+ * the comparison, which is stated in the output rather than hidden.
+ */
+const VOLATILE_SCREENS = new Set(['02-home-feed.png', '03-listings.png', '04-messages.png']);
 
 /** A difference this small is anti-aliasing noise, not a regression. */
 const MAX_DIFF_RATIO = 0.001; // 0.1% of compared pixels
@@ -194,12 +233,17 @@ function capture(name, dir) {
   return { file: out, width: png.width, height: png.height };
 }
 
-/** Crop the status bar off the top so its live clock cannot cause a diff. */
-function cropStatusBar(png) {
+/**
+ * Crop the two transient regions: the status bar along the top (live clock) and
+ * the scroll indicator down the right edge. Everything between them is compared
+ * strictly.
+ */
+function cropTransientRegions(png) {
   const height = png.height - STATUS_BAR_PX;
-  if (height <= 0) return png;
-  const out = new PNG({ width: png.width, height });
-  PNG.bitblt(png, out, 0, STATUS_BAR_PX, png.width, height, 0, 0);
+  const width = png.width - SCROLLBAR_PX;
+  if (height <= 0 || width <= 0) return png;
+  const out = new PNG({ width, height });
+  PNG.bitblt(png, out, 0, STATUS_BAR_PX, width, height, 0, 0);
   return out;
 }
 
@@ -252,6 +296,98 @@ function doCapture() {
   console.log('screenshots: and a seeded local API. See docs/TESTING.md.');
 }
 
+/**
+ * Drive the app through the signed-in screens with Maestro and collect the
+ * resulting images into `screenshots/current/<scheme>/`.
+ *
+ * Maestro is used for navigation rather than a hand-rolled sequence of `adb
+ * shell input tap` coordinates, because coordinates break the moment a layout
+ * changes — which is exactly the thing being tested. Maestro finds elements by
+ * label and testID, so the tour keeps working when the pixels move.
+ *
+ * Maestro writes `takeScreenshot` output into its own run directory, so this
+ * copies the newest run's images across. It refuses to proceed if the tour
+ * produced nothing, rather than silently comparing an empty set and reporting OK.
+ */
+function doTour() {
+  requireDevice();
+
+  const flow = path.join(MOBILE_ROOT, '.maestro', 'screens', 'capture-screens.yaml');
+  if (!fs.existsSync(flow)) fail(`tour flow not found: ${path.relative(MOBILE_ROOT, flow)}`);
+
+  const maestro =
+    process.platform === 'win32'
+      ? path.join(os.homedir(), '.maestro', 'bin', 'maestro.bat')
+      : path.join(os.homedir(), '.maestro', 'bin', 'maestro');
+  if (!fs.existsSync(maestro)) fail(`Maestro not found at ${maestro} — see docs/TESTING.md.`);
+
+  // Animations must be ON for navigation: with scales at 0 the LogBox banner
+  // covers the tab bar and taps land on it instead. stabiliseDevice() below then
+  // turns them off only for the capture itself.
+  restoreAnimations();
+  setScheme(scheme);
+
+  const email = process.env.E2E_TEST_EMAIL || 'e2e.user.a@project-nexus.local';
+  const password = process.env.E2E_TEST_PASSWORD || 'TestPassword123!';
+
+  console.log(`screenshots: touring the app (scheme ${scheme}) via Maestro`);
+  const run = spawnSync(
+    maestro,
+    ['test', '--env', `TEST_EMAIL=${email}`, '--env', `TEST_PASSWORD=${password}`, flow],
+    {
+      cwd: MOBILE_ROOT,
+      stdio: 'inherit',
+      env: { ...process.env, MAESTRO_CLI_NO_ANALYTICS: '1', MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true' },
+    // 🔴 `shell: true` is REQUIRED on Windows. Maestro ships `maestro.bat`, and
+    // Node refuses to spawn a .bat directly since the CVE-2024-27980 fix — it
+    // fails with EINVAL and `status: null`, which reads as "the tool ran and
+    // returned nothing" rather than "the tool never started".
+    shell: process.platform === 'win32',
+    }
+  );
+
+  const collected = collectMaestroScreenshots();
+  if (collected === 0) {
+    fail(
+      'the tour produced no screenshots.',
+      run.status === 0
+        ? 'Maestro reported success but wrote nothing — check the flow takeScreenshot steps.'
+        : `Maestro exited ${run.status}. Its output above says which step failed.`
+    );
+  }
+  console.log(`screenshots: collected ${collected} screen(s) into current/${scheme}`);
+  if (run.status !== 0) {
+    console.error('');
+    console.error(`screenshots: Maestro exited ${run.status} — the tour did not finish, so some`);
+    console.error('screenshots: screens are missing. Do NOT approve a partial tour as a baseline.');
+    process.exit(1);
+  }
+}
+
+/** Copy the newest Maestro run's takeScreenshot output into current/<scheme>/. */
+function collectMaestroScreenshots() {
+  const testsRoot = path.join(os.homedir(), '.maestro', 'tests');
+  if (!fs.existsSync(testsRoot)) return 0;
+
+  const runs = fs
+    .readdirSync(testsRoot)
+    .map((name) => ({ name, mtime: fs.statSync(path.join(testsRoot, name)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime);
+  if (runs.length === 0) return 0;
+
+  const shotDir = path.join(testsRoot, runs[0].name, 'capture-screens', 'takeScreenshot');
+  if (!fs.existsSync(shotDir)) return 0;
+
+  const dest = path.join(SHOT_ROOT, 'current', scheme);
+  ensureDir(dest);
+  let n = 0;
+  for (const f of fs.readdirSync(shotDir).filter((x) => x.endsWith('.png'))) {
+    fs.copyFileSync(path.join(shotDir, f), path.join(dest, f));
+    n += 1;
+  }
+  return n;
+}
+
 function doCompare() {
   const currentDir = path.join(SHOT_ROOT, 'current', scheme);
   const baselineDir = path.join(SHOT_ROOT, 'baseline', scheme);
@@ -271,7 +407,13 @@ function doCompare() {
   if (names.length === 0) fail('the baseline directory contains no PNGs.');
 
   let failures = 0;
+  let skipped = 0;
   for (const name of names) {
+    if (VOLATILE_SCREENS.has(name)) {
+      console.log(`screenshots: skip ${name} — not reproducible, see VOLATILE_SCREENS`);
+      skipped += 1;
+      continue;
+    }
     const cur = path.join(currentDir, name);
     if (!fs.existsSync(cur)) {
       console.error(`screenshots: MISSING capture for baseline "${name}"`);
@@ -279,8 +421,8 @@ function doCompare() {
       continue;
     }
 
-    const a = cropStatusBar(readPng(path.join(baselineDir, name)));
-    const b = cropStatusBar(readPng(cur));
+    const a = cropTransientRegions(readPng(path.join(baselineDir, name)));
+    const b = cropTransientRegions(readPng(cur));
 
     if (a.width !== b.width || a.height !== b.height) {
       console.error(
@@ -318,7 +460,10 @@ function doCompare() {
     console.error('screenshots: do NOT approve without looking — that is how a visual bug becomes the baseline.');
     process.exit(1);
   }
-  console.log(`screenshots: OK — ${names.length} screen(s) match the baseline.`);
+  console.log(
+    `screenshots: OK — ${names.length - skipped} screen(s) match the baseline` +
+      (skipped > 0 ? `, ${skipped} skipped as not reproducible.` : '.')
+  );
 }
 
 function doApprove() {
@@ -328,6 +473,10 @@ function doApprove() {
   ensureDir(baselineDir);
   let n = 0;
   for (const f of fs.readdirSync(currentDir).filter((x) => x.endsWith('.png'))) {
+    if (VOLATILE_SCREENS.has(f)) {
+      console.log(`screenshots: not promoting ${f} — it does not reproduce, so it cannot be an assertion`);
+      continue;
+    }
     fs.copyFileSync(path.join(currentDir, f), path.join(baselineDir, f));
     n += 1;
   }
@@ -345,6 +494,9 @@ switch (mode) {
   case 'approve':
     doApprove();
     break;
+  case 'tour':
+    doTour();
+    break;
   case 'restore-animations':
     // Exposed so a Maestro run can guarantee normal timing without capturing.
     requireDevice();
@@ -353,7 +505,7 @@ switch (mode) {
     break;
   default:
     console.error(
-      'usage: node scripts/screenshots.mjs <capture|compare|approve|restore-animations> [--scheme light|dark]'
+      'usage: node scripts/screenshots.mjs <tour|capture|compare|approve|restore-animations> [--scheme light|dark]'
     );
     process.exit(2);
 }

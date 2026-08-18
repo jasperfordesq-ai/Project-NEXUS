@@ -161,11 +161,56 @@ config pins the same setting.
 
 ```bash
 npm run emulator:start                     # boots and WAITS for sys.boot_completed
-npm run screenshot:capture                 # writes screenshots/current/light/
-npm run screenshot:capture -- --scheme dark
-npm run screenshot:compare                 # fails if a screen changed
+npm run screenshot:tour                    # signs in, visits 6 screens, captures each
+npm run screenshot:tour -- --scheme dark
+npm run screenshot:compare                 # fails if a compared screen changed
 npm run screenshot:approve                 # promote current to baseline
+npm run screenshot:capture                 # single screen only, no navigation
 ```
+
+`tour` drives the app with Maestro (`.maestro/screens/capture-screens.yaml`) rather
+than tapping fixed coordinates, because coordinates break the moment a layout
+changes — which is the thing being tested. It needs the same preconditions as
+`npm run e2e`.
+
+### 🔴 Three of the six screens are captured but NOT compared
+
+Measured across repeated tours: `01-login`, `05-profile` and `06-wallet` reproduce
+at **0 pixels**, run after run, in both schemes. Three do not, and the reason is in
+the app rather than the tooling:
+
+| Screen | Why it is not comparable |
+| --- | --- |
+| `02-home-feed` | The "For You" feed is algorithmically ordered, so the same request can return a different sequence. Two otherwise identical runs differed by **18%**. |
+| `03-listings` | Cards animate in on a stagger *after* the header is present, so a settle wait returns while the list is still moving. Two settle passes did not fix it (8.3%, then 8.9%). |
+| `04-messages` | Same staggered-content pattern. |
+
+All three also render relative timestamps ("6d ago") that drift daily regardless of
+animation.
+
+They are still captured, because looking at them by hand catches a broken layout —
+they are just excluded from the comparison, and `compare` says so on every run
+rather than hiding it. `approve` refuses to promote them at all.
+
+**Making them comparable needs fixed-date seed data and a deterministic sort.** That
+is real work and is not pretended to be done. A gate that fires at random is worse
+than no gate, which is why they were excluded rather than papered over with a loose
+threshold.
+
+### What makes the other three reproducible
+
+| Pinned | Why |
+| --- | --- |
+| `swiftshader_indirect` CPU rendering | A host GPU driver update cannot shift pixels under the baseline |
+| `waitForAnimationToEnd` before every capture | Waiting for an element to be *visible* is not the screen having *settled*; without this, profile and messages came out vertically offset by 8.5% and 5.6% |
+| Status bar cropped (top 96px) | Live clock |
+| Scroll indicator cropped (right 24px) | It fades in and out — on the dark login screen that alone caused a 1.0% difference, the diff being a single stripe down the right edge |
+
+Everything between those two crops is compared strictly at a 0.1% tolerance.
+
+**Sensitivity check:** comparing a dark render against a light baseline reports
+94–97% changed and exits 1. Both directions were verified, because a gate that
+cannot fail is decoration.
 
 🔴 **Use a RELEASE build, not a debug build.** A debug APK loads its JavaScript
 from Metro at runtime. If the emulator cannot reach the dev server the app shows a

@@ -29,6 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Three key screens of the mobile app are now protected against looking wrong, and three more are photographed but honestly excluded.** The sign-in, profile and wallet screens are photographed on every check and compared pixel-for-pixel against an approved copy — they reproduce **exactly**, run after run, in both light and dark mode. The wallet matters most: it shows balances and time credits, and it is where the same faint-text problem was first spotted on the website.
+
+  **Being straight about the other three.** The feed, listings and messages screens are photographed too, but they are **deliberately not compared**, because they genuinely cannot be. The feed is ordered by a recommendation algorithm, so two identical checks return a different order — an 18% difference with nothing actually wrong. Listings and messages animate their contents in one after another, so a photograph taken a moment early catches them mid-move; two separate attempts to wait it out did not fix it. All three also show relative times like "6d ago" that change daily. They are still captured, because looking at them by eye catches a broken layout, and the check says out loud on every run that they were skipped. Making them comparable needs test data with fixed dates and a predictable order — real work, not done, and not pretended.
+
+  A check that fires at random is worse than no check, because people learn to ignore it. That is why those three were excluded rather than hidden behind a loose tolerance.
+
+  Two transient things are cropped out before comparing, for the same reason: the clock in the status bar, and the scrollbar that fades in and out down the right edge — that scrollbar alone caused a 1% false difference on the dark sign-in screen. Everything between those two edges is compared strictly.
+
+  The check was also confirmed to still catch real changes: comparing a dark-mode photograph against a light-mode reference reports 94-97% different and fails, as it should.
+
 - **The nine end-to-end tests now all pass, driving the real app on a phone emulator against your local server.** They had never been run. Getting there meant fixing four separate things, each of which failed silently — which is almost certainly why nobody ran them.
 
   **What was wrong.** The test suite's own settings file contained nothing but comments, and the test tool refuses to start on that — so running the whole suite had never worked, though running one test at a time skipped the file and seemed fine. The app was forbidden from talking to your local server at all: a security rule blocks unencrypted connections for *every* build, and it silently overrides the development exemption that was supposed to allow them. That same rule was also why the app showed a blank screen earlier — it could not fetch its own code. And a release build **deliberately refuses** a local server address and uses the live one instead (a sensible guard added in June after a stale setting shipped to production), so the tests were logging into the live site where the test accounts do not exist.

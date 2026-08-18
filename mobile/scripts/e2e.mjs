@@ -187,6 +187,11 @@ const result = spawnSync(
       MAESTRO_CLI_NO_ANALYTICS: '1',
       MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true',
     },
+    // 🔴 `shell: true` is REQUIRED on Windows. Maestro ships `maestro.bat`, and
+    // Node refuses to spawn a .bat directly since the CVE-2024-27980 fix — it
+    // fails with EINVAL and `status: null`, which reads as "the tool ran and
+    // returned nothing" rather than "the tool never started".
+    shell: process.platform === 'win32',
   }
 );
 

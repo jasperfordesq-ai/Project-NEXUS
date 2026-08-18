@@ -47,8 +47,8 @@ statement about attention, not about the app.
 | 5 | Type safety | **Strong** | `tsc --noEmit` strict, blocking in CI |
 | 6 | Release & native policy | **Strong** | `verify:release` plus generated-manifest inspection, both blocking |
 | 7 | Crash reporting | **Adequate** | Sentry React Native wired; no release-health gate after a rollout |
-| 8 | End-to-end journeys | **Weak** | 9 Maestro flows exist but are operator-run; nothing runs them in CI |
-| 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures) AND screenshot diffing now works (0px repeatable, 97.4% sensitive) — but only 1 screen has a baseline |
+| 8 | End-to-end journeys | **Adequate** | All 9 Maestro flows PASS against the local API (they had never been run); still operator-run, not in CI |
+| 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures); screenshot diffing works and gates 3 signed-in screens at 0px repeatability — 3 more toured but not comparable, and 134 screens have no baseline |
 | 10 | iOS | **Unmeasured** | Never built or run in CI or locally; App Store Connect ID is still a placeholder |
 | 11 | Accessibility | **Weak** | 683 a11y props over 119 of 189 screens (63%); WCAG AA contrast now gated, but no label-coverage gate |
 | 12 | Internationalisation | **Weak** | 7 locales against the platform's 11; namespace content is test-enforced |
@@ -278,7 +278,7 @@ client does not carry the same gate before trusting a quiet dashboard.
 
 ---
 
-## 8. End-to-end journeys — Weak
+## 8. End-to-end journeys — Adequate (was Weak)
 
 Nine Maestro flows exist (`.maestro/01`–`09`): login, logout, browse listings,
 browse groups, view events, messages, profile/explore, search, registration.
@@ -353,15 +353,24 @@ captured in both light and dark.
 
 | Property | Measured |
 | --- | --- |
-| Repeatability | **0 pixels** differ between two captures of the same screen, both schemes |
-| Sensitivity | Dark render vs light baseline → **97.4%** changed, exit 1 |
-| Baselines committed | `screenshots/baseline/{light,dark}/01-launch.png`, ~100 KB each |
+| Screens toured | 6 (login, feed, listings, messages, profile, wallet) |
+| Screens **compared** | **3** — login, profile, wallet |
+| Repeatability | **0 pixels** across repeated runs, both schemes |
+| Sensitivity | Dark render vs light baseline → **94–97%** changed, exit 1 |
+| Baselines committed | `screenshots/baseline/{light,dark}/` — 6 files |
 
-🔴 **One screen, not a suite.** The login screen needs no credentials, which makes
-it a reliable first baseline; every signed-in screen needs a Maestro flow to
-navigate there and a seeded local API. So this is a working mechanism with almost
-no coverage yet — the honest state is "the gate exists and fires", not "the app is
-visually tested".
+🔴 **Half the toured screens cannot be compared, and that is a real limit on this
+dimension.** The feed is algorithmically ordered (18% difference between identical
+runs), and listings and messages animate their content in on a stagger that no
+settle wait resolved (8–9%). All three also carry relative timestamps that drift
+daily. They are captured for eyeballing and excluded from the comparison, which the
+output states on every run. Fixing them needs fixed-date seed data and a
+deterministic sort — worth doing, not done.
+
+The tour signs in and visits six screens, so signed-in coverage now exists — the
+Maestro work made that possible. Three of the six are gated. The honest state is
+"three screens are genuinely protected, including the wallet", not "the app is
+visually tested": 137 Expo Router screens exist and 3 have baselines.
 
 🔴 A debug APK is unusable for this: it fetches its JavaScript from Metro, and when
 the emulator cannot reach the dev server the app renders a bare background colour.
