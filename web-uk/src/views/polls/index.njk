@@ -47,7 +47,9 @@
             <select class="govuk-select" id="category" name="category">
               <option value="">{{ t("polls.all_categories") }}</option>
               {% for category in categories %}
-                <option value="{{ category }}"{% if pollsCategory == category %} selected{% endif %}>{{ category | capitalize }}</option>
+                {# humanizeLabel, not capitalize: capitalize lower-cases the tail,
+                   so a category slug read "Local_events". #}
+                <option value="{{ category }}"{% if pollsCategory == category %} selected{% endif %}>{{ category | humanizeLabel }}</option>
               {% endfor %}
             </select>
           </div>

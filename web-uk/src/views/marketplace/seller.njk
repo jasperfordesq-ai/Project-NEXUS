@@ -24,7 +24,11 @@
       {% endif %}
       {% if seller.createdAt %}
         <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">{{ seller.memberSinceText }}</dt>
+          {# memberSinceText is the whole sentence "Member since March 2024", so
+             using it as the KEY beside createdAt printed the date twice:
+             "Member since March 2024 | March 2024". profile.joined_label is the
+             short label the member profile already uses for this exact row. #}
+          <dt class="govuk-summary-list__key">{{ t("profile.joined_label") }}</dt>
           <dd class="govuk-summary-list__value">{{ seller.createdAt }}</dd>
         </div>
       {% endif %}
@@ -32,7 +36,11 @@
         <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.seller.rating_label") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if seller.totalRatings > 0 %}
-            <progress value="{{ seller.averageRatingLabel }}" max="5" aria-label="{{ seller.ratingText }}">{{ seller.averageRatingLabel }}</progress>
+            {# value must be the NUMBER, not averageRatingLabel: that is
+               toLocaleString output, so in any comma-decimal locale it became
+               "4,5" — an invalid progress value, and the bar rendered empty.
+               The label stays the localised text for people reading it. #}
+            <progress class="nexus-alpha-progress" value="{{ seller.averageRating }}" max="5" aria-label="{{ seller.ratingText }}">{{ seller.averageRatingLabel }}</progress>
             <span>{{ seller.ratingText }}</span>
           {% else %}
             {{ t("govuk_alpha_commerce.seller.no_ratings") }}
@@ -41,8 +49,10 @@
       </div>
       {% if seller.totalRatings > 0 and seller.totalSales > 0 %}
         <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">{{ seller.totalSalesText }}</dt>
-          <dd class="govuk-summary-list__value">{{ seller.totalSales }}</dd>
+          {# Same duplication: totalSalesText is "12 completed sales", so this
+             row read "12 completed sales | 12". #}
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.nav.sales") }}</dt>
+          <dd class="govuk-summary-list__value">{{ seller.totalSalesText }}</dd>
         </div>
       {% endif %}
     </dl>

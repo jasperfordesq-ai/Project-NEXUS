@@ -97,6 +97,7 @@ const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-s
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
 const { nl2br } = require('./lib/nl2br');
+const { humanizeLabel } = require('./lib/humanize-label');
 const { parseMultipartForm } = require('./middleware/multipart');
 const { buildAccountLinks } = require('./lib/account-links');
 const { localization } = require('./middleware/localization');
@@ -260,7 +261,14 @@ nunjucksEnv.addFilter('formatEventDate', (dateStr) => {
   }
 });
 
-// Alias 'date' to formatDate for convenience
+// 🔴 'date' is NOT an alias for formatDate, whatever this comment used to say.
+// They produce different KINDS of value and are not interchangeable:
+//   formatDate → RELATIVE and translated ("3 days ago", "just now")
+//   date       → ABSOLUTE and localised ("5 Mar 2026")
+// Swapping one for the other silently changes what a page means — a relative
+// time on an event's start date, or a fixed date where the member expected
+// "2 hours ago". Pick by the kind of value the page needs: relative for
+// activity and feeds, absolute for anything scheduled or recorded.
 nunjucksEnv.addFilter('date', (dateStr) => {
   if (!dateStr) return '';
   try {
@@ -288,6 +296,10 @@ nunjucksEnv.addFilter('take', (arr, count) => {
 
 // Escapes HTML first, then converts newlines to <br> (see src/lib/nl2br.js).
 nunjucksEnv.addFilter('nl2br', nl2br);
+
+// Presents an API-supplied identifier as a label. Use this rather than the
+// built-in `capitalize`, which lower-cases the tail (see src/lib/humanize-label.js).
+nunjucksEnv.addFilter('humanizeLabel', humanizeLabel);
 
 app.set('view engine', 'njk');
 

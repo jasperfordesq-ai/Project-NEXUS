@@ -32750,7 +32750,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('A road-ready bicycle for local trips.');
     expect(response.text).toContain('GBP 15.50');
     expect(response.text).toContain('Condition');
-    expect(response.text).toContain('good');
+    // The translated label, not the raw database enum. This previously asserted
+    // 'good' and so agreed with a page that showed members "like_new" and
+    // "local_pickup" in a summary list.
+    expect(response.text).toContain('Good');
+    expect(response.text).toContain('Local pickup');
     expect(response.text).toContain('Seller');
     expect(response.text).toContain('Aisha Khan');
     expect(response.text).toContain('Buy this item');
@@ -33397,7 +33401,16 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Aisha Khan');
     expect(response.text).toContain('Average rating: 4.7 out of 5 from 9 reviews');
     expect(response.text).toContain('14 completed sales');
-    expect(response.text).toContain('Member since January 2026');
+    // "Joined | January 2026", not "Member since January 2026 | January 2026".
+    // Those two rows used a whole sentence as the summary-list KEY beside the
+    // same value, so the date and the sales count each appeared twice.
+    expect(response.text).toContain('Joined');
+    expect(response.text).toContain('January 2026');
+    expect(response.text).not.toContain('Member since January 2026');
+    // The rating bar must carry the numeric value; averageRatingLabel is
+    // toLocaleString output and becomes "4,7" in a comma-decimal locale, which
+    // is not a valid progress value.
+    expect(response.text).toContain('value="4.7"');
     expect(response.text).toContain('Items for sale');
     expect(response.text).not.toContain('>Verified<');
     expect(response.text).toContain('Seller bike');

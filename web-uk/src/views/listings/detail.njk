@@ -110,7 +110,10 @@
       {% endif %}
 
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("listings.description_title") }}</h2>
-      <div class="govuk-body">{{ listing.description | nl2br }}</div>
+      {# | safe is required, and is safe: src/lib/nl2br.js HTML-escapes the text
+         before inserting <br>, so it is the escaping step. Without it Nunjucks
+         re-escaped that output and every line break showed as a literal "<br>". #}
+      <div class="govuk-body">{{ listing.description | nl2br | safe }}</div>
 
       {% if listingGallery.length %}
         <h2 class="govuk-heading-m">{{ t("listings.gallery_title") }}</h2>

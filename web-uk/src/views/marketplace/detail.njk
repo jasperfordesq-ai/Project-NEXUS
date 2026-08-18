@@ -33,7 +33,10 @@
     {% if item.condition %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("marketplace.condition_label") }}</dt>
-        <dd class="govuk-summary-list__value">{{ item.condition }}</dd>
+        {# conditionLabel, not condition: the raw value is a database enum, so
+           this row read "like_new" to the member. The route already translates
+           it and falls back to the raw value when there is no key. #}
+        <dd class="govuk-summary-list__value">{{ item.conditionLabel or item.condition }}</dd>
       </div>
     {% endif %}
     {% if item.location %}
@@ -45,7 +48,8 @@
     {% if item.deliveryMethod %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("marketplace.delivery_label") }}</dt>
-        <dd class="govuk-summary-list__value">{{ item.deliveryMethod }}</dd>
+        {# deliveryLabel, not deliveryMethod — this row read "local_pickup". #}
+        <dd class="govuk-summary-list__value">{{ item.deliveryLabel or item.deliveryMethod }}</dd>
       </div>
     {% endif %}
     {% if item.sellerName %}
