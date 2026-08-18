@@ -1,0 +1,345 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Mobile device tests — the nine Maestro end-to-end flows, on a real Android
+# emulator, against a real Laravel API.
+#
+# WHY THIS IS A SEPARATE WORKFLOW
+#
+# `ci.yml`'s `mobile-release` job runs on a bare Node runner: no PHP, no database,
+# no Android SDK. It can typecheck, run Jest and inspect a generated manifest, and
+# it cannot launch an app. This workflow does the expensive half — MariaDB, Redis,
+# Laravel, an emulator, a native build, Metro — which is why it is scheduled rather
+# than run on every push. A ~35-minute job on every commit would be ignored within
+# a week.
+#
+# 🔴 UNVERIFIED UNTIL ITS FIRST RUN. Every step here was exercised by hand on the
+# development machine (all nine flows pass, screenshots reproduce at 0 pixels), but
+# this YAML has never executed on a GitHub runner. Treat the first run as the test
+# of the workflow, not of the app: expect to iterate on the emulator setup, and do
+# not read an early failure as a mobile regression. `workflow_dispatch` is there to
+# make that first run deliberate.
+#
+# WHY THE SCREENSHOT COMPARISON IS NOT A GATE HERE
+#
+# The committed baselines were captured on the dev machine's AVD. Pixel-level
+# equality does not transfer between environments — a different system-image build
+# renders text with different anti-aliasing, and the comparison would fail on day
+# one for reasons that have nothing to do with the app. So this workflow CAPTURES
+# the screens and uploads them as artefacts, and the comparison stays local until a
+# CI-specific baseline is captured deliberately (see docs/TESTING.md). Shipping a
+# visual gate that fails spuriously would train everyone to ignore it.
+
+name: Mobile Device Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 04:40 UTC — after ci.yml's 03:30 sweep, so the two do not contend for runners.
+    - cron: '40 4 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-device-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PHP_VERSION: '8.2'
+  # The emulator reaches the runner's own loopback on this address. A DEBUG build
+  # is required: lib/constants.ts refuses a loopback API URL when __DEV__ is false
+  # and silently uses production instead.
+  API_URL: 'http://10.0.2.2:8090'
+  # Matches the dev machine so CI and local behave identically — the Maestro flows
+  # tap this slug on the tenant-selection screen.
+  TENANT_SLUG: 'hour-timebank'
+  E2E_TENANT_ID: '2'
+
+jobs:
+  device-tests:
+    name: Maestro flows on an Android emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MYSQL_ROOT_PASSWORD: testing
+          MYSQL_DATABASE: nexus
+          MYSQL_USER: nexus
+          MYSQL_PASSWORD: nexus_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── The API side ────────────────────────────────────────────────────────
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, mbstring, xml, zip, redis, gd, intl, bcmath, opcache, curl, fileinfo, gmp
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare Laravel runtime directories
+        run: |
+          mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs
+          chmod -R ug+rw bootstrap/cache storage
+
+      - name: Load the schema and seed the tenant
+        run: |
+          mysql -h 127.0.0.1 -u root -ptesting nexus < database/schema/mysql-schema.sql
+          # Tenant 2 carries the same slug as the dev machine so the Maestro flows,
+          # which tap "hour-timebank" on the tenant chooser, behave identically.
+          mysql -h 127.0.0.1 -u root -ptesting nexus -e \
+            "INSERT INTO tenants (id, name, slug, is_active) VALUES (1, 'Master', 'master', 1), (2, 'Hour Timebank', '${{ env.TENANT_SLUG }}', 1) \
+             ON DUPLICATE KEY UPDATE slug = VALUES(slug), is_active = 1;"
+          mysql -h 127.0.0.1 -u root -ptesting nexus -e \
+            "INSERT IGNORE INTO categories (id, name, slug, tenant_id, type) VALUES (1, 'General', 'general', 2, 'listing');"
+
+      - name: Run pending migrations
+        run: php artisan migrate --force
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nexus
+          DB_USER: root
+          DB_PASS: testing
+          APP_ENV: testing
+
+      - name: Seed the E2E fixture (3 users + 1 listing)
+        run: php artisan db:seed --class=E2ETestDataSeeder --force
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nexus
+          DB_USER: root
+          DB_PASS: testing
+          APP_ENV: testing
+          E2E_TENANT_ID: ${{ env.E2E_TENANT_ID }}
+
+      # 🔴 NOT `php artisan serve`. That serves `public/`, which in this repo holds
+      # only `uploads/` — the real document root is `httpdocs/` (see Dockerfile:
+      # APACHE_DOCUMENT_ROOT=/var/www/html/httpdocs). Verified in the app container:
+      # with `-t httpdocs httpdocs/index.php`, POST /api/auth/login returns 200.
+      - name: Serve the API on 8090
+        run: |
+          php -S 0.0.0.0:8090 -t httpdocs httpdocs/index.php > "$RUNNER_TEMP/laravel.log" 2>&1 &
+          echo "started"
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nexus
+          DB_USER: root
+          DB_PASS: testing
+          APP_ENV: local
+          APP_DEBUG: 'true'
+          REDIS_HOST: 127.0.0.1
+
+      # One step proves two things: the API is answering, AND the seeded account
+      # authenticates. Fail here rather than eight flows later — if login does not
+      # work, nothing downstream is testing the app.
+      #
+      # 🔴 The readiness probe is the LOGIN endpoint, not /health.php. Under PHP's
+      # built-in server a router script handles every request, so static files like
+      # httpdocs/health.php are never served and return 404. Verified in the app
+      # container. Polling login is a better signal anyway: it is exactly what the
+      # app does first.
+      - name: Wait for the API and confirm the seeded account authenticates
+        run: |
+          for i in $(seq 1 60); do
+            body=$(curl -s --max-time 10 -X POST http://127.0.0.1:8090/api/auth/login \
+              -H 'Content-Type: application/json' \
+              -H "X-Tenant-Slug: ${{ env.TENANT_SLUG }}" \
+              -d '{"email":"e2e.user.a@project-nexus.local","password":"TestPassword123!"}' || true)
+            if echo "$body" | grep -q '"success"[[:space:]]*:[[:space:]]*true'; then
+              echo "API up and the E2E account authenticates (after ${i}s)"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::the API never accepted the seeded E2E account on :8090"
+          echo "--- last response ---"; echo "$body" | head -c 600
+          echo "--- server log ---"; cat "$RUNNER_TEMP/laravel.log" | tail -40
+          exit 1
+
+      # ── The app side ────────────────────────────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # 🔴 JDK 17, NOT a newer one. Gradle 8.14.3 rejects Java 25 outright with
+      # "Unsupported class file major version 69", which is what Android Studio
+      # bundles locally.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Write the mobile environment
+        working-directory: mobile
+        run: |
+          cat > .env.local <<ENVFILE
+          EXPO_PUBLIC_API_URL=${{ env.API_URL }}
+          EXPO_PUBLIC_DEFAULT_TENANT=${{ env.TENANT_SLUG }}
+          EXPO_PUBLIC_APP_URL=https://app.project-nexus.ie
+          EXPO_PUBLIC_ALLOW_PRODUCTION_API_IN_DEV=true
+          ENVFILE
+          cat .env.local
+
+      - name: Verify the network security split before building
+        # The debug build can only reach an http:// API because of the debug-only
+        # network security config. If that has regressed, the flows would fail with
+        # a confusing "Invalid credentials" instead of the real reason.
+        working-directory: mobile
+        run: npm run verify:network-security
+
+      - name: Generate the native project
+        working-directory: mobile
+        run: |
+          npx expo prebuild --platform android --no-install
+          # Only the emulator's architecture: building arm64 as well doubles the
+          # native C++ compile for a slice an x86_64 emulator cannot run.
+          if grep -q '^reactNativeArchitectures=' android/gradle.properties; then
+            sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=x86_64/' android/gradle.properties
+          else
+            echo 'reactNativeArchitectures=x86_64' >> android/gradle.properties
+          fi
+
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-mobile-${{ hashFiles('mobile/package-lock.json') }}
+          restore-keys: gradle-mobile-
+
+      - name: Build the debug APK
+        working-directory: mobile/android
+        run: ./gradlew app:assembleDebug -x lint -x test --build-cache
+
+      - name: Start Metro
+        working-directory: mobile
+        run: |
+          npx expo start --port 8081 > "$RUNNER_TEMP/metro.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8081/status | grep -q 'packager-status:running'; then
+              echo "Metro is up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Metro did not start within 60s"
+          cat "$RUNNER_TEMP/metro.log"
+          exit 1
+
+      # KVM is available on GitHub-hosted Ubuntu runners; without it the emulator
+      # falls back to software CPU emulation and is far too slow to finish.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+
+      - name: Run the nine flows on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          ram-size: 4096M
+          # swiftshader_indirect matches the local AVD: CPU rendering is slower but
+          # deterministic, which is what a pixel comparison needs.
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          disable-animations: false # 🔴 see below
+          script: |
+            # 🔴 disable-animations MUST stay false. With animation scales at 0,
+            # Android reports reduced motion, Reanimated logs a dev warning, and
+            # LogBox draws a banner across the BOTTOM of the screen — over the tab
+            # bar. Maestro's taps on "More" then hit the banner, and five flows fail
+            # on a "View wallet" they never reached. Measured locally.
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb reverse tcp:8081 tcp:8081
+
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            export PATH="$HOME/.maestro/bin:$PATH"
+            export MAESTRO_CLI_NO_ANALYTICS=1
+            export MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED=true
+
+            # e2e.mjs checks every precondition first and says which one is wrong,
+            # rather than letting Maestro report a missing button nine times.
+            npm run e2e
+
+            # Captured for eyeballing and uploaded below. NOT compared: the
+            # committed baselines were taken on a different emulator build, and
+            # pixel equality does not transfer between environments.
+            npm run screenshot:tour || echo "::warning::the screenshot tour did not complete"
+          working-directory: mobile
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-screenshots
+          path: mobile/screenshots/current/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Maestro output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-debug-output
+          path: ~/.maestro/tests/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload server logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            ${{ runner.temp }}/laravel.log
+            ${{ runner.temp }}/metro.log
+            storage/logs/
+          if-no-files-found: warn
+          retention-days: 14

@@ -47,7 +47,7 @@ statement about attention, not about the app.
 | 5 | Type safety | **Strong** | `tsc --noEmit` strict, blocking in CI |
 | 6 | Release & native policy | **Strong** | `verify:release` plus generated-manifest inspection, both blocking |
 | 7 | Crash reporting | **Adequate** | Sentry React Native wired; no release-health gate after a rollout |
-| 8 | End-to-end journeys | **Adequate** | All 9 Maestro flows PASS against the local API (they had never been run); still operator-run, not in CI |
+| 8 | End-to-end journeys | **Adequate** | All 9 Maestro flows PASS against the local API (they had never been run); a nightly CI workflow exists but has never run |
 | 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures); screenshot diffing works and gates 3 signed-in screens at 0px repeatability — 3 more toured but not comparable, and 134 screens have no baseline |
 | 10 | iOS | **Unmeasured** | Never built or run in CI or locally; App Store Connect ID is still a placeholder |
 | 11 | Accessibility | **Weak** | 683 a11y props over 119 of 189 screens (63%); WCAG AA contrast now gated, but no label-coverage gate |
@@ -280,9 +280,17 @@ client does not carry the same gate before trusting a quiet dashboard.
 
 ## 8. End-to-end journeys — Adequate (was Weak)
 
-Nine Maestro flows exist (`.maestro/01`–`09`): login, logout, browse listings,
-browse groups, view events, messages, profile/explore, search, registration.
-They are well written and handle the tenant-selection screen and expired sessions.
+Nine Maestro flows (`.maestro/01`–`09`): login, logout, browse listings, browse
+groups, view events, messages, profile/explore, search, registration. **All nine
+pass** against the local API as of 2026-08-18 — they had never been run before.
+
+`.github/workflows/mobile-device-tests.yml` runs them nightly on an emulator against
+a real Laravel API. 🔴 **That workflow has never executed on a runner**, so until it
+has a green run these flows are still effectively operator-run, and the dimension
+cannot move above Adequate. Checking it against reality already corrected two real
+errors (`artisan serve` serves the wrong directory in this repo; `/health.php` 404s
+under the built-in server), which is a fair indication that the first run will need
+iteration.
 
 **Nothing runs them.** `.maestro/README.md` states plainly that Maestro is an
 operator-run device test, and no workflow launches an emulator or a device farm.

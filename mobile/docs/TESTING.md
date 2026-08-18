@@ -400,9 +400,43 @@ config.yaml entirely, so the suite could look healthy one flow at a time while t
 directory run was broken. That is the likeliest reason nine perfectly good flows
 sat unrun for months. The file now carries a real `flows:` key; keep it.
 
-🔴 **Nothing runs these flows automatically.** They are operator-run. A green CI
-run is no evidence that the app launches on a device. What has changed is that
-they *can* now be run at all — see the emulator section above.
+### Running them automatically
+
+`.github/workflows/mobile-device-tests.yml` runs all nine flows on a real emulator
+against a real Laravel API. **Nightly at 04:40 UTC**, plus `workflow_dispatch` —
+deliberately not on every push, because it stands up MariaDB, Redis, Laravel, an
+emulator, a native build and Metro, and a ~35-minute job on every commit gets
+ignored within a week.
+
+🔴 **It has never executed on a GitHub runner.** Every step was exercised by hand
+here, and two were corrected as a result (see below), but the YAML itself is
+unverified. Treat the first run as a test of the workflow, not of the app.
+
+Two things it does NOT do, on purpose:
+
+- **It does not gate on screenshots.** The committed baselines were captured on this
+  machine's AVD, and pixel equality does not transfer between environments — a
+  different system-image build renders text with different anti-aliasing. It captures
+  the screens and uploads them as artefacts instead. Enabling a visual gate in CI
+  needs a CI-specific baseline captured deliberately from a green run.
+- **It does not disable animations** (`disable-animations: false`). The action's
+  default is `true`, which would reintroduce the LogBox banner over the tab bar and
+  fail five flows.
+
+Two corrections found while checking it against reality:
+
+- 🔴 **`php artisan serve` is wrong for this repo.** It serves `public/`, which holds
+  only `uploads/`; the real document root is `httpdocs/`. The workflow uses
+  `php -S 0.0.0.0:8090 -t httpdocs httpdocs/index.php`, verified in the app
+  container to return 200 for `POST /api/auth/login`.
+- 🔴 **`/health.php` cannot be the readiness probe** under the built-in server: a
+  router script handles every request, so static files 404. The workflow polls the
+  login endpoint instead, which proves the API is up *and* that the seeded account
+  authenticates — one signal instead of two, and it is exactly what the app does
+  first.
+
+Until that workflow has a green run, **these flows are effectively operator-run**,
+and a green `ci.yml` remains no evidence that the app launches on a device.
 
 🔴 `.maestro/config.yaml` refers to `.github/workflows/mobile-eas-build.yml` for
 CI configuration. **That workflow does not exist** and never has. The real mobile
