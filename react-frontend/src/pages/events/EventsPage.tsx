@@ -491,6 +491,10 @@ export function EventsPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_title')} description={t('page_description')} />
+      {/* The hero owns this page's only <h1> and is hidden on phones, where the
+          title moves into the app bar as plain text — leaving a phone with no
+          heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
+      {isPhone && <h1 className="sr-only">{t('title')}</h1>}
       {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
       {!isPhone && (
       <PublicPageHero

@@ -195,7 +195,11 @@ describe('EventsPage', () => {
 
       // Desktop chrome is gone: hero, "choose a view" card, inline search field,
       // step-free HeroSelect trigger and the category chip wall.
-      expect(screen.queryByRole('heading', { level: 1, name: 'Events' })).not.toBeInTheDocument();
+      // The VISIBLE hero is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1, name: 'Events' })).toHaveClass('sr-only');
       expect(screen.queryByText('Choose a calendar view')).not.toBeInTheDocument();
       expect(screen.queryByRole('searchbox', { name: 'Search events' })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Step-free venue access/ })).not.toBeInTheDocument();

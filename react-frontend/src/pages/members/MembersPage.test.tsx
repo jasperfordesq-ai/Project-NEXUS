@@ -256,7 +256,11 @@ describe('MembersPage', () => {
       expect(screen.getByLabelText('List view')).toBeInTheDocument();
 
       // Hero, quick-filter row and desktop filter card are all phone-hidden.
-      expect(screen.queryByText('Members')).not.toBeInTheDocument();
+      // The VISIBLE hero is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1, name: 'Members' })).toHaveClass('sr-only');
       expect(screen.queryByText('All Members')).not.toBeInTheDocument();
       expect(screen.queryByPlaceholderText(/Search members/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Near me' })).not.toBeInTheDocument();

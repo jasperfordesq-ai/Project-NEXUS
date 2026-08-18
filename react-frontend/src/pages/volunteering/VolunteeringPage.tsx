@@ -345,6 +345,10 @@ export function VolunteeringPage() {
         title={t('page_title')}
         description={t('page_description')}
       />
+      {/* The hero owns this page's only <h1> and is hidden on phones, where the
+          title moves into the app bar as plain text — leaving a phone with no
+          heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
+      {isPhone && <h1 className="sr-only">{t('heading')}</h1>}
 
       {/* One-time welcome for signed-in members (dismissible, localStorage). */}
       {isAuthenticated && (

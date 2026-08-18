@@ -354,7 +354,11 @@ describe('GroupsPage', () => {
 
       // Desktop chrome is gone: hero <h1>, the quick-filter radios and the
       // GlassCard SearchField (a real input with that placeholder).
-      expect(screen.queryByText('Groups')).not.toBeInTheDocument();
+      // The VISIBLE hero is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1, name: 'Groups' })).toHaveClass('sr-only');
       expect(screen.queryByPlaceholderText(/Search groups/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('radio', { name: 'Public' })).not.toBeInTheDocument();
       expect(screen.queryByText('Join groups to connect with like-minded community members'))

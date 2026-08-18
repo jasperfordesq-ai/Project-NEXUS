@@ -341,7 +341,11 @@ describe('SearchPage', () => {
       expect(screen.getByText('Search for anything...')).toBeInTheDocument();
 
       // Hero and inline form are gone — the title moved to the app bar.
-      expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+      // The VISIBLE hero is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1 })).toHaveClass('sr-only');
       expect(
         screen.queryByText('Find listings, members, events, and groups')
       ).not.toBeInTheDocument();

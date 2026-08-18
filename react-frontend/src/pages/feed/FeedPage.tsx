@@ -164,6 +164,8 @@ export function FeedPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { tenantPath, tenant, hasFeature, hasModule } = useTenant();
   const showDesktopSidebar = useMediaQuery('(min-width: 1024px)');
+  // Same 639px breakpoint the other list pages use for their phone layout.
+  const isPhone = useMediaQuery('(max-width: 639px)');
   // Admin-tier gate aligned with the backend (BaseApiController::callerIsAdminTier):
   // includes god / is_god / is_tenant_super_admin, which the old inline check omitted
   // — those users saw no admin-delete option even though the API would allow it.
@@ -925,6 +927,10 @@ export function FeedPage() {
         description={t('meta_description')}
         noIndex
       />
+      {/* The hero owns this page's only <h1> and is hidden on phones, where the
+          title moves into the app bar as plain text — leaving a phone with no
+          heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
+      {isPhone && <h1 className="sr-only">{t('title')}</h1>}
       <div className="mx-auto flex w-full max-w-6xl items-start justify-center gap-6 px-0 sm:px-2">
         {/* Main Feed Column */}
         <section className="w-full min-w-0 max-w-2xl flex-1 space-y-4" aria-label={t('feed.region_label')}>

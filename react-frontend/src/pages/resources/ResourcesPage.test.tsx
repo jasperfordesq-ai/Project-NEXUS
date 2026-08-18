@@ -161,7 +161,11 @@ describe('ResourcesPage', () => {
     it('does not render the desktop hero or the desktop search field', () => {
       render(<ResourcesPage />);
       // The hero <h1> is the only place the bare title is painted.
-      expect(screen.queryByRole('heading', { level: 1, name: 'Resources' })).not.toBeInTheDocument();
+      // The VISIBLE hero is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1, name: 'Resources' })).toHaveClass('sr-only');
       expect(screen.queryByText('Community knowledge library')).not.toBeInTheDocument();
       expect(screen.queryByPlaceholderText(/Search resources/i)).not.toBeInTheDocument();
     });

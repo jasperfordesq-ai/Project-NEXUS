@@ -301,7 +301,11 @@ describe('ExchangesPage', () => {
 
     it('does not render the desktop header or the tab strip', () => {
       render(<ExchangesPage />);
-      expect(screen.queryByRole('heading', { name: 'My Exchanges' })).not.toBeInTheDocument();
+      // The VISIBLE header is gone, but an <h1> deliberately remains and is
+      // screen-reader-only: on phones the title moves into the app bar as plain
+      // text, which is not a heading, so without this a phone user has nothing
+      // to orient by. Asserted as sr-only rather than absent.
+      expect(screen.getByRole('heading', { level: 1, name: 'My Exchanges' })).toHaveClass('sr-only');
       expect(
         screen.queryByText('Track your service exchange requests and confirmations'),
       ).not.toBeInTheDocument();
