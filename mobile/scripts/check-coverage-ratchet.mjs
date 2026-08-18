@@ -46,6 +46,11 @@ const WRITE = process.argv.slice(2).includes('--write-baseline');
 const AREAS = [
   'lib/api',
   'lib/context',
+  // Extracted from app/_layout.tsx and listed separately on purpose: they are the
+  // start-up routing decision and the Sentry credential scrubbing, both at 100%,
+  // and a regression in either would otherwise hide inside the `lib` average.
+  'lib/navigation',
+  'lib/observability',
   'lib/hooks',
   'lib/payments',
   'lib/security',

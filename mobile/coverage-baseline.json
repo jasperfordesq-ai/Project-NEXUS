@@ -1,11 +1,11 @@
 {
   "note": "Shrink-only coverage floors for the Expo client, by area. Raise a floor only after a real improvement; never lower one to make a red check green. Regenerate with `node scripts/check-coverage-ratchet.mjs --write-baseline` after running `npm run test:coverage`.",
-  "measured_on_files": 276,
+  "measured_on_files": 278,
   "global_floor": {
-    "lines": 72.33,
-    "statements": 69.23,
-    "branches": 62.06,
-    "functions": 66.59
+    "lines": 72.46,
+    "statements": 69.35,
+    "branches": 62.22,
+    "functions": 66.67
   },
   "area_floors": {
     "app": {
@@ -14,7 +14,7 @@
     },
     "app/_layout.tsx": {
       "lines_pct": 0,
-      "instrumented_lines": 67
+      "instrumented_lines": 51
     },
     "app/(auth)": {
       "lines_pct": 88.5,
@@ -84,9 +84,17 @@
       "lines_pct": 89.95,
       "instrumented_lines": 199
     },
+    "lib/navigation": {
+      "lines_pct": 99.5,
+      "instrumented_lines": 19
+    },
     "lib/notifications.ts": {
       "lines_pct": 55.38,
       "instrumented_lines": 34
+    },
+    "lib/observability": {
+      "lines_pct": 99.5,
+      "instrumented_lines": 16
     },
     "lib/payments": {
       "lines_pct": 99.5,

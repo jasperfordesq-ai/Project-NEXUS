@@ -26,6 +26,8 @@ import { TenantProvider } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
+import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
+import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
 import { configureNativeTheme } from '@/lib/theme/nativeTheme';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import * as Sentry from '@sentry/react-native';
@@ -78,23 +80,13 @@ Sentry.init({
   // Strip auth material before events leave the device. Tokens can ride along
   // in request headers (breadcrumbs) or extra context attached by API errors.
   sendDefaultPii: false,
-  beforeSend(event) {
-    if (event.request?.headers) {
-      delete event.request.headers.Authorization;
-      delete event.request.headers.authorization;
-      delete event.request.headers.Cookie;
-      delete event.request.headers.cookie;
-    }
-    return event;
-  },
-  beforeBreadcrumb(breadcrumb) {
-    const data = breadcrumb.data as Record<string, unknown> | undefined;
-    if (data) {
-      delete data.Authorization;
-      delete data.authorization;
-    }
-    return breadcrumb;
-  },
+  // Extracted to lib/observability/sentryScrubbing.ts so the one piece of code whose
+  // failure would leak a bearer token can actually be tested. The extracted version
+  // also matches header names case-insensitively; the inline one deleted only the
+  // exact `Authorization`/`authorization` spellings, so an `AUTHORIZATION` header —
+  // which HTTP permits — went out verbatim.
+  beforeSend: scrubSentryEvent,
+  beforeBreadcrumb: scrubSentryBreadcrumb,
 });
 
 /**
@@ -190,20 +182,11 @@ function RootNavigator() {
   const { isLoading, isAuthenticated } = useAuthContext();
   const theme = useTheme();
   const pathname = usePathname();
-  const isTenantSelectionPath =
-    pathname === '/select-tenant' || pathname.startsWith('/select-tenant/');
-  const isPublicAuthPath =
-    pathname === '/login' ||
-    pathname.startsWith('/login/') ||
-    pathname === '/register' ||
-    pathname.startsWith('/register/') ||
-    pathname === '/forgot-password' ||
-    pathname.startsWith('/forgot-password/') ||
-    pathname === '/reset-password' ||
-    pathname.startsWith('/reset-password/') ||
-    pathname === '/verify-email' ||
-    pathname.startsWith('/verify-email/') ||
-    isTenantSelectionPath;
+  // Path classification and the redirect decision both live in
+  // lib/navigation/authRedirect.ts — see there for why the ordering matters. Nothing
+  // here needs to classify the path itself: `pathname` is the only input, and
+  // decideAuthRedirect derives the rest.
+
 
   // Queue deep link from push notification taps — only navigate once auth resolves.
   const pendingDeepLinkRef = useRef<string | null>(null);
@@ -259,25 +242,24 @@ function RootNavigator() {
   // This prevents the race condition where router.replace('/(tabs)/home')
   // fires before the deep link effect has a chance to navigate.
   useEffect(() => {
-    if (isLoading) return;
-    if (isAuthenticated) {
-      const pendingLink = pendingDeepLinkRef.current;
-      if (pendingLink) {
-        pendingDeepLinkRef.current = null;
-        navigateToLink(pendingLink);
-      } else if (pathname === '/' || (isPublicAuthPath && !isTenantSelectionPath)) {
-        router.replace('/(tabs)/home');
-      } else {
-        // Preserve direct/deep-linked routes after auth, such as /members or /messages.
-        // Expo Router already has the current path in state; replacing here would
-        // make every refreshed authenticated page look like Home.
-      }
-    } else {
-      if (!isPublicAuthPath) {
-        router.replace('/(auth)/login');
-      }
+    const decision = decideAuthRedirect({
+      isLoading,
+      isAuthenticated,
+      pathname,
+      pendingDeepLink: pendingDeepLinkRef.current,
+    });
+
+    if (decision.action === 'deep-link') {
+      // Cleared before navigating so a re-render cannot follow the same link twice.
+      pendingDeepLinkRef.current = null;
+      navigateToLink(decision.url);
+      return;
     }
-  }, [isLoading, isAuthenticated, isPublicAuthPath, isTenantSelectionPath, pathname]);
+
+    if (decision.action === 'replace') {
+      router.replace(decision.href);
+    }
+  }, [isLoading, isAuthenticated, pathname]);
 
   // Shared options for regular modal screens: slide up from bottom, swipe-to-dismiss
   const modalOptions = {

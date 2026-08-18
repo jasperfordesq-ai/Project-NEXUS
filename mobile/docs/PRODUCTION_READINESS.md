@@ -40,8 +40,8 @@ statement about attention, not about the app.
 
 | # | Dimension | Score | One-line basis |
 | --- | --- | --- | --- |
-| 1 | Automated test suite | **Strong** | 271 suites / 1,694 tests, 0 skipped, 0 quarantined, blocking in CI (was 263 / 1,563) |
-| 2 | Code coverage | **Adequate** | 72.83% lines, up from 71.68%; every named 0% seam now covered |
+| 1 | Automated test suite | **Strong** | 273 suites / 1,743 tests, 0 skipped, 0 quarantined, blocking in CI (was 263 / 1,563) |
+| 2 | Code coverage | **Adequate** | 72.96% lines, up from 71.68%; every named 0% seam covered, and the start-up routing decision extracted and pinned |
 | 3 | API contract drift | **Adequate** | 402 of 403 endpoints verified against Laravel's real routes; 1 confirmed defect open |
 | 4 | Route parity drift | **Adequate** | All 254 React member routes classified; 33 gaps, 31 awaiting review, budget shrink-only |
 | 5 | Type safety | **Strong** | `tsc --noEmit` strict, blocking in CI |
@@ -147,7 +147,7 @@ uncovered for this reason and are the obvious next candidates.
 
 | Area | Lines | Coverage | Note |
 | --- | --- | --- | --- |
-| `app/_layout.tsx` | 67 | 0% | 759 source lines: root providers, auth redirect, deep links, push registration. The largest remaining risk. |
+| `app/_layout.tsx` | 62 | 0% | Still 0%, but the *risk* has moved out of it. The start-up routing decision and the Sentry credential scrubbing were extracted to `lib/navigation/authRedirect.ts` and `lib/observability/sentryScrubbing.ts`, both now at **100%** across 49 tests. What remains in the file is provider wiring and ~90 `Stack.Screen` declarations — worth far less to test, and covered from the outside by the Maestro flows. |
 | `lib/eventOfflineCheckinStore.ts` | 199 | 32.7% | Offline check-in queue; the largest under-tested unit |
 | `components/events/EventOfflineCheckinCard.tsx` | 146 | 0% | Its UI |
 | `components/VoiceMessageBubble.tsx` | 52 | 0% | Voice message playback |

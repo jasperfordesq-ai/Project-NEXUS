@@ -23,6 +23,35 @@
 
 appId: ie.project.nexus
 ---
+# 🔴 KNOWN FLAKE — DIAGNOSED, NOT FIXED. Roughly 1 run in 4 (2026-08-18).
+#
+# Symptom: "No visible element found: id: register-password", after
+# scrollUntilVisible hunts for 20 seconds.
+#
+# Cause: the `- back` calls below are keyboard dismissals, and they are NECESSARY —
+# every field from Phone downwards sits under the on-screen keyboard, so the next
+# `tapOn` cannot reach it until the keyboard is dismissed. But on Android a back
+# press with NO keyboard open NAVIGATES instead, and enough of them exit the app.
+# The failure screenshot shows the Android launcher: the app had quietly gone, and
+# scrollUntilVisible was searching a dead process.
+#
+# THREE FIXES WERE TRIED AND ALL WERE WORSE. Recorded so nobody repeats them:
+#
+#   1. `hideKeyboard` instead of `- back` — NOT safer. It is a back press underneath;
+#      three consecutive calls exit the app just the same (measured).
+#   2. Deleting the dismissals after Phone/Location, reasoning that first and last
+#      name manage without one — WRONG. Those two are above the fold. Removing the
+#      others makes the flow fail CONSISTENTLY at `tapOn: register-location`
+#      (4 of 4 runs).
+#   3. A guard assertion on the form title after each dismissal — FALSE ALARMS. The
+#      form scrolls, so the title legitimately leaves the screen and the guard fires
+#      on every run.
+#
+# A real fix needs a way to ask Android whether the keyboard is up, which Maestro
+# does not expose, or a testID on an element that stays visible at every scroll
+# position to guard against. Until then this flow is known-flaky: re-run it before
+# concluding the app is broken.
+
 # 1. Launch fresh - clearState ensures no residual session
 - launchApp:
     clearState: true
