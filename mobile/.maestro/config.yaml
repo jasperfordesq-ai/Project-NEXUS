@@ -1,8 +1,27 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Maestro configuration for Project NEXUS mobile (bundle ID: ie.project.nexus)
+# 🔴 THIS FILE MUST CONTAIN REAL YAML, NOT ONLY COMMENTS.
 #
+# Until 2026-08-18 it was comment-only, and Maestro refuses to parse that:
+#
+#   Failed to parse file: .maestro\config.yaml
+#   List is empty.
+#
+# Which means `maestro test .maestro/` — the documented way to run the whole
+# suite, and the way any CI job would run it — has NEVER worked. Running a single
+# flow by path sidesteps config.yaml entirely, so the suite could look fine one
+# flow at a time while the directory run was broken. That is very likely why nine
+# perfectly good flows sat unrun.
+#
+# If you add documentation here, keep the `flows:` key below.
+
+# The flows to run, in filename order. The numeric prefixes are the order:
+# 01 establishes a session that 02 logs out of; 03-08 re-authenticate inline so
+# they can also run alone; 09 registers from a clean install.
+flows:
+  - "*.yaml"
+
 # ── Running flows ────────────────────────────────────────────────────────────
 #   Run all flows in order:
 #     maestro test .maestro/

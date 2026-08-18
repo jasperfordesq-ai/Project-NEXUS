@@ -316,9 +316,17 @@ working `maestro.bat`, it finds the system JDK, and `maestro -v` returns `2.8.0`
 with no Linux subsystem involved. Do not install a second copy inside WSL2 on the
 strength of the docs — check the `.bat` first.
 
+🔴 **`.maestro/config.yaml` was comment-only until 2026-08-18, and Maestro refuses
+to parse that** — `Failed to parse file: config.yaml / List is empty`. So
+`maestro test .maestro/`, the documented way to run the whole suite and the way any
+CI job would run it, had **never worked**. Running one flow by path skips
+config.yaml entirely, so the suite could look healthy one flow at a time while the
+directory run was broken. That is the likeliest reason nine perfectly good flows
+sat unrun for months. The file now carries a real `flows:` key; keep it.
+
 🔴 **Nothing runs these flows automatically.** They are operator-run. A green CI
 run is no evidence that the app launches on a device. What has changed is that
-they *can* now be run here at all — see the emulator section below.
+they *can* now be run at all — see the emulator section above.
 
 🔴 `.maestro/config.yaml` refers to `.github/workflows/mobile-eas-build.yml` for
 CI configuration. **That workflow does not exist** and never has. The real mobile
