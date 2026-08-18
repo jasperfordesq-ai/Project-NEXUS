@@ -19,7 +19,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
-const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { audit } = require('../lib/auditLogger');
 const { getRequestProfile } = require('../lib/request-profile');
 
@@ -386,12 +386,12 @@ function messageMediaProjection(message) {
     ...source,
     sender: {
       ...sender,
-      avatarAssetUrl: resolveBackendAssetUrl(sender.avatar_url || sender.avatarUrl)
+      avatarAssetUrl: resolveBackendMediaUrl(sender.avatar_url || sender.avatarUrl)
     },
-    audioAssetUrl: resolveBackendAssetUrl(source.audio_url || source.audioUrl),
+    audioAssetUrl: resolveBackendMediaUrl(source.audio_url || source.audioUrl),
     attachments: attachments.map(attachment => ({
       ...attachment,
-      assetUrl: resolveBackendAssetUrl(
+      assetUrl: resolveBackendMediaUrl(
         attachment?.url || attachment?.file_url || attachment?.download_url || attachment?.path
       )
     }))
@@ -463,7 +463,7 @@ function normalizeInboxConversation(conversation, currentUserId, t) {
     id: positiveInteger(source.id) || source.id,
     otherUser: {
       ...otherUser,
-      avatarAssetUrl: resolveBackendAssetUrl(otherUser.avatar_url || otherUser.avatarUrl)
+      avatarAssetUrl: resolveBackendMediaUrl(otherUser.avatar_url || otherUser.avatarUrl)
     },
     displayName,
     filterName,
@@ -877,7 +877,7 @@ router.get('/groups', requireAuth, asyncRoute(async (req, res) => {
     groups: groups.map(group => ({
       ...group,
       displayName: groupName(group, res.locals.t),
-      avatarAssetUrl: resolveBackendAssetUrl(group.group_avatar_url || group.groupAvatarUrl)
+      avatarAssetUrl: resolveBackendMediaUrl(group.group_avatar_url || group.groupAvatarUrl)
     })),
     groupStatus: groupStatus(req.query.status, res.locals.t),
     ...access,

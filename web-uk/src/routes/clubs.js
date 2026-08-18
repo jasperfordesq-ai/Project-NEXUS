@@ -6,6 +6,7 @@
 const express = require('express');
 const { getClubs } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
@@ -56,7 +57,7 @@ function normalizeClub(rawClub, t) {
     id: positiveInteger(club.id),
     name,
     description: truncate(club.description, 200),
-    logoUrl: trimmed(club.logo_url || club.logoUrl),
+    logoUrl: resolveBackendMediaUrl(club.logo_url || club.logoUrl),
     contactEmail: trimmed(club.contact_email || club.contactEmail || club.email),
     websiteHref: websiteHref(club.website),
     meetingSchedule: trimmed(club.meeting_schedule || club.meetingSchedule),

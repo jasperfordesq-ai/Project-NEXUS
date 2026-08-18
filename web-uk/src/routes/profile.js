@@ -23,7 +23,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { isValidEmail } = require('../lib/inputValidator');
-const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { createChoiceTranslator, createTranslator, SUPPORTED_LOCALES } = require('../lib/localization');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -687,7 +687,7 @@ function ownProfileListings(result) {
       title: trimmed(listing?.title || listing?.name),
       description: trimmed(String(listing?.description || '').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' '),
       type: String(listing?.type || 'offer').toLowerCase() === 'request' ? 'request' : 'offer',
-      imageUrl: listing?.image_url || listing?.imageUrl || ''
+      imageUrl: resolveBackendMediaUrl(listing?.image_url || listing?.imageUrl)
     }))
     .filter((listing) => listing.id && listing.title)
     .slice(0, 6);
@@ -889,7 +889,7 @@ function buildProfileSettingsViewModel(req, data) {
       tagline: formValue('tagline'),
       bio: formValue('bio'),
       location: formValue('location'),
-      avatar_url: resolveBackendAssetUrl(profileValue(profile, 'avatar_url')),
+      avatar_url: resolveBackendMediaUrl(profileValue(profile, 'avatar_url')),
       privacy_profile: privacyProfile,
       privacy_search: boolValue(profileValue(profile, 'privacy_search'), true),
       privacy_contact: boolValue(account.privacy_contact, profileValue(profile, 'privacy_contact'), true),
@@ -1107,7 +1107,7 @@ function normalizeBlockedUsers(payload, t) {
       user_id: Number(blockedUser.user_id || blockedUser.id || blockedUser.blocked_user_id || 0),
       name,
       initial: (name || 'U').slice(0, 1).toUpperCase(),
-      avatar_url: resolveBackendAssetUrl(blockedUser.avatar_url || blockedUser.avatarUrl),
+      avatar_url: resolveBackendMediaUrl(blockedUser.avatar_url || blockedUser.avatarUrl),
       reason: blockedUser.reason || ''
     };
   });
@@ -1908,7 +1908,7 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
     profile,
     displayName,
     initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || displayName.charAt(0).toUpperCase(),
-    avatarUrl: profileValue(profile, 'avatar_url'),
+    avatarUrl: resolveBackendMediaUrl(profileValue(profile, 'avatar_url')),
     profileType,
     identityVerified: boolValue(profile.id_verified, profile.idVerified),
     profileStats: ownProfileStats(profile, gamificationResult),

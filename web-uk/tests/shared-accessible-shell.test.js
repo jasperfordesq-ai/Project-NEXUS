@@ -4971,7 +4971,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Federated member');
     expect(response.text).toContain('Message sent');
     expect(response.text).toContain('Avery Stone');
-    expect(response.text).toContain('src="/uploads/avery.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/avery.jpg"`);
     expect(response.text).toContain('4.7 out of 5');
     expect(response.text).toContain('3 reviews');
     expect(response.text).toContain('Community: North Timebank');
@@ -5627,7 +5627,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Offer');
     expect(response.text).toContain('Repairs');
     expect(response.text).toContain('Community: North Timebank');
-    expect(response.text).toContain('src="/uploads/listings/bike.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/listings/bike.jpg"`);
     expect(response.text).toContain('2.5 hours');
     expect(response.text).toContain('North Hall');
     expect(response.text).toContain('Avery Stone');
@@ -12259,7 +12259,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('value="repair"');
     expect(signed.text).toContain('31 members');
     expect(signed.text).toContain('Ada Lovelace');
-    expect(signed.text).toContain('src="/avatars/ada.jpg"');
+    expect(signed.text).toContain(`src="${getApiBaseUrl()}/avatars/ada.jpg"`);
     expect(signed.text).toContain('Connects repair volunteers with neighbours.');
     expect(signed.text).toContain('Community rank:');
     expect(signed.text).toContain('87% match');
@@ -12403,7 +12403,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('value="50" selected');
     expect(signed.text).toContain('Results');
     expect(signed.text).toContain('Ada Lovelace');
-    expect(signed.text).toContain('src="/avatars/ada.jpg"');
+    expect(signed.text).toContain(`src="${getApiBaseUrl()}/avatars/ada.jpg"`);
     expect(signed.text).toContain('Helps neighbours find practical support.');
     expect(signed.text).toContain('4.3 km away');
     expect(signed.text).toContain('Bandon');
@@ -14378,7 +14378,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Posted by Ada Lovelace');
     expect(response.text).toContain('Repair cafe is open.');
     expect(response.text).toContain('Bring your bike lights.');
-    expect(response.text).toContain('src="/uploads/feed/repair-thumb.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/repair-thumb.jpg"`);
     expect(response.text).toContain('alt="A repaired bicycle wheel"');
     expect(response.text).toContain('2 likes');
     expect(response.text).toContain('1 comment');
@@ -14466,7 +14466,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Posted by Ada Lovelace');
     expect(response.text).toContain('Repair cafe is open.');
     expect(response.text).toContain('Bring your bike lights.');
-    expect(response.text).toContain('src="/uploads/feed/repair-thumb.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/repair-thumb.jpg"`);
     expect(response.text).toContain('alt="A repaired bicycle wheel"');
     expect(response.text).toContain('2 likes');
     expect(response.text).toContain('1 comment');
@@ -14516,7 +14516,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="feed-item-listing-42"');
     expect(response.text).toContain('Posted by Grace Hopper');
     expect(response.text).toContain('Available for local errands.');
-    expect(response.text).toContain('src="/uploads/listings/cargo-bike.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/listings/cargo-bike.jpg"`);
     expect(response.text).toContain('alt="Image attached to this feed item"');
     expect(response.text).toContain('href="/listings/42"');
     expect(response.text).toContain('View listing');
@@ -14916,7 +14916,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Cargo bike available');
     expect(response.text).toContain('href="/acme/accessible/listings/42"');
     expect(response.text).toContain('View this listing<span class="govuk-visually-hidden"> for Cargo bike available</span>');
-    expect(response.text).toContain('src="/uploads/feed/cargo-bike-thumb.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/feed/cargo-bike-thumb.jpg"`);
     expect(response.text).toContain('alt="A cargo bicycle parked outside a library"');
     expect(response.text).toContain('class="nexus-alpha-feed-image"');
     expect(response.text).toContain('action="/acme/accessible/feed/items/listing/42/like"');
@@ -14962,7 +14962,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('Ada Lovelace');
-    expect(response.text).toContain('class="nexus-alpha-avatar nexus-alpha-avatar--small" src="/avatars/ada.jpg" alt=""');
+    expect(response.text).toContain(`class="nexus-alpha-avatar nexus-alpha-avatar--small" src="${getApiBaseUrl()}/avatars/ada.jpg" alt=""`);
     expect(response.text).toContain('Posted by Ada Lovelace');
     expect(response.text).toContain('Repair cafe is open.');
     expect(response.text).toContain('action="/feed/items/post/42/like"');
@@ -32622,8 +32622,8 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community bike');
     expect(response.text).toContain('Freshly serviced');
     expect(response.text).toContain('GBP 15.50');
-    expect(response.text).toContain('src="/uploads/bike-thumb.jpg"');
-    expect(response.text).not.toContain('src="/uploads/bike-full.jpg"');
+    expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/bike-thumb.jpg"`);
+    expect(response.text).not.toContain(`src="${getApiBaseUrl()}/uploads/bike-full.jpg"`);
     expect(response.text).toContain('Hybrid tool kit');
     // 🔴 This asserted the OPPOSITE — that the card must NOT show the hybrid price — and
     // so pinned the bug in place. A listing priced at GBP 12.50 OR 3 time credits must

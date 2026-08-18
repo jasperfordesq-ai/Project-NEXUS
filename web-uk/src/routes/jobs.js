@@ -21,6 +21,7 @@ const { readDate, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -1166,7 +1167,7 @@ function decorateCandidate(candidate, req) {
     headline: trimmed(candidate.headline || candidate.resume_headline, 255)
       || translateStatusMessage(req, 'govuk_alpha_jobs.talent.headline_none', 'No headline provided'),
     location: trimmed(candidate.location, 255),
-    avatarUrl: trimmed(candidate.avatar_url || candidate.avatarUrl, 1000),
+    avatarUrl: resolveBackendMediaUrl(candidate.avatar_url || candidate.avatarUrl),
     skills,
     skillsPreview: skills.slice(0, 6),
     lastActiveLabel: formatDateOnlyLong(candidate.last_active || candidate.lastActive),
@@ -1212,7 +1213,7 @@ function decorateEmployer(result, employerId) {
     id: positiveInteger(user.id) || employerId,
     name,
     initial: candidateInitial(name),
-    avatarUrl: trimmed(user.avatar_url || user.avatarUrl, 1000),
+    avatarUrl: resolveBackendMediaUrl(user.avatar_url || user.avatarUrl),
     headline: trimmed(user.resume_headline || user.headline, 255),
     bio: trimmed(user.bio, 5000),
     location: trimmed(user.location, 255),

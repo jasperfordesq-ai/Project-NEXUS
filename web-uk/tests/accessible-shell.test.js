@@ -6,7 +6,8 @@ const {
   buildShellLocals,
   buildLanguageQueryParams,
   prefixLocalPath,
-  resolveBackendAssetUrl
+  resolveBackendAssetUrl,
+  resolveBackendMediaUrl
 } = require('../src/lib/accessible-shell');
 const { createTranslator } = require('../src/lib/localization');
 
@@ -103,6 +104,50 @@ describe('accessible shell tenant gating', () => {
     expect(resolveBackendAssetUrl('/uploads/tenants/acme/logo.png'))
       .toBe('http://127.0.0.1:8090/uploads/tenants/acme/logo.png');
     expect(resolveBackendAssetUrl('https://untrusted.example/logo.png')).toBe('');
+  });
+
+  /**
+   * 🔴 Regression guard added 2026-08-18. Reported on the accessible feed: no
+   * avatars and no post photos loaded at all, on every accessible domain.
+   *
+   * Cause: member-content image URLs were rendered EXACTLY as the API returned
+   * them. The API returns a relative path (`/uploads/...`, and the Laravel
+   * default avatar `/assets/img/defaults/default_avatar.png`), which the browser
+   * resolves against the ACCESSIBLE host — where nothing under /uploads or
+   * /assets exists. Verified against production: both 404 on
+   * accessible.project-nexus.ie and 200/403 on api.project-nexus.ie.
+   *
+   * The header logo was correct because it went through resolveBackendAssetUrl,
+   * and feed COMMENT avatars were correct for the same reason, while post
+   * avatars and photos beside them were not — the inconsistency that hid this.
+   *
+   * The two resolvers differ ONLY on off-origin absolute URLs, and that
+   * difference is deliberate in both directions, so assert both here.
+   */
+  it('resolves relative member-content assets and leaves off-origin ones alone', () => {
+    // The reported bug: a relative path must become browser-reachable.
+    expect(resolveBackendMediaUrl('/uploads/feed/photo.jpg'))
+      .toBe('http://127.0.0.1:8090/uploads/feed/photo.jpg');
+    expect(resolveBackendMediaUrl('/assets/img/defaults/default_avatar.png'))
+      .toBe('http://127.0.0.1:8090/assets/img/defaults/default_avatar.png');
+
+    // Already browser-reachable: unchanged.
+    expect(resolveBackendMediaUrl('http://127.0.0.1:8090/uploads/feed/photo.jpg'))
+      .toBe('http://127.0.0.1:8090/uploads/feed/photo.jpg');
+
+    // 🔴 Off-origin member content is PASSED THROUGH, matching resolveAssetUrl in
+    // react-frontend, which keeps partner URLs so a federated member's avatar
+    // loads from the server that actually holds it. Blanking it here would
+    // delete the image instead of fixing it.
+    expect(resolveBackendMediaUrl('https://cdn.example.test/feed/full.png'))
+      .toBe('https://cdn.example.test/feed/full.png');
+    // ...whereas tenant BRANDING stays strict, so a tenant cannot point the site
+    // header at a third-party host. Asserted together so the split is not
+    // "simplified" back into one helper.
+    expect(resolveBackendAssetUrl('https://cdn.example.test/feed/full.png')).toBe('');
+
+    expect(resolveBackendMediaUrl('')).toBe('');
+    expect(resolveBackendMediaUrl(null)).toBe('');
   });
 
   /**

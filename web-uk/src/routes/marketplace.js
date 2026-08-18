@@ -6,7 +6,7 @@
 const express = require('express');
 const { randomUUID } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { createTranslator, formatLocaleNumber } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -398,11 +398,12 @@ function renderMarketplaceError(error, res, title = 'Marketplace') {
   return true;
 }
 
+// 🔴 Only ever used for image sources. A relative /uploads path is served by the
+// API host, NOT by this frontend's host, so passing it through unchanged renders
+// a broken image on every accessible domain. Resolve it the same way the header
+// logo does.
 function safeRelativeOrAbsoluteUrl(value) {
-  const url = trimmed(value);
-  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')
-    ? url
-    : '';
+  return resolveBackendMediaUrl(value);
 }
 
 function formatMoney(amount, currency = '') {

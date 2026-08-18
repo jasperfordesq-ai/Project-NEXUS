@@ -38,7 +38,7 @@ const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
 
 const router = express.Router();
@@ -273,7 +273,7 @@ function normalizeDiscoverMember(member, t) {
     id: positiveInteger(member.id) || 0,
     name,
     initial: name.slice(0, 1).toUpperCase() || 'M',
-    avatar: String(member.avatar || member.avatar_url || member.avatarUrl || '').trim(),
+    avatar: resolveBackendMediaUrl(member.avatar || member.avatar_url || member.avatarUrl),
     tagline: String(member.tagline || '').trim(),
     rankPercent,
     location: String(member.location || '').trim(),

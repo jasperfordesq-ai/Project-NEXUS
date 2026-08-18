@@ -16,7 +16,7 @@ const {
 const { withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
-const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
@@ -86,8 +86,8 @@ function feedMedia(row) {
     : (row && row.image_url ? [{ file_url: row.image_url, thumbnail_url: row.image_url, alt_text: null }] : []);
 
   return rows.slice(0, 4).map((item) => {
-    const fileUrl = trimmed(item && (item.file_url || item.url));
-    const thumbnailUrl = trimmed(item && (item.thumbnail_url || item.thumbnailUrl || fileUrl));
+    const fileUrl = resolveBackendMediaUrl(item && (item.file_url || item.url));
+    const thumbnailUrl = resolveBackendMediaUrl(item && (item.thumbnail_url || item.thumbnailUrl)) || fileUrl;
     return {
       fileUrl,
       thumbnailUrl,
@@ -157,7 +157,7 @@ function normalizeFeedPost(row) {
     },
     authorId,
     authorName,
-    authorAvatar: trimmed(author.avatar_url || row && row.author_avatar_url),
+    authorAvatar: resolveBackendMediaUrl(author.avatar_url || row && row.author_avatar_url),
     createdAt: trimmed(row && (row.created_at || row.createdAt)),
     content: contentParagraphs.join('\n\n'),
     contentParagraphs,
@@ -276,7 +276,7 @@ function feedCommentRows(result) {
       ...source,
       author: {
         ...author,
-        avatarAssetUrl: resolveBackendAssetUrl(author.avatar || author.avatar_url || author.avatarUrl)
+        avatarAssetUrl: resolveBackendMediaUrl(author.avatar || author.avatar_url || author.avatarUrl)
       },
       replies: Array.isArray(source.replies) ? source.replies.map(project) : []
     };

@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { callPodcastApi, ApiError } = require('../lib/api');
-const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
@@ -178,7 +178,7 @@ function safeRelativeOrAbsoluteUrl(value) {
 function backendRelativeUrl(value) {
   const url = safeRelativeOrAbsoluteUrl(value);
   if (!url) return '';
-  return url.startsWith('/') ? resolveBackendAssetUrl(url) : url;
+  return url.startsWith('/') ? resolveBackendMediaUrl(url) : url;
 }
 
 function sortFrom(query) {

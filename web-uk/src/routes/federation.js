@@ -12,7 +12,7 @@ const {
   getBalance
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
@@ -164,7 +164,7 @@ function normalizeMember(member, options = {}) {
     id: member && member.id !== undefined ? member.id : '',
     name,
     href: memberHref({ id: member && member.id, tenantId }),
-    avatar: trimmed(member && member.avatar),
+    avatar: resolveBackendMediaUrl(member && member.avatar),
     bio: trimmed(member && member.bio, bioLimit),
     location: trimmed(member && member.location),
     serviceReach,
@@ -322,7 +322,7 @@ function normalizeListing(listing, options = {}) {
     description: trimmed(listing && listing.description, descriptionLimit),
     type,
     categoryName: trimmed((listing && listing.category_name) || (listing && listing.category)),
-    imageUrl: trimmed(listing && listing.image_url),
+    imageUrl: resolveBackendMediaUrl(listing && listing.image_url),
     estimatedHours: numberOrNull(listing && (listing.estimated_hours || listing.rate || listing.price)),
     location: trimmed(listing && listing.location),
     authorId: listing && listing.user_id !== undefined ? listing.user_id : author.id,

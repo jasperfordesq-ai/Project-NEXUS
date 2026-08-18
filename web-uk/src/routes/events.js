@@ -34,7 +34,7 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
-const { flagEnabled, localeOptions, resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { flagEnabled, localeOptions, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
 
 const router = express.Router();
@@ -234,7 +234,7 @@ function eventWithAssetUrls(value) {
   const primaryImage = event.primary_image && typeof event.primary_image === 'object'
     ? event.primary_image
     : {};
-  const coverImage = resolveBackendAssetUrl(event.cover_image || event.coverImage || primaryImage.url);
+  const coverImage = resolveBackendMediaUrl(event.cover_image || event.coverImage || primaryImage.url);
   return {
     ...event,
     cover_image: coverImage,
@@ -570,7 +570,7 @@ function eventAttendee(row = {}, t = (key) => key) {
   return {
     name,
     initial: Array.from(name)[0]?.toLocaleUpperCase() || '',
-    avatarUrl: resolveBackendAssetUrl(member.avatar_url || row.avatar_url || row.avatar || legacyUser.avatar_url || legacyUser.avatar),
+    avatarUrl: resolveBackendMediaUrl(member.avatar_url || row.avatar_url || row.avatar || legacyUser.avatar_url || legacyUser.avatar),
     status
   };
 }

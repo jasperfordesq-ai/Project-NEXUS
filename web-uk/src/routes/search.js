@@ -18,7 +18,7 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
-const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
@@ -262,7 +262,7 @@ function groupedSearchResults(rows) {
         displayListingType: textFrom(coalescedField(item, 'listing_type', 'type')),
         displayHours: coalescedField(item, 'hours_estimate', 'estimated_hours'),
         linkId: positiveId(item.id),
-        imageAssetUrl: resolveBackendAssetUrl(item.image_url || item.imageUrl)
+        imageAssetUrl: resolveBackendMediaUrl(item.image_url || item.imageUrl)
       });
     }
     if (type === 'user') {
@@ -272,7 +272,7 @@ function groupedSearchResults(rows) {
         displayTagline: textFrom(coalescedField(item, 'tagline', 'bio')),
         displayLocation: textFrom(item.location),
         linkId: positiveId(item.id),
-        avatarAssetUrl: resolveBackendAssetUrl(item.avatar || item.avatar_url || item.avatarUrl)
+        avatarAssetUrl: resolveBackendMediaUrl(item.avatar || item.avatar_url || item.avatarUrl)
       });
     }
     if (type === 'event') {

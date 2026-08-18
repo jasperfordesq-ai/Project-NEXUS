@@ -28,7 +28,7 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, splitDate } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
-const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 
@@ -320,8 +320,8 @@ function normalizeGroup(item, fallbackId = null) {
     ...raw,
     id: positiveInteger(raw.id) || fallbackId,
     name: trimmed(raw.name || raw.title) || 'Group',
-    imageUrl: resolveBackendAssetUrl(raw.image_url || raw.imageUrl || raw.avatar_url || raw.avatarUrl),
-    coverImageUrl: resolveBackendAssetUrl(raw.cover_image_url || raw.coverImageUrl || raw.cover_url || raw.coverUrl),
+    imageUrl: resolveBackendMediaUrl(raw.image_url || raw.imageUrl || raw.avatar_url || raw.avatarUrl),
+    coverImageUrl: resolveBackendMediaUrl(raw.cover_image_url || raw.coverImageUrl || raw.cover_url || raw.coverUrl),
     createdAtLabel: dateLabel(raw.created_at || raw.createdAt),
     tagsText: groupTags(raw.tags).join(', '),
     my_membership: membership || null,
@@ -481,17 +481,17 @@ function normalizeGroupFeedPost(item, unknownAuthor) {
 
   return {
     authorName: trimmed(author.name || raw.author_name || raw.authorName) || unknownAuthor,
-    authorAvatar: resolveBackendAssetUrl(author.avatar_url || author.avatarUrl || raw.author_avatar_url || raw.authorAvatarUrl),
+    authorAvatar: resolveBackendMediaUrl(author.avatar_url || author.avatarUrl || raw.author_avatar_url || raw.authorAvatarUrl),
     createdAt: createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate.toISOString() : '',
     createdAtLabel: createdDate && !Number.isNaN(createdDate.getTime())
       ? bladeDateTime24Label(createdAt)
       : '',
     contentParagraphs: plainParagraphs(raw.content),
     media: mediaRows.slice(0, 4).map((media) => {
-      const fullUrl = resolveBackendAssetUrl(media?.file_url || media?.fileUrl || media?.url);
+      const fullUrl = resolveBackendMediaUrl(media?.file_url || media?.fileUrl || media?.url);
       return {
         fullUrl,
-        thumbnailUrl: resolveBackendAssetUrl(media?.thumbnail_url || media?.thumbnailUrl) || fullUrl,
+        thumbnailUrl: resolveBackendMediaUrl(media?.thumbnail_url || media?.thumbnailUrl) || fullUrl,
         altText: trimmed(media?.alt_text || media?.altText, 500)
       };
     }).filter((media) => media.fullUrl)
@@ -1094,7 +1094,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       id: positiveInteger(event?.id),
       title: trimmed(event?.title),
       startsAt: event?.start_time || event?.start_date || event?.starts_at || event?.startsAt || '',
-      coverImage: resolveBackendAssetUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl)
+      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl)
     }))
     .filter((event) => event.id !== null && event.title !== '');
   const groupFeed = collectionFrom(feedResult)
@@ -1109,7 +1109,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       id: positiveInteger(subGroup?.id),
       name: trimmed(subGroup?.name),
       description: trimmed(subGroup?.description),
-      imageUrl: resolveBackendAssetUrl(subGroup?.image_url || subGroup?.imageUrl),
+      imageUrl: resolveBackendMediaUrl(subGroup?.image_url || subGroup?.imageUrl),
       memberCount: Number(subGroup?.member_count ?? subGroup?.memberCount ?? 0) || 0,
       isPrivate: trimmed(subGroup?.visibility || 'public') !== 'public'
     }))

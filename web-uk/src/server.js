@@ -93,7 +93,7 @@ const { errorLogger, errorPageFallbackLocals, finalErrorHandler } = require('./l
 const { ApiError, getExchangeConfig } = require('./lib/api');
 const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./lib/rateLimiter');
 const { handleApiError } = require('./lib/routeHelpers');
-const { buildShellLocals, resolveBackendAssetUrl } = require('./lib/accessible-shell');
+const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
 const { nl2br } = require('./lib/nl2br');
@@ -1262,7 +1262,7 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       ...opportunity,
       organization: {
         ...organization,
-        logo_url: resolveBackendAssetUrl(organization.logo_url || organization.logoUrl)
+        logo_url: resolveBackendMediaUrl(organization.logo_url || organization.logoUrl)
       },
       organisationId,
       organisationName,
@@ -1899,7 +1899,7 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
           return {
             ...review,
             authorName: String(author.name || '').trim() || res.locals.t('govuk_alpha.feed.unknown_author'),
-            authorAvatar: resolveBackendAssetUrl(author.avatar || author.avatar_url),
+            authorAvatar: resolveBackendMediaUrl(author.avatar || author.avatar_url),
             rating: Number.isFinite(rating) ? Math.max(0, Math.min(5, Math.trunc(rating))) : 0,
             comment: String(review?.comment ?? '').trim()
           };

@@ -32,7 +32,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { audit } = require('../lib/auditLogger');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
-const { resolveBackendAssetUrl, flagEnabled } = require('../lib/accessible-shell');
+const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
@@ -394,7 +394,7 @@ async function listingFormViewData(req, options) {
   return {
     title: options.title,
     listing: options.listing || null,
-    listingImageUrl: resolveBackendAssetUrl(options.listing?.image_url || options.listing?.imageUrl),
+    listingImageUrl: resolveBackendMediaUrl(options.listing?.image_url || options.listing?.imageUrl),
     values: options.values || null,
     errors: options.errors || null,
     fieldErrors: options.fieldErrors || {},
@@ -420,7 +420,7 @@ function listingGalleryFrom(listing) {
   const images = Array.isArray(listing.images) ? listing.images : [];
   return images.map((image) => {
     const item = image && typeof image === 'object' ? image : {};
-    const url = resolveBackendAssetUrl(item.url || item.image_url || item.imageUrl);
+    const url = resolveBackendMediaUrl(item.url || item.image_url || item.imageUrl);
     if (!url) return null;
     return {
       url,
@@ -452,7 +452,7 @@ function listingAuthorFrom(listing) {
     id,
     name,
     initial: Array.from(name)[0]?.toLocaleUpperCase() || '',
-    avatarUrl: resolveBackendAssetUrl(listing.author_avatar || listing.authorAvatar || user.avatar_url || user.avatar),
+    avatarUrl: resolveBackendMediaUrl(listing.author_avatar || listing.authorAvatar || user.avatar_url || user.avatar),
     tagline: trimmed(listing.author_tagline || listing.authorTagline || user.tagline),
     rating: Number.isFinite(Number(listing.author_rating)) ? Number(listing.author_rating) : null,
     reviewsCount: Math.max(0, Number(listing.author_reviews_count) || 0),
@@ -1285,7 +1285,7 @@ router.get('/', asyncRoute(async (req, res) => {
   const result = listingResult.result;
   const listings = collectionFrom(result).map(listing => ({
     ...listing,
-    imageUrl: resolveBackendAssetUrl(listing && (listing.image_url || listing.imageUrl)),
+    imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl)),
     authorName: trimmed(listing && ((listing.user && listing.user.name) || listing.author_name)),
     categoryName: trimmed(listing && (listing.category_name || (listing.category && listing.category.name))),
     hoursEstimate: listing && (listing.hours_estimate ?? listing.hoursEstimate)
@@ -1448,7 +1448,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   res.render('listings/detail', {
     title: listing.title || listing.name || 'Listing details',
     listing: { ...listing, can_edit },
-    listingImageUrl: resolveBackendAssetUrl(listing.image_url || listing.imageUrl),
+    listingImageUrl: resolveBackendMediaUrl(listing.image_url || listing.imageUrl),
     listingGallery: listingGalleryFrom(listing),
     listingSkillTags: listingSkillTagsFrom(listing),
     listingAuthor: listingAuthorFrom(listing),

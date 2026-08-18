@@ -18,7 +18,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -188,7 +188,7 @@ function normalizeFeedItem(item, t = (key) => key) {
     title: String(item && (item.title || item.heading || typeLabel)).trim(),
     content: stripTags(item && (item.content || item.body)),
     authorName: String(item && ((item.author && item.author.name) || item.author_name || item.authorName || t('feed.unknown_author'))).trim(),
-    imageUrl: item && (item.image_url || item.imageUrl || (item.media && item.media[0] && (item.media[0].thumbnail_url || item.media[0].file_url)))
+    imageUrl: resolveBackendMediaUrl(item && (item.image_url || item.imageUrl || (item.media && item.media[0] && (item.media[0].thumbnail_url || item.media[0].file_url))))
   };
 }
 
@@ -199,7 +199,7 @@ function normalizeListing(listing, t = (key) => key) {
     title: String(listing && (listing.title || listing.name || t('feed.item_types.listing'))).trim(),
     type,
     description: stripTags(listing && listing.description),
-    imageUrl: listing && (listing.image_url || listing.imageUrl)
+    imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl))
   };
 }
 

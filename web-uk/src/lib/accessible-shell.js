@@ -509,6 +509,44 @@ function resolveBackendAssetUrl(value) {
   }
 }
 
+/**
+ * Resolve a MEMBER-CONTENT asset (avatar, post photo, listing image, logo of a
+ * club or organisation) for the browser.
+ *
+ * 🔴 Use this — NOT `resolveBackendAssetUrl` — for anything a member uploaded or
+ * a federation partner supplied. The two differ only on absolute URLs pointing
+ * off-origin, and that difference matters in both directions:
+ *
+ *   - `resolveBackendAssetUrl` REJECTS them, which is right for tenant branding
+ *     (a tenant must not be able to point the site header at a third-party host)
+ *     and wrong for member content, where it silently deletes the image.
+ *   - This one PASSES THEM THROUGH, matching `resolveAssetUrl` in the React
+ *     frontend, which keeps them deliberately so "avatars from federation
+ *     partners load from the correct server".
+ *
+ * Both resolve a RELATIVE path against the browser-reachable API origin, which
+ * is the bug this exists to fix: `/uploads/...` and the Laravel default avatar
+ * `/assets/img/defaults/default_avatar.png` are served by the API host, NOT by
+ * this frontend's host, so rendering them unchanged gave a broken image on every
+ * accessible domain — reported on the feed, where every avatar and every post
+ * photo failed to load.
+ *
+ * 🔴 Known limitation, deliberately NOT worked around here: the CSP in
+ * `server.js` sets `img-src` to `'self' data: <api origin>`, so an off-origin
+ * image still will not render even though the URL survives. Widening the
+ * allowlist is a trust/privacy decision (it leaks every viewer's IP to that
+ * host) and belongs to the owner, not to this helper.
+ */
+function resolveBackendMediaUrl(value) {
+  const asset = String(value || '').trim();
+  if (!asset) return '';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(asset) || asset.startsWith('//')) {
+    // Already absolute (or protocol-relative): leave the host alone.
+    return asset;
+  }
+  return resolveBackendAssetUrl(asset);
+}
+
 function normalizeLogoShape(value) {
   return ['wide', 'landscape', 'square'].includes(value) ? value : 'landscape';
 }
@@ -624,5 +662,6 @@ module.exports = {
   phaseText,
   prefixLocalPath,
   resolveBackendAssetUrl,
+  resolveBackendMediaUrl,
   serviceName
 };

@@ -14,6 +14,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
+const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
@@ -254,7 +255,7 @@ function normalizeRelationship(row, t) {
     relationshipId: positiveInteger(row && (row.relationship_id || row.id)) || 0,
     name: name || t('govuk_alpha_settings.common.unknown_member'),
     email: trimmed(row && row.email),
-    avatarUrl: trimmed(row && row.avatar_url),
+    avatarUrl: resolveBackendMediaUrl(row && row.avatar_url),
     relationshipType: type,
     relationshipTypeLabel: t(`govuk_alpha_settings.linked.types.${type}`),
     status: trimmed(row && row.status) || 'pending',
