@@ -1,6 +1,6 @@
 # Historical Frozen-Client Localization Comparator
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-18 (current figures below; older dated sections are history)
 
 Status: **Historical archive - frozen React client appendix only**
 
@@ -48,6 +48,25 @@ backend ledger, or an overall parity score. Use
 backend evidence and
 [`web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`](../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md)
 for Web UK.
+
+## 🔴 Current figures — regenerated 2026-08-18
+
+Everything below this section is dated history. These are the live numbers, from
+`scripts/compare-laravel-localization-parity.ps1` at monorepo `8f6d527bd`:
+
+| Measure | Value |
+| --- | ---: |
+| Laravel keys | 20,240 |
+| Matched keys | 3,431 |
+| **Missing keys** | **5,424** |
+| Extra .NET keys | 2,951 |
+| Matched namespaces | 396 |
+| Missing namespaces | 374 |
+| Parse errors | 0 |
+
+26.8% of Laravel's keys have no ASP.NET counterpart. This is the largest single
+deduction inside the auth/tenant/security/localization rubric category, which was
+rescored from 97/100 to 74/100 on 2026-08-18 partly for this reason.
 
 ## Historical Static Source Counts (2026-07-04)
 

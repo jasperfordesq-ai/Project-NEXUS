@@ -140,9 +140,11 @@ See `docs/REACT_FRONTEND_RETIREMENT.md` for the maintained policy.
 > defect standing between this backend and running a real community.
 >
 > The one thing to know before you touch anything here: **route existence proves
-> nothing.** 349 action methods return success-shaped JSON while performing no
+> nothing.** 319 action methods (349 when this warning was written; remeasured
+> 2026-08-18) return success-shaped JSON while performing no
 > work at all — no database access, no service call. That is why the generated
-> inventories report 2,659 routes matched and 0 static React contract gaps. Never
+> inventories report 2,648 of 2,667 routes matched and 5 static React contract
+> gaps. Never
 > accept "the route exists" or a green test run as evidence of behaviour; open the
 > method body. `AdminV2RouteAliasRuntimeTests.cs:773-780` literally asserts only
 > "not 404, not 405", which a stub satisfies.

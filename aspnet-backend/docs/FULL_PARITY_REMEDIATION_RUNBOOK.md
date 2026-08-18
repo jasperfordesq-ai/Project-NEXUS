@@ -98,6 +98,30 @@ and 15/75 providers/operations/docs. Exact deductions are respectively 0,
 100, 40, 10, 55, 115, and 60 points. New Laravel drift creates a separately
 named baseline and scope-added delta; it does not silently rewrite this score.
 
+### Fixed Rubric Baseline 2 — named 2026-08-18 (`ASPNET-CONTRACT-R2`)
+
+Baseline 1 above is **frozen and unrewritten**. Baseline 2 is the separately named
+drift baseline the rule immediately above requires, taken at monorepo
+`8f6d527bd87d9c07cc5c619bf397b2cad7592f41` against Laravel HEAD rather than
+`903d03d3`. Its banked score is **598/1000**: 96 route representation, 185 semantic
+parity, 118 schema/upgrade safety, 74 security and localization, 85 build/test/CI,
+10 unchanged-frontend runtime proof, and 30 providers/operations/docs. Exact
+deductions are respectively 4, 165, 32, 26, 15, 115 and 45.
+
+🔴 **It is lower than Baseline 1's 712 because the instrument improved, not because
+the backend regressed.** Baseline 1 banked 307/350 for semantic parity at a time
+when nothing could compare a response; parity was inferred from route inventories.
+`scripts/compare-live-responses.mjs` can now ask both running backends the same
+question, and on the 170 GET paths the canonical React frontend calls, signed in,
+only 64 are contract-identical. Meanwhile the code genuinely improved: the tenant
+hierarchy and subtree confinement now exist, the event-discarding webhooks now
+refuse, no-op handlers fell 349 → 319, and every ASP.NET CI job is green.
+
+The full category table, per-category evidence and the commands behind each number
+live in [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md),
+which remains the canonical current score. This runbook records the baseline's
+existence and denominator only.
+
 ## Historical Published Evidence
 
 The two dated checkpoints below explain how Fixed Rubric Baseline 1 was first
@@ -501,7 +525,8 @@ Comments V2 controller integration class passes 5/5. Full-suite/CI,
 mention/notification side effects on the generic V2 path, and unchanged-browser
 proof remain open.
 
-This banks 1 semantic and 1 security/localization point for **712/1000**:
+This banks 1 semantic and 1 security/localization point for **712/1000** *(the
+Baseline 1 total; superseded by Baseline 2's 598/1000 on 2026-08-18)*:
 100/100 route, 307/350 semantic, 129/150 schema, 97/100
 security/localization, 45/100 build/test/CI, 10/125 unchanged-frontends, and
 24/75 providers/ops/docs. Exact remaining deductions are 0, 43, 21, 3, 55,

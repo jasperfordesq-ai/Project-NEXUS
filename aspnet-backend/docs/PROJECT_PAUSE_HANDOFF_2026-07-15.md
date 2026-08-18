@@ -9,10 +9,19 @@
 
 Last verified: 2026-07-15 22:51 +01:00
 
-Status: **Canonical current — development-pause and cold-start source**
+Status: **Historical — the ASP.NET pause it records was LIFTED on 2026-08-14**
+
+> 🔴 **Score figures in this document are the 2026-07-15 position and are not
+> current.** Every "712/1000" below is Fixed Rubric Baseline 1. ASP.NET was
+> rescored to **598/1000** on 2026-08-18 under Baseline 2
+> (`ASPNET-CONTRACT-R2`); the schema category moved 129/150 → 118/150. Read
+> [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md) for the
+> current score. This document remains useful for the cold-start sequence and the
+> repository-freeze record.
 
 <!-- doc-consistency: PROJECT_PAUSE_DATE=2026-07-15 -->
-<!-- doc-consistency: PROJECT_PAUSE_STATE_ASPNET=PAUSED -->
+<!-- doc-consistency: PROJECT_PAUSE_STATE_ASPNET=LIFTED -->
+<!-- doc-consistency: PROJECT_PAUSE_LIFTED_ASPNET_ON=2026-08-14 -->
 <!-- doc-consistency: PROJECT_PAUSE_STATE_WEBUK=LIFTED -->
 <!-- doc-consistency: PROJECT_PAUSE_LIFTED_WEBUK_ON=2026-08-11 -->
 <!-- doc-consistency: PROJECT_PAUSE_FINAL_TAG=pause/2026-07-15-final -->
@@ -29,7 +38,17 @@ Status: **Canonical current — development-pause and cold-start source**
 >   deployment *preparation* under `web-uk/**` no longer need a fresh instruction.
 >   Current position:
 >   [`../../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
-> - **ASP.NET: STILL PAUSED.** Unchanged. Everything this document says about the
+>
+> 🔴 **SUPERSEDED 2026-08-14 — the ASP.NET pause was LIFTED.** The owner
+> explicitly resumed the ASP.NET contract-parity workstream on 2026-08-14. The
+> marker above and this note are the current state; the line immediately below is
+> the 2026-08-11 position and is kept only so a reader who remembers it can see it
+> was superseded rather than deleted. The database-backup blocker it refers to is
+> real and unchanged, and still gates PRODUCTION action — it never gated local
+> implementation.
+>
+> - ~~**ASP.NET: STILL PAUSED.**~~ *(2026-08-11 position, superseded 2026-08-14.)*
+>   Unchanged. Everything this document says about the
 >   ASP.NET backend, its tests, its migrations and its containers stands.
 >
 > 🔴 **Why the marker was split rather than flipped.** Leaving it `PAUSED` was

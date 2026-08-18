@@ -93,10 +93,13 @@ same D3 denominator and closed explicit deductions:
 
 ## Product Boundaries Preserved
 
-- [ASP.NET Fixed Rubric Baseline 1](CURRENT_ASPNET_CONTRACT_STATUS.md) remains
-  **712/1000**. The latest banked implementation is `5fa15e0e`; later backend,
-  schema, test, and CI work remains published but unscored.
-- The [schema category](CURRENT_SCHEMA_READINESS.md) remains **129/150**. The
+- [ASP.NET](CURRENT_ASPNET_CONTRACT_STATUS.md) was **rescored to 598/1000 on
+  2026-08-18** under Fixed Rubric Baseline 2 (`ASPNET-CONTRACT-R2`). Baseline 1's
+  **712/1000** is retained there as audit trail and is no longer the current score.
+  🔴 The fall is a measurement correction, not a regression: semantic parity had
+  been banked before any instrument could compare a response.
+- The [schema category](CURRENT_SCHEMA_READINESS.md) is now **118/150** under
+  Baseline 2 (was 129/150). The
   chain repair is implemented and the required complete exact-SHA suite/CI is
   terminal green at `dbafc5c3`, but dedicated migration-163 blank/populated-
   upgrade proof, remaining storage classification, fixed-rubric acceptance,

@@ -14,7 +14,8 @@ and route existence is the one thing that was never the problem.
 
 Every previous parity tool compares **source trees** — routes, files, schema,
 translations. The generated contract matrix reports `aspnet_gap_count = 0` while
-229 endpoints answer with nothing, because a handler that does no work still
+319 endpoints answer with nothing — 229 when this was written, peaking at 349 and
+remeasured at 319 on 2026-08-18 — because a handler that does no work still
 satisfies "the route exists".
 
 `scripts/compare-live-responses.mjs` (added 2026-08-16) asks **both running
@@ -144,7 +145,19 @@ inheriting the previous one.
 | + six authorisation/validation fixes | 47 | 21 | 102 |
 | + stray `success` flag removed | 57 | 31 | 82 |
 | + sixteen list endpoints reporting `meta` not `pagination` | 59 | 39 | 72 |
-| + **richer fixture rows in the disposable Laravel** | **61** | **17** | **92** |
+| + richer fixture rows in the disposable Laravel | 61 | 17 | 92 |
+| + connections/suggestions disclosure fix | 61 | 18 | 91 |
+| + seller dashboard currency + raw entity | 62 | 18 | 90 |
+| + the nine raw-record endpoints | 64 | 24 | 82 |
+| + harness empty-list guard corrected | 64 | 19 | 87 |
+| + five `data.items` envelopes | **64** | **24** | **82** |
+
+🔴 **Position as of 2026-08-18: 64 identical / 24 envelope-correct / 82 differing,
+0 status disagreements.** The 24 are untestable because the **ASP.NET** fixture now
+holds no rows for those entities — the mirror image of the Laravel fixture problem
+solved on 2026-08-17, and the next fixture job. This measurement is the evidence
+behind the semantic-parity category being rescored from 307/350 to 185/350 under
+Fixed Rubric Baseline 2.
 
 ### 🔴 The fixture, not the backend, was the limit on what could be measured
 
@@ -504,7 +517,8 @@ bodies. Discount Laravel's debug-mode keys (trap 1 above).
 
 **Status: known, itemised, unchanged.**
 
-229 endpoints a client calls that perform no work; 63 more that nothing calls at
+319 endpoints that perform no work as of 2026-08-18 (229 when this section was
+written); 63 more that nothing calls at
 all and should be **deleted, not implemented**. Full triage in `R-29`.
 
 **What to do:** work them in the order the harness gives, not the order the stub

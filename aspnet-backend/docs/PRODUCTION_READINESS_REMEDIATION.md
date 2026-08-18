@@ -8,6 +8,58 @@ community. It exists so a future session does not have to rediscover any of it.
 (scoring, evidence boundary, full audit narrative) and
 [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md).
 
+## 🔴 Re-verified 2026-08-18 against live code
+
+Every figure in this section was regenerated or probed on 2026-08-18 at monorepo
+`8f6d527bd`. Where it disagrees with an item below, this section wins.
+
+**Closed since this backlog was opened, verified on disk:**
+
+| Item | Evidence |
+| --- | --- |
+| Webhooks discarding events (was P0) | All three now return **501** with `success:false` and log an error, so Stripe / identity / SendGrid events stay in the sender's retry queue. `MiscParityController.cs:1818-1835`, helper at `:90`. |
+| No tenant hierarchy | `Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants`, `MaxDepth`. |
+| No subtree confinement | `Support/Authorization/SuperPanelAccess.cs` models `master` / `regional` with a materialised-path check. |
+| No-op handlers | **349 → 319** (`scripts/check-noop-stubs.ps1`, matches the shrink-only baseline). |
+| Scheduled coverage | **26** job classes, **all 26 registered** as hosted services (was 20 defined / 17 genuine). |
+| Full test suite | CI at `450535aab`: build, all six API shards, Messaging and image builds **all success**, on ASP.NET code byte-identical to HEAD. Local `dotnet test Nexus.sln -c Release`: **3,644 + 38 passed, 0 failed, 0 skipped**. |
+
+🔴 **One claim in R-6 is WITHDRAWN.** "`marketplace:complete-orders` absent means
+sellers are never paid out" is wrong. `MarketplaceEscrowReleaseJob` calls
+`ProcessEligibleEscrowReleasesAsync`, whose `auto_timeout` trigger is gated on
+`order.AutoCompleteAt` (`MarketplacePaymentService.cs:1952`), so escrow-backed
+orders do pay out. A non-escrow completion sweep is still absent.
+
+**Confirmed STILL OPEN, re-probed today:**
+
+- **R-7 Meilisearch** — `IndexDocumentAsync`, `IndexDocumentsAsync` and
+  `DeleteDocumentAsync` have **zero callers** outside the service. New and edited
+  content never reaches the index; deleted items stay findable.
+- **R-10 FCM** — `PushNotificationService.cs:570` still defaults to
+  `https://fcm.googleapis.com/fcm/send`, the legacy endpoint Google retired.
+- **R-11 message voice/attachments** — `GET /api/messages/{id}/voice` answers 404
+  and `GET /api/messages/{id}/attachments/{id}` answers 405.
+- **R-15 localization** — **5,424** missing keys, 374 missing namespaces, of
+  20,240 Laravel keys.
+- **R-12 remaining unmatched routes** — the honest count is **9** method-level
+  gaps, not the 19 the generator reports; ten of those nineteen are served and the
+  generator's route-shape matching misses them.
+
+**Newly recorded, not previously in this backlog:**
+
+- 🔴 A **credential disclosure** was found and fixed on 2026-08-17:
+  `GET /api/v2/connections/suggestions` returned the whole `User` entity —
+  `passwordHash`, `totpSecretEncrypted`, `emailVerificationCode`, `email` and every
+  admin flag — to any signed-in member. Fixed by projecting Laravel's seven fields;
+  pinned by `ConnectionSuggestionsDisclosureTests` (4 tests) which assert against
+  the **raw response text** so a future entity column cannot leak past them. A
+  corpus-wide sweep of all 170 paths on both backends found **no other** credential
+  disclosure.
+- **Response-level parity is now measurable and is the honest headline**: of the
+  170 GET paths the React frontend calls, signed in, **64 are contract-identical**,
+  24 have a correct envelope whose rows could not be compared, and **82 differ**.
+  Writes, uploads and realtime remain entirely unmeasured.
+
 ## How to read this
 
 - Every item was **verified on disk** at the cited `file:line`. Nothing here rests
@@ -708,7 +760,8 @@ migrations actually create.
 
 ## 🔴 The one thing to understand before touching this backend
 
-**Route existence proves nothing here.** 349 action methods return
+**Route existence proves nothing here.** 319 action methods (349 when this was
+written; see the 2026-08-18 re-verification at the top) return
 success-shaped JSON while performing no work at all — no database access, no
 service call. The generated inventories report *2,659 routes matched and 0 static
 React contract gaps* precisely because those stubs answer with plausible 200s.
@@ -1078,7 +1131,7 @@ identical, all fourteen (`GatedTemplates` `:52-68`); and the 403 body
 
 ## P1 — breaks a real workflow
 
-### R-6 `IN PROGRESS` — scheduled work (21 of 71 covered, was 17)
+### R-6 `IN PROGRESS` — scheduled work (26 of 70 covered as of 2026-08-18; was 21, was 17)
 
 **Done 2026-08-15 (`70dc452ee`), both from the compliance cluster:**
 

@@ -1,24 +1,23 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-14 (full evidence re-audit against Laravel HEAD; banked
-score unchanged since 2026-07-15 22:39 +01:00 — see the 2026-08-14 re-audit
-section for the advisory drift-adjusted position)
+Last verified: 2026-08-18 (full evidence regeneration from live code; **rescored**
+under a new named baseline — see "Fixed Rubric Baseline 2" below)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=712/1000 -->
-<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R1 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=598/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R2 -->
 
-🔴 **This score is unchanged and unrelated to Web UK's.** Two 1000-point
-denominators exist in this repository and they measure different things: this one
-measures whether ASP.NET is externally contract-identical to Laravel; Web UK's
-`WEBUK-W2-PROD-R1` measures whether the accessible frontend is safe to serve in
-production. Every score marker now carries a rubric id for exactly this reason —
-**never add the two together, and never present one as progress on the other.**
+🔴 **This score is unrelated to Web UK's.** Two 1000-point denominators exist in
+this repository and they measure different things: this one measures whether
+ASP.NET is externally contract-identical to Laravel; Web UK's `WEBUK-W2-PROD-R1`
+measures whether the accessible frontend is safe to serve in production. Every
+score marker carries a rubric id for exactly this reason — **never add the two
+together, and never present one as progress on the other.**
+
 This workstream was paused from 2026-07-15 to 2026-08-14. **The owner lifted the
 pause on 2026-08-14** with an explicit instruction to drive ASP.NET to full
-contract parity and production readiness, working the queue below adjusted for
-the drift recorded in the 2026-08-14 re-audit section.
+contract parity and production readiness.
 
 Use this document for the current ASP.NET completion score. Use
 [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) for
@@ -35,10 +34,204 @@ The matching accessible-frontend source is
 Do not combine its score with the ASP.NET score: the two workstreams have
 different evidence gates.
 
+---
+
+## Fixed Rubric Baseline 2 — 598/1000 (rescored 2026-08-18)
+
+<!-- Rubric id ASPNET-CONTRACT-R2. Baseline 1 (712/1000) is retained below as
+     audit trail and is NOT rewritten, per the runbook's rule that Laravel drift
+     creates a separately named baseline rather than a silent rescore. -->
+
+**Evidence boundary:** monorepo `8f6d527bd87d9c07cc5c619bf397b2cad7592f41`
+(branch `main`). `aspnet-backend/src` and `aspnet-backend/tests` are byte-identical
+to `450535aab`, the most recent commit whose CI run actually executed the ASP.NET
+jobs. Every number below was regenerated from live code on 2026-08-18, not read
+from a previous document.
+
+| Category | Banked | Maximum | Open |
+| --- | ---: | ---: | ---: |
+| Active Laravel API route representation | 96 | 100 | 4 |
+| Semantic workflow and canonical-consumer contract parity | 185 | 350 | 165 |
+| Schema, migrations, data integrity, and upgrade safety | 118 | 150 | 32 |
+| Auth, tenant isolation, security, and localization | 74 | 100 | 26 |
+| Full build/test/CI evidence | 85 | 100 | 15 |
+| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 10 | 125 | 115 |
+| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 | 45 |
+| **Total** | **598** | **1000** | **402** |
+
+### 🔴 Why the score FELL from 712 while the backend improved
+
+This is the single most important thing to understand about this rescore, and it
+must not be reported as a regression.
+
+**The code got better.** Since the 2026-08-15 audit: the tenant hierarchy and
+regional-super-admin subtree confinement now exist (F1/F9 closed); the three
+webhook handlers that returned HTTP 200 while discarding the event now refuse with
+501 and leave it in the sender's retry queue (F7 closed); no-op handlers fell from
+349 to 319; scheduled jobs rose from 20 to 26, all registered; and the full test
+suite is green in CI across every shard.
+
+**The measurement got honest, and it is what moved the number.** The 307/350
+banked for semantic parity under Baseline 1 was set when **no instrument existed
+that could compare a response**. Parity was inferred from route inventories and
+implemented workflow families. `scripts/compare-live-responses.mjs` (2026-08-16)
+and a signed-in disposable Laravel (2026-08-17) can now ask both backends the same
+question. Measured on the 170 GET paths the canonical React frontend actually
+calls, signed in:
+
+| | Count |
+| --- | ---: |
+| Same status AND same JSON shape | **64** |
+| Envelope matches, row contract untested (one side has no rows) | 24 |
+| Different | 82 |
+| Status disagreements | 0 |
+
+37.6% of the most-used read surface is contract-identical. Banking 87.7% against
+that would be indefensible. The drop is 122 points of *discovered* divergence, not
+122 points of new breakage.
+
+Movement by category, Baseline 1 → Baseline 2:
+
+| Category | R1 | R2 | Driver |
+| --- | ---: | ---: | --- |
+| Route representation | 100 | 96 | Laravel drift: 9 genuine method-level gaps |
+| Semantic parity | 307 | **185** | First direct response measurement: 64/170 |
+| Schema/upgrade | 129 | 118 | 215 Laravel tables absent; no populated-history upgrade proof |
+| Auth/tenant/security/localization | 97 | **74** | F1/F9 closed (+), but 5,424 localization keys absent (−) |
+| Build/test/CI | 45 | **85** | Fresh-checkout CI green on every ASP.NET job |
+| Dual-backend frontend runtime proof | 10 | 10 | Unchanged — neither frontend has been run against ASP.NET |
+| Providers/jobs/ops/docs | 24 | 30 | Webhooks refuse (+); Meilisearch/FCM still non-functional (−) |
+
+### Evidence behind each category
+
+All commands were run on 2026-08-18 from `aspnet-backend/`.
+
+**1. Route representation — 96/100.**
+`scripts/compare-laravel-api-parity.ps1` reports 2,667 source operations,
+2,648 matched, **19 missing**. 🔴 That 19 is NOT the gap count: probing each one
+against the running API with its own HTTP method shows **10 are served** and the
+generator's route-shape matching simply misses them (for example
+`GET /api/auth/oauth/enabled-providers` answers 200). The genuine method-level
+gaps are **9** — 6 paths absent entirely and 3 present without the required
+method:
+
+| Gap | Kind |
+| --- | --- |
+| `GET /api/messages/{message}/voice` | absent (404) |
+| `POST /api/csp-report` | absent |
+| `POST /api/events/{id}/attendance/code` | absent |
+| `POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}` | absent |
+| `GET /api/legal/status` | absent |
+| `GET /api/volunteering/credentials/{id}/download` | absent |
+| `GET /api/messages/{message}/attachments/{attachment}` | path exists, GET not served (405) |
+| `POST /api/legal/accept` | path exists, POST not served (405) |
+| `POST /api/legal/accept-all` | path exists, POST not served (405) |
+
+So 2,658/2,667 at method level (99.66%). Deduction 4: the messages and event
+attendance gaps are client-consumed, and the legal trio is a whole Laravel
+controller family (`LegalController`) unserved at its non-v2 paths.
+
+**2. Semantic parity — 185/350.** Deduction 165, itemised:
+- **−60** 82 of 170 measured GET endpoints differ in shape.
+- **−55** `scripts/check-noop-stubs.ps1` reports **319** action methods returning
+  success-shaped payloads with no database access and no service call. Worst
+  files: `MiscParityController` 87, `AdminCompatibility2Controller` 52,
+  `AdminCompatibility3Controller` 33, `ReactFrontendCompatibilityController` 30.
+  Matches the shrink-only baseline; down from 349 on 2026-08-15.
+- **−50** writes, uploads, realtime and side effects are **entirely unmeasured**.
+  The harness is GET/HEAD only. 208 write-response test assertions remain
+  unverified against Laravel.
+Credit retained for genuinely implemented and pinned workflow families: partner
+venues (15 tests), support actions / carer sub-accounts (39), guardian consent and
+authority attestations (13), the legal acceptance gate (14), impersonation (5),
+and the two small-endpoint batches (12).
+
+**3. Schema/migrations/upgrade — 118/150.**
+`scripts/compare-laravel-schema-parity.ps1`: 472 Laravel source tables, 460
+ASP.NET tables, 257 matched, **215 missing**, 203 extra. 410 Laravel migrations vs
+**183** ASP.NET migration classes on disk (latest
+`20260817121949_AddSkillCategories`). Deduction 32: −20 for the 215 absent tables,
+−12 because no populated-history upgrade has been proven to complete without row
+loss, and no deliberately invalid tenant/financial history has been shown to fail
+preflight without partial schema change.
+
+**4. Auth/tenant/security/localization — 74/100.** Deduction 26:
+- **−18** localization depth. `scripts/compare-laravel-localization-parity.ps1`:
+  20,240 Laravel keys, 3,431 matched, **5,424 missing**, 374 missing namespaces.
+  26.8% of Laravel's keys have no ASP.NET counterpart. This alone made the 97/100
+  banked under Baseline 1 impossible to defend.
+- **−5** residual security items: FCM push targets a decommissioned endpoint, and
+  `oauth/me/identities` advertises a provider (`apple`) Laravel does not.
+- **−3** tenant isolation is unproven for the 215 absent tables, since a table
+  that does not exist cannot have its scoping tested.
+🔴 **Genuine improvements banked here:** `Support/Authorization/SuperPanelAccess.cs`
+now models `master` and `regional` levels with a materialised-path subtree check,
+and `Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants`
+and `MaxDepth`. F1 and F9 are **closed**. Tenant scoping is also enforced globally
+rather than per call site: `NexusDbContext.OnModelCreating` applies a tenant query
+filter to every `ITenantEntity` by reflection — verified empirically on 2026-08-17
+by inserting a row for another tenant and confirming it was not returned.
+
+**5. Build/test/CI — 85/100.**
+- CI run at `450535aab` (2026-08-17 20:42): **ASP.NET build success, all six API
+  test shards success, Messaging tests success, image builds success.** GitHub
+  Actions checks out fresh, so this satisfies the "clean checkout" requirement.
+- `aspnet-backend/src` and `tests` are **unchanged** between `450535aab` and HEAD,
+  so that aggregate covers the current ASP.NET code.
+- Local confirmation 2026-08-18, `dotnet test Nexus.sln -c Release`:
+  `Nexus.Api.Tests` **3,644 passed / 0 failed / 0 skipped**, `Nexus.Messaging.Tests`
+  **38 passed / 0 failed**.
+- 🔴 Read the pass COUNT, never the exit code: this runner exits 0 with failures
+  present, observed repeatedly.
+- 🔴 And never trust a green tick alone. The most recent *overall* green run
+  (`83df7d815`) had **every ASP.NET job SKIPPED** by the changed-paths filter. A
+  workflow conclusion of "success" is not evidence that this backend was tested;
+  the job-level conclusions are.
+Deduction 15: −8 no coverage or test-quality gate evidence, −7 the static contract
+inventory job was skipped in the covering run, so its assertions are unproven at
+this SHA.
+
+**6. Dual-backend unchanged-frontend runtime proof — 10/125.** Unchanged, and the
+largest single block of open points. Neither the canonical React frontend nor Web
+UK has been run against ASP.NET. 🔴 `compare-live-responses.mjs` is **not** this
+proof: it compares two backends directly and starts no frontend. Web UK's own
+switch (`ACCESSIBLE_BACKEND_TARGET=aspnet`) exists but has never been exercised.
+
+**7. Providers/jobs/integrations/ops/docs — 30/75.** Deduction 45:
+- **−20** scheduled coverage: **26** scheduled job classes, all 26 registered as
+  hosted services, against **70** scheduled units in Laravel's `bootstrap/app.php`
+  (~37%). Still absent by name: `retention:enforce`, `backup:verify`,
+  `gdpr:check-overdue-requests`, `slo:check`, `queue:verify-liveness`,
+  `email:health-alert`, `stripe:check-stuck-webhooks`.
+- **−12** two integrations are implemented but non-functional: Meilisearch
+  incremental indexing (`IndexDocumentAsync`, `IndexDocumentsAsync`,
+  `DeleteDocumentAsync` have **zero callers** outside the service, so new content
+  never reaches the index and deleted items stay findable), and FCM push
+  (`PushNotificationService.cs:570` defaults to `fcm.googleapis.com/fcm/send`,
+  the legacy endpoint Google has retired).
+- **−13** no live-provider or operational proof: no Stripe live run, no identity
+  provider exercised, no backup/restore drill recorded for this backend.
+🔴 **Corrections banked here:** the three webhook handlers now return **501** and
+log an error rather than `Ok(new { received = true })`, so a Stripe, identity or
+SendGrid event is retried by the sender instead of being destroyed — F7 closed.
+And `MarketplaceEscrowReleaseJob` does call `ProcessEligibleEscrowReleasesAsync`
+with an `auto_timeout` trigger gated on `AutoCompleteAt`, so the earlier claim
+that "sellers are never paid out" is **withdrawn** for escrow-backed orders.
+
+---
+
+## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
+
+🔴 Everything from here down is history. Baseline 1's 712/1000 is retained
+unrewritten, per the runbook's rule that Laravel drift creates a separately
+named baseline. **It is not the current score.** Where a dated finding below
+has since been closed or corrected, a note says so inline.
+
 ## 2026-08-17 — Live response parity on the React GET corpus: 136 -> 164 of 170
 
 This section records **measured response behaviour**, not a rubric score. The
-banked `712/1000` above is untouched; nothing here has been through the rubric's
+banked score at the time (`712/1000`, Baseline 1) was untouched by it; nothing in
+this section had been through the rubric's
 evidence gates. Read it as: what happens today when both running backends are
 asked the same question.
 
@@ -550,7 +743,12 @@ it proves nothing about payloads, status codes, or side effects.
 
 ### Verified findings
 
-**F1 — SECURITY — no subtree confinement for regional super admins.** Laravel
+**F1 — SECURITY — no subtree confinement for regional super admins.**
+🔴 **CLOSED, verified 2026-08-18.** `Support/Authorization/SuperPanelAccess.cs`
+now models `master` and `regional` with a materialised-path subtree check, and
+`Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants` and
+`MaxDepth`. The text below describing the concept as absent is history.
+ Laravel
 confines a hub-tenant super admin (`level = regional`) to its own tenant subtree:
 `app/Core/SuperPanelAccess.php:172` sets the level, `canAccessTenant()` at `:190`
 enforces it, and it is called from `AdminSuperController.php` (35 sites),
@@ -636,7 +834,11 @@ Three of the eight owed reviews were re-run after the credit reset and completed
 Every finding below was re-verified in the main session against the named lines.
 
 **F7 — CRITICAL — three webhook handlers return HTTP 200 while discarding the
-event.** `Controllers/MiscParityController.cs` (class route `api`, all
+event.**
+🔴 **CLOSED, verified 2026-08-18.** All three now return **501 Not Implemented**
+with `success:false` and log an error, so the event stays in the sender's retry
+queue instead of being destroyed. History.
+ `Controllers/MiscParityController.cs` (class route `api`, all
 `[AllowAnonymous]`):
 
 - `:1328` `POST /api/webhooks/stripe` → `Ok(new { received = true })`. No signature
@@ -654,7 +856,11 @@ replay window + fail-closed in Production; `MarketplaceController.cs:1741`), whi
 is exactly why a route-level audit sees "Stripe webhook: present".
 
 **F8 — CRITICAL — 349 action methods return success-shaped payloads while doing no
-work at all.** Measured with a body-level detector (an action whose entire body
+work at all.**
+🔴 **STILL OPEN but the count has moved: 349 → 319** as of 2026-08-18
+(`scripts/check-noop-stubs.ps1`, shrink-only baseline). The class of defect and the
+worst-offending files are unchanged.
+ Measured with a body-level detector (an action whose entire body
 contains no `_db`, no `await`, no service call, yet returns `Ok(new {...})` /
 `Created`). Worst files: `MiscParityController.cs` (84),
 `AdminCompatibility2Controller.cs` (56), `AdminCompatibility3Controller.cs` (42),
@@ -672,7 +878,10 @@ return plausible 200s, so every route-level comparison passes while the feature
 does nothing. No route inventory can detect this class; only body inspection or
 runtime proof can.
 
-**F9 — ARCHITECTURAL — ASP.NET has no tenant hierarchy at all.** The `Tenant`
+**F9 — ARCHITECTURAL — ASP.NET has no tenant hierarchy at all.**
+🔴 **CLOSED, verified 2026-08-18** — the hierarchy columns listed as missing below
+now exist on `Entities/Tenant.cs`. History.
+ The `Tenant`
 entity and the `tenants` table carry `Id, Slug, Name, Domain, Tagline, LogoUrl,
 IsActive, CreatedAt, UpdatedAt` — **no parent, no path, no depth, no
 allows_subtenants**. Laravel's whole hub/sub-tenant model and the subtree scoping
@@ -726,7 +935,17 @@ is still active and refuses a self-grant with
 (`EventGuardianConsentService.php:389-400`).
 
 **F15 — SCHEDULED WORK — 17 of 71 Laravel scheduled units have a genuine
-counterpart (~24%).** The earlier "56 vs 20" understated Laravel: `bootstrap/app.php`
+counterpart (~24%).**
+🔴 **PARTLY CLOSED, remeasured 2026-08-18: 26 scheduled job classes, all 26
+registered as hosted services, against 70 Laravel scheduled units (~37%).**
+Several named absences below are now implemented (`support-actions:expire`,
+`safeguarding:clear-expired-monitoring`, `groups:prune-exports`,
+`marketplace:process-unacknowledged-reports`, `safeguarding:vetting-renewals`).
+🔴 **And one claim below is WITHDRAWN:** "`marketplace:complete-orders` absent
+means sellers are never paid out" is wrong — `MarketplaceEscrowReleaseJob` calls
+`ProcessEligibleEscrowReleasesAsync` with an `auto_timeout` trigger gated on
+`AutoCompleteAt`, so escrow-backed orders do pay out.
+ The earlier "56 vs 20" understated Laravel: `bootstrap/app.php`
 also has 1 `->job()` and 14 `->call()` closures. Compliance/data-loss absences:
 `retention:enforce`, `backup:verify`, `gdpr:check-overdue-requests`,
 `safeguarding:purge-message-copies`, `safeguarding:review-flags`,

@@ -1,6 +1,6 @@
 # API Parity Map
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-08-18 (current figures below; older dated sections are history)
 
 Status: **Maintained reference — current comparison method with dated evidence**
 
@@ -55,6 +55,34 @@ The legacy ASP.NET React copy at `apps/react-frontend/` was deleted on
 use ASP.NET with the same consumed methods, paths, shapes, status/error
 behavior, auth, tenancy, side effects, jobs, and provider outcomes. Static
 method/path representation is one evidence category, not completion.
+
+## 🔴 Current figures — regenerated 2026-08-18
+
+Everything below this section is dated history. These are the live numbers.
+
+`scripts/compare-laravel-api-parity.ps1` at monorepo `8f6d527bd`:
+
+| Measure | Value |
+| --- | ---: |
+| Laravel source operations | 2,667 |
+| Matched by the generator | 2,648 |
+| Reported missing | 19 |
+| **Genuine method-level gaps (probed live)** | **9** |
+
+🔴 **Do not quote the 19.** Probing each reported gap against the running API with
+its own HTTP method shows **10 are actually served** — the generator's route-shape
+matching misses them (`GET /api/auth/oauth/enabled-providers` answers 200, for
+one). The nine real gaps are six absent paths (`messages/{id}/voice`,
+`csp-report`, `events/{id}/attendance/code`, the event registration-product guest
+attendance action, `legal/status`, `volunteering/credentials/{id}/download`) and
+three paths that exist without the required method
+(`GET messages/{id}/attachments/{id}`, `POST legal/accept`, `POST legal/accept-all`).
+
+That is 2,658/2,667 at method level (99.66%). 🔴 Route representation is **not**
+contract parity: 319 of the matched routes return success-shaped payloads while
+performing no work, and only 64 of the 170 GET endpoints the React frontend calls
+are contract-identical. See
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md).
 
 ## 2026-07-15 Contract Re-audit Corrections
 

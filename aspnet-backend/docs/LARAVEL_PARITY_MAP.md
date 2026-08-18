@@ -22,7 +22,10 @@ regenerated before it is described as current.
 The eleven backend commits published from `60715dfd` through `9ad163c9` after
 the restart scorecard remain a single unscored delta. Some change real semantic
 behavior and others correct the test harness or expectations. The canonical
-status lists them and keeps the bank at 712/1000 pending a complete scoring and
+status lists them. 🔴 **The bank is no longer 712/1000: it was rescored to
+598/1000 on 2026-08-18 under Fixed Rubric Baseline 2 (`ASPNET-CONTRACT-R2`).**
+The paragraph below is the Baseline 1 position and is history; it kept the bank at
+712/1000 pending a complete scoring and
 semantic-audit transaction. A later post-pause exact-SHA CI aggregate is green
 at `dbafc5c3`, but it does not regenerate or accept this detailed map; this map
 does not estimate their value.
@@ -82,7 +85,9 @@ The seven apparent document-era vetting gaps are retired OpenAPI-only artifacts:
 Laravel live routes omit them, the controller prohibits them, feature tests assert
 404/405, and canonical React uses the metadata-only replacement. The comparator now
 conditionally retires them only while Laravel routes omit them; fixture and live proof
-pass at **2,601/2,601 active operations matched, 0 missing**, with seven retired entries
+pass at **2,601/2,601 active operations matched, 0 missing** *(frozen-baseline
+figure; live on 2026-08-18 it is 2,648/2,667 matched with 9 genuine method-level
+gaps)*, with seven retired entries
 reported separately. ASP.NET runtime proof matches the removal responses and preserves
 both legacy and current vetting rows. Static route parity is closed. Live-
 provider settlement, complete-suite/CI proof, unchanged-frontend runtime proof, schema/
@@ -297,7 +302,7 @@ The artifact is ignored by git; `docs/PARITY_BACKLOG.md` is the curated rollup.
 | Tenant SSO providers | `AdminSsoProvidersController.php`, `SsoOidcService.php`, `tenant_sso_providers` migration | `AdminSsoProvidersController.cs`, `TenantSsoProviderService.cs`, `SsoOidcAuthenticationService.cs`, `TenantSsoProvider.cs`, `SsoOidcFlow`, `OAuthCallbackGrant`, `OAuthIdentity`, and `20260714223452_SsoOidcAuthenticationParity` | Admin provider CRUD/test plus public discovery, redirect, callback, and browser exchange are implemented with signed state, browser/server PKCE, nonce/JWKS validation, public-HTTPS endpoint checks, tenant-qualified account linking, domain/provisioning gates, one-time grants, refresh-token issuance, and logout-all invalidation. The general complete exact-SHA aggregate is green at `dbafc5c3`; live IdP/browser proof, fixed-rubric module acceptance, and unchanged-client runtime certification remain open. |
 | Mailchimp-like behavior | `MailchimpService.php` | no matched provider files; email templates exist | Decide equivalent behavior and implement or document replacement |
 | Partner API / portal | `app/Http/Controllers/Api/PartnerApi`, `app/Services/PartnerApi`, `react-frontend/src/partners` | API partner admin entity/service/controller | External partner API/auth/webhook parity incomplete |
-| Accessible frontend | `accessible-frontend/`, `routes/govuk-alpha.php`, `routes/govuk-alpha-parity/*`, and Laravel backend contracts used by those workflows | `apps/web-uk/` is the shared accessible frontend implementation target; Laravel Blade defines the product/UI behaviour and the Laravel backend defines the API contract; ASP.NET is not authoritative and belongs to a separate contract-identity workstream | Advanced implementation with route/workflow/manual-certification gaps; static coverage does not certify production readiness or unchanged ASP.NET switching |
+| Accessible frontend | 🔴 `accessible-frontend/`, `routes/govuk-alpha.php` and `routes/govuk-alpha-parity/*` **were deleted on 2026-08-14 and do not exist** — the frozen inventory at `web-uk/scripts/blade-route-inventory.frozen.json` replaces them as the behaviour record | `web-uk/` (not `apps/web-uk/`) is the shared accessible frontend implementation target; Laravel Blade defines the product/UI behaviour and the Laravel backend defines the API contract; ASP.NET is not authoritative and belongs to a separate contract-identity workstream | Advanced implementation with route/workflow/manual-certification gaps; static coverage does not certify production readiness or unchanged ASP.NET switching |
 
 ## Historical Backlog Order (Superseded)
 

@@ -102,7 +102,11 @@ const KNOWN_MARKERS = {
   PROJECT_PAUSE_STATE_ASPNET: {
     kind: 'pause',
     enum: ['PAUSED', 'LIFTED'],
-    companionDate: 'PROJECT_PAUSE_DATE'
+    // 🔴 Was companioned to PROJECT_PAUSE_DATE (the date the pause STARTED), which
+    // could not express "lifted, and when". The owner lifted the ASP.NET pause on
+    // 2026-08-14; the marker still read PAUSED until 2026-08-18. Now companioned to
+    // its own lift date, exactly as the web-uk marker is.
+    companionDate: 'PROJECT_PAUSE_LIFTED_ASPNET_ON'
   },
   PROJECT_PAUSE_STATE_WEBUK: {
     kind: 'pause',
@@ -110,6 +114,7 @@ const KNOWN_MARKERS = {
     companionDate: 'PROJECT_PAUSE_LIFTED_WEBUK_ON'
   },
   PROJECT_PAUSE_LIFTED_WEBUK_ON: { kind: 'opaque' },
+  PROJECT_PAUSE_LIFTED_ASPNET_ON: { kind: 'opaque' },
   PROJECT_PAUSE_DATE: { kind: 'opaque' },
   PROJECT_PAUSE_FINAL_TAG: { kind: 'opaque' },
   PROJECT_PAUSE_CURRENT_TAG: { kind: 'opaque' },

@@ -1,6 +1,6 @@
 # Schema Parity Map
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-08-18 (current figures below; older dated sections are history)
 
 Status: **Maintained reference — current comparison method with dated evidence**
 
@@ -34,6 +34,23 @@ and remain historical until explicitly regenerated against named SHAs.
 Use [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) for the concise
 pause verdict, current runtime boundary, exact-SHA CI result, and ordered
 recommission package.
+
+## 🔴 Current figures — regenerated 2026-08-18
+
+Everything below this section is dated history. These are the live numbers, from
+`scripts/compare-laravel-schema-parity.ps1` at monorepo `8f6d527bd`:
+
+| Measure | Value |
+| --- | ---: |
+| Laravel source tables | 472 |
+| ASP.NET tables | 460 |
+| Matched exact names | 257 |
+| Missing Laravel tables | **215** |
+| Extra ASP.NET tables | 203 |
+| Laravel migrations | 410 |
+| ASP.NET migration classes | 183 |
+
+Name comparison only — it proves nothing about columns, constraints or behaviour.
 
 ## 2026-07-15 Member Residency Verification Storage Evidence
 

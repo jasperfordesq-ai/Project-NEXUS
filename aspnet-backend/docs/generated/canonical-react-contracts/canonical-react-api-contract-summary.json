@@ -1,26 +1,27 @@
 ﻿{
     "schema_version":  1,
-    "generated_at":  "2026-08-15T08:49:22.9098928+01:00",
+    "generated_at":  "2026-08-18T11:08:27.8434979+01:00",
     "canonical_react_root":  "C:\\platforms\\htdocs\\staging\\react-frontend",
-    "laravel_sha":  "870c1e9892a990c57267bff088c4cdbb41c16017",
-    "aspnet_sha":  "870c1e9892a990c57267bff088c4cdbb41c16017",
+    "laravel_sha":  "8f6d527bd87d9c07cc5c619bf397b2cad7592f41",
+    "aspnet_sha":  "8f6d527bd87d9c07cc5c619bf397b2cad7592f41",
     "laravel_dirty":  [
-                          " M aspnet-backend/docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv",
-                          " M skills-lock.json"
+                          " M .github/sentry-triage-ledger.json",
+                          " M aspnet-backend/docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv"
                       ],
     "aspnet_dirty":  [
-                         " M docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv",
-                         " M ../skills-lock.json"
+                         " M ../.github/sentry-triage-ledger.json",
+                         " M docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv"
                      ],
     "callsite_rows":  2407,
     "unique_method_path_contracts":  2078,
     "method_evidenced_contracts":  1899,
     "method_unresolved_contracts":  179,
     "aspnet_status_counts":  {
-                                 "exists":  1202,
+                                 "exists":  1206,
                                  "exists-any-method":  14,
-                                 "exists-compatibility":  733,
-                                 "exists-unambiguous-method":  129
+                                 "exists-compatibility":  726,
+                                 "exists-unambiguous-method":  127,
+                                 "missing":  5
                              },
     "laravel_status_counts":  {
                                   "exists":  1888,
@@ -29,11 +30,75 @@
                                   "method-mismatch":  2,
                                   "missing":  14
                               },
-    "aspnet_gap_count":  0,
+    "aspnet_gap_count":  5,
     "laravel_gap_count":  16,
     "warning":  "Static call-site evidence only. Route presence does not prove payload, response, auth, tenant, side-effect, or runtime parity.",
     "aspnet_gaps":  [
-
+                        {
+                            "method":  "POST",
+                            "path":  "/api/v2/auth/oauth/{id}/link",
+                            "callsite_count":  1,
+                            "source_files":  "pages/settings/tabs/ConnectedAccountsTab.tsx",
+                            "representative_line":  82,
+                            "laravel_status":  "exists",
+                            "laravel_methods":  "POST",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Auth\\SocialAuthController::class, \u0027link\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        },
+                        {
+                            "method":  "UNRESOLVED",
+                            "path":  "/api/v2/auth/oauth/{id}/redirect",
+                            "callsite_count":  1,
+                            "source_files":  "components/auth/OAuthButtons.tsx",
+                            "representative_line":  80,
+                            "laravel_status":  "exists-unambiguous-method",
+                            "laravel_methods":  "GET",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Auth\\SocialAuthController::class, \u0027redirect\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        },
+                        {
+                            "method":  "DELETE",
+                            "path":  "/api/v2/auth/oauth/{id}/unlink",
+                            "callsite_count":  1,
+                            "source_files":  "pages/settings/tabs/ConnectedAccountsTab.tsx",
+                            "representative_line":  103,
+                            "laravel_status":  "exists",
+                            "laravel_methods":  "DELETE",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Auth\\SocialAuthController::class, \u0027unlink\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        },
+                        {
+                            "method":  "UNRESOLVED",
+                            "path":  "/api/v2/auth/oauth/enabled-providers",
+                            "callsite_count":  1,
+                            "source_files":  "components/auth/OAuthButtons.tsx",
+                            "representative_line":  52,
+                            "laravel_status":  "exists-unambiguous-method",
+                            "laravel_methods":  "GET",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Auth\\SocialAuthController::class, \u0027enabledProviders\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        },
+                        {
+                            "method":  "GET",
+                            "path":  "/api/v2/auth/oauth/me/identities",
+                            "callsite_count":  1,
+                            "source_files":  "pages/settings/tabs/ConnectedAccountsTab.tsx",
+                            "representative_line":  61,
+                            "laravel_status":  "exists",
+                            "laravel_methods":  "GET",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Auth\\SocialAuthController::class, \u0027identities\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        }
                     ],
     "laravel_gaps":  [
                          {

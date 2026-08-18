@@ -1,6 +1,6 @@
 # Frontend Route Parity Map
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-18 (current figures below; older dated sections are history)
 
 Status: **Maintained reference — current policy with historical route snapshots**
 
@@ -37,6 +37,26 @@ The forward path is not to continue developing the ASP.NET React copy. The
 forward path is to make the ASP.NET backend externally contract-identical for the
 production Laravel React frontend. Do not modify frontend files unless the user
 explicitly approves that specific frontend change.
+
+## 🔴 Current figures — regenerated 2026-08-18
+
+Everything below this section is dated history. These are the live numbers, from
+`scripts/compare-laravel-frontend-parity.ps1` and
+`scripts/generate-canonical-react-contract-matrix.ps1` at monorepo `8f6d527bd`:
+
+| Measure | Value |
+| --- | ---: |
+| Shared React routes | 616 |
+| Canonical React unique API contracts | 2,078 |
+| ASP.NET static gaps | 5 |
+| Method-unresolved contracts | 179 |
+| Laravel accessible routes (frozen Blade inventory) | 706 |
+| Web UK accessible routes | 680 |
+
+🔴 **Static route resolution is not runtime proof.** Neither the canonical React
+frontend nor Web UK has ever been run against ASP.NET; that category still banks
+10 of 125 points. The Blade accessible frontend was deleted on 2026-08-14, so the
+accessible comparison is against a frozen inventory, not a live app.
 
 ## Two-Frontends-By-Two-Backends Target
 
