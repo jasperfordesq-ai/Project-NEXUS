@@ -275,9 +275,53 @@ final class CheckInactiveGroupsCommandTest extends TestCase
         }
     }
 
+    public function test_command_reports_without_changing_anything_by_default(): void
+    {
+        $groupId = $this->insertGroup();
+        $this->insertMemberActivity($groupId, now()->subDays(400));
+
+        $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID])
+            ->assertExitCode(0);
+
+        // Quiet for 400 days and still active: the default run must not touch it.
+        $this->assertLifecycle($groupId, GroupStatus::Active, true);
+    }
+
+    public function test_report_only_run_writes_no_audit_entry(): void
+    {
+        $groupId = $this->insertGroup();
+        $this->insertMemberActivity($groupId, now()->subDays(400));
+
+        $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID])
+            ->assertExitCode(0);
+
+        self::assertSame(0, DB::table('group_audit_log')
+            ->where('tenant_id', self::TENANT_ID)
+            ->where('group_id', $groupId)
+            ->count());
+    }
+
+    public function test_the_sweep_is_not_scheduled_to_run_on_its_own(): void
+    {
+        // 🔴 The whole class of incident depends on this staying true. If someone re-adds the
+        // schedule entry, a community's groups can disappear overnight again.
+        $scheduled = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->map(static fn ($event): string => (string) $event->command)
+            ->filter(static fn (string $command): bool => str_contains($command, 'groups:check-inactive'));
+
+        self::assertCount(0, $scheduled, 'groups:check-inactive must not be scheduled: groups are hidden only when a person chooses to.');
+    }
+
+    /**
+     * The existing cases all describe what the sweep DOES, so they must ask for it.
+     *
+     * 🔴 --apply is required since 2026-08-18: the command reports by default and is no
+     * longer scheduled, because nothing may hide a community's groups on its own. The
+     * report-only default has its own cases below.
+     */
     private function runCommand(): void
     {
-        $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID])
+        $this->artisan('groups:check-inactive', ['--tenant' => self::TENANT_ID, '--apply' => true])
             ->assertExitCode(0);
     }
 

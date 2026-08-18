@@ -67,6 +67,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Groups are no longer hidden automatically, by your decision — and the 431 groups hOUR Timebank lost in July are back.**
+
+  **The restore is done and verified.** All **431** groups are active again, each returned to exactly the status it held before the faulty job touched it, read from the group history log rather than guessed. hOUR Timebank now has 434 active groups and none archived. The whole geographic structure is back with its membership intact — Munster (170 members), Co. Cork (151), West Cork (114), Leinster, Ulster, and every county and town group beneath them. Every restore was itself written to the history log, so this change is as reversible as the one it undid. Not one group had been touched by hand since July, so nothing anybody decided was overwritten.
+
+  **And the nightly job that caused it will not run again.** It is no longer scheduled at all. The command still exists and now **reports** by default — it will tell a community which groups look dead, and it cannot change one unless a person explicitly asks it to. Hiding a group is now something a person does, in the admin panel, one group at a time.
+
+  **The measurement that settled it.** The four protections added earlier the same day were tested against the live database on the evening of the restore. They work: 153 groups were protected by them. But the run *still* wanted to hide **278** of the 434, and was stopped only by the rule that refuses any sweep touching more than a fifth of a community. In other words the last line of defence was the only thing standing between a restore and a repeat within hours. That is an argument against having the automation at all, not for tuning it — which is the decision taken.
+
+  For the record, the thresholds it used were 90 days with no activity to hide a group, and 180 days to archive it, checked nightly at 03:30 for every community. Three things about that design are worth remembering if it is ever revisited: both states hid the group equally, so the two stages gave a member no warning; **nobody was ever notified**, before or after; and a group owner had no way to undo it, only an admin.
+
 - **On the accessible site, member photos had no size control at all, and the member profile page showed no photo whatsoever.** Two faults, found together once images started loading.
 
   **The profile page.** Viewing a member showed their initials and never their photo, while the members directory showed photos correctly. The shared piece of markup the profile page uses to draw an avatar **contained no image at all** — it could only ever draw initials. The directory writes its own image markup, which is why one page worked and the other could not. That shared piece now draws the photo when there is one and initials when there is not, so the messages pages that also use it gain the same thing.

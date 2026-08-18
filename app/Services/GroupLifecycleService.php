@@ -586,12 +586,21 @@ class GroupLifecycleService
      * Check for dormant/inactive groups and update their status.
      * Intended to be run as a scheduled command.
      */
-    public static function checkInactiveGroups(int $tenantId): array
+    /**
+     * Work out which groups look inactive, and — ONLY when $apply is true — demote them.
+     *
+     * 🔴 Reporting is the default because nothing may hide a community's groups on its own.
+     * This ran nightly until 2026-08-18 and had archived 431 of one tenant's 434 groups in a
+     * single run; the owner's decision is that a group is hidden only when a person chooses
+     * to hide it. It is no longer scheduled (see bootstrap/app.php), and a caller that wants
+     * the old behaviour has to ask for it explicitly and in writing.
+     */
+    public static function checkInactiveGroups(int $tenantId, bool $apply = false): array
     {
         $dormantThreshold = now()->subDays(self::DORMANT_THRESHOLD_DAYS);
         $archiveThreshold = now()->subDays(self::ARCHIVE_THRESHOLD_DAYS);
 
-        $stats = ['dormant' => 0, 'archived' => 0, 'protected' => 0, 'halted' => false];
+        $stats = ['dormant' => 0, 'archived' => 0, 'protected' => 0, 'halted' => false, 'planned' => 0, 'applied' => $apply];
 
         // Dormant groups remain in the scan so they can advance to archived.
         $groups = DB::table('groups')
@@ -643,6 +652,13 @@ class GroupLifecycleService
                 'candidates' => $groups->count(),
             ]);
 
+            return $stats;
+        }
+
+        $stats['planned'] = count($planned);
+
+        // Report and stop unless a person explicitly asked for the change to be made.
+        if (! $apply) {
             return $stats;
         }
 

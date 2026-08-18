@@ -18,12 +18,16 @@ use App\Services\GroupLifecycleService;
  */
 class CheckInactiveGroupsCommand extends Command
 {
-    protected $signature = 'groups:check-inactive {--tenant= : Specific tenant ID (default: all)}';
-    protected $description = 'Check for inactive groups and mark them dormant/archived';
+    protected $signature = 'groups:check-inactive
+        {--tenant= : Specific tenant ID (default: all)}
+        {--apply : Actually hide the groups. Without this the command only reports.}';
+
+    protected $description = 'Report groups that look inactive (use --apply to hide them)';
 
     public function handle(): int
     {
         $specificTenant = $this->option('tenant');
+        $apply = (bool) $this->option('apply');
 
         if ($specificTenant) {
             $tenantIds = [(int) $specificTenant];
@@ -39,7 +43,7 @@ class CheckInactiveGroupsCommand extends Command
 
         foreach ($tenantIds as $tenantId) {
             TenantContext::setById($tenantId);
-            $stats = GroupLifecycleService::checkInactiveGroups($tenantId);
+            $stats = GroupLifecycleService::checkInactiveGroups($tenantId, $apply);
             $totalStats['dormant'] += $stats['dormant'];
             $totalStats['archived'] += $stats['archived'];
             $totalStats['protected'] += $stats['protected'];
@@ -50,9 +54,31 @@ class CheckInactiveGroupsCommand extends Command
                 continue;
             }
 
+            if (! $apply) {
+                if ($stats['planned'] > 0 || $stats['protected'] > 0) {
+                    $this->line("Tenant {$tenantId}: {$stats['planned']} would be hidden, {$stats['protected']} protected");
+                }
+
+                continue;
+            }
+
             if ($stats['dormant'] > 0 || $stats['archived'] > 0) {
                 $this->info("Tenant {$tenantId}: {$stats['dormant']} dormant, {$stats['archived']} archived, {$stats['protected']} protected");
             }
+        }
+
+        if (! $apply) {
+            $this->newLine();
+            $this->warn('Report only — nothing was changed. Groups are never hidden automatically (owner decision, 2026-08-18);');
+            $this->warn('pass --apply to hide them, or use the admin panel to archive one group at a time.');
+
+            if ($halted !== []) {
+                $this->error('Refused for tenant(s): ' . implode(', ', $halted));
+
+                return Command::FAILURE;
+            }
+
+            return Command::SUCCESS;
         }
 
         $this->info("Done. Total: {$totalStats['dormant']} dormant, {$totalStats['archived']} archived, {$totalStats['protected']} protected.");

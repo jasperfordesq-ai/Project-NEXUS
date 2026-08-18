@@ -352,10 +352,23 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping(5)
             ->name('groups-dispatch-webhooks');
 
-        $schedule->command('groups:check-inactive')
-            ->dailyAt('03:30')
-            ->withoutOverlapping()
-            ->name('groups-check-inactive');
+        // 🔴 groups:check-inactive is DELIBERATELY NOT SCHEDULED (owner decision, 2026-08-18).
+        //
+        // Nothing may hide a community's groups on its own. This ran nightly at 03:30 and on
+        // 2026-07-13 it archived 431 of tenant 2's 434 groups in twenty seconds, including
+        // every geographic hub the community is organised around. Guards were added first
+        // (see GroupLifecycleService), and they work — measured against production the same
+        // evening, the run would still have wanted to hide 278 groups and was refused because
+        // that exceeds a fifth of the directory.
+        //
+        // That measurement is the argument against automation, not for it: the guard was the
+        // only thing standing between a restore and a repeat. The decision is that a group is
+        // hidden only because a person chose to hide it. Admins already have that control at
+        // /v2/admin/groups/{id}/archive.
+        //
+        // The command still exists and now REPORTS by default (writing needs --apply), so a
+        // community can still be shown which groups look dead. Do not re-add it here without
+        // a new owner decision recorded alongside this comment.
 
         $schedule->command('groups:prune-exports')
             ->dailyAt('04:15')
