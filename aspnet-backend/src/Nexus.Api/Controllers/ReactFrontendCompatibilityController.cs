@@ -720,7 +720,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = applications, applications });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `applications` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = applications });
     }
 
     [HttpGet("api/volunteering/my-organisations")]
@@ -851,7 +855,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = categories, categories });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `categories` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = categories });
     }
 
     [HttpGet("api/wallet/user-search")]
@@ -1100,7 +1108,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             new { id = "hours-monthly", title = "Monthly hours goal", category = "timebanking", goal_type = "hours" },
             new { id = "community-helper", title = "Community helper", category = "volunteering", goal_type = "count" }
         };
-        return Ok(new { data = templates, templates });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `templates` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = templates });
     }
 
     [HttpGet("api/goals/templates/categories")]
@@ -1108,7 +1120,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
     public IActionResult GoalTemplateCategories()
     {
         var categories = new[] { "timebanking", "volunteering", "learning", "community" };
-        return Ok(new { data = categories, categories });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `categories` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = categories });
     }
 
     [HttpGet("api/goals/mentoring")]
@@ -1173,7 +1189,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
     public IActionResult PollCategories()
     {
         var categories = new[] { "community", "events", "governance", "feedback" };
-        return Ok(new { data = categories, categories });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `categories` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = categories });
     }
 
     [HttpGet("api/admin/config/registration-policy")]
@@ -1967,7 +1987,11 @@ public class ReactFrontendCompatibilityController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { data = jobs, jobs });
+        // 🔴 Laravel sends {data, meta} only — verified live against the disposable
+        // Laravel on 2026-08-18. The duplicate `jobs` key is this backend's own
+        // legacy habit; a client reading it breaks the day it is removed, and a
+        // client reading `data` never needed it.
+        return Ok(new { data = jobs });
     }
 
     [HttpGet("api/legal/acceptance/status")]
