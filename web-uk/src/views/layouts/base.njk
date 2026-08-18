@@ -209,14 +209,27 @@
     {% block container %}
       <div class="govuk-width-container{% if containerClasses %} {{ containerClasses }}{% endif %}"{{ govukAttributes(containerAttributes) }}>
         {% block containerStart %}
-          {% block beforeContent %}
-            {{ govukPhaseBanner({
-              tag: {
-                text: phaseText or shellPhase
-              },
-              html: '<a class="govuk-link" href="' ~ feedbackUrl ~ '">' ~ shellFeedback ~ '</a>'
-            }) }}
-          {% endblock %}
+          {#
+            🔴 The phase banner sits OUTSIDE {% block beforeContent %} on purpose.
+            It used to be the body of that block, which meant a page overriding
+            beforeContent — the correct place for a GOV.UK back link, above
+            <main> — silently deleted the banner unless it remembered
+            {{ super() }}. That is not hypothetical: ai-chat/index.njk forgot,
+            and shipped with no phase banner at all.
+
+            beforeContent is now a genuinely empty slot that pages fill with
+            their back link. Nothing a page puts there can remove the banner,
+            and {{ super() }} is no longer required (existing calls to it stay
+            harmless — the block is simply empty).
+            Contract test: tests/base-layout-shared-markers.test.js.
+          #}
+          {{ govukPhaseBanner({
+            tag: {
+              text: phaseText or shellPhase
+            },
+            html: '<a class="govuk-link" href="' ~ feedbackUrl ~ '">' ~ shellFeedback ~ '</a>'
+          }) }}
+          {% block beforeContent %}{% endblock %}
         {% endblock %}
 
         {% block main %}

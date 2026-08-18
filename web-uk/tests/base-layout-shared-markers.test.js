@@ -97,6 +97,49 @@ describe('base layout shared markers', () => {
     expect(html).toContain('id="character-count-translations"');
   });
 
+  // The phase banner had the same shape of problem as the two markers above: it
+  // was the BODY of {% block beforeContent %}, which is where a GOV.UK back link
+  // belongs. Any page putting its back link there deleted the banner unless it
+  // remembered {{ super() }} — and ai-chat/index.njk did not, so it shipped with
+  // no phase banner. The banner now renders above the block.
+  it('renders the phase banner for a page that fills beforeContent without super()', () => {
+    const html = renderThroughChildLayout(
+      '{% extends "layouts/base.njk" %}'
+        + '{% block beforeContent %}<a class="govuk-back-link" href="/x">Back</a>{% endblock %}'
+        + '{% block content %}<p>page body</p>{% endblock %}',
+      SIGNED_IN_CONTEXT
+    );
+
+    expect(html).toContain('govuk-phase-banner');
+    expect(html).toContain('govuk-back-link');
+    expect(html).toContain('page body');
+  });
+
+  it('still renders the phase banner for a page that calls super(), as many do', () => {
+    const html = renderThroughChildLayout(
+      '{% extends "layouts/base.njk" %}'
+        + '{% block beforeContent %}{{ super() }}<a class="govuk-back-link" href="/x">Back</a>{% endblock %}'
+        + '{% block content %}<p>page body</p>{% endblock %}',
+      SIGNED_IN_CONTEXT
+    );
+
+    // Exactly one banner — super() on the now-empty block must not duplicate it.
+    // Counts __text, which the govuk-frontend markup emits once per banner
+    // (__content appears twice: on the <p> and inside __content__tag).
+    expect(html.match(/govuk-phase-banner__text/g) || []).toHaveLength(1);
+    expect(html).toContain('govuk-back-link');
+  });
+
+  it('keeps the phase banner outside the overridable beforeContent block', () => {
+    const source = fs.readFileSync(BASE_LAYOUT, 'utf8').replace(/\{#[\s\S]*?#\}/g, '');
+    const bannerIndex = source.indexOf('govukPhaseBanner');
+    const blockIndex = source.indexOf('{% block beforeContent %}');
+
+    expect(bannerIndex).toBeGreaterThan(-1);
+    expect(blockIndex).toBeGreaterThan(-1);
+    expect(bannerIndex).toBeLessThan(blockIndex);
+  });
+
   it('omits only the session marker when signed out, keeping character counts localised', () => {
     const html = renderThroughChildLayout(
       '{% extends "layouts/base.njk" %}{% block content %}<p>page body</p>{% endblock %}',
