@@ -7,7 +7,10 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Production Readiness Rubric
 
-Last reviewed: 2026-08-18 (first edition, all figures measured on that date)
+Last reviewed: 2026-08-18
+
+First edition. Every figure below was measured on that date by running the
+check, not by reading a document.
 
 The scoring rubric for the Expo client, and its honest current score.
 

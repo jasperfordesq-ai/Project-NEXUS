@@ -295,6 +295,27 @@ function loadBaseline() {
   return { entries, raw };
 }
 
+/**
+ * `scripts/check-docs-hygiene.mjs` requires an exact `Last reviewed: YYYY-MM-DD`
+ * line within the first 10 lines of every scoped Markdown file, and re-flags it
+ * after 180 days. For a generated report the generation date IS the review date,
+ * and that expiry is a feature: it forces a regeneration rather than letting a
+ * stale matrix sit in the repository looking authoritative.
+ *
+ * Note the consequence: regenerating on a new day changes this line even when
+ * nothing else moved. That is deliberate — the file is an artefact, and when it
+ * was last rebuilt is part of what it reports.
+ */
+function reviewedMarker() {
+  const now = new Date();
+  const iso = [
+    now.getUTCFullYear(),
+    String(now.getUTCMonth() + 1).padStart(2, '0'),
+    String(now.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+  return `Last reviewed: ${iso}`;
+}
+
 function renderMarkdown(r) {
   const s = r.summary;
   const L = [];
@@ -304,6 +325,8 @@ function renderMarkdown(r) {
   L.push('-->');
   L.push('');
   L.push('# Mobile API Consumer Ledger');
+  L.push('');
+  L.push(reviewedMarker());
   L.push('');
   L.push('> GENERATED FILE — do not edit by hand.');
   L.push('> Regenerate with `npm run api:ledger` from `mobile/`.');
