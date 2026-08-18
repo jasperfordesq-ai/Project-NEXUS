@@ -2145,6 +2145,430 @@ body.app-timeout-modal--open {
   }
 }
 
+// =============================================================================
+// Components whose markup shipped without any styles
+// =============================================================================
+// 🔴 Every class in this section was already used by templates and had NO rule
+// anywhere in this stylesheet, so it fell back to browser defaults. 37 classes
+// across 73 templates. The single class fixed above (.nexus-alpha-filter-nav,
+// with the note explaining it rendered as a bulleted vertical list) was one of
+// this same set; the rest were never done, which is why so many pages looked
+// wrong at once rather than one page looking wrong badly.
+//
+// What a member actually saw: the members directory stacked avatar, name and
+// link vertically instead of forming rows; card thumbnails sat above titles on
+// the four main browse pages; threaded replies had zero indentation, so a reply
+// four levels deep was indistinguishable from a new comment; the reaction you
+// had picked and your own row in the leaderboard had no visible marking at all;
+// job skills listed one per line down the page; and blog, help and legal
+// articles rendered in Times-ish browser defaults inside an otherwise GOV.UK
+// page.
+//
+// House rules followed throughout: govuk-spacing() for space, govuk-colour()
+// and the $govuk-*-colour variables for colour, govuk-font() for type. Nothing
+// here introduces a new palette, and nothing may reintroduce GDS Transport.
+// The contract test tests/css-class-coverage.test.js fails the build if a
+// template ever again references a nexus-alpha-* class with no rule.
+// -----------------------------------------------------------------------------
+
+// Horizontal label/value meta rows — 31 templates, the single most widespread
+// omission. The markup is <dl> > <div> > <dt> + <dd>. Unstyled, each pair became
+// two lines with the value indented 40px by the browser's default <dd> margin,
+// so eight facts about a member occupied eight stacked lines.
+.nexus-alpha-inline-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(1) govuk-spacing(4);
+  margin: 0 0 govuk-spacing(2) 0;
+}
+
+.nexus-alpha-inline-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(1);
+  align-items: baseline;
+}
+
+.nexus-alpha-inline-list dt {
+  @include govuk-font($size: 16);
+  color: $govuk-secondary-text-colour;
+}
+
+.nexus-alpha-inline-list dt::after {
+  // Punctuation, not wording: it must not sit in a translated string, and it
+  // must not be read out as a word by a screen reader.
+  content: ":";
+}
+
+.nexus-alpha-inline-list dd {
+  @include govuk-font($size: 16);
+  // The browser default is a 40px inline-start margin, which is what pushed
+  // every value onto its own indented line.
+  margin: 0;
+}
+
+// Member rows in the directory, /members/discover and /members/nearby.
+.nexus-alpha-member-row,
+.nexus-alpha-listing-row,
+.nexus-alpha-feed-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(3);
+  align-items: flex-start;
+}
+
+.nexus-alpha-member-row__media,
+.nexus-alpha-listing-row__media {
+  flex-shrink: 0;
+}
+
+// min-width: 0 lets a long unbroken word (a URL in a tagline) wrap instead of
+// forcing the whole flex row wider than the page.
+.nexus-alpha-member-row__content,
+.nexus-alpha-listing-row__body {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+// The action sits at the far end on a wide screen and drops below on a narrow
+// one, which the flex-wrap above already handles.
+.nexus-alpha-member-row__action,
+.nexus-alpha-listing-row__action,
+.nexus-alpha-feed-row__action {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
+
+// Name and its status tags on one line, tags aligned to the name's baseline.
+.nexus-alpha-member-row__heading,
+.nexus-alpha-inline-flex-tags,
+.nexus-alpha-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  align-items: center;
+}
+
+.nexus-alpha-card-head {
+  margin-bottom: govuk-spacing(2);
+}
+
+// Comment threads. feed/_comments.njk recurses up to four levels applying
+// --nested, and with no indent every level rendered flush left: a reply was
+// visually identical to a new top-level comment. resources/comments.njk had
+// hand-compensated with a padding utility; it can now rely on this.
+.nexus-alpha-comments-list {
+  padding-inline-start: 0;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.nexus-alpha-comments-list--nested {
+  margin-top: govuk-spacing(3);
+  padding-inline-start: govuk-spacing(4);
+  // The rule is the thread line: it makes depth visible without relying on
+  // indentation alone, which matters at narrow widths where indents compress.
+  border-inline-start: 4px solid $govuk-border-colour;
+}
+
+.nexus-alpha-comment {
+  margin-bottom: govuk-spacing(4);
+}
+
+.nexus-alpha-comment:last-child {
+  margin-bottom: 0;
+}
+
+.nexus-alpha-comment-actions,
+.nexus-alpha-reactions,
+.nexus-alpha-tag-list,
+.nexus-alpha-image-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  padding-inline-start: 0;
+  list-style: none;
+  margin-bottom: govuk-spacing(2);
+}
+
+// Each reaction is its own <form>, so without this the buttons stack.
+.nexus-alpha-reaction-form,
+.nexus-alpha-inline-form {
+  display: inline-block;
+  margin: 0;
+}
+
+// 🔴 The reaction you have chosen. aria-pressed already tells a screen reader,
+// but sighted members had NO visible indication whatsoever — every reaction
+// button looked identical whether or not you had pressed it.
+//
+// The marking is a border plus bold text, not a colour swap: the button keeps
+// the GOV.UK secondary button's light background and black text, so contrast is
+// unchanged and the state does not depend on colour alone (WCAG 1.4.1).
+.nexus-alpha-reaction--active {
+  box-shadow: inset 0 0 0 3px govuk-colour("blue");
+  font-weight: bold;
+}
+
+// 🔴 Your own row in a leaderboard or tier table. Same reasoning: the row
+// carried only a small "You" tag, so finding yourself in a long table meant
+// reading every line. A left accent bar plus a light background, both alongside
+// that existing text label, so this is never colour-only either.
+.nexus-alpha-row--active > td,
+.nexus-alpha-row--active > th {
+  background: govuk-colour("black", $variant: "tint-95");
+  border-bottom-color: $govuk-border-colour;
+}
+
+.nexus-alpha-row--active > :first-child {
+  box-shadow: inset 4px 0 0 0 govuk-colour("blue");
+}
+
+// Cross-page filter strips. Reuses the filter-nav treatment above, including
+// its 24px minimum target height (WCAG 2.2 AA 2.5.8) — see that block's note.
+.nexus-alpha-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 govuk-spacing(6) 0;
+}
+
+.nexus-alpha-filter-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: govuk-spacing(1) govuk-spacing(2);
+}
+
+// The "N results" line above a list. aria-live already announces it; this just
+// stops it reading as body copy.
+.nexus-alpha-result-count {
+  @include govuk-font($size: 16);
+  color: $govuk-secondary-text-colour;
+  margin-bottom: govuk-spacing(3);
+}
+
+.nexus-alpha-card__title {
+  margin-bottom: govuk-spacing(2);
+}
+
+// Activity timelines on a member profile and your own profile.
+.nexus-alpha-timeline {
+  padding-inline-start: govuk-spacing(4);
+  border-inline-start: 4px solid $govuk-border-colour;
+  list-style: none;
+  margin-bottom: govuk-spacing(4);
+}
+
+.nexus-alpha-timeline > li {
+  padding-bottom: govuk-spacing(3);
+}
+
+.nexus-alpha-timeline > li:last-child {
+  padding-bottom: 0;
+}
+
+// 🔴 Stat and score blocks. These sit on govuk-panel--confirmation, which is
+// GOV.UK's END-OF-TRANSACTION success panel: full-bleed green with 48px white
+// type. It was being used as permanent page furniture on the home page (inside
+// a one-third column, so a green block with 48px text in a ~320px space, shown
+// to signed-out visitors), on both Nexus score pages, in the achievements shop
+// and twice in courses.
+//
+// The panel markup is left alone and calmed here instead, which fixes all six
+// places at once. Specificity: .govuk-panel.nexus-alpha-panel is 0-2-0 and
+// beats .govuk-panel--confirmation at 0-1-0, so the green is genuinely
+// overridden rather than fighting it with !important.
+//
+// 🔴 The --govuk-text-colour reset is load-bearing, and specificity alone does
+// NOT achieve it. .govuk-panel--confirmation does not set `color` directly; it
+// redefines the custom property (--govuk-text-colour: inverse, i.e. white) and
+// govuk-frontend's own rules read `color: var(--govuk-text-colour)`. A more
+// specific `color` here fixed only this element and left every descendant
+// reading the overridden variable, so the title and body rendered WHITE ON
+// NEAR-WHITE — invisible, and worse than the green it replaced. Resetting the
+// variable puts the whole subtree back on the normal text colour. Caught in a
+// browser: computed colour was rgb(255,255,255) on a rgb(243,243,243) ground.
+.govuk-panel.nexus-alpha-panel {
+  --govuk-text-colour: #{govuk-colour("black")};
+  background: govuk-colour("black", $variant: "tint-95");
+  border: 1px solid $govuk-border-colour;
+  color: $govuk-text-colour;
+  padding: govuk-spacing(4);
+}
+
+.govuk-panel.nexus-alpha-panel .govuk-panel__title {
+  @include govuk-font($size: 36, $weight: bold);
+  margin-bottom: govuk-spacing(2);
+}
+
+.govuk-panel.nexus-alpha-panel .govuk-panel__body {
+  @include govuk-font($size: 19);
+}
+
+// 🔴 46 native <progress> elements had no styling at all, so each rendered as
+// the raw operating-system widget: a small fixed-width pill in whatever colour
+// the OS chose, ignoring both the page width it sits in and the GOV.UK palette.
+//
+// All three pseudo-elements are needed: Chrome and Safari paint the track with
+// ::-webkit-progress-bar and the fill with ::-webkit-progress-value, Firefox
+// paints the fill with ::-moz-progress-bar. Missing one leaves that browser on
+// its default rendering.
+.nexus-alpha-progress,
+.nexus-alpha-poll-bar {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: govuk-spacing(4);
+  margin-bottom: govuk-spacing(2);
+  // Opts out of the OS widget so the rules below are honoured.
+  appearance: none;
+  border: 1px solid $govuk-border-colour;
+  background: govuk-colour("black", $variant: "tint-95");
+}
+
+.nexus-alpha-progress::-webkit-progress-bar,
+.nexus-alpha-poll-bar::-webkit-progress-bar {
+  background: govuk-colour("black", $variant: "tint-95");
+}
+
+.nexus-alpha-progress::-webkit-progress-value,
+.nexus-alpha-poll-bar::-webkit-progress-value {
+  background: govuk-colour("blue");
+}
+
+.nexus-alpha-progress::-moz-progress-bar,
+.nexus-alpha-poll-bar::-moz-progress-bar {
+  background: govuk-colour("blue");
+}
+
+// Podcast player. Unconstrained, a native audio element can overflow a narrow
+// column.
+.nexus-alpha-audio {
+  display: block;
+  width: 100%;
+  max-width: 30rem;
+  margin-bottom: govuk-spacing(3);
+}
+
+// 🔴 Multi-photo marketplace listings. The single-photo branch of that template
+// uses .nexus-alpha-detail-hero, which constrains to 640px; this strip had no
+// rule and no width attribute on its images, so one photo looked right and two
+// photos rendered at full intrinsic size, one under another, pushing the page
+// sideways. That is the same WCAG 1.4.10 reflow failure the member-image block
+// above was written to fix.
+.nexus-alpha-image-strip img {
+  display: block;
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border: 1px solid $govuk-border-colour;
+}
+
+// Two-factor setup: a shared secret and one-time recovery codes have to be
+// transcribed exactly, so they need a monospaced face and loose letter spacing
+// to tell 0 from O and 1 from l.
+.nexus-alpha-totp-secret {
+  display: inline-block;
+  padding: govuk-spacing(1) govuk-spacing(2);
+  background: govuk-colour("black", $variant: "tint-95");
+  border: 1px solid $govuk-border-colour;
+  font-family: monospace;
+  font-size: 1.125rem;
+  letter-spacing: 0.15em;
+  word-break: break-all;
+}
+
+.nexus-alpha-backup-codes {
+  font-family: monospace;
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+}
+
+// Search term highlighting inside a conversation. <mark> has a browser default
+// of black on yellow; this pins it so it cannot drift, and keeps that pairing
+// because it is well above the 4.5:1 contrast minimum.
+.nexus-alpha-search-match {
+  background: govuk-colour("yellow");
+  color: govuk-colour("black");
+  padding: 0 govuk-spacing(1);
+}
+
+// 🔴 Long-form HTML returned by the API — blog posts, knowledge-base articles,
+// legal documents and custom pages. The wrapper carries govuk-body, which
+// styles only the wrapper itself; because this build has no global element
+// styles, every <h2>, <p>, <ul> and <a> INSIDE the returned HTML fell back to
+// browser defaults. That is the "wall of badly formatted text" on the six most
+// text-heavy pages in the service.
+//
+// These rules restore GOV.UK typography to content this stylesheet cannot put
+// classes on. Sizes match the govuk-heading-* / govuk-body scale.
+.legal-content {
+  h2 {
+    @include govuk-font($size: 27, $weight: bold);
+    margin: govuk-spacing(6) 0 govuk-spacing(3);
+  }
+
+  h3 {
+    @include govuk-font($size: 24, $weight: bold);
+    margin: govuk-spacing(5) 0 govuk-spacing(2);
+  }
+
+  h4 {
+    @include govuk-font($size: 19, $weight: bold);
+    margin: govuk-spacing(4) 0 govuk-spacing(2);
+  }
+
+  p {
+    @include govuk-font($size: 19);
+    margin: 0 0 govuk-spacing(4);
+  }
+
+  ul,
+  ol {
+    @include govuk-font($size: 19);
+    margin: 0 0 govuk-spacing(4);
+    padding-inline-start: govuk-spacing(5);
+  }
+
+  li {
+    margin-bottom: govuk-spacing(1);
+  }
+
+  a {
+    @include govuk-link-common;
+    @include govuk-link-style-default;
+  }
+
+  blockquote {
+    margin: 0 0 govuk-spacing(4);
+    padding-inline-start: govuk-spacing(4);
+    border-inline-start: 4px solid $govuk-border-colour;
+  }
+
+  // Long-form content is the most likely place for an oversized editor upload.
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: govuk-spacing(4);
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    @include govuk-font($size: 19);
+    padding: govuk-spacing(2) govuk-spacing(3) govuk-spacing(2) 0;
+    border-bottom: 1px solid $govuk-border-colour;
+    text-align: left;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Print trigger button
 // -----------------------------------------------------------------------------
