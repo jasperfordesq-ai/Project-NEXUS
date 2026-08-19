@@ -547,41 +547,6 @@
   }
 }
 
-// Message thread styling
-.app-messages-container {
-  max-height: 500px;
-  overflow-y: auto;
-  padding: govuk-spacing(3);
-  background: govuk-colour("black", $variant: "tint-95");
-  border: 1px solid $govuk-border-colour;
-}
-
-.app-message {
-  background: govuk-colour("white");
-  border: 1px solid $govuk-border-colour;
-  padding: govuk-spacing(3);
-  margin-bottom: govuk-spacing(3);
-  max-width: 80%;
-
-  &--own {
-    margin-inline-start: auto;
-    background: govuk-tint(govuk-colour("blue"), 90%);
-  }
-}
-
-.app-message-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: govuk-spacing(2);
-}
-
-.app-message-body {
-  p:last-child {
-    margin-bottom: 0;
-  }
-}
-
 // Link-styled button (for form submissions that look like links)
 .app-link-button {
   @include govuk-font($size: 16);
@@ -726,13 +691,6 @@
 
 body.app-loading-overlay--active {
   overflow: hidden;
-}
-
-// Member card in table with avatar
-.app-member-cell {
-  display: flex;
-  align-items: center;
-  gap: govuk-spacing(2);
 }
 
 // Page header with actions

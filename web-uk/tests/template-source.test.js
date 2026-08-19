@@ -1541,7 +1541,8 @@ describe('tenant-aware template helper conversion', () => {
   it('keeps direct and group message links and forms behind urlFor()', () => {
     const templates = [
       path.join('messages', 'index.njk'),
-      path.join('messages', 'conversation.njk'),
+      // messages/conversation.njk was deleted: no route rendered it. The live
+      // conversation screens are direct-conversation and group-conversation.
       path.join('messages', 'direct-conversation.njk'),
       path.join('messages', 'groups.njk'),
       path.join('messages', 'group-create.njk'),
@@ -1712,12 +1713,12 @@ describe('tenant-aware template helper conversion', () => {
     );
     const alerts = readView(path.join('jobs', 'alerts.njk'));
     const events = readView(path.join('events', 'detail.njk'));
-    const conversation = readView(path.join('messages', 'conversation.njk'));
 
     expect(alerts).toContain('<details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">');
     expect(events).toContain('<details class="govuk-details govuk-!-margin-bottom-4" data-module="govuk-details">');
     expect(events).toContain('<details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">');
-    expect(conversation).toContain('<details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">');
+    // The messages/conversation.njk disclosure was dropped with that template,
+    // which no route rendered.
   });
 
   it('keeps both wallet transfer forms behind Blade confirmation checkboxes', () => {
@@ -2154,7 +2155,9 @@ describe('tenant-aware template helper conversion', () => {
     const listingForm = read('listings', 'form.njk');
     const backLinkPages = [
       [read('listings', 'detail.njk'), "urlFor('/listings')", 't("actions.back_to_listings")'],
-      [read('messages', 'conversation.njk'), "urlFor('/messages')", 't("actions.back_to_messages")']
+      // messages/conversation.njk removed — unrendered by any route. Its live
+      // replacement writes the same key with its namespace prefix.
+      [read('messages', 'direct-conversation.njk'), "urlFor('/messages')", 't("govuk_alpha.actions.back_to_messages")']
     ];
 
     expect(listingForm).toContain("urlFor('/listings/' + (listing.id | string))");
