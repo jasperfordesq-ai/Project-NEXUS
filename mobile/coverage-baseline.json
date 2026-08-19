@@ -2,10 +2,10 @@
   "note": "Shrink-only coverage floors for the Expo client, by area. Raise a floor only after a real improvement; never lower one to make a red check green. Regenerate with `node scripts/check-coverage-ratchet.mjs --write-baseline` after running `npm run test:coverage`.",
   "measured_on_files": 278,
   "global_floor": {
-    "lines": 72.46,
-    "statements": 69.35,
-    "branches": 62.22,
-    "functions": 66.67
+    "lines": 73.23,
+    "statements": 70.15,
+    "branches": 62.94,
+    "functions": 67.26
   },
   "area_floors": {
     "app": {
@@ -73,7 +73,7 @@
       "instrumented_lines": 258
     },
     "lib/eventOfflineCheckinStore.ts": {
-      "lines_pct": 32.67,
+      "lines_pct": 94.47,
       "instrumented_lines": 199
     },
     "lib/events": {

@@ -40,8 +40,8 @@ statement about attention, not about the app.
 
 | # | Dimension | Score | One-line basis |
 | --- | --- | --- | --- |
-| 1 | Automated test suite | **Strong** | 273 suites / 1,743 tests, 0 skipped, 0 quarantined, blocking in CI (was 263 / 1,563) |
-| 2 | Code coverage | **Adequate** | 72.96% lines, up from 71.68%; every named 0% seam covered, and the start-up routing decision extracted and pinned |
+| 1 | Automated test suite | **Strong** | 274 suites / 1,779 tests, 0 skipped, 0 quarantined, blocking in CI (was 263 / 1,563) |
+| 2 | Code coverage | **Adequate** | 73.73% lines, up from 71.68%; every named 0% seam covered, the start-up routing decision pinned, and the offline check-in queue taken from 33% to 95% |
 | 3 | API contract drift | **Adequate** | 402 of 403 endpoints verified against Laravel's real routes; 1 confirmed defect open |
 | 4 | Route parity drift | **Adequate** | All 254 React member routes classified; 33 gaps, 31 awaiting review, budget shrink-only |
 | 5 | Type safety | **Strong** | `tsc --noEmit` strict, blocking in CI |
@@ -50,9 +50,9 @@ statement about attention, not about the app.
 | 8 | End-to-end journeys | **Adequate** | All 9 Maestro flows PASS against the local API (they had never been run); a nightly CI workflow exists but has never run |
 | 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures); screenshot diffing works and gates 3 signed-in screens at 0px repeatability — 3 more toured but not comparable, and 134 screens have no baseline |
 | 10 | iOS | **Unmeasured** | Never built or run in CI or locally; App Store Connect ID is still a placeholder |
-| 11 | Accessibility | **Weak** | 683 a11y props over 119 of 189 screens (63%); WCAG AA contrast now gated, but no label-coverage gate |
-| 12 | Internationalisation | **Weak** | 7 locales against the platform's 11; namespace content is test-enforced |
-| 13 | Offline & flaky-network behaviour | **Weak** | Offline check-in store exists at 33% coverage; no systematic offline testing |
+| 11 | Accessibility | **Adequate** | Re-measured: 2 of 44 interactive elements lack a label, and both are in unused code. WCAG AA contrast is checked. Touch-target size still unchecked |
+| 12 | Internationalisation | **Weak** | 7 locales against the platform's 11. `nl` `pl` `ja` are ~17,200 strings of ordinary work; **`ar` is blocked** — the app has no right-to-left support at all |
+| 13 | Offline & flaky-network behaviour | **Adequate for check-in, Weak elsewhere** | Offline check-in store now 94.97% covered, incl. the retry that stops a double-credit; mid-request connection loss still untested elsewhere |
 | 14 | Performance | **Unmeasured** | No startup-time, bundle-size or list-scroll budget |
 
 **Overall: not production-ready as a flagship, genuinely ready as an Android
@@ -416,39 +416,193 @@ automated process. Treat every iOS claim as unverified.
 
 ---
 
-## 11. Accessibility — Weak
+## 11. Accessibility — Adequate
 
-683 accessibility props across 119 of 189 screens and components (63%), and 241
-`getByLabelText` assertions in tests — so a11y is being written, and the tests
-lean on it.
+> 🔴 **This section said "Weak" on the strength of a metric that measured the wrong
+> thing.** The original figure — "683 accessibility props across 119 of 189 screens
+> (63%)" — counted *files that mention any accessibility prop*. A file scores as a
+> miss under that count if it is a pure layout wrapper with nothing interactive in
+> it, which describes most of the 70 files it was counting against us. It says
+> nothing about whether anything a member can actually press has a name.
 
-**Colour contrast is now gated** (§9) — that is the one WCAG criterion with an
-automated check, and it caught seven real failures. What is still missing is a
-label-coverage gate: nothing fails when a new screen ships with no
-`accessibilityLabel`, and there is no automated audit like the web platform's
-`accessibility-check` job. Touch-target size is also unchecked.
+**Re-measured 2026-08-19 against the question that matters** — how many interactive
+elements a screen reader would announce with no name:
+
+| | Count |
+|---|---|
+| Files containing a touchable (`Pressable`, `TouchableOpacity`, `NativePressable`) | 29 |
+| Touchable elements in them | 44 |
+| Files with a touchable and **no** `accessibilityLabel` | **2** |
+
+Both of the two are benign:
+
+- `app/(modals)/legal-document.tsx` — a retry button that already carries
+  `accessibilityRole="button"` and whose only child is visible translated text. A
+  screen reader reads the text; an added label would be a second, duplicate name.
+- `components/ui/Card.tsx` — its pressable branch has no way to receive a label at
+  all, which *would* be a real gap except that **nothing imports this file** (see
+  §11.1). Fixing dead code would be theatre.
+
+Most interaction goes through wrapped components that require or forward a label,
+which is why the honest number is 2 and not 70. There are also 241
+`getByLabelText` assertions in the tests, so labels are load-bearing in the suite —
+removing one breaks tests.
+
+**What is genuinely still unchecked**, and is the reason this is "Adequate" and not
+"Strong":
+
+- **Touch-target size.** Nothing measures the 44×44pt minimum.
+- **A label-coverage check.** The 2-file state is good but unprotected; nothing
+  fails if a new screen ships with an unlabelled icon button. A check was written
+  and then not kept: at 2 findings, 1 of them a false positive and 1 in dead code,
+  it would have spent most of its life reporting noise. Worth adding when the count
+  of *real* findings justifies it, not before.
+- **Screen-reader behaviour on a device.** No TalkBack or VoiceOver run has ever
+  happened here. Labels existing is not the same as a screen reader making sense of
+  the screen, and only §16's device work could establish the latter.
+
+### 11.1 Three wrapper components are unused
+
+`components/ui/Badge.tsx`, `components/ui/Card.tsx` and `components/ui/Divider.tsx`
+have **no importers anywhere** in `app/`, `components/` or `lib/`. Screens import
+`Badge`, `Card` and `Divider` from `heroui-native` directly instead.
+
+They are not harmless. Each has a test file, so they contribute passing tests and
+coverage percentage for code no member can reach, and their presence suggests a
+house wrapper pattern that the app does not in fact follow — the next person to
+add a card has two plausible imports and no way to tell which is right.
+
+Deleting them is **an owner decision, not a cleanup**: a wrapper may be deliberate
+groundwork for a later HeroUI version change, and this platform's standing rule is
+not to remove working code to satisfy a metric. Recorded here so the choice is
+made deliberately rather than by accident.
 
 ---
 
 ## 12. Internationalisation — Weak
 
 **7 locales** (`en de es fr ga it pt`) against the platform's **11** (missing
-`nl pl ja ar`). 34 namespaces per locale, and locale content is genuinely
-test-enforced — 40 `locales/*-content.test.ts` files assert real keys, which is
-better discipline than most of the platform.
+`nl pl ja ar`). **5,732 English keys** across 34 namespaces, and locale content is
+genuinely test-enforced — 40 `locales/*-content.test.ts` files assert real keys,
+which is better discipline than most of the platform.
 
-The gap is coverage of languages, not of process. A member whose tenant runs in
-Polish gets an English app.
+Two things here are better than expected and one is worse.
+
+**Better:** the language picker cannot lie. `SUPPORTED_LANGUAGES` is derived from
+`Object.keys(languageLoaders)` in `lib/i18n.ts`, so the app offers exactly the
+languages it can actually load. A member is never shown a language that would leave
+them on English — the usual form of this bug does not exist here.
+
+**Better:** nothing about the pipeline is missing. `scripts/translate-mobile-i18n-gaps.mjs`
+already exists and uses Google's unauthenticated translate endpoint, so **no API key
+or spend is required**.
+
+🔴 **Worse: the four missing languages are not one job, they are two, and one of
+them cannot be done by translating anything.**
+
+### Dutch, Polish, Japanese — ordinary work, ~17,200 strings
+
+Mechanical but not free. Three things beyond the translation itself:
+
+1. `scripts/translate-mobile-i18n-gaps.mjs --summary` currently reports
+   `Total: 0 missing`. That is **not** evidence there is no gap — the tool only
+   considers locale directories that already exist, and these four do not. Each
+   needs `locales/<code>/` seeded with the 34 namespaces carrying **English**
+   values first; the translator only fills keys that are already present.
+2. `lib/i18n.ts` hand-registers every locale with an explicit `require()` block per
+   namespace, so each new language needs its own ~34-line block. This is deliberate
+   (it is what keeps unused languages out of memory), not something to refactor away
+   in passing.
+3. `native-locales/<code>.json` and `app.json`'s `expo-localization`
+   `supportedLocales` both need the new codes, or the OS-level strings stay English.
+
+Machine translation of this volume also carries a known cost on this platform: the
+web side spent real effort clearing 99,139 machine-filled strings, and the recorded
+failure modes — mangled URI schemes, capitalised literal field names — apply
+identically here. Whoever does this should expect to review, not just to run.
+
+### Arabic — blocked, and translating it would make things worse
+
+**The app has no right-to-left support whatsoever.** Verified 2026-08-19: a search
+of `app/`, `components/` and `lib/` for `I18nManager`, `allowRTL`, `forceRTL`,
+`isRTL` and `writingDirection` returns **nothing**, and no layout uses the
+direction-aware `marginStart` / `paddingStart` in place of `marginLeft` /
+`paddingLeft`.
+
+So adding Arabic strings would produce Arabic text in a left-to-right layout: back
+arrows pointing the wrong way, labels and values transposed, text pinned to the
+wrong edge. That is worse for an Arabic-speaking member than English, because a
+half-flipped app reads as broken software rather than as software that does not
+speak your language — and it is worse for the platform, because it looks like RTL
+was attempted and failed.
+
+**Recommendation: add `nl`, `pl` and `ja`, and hold `ar` until RTL support exists.**
+RTL is a layout project in its own right — `I18nManager.allowRTL`, an audit of every
+directional style in 189 screens, and mirrored icons — not a translation task, and
+it should be scoped separately rather than smuggled in behind a language.
+
+🔴 This is a decision for the owner, not an assumption to act on, because "add the
+4 missing languages" and "add 3 and open an RTL project" are different pieces of
+work. Nothing has been created for either.
 
 ---
 
-## 13. Offline and flaky-network behaviour — Weak
+## 13. Offline and flaky-network behaviour — Adequate for check-in, Weak elsewhere
 
-`@react-native-community/netinfo` is present, `OfflineBanner` exists (at 0%
-coverage), and there is a real offline check-in queue
-(`lib/eventOfflineCheckinStore.ts`, 199 lines, 32.7% covered). No systematic
-testing of connection loss mid-request, token refresh on a flaky connection, or
-queue replay. On a phone this is not an edge case; it is Tuesday.
+`@react-native-community/netinfo` is present and `OfflineBanner` exists (still 0%
+covered).
+
+### The offline event check-in queue is now properly tested
+
+`lib/eventOfflineCheckinStore.ts` (503 lines, 199 instrumented) went from **32.67%
+to 94.97%** line coverage on 2026-08-19 — 100% of its functions, 84.8% of branches.
+41 tests across two suites; the shrink-only floor was raised to 94.47% in the same
+commit, so it cannot quietly slide back.
+
+This was the right place to spend the effort. The code decides who gets credited for
+attending an event while the phone has no signal, and it fails in two directions that
+both cost a member real money in time credits:
+
+- **A dropped check-in is unpaid work.** Someone stood in the room and the platform
+  has no record of it.
+- **A double-applied check-in is credit nobody earned**, which is worse, because it
+  has to be taken back off a member who did nothing wrong.
+
+What is now pinned by test, and was not before:
+
+| Guarantee | Why it matters at the door |
+|---|---|
+| Ed25519 signatures verified **for real** in the tests, not mocked | A forged pass would let anyone check anyone in. Mocking `verify` would have made this test pass while proving nothing |
+| A pass from a **different occurrence** of a recurring event is refused | Last week's pass is correctly signed and unexpired; the occurrence digest is the only thing stopping it |
+| An expired pass reports `credential_expired`, not `credential_invalid` | "This pass has expired" is something a steward can act on at the door; "invalid" sends them hunting a fault that is not there |
+| The same pass scanned twice is refused, and so is a second check-in via a different pass | The double-scan, from both directions: one is a copied pass, the other is the state machine |
+| Each queued operation claims the next attendance version | Get this count wrong and the server rejects the whole batch as conflicted — a hall full of check-ins goes in by hand |
+| 🔴 **A failed send keeps the same batch id, and retries exactly the items that batch held** | The most consequential branch in the file. The send may have reached the server and only the reply been lost; retrying under a fresh id presents the same check-ins as new work and everyone gets credited twice |
+| Items older than the replay window are rejected locally and never sent | The steward is told while they can still do something, instead of an item sitting "pending" for ever |
+| A conflict is kept in the queue, not discarded | A conflict needs a human; dropping it loses the fact that someone was at the door |
+| A rotated or revoked steward device cannot adopt a fresh roster | This is what stops a revoked device carrying on checking people in |
+| An unreadable stored record is destroyed, not left on the phone | It is a roster of members' names, and if it will not decrypt it cannot be trusted or recovered |
+| Member names and the device secret never appear in the written file | Confirmed by asserting their **absence** from the bytes on disk |
+
+**These tests were verified to be capable of failing.** Four deliberate mutations
+of the source — accepting a forged signature, forgetting the batch id on failure,
+dropping the replay-window rejection, and dropping the reason requirement on undo —
+each turned the intended test red and only that test, and the source was restored
+from git afterwards. A passing suite that cannot fail is worse than no suite,
+because it is believed.
+
+### What is still weak
+
+- **Connection loss mid-request everywhere else.** The check-in queue is the one
+  place a lost response is handled deliberately and now tested. Ordinary screens are
+  not covered for it.
+- **Token refresh on a flaky connection.** Untested.
+- **`OfflineBanner` at 0% coverage** — the component that tells a member they are
+  offline has no test.
+- **No device-level offline test.** Nothing has ever been run with aeroplane mode on
+  a real or emulated phone; all of the above is proven in Jest, against mocked
+  storage and a mocked network. That is a genuine limit: it proves the decisions are
+  right, not that the phone behaves when the radio actually drops.
 
 ---
 
