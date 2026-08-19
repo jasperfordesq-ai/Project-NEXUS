@@ -7,6 +7,11 @@
 @import 'tailwindcss';
 @import 'uniwind';
 @import 'heroui-native/styles';
+/* Per-community accent themes, one per community per scheme. GENERATED —
+ * regenerate with `npm run themes:generate` after editing
+ * config/tenant-palettes.json. See scripts/generate-tenant-themes.mjs for why
+ * these cannot be applied at runtime instead. */
+@import './generated/tenant-themes.css';
 
 @source './node_modules/heroui-native/lib';
 

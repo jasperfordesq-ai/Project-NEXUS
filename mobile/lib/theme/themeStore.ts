@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------
 
 import { Appearance } from 'react-native';
-import { Uniwind } from 'uniwind';
+import { Uniwind, type ThemeName } from 'uniwind';
 
 import { storage } from '@/lib/storage';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -38,6 +38,16 @@ const VALID_MODES: readonly ThemeMode[] = ['system', 'light', 'dark'];
 // with the real system/persisted scheme at startup.
 let mode: ThemeMode = 'system';
 let systemScheme: ColorScheme = 'dark';
+
+/**
+ * The community whose accent colour should paint, or null for the platform default.
+ *
+ * Set once the tenant is known (see TenantContext). It exists because HeroUI Native
+ * resolves its accent from a CSS variable that uniwind compiles at BUILD time, and
+ * neither library can change an arbitrary colour at runtime — so the only lever is
+ * switching to a theme that was registered when the bundle was built.
+ */
+let tenantSlug: string | null = null;
 
 const listeners = new Set<() => void>();
 
@@ -65,9 +75,44 @@ function emit(): void {
  * Appearance (so useColorScheme()/native controls follow). When the user picks
  * 'system' we hand control back to the OS by clearing the JS override.
  */
+/**
+ * The uniwind theme to apply: a community-specific one when that community's colours
+ * were built into this bundle, otherwise the platform default.
+ *
+ * 🔴 The membership check is the whole safety story. A community that signs up after
+ * this build shipped has no theme registered, and `Uniwind.setTheme()` THROWS on an
+ * unregistered name (`node_modules/uniwind/src/core/config/config.common.ts`). Falling
+ * back to the platform default means a new community sees consistent default colours —
+ * which reads as deliberate — instead of a crash on launch. The fix for them is a
+ * palette entry plus an over-the-air update, not an app-store release.
+ */
+/**
+ * Narrows an arbitrary string to a theme uniwind actually has.
+ *
+ * uniwind generates a union of registered theme names into `uniwind-types.d.ts`, so
+ * `setTheme` will not accept a computed string. That type is genuinely useful — it is
+ * why a typo in a theme name fails the build rather than at launch — so this guard
+ * checks membership against the runtime list and confines the assertion to one place
+ * where the check has just been performed.
+ */
+function isRegisteredTheme(name: string): name is ThemeName {
+  return (Uniwind.themes as readonly string[]).includes(name);
+}
+
+function resolveThemeName(scheme: ColorScheme): ThemeName {
+  if (!tenantSlug) return scheme;
+  const candidate = `t-${tenantSlug}-${scheme}`;
+  return isRegisteredTheme(candidate) ? candidate : scheme;
+}
+
 function applyScheme(): void {
   const scheme = resolve();
-  Uniwind.setTheme(scheme);
+  Uniwind.setTheme(resolveThemeName(scheme));
+
+  // 🔴 Order matters, and this line must stay AFTER setTheme. Switching to a theme
+  // whose name is not 'light'/'dark' makes uniwind write `unspecified` to Appearance
+  // to leave adaptive mode; re-asserting here keeps useColorScheme() and native
+  // controls on the scheme this store actually resolved.
   Appearance.setColorScheme(mode === 'system' ? null : scheme);
 }
 
@@ -86,6 +131,36 @@ export const themeStore = {
 
   getMode(): ThemeMode {
     return mode;
+  },
+
+  /**
+   * Point the accent at a community's own brand colour.
+   *
+   * Called when the tenant resolves (and again with null on sign-out / community
+   * switch). Safe to call with an unknown slug: `resolveThemeName` falls back to the
+   * platform default rather than throwing, so a community that signed up after this
+   * bundle shipped simply gets default colours until an over-the-air update carries
+   * its palette.
+   */
+  setTenant(slug: string | null): void {
+    const next = slug && slug.trim() ? slug.trim().toLowerCase() : null;
+    if (next === tenantSlug) return;
+    tenantSlug = next;
+    applyScheme();
+    emit();
+  },
+
+  /** The community slug currently driving the accent, or null for the default. */
+  getTenantSlug(): string | null {
+    return tenantSlug;
+  },
+
+  /**
+   * Whether this bundle actually carries a theme for a community. Exposed so the app
+   * can report a missing palette (a stale build) rather than silently looking generic.
+   */
+  hasThemeFor(slug: string): boolean {
+    return isRegisteredTheme(`t-${slug.trim().toLowerCase()}-light`);
   },
 
   /** Change the user's preference, persist it, and apply immediately. */
@@ -130,6 +205,7 @@ export const themeStore = {
     mode = 'system';
     systemScheme = 'dark';
     snapshot = 'dark';
+    tenantSlug = null;
     listeners.clear();
   },
 };

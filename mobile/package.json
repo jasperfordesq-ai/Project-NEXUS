@@ -30,7 +30,7 @@
     "api:check": "node scripts/generate-api-consumer-ledger.mjs --check",
     "parity:matrix": "node scripts/generate-parity-matrix.mjs",
     "parity:check": "node scripts/generate-parity-matrix.mjs --check",
-    "drift:check": "npm run parity:check && npm run api:check",
+    "drift:check": "npm run parity:check && npm run api:check && npm run themes:check",
     "emulator:start": "node scripts/emulator.mjs start",
     "emulator:stop": "node scripts/emulator.mjs stop",
     "screenshot:tour": "node scripts/screenshots.mjs tour",
@@ -39,7 +39,9 @@
     "screenshot:approve": "node scripts/screenshots.mjs approve",
     "e2e": "node scripts/e2e.mjs",
     "prepare": "cd .. && husky mobile/.husky || true",
-    "screenshot:sweep": "node scripts/screenshots.mjs sweep"
+    "screenshot:sweep": "node scripts/screenshots.mjs sweep",
+    "themes:generate": "node scripts/generate-tenant-themes.mjs",
+    "themes:check": "node scripts/generate-tenant-themes.mjs --check"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

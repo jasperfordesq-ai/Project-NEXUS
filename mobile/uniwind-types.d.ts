@@ -3,7 +3,7 @@
 
 declare module 'uniwind' {
     export interface UniwindConfig {
-        themes: readonly ['light', 'dark']
+        themes: readonly ['light', 'dark', 't-agoris-light', 't-agoris-dark', 't-hour-timebank-light', 't-hour-timebank-dark']
     }
 }
 

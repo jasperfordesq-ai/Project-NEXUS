@@ -8,6 +8,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { getTenantConfig, type TenantConfig } from '@/lib/api/tenant';
 import { DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
+import { themeStore } from '@/lib/theme/themeStore';
 
 interface TenantContextValue {
   tenant: TenantConfig | null;
@@ -39,6 +40,15 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   // before the stored tenant slug is read from SecureStore/AsyncStorage.
   const [tenantSlug, setSlug] = useState<string | null>(null);
   const [tenant, setTenant] = useState<TenantConfig | null>(null);
+
+  // Point HeroUI's accent at this community's own brand colour. It lives in the theme
+  // store rather than in this context because ~200 components read the theme through a
+  // provider-free store, and because the switch has to survive a light/dark change.
+  // A community with no palette in this bundle falls back to the platform default, so
+  // this is safe to call with any slug.
+  useEffect(() => {
+    themeStore.setTenant(tenant?.slug ?? null);
+  }, [tenant?.slug]);
   const [isLoading, setIsLoading] = useState(true);
   const isMountedRef = useRef(true);
 

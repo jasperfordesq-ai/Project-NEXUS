@@ -80,6 +80,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Not covered: the two largest text settings Android offers, where wrapping usually gives out.
 
+- 🔴 **The mobile app can now take on each community's own colours — proven working on a phone.** This is the groundwork for the change you asked for: one colour throughout, and that colour being the community's own rather than the design library's purple.
+
+  Tested with the Agoris community, whose brand colour is **teal**. On the sign-in screen the logo tile and the Sign in button are now **both teal**. Earlier the same screen showed a blue logo beside a purple button. Measured on the device to be certain: the button is exactly the teal generated for that community, not an approximation.
+
+  **Why it needed building rather than configuring.** Thirteen parts of the design library decide their own colour from a single value, and the library offers no way to set it. That value is fixed when the app is built, so each community's colours have to be prepared in advance. There is now a small file listing each community's colour, a script that turns it into what the app needs, and a switch that picks the right one once the app knows which community you are in.
+
+  **Adding a community is a one-line change plus an over-the-air update** — no app-store release. And until that update lands, a brand-new community simply gets the platform's default colours, which looks deliberate rather than broken. That fallback is not a nicety: without it the app would crash on launch for a community it did not recognise, and there is a test holding it in place that I confirmed goes red when removed.
+
+  **One detail worth knowing.** The label on a coloured button is worked out rather than assumed. A community might pick a pale colour that white text cannot be read against, so the script measures the contrast and picks white or near-black accordingly. It already made that call: in dark mode the teal button uses dark text, because white would have failed. The website hardcodes white and its own notes admit it is only checked for the default colour.
+
+  **What is still to do:** the colour list currently holds two communities, because the real colours for the other nine live in the production database and I have not read them. And roughly 128 places still set an icon's colour by hand — those become unnecessary once the single colour is in place, and removing them is the next step. So this is the mechanism proven, not the job finished.
+
+- **A flaw in my own checking, worth recording.** I had been verifying type-safety with a command that printed "typecheck OK" **whether or not it passed** — the way it was written, the success message ran unconditionally. Real errors did still appear in the output, and I caught and fixed each one I saw, but the reassuring line at the end was meaningless.
+
+  That is the fourth instance this week of the same shape: something reporting success while proving nothing. The others were in the app and its tests; this one was in how I was checking my own work. Verification now gates on the actual result, and every check was re-run properly.
+
 - 🔴 **Found by accident, and more important than the fix that found it: the screenshot check could not see most changes to the app.** After fixing the rounding, I compared the app against its saved reference pictures to confirm the change. The check reported **"0 pixels different — everything matches"**. I had just measured the corners changing from 26 to 18 points, so both things could not be true.
 
   Counting the differing pixels by hand gave **9,168** — the check was reporting 40. The cause is a tolerance setting: the check ignored any colour difference smaller than a certain amount, and this app is largely **light grey panels on white cards**, which are only a shade apart. So an entire class of change was invisible to it: a panel moving, a corner rounding differently, one surface swapped for a similar one. It would have said "perfect match" to all of them.

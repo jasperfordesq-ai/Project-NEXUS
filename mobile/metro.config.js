@@ -58,7 +58,19 @@ config.transformer.getTransformOptions = async () => ({
   },
 });
 
+// Per-community accent themes must be REGISTERED at build time: uniwind compiles the
+// CSS variables into the bundle and offers no runtime setter for an arbitrary colour,
+// so `Uniwind.setTheme()` can only reach themes named here. The names are derived from
+// config/tenant-palettes.json rather than written out, so this list and the generated
+// CSS cannot drift apart.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const palette = require('./config/tenant-palettes.json');
+const tenantThemes = Object.keys(palette.tenants ?? {})
+  .sort()
+  .flatMap((slug) => ['light', 'dark'].map((scheme) => `t-${slug}-${scheme}`));
+
 module.exports = withUniwindConfig(config, {
   cssEntryFile: './global.css',
   dtsFile: './uniwind-types.d.ts',
+  extraThemes: tenantThemes,
 });

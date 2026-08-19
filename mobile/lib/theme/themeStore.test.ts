@@ -3,7 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-const mockSetTheme = jest.fn<void, ['light' | 'dark']>();
+// Typed as a plain string, not 'light' | 'dark': the store now also passes generated
+// per-community theme names such as `t-agoris-dark`.
+const mockSetTheme = jest.fn<void, [string]>();
 const mockSetColorScheme = jest.fn<void, ['light' | 'dark' | null]>();
 const mockGetColorScheme = jest.fn<'light' | 'dark', []>(() => 'dark');
 const mockAddChangeListener = jest.fn<
@@ -22,7 +24,13 @@ jest.mock('react-native', () => ({
 }));
 
 jest.mock('uniwind', () => ({
-  Uniwind: { setTheme: (theme: 'light' | 'dark') => mockSetTheme(theme) },
+  Uniwind: {
+    setTheme: (theme: string) => mockSetTheme(theme),
+    // The store checks membership before switching, so the mock has to advertise which
+    // themes exist. Deliberately includes ONE tenant theme and omits another, so the
+    // fallback path is exercised rather than assumed.
+    themes: ['light', 'dark', 't-agoris-light', 't-agoris-dark'],
+  },
 }));
 
 jest.mock('@/lib/storage', () => ({
@@ -126,5 +134,64 @@ describe('themeStore', () => {
 
     expect(themeStore.getMode()).toBe('light');
     expect(themeStore.getSnapshot()).toBe('light');
+  });
+});
+
+describe('per-community accent', () => {
+  beforeEach(() => {
+    themeStore.__resetForTests();
+    mockSetTheme.mockClear();
+  });
+
+  it('switches to the community theme when this bundle carries one', () => {
+    themeStore.setTenant('agoris');
+
+    // Default scheme in tests is dark, so the dark variant is the expected pick.
+    expect(mockSetTheme).toHaveBeenCalledWith('t-agoris-dark');
+    expect(themeStore.getTenantSlug()).toBe('agoris');
+  });
+
+  it('🔴 falls back to the platform theme for a community with no palette', () => {
+    // The branch that stops a crash. `Uniwind.setTheme` THROWS on an unregistered name,
+    // so a community that signed up after this build shipped would take the app down on
+    // launch. Falling back means they see consistent default colours instead.
+    themeStore.setTenant('a-community-added-after-this-build');
+
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetTheme).not.toHaveBeenCalledWith(expect.stringContaining('a-community-added'));
+  });
+
+  it('reports whether a community has a palette in this bundle', () => {
+    // Lets the app notice a stale build rather than quietly looking generic.
+    expect(themeStore.hasThemeFor('agoris')).toBe(true);
+    expect(themeStore.hasThemeFor('not-shipped-yet')).toBe(false);
+  });
+
+  it('keeps the community accent across a light/dark change', () => {
+    themeStore.setTenant('agoris');
+    mockSetTheme.mockClear();
+
+    themeStore.setMode('light');
+
+    expect(mockSetTheme).toHaveBeenCalledWith('t-agoris-light');
+  });
+
+  it('returns to the platform accent when the community is cleared', () => {
+    themeStore.setTenant('agoris');
+    mockSetTheme.mockClear();
+
+    themeStore.setTenant(null);
+
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(themeStore.getTenantSlug()).toBeNull();
+  });
+
+  it('normalises the slug and ignores a repeat of the same one', () => {
+    themeStore.setTenant('  AGORIS  ');
+    expect(themeStore.getTenantSlug()).toBe('agoris');
+
+    mockSetTheme.mockClear();
+    themeStore.setTenant('agoris');
+    expect(mockSetTheme).not.toHaveBeenCalled();
   });
 });

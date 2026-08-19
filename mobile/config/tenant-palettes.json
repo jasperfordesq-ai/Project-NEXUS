@@ -1,0 +1,34 @@
+{
+  "$comment": [
+    "Per-community accent colours for the mobile app.",
+    "",
+    "WHY THIS FILE EXISTS. HeroUI Native resolves its accent from a CSS variable that",
+    "uniwind compiles at BUILD time, and neither library exposes a way to change an",
+    "arbitrary colour while the app is running (verified against uniwind@1.7.0 and",
+    "heroui-native@1.0.4). The web app sets the same variable at runtime; mobile cannot.",
+    "So the colours have to be known when the bundle is built, and this is where they",
+    "are declared. scripts/generate-tenant-themes.mjs turns them into named uniwind",
+    "themes and lib/theme/themeStore.ts selects one once the tenant is known.",
+    "",
+    "ADDING A COMMUNITY. Add an entry, run `npm run themes:generate`, commit the",
+    "generated CSS, and ship it with `npm run update:production` — the CSS lives in the",
+    "JS bundle, so this reaches devices as an over-the-air update and does NOT need an",
+    "app-store release. Until that update lands, a new community falls back to the",
+    "platform default accent, which looks deliberate rather than broken.",
+    "",
+    "`accent` is the community's own brand colour as stored in the database at",
+    "tenants.configuration.primary_color. `accentDark` is optional: when omitted the",
+    "generator lightens the accent for dark mode, mirroring what the platform default",
+    "does between its own light and dark values."
+  ],
+  "tenants": {
+    "hour-timebank": {
+      "accent": "#006FEE",
+      "note": "No primary_color set in the database, so this is the platform default NEXUS blue."
+    },
+    "agoris": {
+      "accent": "#0f766e",
+      "note": "Teal. The only local tenant with a real primary_color, so it is the test case for a community whose colour is nothing like the platform default."
+    }
+  }
+}
