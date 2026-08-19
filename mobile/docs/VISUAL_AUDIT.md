@@ -21,8 +21,11 @@ can and accepts live data, because a person is going to look at the images. Mixi
 them would either flood the comparison with false regressions or hold the sweep down
 to six screens and find nothing.
 
-Coverage of this pass: **16 screens reached of 26 attempted**, light scheme only.
-Not a complete audit — see [Gaps in this pass](#gaps-in-this-pass).
+Coverage: **31 screens in light and 31 in dark**, of 33 attempted (second pass,
+2026-08-19). The first pass reached only 16 of 26 — see
+[How the sweep was made reliable](#how-the-sweep-was-made-reliable) for what was
+wrong with it. Still not a complete audit — see
+[Gaps in this pass](#gaps-in-this-pass).
 
 ---
 
@@ -85,7 +88,38 @@ screen:
 | `--accent` in `global.css` | indigo/violet, `oklch(0.55 0.20 280)` | every HeroUI `Button`, tab indicator, chip |
 | `usePrimaryColor()` | **the tenant's own brand colour** (blue for `hour-timebank`), falling back to `#006FEE` | 115 files that colour something themselves |
 
-Seen in this pass:
+### It happens INSIDE single controls, 128 times
+
+The second pass found the sharpest example of this, and it is worse than "different
+components disagree". On the Wallet screen:
+
+> **The Back button's arrow is blue and the word "Back" is purple.** One button.
+
+The cause is a pattern repeated throughout the app:
+
+```tsx
+<HeroButton variant="secondary" onPress={onBack}>
+  <Ionicons name="arrow-back-outline" size={16} color={primary} />  {/* tenant blue */}
+  <HeroButton.Label>{t('…')}</HeroButton.Label>                     {/* HeroUI indigo */}
+</HeroButton>
+```
+
+The icon is explicitly given the tenant's colour; the label is left to HeroUI and
+gets the indigo accent. **Counted across `app/` and `components/`: 128 controls in
+48 files** pair a tenant-coloured icon with a HeroUI-coloured label. Worst offenders:
+
+| Controls | File |
+|---|---|
+| 10 | `components/federation/FederationDirectoryScreen.tsx` |
+| 9 | `app/(modals)/event-detail.tsx` |
+| 8 | `app/(modals)/group-detail.tsx` |
+| 7 | `app/(modals)/marketplace-detail.tsx` |
+| 6 | `app/(modals)/job-detail.tsx` |
+| 6 | `app/(modals)/wallet.tsx` |
+
+### And it is inconsistent even between neighbours
+
+Also seen:
 
 - **Login:** the logo tile is blue, the "Sign in" button is indigo.
 - **More:** the card's top bar is blue, "Edit profile" is a blue button, "View
@@ -93,7 +127,17 @@ Seen in this pass:
   one card.
 - **Listings:** "Recommended" is a blue pill, "Newest" is indigo text, "Near me" and
   "Filters" are indigo, the "All" tab underline is indigo while its icon is blue.
+- **Wallet:** "Send credits" is a blue button, "Donate" beside it has an indigo
+  label and a blue heart.
 - **Feed:** icons blue, the "For You" underline indigo, "View post" indigo.
+
+Some buttons *are* forced to the tenant colour with an explicit
+`style={{ backgroundColor: primary }}` — Polls' "Create poll" and Listings' "+" are
+correctly blue. That workaround exists in some places and not others, which is what
+makes the result look careless rather than merely purple.
+
+**Dark mode has the same split**, with the indigo lightened: the Sign in button is
+light violet against the same blue logo.
 
 **Why it happens.** App code never writes `bg-accent` — only 2 files reference those
 tokens. The indigo comes from inside HeroUI Native's own components, which resolve
@@ -134,9 +178,35 @@ branding — a core selling point — is silently ignored on mobile.
 Deliberately **not** changed here: any of these repaints every screen in the app,
 and choosing between "consistent" and "per-tenant branded" is a product call.
 
+🔴 **Do not fix the 128 split controls before that decision is made.** The repair for
+a split control is to put its icon and its label on the same colour source — but
+*which* source is exactly what is undecided. Doing it now means either touching 128
+sites twice or guessing on the owner's behalf.
+
 ---
 
-## 3. OPEN — the feed's filter row is clipped mid-word
+## 3. OPEN — scrolled content slides under the clock
+
+On any scrollable screen, content scrolls up behind the status bar with nothing
+behind it, so member-entered text collides with the clock and battery icons. Clearest
+on the registration form, where the "Last name" field and the time overlap and both
+become hard to read.
+
+This is systemic rather than one screen's mistake. The app is edge-to-edge — the
+default on Expo SDK 54, and required by Android 15 — so the status bar is transparent
+and content draws behind it. `app/_layout.tsx` sets `<StatusBar style={…} />`, which
+only chooses the icon colour; nothing paints a background. Screens do apply
+`paddingTop: insets.top`, which correctly positions content at rest but does not
+stop it scrolling underneath.
+
+The usual fix is a small scrim or an opaque strip the height of the inset behind the
+status bar. Not applied here because it belongs in the root layout and affects every
+screen in the app — worth doing deliberately rather than as a side-effect of a bug
+hunt.
+
+---
+
+## 4. OPEN — the feed's filter row is clipped mid-word
 
 On the Community Feed the horizontal filter chips (`All`, `Following`, `Saved`,
 `Posts`, `Exchanges`, …) run past the card's right edge and are cut off mid-word —
@@ -149,7 +219,7 @@ fixed here because it needs a look at the card's padding and the scroller's
 
 ---
 
-## 4. OPEN — signed-out links do not look like links
+## 5. OPEN — signed-out links do not look like links
 
 On the login screen, "Forgot password?" and "Switch community" are bold, near-black
 text with no colour, underline or button shape. "Forgot password?" in particular
@@ -160,11 +230,44 @@ defect — recorded so it is a decision rather than an oversight.
 
 ---
 
-## 5. OPEN — a feed card states the same fact three times
+## 6. OPEN — a feed card states the same fact three times
 
 The level-up card renders "E2E UserA reached 3", then "Level 3", then "Reached
 Level 3!" — the same information three times in one card, and the first phrasing is
 missing the word "Level". A copy fix, in the gamification feed card.
+
+---
+
+## How the sweep was made reliable
+
+The first pass reached 16 of 26 screens. Both failures were in the sweep, not the
+app, and both are now written into the flow as rules:
+
+1. **Never press `back` to leave a screen.** On Android a `back` with nothing to
+   dismiss navigates, and enough of them exit the app. The first version lost 22
+   screens that way and photographed the phone's home screen as "the register page".
+   Every block now returns to a known state with `launchApp` instead.
+2. **Never chain one screen off another.** The first version tapped "More" to reach
+   each destination, which worked until the Groups screen — that opens *over* the tab
+   bar, so every later `tapOn: "More"` failed and ten screens vanished at once. Each
+   block is now independent: relaunch, land on the feed, navigate once, photograph.
+   Slower, and it cannot cascade.
+3. **Partial text does not match.** Maestro matches the whole text, so "Forgot" never
+   matched "Forgot password?" — it warned and did nothing, which reads as success.
+
+Result: 31 of 33 screens, in both schemes. Only "Notifications" is still unreachable
+from the More menu.
+
+---
+
+## Not a bug: a light strip down the right edge in dark mode
+
+Worth recording because it looks alarming and is not real. Five dark screenshots show
+a pale vertical strip at the right edge. Sampling the same column across all 62
+images showed it on the *same five* screens in both schemes — darker than the content
+in light mode, lighter in dark. That is the Android scrollbar, which contrasts against
+whatever is behind it. Those five are simply the screens that were scrollable at
+capture time. The pixel-comparison mode already crops that column for this reason.
 
 ---
 
@@ -188,13 +291,30 @@ reported as a P1, and because it is the second time in this codebase that a stra
 
 Honest coverage, so nobody reads this as "the app has been audited":
 
-- **10 of 26 attempted screens were not reached.** After the Groups screen the tab
-  bar was no longer tappable — that screen opens over it — so Exchanges, Explore,
-  Volunteering, Notifications, Settings, Profile and the listing-detail screens were
-  never photographed. The wallet block also failed. The sweep flow needs a reliable
-  way back to the tab bar before those can be covered.
-- **Dark mode has not been swept at all.** Every finding above is light scheme.
-- **Only one device size.** No small phone, no tablet, no large font setting — and
-  large text is where clipped labels usually appear.
-- **~121 screens still have no picture of any kind.**
-- Nothing here was checked against a real phone; this is an emulator.
+- **~106 screens still have no picture of any kind.** 31 of roughly 137 are covered.
+- **"Notifications" could not be reached** from the More menu and remains
+  unphotographed.
+- **Only one device size, and default font size.** No small phone, no tablet, no
+  large-text setting — and large text is where clipped labels usually appear, so this
+  is a likely source of further findings.
+- **Nothing was checked against a real phone.** This is an emulator throughout.
+- **Screens behind an action are untouched** — anything reached by submitting a form,
+  opening a member's profile, or entering a conversation. The sweep only walks
+  navigation.
+- **No screen was checked for a broken or slow network**, which is where loading and
+  error states live.
+
+---
+
+## Worth saying: most screens are fine
+
+This document lists problems, so it reads worse than the app looks. For balance: of
+31 screens photographed, most had nothing wrong with them. Polls is a good example —
+a clear header, a correctly blue "Create poll" button, and a proper empty state
+("No polls yet — when members create polls, they will appear here") rather than a
+blank area. The registration form's password hint correctly says "At least 12
+characters", matching the real rule.
+
+The two systemic findings above — the brand-colour split and content sliding under
+the clock — account for most of what makes the app feel unfinished, and both are
+single decisions rather than long lists of repairs.

@@ -37,6 +37,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Recorded a 62-value improvement in the PHP translation ceiling.** `.github/php-lang-untranslated-baseline.json` drops from 258 to 196 untranslated values, retiring the Irish `govuk_alpha_courses` (48), `govuk_alpha_federation` (13) and `govuk_alpha_commerce` (1) entries that earlier translation work had already cleared but never re-baselined.
 
+- **Second look at the mobile app: 31 screens in both light and dark, up from 16 in light only.** The first sweep stopped early twice, both times because of how it was written rather than anything wrong with the app. It pressed "back" to leave screens, which on Android walks out of the app when there is nothing to dismiss — that lost 22 screens and photographed the phone's home screen as though it were the sign-up page. It also reached each screen by tapping through the previous one, which worked until the Groups screen, which opens *over* the tab bar and took ten screens down with it. Each screen is now visited independently, so nothing can cascade.
+
+- **The two-colour problem is worse than first reported: it happens inside single buttons, 128 times.** The clearest example is on the Wallet screen, where **the Back button's arrow is blue and the word "Back" is purple** — one button, two brand colours. The cause is one pattern repeated across the app: the icon is explicitly given the community's brand colour while the text beside it is left to the design library, which uses purple. Counted properly: **128 controls across 48 files.** "Donate" on the wallet has a blue heart and a purple label; "Send credits" next to it is a fully blue button.
+
+  Some buttons *are* forced to the community colour by hand — Polls' "Create poll" and the "+" on Listings are correctly blue. That the workaround exists in some places and not others is what makes the app look careless rather than simply purple.
+
+  🔴 **Still not fixed, and deliberately so.** Repairing a two-tone button means putting its icon and its label on the same colour — but which colour is exactly the decision that is outstanding. Doing it now means either touching 128 places twice or guessing on your behalf.
+
+- **Found a second systemic problem: text scrolls up underneath the clock.** On any screen you can scroll, content passes behind the status bar with nothing behind it, so what a member has typed collides with the time and battery icons and both become hard to read. Clearest on the sign-up form, where the surname field and the clock overlap.
+
+  This is not one screen's mistake. The app draws edge-to-edge — the default for our Expo version, and required by Android 15 — and nothing paints a background behind the status bar. The usual fix is a thin shaded strip the height of that bar. Left alone for now because it belongs in the app's root layout and changes every screen, which deserves a deliberate decision rather than being slipped in during a bug hunt.
+
+- **Two alarming-looking things checked and cleared.** A pale stripe down the right edge of five dark screenshots turned out to be the Android scrollbar — sampling that column across all 62 images showed it on the same five screens in both light and dark, darker than light content and lighter than dark. And a completely blank screenshot of the More menu was the sweep's own stray "back" press, not a rendering fault; the screen was confirmed fine by a separate check.
+
+  Recorded because both would have been reported as serious faults, and neither is real.
+
+- **For balance: most of the mobile app is fine.** Of 31 screens photographed, most had nothing wrong. Polls is a good example — clear heading, correctly coloured button, and a proper "No polls yet" message instead of a blank space. The sign-up form's password hint correctly says twelve characters, which is the real rule. The two systemic findings above account for most of what makes the app feel unfinished, and both are single decisions rather than long repair lists.
+
+  **Honest coverage:** about 106 of roughly 137 screens still have no picture. Nothing was tested at a large font size, on a small screen, on a tablet, on a real phone, or on a broken network — all places where more will turn up.
+
 - **Every listing card in the mobile app had a blank grey circle on it. It was meant to be an arrow.** Nobody had ever looked at the app's screens, so it shipped that way. The cause is worth knowing because it will happen again: the shared card component from our design library adds 16 points of padding on all sides by default, and setting a size on it does not remove that padding. The circle was 36 points across, so 32 of those went to padding and the arrow was drawn into the 4 points left over. It did not error or disappear — it drew a few pixels wide, which on a phone looks like an empty button.
 
   Measured rather than guessed: on the same card the heart icon drew at 45×47 pixels and the arrow at **10×12**. After the fix the arrow measures 48×50 and is visible. There is now a check that scans for the same mistake anywhere else in the app and names the file, line and fix — and it was confirmed to go red when the fix is removed.

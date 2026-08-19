@@ -16,11 +16,23 @@
 # `.maestro/config.yaml` declares `flows: - "*.yaml"`, which matches the top level
 # only, so `npm run e2e` does not run this.
 #
-# 🔴 EVERY NAVIGATION IS WRAPPED IN runFlow WITH optional: true. A sweep that stops
-# at the first screen it cannot reach photographs three screens and reports success,
-# which is the failure mode this whole exercise exists to avoid. A screen that
-# cannot be reached is itself a finding, and the missing image is the evidence — so
-# the sweep continues and the gap is visible in the output directory.
+# ── The two rules this flow is built around, both learned the hard way ──────────
+#
+# 🔴 1. NEVER press `back` to get out of a screen. On Android a `back` with nothing
+# to dismiss NAVIGATES, and enough of them walk out of the app entirely. The first
+# version of this flow lost 22 screens that way and photographed the phone's home
+# screen as "the register page". Same trap as `.maestro/09-registration-flow.yaml`.
+# Every block below returns to a known state with `launchApp` instead.
+#
+# 🔴 2. NEVER chain one screen off another. The second version tapped "More" to
+# reach each destination, which worked until the Groups screen — that one opens OVER
+# the tab bar, so every subsequent `tapOn: "More"` failed and ten screens went
+# missing. Each block is now independent: relaunch, land on the feed, navigate once,
+# photograph. It costs a few seconds per screen and cannot cascade.
+#
+# 🔴 3. Partial text does not match. Maestro matches the WHOLE text, so "Forgot"
+# never matched "Forgot password?" — it warned and did nothing. Use the full string
+# or an explicit `.*`.
 #
 # Run:
 #   node scripts/screenshots.mjs sweep
@@ -28,6 +40,7 @@
 
 appId: ie.project.nexus
 ---
+# ── Sign in once, so the session is cached for every relaunch below ────────────
 - launchApp:
     clearState: true
 
@@ -48,22 +61,14 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: sweep-01-login
 
-# 🔴 The signed-out sub-screens (forgot password, register) are captured at the
-# VERY END of this flow, not here. They were here first and it cost 22 screens:
-# `tapOn` with a partial string WARNED because Maestro matches the whole text, the
-# following `- back` then fired with nothing to dismiss, and on Android that
-# navigates — straight out of the app. `sweep-03-register.png` came out as the
-# phone's home screen and every step after it failed. Same trap as
-# `.maestro/09-registration-flow.yaml`. Anything that might exit the app now runs
-# last, where it can only cost itself.
-
-# ── Sign in ───────────────────────────────────────────────────────────────────
 - tapOn:
     id: "email-input"
 - inputText: "${TEST_EMAIL}"
 - tapOn:
     id: "password-input"
 - inputText: "${TEST_PASSWORD}"
+# Needed here: the submit button is below the keyboard. This is the one `back` in
+# the flow and it has a keyboard to dismiss, which is the case where it is safe.
 - back
 - tapOn:
     id: "login-submit"
@@ -73,32 +78,32 @@ appId: ie.project.nexus
     timeout: 30000
 - waitForAnimationToEnd:
     timeout: 8000
-- takeScreenshot: sweep-04-home-feed
+- takeScreenshot: sweep-02-home-feed
 
-# The feed scrolled down: the top of a feed is the most-designed part of any app
-# and the part below the fold is where spacing and truncation problems live.
 - runFlow:
     optional: true
     commands:
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-05-home-feed-scrolled
+      - takeScreenshot: sweep-03-home-feed-scrolled
 
-# ── Each tab-bar destination, and one scroll on the list-heavy ones ───────────
+# ── The four other tab-bar destinations ────────────────────────────────────────
 - runFlow:
     optional: true
     commands:
       - tapOn: "Listings"
+      # Listings needs TWO settle passes: its cards animate in after the header is
+      # already present.
       - waitForAnimationToEnd:
           timeout: 8000
       - waitForAnimationToEnd:
           timeout: 8000
-      - takeScreenshot: sweep-06-listings
+      - takeScreenshot: sweep-04-listings
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-07-listings-scrolled
+      - takeScreenshot: sweep-05-listings-scrolled
 
 - runFlow:
     optional: true
@@ -106,7 +111,7 @@ appId: ie.project.nexus
       - tapOn: "Messages"
       - waitForAnimationToEnd:
           timeout: 8000
-      - takeScreenshot: sweep-08-messages
+      - takeScreenshot: sweep-06-messages
 
 - runFlow:
     optional: true
@@ -114,169 +119,344 @@ appId: ie.project.nexus
       - tapOn: "Create"
       - waitForAnimationToEnd:
           timeout: 8000
-      - takeScreenshot: sweep-09-create
-      - back
+      - takeScreenshot: sweep-07-create
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
       - waitForAnimationToEnd:
           timeout: 8000
-      - takeScreenshot: sweep-10-more
+      - takeScreenshot: sweep-08-more
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-11-more-scrolled
+      - takeScreenshot: sweep-09-more-scrolled
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-10-more-scrolled-2
 
 # ── Screens behind the More menu ──────────────────────────────────────────────
 #
-# Each is reached from a freshly-tapped More tab rather than by chaining `back`,
-# because a failed `back` in a chain silently leaves the next screen photographing
-# whatever was already open — which produces plausible images of the wrong screen.
+# One independent block per destination. `scrollUntilVisible` finds items below the
+# fold, which a bare `tapOn` cannot. Every block starts from a relaunch so a screen
+# that hides the tab bar cannot cost the ones after it — see rule 2 above.
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 6000
       - tapOn: "View wallet"
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-12-wallet
+          timeout: 12000
+      - takeScreenshot: sweep-11-wallet
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-13-wallet-scrolled
+      - takeScreenshot: sweep-12-wallet-scrolled
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Events"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-14-events
+          timeout: 6000
+      - tapOn: "Edit profile"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-13-edit-profile
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Members|Directory"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-15-members
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Discover"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Discover"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-14-discover
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Groups"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-16-groups
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Search"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Search"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-15-search
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Exchanges"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-17-exchanges
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Jobs"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Jobs"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-16-jobs
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Explore|Search"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-18-explore
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Events"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Events"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-17-events
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Volunteering"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-19-volunteering
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Groups"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Groups"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-18-groups
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Notifications"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-20-notifications
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Group exchanges"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Group exchanges"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-19-group-exchanges
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Settings"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-21-settings
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Polls"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Polls"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-20-polls
+
+- runFlow:
+    optional: true
+    commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
+      - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Ideas"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Ideas"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-21-ideas
+
+- runFlow:
+    optional: true
+    commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
+      - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Browse Members"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Browse Members"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-22-members
+
+- runFlow:
+    optional: true
+    commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
+      - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Volunteering"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Volunteering"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-23-volunteering
+
+- runFlow:
+    optional: true
+    commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
+      - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Settings"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Settings"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-24-settings
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-22-settings-scrolled
+      - takeScreenshot: sweep-25-settings-scrolled
 
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "More"
-      - tapOn:
-          text: "Profile|My profile"
-          optional: true
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-23-profile
+          timeout: 6000
+      - scrollUntilVisible:
+          element: "Notifications"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "Notifications"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-26-notifications
 
-# ── One detail screen, because lists and details fail differently ─────────────
-# A list screen shows truncation and spacing problems; a detail screen shows long
-# text, empty fields and image handling. Tapping the first listing is the cheapest
-# way to reach one without hard-coding an id that seeded data may not have.
+# ── A detail screen, because lists and details fail differently ────────────────
+# A list shows truncation and spacing problems; a detail screen shows long text,
+# empty fields and image handling. Tapping the first card's title is more robust
+# than a coordinate, which moves whenever the layout does.
 - runFlow:
     optional: true
     commands:
+      - launchApp:
+          clearState: false
+      - extendedWaitUntil:
+          visible: "Community Feed"
+          timeout: 30000
       - tapOn: "Listings"
       - waitForAnimationToEnd:
           timeout: 8000
-      - tapOn:
-          point: "50%,45%"
       - waitForAnimationToEnd:
-          timeout: 10000
-      - takeScreenshot: sweep-24-listing-detail
+          timeout: 8000
+      - tapOn: "E2E Fixture Listing.*"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - takeScreenshot: sweep-27-listing-detail
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-25-listing-detail-scrolled
+      - takeScreenshot: sweep-28-listing-detail-scrolled
 
-# ── Signed-out sub-screens — LAST, because `back` can exit the app ────────────
+# ── Signed-out sub-screens — LAST, because these need a signed-out session ─────
 #
-# `when: visible:` is the guard that makes the following tap safe: if the link is
-# not there the whole block is skipped, so no `back` fires with nothing to dismiss.
-# The exact strings come from reading `sweep-01-login.png` — Maestro matches the
-# WHOLE text, so "Forgot" never matched "Forgot password?" and reported only a
-# warning while doing nothing.
+# `when: visible:` guards each tap: if the link is not there the block is skipped
+# rather than tapping nothing and continuing on a wrong screen.
 - launchApp:
     clearState: true
 
@@ -298,11 +478,9 @@ appId: ie.project.nexus
     commands:
       - tapOn: "Forgot password.*"
       - waitForAnimationToEnd:
-          timeout: 6000
-      - takeScreenshot: sweep-26-forgot-password
+          timeout: 8000
+      - takeScreenshot: sweep-29-forgot-password
 
-# A fresh launch rather than `back`: it reaches the same place and cannot walk out
-# of the app if the tap above did not navigate.
 - launchApp:
     clearState: false
 - extendedWaitUntil:
@@ -317,12 +495,12 @@ appId: ie.project.nexus
     commands:
       - tapOn: "Create account"
       - waitForAnimationToEnd:
-          timeout: 6000
-      - takeScreenshot: sweep-27-register
+          timeout: 8000
+      - takeScreenshot: sweep-30-register
       - scroll
       - waitForAnimationToEnd:
           timeout: 4000
-      - takeScreenshot: sweep-28-register-scrolled
+      - takeScreenshot: sweep-31-register-scrolled
 
 - launchApp:
     clearState: false
@@ -338,5 +516,5 @@ appId: ie.project.nexus
     commands:
       - tapOn: "Switch community"
       - waitForAnimationToEnd:
-          timeout: 6000
-      - takeScreenshot: sweep-29-switch-community
+          timeout: 8000
+      - takeScreenshot: sweep-32-switch-community
