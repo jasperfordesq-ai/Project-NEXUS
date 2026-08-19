@@ -3350,6 +3350,10 @@ router.get('/new', requireAuth, asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha.events.create_title'),
     categories,
     setupErrorMessage,
+    // The create handler has always sent group_id to the API; until now nothing
+    // could set it, so an event could never be attached to a group. The group
+    // page now links here with ?group_id=N and the form carries it through.
+    groupId: positiveInteger(req.query.group_id) || null,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));
@@ -3423,6 +3427,9 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
       errors: errorList,
       values,
       categories,
+      // Keep the group across a failed submit, or correcting one field would
+      // silently detach the event from the group the member started in.
+      groupId: positiveInteger(req.body.group_id) || null,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   };

@@ -2010,6 +2010,7 @@ return [
         'new_tag' => 'New',
         'view' => 'View',
         'mark_read' => 'Mark as read',
+        'mark_read_and_view' => 'Mark as read and view',
         'mark_group_read' => 'Mark all as read',
         'group_tag' => ':count grouped',
         'actors_label' => 'From :names',
@@ -2263,6 +2264,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'Group events',
+        'create_event_link' => 'Create an event for this group',
+        'create_event_for_group_notice' => 'This event will be created for the group you came from.',
         'events_description' => 'Upcoming events organised by this group.',
         'events_empty' => 'This group has no upcoming events.',
         'events_members_only' => 'Join this group to see its events.',

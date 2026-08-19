@@ -7,6 +7,7 @@ const express = require('express');
 const { requireAuth } = require('../middleware/auth');
 const {
   getNotifications,
+  getNotification,
   getGroupedNotifications,
   getNotificationUnreadCount,
   markNotificationRead,
@@ -166,7 +167,13 @@ router.post('/group/read', asyncRoute(async (req, res) => {
 // Mark single notification as read
 router.post('/:id/read', asyncRoute(async (req, res) => {
   const { id } = req.params;
-  const { redirect } = req.body;
+  // 🔴 The destination is resolved from the notification's OWN record, never from
+  // the request. This route used to accept a `redirect` path in the body — a
+  // client-supplied redirect target that nothing ever sent (template-source.test.js
+  // forbids emitting one), leaving an open-redirect surface with no caller. The
+  // form now posts only the flag `follow=1`; the server looks up where that
+  // notification points, so a crafted request cannot choose the destination.
+  const follow = boolFrom(req.body.follow);
 
   try {
     await markNotificationRead(req.token, id);
@@ -176,10 +183,21 @@ router.post('/:id/read', asyncRoute(async (req, res) => {
     return redirectTo(res, NOTIFICATIONS_PATH);
   }
 
-  // If redirect URL provided, validate it to prevent open redirect attacks
-  if (redirect) {
-    const safeRedirect = validateReturnUrl(redirect, NOTIFICATIONS_PATH);
-    return redirectTo(res, safeRedirect);
+  if (follow) {
+    // A failure here must not lose the successful mark-as-read, so it falls back
+    // to the inbox rather than surfacing an error.
+    const target = await getNotification(req.token, id)
+      .then((result) => {
+        const row = dataFrom(result) || {};
+        return typeof row.link === 'string' ? row.link : '';
+      })
+      .catch((error) => {
+        if (error instanceof ApiError && error.status === 401) throw error;
+        return '';
+      });
+    if (target) {
+      return redirectTo(res, validateReturnUrl(target, NOTIFICATIONS_PATH));
+    }
   }
 
   redirectTo(res, NOTIFICATIONS_PATH);

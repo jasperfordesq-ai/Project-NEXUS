@@ -1986,6 +1986,7 @@ return [
         'new_tag' => 'Nieuw',
         'view' => 'Bekijken',
         'mark_read' => 'Als gelezen markeren',
+        'mark_read_and_view' => 'Markeren als gelezen en bekijken',
         'mark_group_read' => 'Alles als gelezen markeren',
         'group_tag' => ':count gegroepeerd',
         'actors_label' => 'Van :names',
@@ -2239,6 +2240,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'Groepsevenementen',
+        'create_event_link' => 'Een evenement voor deze groep aanmaken',
+        'create_event_for_group_notice' => 'Dit evenement wordt aangemaakt voor de groep waar u vandaan komt.',
         'events_description' => 'Aankomende evenementen georganiseerd door deze groep.',
         'events_empty' => 'Deze groep heeft geen aankomende evenementen.',
         'events_members_only' => 'Word lid van deze groep om de evenementen te zien.',

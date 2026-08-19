@@ -46,6 +46,10 @@
 
       <form action="{{ urlFor('/events/new') }}" method="post" enctype="multipart/form-data" novalidate data-validate-form data-validation-error-title="{{ t('states.error_title') }}" data-validation-error-prefix="{{ t('states.error_prefix') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% if groupId %}
+          <input type="hidden" name="group_id" value="{{ groupId }}">
+          <div class="govuk-inset-text">{{ t("groups_t1.create_event_for_group_notice") }}</div>
+        {% endif %}
 
         <fieldset class="govuk-fieldset">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">

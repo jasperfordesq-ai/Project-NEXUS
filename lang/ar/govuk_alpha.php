@@ -1986,6 +1986,7 @@ return [
         'new_tag' => 'جديد',
         'view' => 'عرض',
         'mark_read' => 'تحديد كمقروء',
+        'mark_read_and_view' => 'وضع علامة مقروء والعرض',
         'mark_group_read' => 'تحديد الكل كمقروء',
         'group_tag' => ':count مجمعة',
         'actors_label' => 'من :names',
@@ -2239,6 +2240,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'فعاليات المجموعة',
+        'create_event_link' => 'إنشاء فعالية لهذه المجموعة',
+        'create_event_for_group_notice' => 'سيتم إنشاء هذه الفعالية للمجموعة التي أتيت منها.',
         'events_description' => 'الفعاليات القادمة التي تنظمها هذه المجموعة.',
         'events_empty' => 'لا توجد فعاليات قادمة لهذه المجموعة.',
         'events_members_only' => 'انضم إلى هذه المجموعة لعرض فعالياتها.',

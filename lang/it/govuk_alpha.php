@@ -1986,6 +1986,7 @@ return [
         'new_tag' => 'Nuova',
         'view' => 'Visualizza',
         'mark_read' => 'Segna come letta',
+        'mark_read_and_view' => 'Segna come letto e visualizza',
         'mark_group_read' => 'Segna tutte come lette',
         'group_tag' => ':count raggruppato',
         'actors_label' => 'Da :names',
@@ -2239,6 +2240,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'Eventi del gruppo',
+        'create_event_link' => 'Crea un evento per questo gruppo',
+        'create_event_for_group_notice' => 'Questo evento sarà creato per il gruppo da cui provieni.',
         'events_description' => 'Prossimi eventi organizzati da questo gruppo.',
         'events_empty' => 'Questo gruppo non ha eventi in programma.',
         'events_members_only' => 'Iscriviti al gruppo per vedere i suoi eventi.',

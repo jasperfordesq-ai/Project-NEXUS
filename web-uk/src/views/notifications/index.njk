@@ -87,6 +87,13 @@
               <form method="post" action="{{ urlFor('/notifications/' + (notification.id | string) + '/read') }}" class="nexus-alpha-linkform">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("notifications.mark_read") }}</button>
+                {# A named submit sends its value ONLY when it is the button clicked, so
+                   one form offers two outcomes with no JavaScript. It posts a FLAG, never
+                   a URL: the route resolves the destination from the notification itself,
+                   which is why no tenant-prefixed path is needed (or wanted) here. #}
+                {% if notificationLink %}
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" name="follow" value="1">{{ t("notifications.mark_read_and_view") }}</button>
+                {% endif %}
               </form>
             {% endif %}
             {% if not notification.isGrouped %}

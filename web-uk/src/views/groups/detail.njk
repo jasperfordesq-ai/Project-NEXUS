@@ -181,6 +181,13 @@
 
   <h2 class="govuk-heading-l" id="group-events">{{ t("groups_t1.events_title") }}</h2>
   <p class="govuk-body">{{ t("groups_t1.events_description") }}</p>
+  {# The create handler always accepted a group; this is the entry point that
+     was missing, so members could never actually make a group event. #}
+  {% if groupCanParticipate %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/events/new?group_id=' + (group.id | string)) }}">{{ t("groups_t1.create_event_link") }}</a>
+    </p>
+  {% endif %}
   {% if not groupCanParticipate and isPrivate %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.events_members_only") }}</p></div>
   {% elif events.length == 0 %}

@@ -51,6 +51,16 @@
           {% if tab == 'expired' %}
             <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/renew') }}" class="nexus-alpha-inline-form">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              {# The renew handler has always read duration_days (clamped to 90); the
+                 form sent nothing, so every renewal silently took the API default. #}
+              <div class="govuk-form-group govuk-!-margin-bottom-2">
+                <label class="govuk-label" for="renew-duration-{{ item.id }}">{{ t("govuk_alpha_commerce.my_listings.renew_duration_label") }}</label>
+                <select class="govuk-select" id="renew-duration-{{ item.id }}" name="duration_days">
+                  <option value="30">{{ t("govuk_alpha_commerce.my_listings.renew_days_30") }}</option>
+                  <option value="60">{{ t("govuk_alpha_commerce.my_listings.renew_days_60") }}</option>
+                  <option value="90">{{ t("govuk_alpha_commerce.my_listings.renew_days_90") }}</option>
+                </select>
+              </div>
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.action_renew") }}</button>
             </form>
           {% endif %}

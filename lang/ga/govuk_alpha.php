@@ -1988,6 +1988,7 @@ return [
         'new_tag' => 'Nua',
         'view' => 'Féach',
         'mark_read' => 'Marcáil mar léite',
+        'mark_read_and_view' => 'Marcáil mar léite agus féach',
         'mark_group_read' => 'Marcáil uile mar léite',
         'group_tag' => 'grúpáilte le :count',
         'actors_label' => 'Ó :names',
@@ -2241,6 +2242,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'Imeachtaí grúpa',
+        'create_event_link' => 'Cruthaigh imeacht don ghrúpa seo',
+        'create_event_for_group_notice' => 'Cruthófar an t-imeacht seo don ghrúpa as ar tháinig tú.',
         'events_description' => 'Imeachtaí atá le teacht eagraithe ag an ngrúpa seo.',
         'events_empty' => 'Níl aon imeachtaí atá le teacht ag an ngrúpa seo.',
         'events_members_only' => 'Glac le ballraíocht sa ghrúpa chun a chuid imeachtaí a fheiceáil.',

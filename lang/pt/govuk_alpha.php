@@ -1986,6 +1986,7 @@ return [
         'new_tag' => 'Nova',
         'view' => 'Ver',
         'mark_read' => 'Marcar como lida',
+        'mark_read_and_view' => 'Marcar como lido e ver',
         'mark_group_read' => 'Marcar todas como lidas',
         'group_tag' => ':count agrupado',
         'actors_label' => 'De :names',
@@ -2239,6 +2240,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'Eventos do grupo',
+        'create_event_link' => 'Criar um evento para este grupo',
+        'create_event_for_group_notice' => 'Este evento será criado para o grupo de onde veio.',
         'events_description' => 'Próximos eventos organizados por este grupo.',
         'events_empty' => 'Este grupo não tem eventos futuros.',
         'events_members_only' => 'Adira a este grupo para ver os seus eventos.',

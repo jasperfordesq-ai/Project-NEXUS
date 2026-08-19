@@ -1986,6 +1986,7 @@ return [
         'new_tag' => '新着',
         'view' => '表示',
         'mark_read' => '既読にする',
+        'mark_read_and_view' => '既読にして表示する',
         'mark_group_read' => 'すべて既読にする',
         'group_tag' => ':count件をグループ化',
         'actors_label' => ':namesから',
@@ -2239,6 +2240,8 @@ return [
     ],
     'groups_t1' => [
         'events_title' => 'グループイベント',
+        'create_event_link' => 'このグループのイベントを作成する',
+        'create_event_for_group_notice' => 'このイベントは、あなたが来たグループのために作成されます。',
         'events_description' => 'このグループが主催する今後のイベント。',
         'events_empty' => 'このグループには今後のイベントはありません。',
         'events_members_only' => 'イベントを見るにはこのグループに参加してください。',

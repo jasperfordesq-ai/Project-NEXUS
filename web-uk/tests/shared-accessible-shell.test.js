@@ -261,6 +261,7 @@ jest.mock('../src/lib/api', () => ({
   transferWalletCredits: jest.fn().mockResolvedValue({ data: { id: 99, type: 'debit', status: 'completed' } }),
   getUnreadCount: jest.fn().mockResolvedValue({ unreadCount: 0 }),
   getNotifications: jest.fn().mockResolvedValue({ data: [], meta: { cursor: null, has_more: false, per_page: 30 } }),
+  getNotification: jest.fn().mockResolvedValue({ data: {} }),
   getGroupedNotifications: jest.fn().mockResolvedValue({ data: [], meta: { cursor: null, has_more: false, per_page: 30 } }),
   getNotificationUnreadCount: jest.fn().mockResolvedValue({ data: { total: 0, categories: {} } }),
   markNotificationRead: jest.fn().mockResolvedValue({}),
@@ -17041,6 +17042,30 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/notifications');
     expect(api.markNotificationRead).toHaveBeenCalledWith('test-token', '7');
+
+    // "Mark as read and view" posts a FLAG, never a destination: the route reads
+    // the notification's own link, so a crafted request cannot pick where the
+    // member lands. The redirect is tenant-prefixed by redirectTo().
+    api.getNotification.mockResolvedValueOnce({ data: { id: 7, link: '/messages/12' } });
+    const followed = await agent
+      .post('/notifications/7/read')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], follow: '1' });
+
+    expect(followed.status).toBe(302);
+    expect(followed.headers.location).toBe('/messages/12');
+    expect(api.getNotification).toHaveBeenCalledWith('test-token', '7');
+
+    // An off-site link in the stored record is still refused by validateReturnUrl.
+    api.getNotification.mockResolvedValueOnce({ data: { id: 7, link: 'https://evil.example/x' } });
+    const refused = await agent
+      .post('/notifications/7/read')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], follow: '1' });
+
+    expect(refused.headers.location).toBe('/notifications');
   });
 
   it('submits a single notification delete through the Laravel v2 API helper', async () => {
@@ -25018,6 +25043,8 @@ describe('shared accessible frontend shell', () => {
     expect(page.status).toBe(200);
     expect(page.text).toContain('action="/events/new"');
     expect(page.text).toContain('enctype="multipart/form-data"');
+    // Without ?group_id the form must not smuggle an empty group through.
+    expect(page.text).not.toContain('name="group_id"');
     expect(page.text).toContain('name="image"');
     expect(page.text).toContain('name="start_time-day"');
     expect(page.text).toContain('name="end_time-day"');
@@ -33262,6 +33289,12 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Expired bike');
     expect(response.text).toContain('Ready to renew');
     expect(response.text).toContain('Renew');
+    // The renew handler has always read duration_days (clamped to 90); the form
+    // sent nothing, so every renewal silently took whatever the API defaulted to.
+    expect(response.text).toContain('name="duration_days"');
+    expect(response.text).toContain('Renew this listing for');
+    expect(response.text).toContain('>30 days<');
+    expect(response.text).toContain('>90 days<');
     expect(response.text).toContain('Delete');
     expect(response.text).toContain('href="/marketplace/42/edit"');
     expect(response.text).not.toContain('Active helmet');
