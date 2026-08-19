@@ -163,112 +163,65 @@ not a mechanical swap.
 
 ---
 
-## 2. OPEN — the app shows two different brand colours at once
+## 2. FIXED — the app showed two different brand colours at once
 
-**Severity: this is the reason the app "looks off". Needs an owner decision.**
+**This section said OPEN, "needs an owner decision", and "do not fix the 128 split
+controls before that decision is made". All three are now out of date: the decision was
+taken and the work is done. The original analysis is summarised rather than deleted,
+because the reasoning behind the chosen option still governs how new controls are built.**
 
-The client has two primary colours by construction, and both appear on the same
-screen:
+### What was wrong
 
-| Source | Value | Used by |
+The client had two primary colours by construction, and both appeared on the same screen:
+
+| Source | Value then | Used by |
 |---|---|---|
 | `--accent` in `global.css` | indigo/violet, `oklch(0.55 0.20 280)` | every HeroUI `Button`, tab indicator, chip |
-| `usePrimaryColor()` | **the tenant's own brand colour** (blue for `hour-timebank`), falling back to `#006FEE` | 115 files that colour something themselves |
+| `usePrimaryColor()` | the tenant's brand colour, falling back to `#006FEE` | 115 files that colour something themselves |
 
-### It happens INSIDE single controls, 128 times
+The sharpest example was inside a *single* control: on the Wallet screen the Back
+button's arrow was blue while the word "Back" was purple. **128 controls across 48 files**
+paired a tenant-coloured icon with a HeroUI-coloured label. App code never wrote
+`bg-accent` — the indigo came from inside HeroUI Native's own components resolving
+`--accent` from the compiled stylesheet, with nothing overriding it.
 
-The second pass found the sharpest example of this, and it is worse than "different
-components disagree". On the Wallet screen:
+### Why the obvious fix was impossible, and still is
 
-> **The Back button's arrow is blue and the word "Back" is purple.** One button.
+The web app solves this by setting `--accent` at runtime from the tenant's colour
+(`react-frontend/src/contexts/ThemeContext.tsx`). Mobile cannot: `uniwind` exports only a
+*reader* for CSS variables plus `ScopedTheme`, which swaps between **named** themes, and
+`heroui-native`'s provider accepts no colour override at all. There is no runtime setter
+for an arbitrary colour. That constraint is unchanged and is why the solution took the
+shape it did.
 
-The cause is a pattern repeated throughout the app:
+### What was actually done
 
-```tsx
-<HeroButton variant="secondary" onPress={onBack}>
-  <Ionicons name="arrow-back-outline" size={16} color={primary} />  {/* tenant blue */}
-  <HeroButton.Label>{t('…')}</HeroButton.Label>                     {/* HeroUI indigo */}
-</HeroButton>
-```
+1. **The default `--accent` was aligned to the NEXUS brand blue** in both schemes, so a
+   default-branded community has one accent rather than two. `global.css` now carries a
+   comment tying it to `FALLBACK_PRIMARY`, and `lib/theme/defaultAccent.test.ts` fails if
+   the two drift apart.
+2. **Per-community accents are real, via generated named themes.** `config/tenant-palettes.json`
+   feeds `scripts/generate-tenant-themes.mjs`, which emits one uniwind theme per community
+   per scheme; `themeStore.setTenant()` switches to it. An unregistered community falls
+   back to the default rather than throwing, so a community that signs up after a build
+   shipped looks deliberately plain instead of crashing.
+3. **Icons now follow their label** rather than being coloured independently.
+   `components/ui/AccentIcon.tsx` is used in **38 files**, and
+   `components/accentIconColour.test.ts` holds the rule.
+4. **~170 redundant accent overrides were swept**, and the dark-mode lift question was
+   settled — see commits `5252ab413` and `cff1c30de`.
 
-The icon is explicitly given the tenant's colour; the label is left to HeroUI and
-gets the indigo accent. **Counted across `app/` and `components/`: 128 controls in
-48 files** pair a tenant-coloured icon with a HeroUI-coloured label. Worst offenders:
+### What the owner still has to decide
 
-| Controls | File |
-|---|---|
-| 10 | `components/federation/FederationDirectoryScreen.tsx` |
-| 9 | `app/(modals)/event-detail.tsx` |
-| 8 | `app/(modals)/group-detail.tsx` |
-| 7 | `app/(modals)/marketplace-detail.tsx` |
-| 6 | `app/(modals)/job-detail.tsx` |
-| 6 | `app/(modals)/wallet.tsx` |
+🔴 **`config/tenant-palettes.json` holds a palette for `agoris` only — 1 of 11
+communities.** The other ten therefore render in the default NEXUS blue. That is not a
+bug and will not fail a gate; it is simply missing information that only the owner can
+supply. Adding a palette needs a rebuild or an over-the-air update, not a store release.
 
-### And it is inconsistent even between neighbours
+### What is still open here
 
-Also seen:
-
-- **Login:** the logo tile is blue, the "Sign in" button is indigo.
-- **More:** the card's top bar is blue, "Edit profile" is a blue button, "View
-  wallet" has indigo text, the avatar initials are indigo — four brand colours in
-  one card.
-- **Listings:** "Recommended" is a blue pill, "Newest" is indigo text, "Near me" and
-  "Filters" are indigo, the "All" tab underline is indigo while its icon is blue.
-- **Wallet:** "Send credits" is a blue button, "Donate" beside it has an indigo
-  label and a blue heart.
-- **Feed:** icons blue, the "For You" underline indigo, "View post" indigo.
-
-Some buttons *are* forced to the tenant colour with an explicit
-`style={{ backgroundColor: primary }}` — Polls' "Create poll" and Listings' "+" are
-correctly blue. That workaround exists in some places and not others, which is what
-makes the result look careless rather than merely purple.
-
-**Dark mode has the same split**, with the indigo lightened: the Sign in button is
-light violet against the same blue logo.
-
-**Why it happens.** App code never writes `bg-accent` — only 2 files reference those
-tokens. The indigo comes from inside HeroUI Native's own components, which resolve
-`--accent` from the compiled stylesheet. Nothing ever overrides it with the tenant's
-colour.
-
-**The web app fixed exactly this**, deliberately.
-`react-frontend/src/contexts/ThemeContext.tsx` sets `--accent` at runtime from the
-tenant's colour, commented *"Keep NEXUS and HeroUI v3 on one runtime accent
-source."* Mobile has the same two sources and no such bridge.
-
-🔴 **Mobile cannot currently do the same thing.** Checked, rather than assumed:
-
-- `uniwind@1.7.0` exports `useCSSVariable` (a reader) and `ScopedTheme`, which only
-  swaps between *named* themes. There is no runtime setter for an arbitrary colour.
-- `heroui-native@1.0.4`'s `HeroUINativeProvider` accepts `animation`, `toast`,
-  `devInfo` and text props — **no colours or theme override** (its own type
-  definitions say "Additional configuration options can be added in future
-  versions").
-
-**This matters more than it looks for a white-label platform.** For
-`hour-timebank` the clash is blue-versus-indigo, which reads as sloppy. For a
-community whose brand is green or orange it would be worse, and the tenant's
-branding — a core selling point — is silently ignored on mobile.
-
-**Options, none of them free:**
-
-1. **Align the hardcoded `--accent` to the NEXUS brand blue.** One place, removes the
-   visible clash for default-branded tenants. Still ignores per-tenant branding, so
-   it treats the symptom.
-2. **Drop `usePrimaryColor()` from the chrome and let indigo be the only accent.**
-   Consistent immediately, but removes per-tenant branding from mobile — a product
-   regression on a multi-tenant platform.
-3. **Build a per-tenant accent properly** — either a small accent context that
-   wrapped components consume explicitly, or wait for runtime CSS-variable support
-   in uniwind. The correct answer, and the largest.
-
-Deliberately **not** changed here: any of these repaints every screen in the app,
-and choosing between "consistent" and "per-tenant branded" is a product call.
-
-🔴 **Do not fix the 128 split controls before that decision is made.** The repair for
-a split control is to put its icon and its label on the same colour source — but
-*which* source is exactly what is undecided. Doing it now means either touching 128
-sites twice or guessing on the owner's behalf.
+A residual ~160 decorative colour values (ambers, greens, slate greys) are unrelated to
+the accent clash and are recorded in "Gaps in this pass" below.
 
 ---
 
@@ -442,6 +395,13 @@ a clear header, a correctly blue "Create poll" button, and a proper empty state
 blank area. The registration form's password hint correctly says "At least 12
 characters", matching the real rule.
 
-Of the two systemic findings, **content sliding under the clock is now fixed**. The
-brand-colour split is the one that remains, and it is a single decision rather than a
-long list of repairs — 128 controls become consistent the moment it is made.
+**Both systemic findings from this sweep are now fixed** — content sliding under the
+clock, and the brand-colour split (see section 2, which was rewritten on 2026-08-19 when
+the work landed). What remains from the colour work is not a defect but missing
+information: ten of the eleven communities have no brand palette recorded, so they render
+in the default NEXUS blue until the owner supplies one.
+
+🔴 One finding from a later pass is still open and is not in this sweep's numbering: the
+rewards/leaderboard screen paints a blank body despite having its data and no error. It is
+recorded as row 9.1 of [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md), with the
+evidence and what has been ruled out.
