@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import * as SecureStore from 'expo-secure-store';
-import * as Sentry from '@sentry/react-native';
+import { reportToSink } from '@/lib/observability/reportSink';
 import { Platform } from 'react-native';
 
 const memoryStorage = new Map<string, string>();
@@ -23,6 +23,23 @@ function isWeb(): boolean {
  * Values are encrypted at rest on both iOS (Keychain) and Android (Keystore).
  * All methods are async and return null on missing/error rather than throwing.
  */
+/**
+ * Reports a storage failure without dragging the reporter into every consumer.
+ *
+ * 🔴 Goes through `reportSink`, a module with NO imports, and the reason is measured.
+ * A static import of the reporter here pulled `@sentry/react-native` and
+ * `expo-constants` into every module that touches storage, breaking 10 tests in
+ * `lib/storage.test.ts`. Switching to `await import()` looked cleaner and was worse:
+ * Jest cannot run a native dynamic import without `--experimental-vm-modules`, so the
+ * report silently never fired under test and the catch hid the reason.
+ *
+ * Same class of mistake as coupling AuthProvider to the toast provider: infrastructure
+ * must stay light enough to be used without a full native environment.
+ */
+function reportStorageFailure(err: unknown, op: string, key: string): void {
+  reportToSink(err, { storage_op: op, key });
+}
+
 export const storage = {
   async get(key: string): Promise<string | null> {
     try {
@@ -54,8 +71,9 @@ export const storage = {
 
       await SecureStore.setItemAsync(key, value);
     } catch (err) {
-      // Log to Sentry so "random logouts" can be diagnosed
-      Sentry.captureException(err, { tags: { storage_op: 'set', key } });
+      // Diagnose "random logouts". Reported to BOTH Sentry and our own server —
+      // Sentry alone has no DSN in any build profile, so this used to go nowhere.
+      reportStorageFailure(err, 'set', key);
     }
   },
 

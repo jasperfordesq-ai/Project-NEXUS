@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
@@ -214,7 +214,7 @@ export type MobileEventCheckinCredentialResponse = z.infer<typeof credentialMuta
 function parse<T>(endpoint: string, schema: z.ZodType<T>, value: unknown): T {
   const parsed = envelope(schema).safeParse(value);
   if (parsed.success) return parsed.data.data;
-  Sentry.captureMessage('Event offline check-in contract drift', {
+  reportSentryMessage('Event offline check-in contract drift', {
     level: 'warning',
     tags: { module: 'events', contract_version: '1' },
     extra: {

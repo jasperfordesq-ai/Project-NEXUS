@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 
 import { api, ApiResponseError } from '@/lib/api/client';
@@ -120,7 +120,7 @@ export async function getEventAnalytics(eventId: number): Promise<{
   const parsed = envelope.safeParse(response);
   if (parsed.success) return parsed.data;
 
-  Sentry.captureMessage('Events analytics contract drift', {
+  reportSentryMessage('Events analytics contract drift', {
     level: 'warning',
     tags: { module: 'events', contract_version: '1', endpoint: `${API_V2}/events/{id}/analytics` },
     extra: {

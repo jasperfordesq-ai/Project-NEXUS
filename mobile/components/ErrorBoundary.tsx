@@ -5,9 +5,9 @@
 
 import React from 'react';
 import { Text, View } from 'react-native';
-import * as Sentry from '@sentry/react-native';
 import { t as translate } from 'i18next';
 import Button from '@/components/ui/Button';
+import { reportException } from '@/lib/observability/report';
 
 interface Props {
   children: React.ReactNode;
@@ -77,10 +77,16 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    // Always report to Sentry so errors are tracked in all environments
-    Sentry.captureException(error, {
-      extra: { componentStack: info.componentStack },
-    });
+    // 🔴 "Always report to Sentry so errors are tracked in all environments" is what
+    // this used to say and do. It was not true of any environment that mattered:
+    // Sentry has no DSN in ANY of the six build profiles, so a crash on a member's
+    // phone produced nothing, anywhere. This is the app's crash boundary — the single
+    // most important report it makes — and it was going into a void.
+    //
+    // reportException still calls Sentry (a no-op without a DSN) AND posts to our own
+    // API, which needs no account and lands in the server log where PHP Sentry is
+    // live and triaged nightly. See lib/observability/report.ts.
+    reportException(error, { componentStack: info.componentStack ?? '' });
 
     console.error('ErrorBoundary caught:', error, info.componentStack);
   }

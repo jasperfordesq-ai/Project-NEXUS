@@ -28,6 +28,7 @@ const mockGetItemAsync = jest.fn();
 const mockSetItemAsync = jest.fn();
 const mockDeleteItemAsync = jest.fn();
 const mockCaptureException = jest.fn();
+const mockReportException = jest.fn();
 
 jest.mock('expo-secure-store', () => ({
   getItemAsync: (...args: unknown[]) => mockGetItemAsync(...args),
@@ -37,6 +38,16 @@ jest.mock('expo-secure-store', () => ({
 
 jest.mock('@sentry/react-native', () => ({
   captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
+// 🔴 storage.ts reports through `lib/observability/reportSink` — a module with NO
+// imports — rather than through the reporter directly. Two earlier attempts failed:
+// a static reporter import dragged Sentry and expo-constants into every module that
+// touches storage (10 tests in this file died on "requiring the 'ExponentConstants'
+// module"), and `await import()` fired nothing at all under Jest, which cannot run a
+// native dynamic import without --experimental-vm-modules.
+jest.mock('@/lib/observability/reportSink', () => ({
+  reportToSink: (...args: unknown[]) => mockReportException(...args),
 }));
 
 /**
@@ -92,14 +103,18 @@ describe('secure storage on a native platform', () => {
     await expect(storage.get('auth_token')).resolves.toBeNull();
   });
 
-  it('reports a failed WRITE to Sentry, with the key, so a silent logout is diagnosable', async () => {
+  it('reports a failed WRITE, with the key, so a silent logout is diagnosable', async () => {
+    // 🔴 This used to assert `Sentry.captureException` directly, and passed — while the
+    // report reached nobody, because Sentry has no DSN in any of the six build profiles.
+    // It now goes through the reporter, which sends to Sentry AND to our own server.
     const failure = new Error('keystore full');
     mockSetItemAsync.mockRejectedValue(failure);
 
     await expect(storage.set('auth_token', 'token-value')).resolves.toBeUndefined();
 
-    expect(mockCaptureException).toHaveBeenCalledWith(failure, {
-      tags: { storage_op: 'set', key: 'auth_token' },
+    expect(mockReportException).toHaveBeenCalledWith(failure, {
+      storage_op: 'set',
+      key: 'auth_token',
     });
   });
 
@@ -108,6 +123,7 @@ describe('secure storage on a native platform', () => {
 
     await expect(storage.remove('auth_token')).resolves.toBeUndefined();
     expect(mockCaptureException).not.toHaveBeenCalled();
+    expect(mockReportException).not.toHaveBeenCalled();
   });
 
   it('round-trips a JSON value', async () => {

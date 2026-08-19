@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 import { api, ApiResponseError, type RequestOptions } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
@@ -116,7 +116,7 @@ function parseSafety(endpoint: string, response: unknown): { data: EventSafety }
   const parsed = eventSafetyEnvelopeSchema.safeParse(response);
   if (parsed.success) return parsed.data;
 
-  Sentry.captureMessage('Event Safety contract drift', {
+  reportSentryMessage('Event Safety contract drift', {
     level: 'warning',
     tags: {
       module: 'events',

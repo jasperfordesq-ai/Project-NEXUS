@@ -145,6 +145,16 @@ async function main() {
     php: env.SENTRY_PROJECT_PHP,
     react: env.SENTRY_PROJECT_REACT,
     webuk: env.SENTRY_PROJECT_WEBUK,
+    // 🔴 The mobile app had no project here, which mattered twice over: its own Sentry
+    // is disabled in all six build profiles, AND this automation had no slot for it — so
+    // even supplying a DSN would not have got mobile crashes into the nightly triage.
+    // Optional like react/webuk: absent means "not configured yet", not an error.
+    //
+    // Until a mobile project exists, mobile crashes still reach the owner by the other
+    // route: the app posts them to POST /api/app/log, which logs at `error` level, which
+    // the `sentry` log channel captures into the PHP project. So they appear in this
+    // sweep under `php` rather than being lost.
+    mobile: env.SENTRY_PROJECT_MOBILE,
   };
   if (!TOKEN || !ORG || !BASE || !PROJECTS.php) {
     bad('sentry.env is missing SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_API_BASE or SENTRY_PROJECT_PHP.');

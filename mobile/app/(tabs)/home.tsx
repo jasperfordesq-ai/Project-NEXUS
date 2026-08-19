@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface, Tabs } from 'heroui-native';
 
-import * as Sentry from '@sentry/react-native';
+import { reportException } from '@/lib/observability/report';
 import { useTranslation } from 'react-i18next';
 import { getFeed, type FeedFilter, type FeedItem as FeedItemType, type FeedMode, type FeedResponse } from '@/lib/api/feed';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -31,7 +31,7 @@ import { withAlpha } from '@/lib/utils/color';
 function extractFeedPage(response: FeedResponse) {
   if (!response?.data || !response?.meta) {
     console.error('Unexpected feed response shape:', response);
-    Sentry.captureException(new Error('Unexpected feed response shape'));
+    reportException(new Error('Unexpected feed response shape'));
     return { items: [], cursor: null, hasMore: false };
   }
   const seen = new Set<string>();

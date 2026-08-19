@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 
 import { api, ApiResponseError } from '@/lib/api/client';
@@ -62,7 +62,7 @@ export async function getEventLifecycleHistory(
   const parsed = envelopeSchema.safeParse(response);
   if (parsed.success) return parsed.data;
 
-  Sentry.captureMessage('Events lifecycle history contract drift', {
+  reportSentryMessage('Events lifecycle history contract drift', {
     level: 'warning',
     tags: {
       module: 'events',

@@ -14,6 +14,7 @@
 
 import * as Device from 'expo-device';
 import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 
 export interface IntegrityCheckResult {
   safe: boolean;
@@ -78,7 +79,7 @@ export function logIntegrityWarnings(): void {
     if (isProductionBuild() && typeof Sentry.getCurrentScope === 'function') {
       // In production, report to Sentry if available.
       // Sentry is initialised in app/_layout.tsx before this runs.
-      Sentry.captureMessage(message, 'warning');
+      reportSentryMessage(message, 'warning');
       continue;
     }
 

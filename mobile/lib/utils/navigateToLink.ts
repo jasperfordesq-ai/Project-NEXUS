@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { router, type Href } from 'expo-router';
-import * as Sentry from '@sentry/react-native';
+import { reportMessage, safeLinkSummary } from '@/lib/observability/report';
 
 const knownSections = new Set([
   'exchanges',
@@ -221,7 +221,23 @@ export function navigateToLink(link: string | null): void {
       router.push('/(modals)/search');
       break;
     default:
-      Sentry.captureMessage(`[DeepLink] Unhandled link: ${link}`, 'warning');
+      // 🔴 Two separate faults were fixed on this one line.
+      //
+      // 1. It reported ONLY to Sentry, which has no DSN in any of the six build
+      //    profiles — so the app's single diagnostic about links it cannot handle
+      //    went nowhere at all. It now also reaches our own server log, which needs
+      //    no account. See lib/observability/report.ts.
+      //
+      // 2. It sent the WHOLE url. One of the links this app handles is a
+      //    password-reset link, and the reset token is in that url — so a member
+      //    tapping a slightly wrong reset link would have shipped a live credential
+      //    to a third-party service. `safeLinkSummary` reduces it to origin plus the
+      //    first path segment, which is the part that is actually diagnostic.
+      reportMessage(
+        '[DeepLink] Unhandled link',
+        { link: safeLinkSummary(link), section },
+        `deeplink-unhandled:${section}`
+      );
       break;
   }
 }

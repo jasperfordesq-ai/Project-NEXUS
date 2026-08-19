@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 import { api, ApiResponseError, type RequestOptions } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
@@ -168,7 +168,7 @@ function requestOptions(idempotencyKey?: string): RequestOptions {
 function parse<T>(endpoint: string, schema: z.ZodType<T>, response: unknown): T {
   const parsed = schema.safeParse(response);
   if (parsed.success) return parsed.data;
-  Sentry.captureMessage('Event registration product contract drift', {
+  reportSentryMessage('Event registration product contract drift', {
     level: 'warning',
     tags: {
       module: 'events',

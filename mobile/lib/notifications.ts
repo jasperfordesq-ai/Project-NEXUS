@@ -20,7 +20,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage, reportException } from '@/lib/observability/report';
 
 import { api } from '@/lib/api/client';
 import i18n from 'i18next';
@@ -106,7 +106,7 @@ export async function registerForPushNotifications(): Promise<void> {
   } catch (err) {
     // Non-critical — app works fine without push notifications
     console.warn('[Notifications] Failed to register device:', err);
-    Sentry.captureException(err, { tags: { module: 'push-notifications' } });
+    reportException(err, { tags: { module: 'push-notifications' } });
   }
 }
 
@@ -124,7 +124,7 @@ export async function unregisterPushNotifications(): Promise<void> {
   } catch (err) {
     // Best effort on logout — log to Sentry for visibility
     if (err instanceof Error) {
-      Sentry.captureMessage(`Push unregister failed: ${err.message}`, 'warning');
+      reportSentryMessage(`Push unregister failed: ${err.message}`, 'warning');
     }
   }
 }

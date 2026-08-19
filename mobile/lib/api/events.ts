@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import * as Sentry from '@sentry/react-native';
+import { reportSentryMessage } from '@/lib/observability/report';
 import { Platform } from 'react-native';
 import { z } from 'zod';
 
@@ -795,7 +795,7 @@ function reportContractDrift(
   error: z.ZodError,
   contractVersion: number = EVENTS_CONTRACT_VERSION,
 ): void {
-  Sentry.captureMessage('Events contract drift', {
+  reportSentryMessage('Events contract drift', {
     level: 'warning',
     tags: {
       module: 'events',
