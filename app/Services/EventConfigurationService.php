@@ -106,7 +106,20 @@ final class EventConfigurationService
         // coordinator stays out.
         $isAdmin = TenantAdminScope::allows($user, $tenantId);
 
-        return $role === 'admins' ? $isAdmin : ($isAdmin || (string) $user->role === 'broker');
+        // The broker half of 'staff' needs the same tenant question as the admin
+        // half. It was a bare role-string comparison, so "is a broker somewhere"
+        // satisfied a community that had restricted creation to its own brokers
+        // and administrators — the admin-side escalation in a second door.
+        //
+        // A broker is an OPERATIONAL role, so this is a plain same-community test
+        // and deliberately not TenantAdminScope: brokers have no hierarchy and
+        // reach no subtree, and AdminTier refuses them outright. A broker who also
+        // needs cross-community reach would hold a platform flag, which $isAdmin
+        // already covers.
+        $isLocalBroker = (string) $user->role === 'broker'
+            && (int) ($user->tenant_id ?? 0) === $tenantId;
+
+        return $role === 'admins' ? $isAdmin : ($isAdmin || $isLocalBroker);
     }
 
     /** @param array<string,mixed> $input

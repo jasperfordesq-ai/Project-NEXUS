@@ -198,15 +198,52 @@ final class EventConfigurationCanCreateTest extends TestCase
         self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
-    public function test_staff_policy_admits_a_broker_but_not_a_plain_member(): void
+    /**
+     * The broker half of 'staff'. The broker is LOCAL: what this pins is
+     * broker-yes / member-no, for which the actor's home tenant is incidental,
+     * and a cross-tenant broker is covered separately below.
+     */
+    public function test_staff_policy_admits_a_local_broker_but_not_a_plain_member(): void
     {
         $this->setCreationRole('staff');
 
-        $broker = $this->crossTenantUser(['role' => 'broker']);
+        $broker = $this->localUser(['role' => 'broker']);
         self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $broker->id));
 
-        $member = $this->crossTenantUser(['role' => 'member']);
+        $member = $this->localUser(['role' => 'member']);
         self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $member->id));
+    }
+
+    /**
+     * A broker of another community is not this community's staff.
+     *
+     * The admin half of this decision became tenant-scoped via TenantAdminScope,
+     * but the broker half stayed a bare role-string comparison, so "is a broker
+     * somewhere" satisfied a community that had restricted creation to its own
+     * brokers and administrators. A broker is an operational role with no
+     * hierarchy — unlike a network admin it reaches no subtree, so this is a
+     * plain same-community test.
+     *
+     * Defence in depth rather than a reachable API hole: Authenticate rejects a
+     * cross-tenant actor with 403 tenant_mismatch unless they are a PLATFORM
+     * admin, so this path is not reachable over HTTP by a cross-tenant broker.
+     * It is fixed because the service must not depend on a caller it cannot see.
+     */
+    public function test_staff_policy_refuses_a_broker_of_another_community(): void
+    {
+        $this->setCreationRole('staff');
+        $broker = $this->crossTenantUser(['role' => 'broker']);
+
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $broker->id));
+    }
+
+    /** A platform admin still satisfies 'staff', wherever their account row sits. */
+    public function test_staff_policy_admits_a_platform_admin_from_elsewhere(): void
+    {
+        $this->setCreationRole('staff');
+        $actor = $this->crossTenantUser(['role' => 'admin', 'is_super_admin' => 1]);
+
+        self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
     /**
