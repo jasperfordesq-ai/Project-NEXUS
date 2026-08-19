@@ -2485,9 +2485,20 @@ describe('GOV.UK Frontend palette compatibility', () => {
       'utf8'
     );
 
+    // The rule this test exists for: none of govuk-frontend's REMOVED legacy
+    // colour names may appear.
     expect(source).not.toContain('govuk-colour("light-grey")');
     expect(source).not.toContain('govuk-colour("turquoise")');
+
+    // A positive control, so the assertions above cannot pass simply because the
+    // file stopped using govuk-colour() at all.
     expect(source).toContain('govuk-colour("black", $variant: "tint-95")');
-    expect(source).toContain('govuk-colour("teal", $variant: "primary")');
+
+    // There was a second control for the modern teal token. Its only occurrence
+    // was .app-badge-summary__fill, one of the 152 unreferenced app-* rules
+    // deleted from this stylesheet — no template or script used that class, so
+    // nothing visible lost its colour. The control is dropped rather than
+    // keeping a dead rule alive to satisfy it; the tint-95 control above serves
+    // the same purpose and is used by live code.
   });
 });
