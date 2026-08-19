@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Patched a newly published vulnerability in a shared code library (nanoid).** Two advisories against the "nanoid" identifier-generator were published and caught by the automated security scan on push. Only one copy in the project was genuinely affected (the root tooling tree, on 3.3.12 — patched versions start at 3.3.16); it is now on 3.3.18 like every other copy. The scanner also flags already-patched 3.3.16+ copies because the public vulnerability database over-matches the whole 3.3 line; those exact false positives are suppressed with version-scoped rules that still fail the scan if a genuinely vulnerable copy ever reappears.
+
 ### Fixed
 
 - **Accessible frontend: two more forms completed, quieter feed cards, and small polish.** Sellers marking an order as shipped can now include a tracking link and delivery method (the system always accepted them; the form never asked). Organisations approving or declining a volunteer can now attach a note the applicant will see. Both come with hand-written translations in all 11 languages. Quiet feed posts no longer stack "No likes · No comments" and "No reactions" above their buttons — counts appear once there is something to count. The matches pages format their average score correctly for right-to-left and Japanese readers, the header unread counter no longer looks like a phone-app bubble, and star ratings no longer flash a focus ring when clicked with a mouse. All verified against the disposable test environment, including creating a real poll and event through the forms.

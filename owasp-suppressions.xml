@@ -589,4 +589,31 @@
     <vulnerabilityName regex="true">^CVE-(2015-(0241|0242|0243|0244|3166|3167)|2016-(0768|0773|5423|5424|7048)|2017-(7484|14798)|2018-1115|2019-(10127|10128|10210|10211)|2020-(25694|25695)|2021-23214|2026-(6473|6475|6477|6479|6637))$</vulnerabilityName>
   </suppress>
 
+  <!--
+    FALSE POSITIVE (added 2026-08-19): nanoid 3.3.16+ flagged for the negative-size
+    infinite-loop CVEs. The authoritative GitHub advisories bound them precisely:
+    CVE-2026-67214 (GHSA-28wg-ghj8-5hjv) affects < 3.3.16, patched in 3.3.16;
+    CVE-2026-67213 (GHSA-2v37-7h3g-55p8) affects >= 4.0.0 < 5.1.6, so no 3.x at all.
+    The NVD CPE match fires on every 3.3.x regardless. This suppression is version-
+    scoped to 3.3.16 and later ONLY, so a genuinely vulnerable 3.3.x (< 3.3.16)
+    still fails the scan — the root lockfile's 3.3.12 was bumped, not suppressed.
+  -->
+  <suppress>
+    <notes><![CDATA[
+      FP: nanoid >= 3.3.16 is patched for CVE-2026-67214 (GHSA-28wg-ghj8-5hjv),
+      and CVE-2026-67213 never affected the 3.x line (GHSA-2v37-7h3g-55p8:
+      >= 4.0.0 < 5.1.6). NVD CPE data over-matches the whole 3.3.x range.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:npm/nanoid@3\.3\.(1[6-9]|[2-9][0-9])$</packageUrl>
+    <vulnerabilityName>CVE-2026-67214</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+      FP: CVE-2026-67213 affects nanoid >= 4.0.0 < 5.1.6 only
+      (GHSA-2v37-7h3g-55p8); the 3.x line was never in range.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:npm/nanoid@3\.3\.(1[6-9]|[2-9][0-9])$</packageUrl>
+    <vulnerabilityName>CVE-2026-67213</vulnerabilityName>
+  </suppress>
+
 </suppressions>
