@@ -266,6 +266,20 @@
   padding: govuk-spacing(1) govuk-spacing(2);
 }
 
+// The applied filter must be visibly different from its siblings. Templates mark
+// it with aria-current; without this rule the only difference was
+// govuk-link--no-visited-state, which renders the SAME blue as an unvisited
+// link — so on /exchanges, /matches, /messages and /connections/network a
+// sighted member could not tell which tab was active (browser-measured:
+// identical computed styles). Bold + a bottom rule in the link colour mirrors
+// the service-navigation active treatment, and is never colour-only.
+.nexus-alpha-filter-nav a[aria-current],
+.nexus-alpha-filter-tabs a[aria-current] {
+  @include govuk-typography-weight-bold;
+  border-bottom: govuk-spacing(1) solid $govuk-link-colour;
+  text-decoration: none;
+}
+
 .nexus-alpha-meta {
   color: $govuk-secondary-text-colour;
 }
@@ -570,7 +584,10 @@
     color: $govuk-error-colour;
 
     &:hover {
-      color: govuk-shade($govuk-error-colour, 20%);
+      // 🔴 govuk-shade()/govuk-tint() do not exist in govuk-frontend 6.x. Sass
+      // passes an unknown function through as literal CSS, which browsers then
+      // discard — this hover was silently dead. Use the palette variant instead.
+      color: govuk-colour("red", $variant: "shade-25");
     }
   }
 }
@@ -751,12 +768,13 @@ body.app-timeout-modal--open {
   overflow: hidden;
 }
 
-// Report link styling
+// Report link styling. Hover only: the markup pairs this with .govuk-link, whose
+// :focus applies the yellow/black focused-text standard — overriding color on
+// :focus here painted link-blue on the yellow ground (3.87:1, fails 4.5:1).
 .app-report-link {
   color: $govuk-secondary-text-colour;
 
-  &:hover,
-  &:focus {
+  &:hover {
     color: $govuk-link-colour;
   }
 }
@@ -790,8 +808,14 @@ body.app-timeout-modal--open {
   transform: scale(1.1);
 }
 
+// Star shape is always outlined in black so the control itself meets the 3:1
+// non-text contrast rule regardless of fill; fill carries only the on/off state.
+// (The previous fills — pre-v6 mid-grey #b1b4b6 and amber #ffbf00 — were both
+// off-palette and both failed 3:1 against the white page.)
 .app-star-rating__star {
-  fill: #b1b4b6;
+  fill: govuk-colour("black", $variant: "tint-80");
+  stroke: govuk-colour("black");
+  stroke-width: 1.5;
   transition: fill 0.15s ease;
 }
 
@@ -799,7 +823,7 @@ body.app-timeout-modal--open {
 .app-star-rating__input:checked ~ .app-star-rating__label .app-star-rating__star,
 .app-star-rating__label:hover .app-star-rating__star,
 .app-star-rating__label:hover ~ .app-star-rating__label .app-star-rating__star {
-  fill: #ffbf00;
+  fill: govuk-colour("black");
 }
 
 .app-star-rating__input:focus + .app-star-rating__label {
@@ -812,8 +836,9 @@ body.app-timeout-modal--open {
   -webkit-overflow-scrolling: touch;
 
   &:focus {
-    outline: 3px solid govuk-colour("yellow");
-    outline-offset: 0;
+    // Two-tone GOV.UK focus (yellow + black band), not a bare yellow outline
+    // that can vanish against a light ground.
+    @include govuk-focused-box;
   }
 }
 
@@ -852,12 +877,16 @@ body.app-timeout-modal--open {
     font-weight: bold;
   }
 
+  // 🔴 These previously called govuk-tint(), which does not exist in
+  // govuk-frontend 6.x — Sass emitted the call verbatim and browsers discarded
+  // it, so the diff had NO added/removed backgrounds at all. tint-80 is the
+  // palette's own subtle-status ground (tint-95 is too faint to read as a diff).
   .diff-added {
-    background-color: govuk-tint(govuk-colour("green"), 90%);
+    background-color: govuk-colour("green", $variant: "tint-80");
   }
 
   .diff-removed {
-    background-color: govuk-tint(govuk-colour("red"), 90%);
+    background-color: govuk-colour("red", $variant: "tint-80");
   }
 
   ins,

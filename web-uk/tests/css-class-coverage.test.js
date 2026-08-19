@@ -98,4 +98,16 @@ describe('CSS class coverage', () => {
     expect(references.has('nexus-alpha-inline-list')).toBe(true);
     expect(references.has('nexus-alpha-reaction--active')).toBe(true);
   });
+
+  it('contains no leaked Sass helper calls, which browsers silently discard', () => {
+    // 🔴 govuk-tint()/govuk-shade() were removed in govuk-frontend 6. Sass emits
+    // an unknown function verbatim as literal CSS, the browser drops the whole
+    // declaration, and nothing fails — the legal-diff backgrounds and a warning
+    // hover shipped dead this way. Any govuk-*() call surviving into the
+    // compiled stylesheet is a build fault. (CSS custom properties are var()
+    // references, not govuk-*() calls, so this cannot false-positive on them.)
+    const css = fs.readFileSync(COMPILED_CSS, 'utf8');
+    const leaked = css.match(/govuk-[a-z-]+\(/g) || [];
+    expect(leaked).toEqual([]);
+  });
 });
