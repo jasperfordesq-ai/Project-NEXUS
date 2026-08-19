@@ -65,6 +65,7 @@
     "timeout": "La solicitud ha agotado el tiempo de espera. Comprueba tu conexión.",
     "requestFailedWithStatus": "La solicitud ha fallado con el estado {{status}}",
     "unauthorized": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+    "sessionEndedTitle": "Sesión cerrada",
     "notFound": "No encontrado.",
     "alertTitle": "Error"
   },

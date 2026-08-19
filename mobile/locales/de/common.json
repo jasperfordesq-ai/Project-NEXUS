@@ -65,6 +65,7 @@
     "timeout": "Zeitüberschreitung bei der Anfrage. Bitte überprüfe deine Verbindung.",
     "requestFailedWithStatus": "Die Anfrage ist mit Status {{status}} fehlgeschlagen",
     "unauthorized": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "sessionEndedTitle": "Abgemeldet",
     "notFound": "Nicht gefunden.",
     "alertTitle": "Error"
   },

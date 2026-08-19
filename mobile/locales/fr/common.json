@@ -65,6 +65,7 @@
     "timeout": "La requête a expiré. Vérifiez votre connexion.",
     "requestFailedWithStatus": "La requête a échoué avec le statut {{status}}",
     "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
+    "sessionEndedTitle": "Déconnecté",
     "notFound": "Introuvable.",
     "alertTitle": "Error"
   },

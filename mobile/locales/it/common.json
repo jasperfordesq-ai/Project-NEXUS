@@ -65,6 +65,7 @@
     "timeout": "La richiesta è scaduta. Controlla la connessione.",
     "requestFailedWithStatus": "La richiesta non è riuscita con stato {{status}}",
     "unauthorized": "La sessione è scaduta. Accedi di nuovo.",
+    "sessionEndedTitle": "Disconnesso",
     "notFound": "Non trovato.",
     "alertTitle": "Error"
   },

@@ -147,22 +147,60 @@ export async function authenticatedMediaRequest(path: string): Promise<{ uri: st
  * completion) prevents a second refresh attempt when a late 401 arrives
  * just after the refresh finished but before the retry response returns.
  */
-let _refreshPromise: Promise<string | null> | null = null;
+/**
+ * The outcome of a refresh attempt.
+ *
+ * 🔴 Why this is a THREE-way result and not `string | null`. It used to return `null` for
+ * both "the server rejected the refresh token" and "the request never completed", so the
+ * caller could not tell an expired session from a dropped connection — and treated both as
+ * expiry. The consequence was not cosmetic: a member on a bad train connection was signed
+ * out, and `AuthContext` responds to sign-out by PURGING the offline event check-in queue.
+ * An organiser standing in a hall with no signal could lose the attendance roster they had
+ * just collected, with no message explaining why.
+ *
+ * - `refreshed`   — a new token; retry the request.
+ * - `rejected`    — the server refused the refresh token. The session really is over.
+ * - `unreachable` — the attempt threw, timed out, or the server could not answer. Keep the
+ *   session, keep the queue, say nothing, and let the next request try again.
+ */
+export type TokenRefreshResult =
+  | { status: 'refreshed'; token: string }
+  | { status: 'rejected' }
+  | { status: 'unreachable' };
+
+let _refreshPromise: Promise<TokenRefreshResult> | null = null;
 let _refreshGraceTimer: ReturnType<typeof setTimeout> | null = null;
 
-export async function attemptTokenRefresh(): Promise<string | null> {
+/**
+ * Test-only reset of the in-flight refresh and its grace window.
+ *
+ * 🔴 Needed because the grace window is deliberate module-level state: `_refreshPromise`
+ * stays populated for 2s AFTER a refresh settles so a late 401 reuses the new token rather
+ * than starting a second doomed refresh. Across a suite that is a cross-test leak — a later
+ * test receives an earlier test's cached result and asserts against the wrong outcome, which
+ * is exactly what happened when this three-way result was introduced (16 tests "failed"
+ * while the code was correct). Mirrors `themeStore.__resetForTests`.
+ */
+export function __resetRefreshStateForTests(): void {
+  if (_refreshGraceTimer) clearTimeout(_refreshGraceTimer);
+  _refreshGraceTimer = null;
+  _refreshPromise = null;
+}
+
+export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
   // If a refresh is in progress (or recently completed), reuse its promise
   if (_refreshPromise) {
     return _refreshPromise;
   }
 
-  _refreshPromise = (async (): Promise<string | null> => {
+  _refreshPromise = (async (): Promise<TokenRefreshResult> => {
     try {
       const [storedRefresh, tenantSlug] = await Promise.all([
         storage.get(STORAGE_KEYS.REFRESH_TOKEN),
         storage.get(STORAGE_KEYS.TENANT_SLUG),
       ]);
-      if (!storedRefresh) return null;
+      // Nothing stored to renew with: a genuine end-of-session, not a failure to reach.
+      if (!storedRefresh) return { status: 'rejected' };
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -177,19 +215,29 @@ export async function attemptTokenRefresh(): Promise<string | null> {
         body: JSON.stringify({ refresh_token: storedRefresh }),
       });
 
-      if (!res.ok) return null;
+      // 🔴 Only an AUTH refusal ends the session. A 5xx or a 429 means the server could not
+      // answer right now — treating those as expiry signs people out during an incident,
+      // the worst possible moment to also wipe their queued check-ins.
+      if (!res.ok) {
+        return res.status === 401 || res.status === 403
+          ? { status: 'rejected' }
+          : { status: 'unreachable' };
+      }
 
       const data = await res.json() as { access_token?: string; token?: string; refresh_token?: string };
       const newToken = data.access_token ?? data.token ?? null;
-      if (!newToken) return null;
+      // A 200 carrying no token is the server contradicting itself — not a reason to
+      // destroy anything.
+      if (!newToken) return { status: 'unreachable' };
 
       const saves: Promise<void>[] = [storage.set(STORAGE_KEYS.AUTH_TOKEN, newToken)];
       if (data.refresh_token) saves.push(storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token));
       await Promise.all(saves);
 
-      return newToken;
+      return { status: 'refreshed', token: newToken };
     } catch {
-      return null;
+      // Thrown = never reached the server (offline, DNS, TLS, abort).
+      return { status: 'unreachable' };
     }
   })();
 
@@ -304,10 +352,10 @@ async function request<T>(
 
   // Handle 401: try silent token refresh, then retry once
   if (response.status === 401 && endpoint !== '/api/auth/login') {
-    const newToken = await attemptTokenRefresh();
-    if (newToken) {
+    const refresh = await attemptTokenRefresh();
+    if (refresh.status === 'refreshed') {
       // Retry the original request with the refreshed token
-      const retryHeaders: Record<string, string> = { ...headers, Authorization: `Bearer ${newToken}` };
+      const retryHeaders: Record<string, string> = { ...headers, Authorization: `Bearer ${refresh.token}` };
       // For FormData, ensure Content-Type is not set (let React Native set multipart boundary)
       if (isFormData) delete retryHeaders['Content-Type'];
       const retryController = new AbortController();
@@ -351,7 +399,16 @@ async function request<T>(
       }
     }
 
-    // Refresh failed or retry still returned 401 — force logout
+    // 🔴 The server could not be reached to renew the token. NOT an expiry: leave the
+    // stored tokens alone, do not fire the sign-out callback (which purges the offline
+    // check-in queue), and surface it as the network failure it is so the screen can offer
+    // a retry. The next request will attempt the refresh again.
+    if (refresh.status === 'unreachable') {
+      throw new ApiResponseError(0, i18n.t('common:errors.network'));
+    }
+
+    // The refresh token was refused, or the retry came back 401 again: the session is
+    // genuinely over. Clear it and tell the app, which signs the member out.
     await Promise.all([
       storage.remove(STORAGE_KEYS.AUTH_TOKEN),
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),

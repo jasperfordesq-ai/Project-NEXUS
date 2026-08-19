@@ -24,6 +24,9 @@ import {
   type LoginUser,
   type LoginPayload,
 } from '@/lib/api/auth';
+import { useTranslation } from 'react-i18next';
+
+import { useOptionalAppToast } from '@/components/ui/AppToast';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
 import { registerUnauthorizedCallback } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -64,19 +67,42 @@ interface AuthContextValue extends AuthState {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation(['common']);
+  const { show: showToast } = useOptionalAppToast();
   const [user, setUser] = useState<AnyUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   /** Track whether push notifications were successfully registered */
   const isPushRegisteredRef = useRef(false);
 
-  /** Called by the API client when it receives a 401 response */
+  /**
+   * Called by the API client when a session has genuinely ENDED.
+   *
+   * 🔴 "Genuinely" is the whole point. The client used to invoke this whenever a token
+   * refresh failed for any reason, including a dropped connection — so a member on a bad
+   * connection was signed out, and the purge below destroyed any offline event check-ins
+   * they were holding. An organiser could lose a hall's worth of attendance with no
+   * explanation. `attemptTokenRefresh` now distinguishes a refused refresh token from an
+   * unreachable server and only the former reaches here; see `TokenRefreshResult` in
+   * lib/api/client.ts.
+   *
+   * The purge is still right for a real sign-out: the queue holds a roster of members'
+   * names, encrypted under a key tied to this session.
+   */
   const handleUnauthorized = useCallback(() => {
     void purgeAllMobileOfflineCheckinData();
     setUser(null);
     setToken(null);
+    // Say what happened. Being returned to the login screen with no message is
+    // indistinguishable from a crash or an unrequested logout, which is exactly how
+    // members describe it when they report it.
+    showToast({
+      title: t('common:errors.sessionEndedTitle'),
+      description: t('common:errors.unauthorized'),
+      variant: 'warning',
+    });
     router.replace('/(auth)/login');
-  }, []);
+  }, [showToast, t]);
 
   useEffect(() => {
     registerUnauthorizedCallback(handleUnauthorized);

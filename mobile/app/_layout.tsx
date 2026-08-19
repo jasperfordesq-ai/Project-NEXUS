@@ -754,6 +754,52 @@ function RootNavigator() {
         name="(modals)/polls"
         options={{ ...modalOptions, headerShown: false, title: t('home:pollsScreen.title') }}
       />
+
+      {/* 🔴 These nine were reachable but UNDECLARED — they inherited default stack
+          options instead of the modal presentation every sibling declares, so they slid in
+          from the side and had no modal dismissal. It mattered more once deep linking was
+          extended: `app/+native-intent.ts` now routes external links into six of them, so a
+          member tapping a link landed on a screen presented the wrong way. Guarded by
+          `app/modalDeclarations.test.ts`.
+
+          achievements / leaderboard / nexus-score are aliases of `./gamification` and take
+          its options deliberately — same screen, three entry points. */}
+      <Stack.Screen
+        name="(modals)/achievements"
+        options={{ ...modalOptions, headerShown: false, title: t('gamification:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/leaderboard"
+        options={{ ...modalOptions, headerShown: false, title: t('gamification:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/nexus-score"
+        options={{ ...modalOptions, headerShown: false, title: t('gamification:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/feed-hashtag"
+        options={{ ...modalOptions, headerShown: false, title: t('home:hashtags.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/feed-hashtags"
+        options={{ ...modalOptions, headerShown: false, title: t('home:hashtags.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/feed-item-detail"
+        options={{ ...modalOptions, headerShown: false, title: t('home:feedTypes.post') }}
+      />
+      <Stack.Screen
+        name="(modals)/settings-blocked-users"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:blockedUsers.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/settings-data-export"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:dataExport.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/settings-translation"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:translation.title') }}
+      />
       <Stack.Screen
         name="(modals)/search"
         options={{ ...modalOptions, headerShown: false, title: t('search:title') }}

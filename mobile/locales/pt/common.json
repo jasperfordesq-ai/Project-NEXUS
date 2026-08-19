@@ -65,6 +65,7 @@
     "timeout": "O pedido excedeu o tempo limite. Verifique a sua ligação.",
     "requestFailedWithStatus": "O pedido falhou com o estado {{status}}",
     "unauthorized": "A sua sessão expirou. Inicie sessão novamente.",
+    "sessionEndedTitle": "Sessão terminada",
     "notFound": "Não encontrado.",
     "alertTitle": "Error"
   },

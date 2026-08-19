@@ -27,7 +27,7 @@ jest.mock('@/lib/constants', () => ({
   },
 }));
 
-import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh } from './client';
+import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
@@ -56,6 +56,11 @@ function mockResponse(
 let fetchMock: jest.Mock;
 
 beforeEach(() => {
+  // 🔴 The refresh promise is cached for 2s after it settles (a deliberate grace window so
+  // a late 401 reuses the fresh token). Without this reset a test inherits the previous
+  // test's refresh result — which is precisely how the three-way-result change first
+  // "failed" 16 tests that were actually fine.
+  __resetRefreshStateForTests();
   jest.useFakeTimers();
   fetchMock = jest.fn();
   global.fetch = fetchMock;
@@ -548,35 +553,40 @@ describe('attemptTokenRefresh', () => {
       mockResponse({ access_token: 'refreshed-token', refresh_token: 'new-refresh' }),
     );
 
-    const token = await attemptTokenRefresh();
+    const result = await attemptTokenRefresh();
 
-    expect(token).toBe('refreshed-token');
+    // Contract changed from `string | null` to a three-way result so the caller can tell a
+    // refused refresh token from an unreachable server. See TokenRefreshResult.
+    expect(result).toEqual({ status: 'refreshed', token: 'refreshed-token' });
     expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'refreshed-token');
     expect(mockStorage.set).toHaveBeenCalledWith('nexus_refresh_token', 'new-refresh');
 
     jest.advanceTimersByTime(3000);
   });
 
-  it('returns null when no refresh token is stored', async () => {
+  it('reports the session ended when no refresh token is stored', async () => {
     mockStorage.get.mockImplementation(async (key: string) => {
       if (key === 'nexus_tenant_slug') return 'hour-timebank';
       return null;
     });
 
-    const token = await attemptTokenRefresh();
+    const result = await attemptTokenRefresh();
 
-    expect(token).toBeNull();
+    // Nothing to renew with is a genuine end-of-session, not a failure to reach the server.
+    expect(result).toEqual({ status: 'rejected' });
     expect(fetchMock).not.toHaveBeenCalled();
 
     jest.advanceTimersByTime(3000);
   });
 
-  it('returns null when refresh endpoint returns non-OK', async () => {
+  it('reports the session ended when the refresh endpoint refuses', async () => {
     fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 401 }));
 
-    const token = await attemptTokenRefresh();
+    const result = await attemptTokenRefresh();
 
-    expect(token).toBeNull();
+    // 401/403 only. A 5xx or 429 now reports `unreachable` instead — see the
+    // "cannot REACH the server" suite below for why that distinction matters.
+    expect(result).toEqual({ status: 'rejected' });
 
     jest.advanceTimersByTime(3000);
   });
@@ -586,9 +596,9 @@ describe('attemptTokenRefresh', () => {
       mockResponse({ token: 'fallback-token' }),
     );
 
-    const token = await attemptTokenRefresh();
+    const result = await attemptTokenRefresh();
 
-    expect(token).toBe('fallback-token');
+    expect(result).toEqual({ status: 'refreshed', token: 'fallback-token' });
     expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'fallback-token');
 
     jest.advanceTimersByTime(3000);
@@ -613,5 +623,106 @@ describe('registerUnauthorizedCallback', () => {
     expect(cb).toHaveBeenCalledTimes(1);
 
     jest.advanceTimersByTime(3000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Session expiry vs an unreachable server
+//
+// 🔴 These exist because the two were indistinguishable. `attemptTokenRefresh` returned
+// `null` both when the server REFUSED the refresh token and when the request never
+// completed, and the caller treated both as expiry — signing the member out and firing the
+// sign-out callback, which purges the offline event check-in queue. A member on a bad
+// connection could lose an attendance roster they had just collected, with no explanation.
+//
+// The distinction is now a three-way result, and these assert both sides of it.
+// ---------------------------------------------------------------------------
+
+describe('a refresh the server REFUSES', () => {
+  beforeEach(() => {
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_auth_token' ? 'stale-token' : key === 'nexus_refresh_token' ? 'refresh-token' : null
+    );
+  });
+
+  it('reports the session as ended', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 401 })); // 401 refresh
+    expect(await attemptTokenRefresh()).toEqual({ status: 'rejected' });
+  });
+
+  it.each([401, 403])('treats %s on the refresh endpoint as the end of the session', async (status) => {
+    fetchMock.mockResolvedValueOnce(mockResponse({}, { status }));
+    expect(await attemptTokenRefresh()).toEqual({ status: 'rejected' });
+  });
+
+  it('reports ended when there is no refresh token to renew with', async () => {
+    mockStorage.get.mockImplementation(async () => null);
+    // Nothing to renew is a genuine end-of-session, not a failure to reach the server.
+    expect(await attemptTokenRefresh()).toEqual({ status: 'rejected' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('🔴 a refresh that cannot REACH the server', () => {
+  beforeEach(() => {
+    // `remove` accumulates across the file, so the "did NOT remove" assertions below would
+    // otherwise read another test's calls and fail for the wrong reason.
+    mockStorage.remove.mockClear();
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_auth_token' ? 'stale-token' : key === 'nexus_refresh_token' ? 'refresh-token' : null
+    );
+  });
+
+  it('reports unreachable when the request throws', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Network request failed'));
+    expect(await attemptTokenRefresh()).toEqual({ status: 'unreachable' });
+  });
+
+  it.each([500, 502, 503, 429])('treats %s as unreachable, not as expiry', async (status) => {
+    // A server error or a rate limit means "cannot answer right now". Signing people out
+    // during an incident is the worst possible moment to also wipe their queued check-ins.
+    fetchMock.mockResolvedValueOnce(mockResponse({}, { status }));
+    expect(await attemptTokenRefresh()).toEqual({ status: 'unreachable' });
+  });
+
+  it('treats a 200 carrying no token as unreachable rather than expiry', async () => {
+    // The server contradicting itself is not a reason to destroy anything.
+    fetchMock.mockResolvedValueOnce(mockResponse({ refresh_token: 'only-this' }, { status: 200 }));
+    expect(await attemptTokenRefresh()).toEqual({ status: 'unreachable' });
+  });
+
+  it('🔴 does NOT sign the member out, and leaves their stored tokens alone', async () => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+
+    fetchMock
+      .mockResolvedValueOnce(mockResponse({}, { status: 401 }))          // the original request
+      .mockRejectedValueOnce(new TypeError('Network request failed'));   // the refresh attempt
+
+    // Surfaced as the network failure it is (status 0), so the screen can offer a retry.
+    await expect(api.get('/api/v2/wallet/balance')).rejects.toMatchObject({ status: 0 });
+
+    // The assertions that matter: the sign-out callback is what purges the offline
+    // check-in queue, and removing the tokens is what makes the logout stick.
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(mockStorage.remove).not.toHaveBeenCalledWith('nexus_auth_token');
+    expect(mockStorage.remove).not.toHaveBeenCalledWith('nexus_refresh_token');
+    expect(mockStorage.remove).not.toHaveBeenCalledWith('nexus_user_data');
+  });
+
+  it('signs the member out when the refresh really is refused', async () => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+
+    fetchMock
+      .mockResolvedValueOnce(mockResponse({}, { status: 401 }))  // the original request
+      .mockResolvedValueOnce(mockResponse({}, { status: 401 })); // the refresh, refused
+
+    await expect(api.get('/api/v2/wallet/balance')).rejects.toMatchObject({ status: 401 });
+
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+    expect(mockStorage.remove).toHaveBeenCalledWith('nexus_auth_token');
+    expect(mockStorage.remove).toHaveBeenCalledWith('nexus_refresh_token');
+    expect(mockStorage.remove).toHaveBeenCalledWith('nexus_user_data');
   });
 });

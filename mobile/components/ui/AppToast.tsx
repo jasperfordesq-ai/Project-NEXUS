@@ -65,3 +65,34 @@ export function useAppToast() {
     show,
   };
 }
+
+/**
+ * A toast that no-ops when there is no ToastProvider above it.
+ *
+ * 🔴 For code that lives in a PROVIDER rather than a screen. `AuthProvider` needs to say
+ * "you have been signed out", but making it call `useAppToast()` directly meant every test
+ * that renders `AuthProvider` standalone died with "useToast must be used within a
+ * ToastProvider" — eight of them immediately. The real app is fine (HeroUINativeProvider
+ * wraps everything), so the failure was purely a coupling one: infrastructure had been made
+ * to depend on presentation.
+ *
+ * This is the same lesson as `useOptionalPrimaryColor` in TenantContext — a component that
+ * only wants to *look* right must not be able to take a screen down. A missing toast is an
+ * acceptable degradation; a crash is not.
+ *
+ * Screens should keep using `useAppToast()`, which fails loudly if the provider is missing.
+ */
+export function useOptionalAppToast(): Pick<ReturnType<typeof useAppToast>, 'show'> {
+  let show: ReturnType<typeof useAppToast>['show'] | null = null;
+
+  try {
+    // Calling the hook inside try/catch is safe here: the underlying useContext has already
+    // run by the time the guard throws, so hook order stays identical on every render.
+    ({ show } = useAppToast());
+  } catch {
+    show = null;
+  }
+
+  const noop = useCallback(() => '', []);
+  return { show: show ?? (noop as ReturnType<typeof useAppToast>['show']) };
+}

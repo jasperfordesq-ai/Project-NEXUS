@@ -65,6 +65,7 @@
     "timeout": "Chuaigh an t-iarratas thar am. Seiceáil do nasc.",
     "requestFailedWithStatus": "Theip ar an iarratas le stádas {{status}}",
     "unauthorized": "Tá do sheisiún imithe in éag. Logáil isteach arís.",
+    "sessionEndedTitle": "Sínithe amach",
     "notFound": "Gan aimsiú.",
     "alertTitle": "Error"
   },

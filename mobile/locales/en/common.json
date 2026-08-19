@@ -65,6 +65,7 @@
     "timeout": "Request timed out. Please check your connection.",
     "requestFailedWithStatus": "Request failed with status {{status}}",
     "unauthorized": "Your session has expired. Please log in again.",
+    "sessionEndedTitle": "Signed out",
     "notFound": "Not found.",
     "alertTitle": "Error"
   },
