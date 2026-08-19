@@ -13,7 +13,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">{{ event.caption or t("govuk_alpha_events.recurring_edit.caption") }}</span>
+      <span class="govuk-caption-xl">{{ event.caption or t("govuk_alpha_events.recurring_edit.caption") }}</span>
       <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.recurring_edit.title") }}</h1>
 
       {% if errors and errors.length %}

@@ -46,7 +46,9 @@
 
   {% if categories.length %}
     <h2 class="govuk-heading-s">{{ t("govuk_alpha_commerce.category.browse_heading") }}</h2>
-    <ul class="nexus-alpha-inline-list govuk-!-margin-bottom-6">
+    {# govuk-list zeroes the UA list padding and markers — without it this flex
+       row rendered as bulleted, 40px-indented links. #}
+    <ul class="govuk-list nexus-alpha-inline-list govuk-!-margin-bottom-6">
       {% for category in categories %}
         {% if category.href %}
           <li><a class="govuk-link" href="{{ urlFor(category.href) }}">{{ category.name }}</a></li>

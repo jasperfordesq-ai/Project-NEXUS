@@ -33,7 +33,7 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.instructor.caption", { community: tenantName }) }}</span>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.instructor.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{% if mode == 'edit' %}{{ t("govuk_alpha_commerce.instructor.title_edit") }}{% else %}{{ t("govuk_alpha_commerce.instructor.title_create") }}{% endif %}</h1>
 
   {% if mode == 'edit' and course.status != 'published' %}

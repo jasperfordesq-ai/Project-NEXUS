@@ -106,7 +106,7 @@
         </div>
       {% endif %}
 
-      <span class="govuk-caption-l">{{ t("listings.edit.caption" if listing else "listings.create.caption", { community: tenantName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("listings.edit.caption" if listing else "listings.create.caption", { community: tenantName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("listings.edit.title" if listing else "listings.create.title") }}</h1>
       <p class="govuk-body-l">{{ t("listings.edit.description") if listing else t("listings.create.description", { community: tenantName }) }}</p>
 

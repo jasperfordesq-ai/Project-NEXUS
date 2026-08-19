@@ -20,7 +20,7 @@
     <a class="govuk-link" href="{{ urlFor('/activity/insights') }}">{{ t("govuk_alpha_activity.nav.insights") }}</a>
   </p>
 
-  <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+  <dl class="nexus-alpha-stat-grid">
     <div class="nexus-alpha-stat">
       <dt>{{ t("activity.hours_given") }}</dt>
       <dd>{{ activity.hoursGivenLabel }}</dd>
@@ -41,7 +41,7 @@
 
   {% if activity.hasEngagement %}
     <h2 class="govuk-heading-l">{{ t("polish_discovery.activity_engagement_title") }}</h2>
-    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
+    <dl class="nexus-alpha-stat-grid">
       <div class="nexus-alpha-stat">
         <dt>{{ t("polish_discovery.activity_posts_count") }}</dt>
         <dd>{{ activity.engagement.postsLabel }}</dd>

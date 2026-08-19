@@ -14,7 +14,7 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-l">{{ t("govuk_alpha_events.moderation.caption") }}</span>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_events.moderation.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.moderation.approve_title" if isApprove else "govuk_alpha_events.moderation.reject_title") }}</h1>
   {% if error %}<div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="{{ '#reason' if error == 'reason_required' or error == 'reason_too_long' else '#confirmation' }}">{{ t(errorKey) }}</a></li></ul></div></div></div>{% endif %}
   <dl class="govuk-summary-list"><div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.event") }}</dt><dd class="govuk-summary-list__value">{{ event.title }}</dd></div><div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.organizer") }}</dt><dd class="govuk-summary-list__value">{{ event.organizerName }}</dd></div>{% if event.startLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.schedule") }}</dt><dd class="govuk-summary-list__value">{{ event.startLabel }}</dd></div>{% endif %}</dl>

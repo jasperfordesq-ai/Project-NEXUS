@@ -6,7 +6,9 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
-  <span class="govuk-caption-l">{{ t("exchanges.title") }}</span>
+  {# Community-name caption, matching every sibling page — this previously
+     rendered the identical string as caption AND h1. #}
+  <span class="govuk-caption-xl">{{ tenantName or serviceName }}</span>
   <h1 class="govuk-heading-xl">{{ t("exchanges.title") }}</h1>
   <p class="govuk-body-l">{{ t("exchanges.description") }}</p>
 

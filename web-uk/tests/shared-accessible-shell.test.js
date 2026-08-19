@@ -7223,7 +7223,7 @@ describe('shared accessible frontend shell', () => {
 
     // An over-limit amount fails validation ('too-large') before any API call.
     const post = await agent.post('/wallet/transfer').set('Cookie', signedCookieHeader()).type('form').send({
-      _csrf: csrf, recipient_id: '77', idempotency_key: 'idem-key-transfer-x', amount: '5000', note: 'Thanks for the help', recipient_q: 'alex'
+      _csrf: csrf, recipient_id: '77', confirm: '1', idempotency_key: 'idem-key-transfer-x', amount: '5000', note: 'Thanks for the help', recipient_q: 'alex'
     });
     expect(post.status).toBe(302);
     expect(post.headers.location).toContain('status=transfer-failed');
@@ -7616,6 +7616,7 @@ describe('shared accessible frontend shell', () => {
         .send({
           _csrf: csrfToken,
           recipient_id: '77',
+          confirm: '1',
           amount: '2.50',
           note: ' Thank you for the repair ',
           idempotency_key: '8199b480-d8ab-4f85-b7ff-1d9413699588'
@@ -7655,7 +7656,7 @@ describe('shared accessible frontend shell', () => {
         .post('/wallet/transfer')
         .set('Cookie', cookie)
         .type('form')
-        .send({ _csrf: csrfToken, idempotency_key: 'validation-key', ...body });
+        .send({ _csrf: csrfToken, confirm: '1', idempotency_key: 'validation-key', ...body });
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toBe(`/wallet?status=transfer-failed&error=${errorKey}#transfer`);
@@ -7684,6 +7685,7 @@ describe('shared accessible frontend shell', () => {
         .send({
           _csrf: csrfToken,
           recipient_id: '77',
+          confirm: '1',
           amount: '2',
           idempotency_key: 'error-key'
         });
@@ -7716,6 +7718,7 @@ describe('shared accessible frontend shell', () => {
         .send({
           _csrf: csrfToken,
           recipient_id: '77',
+          confirm: '1',
           amount: '2',
           idempotency_key: 'onboarding-key'
         });
@@ -7740,6 +7743,7 @@ describe('shared accessible frontend shell', () => {
         .send({
           _csrf: csrfToken,
           recipient_id: '77',
+          confirm: '1',
           amount: '2',
           idempotency_key: 'expired-session-key'
         });
@@ -12259,7 +12263,7 @@ describe('shared accessible frontend shell', () => {
       offset: 20
     });
     expect(signed.text).toContain('href="/members"');
-    expect(signed.text).toContain('<span class="govuk-caption-l">Project NEXUS Accessible</span>');
+    expect(signed.text).toContain('<span class="govuk-caption-xl">Project NEXUS Accessible</span>');
     expect(signed.text).toContain('Recommended members');
     expect(signed.text).toContain('Members ranked by their recent activity, contribution and standing in this community.');
     expect(signed.text).toContain('href="/members?sort=joined&amp;order=DESC"');
@@ -12273,9 +12277,11 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('87% match');
     expect(signed.text).toContain('value="87"');
     expect(signed.text).toContain('Bandon');
-    expect(signed.text).toContain('42 hours given');
-    expect(signed.text).toContain('11 hours received');
-    expect(signed.text).toContain('Rating 4.8');
+    // The <dt> carries the label; the <dd> is the bare value — the old sentence
+    // form ("42 hours given" under a "Hours given" key) printed the label twice.
+    expect(signed.text).toMatch(/<dt>Hours given<\/dt>\s*<dd>42<\/dd>/);
+    expect(signed.text).toMatch(/<dt>Hours received<\/dt>\s*<dd>11<\/dd>/);
+    expect(signed.text).toMatch(/<dt>Rating<\/dt>\s*<dd>4.8<\/dd>/);
     expect(signed.text).toContain('Verified');
     expect(signed.text).toContain('Level 5');
     expect(signed.text).toContain('Connected');
@@ -12316,7 +12322,8 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers['content-language']).toBe('ar');
     expect(response.text).toContain('<html lang="ar" dir="rtl"');
     expect(response.text).toContain(translate('ar', 'members.unknown_member'));
-    expect(response.text).toContain(translate('ar', 'members.hours_given', { count: 2 }));
+    expect(response.text).toContain(translate('ar', 'members.hours_given_label'));
+    expect(response.text).toMatch(new RegExp('<dt>' + translate('ar', 'members.hours_given_label') + '</dt>\\s*<dd>2</dd>'));
     expect(response.text).toContain(translate('ar', 'members.connection_request_received'));
     expect(response.text).toContain(`aria-label="${translate('ar', 'members.pagination_label')}"`);
   });
@@ -12402,7 +12409,7 @@ describe('shared accessible frontend shell', () => {
       offset: 24
     });
     expect(signed.text).toContain('href="/members"');
-    expect(signed.text).toContain('<span class="govuk-caption-l">Project NEXUS Accessible</span>');
+    expect(signed.text).toContain('<span class="govuk-caption-xl">Project NEXUS Accessible</span>');
     expect(signed.text).toContain('Members near me');
     expect(signed.text).toContain('Members within the chosen distance of the location saved on your profile.');
     expect(signed.text).toContain('href="/members/discover"');
@@ -12415,9 +12422,11 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Helps neighbours find practical support.');
     expect(signed.text).toContain('4.3 km away');
     expect(signed.text).toContain('Bandon');
-    expect(signed.text).toContain('42 hours given');
-    expect(signed.text).toContain('11 hours received');
-    expect(signed.text).toContain('Rating 4.8');
+    // The <dt> carries the label; the <dd> is the bare value — the old sentence
+    // form ("42 hours given" under a "Hours given" key) printed the label twice.
+    expect(signed.text).toMatch(/<dt>Hours given<\/dt>\s*<dd>42<\/dd>/);
+    expect(signed.text).toMatch(/<dt>Hours received<\/dt>\s*<dd>11<\/dd>/);
+    expect(signed.text).toMatch(/<dt>Rating<\/dt>\s*<dd>4.8<\/dd>/);
     expect(signed.text).toContain('Verified');
     expect(signed.text).toContain('Level 5');
     expect(signed.text).toContain('Connected');
@@ -14468,7 +14477,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getComments).toHaveBeenCalled();
     expect(response.text).toContain('href="/feed"');
     expect(response.text).toContain('Back to the feed');
-    expect(response.text).toContain('<span class="govuk-caption-l">Project NEXUS Accessible</span>');
+    expect(response.text).toContain('<span class="govuk-caption-xl">Project NEXUS Accessible</span>');
     expect(response.text).toContain('<h1');
     expect(response.text).toContain('Post');
     expect(response.text).toContain('Posted by Ada Lovelace');
@@ -22873,7 +22882,7 @@ describe('shared accessible frontend shell', () => {
     expect(unsigned.headers.location).toBe('/login?status=auth-required');
     expect(signed.status).toBe(200);
     expect(signed.text).toContain('Manage members');
-    expect(signed.text).toContain('<span class="govuk-caption-l">Neighbourhood Repairs</span>');
+    expect(signed.text).toContain('<span class="govuk-caption-xl">Neighbourhood Repairs</span>');
     expect(signed.text).toContain('Neighbourhood Repairs');
     expect(signed.text).toContain('The member is now an admin.');
     expect(signed.text).toContain('Join requests');
@@ -24895,7 +24904,7 @@ describe('shared accessible frontend shell', () => {
       .get('/events/7/recurring-edit')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
     expect(recurringReplay.status).toBe(200);
-    expect(recurringReplay.text).toContain('<span class="govuk-caption-l">Original title</span>');
+    expect(recurringReplay.text).toContain('<span class="govuk-caption-xl">Original title</span>');
     expect(recurringReplay.text).toContain('href="#title"');
     expect(recurringReplay.text).toContain('id="title-error"');
     expect(recurringReplay.text).toContain('value=" Preserve this title "');
@@ -25404,7 +25413,10 @@ describe('shared accessible frontend shell', () => {
     const response = await request(app).get('/events/42/communications?page=2&broadcast_id=8&history_page=2').set('Cookie', signedCookieHeader());
     expect(response.status).toBe(200);
     expect(response.headers['cache-control']).toBe('private, no-store');
-    expect(response.text).not.toContain('<span class="govuk-caption-l">Community garden day</span>');
+    // The event title IS the page caption (standard sub-page pattern). This
+    // assertion was negative and asserted caption-l — which the template never
+    // used — so it passed vacuously from the day it was written.
+    expect(response.text).toContain('<span class="govuk-caption-xl">Community garden day</span>');
     expect(response.text).toContain('Post-event messages can only use attendance segments');
     expect(response.text).toContain('id="communication-body-hint"');
     expect(response.text).toContain('data-module="govuk-checkboxes"');
@@ -30570,7 +30582,7 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('<span class="govuk-caption-l">Messages</span>');
+    expect(response.text).toContain('<span class="govuk-caption-xl">Messages</span>');
     expect(response.text).toContain('id="safeguarding-notice"');
     expect(response.text).toContain('Coordinator arrangement needed');
     expect(response.text).toContain('A coordinator must arrange contact with this member.');
@@ -33782,7 +33794,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="Jasper Cycles"');
     expect(response.text).toContain('Repairs and refurbished bikes');
     expect(response.text).toContain('value="1 Market Street"');
-    expect(response.text).toContain('class="govuk-caption-l"');
+    expect(response.text).toContain('class="govuk-caption-xl"');
     expect(response.text).toContain('id="seller_type"');
     expect(response.text).toContain('id="seller_type-business"');
     expect(response.text).not.toContain('Laravel Blade route');
@@ -33906,7 +33918,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/seller/pickup-slots');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/seller/pickup-slots');
     expect(index.text).toContain('Pickup slots');
-    expect(index.text).toContain('class="govuk-caption-l"');
+    expect(index.text).toContain('class="govuk-caption-xl"');
     expect(index.text).toContain('govuk-visually-hidden">Pickup slots</caption>');
     expect(index.text).toContain('Collection confirmed. The order is marked as collected.');
     expect(index.text).toContain('Order reference: 91');
@@ -33990,7 +34002,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/seller/coupons');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/seller/coupons');
     expect(index.text).toContain('My coupons');
-    expect(index.text).toContain('class="govuk-caption-l"');
+    expect(index.text).toContain('class="govuk-caption-xl"');
     expect(index.text).toContain('govuk-visually-hidden">My coupons</caption>');
     expect(index.text).toContain('Your coupon was created.');
     expect(index.text).toContain('Summer sale');

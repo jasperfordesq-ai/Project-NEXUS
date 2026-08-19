@@ -9,7 +9,7 @@
     <div class="govuk-grid-column-two-thirds">
       <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
 
-      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("legal.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{% if document %}{{ document.title }}{% else %}{{ config.title }}{% endif %}</h1>
 
       {% if document %}

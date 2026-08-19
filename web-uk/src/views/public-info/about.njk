@@ -7,7 +7,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">{{ t("about.caption", { community: communityName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("about.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("about.title", { name: communityName }) if t else title }}</h1>
       <p class="govuk-body-l">{{ t("about.description", { name: communityName }) }}</p>
     </div>
@@ -37,7 +37,7 @@
 
   {% if stats %}
     <h2 class="govuk-heading-l">{{ t("about.stats.title") }}</h2>
-    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+    <dl class="nexus-alpha-stat-grid">
       <div class="nexus-alpha-stat">
         <dt>{{ t("about.stats.members") }}</dt>
         <dd>{{ stats.members }}</dd>

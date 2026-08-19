@@ -9,7 +9,9 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block mainContent %}
-      <span class="govuk-caption-l">{{ t("nav.messages") }}</span>
+      {# Community-name caption, matching every sibling page — this previously
+         repeated the word "Messages" directly above the "Messages" h1. #}
+      <span class="govuk-caption-xl">{{ tenantName or serviceName }}</span>
       <h1 class="govuk-heading-xl">{{ t("messages.title") }}</h1>
       <p class="govuk-body-l">{{ t("messages.description") }}</p>
       {% if unreadCount > 0 %}

@@ -11,7 +11,7 @@
     <div class="govuk-grid-column-two-thirds">
       <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
 
-      <span class="govuk-caption-l">{{ t("govuk_alpha_feed.item.caption", { community: communityName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_feed.item.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{% if item.title %}{{ item.title }}{% else %}{{ t("govuk_alpha_feed.item.heading") }}{% endif %}</h1>
 
       {% if statusMessage %}

@@ -10,7 +10,7 @@
   {% set hasErrors = errors and (errors.summary or errors.description or errors.impact) %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">{{ t("report_problem.caption", { service: tenantName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("report_problem.caption", { service: tenantName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("report_problem.title") }}</h1>
 
       {% if status == 'sent' %}

@@ -9,7 +9,7 @@
     <div class="govuk-grid-column-two-thirds">
       <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
 
-      <span class="govuk-caption-l">{{ t("accessibility.caption", { community: communityName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("accessibility.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{% if document %}{{ document.title }}{% else %}{{ t("accessibility.title") if t else title }}{% endif %}</h1>
 
       {# `accessibility` is a valid legal document type, so a community can publish

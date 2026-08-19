@@ -33,7 +33,7 @@
         }) }}
       {% endif %}
 
-      <span class="govuk-caption-l">{{ event.title or t("events.detail_title") }}</span>
+      <span class="govuk-caption-xl">{{ event.title or t("events.detail_title") }}</span>
       <h1 class="govuk-heading-xl">{{ t("events.edit_title") }}</h1>
 
       <form action="{{ urlFor('/events/' + (event.id | string) + '/edit') }}" method="post" enctype="multipart/form-data" novalidate data-validate-form data-validation-error-title="{{ t('states.error_title') }}" data-validation-error-prefix="{{ t('states.error_prefix') }}">

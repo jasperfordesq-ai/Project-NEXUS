@@ -32,7 +32,7 @@
     <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.free_items.title") }}</h1>
     <p class="govuk-body-l">{{ t("govuk_alpha_commerce.free_items.description") }}</p>
   {% elseif mode == 'category' %}
-    <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.category.caption", { community: tenantName or serviceName }) }}</span>
+    <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.category.caption", { community: tenantName or serviceName }) }}</span>
     <h1 class="govuk-heading-xl">{{ category.name }}</h1>
     <p class="govuk-body">{{ tc("govuk_alpha_commerce.category.count", listings.length, { count: listings.length }) }}</p>
   {% else %}

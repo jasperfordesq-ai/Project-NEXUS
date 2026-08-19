@@ -110,7 +110,7 @@
     <div class="govuk-grid-column-two-thirds">
 
       <div class="app-page-header">
-        <span class="govuk-caption-l">{{ t("events.detail_title") }}</span>
+        <span class="govuk-caption-xl">{{ t("events.detail_title") }}</span>
         <h1 class="govuk-heading-xl">{{ event.title }}</h1>
         {% set permissions = event.permissions or {} %}
         {% set canManageRegistrationRoster = permissions.manage_registration and permissions.manage_people %}

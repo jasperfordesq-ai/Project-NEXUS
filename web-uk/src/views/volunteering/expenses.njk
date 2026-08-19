@@ -37,7 +37,7 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.expenses.caption") }}</span>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_volunteering.expenses.caption") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.expenses.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.expenses.description") }}</p>
 
@@ -54,7 +54,7 @@
 
   {% if dashboard.expenses.length %}
     <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.expenses.stats_title") }}</h2>
-    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
+    <dl class="nexus-alpha-stat-grid">
       <div class="nexus-alpha-stat">
         <dt>{{ t("govuk_alpha_volunteering.expenses.stat_total_claimed") }}</dt>
         <dd>{{ dashboard.stats.totalClaimedLabel }}</dd>
