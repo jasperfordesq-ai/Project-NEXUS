@@ -28,6 +28,7 @@ import {
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceFreeRoute() {
   return (
@@ -138,7 +139,7 @@ function MarketplaceFreeScreen() {
                 </View>
               </View>
               <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/new-marketplace-listing', params: { price_type: 'free' } } as unknown as Href)} style={{ backgroundColor: theme.success }}>
-                <Ionicons name="add-outline" size={16} color="#fff" />
+                <AccentIcon name="add-outline" size={16} />
                 <HeroButton.Label>{t('free.giveAway')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>

@@ -44,6 +44,7 @@ import VoiceMessageBubble from '@/components/VoiceMessageBubble';
 import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
 import { authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const REACTION_EMOJIS = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
@@ -625,7 +626,7 @@ function ThreadScreenInner() {
               </HeroButton>
             ) : (
               <HeroButton isIconOnly size="sm" variant="primary" onPress={() => void handleSendVoice()} isDisabled={isSending} accessibilityLabel={t('thread.voice.send')}>
-                {isSending ? <Spinner size="sm" /> : <Ionicons name="send" size={16} color="#fff" />}
+                {isSending ? <Spinner size="sm" /> : <AccentIcon name="send" size={16} />}
               </HeroButton>
             )}
             <HeroButton isIconOnly size="sm" variant="ghost" onPress={() => void handleCancelVoice()} accessibilityLabel={t('thread.voice.cancel')}>
@@ -706,7 +707,7 @@ function ThreadScreenInner() {
               isDisabled={isSending || (!inputText.trim() && pendingAttachments.length === 0) || messagingRestriction?.messaging_disabled}
               accessibilityLabel={editingMessage ? t('thread.saveEdit') : t('thread.send')}
             >
-              {isSending ? <Spinner size="sm" /> : <Ionicons name={editingMessage ? 'checkmark' : 'send'} size={18} color="#fff" />}
+              {isSending ? <Spinner size="sm" /> : <AccentIcon name={editingMessage ? 'checkmark' : 'send'} size={18} />}
             </HeroButton>
           </View>
         </Surface>

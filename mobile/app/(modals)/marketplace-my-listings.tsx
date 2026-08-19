@@ -36,6 +36,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type ListingTab = 'active' | 'draft' | 'sold' | 'expired';
 
@@ -351,7 +352,7 @@ function OnboardingNudge({ primary, onDismiss }: { primary: string; onDismiss: (
         </View>
         <View className="flex-row gap-2">
           <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/marketplace-merchant-onboarding' as Href)}>
-            <Ionicons name="storefront-outline" size={16} color="#fff" />
+            <AccentIcon name="storefront-outline" size={16} />
             <HeroButton.Label>{t('myListings.onboardingNudge.start')}</HeroButton.Label>
           </HeroButton>
           <HeroButton className="flex-1" variant="secondary" onPress={onDismiss}>

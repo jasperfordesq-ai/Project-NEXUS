@@ -34,6 +34,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import OfflineBanner from '@/components/OfflineBanner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 type ExperienceOption = (typeof experienceOptions)[number];
@@ -497,7 +498,7 @@ function NewExchangeModalInner() {
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
             </HeroButton>
             <HeroButton className="flex-1" variant="primary" isDisabled={submitting} onPress={() => void handleSubmit()}>
-              {submitting ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={18} color="#fff" />}
+              {submitting ? <Spinner size="sm" /> : <AccentIcon name="checkmark-outline" size={18} />}
               <HeroButton.Label>{type === 'offer' ? t('postOffer') : t('postRequest')}</HeroButton.Label>
             </HeroButton>
           </View>

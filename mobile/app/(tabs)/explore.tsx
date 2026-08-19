@@ -34,6 +34,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
 import OfflineBanner from '@/components/OfflineBanner';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type ExploreTab = 'all' | 'forYou' | 'listings' | 'people' | 'events' | 'groups';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -147,7 +148,7 @@ export default function ExploreScreen() {
             </HeroCard.Header>
             <HeroCard.Footer className="flex-row gap-3 px-5 pb-5 pt-2">
               <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/search' as Href)}>
-                <Ionicons name="search-outline" size={18} color="#fff" />
+                <AccentIcon name="search-outline" size={18} />
                 <HeroButton.Label>{t('actions.search')}</HeroButton.Label>
               </HeroButton>
               <HeroButton className="flex-1" variant="secondary" onPress={() => router.push('/(modals)/matches' as Href)}>

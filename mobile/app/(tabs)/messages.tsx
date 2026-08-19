@@ -25,6 +25,7 @@ import Input from '@/components/ui/Input';
 import NativePressable from '@/components/ui/NativePressable';
 import { ConversationSkeleton } from '@/components/ui/Skeleton';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 function extractConversationsPage(response: ConversationListResponse) {
   return {
@@ -274,7 +275,7 @@ export default function MessagesScreen() {
                 ) : (
                   activeTab === 'inbox' ? (
                     <HeroButton variant="primary" size="sm" onPress={openNewMessage}>
-                    <Ionicons name="create-outline" size={16} color="#fff" />
+                    <AccentIcon name="create-outline" size={16} />
                     <HeroButton.Label>{t('newMessage')}</HeroButton.Label>
                     </HeroButton>
                   ) : null
@@ -372,7 +373,7 @@ function MessagesHeader({
                 accessibilityLabel={t('newMessage')}
                 onPress={onNewMessage}
               >
-                <Ionicons name="create-outline" size={18} color="#fff" />
+                <AccentIcon name="create-outline" size={18} />
               </HeroButton>
             </View>
           </View>
@@ -486,7 +487,7 @@ function ConversationCard({
           accessibilityLabel={t('archiveConversationWithName', { name: otherName })}
           onPress={() => onArchive(conversation)}
         >
-          <Ionicons name="archive-outline" size={21} color="#fff" />
+          <AccentIcon name="archive-outline" size={21} />
           <HeroButton.Label className="text-xs font-semibold text-white" numberOfLines={1}>{t('archive')}</HeroButton.Label>
         </HeroButton>
       )}

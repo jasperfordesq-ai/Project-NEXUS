@@ -76,6 +76,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SearchInput from '@/components/ui/SearchInput';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -970,7 +971,7 @@ function CertificatesPanel({
             </View>
           </View>
           <HeroButton isDisabled={generating} onPress={() => void handleGenerate()}>
-            {generating ? <Spinner size="sm" /> : <Ionicons name="add-outline" size={16} color="#fff" />}
+            {generating ? <Spinner size="sm" /> : <AccentIcon name="add-outline" size={16} />}
             <HeroButton.Label>{t('certificates.generate')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Body>

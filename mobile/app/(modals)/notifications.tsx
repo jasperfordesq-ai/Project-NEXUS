@@ -38,6 +38,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation(['notifications', 'common']);
@@ -146,7 +147,7 @@ export default function NotificationsScreen() {
                 isDisabled={markingAll}
                 accessibilityLabel={t('markAllRead')}
               >
-                <Ionicons name="checkmark-done-outline" size={17} color="#fff" />
+                <AccentIcon name="checkmark-done-outline" size={17} />
                 <HeroButton.Label>{markingAll ? t('marking') : t('markAllRead')}</HeroButton.Label>
               </HeroButton>
             ) : null}

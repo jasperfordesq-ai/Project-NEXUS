@@ -20,6 +20,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -163,7 +164,7 @@ export default function MoreScreen() {
 
             <View className="flex-row gap-3">
               <HeroButton className="flex-1" variant="primary" onPress={() => navigate('/(modals)/edit-profile')}>
-                <Ionicons name="create-outline" size={17} color="#fff" />
+                <AccentIcon name="create-outline" size={17} />
                 <HeroButton.Label>{t('editProfile')}</HeroButton.Label>
               </HeroButton>
               <HeroButton className="flex-1" variant="secondary" onPress={() => navigate('/(modals)/wallet')}>

@@ -24,6 +24,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected'] as const;
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
@@ -288,7 +289,7 @@ function PipelineApplicationCard({
             </HeroButton>
           ))}
           <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void moveTo('interview')}>
-            <Ionicons name="calendar-outline" size={14} color="#fff" />
+            <AccentIcon name="calendar-outline" size={14} />
             <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
           </HeroButton>
         </View>

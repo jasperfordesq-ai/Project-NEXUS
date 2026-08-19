@@ -29,6 +29,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceStripeOnboardingRoute() {
   return (
@@ -244,7 +245,7 @@ function MarketplaceStripeOnboardingScreen() {
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
             <HeroButton variant="primary" onPress={() => void start()} isDisabled={isStarting || complete} style={{ backgroundColor: complete ? theme.success : primary }}>
-              <Ionicons name={complete ? 'checkmark-circle-outline' : incomplete ? 'refresh-outline' : 'open-outline'} size={17} color="#fff" />
+              <AccentIcon name={complete ? 'checkmark-circle-outline' : incomplete ? 'refresh-outline' : 'open-outline'} size={17} />
               <HeroButton.Label>{primaryActionLabel}</HeroButton.Label>
             </HeroButton>
             <HeroButton variant="secondary" onPress={() => void load()} isDisabled={isStarting}>

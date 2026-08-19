@@ -51,6 +51,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceDetailRoute() {
   return (
@@ -678,7 +679,7 @@ function MarketplaceDetailScreen() {
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('owner.title')}</Text>
               <View className="flex-row gap-2">
                 <HeroButton className="flex-1" variant="primary" onPress={() => router.push({ pathname: '/(modals)/edit-marketplace-listing', params: { id: String(listing.id) } } as unknown as Href)}>
-                  <Ionicons name="create-outline" size={16} color="#fff" />
+                  <AccentIcon name="create-outline" size={16} />
                   <HeroButton.Label>{t('owner.edit')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton className="flex-1" variant="secondary" onPress={() => router.push('/(modals)/marketplace-my-listings' as Href)}>
@@ -822,7 +823,7 @@ function MarketplaceDetailScreen() {
               ) : null}
               {canBuy ? (
                 <HeroButton className="flex-1" variant="primary" onPress={handleBuyNow} isDisabled={isActionLoading || !fulfilmentReady || !pickupSlotReady}>
-                  <Ionicons name="card-outline" size={17} color="#fff" />
+                  <AccentIcon name="card-outline" size={17} />
                   <HeroButton.Label>{t('detail.buyNow')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
@@ -847,7 +848,7 @@ function MarketplaceDetailScreen() {
               <View className="gap-3">
                 <EmptyState icon="folder-open-outline" title={t('collections.empty')} subtitle={t('collections.emptyHint')} />
                 <HeroButton variant="primary" onPress={() => { setCollectionOpen(false); router.push('/(modals)/marketplace-tools' as Href); }}>
-                  <Ionicons name="add-outline" size={17} color="#fff" />
+                  <AccentIcon name="add-outline" size={17} />
                   <HeroButton.Label>{t('collections.manage')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -874,7 +875,7 @@ function MarketplaceDetailScreen() {
               <FormInput label={t('offers.amount')} value={offerAmount} onChangeText={setOfferAmount} placeholder={t('offers.amountPlaceholder')} keyboardType="decimal-pad" />
               <FormInput label={t('offers.message')} value={offerMessage} onChangeText={setOfferMessage} placeholder={t('offers.messagePlaceholder')} multiline />
               <HeroButton variant="primary" onPress={handleSubmitOffer} isDisabled={isActionLoading}>
-                <Ionicons name="send-outline" size={17} color="#fff" />
+                <AccentIcon name="send-outline" size={17} />
                 <HeroButton.Label>{t('offers.submit')}</HeroButton.Label>
               </HeroButton>
             </View>

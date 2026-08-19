@@ -43,6 +43,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const WEB_URL = 'https://app.project-nexus.ie';
 
@@ -671,7 +672,7 @@ function VolunteeringDetailScreenInner() {
                   <Spinner size="sm" />
                 ) : (
                   <>
-                    <Ionicons name={hasApplied ? 'checkmark-circle-outline' : 'send-outline'} size={18} color="#fff" />
+                    <AccentIcon name={hasApplied ? 'checkmark-circle-outline' : 'send-outline'} size={18} />
                     <HeroButton.Label>
                       {hasApplied ? t('interestSent') : open ? t('expressInterest') : t('status.closed')}
                     </HeroButton.Label>
@@ -711,7 +712,7 @@ function VolunteeringDetailScreenInner() {
               isDisabled={!open || hasApplied || interestLoading}
               onPress={() => void handleApply()}
             >
-              {interestLoading ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={18} color="#fff" />}
+              {interestLoading ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={18} />}
               <HeroButton.Label>{t('expressInterest')}</HeroButton.Label>
             </HeroButton>
           </View>

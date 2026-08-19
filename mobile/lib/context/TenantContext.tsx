@@ -174,3 +174,21 @@ export function usePrimaryColor(): string {
   const { tenant } = useTenantContext();
   return tenant?.branding.primary_color ?? FALLBACK_PRIMARY;
 }
+
+/**
+ * The brand colour, or the platform default when there is no TenantProvider above.
+ *
+ * 🔴 Deliberately non-throwing, unlike `usePrimaryColor`. A presentational component — an
+ * icon, a badge — should not make its whole screen depend on tenant context. Adding
+ * `AccentIcon` (which needs this to match a button label) to 37 screens broke 12 test
+ * suites that render components standalone, because `useTenantContext` throws without a
+ * provider. Failing to a readable default is the right answer for a colour: the icon still
+ * renders, just in the platform colour.
+ *
+ * Screens that genuinely need tenant DATA should keep using `useTenantContext` and get the
+ * loud error.
+ */
+export function useOptionalPrimaryColor(): string {
+  const ctx = useContext(TenantContext);
+  return ctx?.tenant?.branding.primary_color ?? FALLBACK_PRIMARY;
+}

@@ -33,6 +33,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const WEB_URL = 'https://app.project-nexus.ie';
 
@@ -457,7 +458,7 @@ export default function JobDetailScreen() {
           }}
           style={hasApplied || isClosed ? { backgroundColor: theme.textMuted } : undefined}
         >
-          <Ionicons name={hasApplied ? 'checkmark-circle' : 'send-outline'} size={18} color="#fff" />
+          <AccentIcon name={hasApplied ? 'checkmark-circle' : 'send-outline'} size={18} />
           <HeroButton.Label>{hasApplied ? t('detail.applied') : t('detail.apply')}</HeroButton.Label>
         </HeroButton>
       </Surface>
@@ -790,7 +791,7 @@ function OwnerApplicationCard({
           <HeroButton.Label>{t('owner.reject')}</HeroButton.Label>
         </HeroButton>
         <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void updateStatus('interview')}>
-          <Ionicons name="calendar-outline" size={14} color="#fff" />
+          <AccentIcon name="calendar-outline" size={14} />
           <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
         </HeroButton>
       </View>

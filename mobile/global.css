@@ -62,22 +62,21 @@
        * that way. Without this the fallback state still showed the clash it was
        * supposed to avoid.
        *
-       * 🔴 The SAME colour in both schemes, deliberately NOT lightened for dark. Lifting
-       * it was tried twice and abandoned twice — see the long note in
-       * scripts/generate-tenant-themes.mjs for the full reasoning. In short: a lifted
-       * accent is a different colour from usePrimaryColor(), which everything the app
-       * paints by hand uses, so it cascades into ~230 edit sites (170 background
-       * overrides, since swept, plus 62 hardcoded white icons that cannot inherit a CSS
-       * variable because nativeVectorIconStyling.test.ts requires the native color prop).
-       * And it buys nothing that is missing: un-lifted, the accent as a link on the dark
-       * ground measures 4.24:1, above the 3:1 floor, and as a solid button fill lifting
-       * changes nothing.
+       * 🔴 Lightened 30% towards white for dark mode, matching DARK_LIFT in
+       * scripts/generate-tenant-themes.mjs. Three things had to be fixed before this was
+       * safe, because a lifted accent is a different colour from usePrimaryColor() and
+       * everything the app paints by hand uses that: 79 buttons overriding their own
+       * background, 91 conditional overrides on toggles, and 72 hardcoded-white icons
+       * beside those labels (now <AccentIcon>, which applies the same lift before choosing
+       * its colour). The long note in the generator has the full history.
        *
-       * White label measures 4.66:1 on this blue in both schemes.
+       * Label is INK here, not white: white on the lifted blue measures 2.90:1 and fails,
+       * ink measures 6.15:1. As a link on the dark ground the lifted blue reads 6.80:1
+       * against 4.24:1 un-lifted, which is what lifting buys.
        * Guarded by lib/theme/defaultAccent.test.ts. */
-      --accent: rgb(0 111 238);
-      --accent-foreground: oklch(1 0 0);
-      --accent-hover: rgb(38 134 240);
+      --accent: rgb(77 154 243);
+      --accent-foreground: oklch(0.21 0.03 256);
+      --accent-hover: rgb(98 166 244);
 
       --background: oklch(0.13 0.02 280);        /* #0a0a0f */
       --foreground: oklch(0.94 0 0);

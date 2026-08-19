@@ -31,6 +31,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type Step = 1 | 2 | 3 | 4;
 type SellerType = 'private' | 'business';
@@ -281,7 +282,7 @@ function MarketplaceMerchantOnboardingScreen() {
           <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
             <HeroCard.Body className="gap-3 p-4">
               <HeroButton variant="primary" onPress={() => router.replace('/(modals)/marketplace-my-listings' as Href)}>
-                <Ionicons name="albums-outline" size={17} color="#fff" />
+                <AccentIcon name="albums-outline" size={17} />
                 <HeroButton.Label>{t('merchantOnboarding.goListings')}</HeroButton.Label>
               </HeroButton>
               <HeroButton variant="secondary" onPress={() => router.push('/(modals)/marketplace-stripe-onboarding' as Href)}>
@@ -370,7 +371,7 @@ function MarketplaceMerchantOnboardingScreen() {
                 ) : null}
                 <HeroButton className="flex-1" variant="primary" onPress={() => void next()} isDisabled={isSaving}>
                   <HeroButton.Label>{step === 4 ? t('merchantOnboarding.complete') : t('merchantOnboarding.next')}</HeroButton.Label>
-                  <Ionicons name="arrow-forward-outline" size={17} color="#fff" />
+                  <AccentIcon name="arrow-forward-outline" size={17} />
                 </HeroButton>
               </View>
             </HeroCard.Body>

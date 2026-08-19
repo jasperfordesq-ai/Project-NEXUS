@@ -35,6 +35,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type TabKey = 'collections' | 'saved';
 
@@ -308,7 +309,7 @@ function MarketplaceCollectionsScreen() {
                   </HeroButton>
                 </View>
                 <HeroButton variant="primary" onPress={() => setIsCreateOpen(true)}>
-                  <Ionicons name="add-outline" size={16} color="#fff" />
+                  <AccentIcon name="add-outline" size={16} />
                   <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton variant="secondary" onPress={() => openManageTools()}>
@@ -417,7 +418,7 @@ function SavedSearchRow({
         </View>
         <View className="flex-row gap-2">
           <HeroButton className="flex-1" variant="primary" onPress={onRun}>
-            <Ionicons name="play-outline" size={16} color="#fff" />
+            <AccentIcon name="play-outline" size={16} />
             <HeroButton.Label>{t('savedSearches.run')}</HeroButton.Label>
           </HeroButton>
           <HeroButton className="flex-1" variant="secondary" onPress={onDelete}>

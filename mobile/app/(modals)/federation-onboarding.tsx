@@ -20,6 +20,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type Step = 0 | 1 | 2 | 3;
 
@@ -197,7 +198,7 @@ function FederationOnboardingScreen() {
             <HeroButton.Label>{t('common:back')}</HeroButton.Label>
           </HeroButton>
           <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving}>
-            {isSaving ? <Spinner size="sm" /> : <Ionicons name={step === 3 ? 'checkmark-outline' : 'arrow-forward-outline'} size={16} color="#fff" />}
+            {isSaving ? <Spinner size="sm" /> : <AccentIcon name={step === 3 ? 'checkmark-outline' : 'arrow-forward-outline'} size={16} />}
             <HeroButton.Label>{step === 3 ? t('directory.onboarding.finish') : t('directory.onboarding.next')}</HeroButton.Label>
           </HeroButton>
         </View>

@@ -68,8 +68,8 @@
       --muted: oklch(70.5% 0.015 286.067);
       --default: oklch(27.4% 0.006 286.033);
       --default-foreground: var(--snow);
-      --accent: rgb(15 118 110);
-      --accent-foreground: oklch(1 0 0);
+      --accent: rgb(87 159 154);
+      --accent-foreground: oklch(0.21 0.03 256);
       --field-background: oklch(0.2103 0.0059 285.89);
       --field-foreground: var(--foreground);
       --field-placeholder: var(--muted);
@@ -84,12 +84,12 @@
       --segment-foreground: var(--foreground);
       --border: oklch(28% 0.006 286.033);
       --separator: oklch(40% 0.006 286.033);
-      --focus: rgb(15 118 110);
-      --link: rgb(15 118 110);
+      --focus: rgb(87 159 154);
+      --link: rgb(87 159 154);
       --surface-shadow: 0 0 0 0 transparent inset;
       --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
       --field-shadow: 0 0 0 0 transparent inset;
-      --accent-hover: rgb(44 134 127);
+      --accent-hover: rgb(107 171 166);
     }
   }
 }

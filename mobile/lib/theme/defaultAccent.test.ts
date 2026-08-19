@@ -90,31 +90,25 @@ describe('the default accent', () => {
     expect(defaultAccent('light')).toBe(fallbackPrimary());
   });
 
-  it('🔴 is the SAME colour in dark mode — lightening it was tried twice and abandoned twice', () => {
-    // The full reasoning lives in scripts/generate-tenant-themes.mjs. In short: a lightened
-    // accent is a DIFFERENT colour from `usePrimaryColor()`, which everything the app paints
-    // by hand uses, so the two stop agreeing and it cascades:
+  it('🔴 is lightened for dark mode, by the same amount as everything else', () => {
+    // Three separate things had to be fixed before this was safe, because a lifted accent is
+    // a different colour from `usePrimaryColor()` and everything the app paints by hand uses
+    // that: 79 background overrides, 91 conditional overrides, and 72 hardcoded-white icons
+    // beside the labels. All three are swept and guarded. The generator's long note has the
+    // history.
     //
-    //   79 buttons overriding their own background      (swept away — worth doing anyway)
-    //   91 conditional overrides on toggle buttons      (swept away — worth doing anyway)
-    //   62 buttons with a hardcoded white ICON beside a label that would become dark ink
-    //
-    // The last group cannot be fixed cheaply: lib/theme/nativeVectorIconStyling.test.ts
-    // requires Ionicons to use the native `color` prop, so an icon cannot inherit a CSS
-    // variable — it would need a new hook threaded through 34 files.
-    //
-    // And it buys nothing that is missing. See the next test.
-    expect(defaultAccent('dark')).toBe(defaultAccent('light'));
-    expect(defaultAccent('dark')).toBe(fallbackPrimary());
-    expect(defaultAccent('dark')).not.toBe(lift(fallbackPrimary(), 0.3));
+    // The lift amount must match DARK_LIFT in scripts/generate-tenant-themes.mjs and in
+    // lib/theme/accentForeground.ts. Three copies of one constant is why
+    // accentForegroundParity.test.ts exists.
+    expect(defaultAccent('dark')).toBe(lift(fallbackPrimary(), 0.3));
+    expect(defaultAccent('light')).toBe(fallbackPrimary());
   });
 
-  it('🔴 is legible on the dark ground WITHOUT being lightened', () => {
-    // This is the measurement that makes the decision above defensible rather than merely
-    // convenient. The accent is also `--link`, so it has to be readable as text on the
-    // near-black background: un-lifted it measures 4.24:1, comfortably over the 3:1 floor
-    // for UI text. As a solid button fill, lightening changes nothing about visibility.
-    expect(contrast(defaultAccent('dark'), '#0a0a0f')).toBeGreaterThanOrEqual(3);
+  it('🔴 lifting is what makes the accent readable as a link on dark', () => {
+    // The justification, measured rather than asserted: 4.24:1 un-lifted, 6.80:1 lifted.
+    expect(contrast(defaultAccent('dark'), '#0a0a0f'))
+      .toBeGreaterThan(contrast(fallbackPrimary(), '#0a0a0f'));
+    expect(contrast(defaultAccent('dark'), '#0a0a0f')).toBeGreaterThanOrEqual(4.5);
   });
 
   it('puts a readable label on the light accent', () => {
@@ -128,16 +122,17 @@ describe('the default accent', () => {
     expect(contrast(defaultAccent('light'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('keeps the same white label in dark mode, since it is the same accent', () => {
-    // One accent means one label. White measures 4.66:1 on this blue in either scheme.
-    // Recomputed rather than trusted, so changing the default colour cannot silently leave
-    // an unreadable label behind.
-    expect(contrast(defaultAccent('dark'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  it('🔴 puts INK on the lifted dark accent, because white fails there', () => {
+    // White on the lifted blue measures 2.90:1 — under even the 3:1 UI floor — while ink
+    // measures 6.15:1. Recomputed here so nobody "tidies" it back to white for symmetry with
+    // the light block.
+    expect(contrast(defaultAccent('dark'), '#ffffff')).toBeLessThan(3);
+    expect(contrast(defaultAccent('dark'), '#0f172a')).toBeGreaterThanOrEqual(4.5);
 
     const css = fs.readFileSync(GLOBAL_CSS, 'utf8');
     const dark = /@variant dark[\s\S]*?--accent-foreground:\s*([^;]+);/.exec(css);
     expect(dark).not.toBeNull();
-    expect(dark![1]!.trim()).toBe('oklch(1 0 0)');
+    expect(dark![1]!.trim()).toBe('oklch(0.21 0.03 256)');
   });
 
   it('does not generate a redundant theme for the default colour', () => {

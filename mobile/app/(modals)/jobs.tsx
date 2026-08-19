@@ -55,6 +55,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 // ---------------------------------------------------------------------------
 // Type filter options
@@ -260,7 +261,7 @@ function FilterPill({
       onPress={onPress}
     >
       <HeroButton.Label>{label}</HeroButton.Label>
-      {selected ? <Ionicons name="checkmark-outline" size={13} color="#fff" /> : <Ionicons name="add-outline" size={13} color={theme.textSecondary} />}
+      {selected ? <AccentIcon name="checkmark-outline" size={13} /> : <Ionicons name="add-outline" size={13} color={theme.textSecondary} />}
     </HeroButton>
   );
 }
@@ -851,7 +852,7 @@ function JobAlertsPanel({
                 isDisabled={busyKey === 'create'}
                 accessibilityLabel={t('alerts.create')}
               >
-                <Ionicons name="add-outline" size={17} color="#fff" />
+                <AccentIcon name="add-outline" size={17} />
                 <HeroButton.Label>{busyKey === 'create' ? t('alerts.creating') : t('alerts.create')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>

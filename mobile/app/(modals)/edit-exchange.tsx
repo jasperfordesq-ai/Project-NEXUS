@@ -37,6 +37,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 
@@ -553,7 +554,7 @@ function EditExchangeModalInner() {
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
             </HeroButton>
             <HeroButton className="flex-1" variant="primary" isDisabled={saving} onPress={() => void handleSave()}>
-              {saving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={18} color="#fff" />}
+              {saving ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={18} />}
               <HeroButton.Label>{t('detail.saveChanges')}</HeroButton.Label>
             </HeroButton>
           </View>

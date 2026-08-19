@@ -27,6 +27,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { presentIdentityPayment } from '@/lib/payments/identityPayment';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type PageState = 'loading' | 'dob_collection' | 'payment_required' | 'start' | 'in_progress' | 'verified' | 'failed' | 'error';
 type TFunction = (key: string, options?: Record<string, unknown>) => string;
@@ -249,7 +250,7 @@ function VerifyIdentityScreenInner() {
                 accessibilityLabel={t('identity.dob_title')}
               />
               <HeroButton variant="primary" onPress={() => void handleSaveDob()} isDisabled={isSavingDob}>
-                {isSavingDob ? <Spinner size="sm" /> : <Ionicons name="calendar-outline" size={17} color="#fff" />}
+                {isSavingDob ? <Spinner size="sm" /> : <AccentIcon name="calendar-outline" size={17} />}
                 <HeroButton.Label>{t('identity.continue')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>
@@ -266,7 +267,7 @@ function VerifyIdentityScreenInner() {
                 <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>{t('identity.fee_one_time_label')}</Text>
               </Surface>
               <HeroButton testID="identity-pay-button" variant="primary" onPress={() => void handleCreatePayment()} isDisabled={isCreatingPayment}>
-                {isCreatingPayment ? <Spinner size="sm" /> : <Ionicons name="card-outline" size={17} color="#fff" />}
+                {isCreatingPayment ? <Spinner size="sm" /> : <AccentIcon name="card-outline" size={17} />}
                 <HeroButton.Label>{t('identity.pay_button', { fee })}</HeroButton.Label>
               </HeroButton>
               <HeroButton variant="secondary" onPress={() => void Linking.openURL(`${APP_URL}/settings/verify-identity`)}>
@@ -289,7 +290,7 @@ function VerifyIdentityScreenInner() {
               <Requirement label={t('identity.need_camera')} icon="camera-outline" theme={theme} />
               <Requirement label={t('identity.need_minutes')} icon="timer-outline" theme={theme} />
               <HeroButton variant="primary" onPress={() => void handleStartVerification()} isDisabled={isStarting}>
-                {isStarting ? <Spinner size="sm" /> : <Ionicons name="shield-checkmark-outline" size={17} color="#fff" />}
+                {isStarting ? <Spinner size="sm" /> : <AccentIcon name="shield-checkmark-outline" size={17} />}
                 <HeroButton.Label>{t(pageState === 'failed' ? 'identity.try_again' : 'identity.start_button')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>

@@ -45,6 +45,7 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
@@ -492,7 +493,7 @@ function MarketplaceOrdersScreen() {
                 </View>
               </View>
               <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitShipment()}>
-                <Ionicons name="car-outline" size={17} color="#fff" />
+                <AccentIcon name="car-outline" size={17} />
                 <HeroButton.Label>{t('orders.confirmShipped')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -546,7 +547,7 @@ function MarketplaceOrdersScreen() {
                 <HeroButton.Label>{t('orders.anonymousRating')}</HeroButton.Label>
               </HeroButton>
               <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitRating()}>
-                <Ionicons name="star-outline" size={17} color="#fff" />
+                <AccentIcon name="star-outline" size={17} />
                 <HeroButton.Label>{t('orders.submitRating')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -749,13 +750,13 @@ function OrderCard({
           ) : null}
           {mode === 'purchases' && item.status === 'pending_payment' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment}>
-              <Ionicons name="card-outline" size={14} color="#fff" />
+              <AccentIcon name="card-outline" size={14} />
               <HeroButton.Label>{t('orders.continuePayment')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'sales' && item.status === 'paid' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onShip}>
-              <Ionicons name="car-outline" size={14} color="#fff" />
+              <AccentIcon name="car-outline" size={14} />
               <HeroButton.Label>{t('orders.markShipped')}</HeroButton.Label>
             </HeroButton>
           ) : null}
@@ -798,7 +799,7 @@ function OrderCard({
           ) : null}
           {mode === 'purchases' && item.status === 'shipped' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onConfirmDelivery} style={{ backgroundColor: theme.success }}>
-              <Ionicons name="checkmark-circle-outline" size={14} color="#fff" />
+              <AccentIcon name="checkmark-circle-outline" size={14} />
               <HeroButton.Label>{t('orders.confirmDelivery')}</HeroButton.Label>
             </HeroButton>
           ) : null}
@@ -883,13 +884,13 @@ function DeliveryOfferCard({
         <View className="flex-row flex-wrap gap-2">
           {offer.status === 'pending' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onAccept}>
-              <Ionicons name="checkmark-circle-outline" size={14} color="#fff" />
+              <AccentIcon name="checkmark-circle-outline" size={14} />
               <HeroButton.Label>{t('orders.acceptDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {offer.status === 'accepted' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onConfirm} style={{ backgroundColor: theme.success }}>
-              <Ionicons name="flag-outline" size={14} color="#fff" />
+              <AccentIcon name="flag-outline" size={14} />
               <HeroButton.Label>{t('orders.confirmDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
           ) : null}

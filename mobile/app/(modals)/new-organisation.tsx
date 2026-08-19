@@ -21,6 +21,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type FormField = 'name' | 'description' | 'contact_email' | 'website' | 'terms';
 type FormErrors = Partial<Record<FormField, string>>;
@@ -236,7 +237,7 @@ function NewOrganisationInner() {
                 <HeroButton.Label>{t('register.cancel')}</HeroButton.Label>
               </HeroButton>
               <HeroButton className="flex-1" variant="primary" onPress={submit} isDisabled={isSubmitting}>
-                {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#ffffff" />}
+                {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
                 <HeroButton.Label>{t('register.submit')}</HeroButton.Label>
               </HeroButton>
             </View>

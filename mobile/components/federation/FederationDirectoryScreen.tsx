@@ -49,6 +49,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -276,7 +277,7 @@ function FilterChip({
   return (
     <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} className="max-w-[136px]" onPress={onPress}>
       <HeroButton.Label numberOfLines={1}>{label}</HeroButton.Label>
-      {selected ? <Ionicons name="checkmark-outline" size={13} color="#fff" /> : <Ionicons name="add-outline" size={13} color={tone} />}
+      {selected ? <AccentIcon name="checkmark-outline" size={13} /> : <Ionicons name="add-outline" size={13} color={tone} />}
     </HeroButton>
   );
 }
@@ -472,7 +473,7 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
                 : { id: String(member.id), tenant_id: String(tenantId) },
               } as unknown as Href)}
             >
-              <Ionicons name="person-outline" size={14} color="#fff" />
+              <AccentIcon name="person-outline" size={14} />
               <HeroButton.Label>{t('directory.members.viewProfile')}</HeroButton.Label>
             </HeroButton>
           ) : null}
@@ -744,7 +745,7 @@ function ListingDetailView({
             ) : null}
             {canMessageAuthor ? (
               <HeroButton size="sm" variant="primary" onPress={messageAuthor}>
-                <Ionicons name="chatbubble-ellipses-outline" size={14} color="#fff" />
+                <AccentIcon name="chatbubble-ellipses-outline" size={14} />
                 <HeroButton.Label>{t('directory.listings.contactAuthor')}</HeroButton.Label>
               </HeroButton>
             ) : null}
@@ -1347,7 +1348,7 @@ function MessageThreadView({
             style={{ color: theme.text }}
           />
           <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void sendReply()} style={{ backgroundColor: canSend ? primary : theme.border }}>
-            {isSending ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={17} color="#fff" />}
+            {isSending ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={17} />}
             <HeroButton.Label>{t('directory.messages.sendReply')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Body>
@@ -1589,7 +1590,7 @@ function FederationComposeCard({
         </View>
 
         <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void handleSend()} style={{ backgroundColor: canSend ? primary : theme.border }}>
-          {isSending ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={17} color="#fff" />}
+          {isSending ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={17} />}
           <HeroButton.Label>{t('directory.messages.send')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
@@ -1744,7 +1745,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
             isDisabled={isSaving}
             accessibilityLabel={t('directory.settings.save')}
           >
-            {isSaving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#fff" />}
+            {isSaving ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
             <HeroButton.Label>{t('directory.settings.save')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Body>

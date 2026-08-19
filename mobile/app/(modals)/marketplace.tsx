@@ -34,6 +34,7 @@ import {
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const PRICE_FILTERS: (MarketplacePriceType | '')[] = ['', 'free', 'fixed', 'negotiable', 'contact'];
 
@@ -223,7 +224,7 @@ function MarketplaceScreen() {
 
                 <View className="flex-row gap-2">
                   <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/new-marketplace-listing' as Href)}>
-                    <Ionicons name="add-outline" size={16} color="#fff" />
+                    <AccentIcon name="add-outline" size={16} />
                     <HeroButton.Label>{t('actions.sell')}</HeroButton.Label>
                   </HeroButton>
                   <HeroButton className="flex-1" variant="secondary" onPress={() => router.push('/(modals)/marketplace-my-listings' as Href)}>

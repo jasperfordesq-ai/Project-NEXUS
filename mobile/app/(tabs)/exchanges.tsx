@@ -32,6 +32,7 @@ import ExchangeCard from '@/components/ExchangeCard';
 import OfflineBanner from '@/components/OfflineBanner';
 import SearchInput from '@/components/ui/SearchInput';
 import { ExchangeCardSkeleton } from '@/components/ui/Skeleton';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 function extractExchangePage(response: ExchangeListResponse) {
   const seen = new Set<number>();
@@ -342,7 +343,7 @@ export default function ExchangesScreen() {
             }}
             accessibilityLabel={t('newListing')}
           >
-            <Ionicons name="add" size={20} color="#fff" />
+            <AccentIcon name="add" size={20} />
           </HeroButton>
         </View>
       </View>
@@ -567,7 +568,7 @@ export default function ExchangesScreen() {
                   </HeroButton>
                 ) : (
                   <HeroButton size="sm" variant="primary" onPress={() => router.push('/(modals)/new-exchange')}>
-                    <Ionicons name="add" size={16} color="#fff" />
+                    <AccentIcon name="add" size={16} />
                     <HeroButton.Label>{t('newListing')}</HeroButton.Label>
                   </HeroButton>
                 )}

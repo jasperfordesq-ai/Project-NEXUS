@@ -35,6 +35,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
@@ -522,7 +523,7 @@ function WalletActionPanel({
         </View>
 
         <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting}>
-          {isSubmitting ? <Spinner size="sm" /> : <Ionicons name={action === 'transfer' ? 'send-outline' : 'heart-outline'} size={16} color="#fff" />}
+          {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name={action === 'transfer' ? 'send-outline' : 'heart-outline'} size={16} />}
           <HeroButton.Label>{t(action === 'transfer' ? 'actions.sendNow' : 'actions.donateNow')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
@@ -608,7 +609,7 @@ function BalanceCard({
         </View>
         <View className="flex-row gap-3">
           <HeroButton className="flex-1" variant="primary" onPress={onSend} isDisabled={!canSpend} style={{ backgroundColor: canSpend ? primary : theme.border }}>
-            <Ionicons name="send-outline" size={16} color="#fff" />
+            <AccentIcon name="send-outline" size={16} />
             <HeroButton.Label>{t('sendCredits')}</HeroButton.Label>
           </HeroButton>
           <HeroButton className="flex-1" variant="secondary" onPress={onDonate} isDisabled={!canSpend}>

@@ -30,6 +30,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatLegacyCouponMinorAmount } from '@/lib/utils/marketplaceCurrency';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceCouponDetailRoute() {
   return (
@@ -199,7 +200,7 @@ function CouponDetailCard({
         ) : null}
         <View className="flex-row gap-2">
           <HeroButton className="flex-1" variant="primary" onPress={onShare}>
-            <Ionicons name="copy-outline" size={16} color="#fff" />
+            <AccentIcon name="copy-outline" size={16} />
             <HeroButton.Label>{t('publicCoupons.useOnline')}</HeroButton.Label>
           </HeroButton>
           <HeroButton className="flex-1" variant="secondary" onPress={onQr} isDisabled={isQrLoading}>

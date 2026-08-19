@@ -34,6 +34,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type SellerTab = 'listings' | 'reviews';
 type SellerListItem = MarketplaceListingItem | ReviewItem;
@@ -298,7 +299,7 @@ function SellerHeader({ profile, canMessage }: { profile: MarketplaceSellerProfi
 
         {canMessage ? (
           <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/thread', params: { recipientId: String(profile.user_id), name: profile.display_name } } as unknown as Href)}>
-            <Ionicons name="chatbubble-outline" size={17} color="#fff" />
+            <AccentIcon name="chatbubble-outline" size={17} />
             <HeroButton.Label>{t('seller.message')}</HeroButton.Label>
           </HeroButton>
         ) : null}

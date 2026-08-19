@@ -35,6 +35,7 @@ import Avatar from '@/components/ui/Avatar';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type DisplayMessage = ChatMessage | { id: string; role: 'thinking'; content: string; created_at: string };
 type FeedbackState = Record<string, ChatFeedbackVote>;
@@ -699,7 +700,7 @@ function ChatScreenInner() {
                   isDisabled={!inputText.trim() || sending}
                   onPress={() => void handleSend()}
                 >
-                  {sending ? <Spinner size="sm" /> : <Ionicons name="send" size={18} color="#ffffff" />}
+                  {sending ? <Spinner size="sm" /> : <AccentIcon name="send" size={18} />}
                 </HeroButton>
               </View>
             </HeroCard.Body>

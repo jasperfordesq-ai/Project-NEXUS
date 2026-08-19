@@ -52,6 +52,7 @@ import {
 } from '@/lib/api/members';
 import type { Exchange } from '@/lib/api/exchanges';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 import {
   getBadges,
   getGamificationProfile,
@@ -423,7 +424,7 @@ function MemberProfileScreenInner() {
                 </Text>
                 <View className="flex-row gap-2">
                   <HeroButton className="flex-1" variant="primary" onPress={openEditProfile}>
-                    <Ionicons name="create-outline" size={18} color="#fff" />
+                    <AccentIcon name="create-outline" size={18} />
                     <HeroButton.Label>{t('profile.editProfile')}</HeroButton.Label>
                   </HeroButton>
                   <HeroButton className="flex-1" variant="secondary" onPress={handleShare}>
@@ -575,7 +576,7 @@ function MemberProfileScreenInner() {
               accessibilityLabel={t('profile.editProfile')}
               onPress={openEditProfile}
             >
-              <Ionicons name="create-outline" size={16} color="#fff" />
+              <AccentIcon name="create-outline" size={16} />
               <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.editProfile')}</HeroButton.Label>
             </HeroButton>
           ) : null}
@@ -636,7 +637,7 @@ function MemberProfileScreenInner() {
                 router.push({ pathname: '/(modals)/thread', params: { recipientId: String(member.id), name: displayName } });
               }}
             >
-              <Ionicons name="chatbubble-outline" size={16} color="#fff" />
+              <AccentIcon name="chatbubble-outline" size={16} />
               <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendMessage')}</HeroButton.Label>
             </HeroButton>
           ) : null}
@@ -724,7 +725,7 @@ function ExternalFederatedMemberState({
             </View>
             <View className="w-full gap-3">
               <HeroButton variant="primary" isDisabled={!canMessage} onPress={openMessage} style={{ backgroundColor: canMessage ? primary : theme.border }}>
-                <Ionicons name="chatbubble-ellipses-outline" size={18} color="#fff" />
+                <AccentIcon name="chatbubble-ellipses-outline" size={18} />
                 <HeroButton.Label>{t('profile.sendMessage')}</HeroButton.Label>
               </HeroButton>
               <HeroButton variant="secondary" onPress={() => router.replace('/(modals)/federation-members' as Href)}>
@@ -856,7 +857,7 @@ function FederatedTransferCard({
         </View>
 
         <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submit()}>
-          {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={16} color="#fff" />}
+          {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={16} />}
           <HeroButton.Label>{t('profile.sendCredits')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>

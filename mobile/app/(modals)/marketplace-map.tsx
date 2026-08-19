@@ -26,6 +26,7 @@ import {
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const RADIUS_OPTIONS = ['5', '10', '25', '50', '100'];
 
@@ -188,7 +189,7 @@ function MarketplaceMapScreen() {
               </FilterStrip>
               <View className="gap-2">
                 <HeroButton variant="primary" onPress={() => void search()} isDisabled={isLoading}>
-                  <Ionicons name="locate-outline" size={16} color="#fff" />
+                  <AccentIcon name="locate-outline" size={16} />
                   <HeroButton.Label>{t('map.search')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton variant="secondary" onPress={() => void searchCurrentLocation()} isDisabled={isLoading}>

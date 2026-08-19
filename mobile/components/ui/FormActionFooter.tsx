@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getRootBottomInset } from '@/lib/ui/rootInsets';
 import { useTheme } from '@/lib/hooks/useTheme';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function FormActionFooter({
   title,
@@ -67,7 +68,7 @@ export default function FormActionFooter({
             isDisabled={isSubmitting || isDisabled}
             style={{ backgroundColor: isSubmitting || isDisabled ? theme.border : primary }}
           >
-            {isSubmitting ? <Spinner size="sm" /> : <Ionicons name={icon} size={16} color="#fff" />}
+            {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name={icon} size={16} />}
             <HeroButton.Label>{submitLabel}</HeroButton.Label>
           </HeroButton>
         </View>

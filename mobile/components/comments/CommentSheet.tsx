@@ -32,6 +32,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 const MAX_COMMENT_LENGTH = 10000;
 const COUNTER_VISIBLE_FROM = 9000;
@@ -454,7 +455,7 @@ function CommentComposer({
           onPress={onSubmit}
           className="h-12 w-12 rounded-full"
         >
-          {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="send" size={18} color="#fff" />}
+          {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="send" size={18} />}
         </HeroButton>
       </View>
     </View>

@@ -44,6 +44,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -450,7 +451,7 @@ function WalletPanel({
             leftIcon={<Ionicons name="document-text-outline" size={18} color={theme.textMuted} />}
           />
           <HeroButton isDisabled={saving} onPress={() => void deposit()}>
-            {saving ? <Spinner size="sm" /> : <Ionicons name="wallet-outline" size={16} color="#fff" />}
+            {saving ? <Spinner size="sm" /> : <AccentIcon name="wallet-outline" size={16} />}
             <HeroButton.Label>{t('org.wallet.deposit')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Body>
@@ -534,7 +535,7 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
         <Input value={contactEmail} onChangeText={setContactEmail} placeholder={t('org.settings.emailPlaceholder')} placeholderTextColor={theme.textMuted} keyboardType="email-address" autoCapitalize="none" />
         <Input value={website} onChangeText={setWebsite} placeholder={t('org.settings.websitePlaceholder')} placeholderTextColor={theme.textMuted} autoCapitalize="none" />
         <HeroButton isDisabled={saving} onPress={() => void save()}>
-          {saving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#fff" />}
+          {saving ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
           <HeroButton.Label>{t('org.settings.save')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>

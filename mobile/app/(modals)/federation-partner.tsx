@@ -32,6 +32,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -207,7 +208,7 @@ function EmptyPartnerState({
               </HeroButton>
             ) : null}
             <HeroButton variant="primary" onPress={() => router.replace('/(modals)/federation')} accessibilityLabel={t('detail.goBack')}>
-              <Ionicons name="git-network-outline" size={16} color="#fff" />
+              <AccentIcon name="git-network-outline" size={16} />
               <HeroButton.Label>{t('detail.browseNetwork')}</HeroButton.Label>
             </HeroButton>
           </View>
@@ -398,7 +399,7 @@ export default function FederationPartnerScreen() {
             <View className="gap-3">
               {websiteUrl ? (
                 <HeroButton variant="primary" onPress={openWebsite} accessibilityLabel={t('visitWebsite')}>
-                  <Ionicons name="open-outline" size={16} color="#fff" />
+                  <AccentIcon name="open-outline" size={16} />
                   <HeroButton.Label>{t('visitWebsite')}</HeroButton.Label>
                 </HeroButton>
               ) : null}

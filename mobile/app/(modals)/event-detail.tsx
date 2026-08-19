@@ -61,6 +61,7 @@ import { EventAnalyticsSummaryCard } from '@/components/events/EventAnalyticsSum
 import EventCheckinCredentialCard from '@/components/events/EventCheckinCredentialCard';
 import EventRegistrationPanel from '@/components/events/EventRegistrationPanel';
 import { EventAgendaEnterprisePanel } from '@/components/events/EventAgendaEnterprisePanel';
+import AccentIcon from '@/components/ui/AccentIcon';
 import {
   canUseRecurrenceDefinitionBlueprints,
   isRecurrenceDefinitionBlueprintCandidate,
@@ -620,13 +621,13 @@ function EventDetailScreenInner() {
               <SectionTitle icon="settings-outline" title={t('detail.ownerTools')} primary={primary} theme={theme} />
               {event.permissions.submit_for_review ? (
                 <HeroButton isDisabled={updating} onPress={() => void handlePublication('submit_for_review')}>
-                  {updating ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={18} color="#fff" />}
+                  {updating ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={18} />}
                   <HeroButton.Label>{t('detail.submitForReview')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
               {event.permissions.publish ? (
                 <HeroButton isDisabled={updating} onPress={() => void handlePublication('publish')}>
-                  {updating ? <Spinner size="sm" /> : <Ionicons name="cloud-upload-outline" size={18} color="#fff" />}
+                  {updating ? <Spinner size="sm" /> : <AccentIcon name="cloud-upload-outline" size={18} />}
                   <HeroButton.Label>{t('detail.publishEvent')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
@@ -698,7 +699,7 @@ function EventDetailScreenInner() {
                 {t('attendance.detailCta')}
               </Text>
               <HeroButton variant="primary" onPress={openAttendanceWorkspace}>
-                <Ionicons name="people-outline" size={18} color="#fff" />
+                <AccentIcon name="people-outline" size={18} />
                 <HeroButton.Label>{t('attendance.openWorkspace')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>
@@ -755,7 +756,7 @@ function EventDetailScreenInner() {
                   accessibilityLabel={t('detail.acceptOffer')}
                   accessibilityState={{ busy: updating }}
                 >
-                  {updating ? <Spinner size="sm" /> : <Ionicons name="checkmark-circle-outline" size={16} color="#fff" />}
+                  {updating ? <Spinner size="sm" /> : <AccentIcon name="checkmark-circle-outline" size={16} />}
                   <HeroButton.Label>{t('detail.acceptOffer')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton

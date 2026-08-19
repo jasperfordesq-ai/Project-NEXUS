@@ -32,6 +32,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import AccentIcon from '@/components/ui/AccentIcon';
 
 function formatDate(value?: string | null): string {
   if (!value) return '';
@@ -282,7 +283,7 @@ function CreateCollectionCard({
         <Input label={t('collections.description')} value={description} onChangeText={setDescription} placeholder={t('collections.descriptionPlaceholder')} multiline />
         <Toggle value={isPublic} onValueChange={setIsPublic} label={t('collections.makePublic')} />
         <HeroButton variant="primary" onPress={() => onSubmit({ name, description, isPublic })} isDisabled={isSubmitting}>
-          {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="add-outline" size={17} color="#fff" />}
+          {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="add-outline" size={17} />}
           <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
