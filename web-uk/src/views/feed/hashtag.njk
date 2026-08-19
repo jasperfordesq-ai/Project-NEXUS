@@ -35,6 +35,7 @@
       {% endif %}
 
       {% if items and items.length %}
+        <div class="nexus-alpha-card-list">
         {% for item in items %}
           <article class="nexus-alpha-card" id="feed-item-post-{{ item.id }}">
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
@@ -102,6 +103,7 @@
             </p>
           </article>
         {% endfor %}
+        </div>
 
         {% if nextHref %}
           <p class="govuk-body">

@@ -14,7 +14,7 @@
     <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ item.title }}</h1>
-  <p><strong class="govuk-tag {{ item.priceTagClass }}">{{ item.priceLabel }}</strong></p>
+  <p class="govuk-body"><strong class="govuk-tag {{ item.priceTagClass }}">{{ item.priceLabel }}</strong></p>
 
   {% if item.images.length == 1 %}
     <div class="nexus-alpha-detail-hero">

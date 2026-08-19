@@ -17,14 +17,14 @@
 
   {% include "federation/_nav.njk" %}
 
-  <p class="govuk-body-s govuk-!-margin-bottom-3 nexus-alpha-inline-list">
+  <p class="govuk-body-s govuk-!-margin-bottom-3 nexus-alpha-tag-list">
     {% if listing.type == "request" %}
-      <strong class="govuk-tag govuk-tag--purple govuk-!-margin-right-1">{{ listing.typeLabel }}</strong>
+      <strong class="govuk-tag govuk-tag--purple">{{ listing.typeLabel }}</strong>
     {% else %}
-      <strong class="govuk-tag govuk-tag--blue govuk-!-margin-right-1">{{ listing.typeLabel }}</strong>
+      <strong class="govuk-tag govuk-tag--blue">{{ listing.typeLabel }}</strong>
     {% endif %}
     {% if listing.categoryName %}
-      <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ listing.categoryName }}</strong>
+      <strong class="govuk-tag govuk-tag--grey">{{ listing.categoryName }}</strong>
     {% endif %}
     {% if listing.tenantName %}
       <strong class="govuk-tag govuk-tag--grey">{{ t("federation.listings_browse.community_label") }}: {{ listing.tenantName }}</strong>

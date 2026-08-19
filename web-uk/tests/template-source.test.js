@@ -644,7 +644,9 @@ describe('tenant-aware template helper conversion', () => {
       path.join(__dirname, '..', 'src', 'assets', 'scss', 'main.scss'),
       'utf8'
     );
-    expect(styles).toMatch(/\.nexus-alpha-table-scroll\s*\{[^}]*contain:\s*inline-size layout paint;/s);
+    // No `paint` in the containment list: paint containment clips the scroll
+    // region's focus ring (a box-shadow) to the padding box, hiding part of it.
+    expect(styles).toMatch(/\.nexus-alpha-table-scroll\s*\{[^}]*contain:\s*inline-size layout;/s);
   });
 
   it('keeps member directory, discovery, nearby, and insights controls behind urlFor()', () => {

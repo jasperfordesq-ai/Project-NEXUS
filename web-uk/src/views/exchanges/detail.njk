@@ -248,9 +248,9 @@
 
   {% if exchange.status == 'completed' and ratings.length > 0 %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("exchanges.ratings_title") }}</h2>
-    <ul class="govuk-list">
+    <ul class="govuk-list nexus-alpha-card-list">
       {% for rating in ratings %}
-        <li class="nexus-alpha-card govuk-!-margin-bottom-3">
+        <li class="nexus-alpha-card">
           <p class="govuk-body govuk-!-margin-bottom-1">
             <strong>{{ rating.raterName }}</strong>
             - {{ t("exchanges.review_rating_value", { rating: rating.rating }) }}
@@ -263,7 +263,7 @@
     </ul>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("exchanges.timeline_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("exchanges.timeline_title") }}</h2>
   {% if exchange.history.length == 0 %}
     <div class="govuk-inset-text">{{ t("exchanges.empty_timeline") }}</div>
   {% else %}

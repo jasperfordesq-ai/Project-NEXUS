@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -75,7 +76,7 @@
     </div>
 
     {% if meta and meta.hasMore and meta.cursor %}
-      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/goals?cursor=' + (meta.cursor | string)) }}">{{ t("actions.load_more") }}</a></p>
+      {{ loadMoreNext(urlFor('/goals?cursor=' + (meta.cursor | string)), t("actions.load_more")) }}
     {% endif %}
   {% else %}
     <div class="govuk-inset-text">

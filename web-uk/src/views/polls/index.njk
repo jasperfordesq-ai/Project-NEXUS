@@ -98,11 +98,14 @@
         <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("polls.empty") }}</p></div>
       {% else %}
         <h2 class="govuk-heading-l">{{ t("polls.open_section_title") }}</h2>
-        {% set anyOpen = false %}
-        {% for poll in polls %}
-          {% if poll.status == "open" %}
-            {% set anyOpen = true %}
-            <article class="nexus-alpha-card govuk-!-margin-bottom-6" id="poll-{{ poll.id }}">
+        {# Nunjucks selectattr has NO three-argument test form (it filters on
+           attribute truthiness only), so partition with a plain loop. #}
+        {% set openPolls = [] %}
+        {% set closedPolls = [] %}
+        {% for poll in polls %}{% if poll.status == "open" %}{% set _ = openPolls.push(poll) %}{% else %}{% set _ = closedPolls.push(poll) %}{% endif %}{% endfor %}
+        {% if openPolls.length %}<div class="nexus-alpha-card-list">{% endif %}
+        {% for poll in openPolls %}
+            <article class="nexus-alpha-card" id="poll-{{ poll.id }}">
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question }}</h3>
                 <strong class="govuk-tag govuk-tag--green">{{ t("polls.open_tag") }}</strong>
@@ -155,9 +158,9 @@
                 </details>
               {% endif %}
             </article>
-          {% endif %}
         {% endfor %}
-        {% if not anyOpen %}
+        {% if openPolls.length %}</div>{% endif %}
+        {% if not openPolls.length %}
           <div class="govuk-inset-text"><p class="govuk-body">{{ t("polls.no_open") }}</p></div>
         {% endif %}
 
@@ -166,12 +169,10 @@
            a "Closed polls" heading sitting over blank space. The heading is now
            shown only when there is something under it — no new wording needed,
            and the loop below already renders nothing in that case. #}
-        {% set anyClosed = false %}
-        {% for poll in polls %}{% if poll.status != "open" %}{% set anyClosed = true %}{% endif %}{% endfor %}
-        {% if anyClosed %}<h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("polls.closed_section_title") }}</h2>{% endif %}
-        {% for poll in polls %}
-          {% if poll.status != "open" %}
-            <article class="nexus-alpha-card govuk-!-margin-bottom-6" id="poll-{{ poll.id }}">
+        {% if closedPolls.length %}<h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polls.closed_section_title") }}</h2>{% endif %}
+        {% if closedPolls.length %}<div class="nexus-alpha-card-list">{% endif %}
+        {% for poll in closedPolls %}
+            <article class="nexus-alpha-card" id="poll-{{ poll.id }}">
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question }}</h3>
                 <strong class="govuk-tag govuk-tag--grey">{{ t("polls.closed_tag") }}</strong>
@@ -202,8 +203,8 @@
                 </details>
               {% endif %}
             </article>
-          {% endif %}
         {% endfor %}
+        {% if closedPolls.length %}</div>{% endif %}
       {% endif %}
     </div>
   </div>

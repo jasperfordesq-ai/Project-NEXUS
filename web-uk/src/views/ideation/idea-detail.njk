@@ -59,7 +59,7 @@
     </form>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="media">{{ t("govuk_alpha_ideation.media.heading") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="media">{{ t("govuk_alpha_ideation.media.heading") }}</h2>
   {% if media and media.length %}
     <ul class="govuk-list">
       {% for item in media %}
@@ -109,7 +109,7 @@
   {% endif %}
 
   {% if idea.isAdmin %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_ideation.admin.controls_heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_ideation.admin.controls_heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_ideation.admin.status_help") }}</p>
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/status') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -131,7 +131,7 @@
   {% endif %}
 
   {% if idea.canConvert %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_ideation.convert.heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_ideation.convert.heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_ideation.convert.intro") }}</p>
     <div class="govuk-warning-text">
       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -188,7 +188,7 @@
     </details>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="comments">{{ t("govuk_alpha_ideation.comments.heading") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="comments">{{ t("govuk_alpha_ideation.comments.heading") }}</h2>
   {% if comments and comments.length %}
     <div class="nexus-alpha-card-list">
       {% for comment in comments %}

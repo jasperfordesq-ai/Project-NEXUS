@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_volunteers.back_link") }}</a>
@@ -63,9 +64,7 @@
     </div>
 
     {% if nextHref %}
-      <p class="govuk-body govuk-!-margin-top-4">
-        <a class="govuk-link" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha_volunteering.org_volunteers.load_more") }}</a>
-      </p>
+      {{ loadMoreNext(urlFor(nextHref), t("govuk_alpha_volunteering.org_volunteers.load_more")) }}
     {% endif %}
   {% endif %}
 {% endblock %}

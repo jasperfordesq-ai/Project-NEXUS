@@ -112,7 +112,7 @@
     </div>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="ideas">{{ t("ideation.ideas_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="ideas">{{ t("ideation.ideas_title") }}</h2>
   {% if ideas and ideas.length %}
     <div class="nexus-alpha-card-list">
       {% for idea in ideas %}
@@ -144,7 +144,7 @@
   {% endif %}
 
   {% if challenge.isOpenForIdeas %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="submit">{{ t("ideation.submit_title") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="submit">{{ t("ideation.submit_title") }}</h2>
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if status == 'idea-invalid' %} govuk-form-group--error{% endif %}">

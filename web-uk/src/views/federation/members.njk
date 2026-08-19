@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("federation.members_browse.back") }}</a>
@@ -84,9 +85,9 @@
           {% endif %}
 
           {% if member.skills.length %}
-            <p class="govuk-body-s govuk-!-margin-bottom-2 nexus-alpha-inline-list">
+            <p class="govuk-body-s govuk-!-margin-bottom-2 nexus-alpha-tag-list">
               {% for skill in member.visibleSkills %}
-                <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ skill }}</strong>
+                <strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong>
               {% endfor %}
               {% if member.moreSkillsLabel %}<strong class="govuk-tag govuk-tag--grey">{{ member.moreSkillsLabel }}</strong>{% endif %}
             </p>
@@ -98,7 +99,7 @@
     </div>
 
     {% if loadMoreHref %}
-      <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor(loadMoreHref) }}">{{ t("federation.members_browse.load_more") }}</a></p>
+      {{ loadMoreNext(urlFor(loadMoreHref), t("federation.members_browse.load_more")) }}
     {% endif %}
   {% else %}
     {% if not partnerOptions.length %}

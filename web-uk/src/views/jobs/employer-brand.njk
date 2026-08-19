@@ -72,7 +72,8 @@
 
     {% if reviewStats.dimensionRows.length %}
     <h3 class="govuk-heading-s">{{ t("govuk_alpha_jobs.employer.dimensions_heading") }}</h3>
-    <table class="govuk-table govuk-!-margin-bottom-6">
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_jobs.employer.dimensions_heading") }}">
+    <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.employer.dimensions_heading") }}</caption>
       <tbody class="govuk-table__body">
       {% for row in reviewStats.dimensionRows %}
@@ -80,6 +81,7 @@
       {% endfor %}
       </tbody>
     </table>
+    </div>
     {% endif %}
 
     <div class="nexus-alpha-card-list">

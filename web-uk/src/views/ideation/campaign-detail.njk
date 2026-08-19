@@ -40,7 +40,7 @@
     <div class="govuk-body-l">{{ campaign.description | nl2br | safe }}</div>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="challenges">{{ t("govuk_alpha_ideation.campaigns.linked_heading") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="challenges">{{ t("govuk_alpha_ideation.campaigns.linked_heading") }}</h2>
   {% if campaign.challenges and campaign.challenges.length %}
     <div class="nexus-alpha-card-list">
       {% for challenge in campaign.challenges %}
@@ -63,7 +63,7 @@
   {% endif %}
 
   {% if ideationIsAdmin %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="edit">{{ t("govuk_alpha_ideation.campaigns.edit_heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="edit">{{ t("govuk_alpha_ideation.campaigns.edit_heading") }}</h2>
     <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id) }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if status == 'campaign-invalid' %} govuk-form-group--error{% endif %}">

@@ -32,7 +32,7 @@
 // Project NEXUS accessible shell. This mirrors the Laravel Blade accessible
 // frontend's reusable visual layer while keeping this app on Express/Nunjucks.
 .nexus-alpha-header {
-  border-bottom: 10px solid var(--nexus-alpha-header-accent, govuk-colour("blue"));
+  border-bottom: govuk-spacing(2) solid var(--nexus-alpha-header-accent, govuk-colour("blue"));
   background: var(--nexus-alpha-header-bg, govuk-colour("black"));
 }
 
@@ -153,11 +153,13 @@
 
   @include govuk-media-query($until: tablet) {
     .govuk-service-navigation__item--active {
-      margin-right: -(govuk-spacing(2) + 4px);
+      // govuk-spacing(1) = 5px, matching the vendor's LTR border width exactly;
+      // this was 4px, so the RTL accent bar was 1px thinner and 1px misaligned.
+      margin-right: -(govuk-spacing(2) + govuk-spacing(1));
       margin-left: 0;
       padding-right: govuk-spacing(2);
       padding-left: 0;
-      border-right-width: 4px;
+      border-right-width: govuk-spacing(1);
       border-left-width: 0;
     }
   }
@@ -210,8 +212,8 @@
 }
 
 .nexus-alpha-card {
-  padding-top: govuk-spacing(4);
-  padding-bottom: govuk-spacing(4);
+  @include govuk-responsive-padding(4, "top");
+  @include govuk-responsive-padding(4, "bottom");
   border-bottom: 1px solid $govuk-border-colour;
 }
 
@@ -250,16 +252,19 @@
 // Blade fails this too. Small, tightly-packed targets are exactly what this frontend's
 // audience cannot use, so the links get a 24px minimum target instead of matching a
 // known-failing original.
-.nexus-alpha-filter-nav {
+.nexus-alpha-filter-nav,
+.nexus-alpha-filter-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: govuk-spacing(2);
   list-style: none;
-  padding: 0;
-  margin: 0 0 govuk-spacing(6) 0;
+  padding-inline-start: 0;
+  margin: 0;
+  @include govuk-responsive-margin(6, "bottom");
 }
 
-.nexus-alpha-filter-nav a {
+.nexus-alpha-filter-nav a,
+.nexus-alpha-filter-tabs a {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
@@ -288,7 +293,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: govuk-spacing(3);
-  margin-bottom: govuk-spacing(6);
+  @include govuk-responsive-margin(6, "bottom");
 }
 
 .nexus-alpha-stat {
@@ -302,7 +307,7 @@
 }
 
 .nexus-alpha-stat dd {
-  @include govuk-font($size: 36, $weight: bold);
+  @include govuk-font($size: 36, $weight: bold, $tabular: true);
   margin: govuk-spacing(1) 0 0;
 }
 
@@ -316,10 +321,14 @@
 }
 
 .nexus-alpha-card-thumb {
+  // Pinned box + object-fit, like every other image class in this file: the old
+  // height:auto overrode the markup's width/height attributes, so a non-4:3
+  // photo re-flowed the row on load. The flex parent's gap owns the spacing.
   display: block;
-  max-width: 120px;
-  height: auto;
-  margin-top: govuk-spacing(2);
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  background-color: govuk-colour("black", $variant: "tint-95");
 }
 
 .nexus-alpha-detail-hero {
@@ -520,9 +529,28 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  contain: inline-size layout paint;
+  // No `paint` containment: it clips the focus ring to the padding box.
+  contain: inline-size layout;
   overflow: auto hidden;
   overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+
+  // Edge shadows that appear only while content overflows on that side (the
+  // MOJ scrollable-pane technique): the white "covers" scroll WITH the content
+  // and hide the fixed shadows when there is nothing more to see.
+  background:
+    linear-gradient(to right, govuk-colour("white"), govuk-colour("white") govuk-spacing(1)) left / govuk-spacing(6) 100%,
+    linear-gradient(to left, govuk-colour("white"), govuk-colour("white") govuk-spacing(1)) right / govuk-spacing(6) 100%,
+    radial-gradient(farthest-side at 0 50%, rgba(11, 12, 12, 0.2), transparent) left / govuk-spacing(3) 100%,
+    radial-gradient(farthest-side at 100% 50%, rgba(11, 12, 12, 0.2), transparent) right / govuk-spacing(3) 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+
+  &:focus {
+    // Two-tone GOV.UK focus (yellow + black band), not a bare yellow outline
+    // that can vanish against a light ground.
+    @include govuk-focused-box;
+  }
 }
 
 .nexus-alpha-table-scroll .govuk-table {
@@ -779,11 +807,6 @@ body.app-timeout-modal--open {
   }
 }
 
-// Text alignment utility
-.govuk-\!-text-align-centre {
-  text-align: center;
-}
-
 // Star rating input component
 .app-star-rating {
   display: flex;
@@ -827,19 +850,7 @@ body.app-timeout-modal--open {
 }
 
 .app-star-rating__input:focus + .app-star-rating__label {
-  outline: 3px solid $govuk-focus-colour;
-  outline-offset: 2px;
-}
-.nexus-alpha-table-scroll {
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-
-  &:focus {
-    // Two-tone GOV.UK focus (yellow + black band), not a bare yellow outline
-    // that can vanish against a light ground.
-    @include govuk-focused-box;
-  }
+  @include govuk-focused-box;
 }
 
 // Legal document contents list, built on the server from the document's own
@@ -1082,23 +1093,8 @@ body.app-timeout-modal--open {
   box-shadow: inset 4px 0 0 0 govuk-colour("blue");
 }
 
-// Cross-page filter strips. Reuses the filter-nav treatment above, including
-// its 24px minimum target height (WCAG 2.2 AA 2.5.8) — see that block's note.
-.nexus-alpha-filter-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: govuk-spacing(2);
-  list-style: none;
-  padding: 0;
-  margin: 0 0 govuk-spacing(6) 0;
-}
-
-.nexus-alpha-filter-tabs a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: govuk-spacing(1) govuk-spacing(2);
-}
+// Cross-page filter strips (.nexus-alpha-filter-tabs) are styled with
+// .nexus-alpha-filter-nav above — one shared block, so the two can never drift.
 
 // The "N results" line above a list. aria-live already announces it; this just
 // stops it reading as body copy.
@@ -1121,7 +1117,20 @@ body.app-timeout-modal--open {
 }
 
 .nexus-alpha-timeline > li {
+  position: relative;
   padding-bottom: govuk-spacing(3);
+
+  // Marker dot straddling the timeline rule (the MOJ timeline treatment).
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(-1 * govuk-spacing(4) - 7px);
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: govuk-colour("blue");
+  }
 }
 
 .nexus-alpha-timeline > li:last-child {
@@ -1323,7 +1332,7 @@ body.app-timeout-modal--open {
     @include govuk-font($size: 19);
     padding: govuk-spacing(2) govuk-spacing(3) govuk-spacing(2) 0;
     border-bottom: 1px solid $govuk-border-colour;
-    text-align: left;
+    text-align: start;
   }
 }
 
@@ -1385,16 +1394,50 @@ body.app-timeout-modal--open {
     background: transparent !important;
   }
 
-  a::after {
-    // Show the destination of content links so a printed page stays useful.
+  // Absolute destinations only: an in-app link printed "(/wallet)" after
+  // itself — noise, not a destination — and inflated every table cell.
+  a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 90%;
     word-wrap: break-word;
   }
 
-  // But not for in-page anchors or links whose text already is the URL.
-  a[href^="#"]::after,
-  a[href^="javascript:"]::after {
-    content: "";
+  // Sensible page furniture and break control.
+  @page {
+    margin: 2cm;
+  }
+
+  thead {
+    // Repeat column headers on every printed page of a long table.
+    display: table-header-group;
+  }
+
+  tr,
+  img,
+  .nexus-alpha-card {
+    break-inside: avoid;
+  }
+
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  // Tags carry meaning purely through background colour, which print strips —
+  // a border keeps them reading as chips rather than stray words.
+  .govuk-tag {
+    border: 1px solid govuk-colour("black");
+    background: transparent !important;
+  }
+
+  // Collapsed details content otherwise vanishes from the printed record.
+  .govuk-details__text {
+    display: block !important;
   }
 }

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -53,7 +54,7 @@
       {% endif %}
 
       {% if reviewsHasMore and loadMoreHref %}
-        <p class="govuk-body govuk-!-margin-top-6"><a class="govuk-link" href="{{ urlFor(loadMoreHref) }}">{{ t("govuk_alpha_blogreviews.reviews_list.load_more") }}</a></p>
+        {{ loadMoreNext(urlFor(loadMoreHref), t("govuk_alpha_blogreviews.reviews_list.load_more")) }}
       {% endif %}
     </div>
   </div>

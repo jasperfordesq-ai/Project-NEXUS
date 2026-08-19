@@ -35,8 +35,10 @@
   {% endif %}
 
   {% if not announcements.length %}
-    <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-    <p class="govuk-body">{{ t("govuk_alpha_groups.announcements.empty") }}</p>
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_groups.announcements.empty") }}</p>
+    </div>
   {% else %}
     {% for announcement in announcements %}
       <div class="govuk-summary-card">

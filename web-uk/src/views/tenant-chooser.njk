@@ -37,8 +37,10 @@
           {% endfor %}
         </ul>
       {% else %}
-        <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-        <p class="govuk-body">{{ t("tenant_chooser.empty") }}</p>
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+          <p class="govuk-body">{{ t("tenant_chooser.empty") }}</p>
+        </div>
       {% endif %}
     </div>
   </div>

@@ -27436,7 +27436,8 @@ describe('shared accessible frontend shell', () => {
     expect(library.text).toContain('class="govuk-button" data-module="govuk-button" href="/event-templates/7/materialize"');
     expect(library.text).toContain('class="govuk-button govuk-button--secondary" data-module="govuk-button" href="/events/42/template-preview?template_id=7"');
     expect(library.text).toContain('class="govuk-button govuk-button--secondary" data-module="govuk-button" href="/event-templates/7/history?filter=active"');
-    expect(library.text).toContain('data-module="govuk-button" href="/events/templates?filter=active&amp;cursor=8"');
+    // Load-more is the shared govuk-pagination next block, not a secondary button.
+    expect(library.text).toContain('govuk-pagination__link" href="/events/templates?filter=active&amp;cursor=8" rel="next"');
     const history = await request(app).get('/event-templates/7/history?cursor=incoming%2Bcursor%2F9%3D&filter=archived&library_cursor=library%2Bcursor%2F8%3D').set('Cookie', signedCookieHeader());
     expect(history.status).toBe(200); expect(history.text).toContain('Reusable garden day');
     expect(history.text).toContain('<time datetime="2026-07-13T12:00:00Z">13 July 2026 at 12:00</time>');

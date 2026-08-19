@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
   {% if status == 'connection-accepted' or status == 'connection-declined' or status == 'connection-removed' %}
@@ -110,9 +111,7 @@
         {% endfor %}
       </div>
       {% if loadMoreHrefs.accepted and not hasSearch %}
-        <p class="govuk-!-margin-top-2">
-          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor(loadMoreHrefs.accepted) }}">{{ t("govuk_alpha_connections.network.load_more") }} <span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_accepted") }) }}</span></a>
-        </p>
+        {{ loadMoreNext(urlFor(loadMoreHrefs.accepted), t("govuk_alpha_connections.network.load_more"), t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_accepted") })) }}
       {% endif %}
     {% else %}
       <div class="govuk-inset-text">
@@ -126,7 +125,7 @@
   </section>
 
   <section aria-labelledby="net-received-heading">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="net-received-heading">{{ t("govuk_alpha_connections.network.tab_pending_received") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="net-received-heading">{{ t("govuk_alpha_connections.network.tab_pending_received") }}</h2>
     {% if sections.pending_received.items.length %}
       <div class="nexus-alpha-card-list">
         {% for connection in sections.pending_received.items %}
@@ -158,9 +157,7 @@
         {% endfor %}
       </div>
       {% if loadMoreHrefs.pending_received and not hasSearch %}
-        <p class="govuk-!-margin-top-2">
-          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor(loadMoreHrefs.pending_received) }}">{{ t("govuk_alpha_connections.network.load_more") }} <span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_pending_received") }) }}</span></a>
-        </p>
+        {{ loadMoreNext(urlFor(loadMoreHrefs.pending_received), t("govuk_alpha_connections.network.load_more"), t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_pending_received") })) }}
       {% endif %}
     {% else %}
       <div class="govuk-inset-text">
@@ -171,7 +168,7 @@
   </section>
 
   <section aria-labelledby="net-sent-heading">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="net-sent-heading">{{ t("govuk_alpha_connections.network.tab_pending_sent") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="net-sent-heading">{{ t("govuk_alpha_connections.network.tab_pending_sent") }}</h2>
     {% if sections.pending_sent.items.length %}
       <div class="nexus-alpha-card-list">
         {% for connection in sections.pending_sent.items %}
@@ -208,9 +205,7 @@
         {% endfor %}
       </div>
       {% if loadMoreHrefs.pending_sent and not hasSearch %}
-        <p class="govuk-!-margin-top-2">
-          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor(loadMoreHrefs.pending_sent) }}">{{ t("govuk_alpha_connections.network.load_more") }} <span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_pending_sent") }) }}</span></a>
-        </p>
+        {{ loadMoreNext(urlFor(loadMoreHrefs.pending_sent), t("govuk_alpha_connections.network.load_more"), t("govuk_alpha_connections.network.load_more_sr", { section: t("govuk_alpha_connections.network.tab_pending_sent") })) }}
       {% endif %}
     {% else %}
       <div class="govuk-inset-text">

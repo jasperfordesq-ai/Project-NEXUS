@@ -42,7 +42,7 @@
       </dl>
     {% endif %}
 
-    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.milestones_heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_gamification.journey.milestones_heading") }}</h2>
     {% if journey.milestoneRows.length %}
       <ul class="govuk-list govuk-list--bullet">
         {% for milestone in journey.milestoneRows %}
@@ -55,7 +55,7 @@
       </div>
     {% endif %}
 
-    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</h2>
     {% if journey.activityRows.length %}
       <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_gamification.journey.activity_heading') }}">
       <table class="govuk-table">
@@ -83,7 +83,7 @@
     {% endif %}
 
     {% if journey.badgeRows.length %}
-      <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.badges_heading") }}</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_gamification.journey.badges_heading") }}</h2>
       <ul class="govuk-list govuk-list--bullet">
         {% for badge in journey.badgeRows %}
           <li>{{ badge }}</li>

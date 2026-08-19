@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("event_templates.back_to_events") }}</a>
@@ -73,7 +74,7 @@
   {% endif %}
 
   {% if pagination.has_more and pagination.next_cursor %}
-    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/templates?filter=' + filter + '&cursor=' + (pagination.next_cursor | urlencode)) }}">{{ t("event_templates.load_more") }}</a>
+    {{ loadMoreNext(urlFor('/events/templates?filter=' + filter + '&cursor=' + (pagination.next_cursor | urlencode)), t("event_templates.load_more")) }}
   {% endif %}
     </div>
   </div>

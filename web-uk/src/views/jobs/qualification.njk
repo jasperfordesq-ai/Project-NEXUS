@@ -43,7 +43,8 @@
 
   {% if qualification.dimensions.length %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.qualification.dimensions_heading") }}</h2>
-    <table class="govuk-table govuk-!-margin-bottom-6">
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_jobs.qualification.dimensions_heading") }}">
+    <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.qualification.dimensions_heading") }}</caption>
       <tbody class="govuk-table__body">
         {% for dimension in qualification.dimensions %}
@@ -60,6 +61,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
 
   {% if qualification.aiSummary %}

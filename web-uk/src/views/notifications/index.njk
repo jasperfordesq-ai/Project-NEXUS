@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block mainContent %}
   {% if successMessage %}
@@ -108,9 +109,7 @@
     </div>
 
     {% if meta.has_more and meta.cursor %}
-      <p class="govuk-body govuk-!-margin-top-4">
-        <a class="govuk-link" href="{{ urlFor('/notifications?' + ('filter=unread&' if showUnreadOnly else '') + 'cursor=' + (meta.cursor | urlencode)) }}">{{ t("notifications.load_more") }}</a>
-      </p>
+      {{ loadMoreNext(urlFor('/notifications?' + ('filter=unread&' if showUnreadOnly else '') + 'cursor=' + (meta.cursor | urlencode)), t("notifications.load_more")) }}
     {% endif %}
   {% else %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("notifications.empty") }}</p></div>

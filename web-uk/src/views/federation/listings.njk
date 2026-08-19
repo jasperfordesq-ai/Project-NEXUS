@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("federation.listings_browse.back") }}</a>
@@ -113,9 +114,7 @@
       </div>
 
       {% if loadMoreHref %}
-        <p class="govuk-body govuk-!-margin-top-4">
-          <a class="govuk-link" href="{{ urlFor(loadMoreHref) }}">{{ t("federation.listings_browse.load_more") }}</a>
-        </p>
+        {{ loadMoreNext(urlFor(loadMoreHref), t("federation.listings_browse.load_more")) }}
       {% endif %}
     {% endif %}
   {% endif %}

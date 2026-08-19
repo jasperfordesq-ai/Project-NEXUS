@@ -1,0 +1,26 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The ONE "load more" affordance. Before this macro the same role was built four
+  ways — govuk-pagination (34 templates), a plain link in a paragraph with three
+  different top margins, and a secondary button — so the control members use most
+  looked different on sibling pages. This is the GDS pagination block-mode "next"
+  pattern, matching the 34 templates that already did it properly.
+
+  href           already-resolved URL (pass through urlFor before calling)
+  label          translated link text ("Load more …")
+  visuallyHidden optional extra screen-reader suffix (e.g. which section it loads)
+#}
+{% macro loadMoreNext(href, label, visuallyHidden = "") %}
+  <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ label }}">
+    <div class="govuk-pagination__next">
+      <a class="govuk-link govuk-pagination__link" href="{{ href }}" rel="next">
+        <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+        <span class="govuk-pagination__link-title">{{ label }}</span>{% if visuallyHidden %}<span class="govuk-visually-hidden"> {{ visuallyHidden }}</span>{% endif %}
+      </a>
+    </div>
+  </nav>
+{% endmacro %}

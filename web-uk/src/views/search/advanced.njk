@@ -287,7 +287,7 @@
               {% set eventTitle = event.displayTitle or t("govuk_alpha_search.results.section_events") %}
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if event.linkId %}<a class="govuk-link" href="{{ urlFor('/events/' + (event.linkId | string)) }}">{{ eventTitle }}</a>{% else %}{{ eventTitle }}{% endif %}</h3>
               {% if event.displayDescription %}<p class="govuk-body govuk-!-margin-bottom-2">{{ truncate(event.displayDescription, 200) }}</p>{% endif %}
-              <dl class="nexus-alpha-inline-list govuk-!-margin-bottom-2">{% if event.displayWhen %}<div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_search.results.section_events") }}</dt><dd>{{ formatEventDate(event.displayWhen) }}</dd></div>{% endif %}{% if event.displayLocation %}<div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_search.filters.location") }}</dt><dd>{{ event.displayLocation }}</dd></div>{% endif %}</dl>
+              <dl class="nexus-alpha-inline-list">{% if event.displayWhen %}<div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_search.results.section_events") }}</dt><dd>{{ formatEventDate(event.displayWhen) }}</dd></div>{% endif %}{% if event.displayLocation %}<div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_search.filters.location") }}</dt><dd>{{ event.displayLocation }}</dd></div>{% endif %}</dl>
               {% if event.linkId %}<p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.linkId | string)) }}">{{ t("govuk_alpha_search.results.view_event") }}</a></p>{% endif %}
             </article>
           {% endfor %}

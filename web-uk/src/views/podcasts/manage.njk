@@ -90,9 +90,9 @@
   {% if not episodes.length %}
     <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.podcast_studio.no_episodes") }}</p>
   {% else %}
-    <ul class="govuk-list">
+    <ul class="govuk-list nexus-alpha-card-list">
       {% for episode in episodes %}
-        <li class="nexus-alpha-card govuk-!-margin-bottom-3">
+        <li class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <span>
               {% if episode.episodeNumberLabel %}<span class="govuk-body-s nexus-alpha-meta">{{ episode.episodeNumberLabel }} - </span>{% endif %}

@@ -60,10 +60,11 @@
   <p class="govuk-body">{{ t("connections.summary", { received: countLabels.received, sent: countLabels.sent, total: countLabels.accepted }) }}</p>
 
   <section aria-labelledby="received-heading">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="received-heading">{{ t("connections.received_title") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="received-heading">{{ t("connections.received_title") }}</h2>
     {% if receivedRequests.length %}
+      <div class="nexus-alpha-card-list">
       {% for connection in receivedRequests %}
-        <article class="nexus-alpha-card govuk-!-margin-bottom-4">
+        <article class="nexus-alpha-card">
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ connection.name }}</h3>
           {% if connection.location %}<p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-2">{{ connection.location }}</p>{% endif %}
           {% if connection.bio %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2"><span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.about", { name: connection.name }) }}: </span>{{ connection.bio }}</p>{% endif %}
@@ -83,16 +84,18 @@
           </div>
         </article>
       {% endfor %}
+      </div>
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.received_empty") }}</p></div>
     {% endif %}
   </section>
 
   <section aria-labelledby="accepted-heading">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="accepted-heading">{{ t("connections.accepted_title") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="accepted-heading">{{ t("connections.accepted_title") }}</h2>
     {% if acceptedConnections.length %}
+      <div class="nexus-alpha-card-list">
       {% for connection in acceptedConnections %}
-        <article class="nexus-alpha-card govuk-!-margin-bottom-4">
+        <article class="nexus-alpha-card">
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ connection.name }}</h3>
           {% if connection.location %}<p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-2">{{ connection.location }}</p>{% endif %}
           {% if connection.bio %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2"><span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.about", { name: connection.name }) }}: </span>{{ connection.bio }}</p>{% endif %}
@@ -116,16 +119,18 @@
           </div>
         </article>
       {% endfor %}
+      </div>
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.accepted_empty") }}</p></div>
     {% endif %}
   </section>
 
   <section aria-labelledby="sent-heading">
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="sent-heading">{{ t("connections.sent_title") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="sent-heading">{{ t("connections.sent_title") }}</h2>
     {% if sentRequests.length %}
+      <div class="nexus-alpha-card-list">
       {% for connection in sentRequests %}
-        <article class="nexus-alpha-card govuk-!-margin-bottom-4">
+        <article class="nexus-alpha-card">
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ connection.name }}</h3>
           {% if connection.bio %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2"><span class="govuk-visually-hidden">{{ t("govuk_alpha_connections.network.about", { name: connection.name }) }}: </span>{{ connection.bio }}</p>{% endif %}
           <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("connections.awaiting_response") }}</p>
@@ -149,6 +154,7 @@
           </div>
         </article>
       {% endfor %}
+      </div>
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("connections.sent_empty") }}</p></div>
     {% endif %}

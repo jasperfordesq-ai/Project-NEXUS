@@ -70,7 +70,7 @@
   {% endif %}
 
   {% if ideationIsAdmin %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="create">{{ t("govuk_alpha_ideation.campaigns.create_heading") }}</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="create">{{ t("govuk_alpha_ideation.campaigns.create_heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_ideation.campaigns.create_intro") }}</p>
     <form method="post" action="{{ urlFor('/ideation/campaigns') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">

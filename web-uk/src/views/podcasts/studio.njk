@@ -39,8 +39,10 @@
   {% endif %}
 
   {% if not shows.length %}
-    <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-    <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.podcast_studio.empty") }}</p>
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.empty") }}</p>
+    </div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for show in shows %}

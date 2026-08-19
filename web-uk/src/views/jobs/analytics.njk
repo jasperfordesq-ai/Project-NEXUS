@@ -46,29 +46,36 @@
   {% if analytics.viewsByDay.length == 0 %}
     <p class="govuk-body">{{ t("govuk_alpha_jobs.analytics.no_views_yet") }}</p>
   {% else %}
-    <table class="govuk-table govuk-!-margin-bottom-6">
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_jobs.analytics.views_over_time") }}">
+    <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.analytics.views_over_time") }}</caption>
       <tbody class="govuk-table__body">{% for row in analytics.viewsByDay %}<tr class="govuk-table__row"><th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ row.label }}</th><td class="govuk-table__cell"><progress value="{{ row.count }}" max="{{ analytics.maxViews }}" aria-label="{{ t('govuk_alpha_jobs.analytics.views_on_date', { date: row.label }) }}">{{ row.count }}</progress></td><td class="govuk-table__cell govuk-table__cell--numeric">{{ row.count }}</td></tr>{% endfor %}</tbody>
     </table>
+    </div>
   {% endif %}
 
   {% if analytics.weeklyTrend.length %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.analytics.weekly_trend") }}</h2>
-    <table class="govuk-table govuk-!-margin-bottom-6">
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_jobs.analytics.weekly_trend") }}">
+    <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.analytics.weekly_trend") }}</caption>
       <tbody class="govuk-table__body">{% for row in analytics.weeklyTrend %}<tr class="govuk-table__row"><th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ row.label }}</th><td class="govuk-table__cell"><progress value="{{ row.count }}" max="{{ analytics.maxWeekly }}" aria-label="{{ t('govuk_alpha_jobs.analytics.applications_in_week', { week: row.label }) }}">{{ row.count }}</progress></td><td class="govuk-table__cell govuk-table__cell--numeric">{{ row.count }}</td></tr>{% endfor %}</tbody>
     </table>
+    </div>
   {% endif %}
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.analytics.applications_by_stage") }}</h2>
   {% if analytics.applicationsByStage.length == 0 %}
     <p class="govuk-body">{{ t("govuk_alpha_jobs.analytics.no_applications_yet") }}</p>
   {% else %}
-    <table class="govuk-table govuk-!-margin-bottom-6">
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_jobs.analytics.applications_by_stage") }}">
+    <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.analytics.applications_by_stage") }}</caption>
-      <thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.analytics.applications_by_stage") }}</th><th scope="col" class="govuk-table__header"></th><th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.analytics.total_applications") }}</th></tr></thead>
+      {# No thead, matching the two sibling bar tables above: the header row
+         duplicated the caption in its first cell and left the second empty. #}
       <tbody class="govuk-table__body">{% for row in analytics.applicationsByStage %}<tr class="govuk-table__row"><th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ row.label }}</th><td class="govuk-table__cell"><progress value="{{ row.count }}" max="{{ analytics.totalApplications if analytics.totalApplications > 0 else 1 }}" aria-label="{{ row.label }}: {{ row.percentage }}%">{{ row.percentage }}%</progress></td><td class="govuk-table__cell govuk-table__cell--numeric">{{ row.count }} ({{ row.percentage }}%)</td></tr>{% endfor %}</tbody>
     </table>
+    </div>
   {% endif %}
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.analytics.predictions_heading") }}</h2>

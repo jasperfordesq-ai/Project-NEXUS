@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block mainContent %}
@@ -91,9 +92,7 @@
       </div>
 
       {% if nextHref %}
-        <p class="govuk-body govuk-!-margin-top-6">
-          <a class="govuk-link" href="{{ urlFor(nextHref) }}">{{ t("actions.load_more") }}</a>
-        </p>
+        {{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}
       {% endif %}
     </div>
   </div>

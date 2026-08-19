@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
@@ -108,7 +109,7 @@
     </div>
 
     {% if competitive.hasMore %}
-      <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/leaderboard/competitive?type=' + competitive.type + '&period=' + competitive.period + '&limit=' + (competitive.nextLimit | string) + '#leaderboard-end') }}">{{ t("govuk_alpha_gamification.competitive.load_more") }}</a>
+      {{ loadMoreNext(urlFor('/leaderboard/competitive?type=' + competitive.type + '&period=' + competitive.period + '&limit=' + (competitive.nextLimit | string) + '#leaderboard-end'), t("govuk_alpha_gamification.competitive.load_more")) }}
     {% endif %}
     <span id="leaderboard-end" tabindex="-1"></span>
   {% else %}

@@ -61,12 +61,12 @@
         </form>
 
         {% if translated and status == "translate-done" %}
-          <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_events.translate.translated_heading") }}</h2>
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_events.translate.translated_heading") }}</h2>
           <div class="govuk-inset-text"><div class="govuk-body">{{ translated }}</div></div>
           <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_events.translate.machine_note") }}</p>
         {% endif %}
 
-        <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_events.translate.original_heading") }}</h2>
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_events.translate.original_heading") }}</h2>
         <div class="govuk-body">{{ sourceText }}</div>
       {% endif %}
     </div>

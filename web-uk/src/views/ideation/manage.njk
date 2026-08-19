@@ -79,7 +79,7 @@
     <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.page.manage_no_transitions") }}</div>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_ideation.page.manage_link_campaign_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_ideation.page.manage_link_campaign_title") }}</h2>
   <p class="govuk-body">{{ t("govuk_alpha_ideation.page.manage_link_campaign_intro") }}</p>
   {% if campaigns and campaigns.length %}
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/link-campaign') }}">
@@ -98,7 +98,7 @@
     <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.page.manage_no_campaigns") }}</div>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_ideation.page.manage_duplicate_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_ideation.page.manage_duplicate_title") }}</h2>
   <p class="govuk-body">{{ t("govuk_alpha_ideation.page.manage_duplicate_intro") }}</p>
   <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/duplicate') }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">

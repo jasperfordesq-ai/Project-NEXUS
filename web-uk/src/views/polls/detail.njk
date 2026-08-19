@@ -28,7 +28,7 @@
 
       <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_detail.caption", { community: tenantName }) }}</span>
       <div class="nexus-alpha-module-row">
-        <h1 class="govuk-heading-xl govuk-!-margin-bottom-1">{{ poll.question }}</h1>
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ poll.question }}</h1>
         {% if poll.status == "open" %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.poll_detail.open_tag") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_gamification.poll_detail.closed_tag") }}</strong>{% endif %}
         {% if poll.pollType == "ranked" %}<strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.poll_detail.ranked_tag") }}</strong>{% endif %}
       </div>

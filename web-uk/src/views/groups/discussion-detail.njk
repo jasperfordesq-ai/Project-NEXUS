@@ -54,8 +54,9 @@
   {% if not messages.length %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.no_replies") }}</p></div>
   {% else %}
+    <div class="nexus-alpha-card-list">
     {% for message in messages %}
-      <article class="nexus-alpha-card govuk-!-margin-bottom-3">
+      <article class="nexus-alpha-card">
         {% if message.authorName %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
             {{ t("polish_groups.reply_posted_by", { name: message.authorName }) }}{% if message.createdAtLabel %}<span aria-hidden="true"> · </span><time datetime="{{ message.createdAt }}">{{ message.createdAtLabel }}</time>{% endif %}
@@ -64,6 +65,7 @@
         <div class="govuk-body govuk-!-margin-bottom-0">{{ message.content | striptags | nl2br | safe }}</div>
       </article>
     {% endfor %}
+    </div>
   {% endif %}
 
   <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string) + '/reply') }}" novalidate>

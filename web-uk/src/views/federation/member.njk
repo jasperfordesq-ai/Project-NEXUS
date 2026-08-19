@@ -39,7 +39,7 @@
       <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ member.name }}</h1>
       {% if member.reputationCount > 0 %}
         <p class="govuk-body-s govuk-!-margin-bottom-1">
-          <strong class="govuk-tag {{ member.reputationTagClass }} govuk-!-margin-right-1">{{ t("fed2.reviews.reputation_label", { score: member.reputationScoreLabel }) }}</strong>
+          <strong class="govuk-tag {{ member.reputationTagClass }}">{{ t("fed2.reviews.reputation_label", { score: member.reputationScoreLabel }) }}</strong>
           <span class="nexus-alpha-meta">{{ member.reputationCountLabel }}</span>
         </p>
       {% endif %}
@@ -78,7 +78,7 @@
       <dd class="govuk-summary-list__value">
         {% if member.skills.length %}
           {% for skill in member.skills %}
-            <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ skill }}</strong>
+            <strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong>
           {% endfor %}
         {% else %}
           {{ t("federation.member.no_skills") }}
@@ -161,8 +161,8 @@
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("fed2.reviews.date_label") }}: {{ review.createdAtLabel }}</p>
             {% endif %}
             {% if review.partnerName or review.verified %}
-              <p class="govuk-body-s govuk-!-margin-bottom-1 nexus-alpha-inline-list">
-                {% if review.partnerName %}<strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ t("fed2.reviews.from_partner", { community: review.partnerName }) }}</strong>{% endif %}
+              <p class="govuk-body-s govuk-!-margin-bottom-1 nexus-alpha-tag-list">
+                {% if review.partnerName %}<strong class="govuk-tag govuk-tag--grey">{{ t("fed2.reviews.from_partner", { community: review.partnerName }) }}</strong>{% endif %}
                 {% if review.verified %}<strong class="govuk-tag govuk-tag--green">{{ t("fed2.reviews.verified") }}</strong>{% endif %}
               </p>
             {% endif %}

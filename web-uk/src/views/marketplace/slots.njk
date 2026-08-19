@@ -31,8 +31,10 @@
   <a class="govuk-button" href="#new-slot" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.new_button") }}</a>
 
   {% if not slots.length %}
-    <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-    <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.slots.empty") }}</p>
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.slots.empty") }}</p>
+    </div>
   {% else %}
     <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_commerce.slots.title') }}">
     <table class="govuk-table">
@@ -73,7 +75,7 @@
     </div>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="new-slot">{{ t("govuk_alpha_commerce.slots.new_button") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="new-slot">{{ t("govuk_alpha_commerce.slots.new_button") }}</h2>
   {% set slot = emptySlot %}
   {% set action = "/marketplace/slots" %}
   {% set submitLabel = t("govuk_alpha_commerce.slots.submit_create") %}

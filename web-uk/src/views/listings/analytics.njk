@@ -86,7 +86,8 @@
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.views_over_time") }}</h2>
     {% if analytics.viewsOverTime.length %}
-      <table class="govuk-table govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_listings.analytics.views_over_time") }}">
+      <table class="govuk-table">
         <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.views_over_time") }}</caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -107,13 +108,15 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_views_yet") }}</p>
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}</h2>
     {% if analytics.contactsOverTime.length %}
-      <table class="govuk-table govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}">
+      <table class="govuk-table">
         <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}</caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -134,13 +137,15 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_contacts_yet") }}</p>
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.contact_types_heading") }}</h2>
     {% if analytics.contactTypes.length %}
-      <table class="govuk-table govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_listings.analytics.contact_types_heading") }}">
+      <table class="govuk-table">
         <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.contact_types_heading") }}</caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -157,6 +162,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_contact_types") }}</p>
     {% endif %}

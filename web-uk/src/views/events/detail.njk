@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
@@ -438,7 +439,7 @@
       {% endif %}
 
       {% if attendeesLoadFailed or attendees.length > 0 %}
-        <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("govuk_alpha.events.attendees_title") }}</h2>
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha.events.attendees_title") }}</h2>
 
         {% if attendeesLoadFailed %}
           <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1" aria-labelledby="attendees-error-title">
@@ -468,9 +469,7 @@
         {% endif %}
 
         {% if attendeesNextPath %}
-          <p class="govuk-body govuk-!-margin-top-4">
-            <a class="govuk-link" rel="next" href="{{ urlFor(attendeesNextPath) }}">{{ t("govuk_alpha.actions.load_more") }}</a>
-          </p>
+          {{ loadMoreNext(urlFor(attendeesNextPath), t("govuk_alpha.actions.load_more")) }}
         {% endif %}
       {% endif %}
     </div>

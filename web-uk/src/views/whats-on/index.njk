@@ -42,8 +42,10 @@
       </form>
 
       {% if not events.length %}
-        <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-        <p class="govuk-body">{{ t("govuk_alpha_whats_on.index.empty") }}</p>
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+          <p class="govuk-body">{{ t("govuk_alpha_whats_on.index.empty") }}</p>
+        </div>
       {% else %}
         <ul class="govuk-list">
           {% for event in events %}
