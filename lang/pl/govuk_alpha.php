@@ -224,6 +224,7 @@ return [
         'warning' => 'Ostrzeżenie',
         'warning_prefix' => 'Ostrzeżenie',
         'empty_title' => 'Nie znaleziono żadnych wyników',
+        'nothing_yet_title' => 'Nie ma tu jeszcze niczego',
         'try_different_search' => 'Spróbuj zmienić wyszukiwanie lub filtry.',
         'module_disabled' => 'W tej społeczności nie można wyświetlać wpisów.',
         'events_disabled' => 'Wydarzenia nie są włączone dla tej społeczności.',

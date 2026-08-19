@@ -122,7 +122,7 @@ describe('Laravel exchange workflow integration contract', () => {
       /<div class="govuk-inset-text">\s*<h2 class="govuk-heading-m">([^<]+)<\/h2>/
     );
     expect(insetHeading).not.toBeNull();
-    expect(insetHeading[1].trim()).toBe(t('states.empty_title'));
+    expect(insetHeading[1].trim()).toBe(t('states.nothing_yet_title'));
   });
 
   it('translates the empty exchange list heading rather than hardcoding English', () => {
@@ -130,7 +130,7 @@ describe('Laravel exchange workflow integration contract', () => {
     // it would survive the locale switch, and this assertion would fail.
     const html = renderEmptyExchangeList('ar');
 
-    expect(html).toContain(createTranslator('ar')('states.empty_title'));
-    expect(html).not.toContain(createTranslator('en')('states.empty_title'));
+    expect(html).toContain(createTranslator('ar')('states.nothing_yet_title'));
+    expect(html).not.toContain(createTranslator('en')('states.nothing_yet_title'));
   });
 });

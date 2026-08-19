@@ -224,6 +224,7 @@ return [
         'warning' => 'Waarschuwing',
         'warning_prefix' => 'Waarschuwing',
         'empty_title' => 'Geen resultaten gevonden',
+        'nothing_yet_title' => 'Hier is nog niets',
         'try_different_search' => 'Probeer uw zoekopdracht of filters te wijzigen.',
         'module_disabled' => 'Advertenties zijn niet ingeschakeld voor deze community.',
         'events_disabled' => 'Evenementen zijn niet ingeschakeld voor deze community.',

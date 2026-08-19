@@ -224,6 +224,7 @@ return [
         'warning' => 'Rabhadh',
         'warning_prefix' => 'Rabhadh',
         'empty_title' => 'Níor aimsíodh aon torthaí',
+        'nothing_yet_title' => 'Níl aon rud anseo fós',
         'try_different_search' => 'Bain triail as do chuardach nó scagairí a athrú.',
         'module_disabled' => 'Níl liostaí cumasaithe don phobal seo.',
         'events_disabled' => 'Níl imeachtaí cumasaithe don phobal seo.',

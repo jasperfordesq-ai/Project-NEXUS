@@ -225,6 +225,7 @@ return [
         'warning' => 'Warning',
         'warning_prefix' => 'Warning',
         'empty_title' => 'No results found',
+        'nothing_yet_title' => 'Nothing here yet',
         'try_different_search' => 'Try changing your search or filters.',
         'module_disabled' => 'Listings are not enabled for this community.',
         'events_disabled' => 'Events are not enabled for this community.',

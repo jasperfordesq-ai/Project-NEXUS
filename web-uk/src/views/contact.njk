@@ -128,7 +128,7 @@
          only when the community has published an address; the report-a-problem
          route is not Turnstile-gated. #}
       {% if contactEmail or isAuthenticated %}
-        <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("contact.other_ways_title") }}</h2>
+        <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("contact.other_ways_title") }}</h2>
         {% if contactEmail %}
           <p class="govuk-body">
             <a class="govuk-link" href="mailto:{{ contactEmail }}">{{ t("contact.other_ways_email", { email: contactEmail }) }}</a>

@@ -3168,6 +3168,11 @@ describe('shared accessible frontend shell', () => {
     expect(api.callGamificationApi).toHaveBeenCalledWith('test-token', 'GET', '/daily-reward');
     expect(api.callGamificationApi).toHaveBeenCalledWith('test-token', 'GET', '/challenges');
     expect(signed.text).toContain('Achievements and rewards');
+    // The caption interpolates { community: communityName }. The route never
+    // passed it, so this page said the literal word "undefined" above its h1
+    // until the shell provided a default. Caught by the audit's route sweep.
+    expect(signed.text).toContain('<span class="govuk-caption-xl">Project NEXUS Accessible</span>');
+    expect(signed.text).not.toContain('undefined');
     expect(signed.text).toContain('/achievements/shop');
     expect(signed.text).toContain('/achievements/collections');
     expect(signed.text).toContain('/achievements/showcase');
@@ -7322,7 +7327,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Messages');
     expect(response.text).toContain('Read and send direct messages with members of this community.');
     expect(response.text).toContain('href="/messages/groups">Groups</a>');
-    expect(response.text).toContain('No results found');
+    expect(response.text).toContain('Nothing here yet');
     expect(response.text).toContain('There are no conversations to show.');
     expect(response.text).toContain('href="/members">Message a member</a>');
     expect(response.text).not.toContain('No conversations yet');

@@ -222,6 +222,31 @@
   border-bottom: 1px solid $govuk-border-colour;
 }
 
+// Whole-card click target (the NHS clickable-card pattern): the heading link's
+// ::after stretches over the card, so the whole card is one tap target and ONE
+// tab stop — which is why cards using this drop their separate "View details"
+// link. Any other link, button or form inside the card sits above the
+// stretched layer and stays independently clickable.
+.nexus-alpha-card--clickable {
+  position: relative;
+
+  &:hover {
+    background-color: govuk-colour("black", $variant: "tint-95");
+  }
+
+  .nexus-alpha-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  a:not(.nexus-alpha-card__link),
+  button,
+  form {
+    position: relative;
+  }
+}
+
 .nexus-alpha-module-row {
   display: flex;
   justify-content: space-between;

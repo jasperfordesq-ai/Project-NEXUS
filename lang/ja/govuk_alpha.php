@@ -224,6 +224,7 @@ return [
         'warning' => '警告',
         'warning_prefix' => '警告',
         'empty_title' => '結果が見つかりませんでした',
+        'nothing_yet_title' => 'まだ何もありません',
         'try_different_search' => '検索またはフィルターを変更してみてください。',
         'module_disabled' => 'このコミュニティではリストが有効になっていません。',
         'events_disabled' => 'このコミュニティではイベントが有効になっていません。',

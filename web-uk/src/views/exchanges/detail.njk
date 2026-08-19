@@ -131,7 +131,7 @@
     <div class="govuk-inset-text">{{ t("exchanges.no_action") }}</div>
   {% else %}
     {% if exchange.canAccept or exchange.canStart or exchange.canComplete %}
-      <div class="govuk-button-group govuk-!-margin-bottom-5">
+      <div class="govuk-button-group govuk-!-margin-bottom-6">
         {% if exchange.canAccept %}
           <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">

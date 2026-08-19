@@ -183,7 +183,7 @@
         {% set coverImage = event.cover_image or event.coverImage %}
         {% set categoryName = event.category.name if event.category else (event.category_name or event.categoryName) %}
         <article
-          class="nexus-alpha-card"
+          class="nexus-alpha-card nexus-alpha-card--clickable"
           data-events-contract-version="{{ event.contract_version or '' }}"
           data-event-timezone="{{ event.timezone }}"
           data-event-engagement-state="{{ event.relationship.engagement.state if event.relationship and event.relationship.engagement else '' }}"
@@ -197,7 +197,7 @@
             {% endif %}
             <div class="nexus-alpha-listing-row__body">
               <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
-                <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a>
+                <a class="govuk-link nexus-alpha-card__link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a>
               </h3>
               <dl class="nexus-alpha-inline-list">
                 {% if event.start_label %}<div><dt>{{ t("events.starts") }}</dt><dd>{{ event.start_label }}{% if event.all_day %} · {{ t("events.all_day") }}{% endif %}</dd></div>{% endif %}
@@ -210,7 +210,6 @@
                 {{ tc("events.attendees", event.attendee_count, { count: event.attendee_count }) }}
                 {% if event.interested_count %}<br>{{ tc("events.interested", event.interested_count, { count: event.interested_count }) }}{% endif %}
               </p>
-              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("actions.view_details") }}</a>
             </div>
           </div>
         </article>

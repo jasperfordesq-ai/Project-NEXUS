@@ -224,6 +224,7 @@ return [
         'warning' => 'تحذير',
         'warning_prefix' => 'تحذير',
         'empty_title' => 'لم يتم العثور على نتائج',
+        'nothing_yet_title' => 'لا يوجد شيء هنا بعد',
         'try_different_search' => 'حاول تغيير البحث أو عوامل التصفية.',
         'module_disabled' => 'لم يتم تمكين القوائم لهذا المجتمع.',
         'events_disabled' => 'لم يتم تمكين الأحداث لهذا المجتمع.',

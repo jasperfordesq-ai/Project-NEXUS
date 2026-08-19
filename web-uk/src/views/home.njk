@@ -31,7 +31,7 @@
         <a class="govuk-link" href="{{ urlFor('/guide') }}">{{ t("guide.title") }}</a>
       </p>
 
-      <div class="govuk-button-group govuk-!-margin-bottom-8">
+      <div class="govuk-button-group govuk-!-margin-bottom-6">
         {% if isAuthenticated %}
           {{ govukButton({ text: t("home.primary_authenticated"), href: urlFor("/dashboard") }) }}
           {{ govukButton({ text: t("home.profile_action"), href: urlFor("/profile"), classes: "govuk-button--secondary" }) }}

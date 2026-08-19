@@ -224,6 +224,7 @@ return [
         'warning' => 'Avertissement',
         'warning_prefix' => 'Avertissement',
         'empty_title' => 'Aucun résultat trouvé',
+        'nothing_yet_title' => 'Rien ici pour le moment',
         'try_different_search' => 'Essayez de modifier votre recherche ou vos filtres.',
         'module_disabled' => 'Les annonces ne sont pas activées pour cette communauté.',
         'events_disabled' => 'Les événements ne sont pas activés pour cette communauté.',

@@ -274,7 +274,11 @@
                   {{ tc("feed.comments", post.commentCount, { count: post.commentCount }) }}
                 </p>
               {% endif %}
-              <div class="govuk-button-group govuk-!-margin-bottom-3">
+              {# One action row, not two: the Like control and the emoji reactions are
+                 different systems underneath (item like vs post reaction), but they are
+                 both "respond to this post" to a member, so they share a row on posts.
+                 Non-post items keep the standalone Like group (they have no reactions). #}
+              {% set likeForm %}
                 <form action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/like') }}" method="post">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="type" value="{{ selectedType }}">
@@ -287,10 +291,16 @@
                     <span class="govuk-visually-hidden">{{ t("feed.action_for", { title: postHeading }) }}</span>
                   </button>
                 </form>
-              </div>
+              {% endset %}
+              {% if post.type != "post" %}
+                <div class="govuk-button-group govuk-!-margin-bottom-3">
+                  {{ likeForm | safe }}
+                </div>
+              {% endif %}
 
               {% if post.type == "post" %}
                 <div class="nexus-alpha-reactions govuk-!-margin-bottom-3">
+                  {{ likeForm | safe }}
                   {% if post.reactionTotal > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>{% endif %}
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("feed_t1.reactions_legend") }}</legend>
@@ -450,7 +460,7 @@
         {% endif %}
         {% else %}
           <div class="govuk-inset-text">
-            <h3 class="govuk-heading-m">{{ t("states.empty_title") }}</h3>
+            <h3 class="govuk-heading-m">{{ t("states.nothing_yet_title") }}</h3>
             <p class="govuk-body">{{ t("feed.empty") }}</p>
           </div>
         {% endif %}

@@ -1231,6 +1231,7 @@
                 "warning": "Avviso",
                 "warning_prefix": "Avviso",
                 "empty_title": "Nessun risultato trovato",
+                "nothing_yet_title": "Non c'è ancora niente qui",
                 "try_different_search": "Prova a cambiare la ricerca o i filtri.",
                 "module_disabled": "Gli elenchi non sono abilitati per questa comunità.",
                 "events_disabled": "Gli eventi non sono abilitati per questa community.",

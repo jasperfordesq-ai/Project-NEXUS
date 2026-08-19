@@ -663,6 +663,12 @@ function buildShellLocals(req, isAuthenticated) {
     serviceName: t('service_name'),
     phaseText: t('phase'),
     tenantName,
+    // 41 templates interpolate { community: communityName } into their caption.
+    // Routes provide it inconsistently — achievements never did, so its caption
+    // rendered the literal word "undefined" (caught by the route sweep). A
+    // shell-wide default makes that impossible; a route-passed value still wins
+    // because res.render() locals override res.locals.
+    communityName: tenantName,
     tenantSlug,
     tenantLogoUrl,
     tenantLogoShape: normalizeLogoShape(branding.logo_shape),

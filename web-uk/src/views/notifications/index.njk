@@ -112,6 +112,6 @@
       {{ loadMoreNext(urlFor('/notifications?' + ('filter=unread&' if showUnreadOnly else '') + 'cursor=' + (meta.cursor | urlencode)), t("notifications.load_more")) }}
     {% endif %}
   {% else %}
-    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("notifications.empty") }}</p></div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.nothing_yet_title") }}</h2><p class="govuk-body">{{ t("notifications.empty") }}</p></div>
   {% endif %}
 {% endblock %}
