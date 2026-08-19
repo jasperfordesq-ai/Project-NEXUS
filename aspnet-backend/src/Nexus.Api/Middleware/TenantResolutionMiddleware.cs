@@ -50,6 +50,14 @@ public class TenantResolutionMiddleware
         "/api/totp/verify",          // Public 2FA exchange resolves user and tenant from opaque challenge
         "/api/v2/support-actions/confirm", // Public single-use consent token; the row carries its tenant
         "/api/v2/auth/impersonate/exchange", // Anonymous; the proof carries its tenant
+        // 🔴 The BROWSER posts CSP violation reports, unprompted, with no headers of
+        // ours — no tenant, no credentials. Laravel accepts them anonymously and
+        // tenantlessly (routes/api.php:4320). Without this exemption the endpoint
+        // answered 400 "X-Tenant-ID header is required" and every report from a real
+        // browser session was refused, which no test that sets the header would ever
+        // have caught.
+        "/api/csp-report",
+        "/api/v2/csp-report",
         "/api/webauthn/auth-challenge", // Public passkey authentication bootstrap
         "/api/webauthn/auth-verify", // Public passkey exchange resolves tenant from cached challenge
         "/api/auth/forgot-password",           // Forgot password determines tenant from request body
