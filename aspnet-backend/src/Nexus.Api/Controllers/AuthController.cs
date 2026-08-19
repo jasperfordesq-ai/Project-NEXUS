@@ -134,6 +134,34 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Laravel's refusal for a failed sign-in: 401 with
+    /// <c>{"errors":[{"code":"AUTH_INVALID_CREDENTIALS","message":"Invalid credentials"}]}</c>
+    /// and NO <c>success</c> key — verified live against the disposable Laravel on
+    /// 2026-08-19.
+    ///
+    /// 🔴 Why this must be built here rather than left to the filter. A bare
+    /// <c>Unauthorized(new { error = ... })</c> does not carry an <c>errors</c> array,
+    /// so <see cref="Filters.LaravelAuthEnvelopeFilter"/> rewrote it into the GENERIC
+    /// challenge body — <c>auth_required</c> / "Authentication required" /
+    /// <c>success:false</c>. That is the right body for "you sent no token" and the
+    /// WRONG one for "your password was wrong": the client cannot tell the two apart,
+    /// and a sign-in form shows the wrong message. Emitting the errors array here means
+    /// the filter deliberately leaves it alone.
+    ///
+    /// 🔴 Laravel is inconsistent between the two on purpose-of-record: its generic 401
+    /// DOES include <c>success:false</c> (verified on a protected endpoint with no
+    /// token) while this one does not. Both spellings are the contract; do not
+    /// "harmonise" them.
+    /// </summary>
+    private IActionResult InvalidCredentials() => Unauthorized(new
+    {
+        errors = new[]
+        {
+            new { code = "AUTH_INVALID_CREDENTIALS", message = "Invalid credentials" }
+        }
+    });
+
+    /// <summary>
     /// Login with email, password, and tenant identifier.
     /// Returns access token and refresh token.
     /// Rate limited: 5 requests per minute per IP.
@@ -146,7 +174,17 @@ public class AuthController : ControllerBase
         // Validate required fields
         if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
         {
-            return BadRequest(new { error = "Email and password are required" });
+            // 🔴 Laravel answers 400 {"errors":[{"code":"VALIDATION_REQUIRED_FIELD",
+            // "message":"Email and password required"}]} — verified live 2026-08-19.
+            // A bare {error} string is a DIFFERENT envelope: a client reading
+            // errors[0].code to decide which field to highlight gets nothing.
+            return BadRequest(new
+            {
+                errors = new[]
+                {
+                    new { code = "VALIDATION_REQUIRED_FIELD", message = "Email and password required" }
+                }
+            });
         }
 
         // 🔴 Per-ACCOUNT lockout, checked before the password is verified.
@@ -221,7 +259,7 @@ public class AuthController : ControllerBase
         {
             _logger.LogWarning("Login failed: tenant not found (slug={Slug}, id={Id})",
                 request.TenantSlug, request.TenantId);
-            return Unauthorized(new { error = "Invalid credentials" });
+            return InvalidCredentials();
         }
 
         if (!tenant.IsActive)
@@ -241,7 +279,7 @@ public class AuthController : ControllerBase
         {
             _logger.LogWarning("Login failed: user not found for {Email} in tenant {TenantId}",
                 request.Email, tenant.Id);
-            return Unauthorized(new { error = "Invalid credentials" });
+            return InvalidCredentials();
         }
 
         // Check registration/account status before password verification
@@ -272,7 +310,7 @@ public class AuthController : ControllerBase
                 HttpContext.RequestAborted);
             await _loginThrottle.RecordAsync(clientIp, LoginThrottleService.TypeIp, false,
                 HttpContext.RequestAborted);
-            return Unauthorized(new { error = "Invalid credentials" });
+            return InvalidCredentials();
         }
 
         // Step 4: Check if 2FA is required

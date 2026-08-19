@@ -336,3 +336,27 @@ INSERT INTO poll_votes (id, poll_id, option_id, user_id, tenant_id) VALUES
 INSERT INTO skills (id, tenant_id, name, slug, category_id) VALUES
   (950130, @T, 'Bicycle repair', 'bicycle-repair', NULL),
   (950131, @T, 'Conversational Irish', 'conversational-irish', NULL);
+
+-- ---------------------------------------------------------------------------
+-- Federation opt-in for the fixture members.
+--
+-- 🔴 Moved here from start-disposable-laravel.sh on 2026-08-19, because the fixture
+-- must be SELF-CONTAINED. Federation reads are gated on the member's opt-in on both
+-- backends, so without these rows /federation/activity and /federation/messages
+-- answer differently for a reason that is fixture state, not behaviour — and the
+-- harness reports a status difference it cannot see past.
+--
+-- Keeping it only in the start script meant the opt-in was lost whenever the fixture
+-- drifted without the container being recreated, which is exactly what happened: a
+-- fixture applied yesterday is not the fixture you measure against today. Re-applying
+-- this file must be enough to restore a measurable state on its own.
+--
+-- This is a comparison fixture only. Opting in is a real member decision and nothing
+-- here changes that; verifying the gate correctly REFUSES is a separate check against
+-- a fixture that has not opted in.
+-- ---------------------------------------------------------------------------
+INSERT INTO federation_user_settings
+    (user_id, federation_optin, profile_visible_federated, messaging_enabled_federated,
+     appear_in_federated_search, show_skills_federated, opted_in_at)
+SELECT id, 1, 1, 1, 1, 1, NOW() FROM users
+ON DUPLICATE KEY UPDATE federation_optin = 1, opted_in_at = NOW();
