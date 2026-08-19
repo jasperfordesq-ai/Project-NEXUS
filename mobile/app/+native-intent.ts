@@ -36,10 +36,90 @@ const KNOWN_SECTIONS = new Set([
   'accessibility',
   'trust-and-safety',
   'platform',
+  // Added 2026-08-19. Everything below had a working native screen that no deep
+  // link could reach: app.json claims EVERY https://app.project-nexus.ie/* URL
+  // (autoVerify, no pathPrefix), so Android hands us the URL, this mapper returned
+  // null, and Expo Router showed its "Unmatched Route" screen. 169 of 254 member
+  // routes behaved that way. `password` is first in this list on purpose — a
+  // password-reset email opened on a device with the app installed dropped the
+  // token and dumped the member on the login screen.
+  'password',
+  'login',
+  'register',
+  'verify-email',
+  'verify-identity',
+  'marketplace',
+  'coupons',
+  'jobs',
+  'federation',
+  'volunteering',
+  'organisations',
+  'group-exchanges',
+  'goals',
+  'blog',
+  'kb',
+  'feed',
+  'dashboard',
+  'notifications',
+  'settings',
+  'activity',
+  'chat',
+  'connections',
+  'matches',
+  'reviews',
+  'saved',
+  'skills',
+  'wallet',
+  'achievements',
+  'leaderboard',
+  'nexus-score',
+  'linked-accounts',
 ]);
+
+/**
+ * Sections that MUST stay in the browser even though app.json hands us the URL.
+ *
+ * 🔴 These are not "unmapped" — they are deliberately declined. The staff consoles
+ * have no native equivalent, and the two callbacks are mid-handshake redirects whose
+ * flow lives in the browser that started it: swallowing them into the app strands
+ * the member with a token the app cannot complete. `redirectSystemPath` returns them
+ * unchanged so Android continues on to the browser.
+ */
+const BROWSER_ONLY_SECTIONS = new Set([
+  'admin',
+  'admin-legacy',
+  'broker',
+  'super-admin',
+  'auth',
+]);
+
+/** Full paths that must stay in the browser, checked before section routing. */
+const BROWSER_ONLY_PATHS = new Set([
+  'verify-identity/callback',
+  'auth/oauth/callback',
+]);
+
+export function isBrowserOnlyPath(rawPath: string | null): boolean {
+  const trimmed = rawPath?.trim();
+  if (!trimmed) return false;
+  let pathname: string;
+  try {
+    const normalized = trimmed.includes('://') || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    pathname = new URL(normalized, 'https://app.project-nexus.ie').pathname;
+  } catch {
+    return false;
+  }
+  const segments = pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  if (segments.length === 0) return false;
+  if (BROWSER_ONLY_PATHS.has(segments.join('/'))) return true;
+  return BROWSER_ONLY_SECTIONS.has(segments[0]!);
+}
 
 export function redirectSystemPath({ path }: RedirectEvent): string {
   try {
+    // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
+    // lets Android carry on to the browser instead of stranding the member here.
+    if (isBrowserOnlyPath(path)) return path ?? '/';
     return mapSystemPathToNativeRoute(path) ?? path ?? '/';
   } catch {
     return path ?? '/';
@@ -123,9 +203,262 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       }
       return appendParams('/(modals)/support', params);
 
+    // -- Auth ----------------------------------------------------------------
+    // The reason this whole block exists. A reset email opened on a device with the
+    // app installed used to drop its token and land on login, because `password`
+    // was not a known section. The token rides in `params`, so appendParams carries
+    // it through untouched.
+    case 'password':
+      if (id === 'reset') return appendParams('/(auth)/reset-password', params);
+      return appendParams('/(auth)/forgot-password', params);
+
+    case 'login':
+      return appendParams('/(auth)/login', params);
+
+    case 'register':
+      return appendParams('/(auth)/register', params);
+
+    case 'verify-email':
+      return appendParams('/(auth)/verify-email', params);
+
+    case 'verify-identity':
+      // `verify-identity/callback` never reaches here - isBrowserOnlyPath declines it
+      // first, because the Stripe handshake must finish in the browser that began it.
+      return appendParams('/(modals)/verify-identity', params);
+
+    // -- Marketplace ---------------------------------------------------------
+    case 'marketplace':
+      return mapMarketplacePath(segments, params);
+
+    case 'coupons':
+      return id
+        ? appendParams('/(modals)/marketplace-coupon-detail', { ...params, id })
+        : appendParams('/(modals)/marketplace-coupons', params);
+
+    // -- Jobs ----------------------------------------------------------------
+    case 'jobs':
+      if (isCreateAlias(id)) return appendParams('/(modals)/new-job', params);
+      if (id === 'alerts') return appendParams('/(modals)/jobs', { ...params, view: 'alerts' });
+      if (id && detail === 'analytics') return appendParams('/(modals)/job-analytics', { ...params, id });
+      if (id && detail === 'edit') return appendParams('/(modals)/edit-job', { ...params, id });
+      if (id && detail === 'kanban') return appendParams('/(modals)/job-pipeline', { ...params, id });
+      return id ? appendParams('/(modals)/job-detail', { ...params, id }) : appendParams('/(modals)/jobs', params);
+
+    // -- Federation ----------------------------------------------------------
+    case 'federation':
+      return mapFederationPath(segments, params);
+
+    // -- Volunteering --------------------------------------------------------
+    case 'volunteering':
+      if (isCreateAlias(id)) return appendParams('/(modals)/new-volunteering', params);
+      if (id === 'opportunities' && detail) {
+        return appendParams('/(modals)/volunteering-detail', { ...params, id: detail });
+      }
+      if (id === 'org' && detail) {
+        return appendParams('/(modals)/volunteering-org-dashboard', { ...params, orgId: detail });
+      }
+      return appendParams('/(modals)/volunteering', params);
+
+    // -- Organisations -------------------------------------------------------
+    case 'organisations':
+      if (id === 'register') return appendParams('/(modals)/new-organisation', params);
+      return id
+        ? appendParams('/(modals)/organisation-detail', { ...params, id })
+        : appendParams('/(modals)/organisations', params);
+
+    case 'group-exchanges':
+      if (isCreateAlias(id)) return appendParams('/(modals)/new-group-exchange', params);
+      return id
+        ? appendParams('/(modals)/group-exchange-detail', { ...params, id })
+        : appendParams('/(modals)/group-exchanges', params);
+
+    case 'goals':
+      return id
+        ? appendParams('/(modals)/goal-detail', { ...params, id })
+        : appendParams('/(modals)/goals', params);
+
+    // -- Content -------------------------------------------------------------
+    case 'blog':
+      // The web route is /blog/:slug, so this segment is a slug, not a numeric id.
+      return id
+        ? appendParams('/(modals)/blog-post', { ...params, slug: id })
+        : appendParams('/(modals)/blog', params);
+
+    case 'kb':
+      return id
+        ? appendParams('/(modals)/kb-article', { ...params, id })
+        : appendParams('/(modals)/resources', params);
+
+    // -- Feed ----------------------------------------------------------------
+    case 'feed':
+    case 'dashboard':
+      return mapFeedPath(segments, params);
+
+    // -- Settings ------------------------------------------------------------
+    case 'settings':
+      if (id === 'blocked') return appendParams('/(modals)/settings-blocked-users', params);
+      if (id === 'data-export') return appendParams('/(modals)/settings-data-export', params);
+      return appendParams('/(modals)/settings', params);
+
+    case 'linked-accounts':
+      // Deliberately lands on the linked-accounts screen rather than a conversation:
+      // per-relationship message viewing is NOT enforced server-side yet, so the
+      // native app must not present it as available. See docs/SAFEGUARDING-AND-CONSENT.md.
+      return appendParams('/(modals)/settings-linked-accounts', id ? { ...params, childId: id } : params);
+
+    // -- Single-screen sections ----------------------------------------------
+    case 'notifications':
+      return appendParams('/(modals)/notifications', params);
+
+    case 'activity':
+      return appendParams('/(modals)/activity', params);
+
+    case 'chat':
+      return appendParams('/(modals)/chat', params);
+
+    case 'connections':
+      return appendParams('/(modals)/connections', params);
+
+    case 'matches':
+      return appendParams('/(modals)/matches', params);
+
+    case 'reviews':
+      return appendParams('/(modals)/reviews', params);
+
+    case 'saved':
+      return appendParams('/(modals)/profile-collections', { ...params, scope: 'saved' });
+
+    case 'skills':
+      return appendParams('/(modals)/skills', params);
+
+    case 'wallet':
+      return appendParams('/(modals)/wallet', params);
+
+    case 'achievements':
+      return appendParams('/(modals)/achievements', params);
+
+    case 'leaderboard':
+      return appendParams('/(modals)/leaderboard', params);
+
+    case 'nexus-score':
+      return appendParams('/(modals)/nexus-score', params);
+
     default:
       return null;
   }
+}
+
+/**
+ * `/marketplace/*` is the largest cluster (24 routes) and the reason seven redirect
+ * shims under app/(modals)/ were dead code: they exist purely for deep-link parity
+ * and nothing could reach them.
+ *
+ * Ordering matters. `seller` and the fixed sub-pages are checked BEFORE the
+ * `/marketplace/:id` catch-all, or `/marketplace/collections` would be read as a
+ * listing whose id is "collections".
+ */
+function mapMarketplacePath(segments: string[], params: Record<string, string>): string {
+  const [first, second, third, fourth] = segments;
+
+  if (!first) return appendParams('/(modals)/marketplace', params);
+
+  if (first === 'seller') {
+    if (second === 'coupons') {
+      if (third === 'new') return appendParams('/(modals)/marketplace-coupon-edit', params);
+      if (third && fourth === 'edit') {
+        return appendParams('/(modals)/marketplace-coupon-edit', { ...params, id: third });
+      }
+      return appendParams('/(modals)/marketplace-coupons', params);
+    }
+    if (second === 'onboard') return appendParams('/(modals)/marketplace-seller-onboarding', params);
+    if (second === 'onboarding') return appendParams('/(modals)/marketplace-stripe-onboarding', params);
+    if (second === 'pickup-scan') return appendParams('/(modals)/marketplace-pickup-scan', params);
+    if (second === 'pickup-slots') return appendParams('/(modals)/marketplace-pickup-slots', params);
+    if (second === 'shipping-options') return appendParams('/(modals)/marketplace-shipping-options', params);
+    // /marketplace/seller/:id - a public seller storefront.
+    return second
+      ? appendParams('/(modals)/marketplace-seller', { ...params, id: second })
+      : appendParams('/(modals)/marketplace', params);
+  }
+
+  if (first === 'orders') {
+    return second === 'sales'
+      ? appendParams('/(modals)/marketplace-sales-orders', params)
+      : appendParams('/(modals)/marketplace-orders', params);
+  }
+
+  if (first === 'me' && second === 'pickups') return appendParams('/(modals)/marketplace-pickups', params);
+  if (first === 'category' && second) {
+    return appendParams('/(modals)/marketplace-category', { ...params, slug: second });
+  }
+
+  switch (first) {
+    case 'become-partner': return appendParams('/(modals)/marketplace-become-partner', params);
+    case 'collections': return appendParams('/(modals)/marketplace-collections', params);
+    case 'free': return appendParams('/(modals)/marketplace-free', params);
+    case 'map': return appendParams('/(modals)/marketplace-map', params);
+    case 'my-listings': return appendParams('/(modals)/marketplace-my-listings', params);
+    case 'my-offers': return appendParams('/(modals)/marketplace-offers', params);
+    case 'search': return appendParams('/(modals)/marketplace-search', params);
+    case 'sell': return appendParams('/(modals)/new-marketplace-listing', params);
+    default: break;
+  }
+
+  if (isCreateAlias(first)) return appendParams('/(modals)/new-marketplace-listing', params);
+
+  // /marketplace/:id and /marketplace/:id/edit
+  if (second === 'edit') {
+    return appendParams('/(modals)/edit-marketplace-listing', { ...params, id: first });
+  }
+  return appendParams('/(modals)/marketplace-detail', { ...params, id: first });
+}
+
+/** `/federation/*` - one screen per branch, plus two id-bearing detail routes. */
+function mapFederationPath(segments: string[], params: Record<string, string>): string {
+  const [branch, id] = segments;
+
+  if (branch === 'members') {
+    return id
+      ? appendParams('/(modals)/federation-member', { ...params, id })
+      : appendParams('/(modals)/federation-members', params);
+  }
+  if (branch === 'partners') {
+    return id
+      ? appendParams('/(modals)/federation-partner', { ...params, id })
+      : appendParams('/(modals)/federation-partners', params);
+  }
+
+  switch (branch) {
+    case 'connections': return appendParams('/(modals)/federation-connections', params);
+    case 'events': return appendParams('/(modals)/federation-events', params);
+    case 'groups': return appendParams('/(modals)/federation-groups', params);
+    case 'listings': return appendParams('/(modals)/federation-listings', params);
+    case 'messages': return appendParams('/(modals)/federation-messages', params);
+    case 'onboarding': return appendParams('/(modals)/federation-onboarding', params);
+    case 'settings': return appendParams('/(modals)/federation-settings', params);
+    default: return appendParams('/(modals)/federation', params);
+  }
+}
+
+/**
+ * `/feed/*` and `/dashboard` both land on the Home tab; the hashtag and item routes
+ * have their own screens. `/feed/item/:type/:id` and `/feed/posts/:id` are two
+ * spellings of the same destination.
+ */
+function mapFeedPath(segments: string[], params: Record<string, string>): string {
+  const [branch, second, third] = segments;
+
+  if (branch === 'hashtags') return appendParams('/(modals)/feed-hashtags', params);
+  if (branch === 'hashtag' && second) {
+    return appendParams('/(modals)/feed-hashtag', { ...params, tag: second });
+  }
+  if (branch === 'item' && second && third) {
+    return appendParams('/(modals)/feed-item-detail', { ...params, type: second, id: third });
+  }
+  if (branch === 'posts' && second) {
+    return appendParams('/(modals)/feed-item-detail', { ...params, type: 'post', id: second });
+  }
+  return appendParams('/(tabs)/home', params);
 }
 
 function parseSystemPath(rawPath: string | null): { section: string; segments: string[]; params: Record<string, string> } | null {

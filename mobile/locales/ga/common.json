@@ -107,5 +107,14 @@
       "admin_verified": "F?oraithe ag riarth?ir",
       "unknown": "F?oraithe"
     }
+  },
+  "unknown": "Anaithnid",
+  "close": "Dún",
+  "notFound": {
+    "shortTitle": "Nasc gan oscailt",
+    "title": "Ní féidir an nasc seo a oscailt san aip",
+    "subtitle": "Níl an leathanach sin ar fáil san aip go fóill. Is féidir leat é a oscailt sa bhrabhsálaí.",
+    "openInBrowser": "Oscail sa bhrabhsálaí",
+    "goHome": "Chuig an mbaile"
   }
 }

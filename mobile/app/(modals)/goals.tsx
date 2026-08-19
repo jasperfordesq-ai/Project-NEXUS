@@ -449,7 +449,7 @@ function CreateGoalForm({
 
         <HeroCard.Footer className="gap-2 p-0">
           <HeroButton className="flex-1" variant="tertiary" onPress={onCancel}>
-            <HeroButton.Label>{t('common:cancel')}</HeroButton.Label>
+            <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
           </HeroButton>
           <HeroButton
             className="flex-[2]"

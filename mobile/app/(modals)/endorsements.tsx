@@ -267,7 +267,7 @@ export default function EndorsementsScreen() {
       title: t('removeSkillTitle'),
       message: t('removeSkillConfirm'),
       confirmLabel: t('removeSkill'),
-      cancelLabel: t('common:cancel'),
+      cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -599,7 +599,7 @@ function EndorsementsHeader({
           </View>
           <View className="flex-row flex-wrap gap-2">
             <ActionPill
-              label={t('common:cancel')}
+              label={t('common:buttons.cancel')}
               icon="close-outline"
               primary={primary}
               onPress={() => { setAddingSkill(false); setSkillInput(''); }}

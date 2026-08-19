@@ -66,6 +66,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Not covered: the two largest text settings Android offers, where wrapping usually gives out.
 
+- 🔴 **Fixed: password-reset emails did not work on the Android app.** If a member had the app installed and tapped the reset link in their email, Android opened the app, the app could not understand the address, and it quietly threw away the reset code and dropped them on the sign-in screen. There was no error and nothing to tell them what had happened. Verified fixed on a real device: the link now opens straight onto "Set a new password".
+
+  This was one symptom of a much bigger fault. The app tells Android it can handle **every** address on `app.project-nexus.ie`, but it only actually knew 27 kinds. Of 254 member pages, **169 opened to a blank framework error screen** — and 65 of those had a perfectly good screen in the app that no link could reach. Among them: every marketplace page, jobs, blog posts, the whole federation section, and identity checks.
+
+  All 125 pages that have a mobile screen now open properly. Confirmed on a device for password reset, marketplace collections, a job, and the wallet.
+
+- **Fixed: a link the app genuinely cannot open now explains itself instead of showing a developer error page.** Some pages only exist on the website — staff tools, for instance. Those used to land on the app framework's own "Unmatched Route" screen, which is a diagnostic for programmers, and a signed-in member was simply left stuck on it. There is now a proper screen that says the link cannot be opened here and offers two ways out: open the real page in the browser, or go back to the app. Never a dead end.
+
+  Staff consoles and the two mid-sign-in redirects (identity and social login) are now **deliberately declined** by the app so they continue to the browser, because swallowing them left the member holding a code the app could not finish using.
+
+- **Fixed: fifteen buttons were showing raw code instead of words.** Five **Cancel** buttons in confirmation dialogs and five **Retry** buttons on error screens displayed text like `common:cancel` — the internal name of the phrase rather than the phrase itself. Those are the two worst possible places for it, since a member is already stuck when they see them. Four places showed `common:unknown` where a name was missing, and one close button had no label for screen readers.
+
+  The translation files were **100% complete in all seven languages** — the callers were simply asking for the wrong names, so every existing check passed. There is now a check that reads the app's own code and fails if any phrase it asks for does not exist, which is a class of bug this platform could not previously see.
+
+- **Two new checks, both proven to fail when the fault is put back.** One reads the list of every member page and fails if a page has a working mobile screen that no link can reach — the check that would have caught the password-reset fault years earlier. The other verifies every phrase the app asks for actually exists. Both name the exact file, line and fix in their failure message.
+
+  **One honest note:** while building the "cannot open this link" screen, its own explanatory text did not appear on the phone for two attempts, even though it appeared correctly in tests. Wrapping the content in a vertically-centred container turned out to be the problem. I could not narrow it down to a single cause with certainty, so I have written down exactly what I know and what I don't in the code, rather than a tidy explanation I can't back up.
+
 - **Second look at the mobile app: 31 screens in both light and dark, up from 16 in light only.** The first sweep stopped early twice, both times because of how it was written rather than anything wrong with the app. It pressed "back" to leave screens, which on Android walks out of the app when there is nothing to dismiss — that lost 22 screens and photographed the phone's home screen as though it were the sign-up page. It also reached each screen by tapping through the previous one, which worked until the Groups screen, which opens *over* the tab bar and took ten screens down with it. Each screen is now visited independently, so nothing can cascade.
 
 - **The two-colour problem is worse than first reported: it happens inside single buttons, 128 times.** The clearest example is on the Wallet screen, where **the Back button's arrow is blue and the word "Back" is purple** — one button, two brand colours. The cause is one pattern repeated across the app: the icon is explicitly given the community's brand colour while the text beside it is left to the design library, which uses purple. Counted properly: **128 controls across 48 files.** "Donate" on the wallet has a blue heart and a purple label; "Send credits" next to it is a fully blue button.

@@ -222,7 +222,7 @@ function EventTicketsScreenInner() {
               <Alert.Description>{t('tickets.mobile.loadFailedDescription')}</Alert.Description>
             </Alert.Content>
             <Button size="sm" variant="danger" onPress={() => void load()}>
-              {t('common:retry')}
+              {t('common:buttons.retry')}
             </Button>
           </Alert>
         ) : (

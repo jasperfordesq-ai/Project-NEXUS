@@ -328,7 +328,7 @@ function EventTemplatesScreenInner() {
                     <Alert.Description>{t('templates.mobile.auditLoadFailedDescription')}</Alert.Description>
                   </Alert.Content>
                   <Button size="sm" variant="danger" onPress={() => void openAudit(auditTarget)}>
-                    {t('common:retry')}
+                    {t('common:buttons.retry')}
                   </Button>
                 </Alert>
               ) : audits.length === 0 ? (
@@ -385,7 +385,7 @@ function EventTemplatesScreenInner() {
               <Alert.Description>{t('templates.mobile.loadFailedDescription')}</Alert.Description>
             </Alert.Content>
             <Button size="sm" variant="danger" onPress={() => void load()}>
-              {t('common:retry')}
+              {t('common:buttons.retry')}
             </Button>
           </Alert>
         ) : templates.length === 0 ? (

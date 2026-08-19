@@ -700,7 +700,7 @@ function EventCommunicationsScreenInner() {
                     <Alert.Description>{t('history_load_failed_description')}</Alert.Description>
                   </Alert.Content>
                   <Button size="sm" variant="danger" onPress={() => void openAudit(auditTarget)}>
-                    {t('common:retry')}
+                    {t('common:buttons.retry')}
                   </Button>
                 </Alert>
               ) : auditDetail?.history.length === 0 ? (
@@ -762,7 +762,7 @@ function EventCommunicationsScreenInner() {
               <Alert.Title>{t('load_failed_title')}</Alert.Title>
               <Alert.Description>{t('load_failed_description')}</Alert.Description>
             </Alert.Content>
-            <Button size="sm" variant="danger" onPress={() => void load()}>{t('common:retry')}</Button>
+            <Button size="sm" variant="danger" onPress={() => void load()}>{t('common:buttons.retry')}</Button>
           </Alert>
         ) : broadcasts.length === 0 ? (
           <Card>

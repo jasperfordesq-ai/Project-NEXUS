@@ -107,5 +107,14 @@
       "admin_verified": "V?rifi? par l'administration",
       "unknown": "V?rifi?"
     }
+  },
+  "unknown": "Inconnu",
+  "close": "Fermer",
+  "notFound": {
+    "shortTitle": "Lien non ouvert",
+    "title": "Ce lien ne peut pas être ouvert dans l'application",
+    "subtitle": "Cette page n'est pas encore disponible dans l'application. Vous pouvez l'ouvrir dans votre navigateur.",
+    "openInBrowser": "Ouvrir dans le navigateur",
+    "goHome": "Aller à l'accueil"
   }
 }

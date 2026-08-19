@@ -190,7 +190,7 @@ export default function PollsScreen() {
                     style={showCreate ? undefined : { backgroundColor: primary }}
                   >
                     <Ionicons name={showCreate ? 'close-outline' : 'add-circle-outline'} size={18} color={showCreate ? primary : theme.onPrimary} />
-                    <HeroButton.Label>{showCreate ? t('common:cancel') : t('pollsScreen.createPoll')}</HeroButton.Label>
+                    <HeroButton.Label>{showCreate ? t('common:buttons.cancel') : t('pollsScreen.createPoll')}</HeroButton.Label>
                   </HeroButton>
                 </HeroCard.Body>
               </HeroCard>

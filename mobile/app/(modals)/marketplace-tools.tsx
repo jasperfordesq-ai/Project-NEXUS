@@ -883,7 +883,7 @@ function CouponsPanel() {
       title: t('tools.coupons.deleteTitle'),
       message: t('tools.coupons.deleteMessage', { code: item.code }),
       confirmLabel: t('tools.delete'),
-      cancelLabel: t('common:cancel'),
+      cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
         try {

@@ -107,5 +107,14 @@
       "admin_verified": "Verificato dall'amministrazione",
       "unknown": "Verificato"
     }
+  },
+  "unknown": "Sconosciuto",
+  "close": "Chiudi",
+  "notFound": {
+    "shortTitle": "Link non aperto",
+    "title": "Questo link non può essere aperto nell'app",
+    "subtitle": "Quella pagina non è ancora disponibile nell'app. Puoi aprirla nel browser.",
+    "openInBrowser": "Apri nel browser",
+    "goHome": "Vai alla home"
   }
 }
