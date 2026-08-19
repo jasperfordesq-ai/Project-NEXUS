@@ -507,7 +507,11 @@ $stmt = Database::query(
 ### Key Patterns
 
 - **Services**: Static methods, always scope by `TenantContext::getId()`
-- **Controllers**: `jsonResponse()` + `getJsonInput()` helpers
+- **Controllers**: `jsonResponse()` + `getAllInput()` helpers. 🔴 `getJsonInput()`
+  does NOT exist — it was removed in the Laravel migration and this line advertised
+  it until 2026-08-19, by which point six live endpoints called it and threw a fatal
+  error on every request. Use `getAllInput()` (`request()->all()`, JSON body
+  included) or `requireInput('field')` when the value is mandatory.
 - **Authentication**: `Auth::user()`, `ApiAuth::authenticate()` (token-based), `Csrf::token()`
 - **Feature gating**: `TenantContext::hasFeature('events')` (PHP) / `useTenant().hasFeature('events')` (React)
 

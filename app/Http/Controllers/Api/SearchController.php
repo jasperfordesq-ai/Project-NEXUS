@@ -203,7 +203,7 @@ class SearchController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
-        $input = $this->getJsonInput();
+        $input = $this->getAllInput();
         $name = trim($input['name'] ?? '');
 
         if ($name === '') {
@@ -291,7 +291,7 @@ class SearchController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.saved_search_not_found'), null, 404);
         }
 
-        $input = $this->getJsonInput();
+        $input = $this->getAllInput();
         $resultCount = isset($input['result_count']) ? (int) $input['result_count'] : null;
 
         DB::table('saved_searches')

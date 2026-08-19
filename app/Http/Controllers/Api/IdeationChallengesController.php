@@ -216,6 +216,14 @@ class IdeationChallengesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('ideation_submit_idea', 10, 60);
 
+        // Submitting with no `title` used to reach IdeationChallengeService::submitIdea,
+        // which does `trim($data['title'])` unguarded, and threw
+        // "Undefined array key \"title\"" — a 500 for what is a plainly invalid
+        // request. requireInput() is the house helper for this: it returns a 400
+        // VALIDATION_REQUIRED_FIELD naming the field, the same shape the rest of the
+        // API uses, instead of a stack trace.
+        $this->requireInput('title');
+
         $data = $this->getAllInput();
         try {
             $ideaId = $this->challengeService->submitIdea($id, $userId, $data);

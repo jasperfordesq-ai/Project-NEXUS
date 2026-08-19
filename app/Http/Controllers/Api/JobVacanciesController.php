@@ -2482,7 +2482,7 @@ class JobVacanciesController extends BaseApiController
 
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
-        $data = $this->getJsonInput();
+        $data = $this->getAllInput();
 
         if (empty($data['name'])) {
             return $this->respondWithError('VALIDATION_REQUIRED', __('api_controllers_2.job_vacancies.template_name_required'), 'name', 422);
@@ -2533,7 +2533,7 @@ class JobVacanciesController extends BaseApiController
 
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
-        $data = $this->getJsonInput();
+        $data = $this->getAllInput();
 
         $template = \App\Models\JobTemplate::where('tenant_id', $tenantId)
             ->where('id', $id)
@@ -2617,7 +2617,7 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('jobs_employer_review_create', 5, 60);
         $tenantId = TenantContext::getId();
-        $data = $this->getJsonInput();
+        $data = $this->getAllInput();
 
         $employerId = (int) ($data['employer_id'] ?? 0);
         if (!$employerId) {
@@ -2955,7 +2955,7 @@ class JobVacanciesController extends BaseApiController
             return $this->respondWithError('AI_DISABLED', __('api_controllers_2.job_vacancies.ai_not_configured'), null, 503);
         }
 
-        $data = $this->getJsonInput();
+        $data = $this->getAllInput();
         $userMessage = trim($data['message'] ?? '');
         if (empty($userMessage)) {
             return $this->respondWithError('VALIDATION_REQUIRED', __('api_controllers_2.job_vacancies.message_required'), 'message', 422);

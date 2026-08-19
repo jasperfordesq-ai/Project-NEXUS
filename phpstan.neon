@@ -22,6 +22,17 @@ includes:
 
 parameters:
     level: 1
+    # 🔴 Report calls that only a __call handler could absorb. Enabled 2026-08-19
+    # after six live endpoints spent months throwing a fatal error on every request:
+    # they called $this->getJsonInput(), removed from BaseApiController during the
+    # Laravel migration. This gate stayed GREEN throughout, because
+    # Illuminate\Routing\Controller defines __call and PHPStan therefore assumes an
+    # unknown method might be handled at runtime.
+    #
+    # Proven both ways against a controller written to test it: with this true,
+    # "Call to an undefined method"; with it false, "No errors". Measured cost of
+    # enabling it across app/: ZERO new findings.
+    reportMagicMethods: true
     paths:
         - app
     excludePaths:

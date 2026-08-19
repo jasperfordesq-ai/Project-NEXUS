@@ -185,6 +185,61 @@ class SearchControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * 🔴 The test above was the ONLY coverage this endpoint had, and it never signed
+     * in — so it never reached the body of the method. `saveSearch()` called
+     * `$this->getJsonInput()`, a helper removed from BaseApiController during the
+     * Laravel migration, and threw a fatal error on EVERY authenticated request. It
+     * stayed broken for months with this suite green, because proving the door is
+     * locked proves nothing about the room behind it.
+     *
+     * So this signs in and asserts the search is actually SAVED. An assertion that
+     * merely checks "not 401" would have passed against the 500 as well.
+     */
+    public function test_save_search_signed_in_actually_saves_and_does_not_fatal(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $response = $this->apiPost('/v2/search/saved', [
+            'name'         => 'Dog walking nearby',
+            'query_params' => ['q' => 'dog walking'],
+        ]);
+
+        $response->assertStatus(201);
+
+        $body = $response->json();
+        self::assertArrayNotHasKey(
+            'message',
+            $body,
+            'a Laravel fatal surfaces as a top-level `message` plus `exception`; there must be neither'
+        );
+        self::assertSame('Dog walking nearby', $body['data']['name'] ?? null);
+
+        self::assertDatabaseHas('saved_searches', [
+            'user_id' => $user->id,
+            'name'    => 'Dog walking nearby',
+        ]);
+    }
+
+    /**
+     * The validation path behind the login, for the same reason: it was equally
+     * unreachable while the method fatalled on its first line.
+     */
+    public function test_save_search_signed_in_refuses_a_missing_name(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->apiPost('/v2/search/saved', ['query_params' => []]);
+
+        $response->assertStatus(400);
+        self::assertSame(
+            'VALIDATION_ERROR',
+            $response->json('errors.0.code'),
+            'read from the running Laravel: 400 {"errors":[{"code":"VALIDATION_ERROR",…,"field":"name"}]}'
+        );
+        self::assertSame('name', $response->json('errors.0.field'));
+    }
+
     // ------------------------------------------------------------------
     //  DELETE /v2/search/saved/{id}
     // ------------------------------------------------------------------

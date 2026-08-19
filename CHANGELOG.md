@@ -29,6 +29,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Six things members and employers could try to do have been failing with a server error every single time, and now work.** This is the live platform, not the experimental backend. Saving a search, running a saved search, posting an employer review, creating a job-offer template, previewing one, and the AI chat on a job vacancy all failed outright — every attempt, for every person, for months.
+
+  **The cause was one wrong name in six places.** A shared helper for reading what the browser sent was renamed during the move to Laravel, and six places were left calling the old name. Calling something that does not exist stops the request dead. All six now use the correct helper, and each was checked against the running system before and after: saving a search now succeeds, and the ones that should refuse incomplete input now say clearly what is missing instead of collapsing.
+
+  **Submitting an idea with no title also failed with a server error**, for a related reason — nothing checked the title before the code that needed it. It now returns a plain "title is required".
+
+  🔴 **Why no safety net caught this, which matters more than the fix.** Two nets had a hole in the same place. The code analyser cannot see this class of mistake, because Laravel's base controller has a catch-all that *might* handle an unknown method at runtime, so the analyser stays quiet. And the only test covering the save-search endpoint checked that it refuses people who are not signed in — it never signed in, so it never reached the broken line, and it passed cleanly the whole time. Proving the door is locked proves nothing about the room behind it.
+
+  Both holes are now closed. The analyser setting that reports this class of mistake is switched on — measured first as costing zero new findings, and verified against the exact settings the build uses. A new check fails if anything calls a helper that does not exist, and two new tests sign in and confirm a search is genuinely saved. Every new check was deliberately proved to fail when the original fault is put back, because a check that has never failed is not a check.
+
+  Someone had already hit this once and fixed only their own line, leaving a note about it in another file. The remaining five were never swept for.
+
 - **Accessible frontend: the last four audit findings, now translated into all 11 languages.** Opening "manage your support" without an active supporter subscription no longer lands on an unexplained page — it now says there is nothing to manage yet. The insurance form gained the amount-of-cover, start-date and notes fields the system always expected but never offered (they were silently sent empty). A plain feed post no longer shows "Post" twice ("Post" tag over a "Post" heading) — the heading now says who wrote it, in the member's own language, where before the fallback was English-only for everyone. And the same time-credit balance no longer reads "100.00 hours" in the wallet but "100.0" on the dashboard — every page now formats hours the same way, keeping quarter-hour precision.
 
 ### Changed
