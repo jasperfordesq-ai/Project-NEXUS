@@ -20,6 +20,10 @@
  * Every expectation here was read from the RUNNING disposable Laravel, not from this
  * backend's behaviour. 🔴 That distinction matters: eight assertions in this suite
  * have already been found pinning ASP.NET's own shape under a Laravel-parity name.
+ *
+ * 🔴 NON-v2 paths only. Laravel registers just the bare forms
+ * (routes/api.php:4013-4015) and answers 404/405 on the v2 spellings, so testing
+ * a v2 path here would pin a route Laravel does not have.
  */
 
 using System.Net;
@@ -43,7 +47,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     {
         await AuthenticateAsMemberAsync();
 
-        var response = await Client.GetAsync("/api/v2/legal/status");
+        var response = await Client.GetAsync("/api/legal/status");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -63,7 +67,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     public async Task LegalStatus_RejectsAnonymousCallers()
     {
         ClearAuthToken();
-        var response = await Client.GetAsync("/api/v2/legal/status");
+        var response = await Client.GetAsync("/api/legal/status");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -74,7 +78,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     {
         await AuthenticateAsMemberAsync();
 
-        var response = await Client.PostAsJsonAsync("/api/v2/legal/accept", new { });
+        var response = await Client.PostAsJsonAsync("/api/legal/accept", new { });
 
         // Verified live: 400 with {"errors":[{"code":"VALIDATION_ERROR",
         // "message":"Missing document_id or version_id"}]} and NO `data`.
@@ -91,7 +95,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
         await AuthenticateAsMemberAsync();
 
         var response = await Client.PostAsJsonAsync(
-            "/api/v2/legal/accept",
+            "/api/legal/accept",
             new { document_id = 987654, version_id = 987654 });
 
         // 🔴 Laravel resolves the VERSION first and 404s when it cannot, BEFORE it
@@ -107,7 +111,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     public async Task LegalAccept_RejectsAnonymousCallers()
     {
         ClearAuthToken();
-        var response = await Client.PostAsJsonAsync("/api/v2/legal/accept", new { document_id = 1, version_id = 1 });
+        var response = await Client.PostAsJsonAsync("/api/legal/accept", new { document_id = 1, version_id = 1 });
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -118,7 +122,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     {
         await AuthenticateAsMemberAsync();
 
-        var response = await Client.PostAsync("/api/v2/legal/accept-all", null);
+        var response = await Client.PostAsync("/api/legal/accept-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Verified live: {"data":{"message":"All legal documents accepted"},"meta":{...}}
@@ -129,7 +133,7 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
         // Accepting everything must actually clear the pending flag — the point of the
         // endpoint. This is what a member does to get past the acceptance gate, and a
         // hardcoded success here is what left them locked out before.
-        var after = await Client.GetAsync("/api/v2/legal/status");
+        var after = await Client.GetAsync("/api/legal/status");
         var status = await after.Content.ReadFromJsonAsync<JsonElement>();
         status.GetProperty("data").GetProperty("has_pending").GetBoolean().Should().BeFalse();
     }
@@ -139,9 +143,9 @@ public class LegalShortRoutesAndCspReportTests : IntegrationTestBase
     {
         await AuthenticateAsMemberAsync();
 
-        (await Client.PostAsync("/api/v2/legal/accept-all", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await Client.PostAsync("/api/legal/accept-all", null)).StatusCode.Should().Be(HttpStatusCode.OK);
         // A second call must not duplicate acceptance rows or error.
-        (await Client.PostAsync("/api/v2/legal/accept-all", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await Client.PostAsync("/api/legal/accept-all", null)).StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     // ── POST /api/csp-report ─────────────────────────────────────────────────

@@ -31,6 +31,18 @@
  *     POST /api/legal/accept-all  -> {"data":{"message":"All legal documents
  *                                     accepted"},"meta":{...}}
  *
+ * 🔴 NON-v2 ONLY, and that is deliberate. My first version of this file also
+ * registered /api/v2/legal/status, /api/v2/legal/accept and
+ * /api/v2/legal/accept-all. Laravel has NO such routes — verified live: it answers
+ * 404 for the v2 status path and 405 for both v2 POSTs, and routes/api.php:4013-4015
+ * registers only the bare forms. The v2 aliases were mine, invented, and served
+ * nobody: the React client uses /v2/legal/acceptance/status, which is a different
+ * endpoint that already existed. An extra route is not harmless — it is surface a
+ * client could come to depend on and then lose against the production backend.
+ *
+ * The WRITE harness caught this on its first run, which is a fair advertisement for
+ * measuring writes: a read-only corpus would never have posted to those paths.
+ *
  * 🔴 Note `success` sits INSIDE `data` on the status route. That is Laravel's own
  * shape (LegalController::status passes it into respondWithData), not a mistake
  * copied from this backend's habits — and it is why LaravelDataEnvelopeFilter,
@@ -64,7 +76,6 @@ public class LegalShortRoutesController : ControllerBase
     /// fields as unverified until a fixture with legal documents exists.
     /// </summary>
     [HttpGet("api/legal/status")]
-    [HttpGet("api/v2/legal/status")]
     [Authorize]
     public async Task<IActionResult> Status()
     {
@@ -103,7 +114,6 @@ public class LegalShortRoutesController : ControllerBase
     /// codes and order must not move.
     /// </summary>
     [HttpPost("api/legal/accept")]
-    [HttpPost("api/v2/legal/accept")]
     [Authorize]
     public async Task<IActionResult> Accept([FromBody] LegalAcceptRequest? request)
     {
@@ -201,7 +211,6 @@ public class LegalShortRoutesController : ControllerBase
     /// requires one and that the member has not already accepted.
     /// </summary>
     [HttpPost("api/legal/accept-all")]
-    [HttpPost("api/v2/legal/accept-all")]
     [Authorize]
     public async Task<IActionResult> AcceptAll()
     {
