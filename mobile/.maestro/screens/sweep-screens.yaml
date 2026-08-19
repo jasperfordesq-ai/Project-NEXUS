@@ -1,0 +1,342 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# VISUAL SWEEP — a wide walk for finding bugs by eye. NOT a pass/fail test and NOT
+# a source of baselines.
+#
+# 🔴 WHY THIS IS SEPARATE FROM capture-screens.yaml. That flow feeds the pixel
+# comparison gate, so every screen in it must be reproducible to 0px and it is
+# deliberately only six screens. This flow is the opposite trade: it visits as many
+# screens as it can and does not care whether they reproduce, because a human is
+# going to look at the images rather than a comparison. Mixing the two would either
+# flood the gate with false regressions from live data, or keep the sweep down to
+# six screens and find nothing.
+#
+# It lives in `screens/` for the same reason capture-screens.yaml does:
+# `.maestro/config.yaml` declares `flows: - "*.yaml"`, which matches the top level
+# only, so `npm run e2e` does not run this.
+#
+# 🔴 EVERY NAVIGATION IS WRAPPED IN runFlow WITH optional: true. A sweep that stops
+# at the first screen it cannot reach photographs three screens and reports success,
+# which is the failure mode this whole exercise exists to avoid. A screen that
+# cannot be reached is itself a finding, and the missing image is the evidence — so
+# the sweep continues and the gap is visible in the output directory.
+#
+# Run:
+#   node scripts/screenshots.mjs sweep
+#   node scripts/screenshots.mjs sweep --scheme dark
+
+appId: ie.project.nexus
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - extendedWaitUntil:
+          visible: "Select your timebank"
+          timeout: 8000
+      - takeScreenshot: sweep-00-tenant-select
+      - tapOn: "hour-timebank"
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: sweep-01-login
+
+# 🔴 The signed-out sub-screens (forgot password, register) are captured at the
+# VERY END of this flow, not here. They were here first and it cost 22 screens:
+# `tapOn` with a partial string WARNED because Maestro matches the whole text, the
+# following `- back` then fired with nothing to dismiss, and on Android that
+# navigates — straight out of the app. `sweep-03-register.png` came out as the
+# phone's home screen and every step after it failed. Same trap as
+# `.maestro/09-registration-flow.yaml`. Anything that might exit the app now runs
+# last, where it can only cost itself.
+
+# ── Sign in ───────────────────────────────────────────────────────────────────
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    id: "password-input"
+- inputText: "${TEST_PASSWORD}"
+- back
+- tapOn:
+    id: "login-submit"
+
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: sweep-04-home-feed
+
+# The feed scrolled down: the top of a feed is the most-designed part of any app
+# and the part below the fold is where spacing and truncation problems live.
+- runFlow:
+    optional: true
+    commands:
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-05-home-feed-scrolled
+
+# ── Each tab-bar destination, and one scroll on the list-heavy ones ───────────
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "Listings"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: sweep-06-listings
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-07-listings-scrolled
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "Messages"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: sweep-08-messages
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "Create"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: sweep-09-create
+      - back
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - takeScreenshot: sweep-10-more
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-11-more-scrolled
+
+# ── Screens behind the More menu ──────────────────────────────────────────────
+#
+# Each is reached from a freshly-tapped More tab rather than by chaining `back`,
+# because a failed `back` in a chain silently leaves the next screen photographing
+# whatever was already open — which produces plausible images of the wrong screen.
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn: "View wallet"
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-12-wallet
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-13-wallet-scrolled
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Events"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-14-events
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Members|Directory"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-15-members
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Groups"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-16-groups
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Exchanges"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-17-exchanges
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Explore|Search"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-18-explore
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Volunteering"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-19-volunteering
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Notifications"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-20-notifications
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Settings"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-21-settings
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-22-settings-scrolled
+
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "More"
+      - tapOn:
+          text: "Profile|My profile"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-23-profile
+
+# ── One detail screen, because lists and details fail differently ─────────────
+# A list screen shows truncation and spacing problems; a detail screen shows long
+# text, empty fields and image handling. Tapping the first listing is the cheapest
+# way to reach one without hard-coding an id that seeded data may not have.
+- runFlow:
+    optional: true
+    commands:
+      - tapOn: "Listings"
+      - waitForAnimationToEnd:
+          timeout: 8000
+      - tapOn:
+          point: "50%,45%"
+      - waitForAnimationToEnd:
+          timeout: 10000
+      - takeScreenshot: sweep-24-listing-detail
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-25-listing-detail-scrolled
+
+# ── Signed-out sub-screens — LAST, because `back` can exit the app ────────────
+#
+# `when: visible:` is the guard that makes the following tap safe: if the link is
+# not there the whole block is skipped, so no `back` fires with nothing to dismiss.
+# The exact strings come from reading `sweep-01-login.png` — Maestro matches the
+# WHOLE text, so "Forgot" never matched "Forgot password?" and reported only a
+# warning while doing nothing.
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - tapOn: "hour-timebank"
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000
+- waitForAnimationToEnd:
+    timeout: 6000
+
+- runFlow:
+    when:
+      visible: "Forgot password.*"
+    commands:
+      - tapOn: "Forgot password.*"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - takeScreenshot: sweep-26-forgot-password
+
+# A fresh launch rather than `back`: it reaches the same place and cannot walk out
+# of the app if the tap above did not navigate.
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 6000
+
+- runFlow:
+    when:
+      visible: "Create account"
+    commands:
+      - tapOn: "Create account"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - takeScreenshot: sweep-27-register
+      - scroll
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - takeScreenshot: sweep-28-register-scrolled
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 6000
+
+- runFlow:
+    when:
+      visible: "Switch community"
+    commands:
+      - tapOn: "Switch community"
+      - waitForAnimationToEnd:
+          timeout: 6000
+      - takeScreenshot: sweep-29-switch-community

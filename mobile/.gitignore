@@ -40,3 +40,7 @@ emu*.png
 # would make every capture a diff and bury the one that matters.
 screenshots/current/
 screenshots/diff/
+# Visual-sweep output: live-data screenshots for looking at by hand, deliberately
+# not baselines and not reproducible. Committing them would add megabytes per run
+# and put seeded member data in a public repository.
+screenshots/sweep/

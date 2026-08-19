@@ -37,6 +37,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Recorded a 62-value improvement in the PHP translation ceiling.** `.github/php-lang-untranslated-baseline.json` drops from 258 to 196 untranslated values, retiring the Irish `govuk_alpha_courses` (48), `govuk_alpha_federation` (13) and `govuk_alpha_commerce` (1) entries that earlier translation work had already cleared but never re-baselined.
 
+- **Every listing card in the mobile app had a blank grey circle on it. It was meant to be an arrow.** Nobody had ever looked at the app's screens, so it shipped that way. The cause is worth knowing because it will happen again: the shared card component from our design library adds 16 points of padding on all sides by default, and setting a size on it does not remove that padding. The circle was 36 points across, so 32 of those went to padding and the arrow was drawn into the 4 points left over. It did not error or disappear — it drew a few pixels wide, which on a phone looks like an empty button.
+
+  Measured rather than guessed: on the same card the heart icon drew at 45×47 pixels and the arrow at **10×12**. After the fix the arrow measures 48×50 and is visible. There is now a check that scans for the same mistake anywhere else in the app and names the file, line and fix — and it was confirmed to go red when the fix is removed.
+
+  🔴 **No unit test could have caught this.** The icon is present, the structure is correct, and the test runner has no concept of layout, so it cannot tell that a box is 4 points wide. It was found by looking at a picture.
+
+- **Found the reason the mobile app "looks off": it shows two different brand colours at the same time.** On the sign-in screen the logo is blue and the Sign in button is purple. On the More screen one card manages four brand colours at once. On Listings, "Recommended" is a blue pill sitting next to purple text.
+
+  The app has two sources of brand colour and no connection between them: our design library's buttons and tabs use a fixed purple, while everything the app colours itself uses **the community's own brand colour**. The website had this exact problem and fixed it — it pushes the community's colour into the design library at start-up. Mobile cannot currently do the same: I checked both libraries and neither offers a way to change that colour while the app is running.
+
+  **Not changed, because it needs your decision.** Every option repaints the whole app, and one of them means dropping per-community branding on mobile — which matters, since a community whose colours are green or orange currently gets purple buttons regardless. The options are written up with what each costs.
+
+- **A visual sweep of the mobile app now exists, and ran for the first time.** Before this, 6 of roughly 137 screens had ever been photographed. There is now one command that walks the app and collects screens to look through, kept deliberately separate from the three screens under automatic pixel comparison so live data cannot break that check.
+
+  **Honest about coverage:** it reached 16 screens of 26 attempted. After the Groups screen the tab bar could no longer be tapped, so seven screens plus the wallet were never reached. Dark mode has not been swept at all, and about 121 screens still have no picture of any kind. This is a start, not an audit.
+
+  One blank screenshot that looked like a serious fault turned out to be the sweep's own doing — a stray "back" gesture had walked the app out to the phone's home screen. Verified separately that the screen renders correctly. Recorded because that is the second time a stray back press in this codebase has produced a convincing false alarm.
+
 - **Event check-in without a signal is now properly tested — including the case that could credit a member twice.** The mobile app lets a steward check people into an event with no phone signal, holding the check-ins on the phone until it can send them. Attendance turns into time credits, so this code decides who gets paid for showing up, and it can fail in two directions: a dropped check-in is unpaid work, and a duplicated one is credit nobody earned — worse, because it has to be taken back off a member who did nothing wrong. It was the least-tested important thing in the app at **32.67%**; it is now at **94.97%**, with 41 tests, and the floor was raised so it cannot slide back.
 
   **The branch worth knowing about:** when the phone tries to send its queued check-ins and the connection dies, the send may well have *arrived* and only the reply been lost. The app deals with this by remembering the batch it was sending and reusing the same reference when it retries, so the server recognises the work it has already done. Nothing was testing that. Had it broken, every person scanned at that event would have been credited twice, and the app would have looked like it was working perfectly.

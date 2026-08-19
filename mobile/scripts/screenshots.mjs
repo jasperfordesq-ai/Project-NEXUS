@@ -104,6 +104,13 @@ function argValue(flag, fallback) {
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 }
 
+/** Maestro's launcher, which is a .bat on Windows — see the spawnSync note below. */
+function resolveMaestro() {
+  return process.platform === 'win32'
+    ? path.join(os.homedir(), '.maestro', 'bin', 'maestro.bat')
+    : path.join(os.homedir(), '.maestro', 'bin', 'maestro');
+}
+
 function resolveAdb() {
   const home = process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT;
   if (home) {
@@ -315,10 +322,7 @@ function doTour() {
   const flow = path.join(MOBILE_ROOT, '.maestro', 'screens', 'capture-screens.yaml');
   if (!fs.existsSync(flow)) fail(`tour flow not found: ${path.relative(MOBILE_ROOT, flow)}`);
 
-  const maestro =
-    process.platform === 'win32'
-      ? path.join(os.homedir(), '.maestro', 'bin', 'maestro.bat')
-      : path.join(os.homedir(), '.maestro', 'bin', 'maestro');
+  const maestro = resolveMaestro();
   if (!fs.existsSync(maestro)) fail(`Maestro not found at ${maestro} — see docs/TESTING.md.`);
 
   // Animations must be ON for navigation: with scales at 0 the LogBox banner
@@ -364,8 +368,14 @@ function doTour() {
   }
 }
 
-/** Copy the newest Maestro run's takeScreenshot output into current/<scheme>/. */
-function collectMaestroScreenshots() {
+/**
+ * Copy the newest Maestro run's takeScreenshot output into `<destRoot>/<scheme>/`.
+ *
+ * `flowName` is the flow's filename without extension, because that is the
+ * directory Maestro writes under — passing the wrong one silently finds nothing and
+ * reads as "the flow produced no screenshots".
+ */
+function collectMaestroScreenshots(flowName = 'capture-screens', destRoot = 'current') {
   const testsRoot = path.join(os.homedir(), '.maestro', 'tests');
   if (!fs.existsSync(testsRoot)) return 0;
 
@@ -375,10 +385,10 @@ function collectMaestroScreenshots() {
     .sort((a, b) => b.mtime - a.mtime);
   if (runs.length === 0) return 0;
 
-  const shotDir = path.join(testsRoot, runs[0].name, 'capture-screens', 'takeScreenshot');
+  const shotDir = path.join(testsRoot, runs[0].name, flowName, 'takeScreenshot');
   if (!fs.existsSync(shotDir)) return 0;
 
-  const dest = path.join(SHOT_ROOT, 'current', scheme);
+  const dest = path.join(SHOT_ROOT, destRoot, scheme);
   ensureDir(dest);
   let n = 0;
   for (const f of fs.readdirSync(shotDir).filter((x) => x.endsWith('.png'))) {
@@ -386,6 +396,69 @@ function collectMaestroScreenshots() {
     n += 1;
   }
   return n;
+}
+
+/**
+ * Walk as many screens as the app will allow and collect the images into
+ * `screenshots/sweep/<scheme>/` for a person to look through.
+ *
+ * 🔴 This deliberately writes to `sweep/`, NOT to `current/`. `current/` is the
+ * input to the pixel comparison, so dropping 26 unreproducible live-data screens
+ * into it would either flood the gate with false regressions or tempt someone to
+ * approve them as baselines — and a baseline that never reproduces is worse than no
+ * baseline, because it gets ignored and then the real regressions are ignored with
+ * it.
+ *
+ * There is no pass/fail here and no exit code beyond "did it run". A screen the
+ * sweep could not reach shows up as a missing image, which is itself the finding.
+ */
+function doSweep() {
+  requireDevice();
+
+  const flow = path.join(MOBILE_ROOT, '.maestro', 'screens', 'sweep-screens.yaml');
+  if (!fs.existsSync(flow)) fail(`sweep flow not found: ${path.relative(MOBILE_ROOT, flow)}`);
+
+  const maestro = resolveMaestro();
+  if (!fs.existsSync(maestro)) fail(`Maestro not found at ${maestro} — see docs/TESTING.md.`);
+
+  // Animations ON: with scales at 0 the LogBox banner covers the tab bar and taps
+  // land on it instead of the tab. The sweep is not pixel-compared, so the slight
+  // motion blur this allows costs nothing here.
+  restoreAnimations();
+  setScheme(scheme);
+
+  const email = process.env.E2E_TEST_EMAIL || 'e2e.user.a@project-nexus.local';
+  const password = process.env.E2E_TEST_PASSWORD || 'TestPassword123!';
+
+  console.log(`screenshots: sweeping the app (scheme ${scheme}) via Maestro`);
+  const run = spawnSync(
+    maestro,
+    ['test', '--env', `TEST_EMAIL=${email}`, '--env', `TEST_PASSWORD=${password}`, flow],
+    {
+      cwd: MOBILE_ROOT,
+      stdio: 'inherit',
+      env: { ...process.env, MAESTRO_CLI_NO_ANALYTICS: '1', MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true' },
+      shell: process.platform === 'win32',
+    }
+  );
+
+  const collected = collectMaestroScreenshots('sweep-screens', 'sweep');
+  console.log('');
+  if (collected === 0) {
+    fail(
+      'the sweep produced no screenshots.',
+      run.status === 0
+        ? 'Maestro reported success but wrote nothing — check the flow takeScreenshot steps.'
+        : `Maestro exited ${run.status}. Its output above says which step failed.`
+    );
+  }
+  console.log(`screenshots: collected ${collected} screen(s) into sweep/${scheme}`);
+  console.log('screenshots: these are for LOOKING AT. They are not baselines and are');
+  console.log('screenshots: not compared — see doSweep() for why.');
+  if (run.status !== 0) {
+    console.log(`screenshots: Maestro exited ${run.status} — some screens were unreachable.`);
+    console.log('screenshots: that is a finding, not a crash. Check which images are missing.');
+  }
 }
 
 function doCompare() {
@@ -497,6 +570,9 @@ switch (mode) {
   case 'tour':
     doTour();
     break;
+  case 'sweep':
+    doSweep();
+    break;
   case 'restore-animations':
     // Exposed so a Maestro run can guarantee normal timing without capturing.
     requireDevice();
@@ -505,7 +581,7 @@ switch (mode) {
     break;
   default:
     console.error(
-      'usage: node scripts/screenshots.mjs <tour|capture|compare|approve|restore-animations> [--scheme light|dark]'
+      'usage: node scripts/screenshots.mjs <tour|sweep|capture|compare|approve|restore-animations> [--scheme light|dark]'
     );
     process.exit(2);
 }

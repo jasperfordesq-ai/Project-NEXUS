@@ -38,7 +38,8 @@
     "screenshot:compare": "node scripts/screenshots.mjs compare",
     "screenshot:approve": "node scripts/screenshots.mjs approve",
     "e2e": "node scripts/e2e.mjs",
-    "prepare": "cd .. && husky mobile/.husky || true"
+    "prepare": "cd .. && husky mobile/.husky || true",
+    "screenshot:sweep": "node scripts/screenshots.mjs sweep"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

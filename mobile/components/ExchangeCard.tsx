@@ -92,7 +92,13 @@ export default function ExchangeCard({ exchange, onToggleSave }: ExchangeCardPro
                 />
               </HeroButton>
             ) : null}
-            <Surface variant="secondary" className="size-9 items-center justify-center rounded-full">
+            {/* 🔴 p-0 is load-bearing. HeroUI Native Surface has `p-4` in its BASE
+                class, so a 36dp (`size-9`) box keeps only 36 - 2x16 = 4dp of content
+                box and the 18dp arrow drew at 4dp — measured on device at 10x12px
+                against the heart button's correct 45x47px. It read as an empty grey
+                circle on every listing card. Giving a Surface a size does NOT reset
+                its padding. Guarded by components/surfacePadding.test.ts. */}
+            <Surface variant="secondary" className="size-9 items-center justify-center rounded-full p-0">
               <Ionicons name="arrow-forward" size={18} color={primary} />
             </Surface>
           </View>
