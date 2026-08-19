@@ -111,6 +111,39 @@ public class V15MemberParityController : ControllerBase
         return Ok(new { data });
     }
 
+    /// <summary>
+    /// POST /api/v2/events — Laravel EventController::store.
+    ///
+    /// 🔴 This accepted anything and INVENTED what was missing. `title` fell back to
+    /// the literal "Untitled event" and the start time to
+    /// <c>DateTime.UtcNow.AddDays(7)</c> — so an event posted with no date at all was
+    /// created a week from whenever the request happened to arrive, and an event
+    /// posted with an unrecognised date field was silently given that fabricated one
+    /// instead of the date the caller supplied. Laravel refuses both.
+    ///
+    /// Contract read from the running disposable Laravel on 2026-08-19:
+    ///
+    ///   - `title` required, `start_time` required
+    ///   - refusal is 422 with a DIFFERENT envelope from the listing one:
+    ///     <c>{"errors":[{"code":"validation_failed","message":"Validation failed",
+    ///     "details":{"start_time":["The start time field is required."]}}],
+    ///     "success":false}</c>
+    ///   - `start_date` is NOT an accepted spelling: posting only `start_date`
+    ///     returns the `start_time` required error. Laravel emits `start_date` in its
+    ///     RESPONSE as a derived attribute, which is what makes this easy to get
+    ///     backwards.
+    ///
+    /// 🔴 Laravel's error envelopes are per-endpoint, not global. Listings return
+    /// `{"code":"VALIDATION_ERROR","field":…}`; this returns lowercase
+    /// `validation_failed` with a `details` map of field to messages, plus
+    /// `success:false`. Do not unify them — each was read from the live response.
+    ///
+    /// 🔴 `api/v2/events/series` shares this handler and therefore inherits the
+    /// check. Laravel's series contract has NOT been measured; requiring a title and
+    /// a start time is near-certainly a subset of what it demands, but if that route
+    /// is ever compared directly it may need more (a recurrence rule) and should get
+    /// its own handler rather than more branches here.
+    /// </summary>
     [HttpPost("api/v2/events")]
     [HttpPost("api/v2/events/series")]
     public async Task<IActionResult> V2CreateEvent([FromBody] JsonElement body)
@@ -118,16 +151,41 @@ public class V15MemberParityController : ControllerBase
         var userId = CurrentUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var title = GetString(body, "title") ?? "Untitled event";
-        var startsAt = GetDate(body, "starts_at") ?? GetDate(body, "start_time") ?? DateTime.UtcNow.AddDays(7);
+        // Laravel collects every failure and returns them together, keyed by field.
+        var details = new Dictionary<string, string[]>();
+
+        var title = GetString(body, "title");
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            details["title"] = ["The title field is required."];
+        }
+
+        var startsAt = GetDate(body, "starts_at") ?? GetDate(body, "start_time");
+        if (startsAt == null)
+        {
+            details["start_time"] = ["The start time field is required."];
+        }
+
+        if (details.Count > 0)
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[]
+                {
+                    new { code = "validation_failed", message = "Validation failed", details },
+                },
+                success = false,
+            });
+        }
+
         var ev = new Event
         {
             TenantId = TenantId(),
             CreatedById = userId.Value,
-            Title = title,
+            Title = title!,
             Description = GetString(body, "description"),
             Location = GetString(body, "location"),
-            StartsAt = startsAt,
+            StartsAt = startsAt!.Value,
             EndsAt = GetDate(body, "ends_at") ?? GetDate(body, "end_time"),
             MaxAttendees = GetInt(body, "max_attendees"),
             ImageUrl = GetString(body, "image_url") ?? GetString(body, "cover_image")

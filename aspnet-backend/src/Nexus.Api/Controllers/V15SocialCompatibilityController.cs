@@ -1363,13 +1363,29 @@ public class V15SocialCompatibilityController : ControllerBase
         return Ok(new { success = true, data = MapNotification(row) });
     }
 
+    /// <summary>
+    /// POST /api/v2/notifications/read-all.
+    ///
+    /// 🔴 Shape read from the running disposable Laravel on 2026-08-19:
+    /// <c>{"data":{"marked_all_read":true,"marked_read":0},"meta":{"base_url":…}}</c>.
+    /// This returned <c>{"success":true,"marked_count":N}</c> — no `data` wrapper, a
+    /// top-level `success` Laravel does not send, and a differently named count. A
+    /// client reading `response.data.marked_read` got nothing at all.
+    ///
+    /// 🔴 The v2 path ONLY. `/api/notifications/read-all` is a DIFFERENT handler in
+    /// NotificationsController with its own tests, and Laravel's non-v2 helpers emit
+    /// a different envelope. Do not "fix" that one on this one's evidence — assuming
+    /// a verb or prefix carries over has produced eight wrong assertions in this
+    /// suite already.
+    /// </summary>
     [HttpPost("/api/v2/notifications/read-all")]
     public async Task<IActionResult> MarkAllNotificationsRead()
     {
         var now = DateTime.UtcNow;
         var count = await _db.Notifications.Where(n => n.UserId == RequireUserId() && !n.IsRead)
             .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true).SetProperty(n => n.ReadAt, now));
-        return Ok(new { success = true, marked_count = count });
+        // meta.base_url is added by LaravelDataEnvelopeFilter (v2 write with a data key).
+        return Ok(new { data = new { marked_all_read = true, marked_read = count } });
     }
 
     [HttpPost("/api/notifications/delete")]

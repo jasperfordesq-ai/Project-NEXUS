@@ -92,7 +92,8 @@ public class LegalShortRoutesController : ControllerBase
                 success = true,
                 documents,
                 has_pending = hasPending,
-            }
+            },
+            meta = Meta(),
         });
     }
 
@@ -201,7 +202,8 @@ public class LegalShortRoutesController : ControllerBase
                 success = true,
                 message = "Acceptance recorded",
                 accepted_at = acceptedAt,
-            }
+            },
+            meta = Meta(),
         });
     }
 
@@ -247,7 +249,7 @@ public class LegalShortRoutesController : ControllerBase
             await _db.SaveChangesAsync();
         }
 
-        return Ok(new { data = new { message = "All legal documents accepted" } });
+        return Ok(new { data = new { message = "All legal documents accepted" }, meta = Meta() });
     }
 
     /// <summary>
@@ -301,4 +303,32 @@ public class LegalShortRoutesController : ControllerBase
         [System.Text.Json.Serialization.JsonPropertyName("version_id")]
         public int VersionId { get; set; }
     }
+
+    /// <summary>
+    /// Laravel's `meta` block, built here rather than by
+    /// <see cref="Filters.LaravelDataEnvelopeFilter"/>.
+    ///
+    /// 🔴 Why this route builds its own. That filter is scoped to `/api/v2` paths,
+    /// because Laravel's v1 helpers emit a different envelope and every endpoint
+    /// measured against the running Laravel to justify the filter was a v2 path.
+    /// These three routes are deliberately NOT v2 — Laravel registers only the bare
+    /// `/api/legal/...` forms and answers 404/405 on the v2 spellings — yet it still
+    /// answers them through `respondWithData`, so they do carry `meta.base_url`.
+    /// Filling it in here keeps the shared filter inside its evidence instead of
+    /// widening it on a single sample.
+    ///
+    /// Evidence, read from the running disposable Laravel on 2026-08-19:
+    /// `GET /api/legal/status` and `POST /api/legal/accept-all` both return
+    /// `"meta":{"base_url":"http://127.0.0.1"}`.
+    ///
+    /// 🔴 `POST /api/legal/accept` is NOT directly measured, and should not be read
+    /// as if it were. Its success path needs an active legal document, and the
+    /// disposable Laravel has none — deliberately, because seeding an enforceable
+    /// document would switch on the acceptance gate for the harness member and make
+    /// every other write in the corpus answer from behind it. It is included here on
+    /// the strength of its two measured siblings sharing Laravel's one helper. If a
+    /// disposable fixture ever gains a legal document, measure this route directly
+    /// and replace this note with the result.
+    /// </summary>
+    private object Meta() => new { base_url = $"{Request.Scheme}://{Request.Host}" };
 }

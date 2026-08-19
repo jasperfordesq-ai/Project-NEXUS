@@ -220,6 +220,188 @@ that "sellers are never paid out" is **withdrawn** for escrow-backed orders.
 
 ---
 
+## 2026-08-19 — WRITES are measured now: 6 -> 10 of 18, and the envelope rule extended on 11-of-11 evidence
+
+Writes were the last completely unmeasured surface. They are measured now, and
+the count moved from **6 of 18 to 10 of 18 contract-identical** on the same
+corpus. The read side was re-measured immediately afterwards and is **unchanged
+at 79 of 170**, so nothing was traded for this.
+
+| | Before | After |
+| --- | --- | --- |
+| Same status AND same JSON shape | 6 | **10** |
+| Different shape | 8 | **6** |
+| Status disagreements | 3 | **1** |
+| Non-JSON on both sides | 1 | **1** |
+
+### Two endpoints INVENTED data rather than refusing
+
+`POST /api/v2/listings` and `POST /api/v2/events` both accepted anything and
+substituted values for whatever was missing — literally `?? "Untitled listing"`
+and `?? DateTime.UtcNow.AddDays(7)`. So an event posted with no date was created
+a week from whenever the request arrived, and an event posted with an
+unrecognised date field was given that fabricated date instead of the one
+supplied. Laravel refuses both.
+
+The listing rules are **per community, not constants**: `ListingService::validateData`
+reads `min_title_length`, `min_description_length`, `require_category`,
+`allow_offers` and `allow_requests` from tenant config. This backend was already
+publishing those in `/tenant/bootstrap`'s `listing_config` and never applying them.
+
+🔴 **Laravel's validation envelopes are per-endpoint, not global.** Listings return
+`{"code":"VALIDATION_ERROR","field":…}`; events return lowercase
+`{"code":"validation_failed","details":{field:[messages]}}` plus `success:false`;
+resources return `{"code":"VALIDATION_REQUIRED_FIELD","field":…}`. Three different
+shapes on three creates. Each was read from the live response — unifying them
+would have been wrong three ways.
+
+### `POST /api/v2/resources` answered 500 where Laravel answers 400
+
+A non-multipart request reached `ReadFormAsync`, which throws
+`InvalidOperationException("Incorrect Content-Type: application/json")`, and the
+error handler turned that into a 500 with a stack trace. All five of its refusals
+now carry Laravel's exact codes and wording, measured individually: no title, no
+file, an 11 MB upload (`FILE_TOO_LARGE` / "File exceeds 10MB limit"), an `.exe`
+(`FILE_TYPE_NOT_ALLOWED` / "File type not allowed") and a `.pdf` with `MZ` content
+("This file type is not allowed (HTML/SVG/PHP)").
+
+### `LaravelDataEnvelopeFilter` covers writes for `meta` — and the `success` strip was REVERTED after 82 red tests
+
+The filter was GET/HEAD-only, and its own docblock said why: no instrument had ever
+compared a write. Now one has.
+
+```
+2xx Laravel writes carrying a `data` key      : 11
+...of those, also carrying meta.base_url      : 11
+...of those, carrying a top-level `success`   :  0
+counter-examples in either direction          :  0
+```
+
+🔴 **Half of this shipped and half was reverted. The half that was reverted is the
+more useful record.**
+
+The change had two parts, and treating them as one claim was the mistake:
+
+| | Direction | Evidence | Outcome |
+| --- | --- | --- | --- |
+| Add `meta.base_url` to writes | **additive** | writes 11-of-11, 0 counter-examples | **shipped** |
+| Strip top-level `success` from writes | **subtractive** | 41-to-0, but taken across 170 **GET** endpoints | **reverted** |
+
+The partial run showed six admin tests failing and the tempting read was "admin must
+be different — narrow the filter". That was worth checking, and the check was
+worthwhile: signing in to the disposable Laravel as its own admin
+(`e2e.admin@project-nexus.local` / `AdminPassword123!`, from `E2ETestDataSeeder`)
+showed `POST admin/registration/resume-signups`, `PUT admin/retention/policies/*`
+and `PUT admin/settings/header-colors` all return `{data, meta}` with **no**
+`success`. Laravel really is consistent.
+
+🔴 **But the full run failed 82 tests, not six** — and 3,577 passed, which is how a
+40-minute run still exits 0. Eleven samples cannot license removing a key from every
+write in the backend; they establish only that those eleven Laravel writes omit it.
+So the strip was scoped back to reads, where its own 41-to-0 count was taken.
+
+🔴 **The decisive check: the strip bought NOTHING.** Re-measured with it reverted,
+write parity is **10 of 18 — unchanged**. The whole 6 -> 10 movement came from the
+`meta` addition and the per-endpoint fixes. It cost 82 red tests for zero measured
+gain. Had the score dropped, this would have been a real trade-off to weigh; it did
+not, so there was nothing to weigh.
+
+The six test edits were reverted with it. They were changed on the blanket rule, and
+once the rule is gone they would have been asserting something this backend does not
+do.
+
+🔴 **Still open, and now precisely stated:** Laravel omits `success` on those three
+measured admin writes and this backend sends it. That is a real divergence. Closing
+it means editing those handlers, per endpoint, against a live read — not widening a
+filter. Any future attempt needs a per-endpoint `success` count on writes taken the
+way the 41-to-0 read count was taken.
+
+🔴 The `/api/v2` restriction stays even for writes. Seven of the eight member
+samples are v2; exactly one is not (`POST /api/legal/accept-all`, which does carry
+meta). One sample is not a rule, so that route emits its own meta in
+`LegalShortRoutesController` instead of widening the filter.
+
+### 🔴 A measurement defect: every field-level figure in this workstream was understated
+
+`describeShapeDiff` capped its two lists at `.slice(0, 8)` with nothing marking the
+truncation, so "8 missing fields" was the display cap being read as a count. Both
+harnesses now print the true total beside the sample. Re-read honestly, the write
+divergences are much larger than recorded: created group **77** fields short,
+created listing 67, created poll 38, created goal 37, profile update 22.
+
+Nothing about either backend changed here. What changed is that the numbers are no
+longer quietly wrong, and reviewing the eight-name sample is no longer mistakable
+for reviewing the difference.
+
+### Harness changes
+
+- `body(ctx)` now receives a **per-backend** context. A valid listing needs a real
+  category id and the two backends mint different ids, so a single fixed body could
+  only ever exercise the refusal. `ctx.categoryId` is resolved from each backend's
+  own `/api/v2/categories` just before the run. That immediately exposed a
+  divergence the refusal had hidden.
+- Corpus widened 13 -> 18 (group, event, goal, resource, notification preferences)
+  specifically to raise N before extending a shared filter.
+- Every row now records `laravel_envelope` / `aspnet_envelope` observations, so the
+  count that justifies an envelope change is evidence in a file rather than a claim
+  in a commit message.
+
+### 🔴 The invented-data sweep: three more, and a LARAVEL defect
+
+The two creates that invented data were found by chance, so every `??` fallback on
+a request field in `src/Nexus.Api/Controllers` was swept. Most are harmless — a
+`?? "Unknown"` filling a name in a RESPONSE, or a defensive default when reading a
+stored blob back. Three are the real fault, where a fabricated value is **saved**:
+
+| Endpoint | ASP.NET | Laravel (measured) |
+| --- | --- | --- |
+| `POST /api/v2/groups/{id}/tasks` | 201, title saved as `"Untitled task"` | **422** `{"code":"VALIDATION_ERROR","message":"Title is required","field":"title"}` |
+| `POST /api/v2/wallet/categories` | 201, name saved as `"General"` | **400** `{"success":false,"error":"Name is required"}` |
+| `POST /api/ideation-challenges/{id}/ideas` | 201, title saved as `"Untitled"` | **404** — the route does not exist |
+
+🔴 The group-task one has a validation check that **can never fire**:
+
+```csharp
+var title = ReadStringProperty(request, "title", "name") ?? "Untitled task";
+if (string.IsNullOrWhiteSpace(title))                      // dead: the line above
+    return BadRequest(LaravelValidationError("title", …));  // guarantees a value
+```
+
+The placeholder is applied on the line above the guard, so the guard's condition is
+unreachable. It reads like validated input and is not. One handler serves both the
+v2 and non-v2 spellings (it branches on `IsV2Request()`), so both are affected.
+
+🔴 **Two routes exist here that Laravel does not have.**
+`POST /api/groups/{id}/tasks` and `POST /api/ideation-challenges/{id}/ideas` are
+registered without the `/v2/` prefix; Laravel registers only `/v2/` forms
+(`routes/api.php:1179, 3765`) and 404s the bare ones. React calls only the `/v2/`
+spellings (`ChallengeDetailPage.tsx:493`, `TeamTasks.tsx:190`), so nothing depends
+on the extras. Note the ASP.NET v2 ideas handler ALREADY validates correctly (400
+`VALIDATION_REQUIRED_FIELD`) — it is the non-v2 twin that invents.
+
+🔴 **A defect in LARAVEL, not this backend.** `POST /api/v2/ideation-challenges/{id}/ideas`
+with no `title` makes **Laravel** answer **500**:
+`Undefined array key "title"` at `app/Services/IdeationChallengeService.php:425`.
+That is live production code reachable by any client that omits the field. It is
+NOT a contract to reproduce — ASP.NET's 400 is the better answer and stays. Raised
+for the owner separately; changing Laravel is not part of this workstream.
+
+### What is left on writes
+
+- `POST /api/v2/groups` is the worst remaining: **77** fields short, and it returns
+  `{success, message, group}` — the payload under `group`, not `data`, with
+  camelCase field names (`isPrivate`, `imageUrl`). It is the only write still
+  sending a top-level `success`, because the filter requires a `data` key to act.
+- Created poll (38), goal (37), listing (67) and profile update (22) are field-level
+  tails, all of them Laravel returning a raw Eloquent model plus appended attributes.
+- `POST /api/v2/search/saved` makes **Laravel itself** answer 500. Not a contract to
+  copy; it needs its own diagnosis.
+- `PUT /api/v2/users/me/notification-preferences` 404s on both. The path was my
+  guess and is wrong on both backends — find the real one before counting it.
+- Multipart writes are still uncompared: the harness posts JSON only, so the
+  resource-create SUCCESS shape (Laravel returns a deliberate 8-field projection,
+  not a raw row) has not been diffed.
+
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
 🔴 Everything from here down is history. Baseline 1's 712/1000 is retained

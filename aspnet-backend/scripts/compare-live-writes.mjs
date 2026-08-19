@@ -194,6 +194,68 @@ const CORPUS = [
     path: '/api/v2/feed/posts',
     body: () => ({ content: stamp('Write-harness post'), visibility: 'public' }),
   },
+  // ── Corpus widened 2026-08-19 ───────────────────────────────────────────────
+  // 🔴 Added to raise N before extending the shared envelope filter to writes.
+  // Six samples were not enough to justify a rule applied to every write in the
+  // backend; over-generalising from a small count is the specific mistake that
+  // cost this workstream 22 wrong endpoints once already. These are creates that
+  // need no pre-existing row id, so they work on either backend's fixtures.
+  {
+    name: 'create group',
+    method: 'POST',
+    path: '/api/v2/groups',
+    body: () => ({
+      name: stamp('Write-harness group'),
+      description: stamp('Created by the write-mode parity harness'),
+      privacy: 'public',
+      visibility: 'public',
+    }),
+  },
+  {
+    name: 'create event',
+    method: 'POST',
+    path: '/api/v2/events',
+    body: () => ({
+      title: stamp('Write-harness event'),
+      description: stamp('Created by the write-mode parity harness'),
+      start_date: '2027-01-15 10:00:00',
+      end_date: '2027-01-15 12:00:00',
+      location: 'Write-harness venue',
+      capacity: 10,
+    }),
+  },
+  {
+    name: 'create goal',
+    method: 'POST',
+    path: '/api/v2/goals',
+    body: () => ({
+      title: stamp('Write-harness goal'),
+      description: stamp('Created by the write-mode parity harness'),
+      target_hours: 5,
+    }),
+  },
+  {
+    name: 'create resource',
+    method: 'POST',
+    path: '/api/v2/resources',
+    body: () => ({
+      title: stamp('Write-harness resource'),
+      description: stamp('Created by the write-mode parity harness'),
+      content: stamp('Body text for the write-mode parity harness'),
+      type: 'article',
+    }),
+  },
+  {
+    // 🔴 `notification-SETTINGS`, not `notification-preferences`. The first spelling
+    // was my guess and 404s on BOTH backends, so the row agreed and measured nothing
+    // — a matched 404 pair reads as harmless in a tally while proving only that
+    // neither backend has an endpoint nobody asked for. Read off Laravel's route
+    // table: routes/api.php:768.
+    name: 'update my notification settings',
+    method: 'PUT',
+    path: '/api/v2/users/me/notification-settings',
+    body: () => ({ email_notifications: true, push_notifications: false }),
+  },
   {
     // 🔴 The SUCCESS path. Needs a per-backend category id and a description long
     // enough to clear the configured minimum (20 characters by default), or it only
@@ -334,6 +396,17 @@ async function main() {
     const aspnet = await send(ASPNET, spec, ASPNET_TENANT, aspnetToken, aspnetCtx);
 
     const verdict = classify(laravel, aspnet);
+
+    // 🔴 Envelope observations recorded on EVERY row, match or not. The shared
+    // envelope filter is restricted to GET/HEAD and /api/v2 because that is the
+    // only surface that had ever been measured; extending it needs a count of
+    // Laravel's actual behaviour on writes, per path, not an assumption that the
+    // GET rule carries over. Captured here so the count is evidence in a file.
+    const envelope = (r) => ({
+      has_data: !!r.parsed && r.body !== null && typeof r.body === 'object' && 'data' in r.body,
+      has_meta_base_url: !!r.parsed && typeof r.body?.meta?.base_url === 'string',
+      has_top_level_success: !!r.parsed && r.body !== null && typeof r.body === 'object' && 'success' in r.body,
+    });
     const row = {
       name: spec.name,
       method: spec.method,
@@ -341,6 +414,8 @@ async function main() {
       verdict,
       laravel_status: laravel.status,
       aspnet_status: aspnet.status,
+      laravel_envelope: envelope(laravel),
+      aspnet_envelope: envelope(aspnet),
     };
     if (verdict === 'SHAPE_DIFFERS') Object.assign(row, describeShapeDiff(laravel, aspnet));
     results.push(row);

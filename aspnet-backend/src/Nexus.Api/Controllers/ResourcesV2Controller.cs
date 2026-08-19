@@ -186,16 +186,44 @@ public class ResourcesV2Controller : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { success = false, error = "Invalid token" });
 
+        // 🔴 A non-multipart request used to reach ReadFormAsync and throw
+        // InvalidOperationException("Incorrect Content-Type: application/json"), which
+        // the error handler turned into a 500 with a stack trace. Laravel answers the
+        // same request with a plain 400 "File is required" — measured live on
+        // 2026-08-19 by posting a JSON body. A 500 tells a caller the server is
+        // broken; a 400 tells them what to send instead, and a resource upload is
+        // inherently multipart, so a request that cannot carry a file has none.
+        if (!Request.HasFormContentType)
+        {
+            return ResourceUploadError("VALIDATION_REQUIRED_FIELD", "File is required", "file");
+        }
+
         var form = await Request.ReadFormAsync(ct);
+
+        // 🔴 Every refusal below uses Laravel's `{errors:[{code,message,field}]}`
+        // envelope with its exact codes and wording, each read from the running
+        // disposable Laravel on 2026-08-19 rather than inferred:
+        //
+        //   file present, no title -> VALIDATION_REQUIRED_FIELD "Title is required"
+        //   title present, no file -> VALIDATION_REQUIRED_FIELD "File is required"
+        //   11 MB upload           -> FILE_TOO_LARGE "File exceeds 10MB limit"
+        //   .exe upload            -> FILE_TYPE_NOT_ALLOWED "File type not allowed"
+        //   .pdf with MZ content   -> FILE_TYPE_NOT_ALLOWED
+        //                             "This file type is not allowed (HTML/SVG/PHP)"
+        //
+        // Three of these returned `{success:false,error:…}` instead, a shape Laravel
+        // never sends, so a client reading `errors[0].field` to mark the offending
+        // input found nothing and could only show a generic failure. Title is checked
+        // before the file in both backends — verified, not assumed.
         var title = form["title"].FirstOrDefault();
         if (string.IsNullOrWhiteSpace(title))
-            return BadRequest(new { success = false, error = "Title is required" });
+            return ResourceUploadError("VALIDATION_REQUIRED_FIELD", "Title is required", "title");
 
         var file = form.Files.GetFile("file");
         if (file == null || file.Length == 0)
-            return BadRequest(new { success = false, error = "File is required" });
+            return ResourceUploadError("VALIDATION_REQUIRED_FIELD", "File is required", "file");
         if (file.Length > MaxUploadBytes)
-            return BadRequest(new { success = false, error = "File exceeds 10 MB" });
+            return ResourceUploadError("FILE_TOO_LARGE", "File exceeds 10MB limit", "file");
 
         var extension = Path.GetExtension(file.FileName).TrimStart('.').ToLowerInvariant();
         var detectedContentType = await DetectResourceMimeAsync(file, ct);
@@ -203,7 +231,7 @@ public class ResourcesV2Controller : ControllerBase
             detectedContentType is null ||
             !allowedMimes.Contains(detectedContentType, StringComparer.OrdinalIgnoreCase))
         {
-            return ResourceUploadError("FILE_TYPE_NOT_ALLOWED", "File type is not allowed", "file");
+            return ResourceUploadError("FILE_TYPE_NOT_ALLOWED", "File type not allowed", "file");
         }
 
         var contentType = detectedContentType;

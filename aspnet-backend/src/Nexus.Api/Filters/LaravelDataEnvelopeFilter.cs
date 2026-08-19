@@ -51,10 +51,11 @@ namespace Nexus.Api.Filters;
 /// <item><description><c>/api/v2</c> paths only. Laravel's v1 helpers emit a
 /// different envelope (<c>{success, data}</c>, no meta), and v2 is what the
 /// React frontend consumes.</description></item>
-/// <item><description>GET and HEAD only. Those are what the harness measures.
-/// Laravel's helper is used by writes too, but this backend's write responses
-/// have NOT been compared yet, and a rule applied beyond its evidence is how
-/// three earlier over-generalisations in this repo broke things.</description></item>
+/// <item><description>meta.base_url: reads AND writes (writes measured 11 of 11,
+/// 0 counter-examples, 2026-08-19). Stripping a top-level <c>success</c>: READS
+/// ONLY — that rule's 41-to-0 count was taken across GET endpoints, and extending
+/// a SUBTRACTIVE rule past its own measurement turned 82 tests red for no measured
+/// gain. See the comment at the strip itself.</description></item>
 /// <item><description>2xx only. Error bodies are <c>errors</c> +
 /// <c>success:false</c>, carry no meta, and are never touched here.</description></item>
 /// <item><description>Only when the body has a <c>data</c> key. Never replaces
@@ -66,8 +67,36 @@ public sealed class LaravelDataEnvelopeFilter : IAlwaysRunResultFilter
 {
     public void OnResultExecuting(ResultExecutingContext context)
     {
+        // 🔴 Writes were EXCLUDED until 2026-08-19, and the reason was honest: no
+        // instrument existed that had ever compared a write response, and a rule
+        // applied past its evidence is how three earlier over-generalisations in
+        // this repo broke things. `scripts/compare-live-writes.mjs` now measures
+        // them, so the exclusion has been lifted on a count rather than an
+        // assumption. Across the write corpus, signed in against the disposable
+        // Laravel:
+        //
+        //     2xx Laravel writes carrying a `data` key      : 11
+        //     ...of those, also carrying meta.base_url      : 11
+        //     ...of those, carrying a top-level `success`   : 0
+        //     counter-examples in either direction          : 0
+        //
+        // Member surface (8): feed post, group, goal, listing, profile update,
+        // mark-all-read, legal accept-all, and a second listing case. Admin surface
+        // (3), signed in as the disposable Laravel's admin: registration
+        // resume-signups, a retention-policy update, and a header-colours update.
+        //
+        // 🔴 The admin three were measured SPECIFICALLY because extending this filter
+        // broke six admin tests, and the tempting read of that was "admin must be
+        // different, narrow the filter". It is not different — those tests were
+        // asserting THIS backend's shape under a Laravel-parity name, which is the
+        // recurring failure mode here. Asking the running Laravel settled it.
+        // respondWithData is verb-agnostic and surface-agnostic: it seeds base_url
+        // for whoever calls it.
         var method = context.HttpContext.Request.Method;
-        if (!HttpMethods.IsGet(method) && !HttpMethods.IsHead(method))
+        var isRead = HttpMethods.IsGet(method) || HttpMethods.IsHead(method);
+        var isWrite = HttpMethods.IsPost(method) || HttpMethods.IsPut(method)
+                      || HttpMethods.IsPatch(method) || HttpMethods.IsDelete(method);
+        if (!isRead && !isWrite)
         {
             return;
         }
@@ -88,10 +117,14 @@ public sealed class LaravelDataEnvelopeFilter : IAlwaysRunResultFilter
             return;
         }
 
-        // 🔴 v2 only. Laravel's v1 helpers (`success()`, `error()`) emit a
-        // DIFFERENT envelope — `{success, data}` with no meta — and the v2
-        // helpers are what the React frontend consumes. Scoping here keeps this
-        // filter inside the evidence: every measured endpoint is a /api/v2 path.
+        // 🔴 v2 only — and this restriction stays for writes too, deliberately.
+        // Laravel's v1 helpers (`success()`, `error()`) emit a DIFFERENT envelope
+        // — `{success, data}` with no meta — and the v2 helpers are what the React
+        // frontend consumes. Of the eight measured writes, SEVEN are /api/v2 and
+        // exactly ONE is not (POST /api/legal/accept-all, which does carry meta).
+        // One sample is not a rule: rather than widen this filter on it, that route
+        // emits its own meta in LegalShortRoutesController, so the shared rule stays
+        // inside the evidence and the measured route is still correct.
         var path = context.HttpContext.Request.Path.Value ?? string.Empty;
         if (!path.StartsWith("/api/v2/", StringComparison.OrdinalIgnoreCase))
         {
@@ -153,7 +186,28 @@ public sealed class LaravelDataEnvelopeFilter : IAlwaysRunResultFilter
         //
         // A client that branches on `success` therefore behaves differently
         // against the two backends on 41 screens.
-        if (body.Remove("success"))
+        //
+        // 🔴 READS ONLY, and this bound was earned the hard way on 2026-08-19.
+        // Extending the strip to writes alongside the meta addition turned 82 tests
+        // red in one run. Those two halves are NOT the same claim and must not share
+        // a scope:
+        //
+        //   * ADDING meta.base_url is additive and measured on writes 11-of-11. It
+        //     cannot remove information a caller relies on, so a wrong guess degrades
+        //     to a harmless extra key.
+        //   * REMOVING `success` is subtractive. The 41-to-0 count above was taken
+        //     across the 170 GET endpoints — READS. There is no equivalent count for
+        //     writes, and 11 samples is not one: it establishes that those 11 Laravel
+        //     writes omit `success`, not that every write in this backend should have
+        //     it taken away.
+        //
+        // The measured benefit of the write strip was ZERO once checked: the write
+        // score moved 6 -> 10 of 18 on the meta addition and the per-endpoint fixes
+        // alone. So it cost 82 red tests and bought nothing.
+        //
+        // To extend it, count `success` presence per endpoint against a live Laravel
+        // write, the way the 41-to-0 read count was taken. Until then it stays here.
+        if (isRead && body.Remove("success"))
         {
             changed = true;
         }
