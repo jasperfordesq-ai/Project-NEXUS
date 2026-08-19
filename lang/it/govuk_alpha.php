@@ -1898,7 +1898,7 @@ return [
         'leading' => 'In vantaggio',
         'vote_once_hint' => 'Scegli un\'opzione. Non puoi modificare il tuo voto una volta inviato.',
         'results_pending_note' => 'Hai votato. I risultati saranno mostrati alla chiusura di questo sondaggio.',
-        'per_option_votes' => ':count voti',
+        'per_option_votes' => '{0} 0 voti|{1} 1 voto|[2,*] :count voti',
         'your_choice' => 'La tua scelta',
         'states' => [
             'voted' => 'Grazie — il tuo voto è stato registrato.',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'Episodi',
         'episodes_empty' => 'Non è ancora stato pubblicato nessun episodio.',
         'by_label' => 'Di :name',
-        'episodes_count' => ':count episodi',
+        'episodes_count' => '{0} Nessun episodio|{1} 1 episodio|[2,*] :count episodi',
         'download_episode' => 'Scarica episodio: :title',
     ],
     'coupons' => [

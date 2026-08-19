@@ -74,7 +74,7 @@
             <p class="govuk-body govuk-!-margin-bottom-1">{{ show.summary }}</p>
           {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
-            {% if show.byLabel %}{{ show.byLabel }} - {% endif %}{{ t("govuk_alpha.podcasts.episodes_count", { count: show.episodeCount }) }}
+            {% if show.byLabel %}{{ show.byLabel }} - {% endif %}{{ tc("govuk_alpha.podcasts.episodes_count", show.episodeCount, { count: show.episodeCount }) }}
           </p>
         </article>
       {% endfor %}

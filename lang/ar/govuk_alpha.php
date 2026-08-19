@@ -1898,7 +1898,7 @@ return [
         'leading' => 'في المقدمة',
         'vote_once_hint' => 'اختر خيارًا واحدًا. لا يمكنك تغيير صوتك بعد الإرسال.',
         'results_pending_note' => 'لقد صوّتت. ستظهر النتائج عند إغلاق هذا الاستطلاع.',
-        'per_option_votes' => ':count أصوات',
+        'per_option_votes' => '{0} 0 أصوات|{1} صوت واحد|[2,*] :count أصوات',
         'your_choice' => 'اختيارك',
         'states' => [
             'voted' => 'شكرًا لك — تم تسجيل صوتك.',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'الحلقات',
         'episodes_empty' => 'لم تُنشر أي حلقات بعد.',
         'by_label' => 'بواسطة :name',
-        'episodes_count' => ':count حلقة',
+        'episodes_count' => '{0} ليست هناك حلقات|{1} حلقة واحدة|[2,*] :count حلقة',
         'download_episode' => 'تنزيل الحلقة: :title',
     ],
     'coupons' => [

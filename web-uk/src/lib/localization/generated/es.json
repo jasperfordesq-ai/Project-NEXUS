@@ -2905,7 +2905,7 @@
                 "leading": "En cabeza",
                 "vote_once_hint": "Elija una opción. No podrá cambiar su voto una vez enviado.",
                 "results_pending_note": "Ha votado. Los resultados se mostrarán cuando se cierre esta encuesta.",
-                "per_option_votes": ":count votos",
+                "per_option_votes": "{0} 0 votos|{1} 1 voto|[2,*] :count votos",
                 "your_choice": "Su elección",
                 "states": {
                     "voted": "Gracias — su voto ha sido registrado.",
@@ -3888,7 +3888,7 @@
                 "episodes_title": "Episodios",
                 "episodes_empty": "Todavía no se ha publicado ningún episodio.",
                 "by_label": "Por :name",
-                "episodes_count": ":count episodios",
+                "episodes_count": "{0} Sin episodios|{1} 1 episodio|[2,*] :count episodios",
                 "download_episode": "Descargar episodio: :title"
             },
             "coupons": {

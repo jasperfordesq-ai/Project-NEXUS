@@ -1922,7 +1922,7 @@ return [
         'leading' => 'Leading',
         'vote_once_hint' => 'Choose one option. You cannot change your vote once it is submitted.',
         'results_pending_note' => 'You have voted. The results will be shown when this poll closes.',
-        'per_option_votes' => ':count votes',
+        'per_option_votes' => '{0} 0 votes|{1} 1 vote|[2,*] :count votes',
         'your_choice' => 'Your choice',
         'states' => [
             'voted' => 'Thank you — your vote has been recorded.',
@@ -2918,7 +2918,7 @@ return [
         'episodes_title' => 'Episodes',
         'episodes_empty' => 'No episodes have been published yet.',
         'by_label' => 'By :name',
-        'episodes_count' => ':count episodes',
+        'episodes_count' => '{0} No episodes|{1} 1 episode|[2,*] :count episodes',
         'download_episode' => 'Download episode: :title',
     ],
     'coupons' => [

@@ -1898,7 +1898,7 @@ return [
         'leading' => 'Na prowadzeniu',
         'vote_once_hint' => 'Wybierz jedną opcję. Po przesłaniu głosu nie możesz go zmienić.',
         'results_pending_note' => 'Twój głos został oddany. Wyniki zostaną pokazane po zamknięciu tej ankiety.',
-        'per_option_votes' => ':count głosów',
+        'per_option_votes' => '{0} 0 głosów|{1} 1 głos|[2,*] :count głosów',
         'your_choice' => 'Twój wybór',
         'states' => [
             'voted' => 'Dziękujemy — Twój głos został zarejestrowany.',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'Odcinki',
         'episodes_empty' => 'Nie opublikowano jeszcze żadnych odcinków.',
         'by_label' => 'Przez :name',
-        'episodes_count' => ':count odcinków',
+        'episodes_count' => '{0} Brak odcinków|{1} 1 odcinek|[2,*] :count odcinki',
         'download_episode' => 'Pobierz odcinek: :title',
     ],
     'coupons' => [

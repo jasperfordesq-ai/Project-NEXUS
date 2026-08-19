@@ -2905,7 +2905,7 @@
                 "leading": "Ar thús cadhnaíochta",
                 "vote_once_hint": "Roghnaigh rogha amháin. Ní féidir leat do vóta a athrú nuair atá sé curtha isteach.",
                 "results_pending_note": "Chaith tú do vóta. Taispeánfar na torthaí nuair a dhúnfar an phobalbhreith seo.",
-                "per_option_votes": ":count vóta",
+                "per_option_votes": "{0} 0 vóta|{1} 1 vóta|[2,*] :count vóta",
                 "your_choice": "Do rogha",
                 "states": {
                     "voted": "Go raibh maith agat — tá do vóta cláraithe.",
@@ -3888,7 +3888,7 @@
                 "episodes_title": "Eipeasóidí",
                 "episodes_empty": "Níl aon eipeasóidí foilsithe fós.",
                 "by_label": "Le :name",
-                "episodes_count": ":count eipeasóid",
+                "episodes_count": "{0} Gan eipeasóid|{1} 1 eipeasóid|[2,*] :count eipeasóid",
                 "download_episode": "Íoslódáil eipeasóid: :title"
             },
             "coupons": {

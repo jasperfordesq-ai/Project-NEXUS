@@ -15,7 +15,7 @@
         {% endif %}
       </p>
       <progress max="100" value="{{ option.percentage }}" aria-label="{{ option.text }}: {{ option.percentage }}%">{{ option.percentage }}%</progress>
-      <span class="govuk-body-s">{{ option.percentage }}% - {{ t("polls.per_option_votes", { count: option.voteCount }) }}</span>
+      <span class="govuk-body-s">{{ option.percentage }}% - {{ tc("polls.per_option_votes", option.voteCount, { count: option.voteCount }) }}</span>
     </div>
   {% endfor %}
 {% endmacro %}

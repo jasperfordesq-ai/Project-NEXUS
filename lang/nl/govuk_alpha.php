@@ -1898,7 +1898,7 @@ return [
         'leading' => 'Koploper',
         'vote_once_hint' => 'Kies één optie. U kunt uw stem niet wijzigen nadat deze is ingediend.',
         'results_pending_note' => 'U heeft gestemd. De resultaten worden getoond wanneer deze peiling sluit.',
-        'per_option_votes' => ':count stemmen',
+        'per_option_votes' => '{0} 0 stemmen|{1} 1 stem|[2,*] :count stemmen',
         'your_choice' => 'Uw keuze',
         'states' => [
             'voted' => 'Bedankt — uw stem is geregistreerd.',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'Afleveringen',
         'episodes_empty' => 'Er zijn nog geen afleveringen gepubliceerd.',
         'by_label' => 'Door :name',
-        'episodes_count' => ':count afleveringen',
+        'episodes_count' => '{0} Geen afleveringen|{1} 1 aflevering|[2,*] :count afleveringen',
         'download_episode' => 'Aflevering downloaden: :title',
     ],
     'coupons' => [

@@ -1898,7 +1898,7 @@ return [
         'leading' => '首位',
         'vote_once_hint' => '1つのオプションを選択してください。送信後に変更することはできません。',
         'results_pending_note' => '投票済みです。結果はこの投票が終了したときに表示されます。',
-        'per_option_votes' => ':count 票',
+        'per_option_votes' => '{0} 0票|{1} 1票|[2,*] :count票',
         'your_choice' => 'あなたの選択',
         'states' => [
             'voted' => 'ありがとうございます。投票が記録されました。',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'エピソード',
         'episodes_empty' => 'まだ公開されたエピソードはありません。',
         'by_label' => ':name 制作',
-        'episodes_count' => ':count 件のエピソード',
+        'episodes_count' => '{0} エピソードなし|{1} 1 エピソード|[2,*] :count エピソード',
         'download_episode' => 'エピソードをダウンロード: :title',
     ],
     'coupons' => [

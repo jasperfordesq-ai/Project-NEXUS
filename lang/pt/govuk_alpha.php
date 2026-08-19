@@ -1898,7 +1898,7 @@ return [
         'leading' => 'Na liderança',
         'vote_once_hint' => 'Escolha uma opção. Não pode alterar o seu voto após a submissão.',
         'results_pending_note' => 'Já votou. Os resultados serão apresentados quando esta votação encerrar.',
-        'per_option_votes' => ':count votos',
+        'per_option_votes' => '{0} 0 votos|{1} 1 voto|[2,*] :count votos',
         'your_choice' => 'A sua escolha',
         'states' => [
             'voted' => 'Obrigado — o seu voto foi registado.',
@@ -2881,7 +2881,7 @@ return [
         'episodes_title' => 'Episódios',
         'episodes_empty' => 'Ainda não foram publicados episódios.',
         'by_label' => 'Por :name',
-        'episodes_count' => ':count episódios',
+        'episodes_count' => '{0} Nenhum episódio|{1} 1 episódio|[2,*] :count episódios',
         'download_episode' => 'Descarregar episódio: :title',
     ],
     'coupons' => [

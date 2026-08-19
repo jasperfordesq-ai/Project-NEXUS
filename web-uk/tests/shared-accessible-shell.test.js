@@ -15681,7 +15681,14 @@ describe('shared accessible frontend shell', () => {
     }
     expect(response.text).toContain(t('polls.by_label', { name: 'Ada Lovelace' }));
     expect(response.text).toContain(t('polls.votes_count', { count: 10 }));
-    expect(response.text).toContain(t('polls.per_option_votes', { count: 7 }));
+    // per_option_votes now carries plural forms, so the expectation must come
+    // from the CHOICE translator. Built with plain t() it yields the whole
+    // "{0} …|{1} …|[2,*] …" template, which is what the page itself used to
+    // print once a locale had plural forms — the bug this key was fixed for.
+    const tc = createChoiceTranslator('ar');
+    expect(response.text).toContain(tc('polls.per_option_votes', 7, { count: 7 }));
+    expect(response.text).not.toContain('{0}');
+    expect(response.text).not.toContain('[2,*]');
     expect(response.text).not.toContain('This community');
   });
 
