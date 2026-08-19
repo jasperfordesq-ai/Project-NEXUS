@@ -72,8 +72,8 @@ dimension's own section; none is inherited from an earlier edition.
 | 12 | Internationalisation | **Weak** | 7 locales (`de en es fr ga it pt`) against the platform's 11. `nl` `pl` `ja` are ordinary work; **`ar` is blocked** — no right-to-left support exists |
 | 13 | Offline & flaky network | **Adequate for check-in, Weak elsewhere** | Offline check-in store 94.97% covered incl. the double-credit guard; a dropped connection no longer signs a member out (fixed this session) |
 | 14 | Performance | **Unmeasured** | No startup-time, bundle-size or scroll budget of any kind |
-| 15 | Observability & ops | **Weak (new row)** | Sentry is wired in code and **switched off in all six build profiles** — confirmed on-device. The nightly Sentry triage knows php/react/webuk and not mobile |
-| 16 | Distribution & update lever | **Weak (new row)** | Nothing has ever been distributed. No force-update lever. `expo-updates` unused in app code. Rollback wrapper absent. The public-download channel could not be published to until this session |
+| 15 | Observability & ops | **Adequate (was Weak, same day)** | Sentry is still off in all six profiles, but every report now ALSO goes to our own API and is logged at `error`, so a crash reaches the owner with no account, no DSN and no owner action. 13 report sites redirected; a credential leak in one of them fixed |
+| 16 | Distribution & update lever | **Adequate (was Weak, same day)** | **The force-update lever is complete and proven end-to-end on a device.** Server refuses an old build with 426; the app replaces its whole UI with a blocking screen. `expo-updates` still unused; rollback wrapper still absent |
 | 17 | Store readiness | **Unmeasured (new row)** | No listing, screenshots, public privacy URL or Data Safety answers. `versionCode` is 2 and `autoIncrement` never exercised. Two policy risks flagged below |
 
 ---
@@ -305,7 +305,7 @@ No startup-time budget, no bundle-size ceiling, no scroll measurement. The web p
 has Lighthouse in CI; mobile has no equivalent number, so "the app feels slow" cannot be
 answered with evidence.
 
-## 15. Observability and ops — Weak (new row)
+## 15. Observability and ops — Adequate (was Weak, same day)
 
 ```bash
 grep -n "SENTRY" mobile/eas.json
@@ -314,23 +314,65 @@ grep -n "SENTRY" mobile/eas.json
 → six occurrences, all `SENTRY_DISABLE_AUTO_UPLOAD: "true"`, and
 **`EXPO_PUBLIC_SENTRY_DSN` appears in no build profile at all.**
 
-Confirmed from the device log on launch:
+That is unchanged, and confirmed from the device log at launch:
 
 > `[env] NOTE: EXPO_PUBLIC_SENTRY_DSN is not set. Crash reporting (Sentry) is disabled.`
 
-So Sentry is wired in code and switched off in every build. Consequences:
+### What was actually wrong, which was worse than a missing account
 
-- A crash in a member's hands produces no signal anywhere.
-- The `default:` case of the deep-link mapper reports unhandled links via
-  `Sentry.captureMessage` — i.e. the one diagnostic that exists reports into nothing.
-- The nightly Sentry triage (`scripts/sentry-triage.mjs`) knows `php`, `react` and
-  `webuk`. There is no mobile project, so even a DSN would not reach the automation.
+The app produced **13 kinds of diagnostic** — the crash boundary, push-registration
+failures, an unexpected feed shape, a security-integrity warning, storage write failures,
+the unhandled-deep-link warning, and ten API "contract drift" detectors — and every single
+one reported to Sentry alone. With no DSN anywhere, all thirteen went nowhere.
 
-**Owner action, and only the owner can do it:** create a Sentry project for the mobile
-app and set its DSN. Until then, treat every "no crashes reported" statement about mobile
-as meaningless.
+Two compounding details:
 
-## 16. Distribution and update lever — Weak (new row)
+- **The warning about the missing warnings was itself suppressed.** `lib/env.ts` announced
+  "crash reporting is disabled" through a helper that is silent unless `__DEV__`. So the
+  only audience who could ever see it was someone already running a development build.
+- **One of the reports leaked a credential.** `navigateToLink` sent
+  `[DeepLink] Unhandled link: ${link}` with the whole URL — and one of the links this app
+  handles is a password reset, whose token is in the URL. A member tapping a slightly
+  wrong reset link would have shipped a live credential to a third-party service.
+
+### What now happens instead
+
+`mobile/lib/observability/report.ts` sends every report to **two** destinations: Sentry
+(a harmless no-op without a DSN) **and** `POST /api/app/log`, which already existed, is
+rate-limited, and writes into the Laravel log. Crashes are logged at `error`, which is the
+level the `sentry` log channel captures — so a mobile crash reaches the PHP project and
+the nightly triage that already exists.
+
+```bash
+curl -X POST http://127.0.0.1:8090/api/app/log -H 'Content-Type: application/json'   -d '{"event":"mobile_error","version":"1.2.0","platform":"mobile","data":{"message":"probe"}}'
+```
+
+→ `200`, and in the container log:
+`development.ERROR: [APP LOG] Event: mobile_error | Version: 1.2.0 …` with `tenant_id` and
+`request_id` attached. Measured, not assumed.
+
+**The point: this needs no account, no DSN and no owner action.** Crash reporting for
+mobile is working today.
+
+Guards, because "reports into a void" is invisible to any behavioural test:
+`lib/observability/reportingWiring.test.ts` fails if anything reports to Sentry directly,
+if the crash boundary stops using the reporter, if the deep-link report regains the whole
+URL, or if reporting is put behind a dynamic import again.
+
+### Still outstanding, and still owner-only
+
+A **Sentry project for mobile** would add grouping, release health and stack symbolication,
+none of which the server log gives. `scripts/sentry-triage.mjs` now has a `mobile` slot
+waiting for `SENTRY_PROJECT_MOBILE`. Two commands from the owner: create the project, set
+the DSN as an EAS environment variable. Deliberately not done here — it is an account
+action, and this session does not touch the owner's external accounts.
+
+🔴 One dependency worth stating: routing mobile crashes into Sentry relies on production
+setting `LOG_STACK=daily,stderr,sentry` (see `.env.example`). Without it they still land in
+the log file, which is where they landed before — so the change cannot make things worse,
+but it is worth confirming.
+
+## 16. Distribution and update lever — Adequate (was Weak, same day)
 
 ```bash
 node -e "const e=require('./mobile/eas.json'); for(const [n,p] of Object.entries(e.build)) console.log(n, p.channel, p.distribution, p.autoIncrement)"
@@ -339,25 +381,68 @@ node -e "const e=require('./mobile/eas.json'); for(const [n,p] of Object.entries
 → `development/local-emulator` have no channel; `preview`, `staging`, `website`,
 `production` do; only `production` sets `autoIncrement`.
 
+### 🔴 The force-update lever is complete, and proven on a device
+
+This was the one item on the whole scorecard that **could not be retrofitted**: a binary
+already on someone's phone can only be told "you must update" if that copy already knows
+how to ask. It now exists on both sides, and it was verified end to end rather than
+reasoned about.
+
+- **Server:** `App\Http\Middleware\EnforceMobileMinimumVersion` reads
+  `X-Nexus-Mobile-Version` on every request and refuses anything below
+  `config('mobile.expo.minimum_version')` with **426 Upgrade Required**, carrying the
+  minimum, the current version and the update URL.
+- **Client:** `lib/api/client.ts` turns a 426 into a record in
+  `lib/updates/updateRequiredStore.ts`, and `UpdateRequiredGate` — mounted above the
+  tenant, auth and error-boundary providers — **replaces the entire app** with
+  `UpdateRequiredScreen`, translated into all 7 locales.
+
+Proof, 2026-08-19, on emulator `nexus_test` with the server minimum temporarily raised to
+`99.0.0`:
+
+```bash
+curl -s -o - -w '%{http_code}' http://127.0.0.1:8090/api/v2/feed   -H 'X-Nexus-Mobile-Version: 1.2.0' -H 'X-Tenant-Slug: hour-timebank'
+```
+
+→ `426` with `"code":"APP_UPDATE_REQUIRED"`, while the same request **without** the header
+returned a normal `401` — i.e. the web frontend is untouched. On the device the app showed
+"Time to update" with the server-supplied button, and reverting the minimum restored normal
+service on the next launch, so the block is not sticky.
+
+Design decisions that are load-bearing (all pinned by tests, several mutation-verified):
+
+- **An absent header is allowed.** Everything without it is the web app, the Capacitor
+  wrapper (which polls `/api/app/check-version` instead), or a server-to-server caller.
+  Refusing unknown callers would take the website down.
+- **It fails open.** Any error while deciding is logged and the request proceeds.
+- **`/api/app/*` is exempt**, so a locked-out copy can still ask what version it needs —
+  otherwise "please update" becomes a dead end.
+- **426, not 403.** The client treats 401/403 as a session decision and would sign the
+  member out instead of asking them to update.
+- **The update URL comes from the server**, because the copies that need it are exactly
+  the ones that cannot be updated any other way.
+- **There is no dismiss.** The API refuses every request from this build, so a "continue
+  anyway" would lead to a wall of unexplained failures.
+
+The registration is tested separately from the logic
+(`MobileVersionGateRegistrationTest`), because a unit test of `handle()` passes just as
+happily when the middleware is not wired into `bootstrap/app.php` at all — verified by
+mutation: removing the registration turns that test red.
+
+### Still open here
+
 - **Nothing has ever been distributed.** No artefact has reached a member.
-- **There is no force-update lever, and this is the one item that cannot be
-  retrofitted.** A binary already installed cannot be told to update unless the shipped
-  code already knows how to ask. Half of it landed this session — every API request now
-  carries `X-Nexus-Mobile-Version` — so the server can *see* stale clients. The blocking
-  screen and the server-side minimum version do not exist yet.
-- **`expo-updates` is unused in app code**, so a published over-the-air update is picked
-  up only on a later cold start, silently. No "update ready — restart" prompt exists.
+- **`expo-updates` is unused in app code**, so a published over-the-air update is picked up
+  only on a later cold start, silently. No "update ready — restart" prompt exists.
 - **No rollback wrapper.** `eas update:rollback` exists as a CLI command with none of the
-  guards that `publish-update.mjs` applies.
-- Fixed this session: the `website` channel — the profile behind the APK that
-  `DISTRIBUTION.md` designates for public download, and with no store submission
-  configured the **only** route to a member — had no publish path at all. The intended
-  first public artefact was the one build that could never be sent a fix.
+  guards `publish-update.mjs` applies.
+- Fixed earlier this session: the `website` channel — the profile behind the APK that
+  `DISTRIBUTION.md` designates for public download, and the only current route to a
+  member — had no publish path at all.
 
 **Hard date: certificate pinning expires 2027-01-01 and the gate requires 90 days'
 headroom, so `verify:network-security` turns red around 2026-10-03** — and it is in the
-release gate, so it blocks web deploys too, not just mobile. `mobile/scripts/get-cert-pins.sh`
-exists to refresh the pins.
+release gate, so it blocks web deploys too. `mobile/scripts/get-cert-pins.sh` refreshes it.
 
 ## 17. Store readiness — Unmeasured (new row)
 
