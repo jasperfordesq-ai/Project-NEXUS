@@ -177,17 +177,22 @@
   }
 }
 
+// Unread-count chip in the header nav. MOJ-badge shaped (near-square corners,
+// bold, tabular digits) rather than the previous fully-rounded pill, which read
+// as a phone-app notification bubble next to GOV.UK nav type. Type size stays
+// on the scale via govuk-font-size; the 20px line-height keeps the chip height.
 .nexus-alpha-nav-badge {
   display: inline-block;
   margin-inline-start: govuk-spacing(1);
   min-width: 20px;
   padding: 0 govuk-spacing(1);
-  border-radius: 10px;
+  border-radius: 2px;
   background: govuk-colour("blue");
   color: govuk-colour("white");
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 20px;
+  // 16 is the smallest point on the v6 type scale (there is no 14).
+  @include govuk-font-size($size: 16, $line-height: 20px);
+  @include govuk-typography-weight-bold;
+  @include govuk-font-tabular-numbers;
   text-align: center;
 }
 
@@ -851,6 +856,14 @@ body.app-timeout-modal--open {
 
 .app-star-rating__input:focus + .app-star-rating__label {
   @include govuk-focused-box;
+}
+
+// A mouse click on a star label focuses the hidden input, so the label grew a
+// focus ring mid-click that read as a glitch on top of its scale() hover
+// transform. Keyboard focus (which matches :focus-visible) keeps the full ring.
+.app-star-rating__input:focus:not(:focus-visible) + .app-star-rating__label {
+  outline: none;
+  box-shadow: none;
 }
 
 // Legal document contents list, built on the server from the document's own

@@ -293,6 +293,8 @@ return [
         'pay_by_card_hint' => 'お支払いを完了するには、当社の安全な決済プロバイダーに移動します。',
         'ship_heading' => '出荷済みとしてマークする',
         'ship_tracking_label' => '追跡番号 (オプション)',
+        'ship_tracking_url_label' => '追跡リンク（オプション）',
+        'ship_method_label' => '発送または配達方法（オプション）',
         'confirm_heading' => '配送の確認',
         'confirm_warning' => '商品を受け取った後にのみ確認してください。これにより、注文が販売者に解放されます。',
         'cancel_heading' => '注文をキャンセルする',

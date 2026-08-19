@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Approuvez ou refusez les bénévoles qui ont postulé à vos opportunités.',
         'applications_empty' => 'Il n\'y a aucune demande en attente d\'une décision.',
         'applicant_message' => 'Message de la part du candidat',
+        'org_note_label' => 'Note pour le candidat (facultatif)',
+        'org_note_hint' => 'Le candidat verra cette note avec votre décision.',
         'applicant_unknown' => 'Un bénévole',
         'application_for' => 'pour :name',
         'opportunity_label' => 'Opportunité',

@@ -33712,6 +33712,12 @@ describe('shared accessible frontend shell', () => {
     expect(seller.text).toContain('The order was marked as shipped.');
     expect(seller.text).toContain('Garden chair');
     expect(seller.text).toContain('Mark as shipped');
+    // The ship handler has always read these two alongside tracking_number;
+    // the form now emits them (a seller previously could not pass a tracking link).
+    expect(seller.text).toContain('name="tracking_url"');
+    expect(seller.text).toContain('Tracking link (optional)');
+    expect(seller.text).toContain('name="shipping_method"');
+    expect(seller.text).toContain('Postage or delivery method (optional)');
     expect(seller.text).not.toContain('action="/marketplace/orders/92/cancel"');
     expect(seller.text).not.toContain('Laravel Blade route');
   });
@@ -37235,6 +37241,10 @@ describe('shared accessible frontend shell', () => {
     expect(manageResponse.text).toContain('Approving accepts this volunteer for the opportunity. Declining lets them know they were not selected.');
     expect(manageResponse.text).toContain('for Alex Applicant');
     expect(manageResponse.text).toContain('method="post" action="/volunteering/organisations/42/applications/91"');
+    // The decision handler has always sent org_note (the applicant sees it);
+    // the form now offers the field.
+    expect(manageResponse.text).toContain('name="org_note"');
+    expect(manageResponse.text).toContain('Note for the applicant (optional)');
     expect(manageResponse.text).toContain('Sam Logger');
     expect(manageResponse.text).toContain('2.5');
     expect(manageResponse.text).toContain('3 August 2026');

@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Aprove ou recuse os voluntários que se candidataram às suas oportunidades.',
         'applications_empty' => 'Não há candidaturas aguardando uma decisão.',
         'applicant_message' => 'Mensagem do candidato',
+        'org_note_label' => 'Nota para o candidato (opcional)',
+        'org_note_hint' => 'O candidato verá esta nota juntamente com a sua decisão.',
         'applicant_unknown' => 'Um voluntário',
         'application_for' => 'para :name',
         'opportunity_label' => 'Oportunidade',

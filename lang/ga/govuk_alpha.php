@@ -4493,6 +4493,8 @@ return [
         'applications_description' => 'Ceadaigh nó diúltaigh do dhaoine deonacha atá iarrtha ar do dheiseanna.',
         'applications_empty' => 'Níl aon iarratais ag fanacht ar chinneadh.',
         'applicant_message' => 'Teachtaireacht ón iarratasóir',
+        'org_note_label' => 'Nóta don iarratasóir (roghnach)',
+        'org_note_hint' => 'Feicfidh an t-iarratasóir an nóta seo in éineacht le do chinneadh.',
         'applicant_unknown' => 'Oibrí deonach',
         'application_for' => 'do :name',
         'opportunity_label' => 'Deis',

@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'あなたの機会に応募したボランティアを承認または拒否してください。',
         'applications_empty' => '決定を待っている申請はありません。',
         'applicant_message' => '応募者からのメッセージ',
+        'org_note_label' => '応募者へのメモ（オプション）',
+        'org_note_hint' => '応募者はこのメモをあなたの決定と一緒に見ることができます。',
         'applicant_unknown' => 'ボランティア',
         'application_for' => ':name へ',
         'opportunity_label' => '機会',

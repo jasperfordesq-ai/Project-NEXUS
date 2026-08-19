@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Approva o rifiuta i volontari che hanno fatto domanda per le tue opportunità.',
         'applications_empty' => 'Non ci sono domande in attesa di una decisione.',
         'applicant_message' => 'Messaggio dal richiedente',
+        'org_note_label' => 'Nota per il richiedente (facoltativo)',
+        'org_note_hint' => 'Il richiedente vedrà questa nota insieme alla tua decisione.',
         'applicant_unknown' => 'Un volontario',
         'application_for' => 'per :name',
         'opportunity_label' => 'Opportunità',

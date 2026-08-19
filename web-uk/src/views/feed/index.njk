@@ -264,11 +264,16 @@
                 {% endif %}
               {% endif %}
 
-              <p class="govuk-body-s nexus-alpha-meta">
-                {{ tc("feed.likes", post.likeCount, { count: post.likeCount }) }}
-                <span aria-hidden="true"> &middot; </span>
-                {{ tc("feed.comments", post.commentCount, { count: post.commentCount }) }}
-              </p>
+              {# Counts only when there is something to count: a silent card used to
+                 stack "No likes · No comments" AND "No reactions" above its buttons,
+                 three lines of nothing on every quiet post. #}
+              {% if post.likeCount > 0 or post.commentCount > 0 %}
+                <p class="govuk-body-s nexus-alpha-meta">
+                  {{ tc("feed.likes", post.likeCount, { count: post.likeCount }) }}
+                  <span aria-hidden="true"> &middot; </span>
+                  {{ tc("feed.comments", post.commentCount, { count: post.commentCount }) }}
+                </p>
+              {% endif %}
               <div class="govuk-button-group govuk-!-margin-bottom-3">
                 <form action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/like') }}" method="post">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -286,7 +291,7 @@
 
               {% if post.type == "post" %}
                 <div class="nexus-alpha-reactions govuk-!-margin-bottom-3">
-                  <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>
+                  {% if post.reactionTotal > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>{% endif %}
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("feed_t1.reactions_legend") }}</legend>
                     <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">

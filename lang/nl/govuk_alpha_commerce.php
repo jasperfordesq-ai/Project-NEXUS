@@ -293,6 +293,8 @@ return [
         'pay_by_card_hint' => 'U wordt doorgestuurd naar onze beveiligde betalingsprovider om uw betaling af te ronden.',
         'ship_heading' => 'Markeer als verzonden',
         'ship_tracking_label' => 'Trackingnummer (optioneel)',
+        'ship_tracking_url_label' => 'Trackinglink (optioneel)',
+        'ship_method_label' => 'Verzend- of bezorgmethode (optioneel)',
         'confirm_heading' => 'Bevestig de levering',
         'confirm_warning' => 'Bevestig pas nadat u het artikel heeft ontvangen. Hierdoor wordt de bestelling vrijgegeven aan de verkoper.',
         'cancel_heading' => 'Bestelling annuleren',

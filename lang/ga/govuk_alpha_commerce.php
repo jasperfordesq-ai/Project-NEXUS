@@ -294,6 +294,8 @@ return [
         'pay_by_card_hint' => 'Tabharfar chuig ár soláthraí íocaíochta slán thú chun d’íocaíocht a chomhlánú.',
         'ship_heading' => 'Marcáil mar seolta',
         'ship_tracking_label' => 'Uimhir rianaithe (roghnach)',
+        'ship_tracking_url_label' => 'Nasc rianaithe (roghnach)',
+        'ship_method_label' => 'Modh postais nó seachadta (roghnach)',
         'confirm_heading' => 'Deimhnigh an seachadadh',
         'confirm_warning' => 'Ná deimhnigh ach nuair a bheidh an t-earra faighte agat. Scaoileann sé seo an t-ordú chuig an díoltóir.',
         'cancel_heading' => 'Cealaigh ordú',

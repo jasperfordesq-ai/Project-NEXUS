@@ -293,6 +293,8 @@ return [
         'pay_by_card_hint' => 'Verrai indirizzato al nostro fornitore di servizi di pagamento sicuro per completare il pagamento.',
         'ship_heading' => 'Contrassegna come spedito',
         'ship_tracking_label' => 'Numero di tracciamento (facoltativo)',
+        'ship_tracking_url_label' => 'Link di tracciamento (facoltativo)',
+        'ship_method_label' => 'Metodo di spedizione o consegna (facoltativo)',
         'confirm_heading' => 'Conferma la consegna',
         'confirm_warning' => 'Conferma solo dopo aver ricevuto l\'articolo. Questo rilascia l\'ordine al venditore.',
         'cancel_heading' => 'Annulla l\'ordine',

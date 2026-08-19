@@ -293,6 +293,8 @@ return [
         'pay_by_card_hint' => 'Serás llevado a nuestro proveedor de pago seguro para completar tu pago.',
         'ship_heading' => 'Marcar como enviado',
         'ship_tracking_label' => 'Número de seguimiento (opcional)',
+        'ship_tracking_url_label' => 'Enlace de seguimiento (opcional)',
+        'ship_method_label' => 'Método de envío o entrega (opcional)',
         'confirm_heading' => 'Confirmar entrega',
         'confirm_warning' => 'Confirme solo una vez que haya recibido el artículo. Esto libera el pedido al vendedor.',
         'cancel_heading' => 'Cancelar pedido',

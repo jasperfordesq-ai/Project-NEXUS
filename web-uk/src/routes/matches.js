@@ -129,7 +129,7 @@ function normalizeMatch(match = {}, t, board = false, formatRelativeTime = () =>
   };
 }
 
-function statsFor(matches) {
+function statsFor(matches, formatNumber) {
   const total = matches.length;
   const avgScore = total > 0
     ? Math.round(matches.reduce((sum, item) => sum + item.pct, 0) / total)
@@ -141,9 +141,16 @@ function statsFor(matches) {
     }
   });
 
+  // Intl's percent style owns the digits AND the sign placement — the template
+  // previously appended a literal "%", which is wrong for Arabic and Japanese.
+  const percent = typeof formatNumber === 'function'
+    ? (value) => formatNumber(value / 100, { style: 'percent', maximumFractionDigits: 0 })
+    : (value) => `${value}%`;
+
   return {
     total,
     avgScore,
+    avgScoreLabel: percent(avgScore),
     hotMatches: matches.filter((item) => item.pct >= 80).length,
     sourceTypes: Object.values(sourceCounts).filter((count) => count > 0).length,
     sourceCounts
@@ -195,7 +202,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     if (isAuthError(error)) throw error;
     errorMessage = res.locals.t('error_pages.503_body');
   }
-  const stats = statsFor(matches);
+  const stats = statsFor(matches, res.locals.formatLocaleNumber);
 
   res.render('matches/index', {
     title: 'Your matches',
@@ -225,7 +232,7 @@ router.get('/board', requireAuth, asyncRoute(async (req, res) => {
     if (isAuthError(error)) throw error;
     errorMessage = res.locals.t('error_pages.503_body');
   }
-  const stats = statsFor(matches);
+  const stats = statsFor(matches, res.locals.formatLocaleNumber);
   const filteredMatches = visibleMatches(matches, activeSource);
 
   res.render('matches/board', {

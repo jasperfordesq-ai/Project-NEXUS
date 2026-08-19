@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Zatwierdź lub odrzuć wolontariuszy, którzy zgłosili się do Twoich ofert.',
         'applications_empty' => 'Nie ma wniosków oczekujących na decyzję.',
         'applicant_message' => 'Wiadomość od wnioskodawcy',
+        'org_note_label' => 'Notatka dla wnioskodawcy (opcjonalnie)',
+        'org_note_hint' => 'Wnioskodawca zobaczy tę notatkę wraz z Twoją decyzją.',
         'applicant_unknown' => 'Wolontariusz',
         'application_for' => 'dla :name',
         'opportunity_label' => 'Oferta',

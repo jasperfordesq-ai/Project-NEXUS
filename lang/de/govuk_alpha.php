@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Genehmigen oder ablehnen Sie Freiwillige, die sich für Ihre Möglichkeiten beworben haben.',
         'applications_empty' => 'Es gibt keine Anträge, die auf eine Entscheidung warten.',
         'applicant_message' => 'Nachricht vom Antragsteller',
+        'org_note_label' => 'Anmerkung für den Antragsteller (optional)',
+        'org_note_hint' => 'Der Antragsteller sieht diese Anmerkung zusammen mit Ihrer Entscheidung.',
         'applicant_unknown' => 'Ein Freiwilliger',
         'application_for' => 'für :name',
         'opportunity_label' => 'Gelegenheit',

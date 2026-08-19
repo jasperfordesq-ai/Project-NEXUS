@@ -306,6 +306,8 @@ return [
         'pay_by_card_hint' => 'You will be taken to our secure payment provider to complete your payment.',
         'ship_heading' => 'Mark as shipped',
         'ship_tracking_label' => 'Tracking number (optional)',
+        'ship_tracking_url_label' => 'Tracking link (optional)',
+        'ship_method_label' => 'Postage or delivery method (optional)',
         'confirm_heading' => 'Confirm delivery',
         'confirm_warning' => 'Only confirm once you have received the item. This releases the order to the seller.',
         'cancel_heading' => 'Cancel order',

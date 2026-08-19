@@ -4541,6 +4541,8 @@ return [
         'applications_description' => 'Approve or decline volunteers who have applied to your opportunities.',
         'applications_empty' => 'There are no applications awaiting a decision.',
         'applicant_message' => 'Message from the applicant',
+        'org_note_label' => 'Note for the applicant (optional)',
+        'org_note_hint' => 'The applicant will see this note with your decision.',
         'applicant_unknown' => 'A volunteer',
         'application_for' => 'for :name',
         'opportunity_label' => 'Opportunity',

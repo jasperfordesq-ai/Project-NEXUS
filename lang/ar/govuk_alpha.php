@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'وافق أو ارفض المتطوعين الذين قدموا طلبات لفرصك.',
         'applications_empty' => 'لا توجد طلبات تنتظر قرارًا.',
         'applicant_message' => 'رسالة من المتقدم',
+        'org_note_label' => 'ملاحظة للمتقدم (اختياري)',
+        'org_note_hint' => 'سيرى المتقدم هذه الملاحظة مع قرارك.',
         'applicant_unknown' => 'متطوع',
         'application_for' => 'لـ :name',
         'opportunity_label' => 'فرصة',

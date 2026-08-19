@@ -4491,6 +4491,8 @@ return [
         'applications_description' => 'Goedkeuren of weigeren van vrijwilligers die zich hebben aangemeld voor uw kansen.',
         'applications_empty' => 'Er zijn geen aanvragen die wachten op een beslissing.',
         'applicant_message' => 'Bericht van de aanvrager',
+        'org_note_label' => 'Opmerking voor de aanvrager (optioneel)',
+        'org_note_hint' => 'De aanvrager ziet deze opmerking samen met uw beslissing.',
         'applicant_unknown' => 'Een vrijwilliger',
         'application_for' => 'voor :name',
         'opportunity_label' => 'Kans',

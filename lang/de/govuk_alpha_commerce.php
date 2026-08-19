@@ -293,6 +293,8 @@ return [
         'pay_by_card_hint' => 'Sie werden zu unserem sicheren Zahlungsanbieter weitergeleitet, um Ihre Zahlung abzuschließen.',
         'ship_heading' => 'Als versendet markieren',
         'ship_tracking_label' => 'Tracking-Nummer (optional)',
+        'ship_tracking_url_label' => 'Sendungsverfolgungslink (optional)',
+        'ship_method_label' => 'Versand- oder Lieferart (optional)',
         'confirm_heading' => 'Bestätigen Sie die Lieferung',
         'confirm_warning' => 'Bestätigen Sie erst, wenn Sie den Artikel erhalten haben. Dadurch wird die Bestellung an den Verkäufer freigegeben.',
         'cancel_heading' => 'Bestellung stornieren',

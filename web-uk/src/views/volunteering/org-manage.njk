@@ -88,6 +88,13 @@
           {% endif %}
           <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            {# The handler has always sent org_note with the decision (and the
+               applicant sees it on their application) — the form never offered it. #}
+            <div class="govuk-form-group govuk-!-margin-bottom-2">
+              <label class="govuk-label" for="org_note_{{ application.id }}">{{ t("govuk_alpha.vol_org.org_note_label") }}</label>
+              <div id="org-note-hint-{{ application.id }}" class="govuk-hint">{{ t("govuk_alpha.vol_org.org_note_hint") }}</div>
+              <textarea class="govuk-textarea" id="org_note_{{ application.id }}" name="org_note" rows="2" maxlength="1000" aria-describedby="org-note-hint-{{ application.id }}"></textarea>
+            </div>
             <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-1">{{ t("govuk_alpha.vol_clarity.org_application_action_hint") }}</p>
             <div class="govuk-button-group govuk-!-margin-top-0">
               <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="approve" data-module="govuk-button">{{ t("govuk_alpha.vol_org.approve") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.application_for", { name: application.applicant.name }) }}</span></button>
