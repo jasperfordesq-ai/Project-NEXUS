@@ -90,9 +90,14 @@
   <div class="govuk-!-margin-bottom-6">
     {% if isMember %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.you_are_member") }}</p></div>
-      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.link") }}</a></p>
-      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/notifications') }}">{{ t("govuk_alpha_groups.nav.notification_settings") }}</a></p>
-      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/files') }}">{{ t("govuk_alpha_groups.files.nav_files") }}</a></p>
+      {# One list, not three consecutive single-link paragraphs: these are a set
+         of related places to go, and a list says so to a screen reader ("list,
+         3 items") as well as tightening the spacing. #}
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.link") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/notifications') }}">{{ t("govuk_alpha_groups.nav.notification_settings") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/files') }}">{{ t("govuk_alpha_groups.files.nav_files") }}</a></li>
+      </ul>
       <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/leave') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("groups.leave"), classes: "govuk-button--warning govuk-!-margin-bottom-0" }) }}

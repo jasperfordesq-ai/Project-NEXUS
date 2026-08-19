@@ -23,32 +23,39 @@
   {% if leaderboard.impact.hasValues %}
     <h2 class="govuk-heading-m govuk-!-margin-top-2">{{ t("polish_gamify.community_impact_title") }}</h2>
     <p class="govuk-body govuk-!-margin-bottom-4">{{ t("polish_gamify.community_impact_desc") }}</p>
-    <div class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_members") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalMembers }}</dd>
-      </dl>
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_exchanges") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalExchanges }}</dd>
-      </dl>
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_hours") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalVolunteerHours }}</dd>
-      </dl>
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_listings") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalListings }}</dd>
-      </dl>
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_connections") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalConnections }}</dd>
-      </dl>
-      <dl class="nexus-alpha-stat">
-        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_badges") }}</dt>
-        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalBadgesAwarded }}</dd>
-      </dl>
-    </div>
+    {# One <dl> holding div-grouped pairs, matching wallet and home. This was
+       inverted — a plain <div> grid holding six separate <dl>s — so six unrelated
+       description lists were announced where there is one set of statistics.
+       The govuk-body-s / govuk-heading-m utilities were also doing nothing:
+       .nexus-alpha-stat dt/dd is more specific and wins, which is why the
+       numbers rendered at 36px rather than the 24px the markup asked for. They
+       are dropped rather than left looking effective. #}
+    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_members") }}</dt>
+        <dd>{{ leaderboard.impact.totalMembers }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_exchanges") }}</dt>
+        <dd>{{ leaderboard.impact.totalExchanges }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_hours") }}</dt>
+        <dd>{{ leaderboard.impact.totalVolunteerHours }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_listings") }}</dt>
+        <dd>{{ leaderboard.impact.totalListings }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_connections") }}</dt>
+        <dd>{{ leaderboard.impact.totalConnections }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_gamify.stat_total_badges") }}</dt>
+        <dd>{{ leaderboard.impact.totalBadgesAwarded }}</dd>
+      </div>
+    </dl>
   {% endif %}
 
   <form method="get" action="{{ urlFor('/leaderboard') }}" data-alpha-auto-submit class="govuk-!-margin-bottom-6">

@@ -19,7 +19,11 @@
   <body class="govuk-template__body">
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">{{ t("skip_to_content") }}</a>
     <div class="govuk-width-container">
-      <main class="govuk-main-wrapper" id="main-content">
+      {# tabindex="-1" matches layouts/base.njk. Without it the skip link above
+         points at an element that cannot take focus, so on an error page
+         "Skip to content" moved the viewport but not the keyboard position —
+         the one page where a lost visitor most needs the link to work. #}
+      <main class="govuk-main-wrapper" id="main-content" tabindex="-1">
         {% block mainContent %}{% endblock %}
       </main>
     </div>
@@ -28,9 +32,12 @@
         <div class="govuk-footer__meta">
           <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
             <div class="govuk-footer__meta-custom">
-              <p class="govuk-!-margin-bottom-2">{{ t("footer.licence") }}</p>
-              <p class="govuk-!-margin-bottom-2">{{ t("footer.attribution") }}</p>
-              <p class="govuk-!-margin-bottom-0">
+              {# govuk-body: these carried only a spacing utility, so the licence
+                 and attribution rendered at the browser's default 16px beside
+                 19px GDS copy. #}
+              <p class="govuk-body govuk-!-margin-bottom-2">{{ t("footer.licence") }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-2">{{ t("footer.attribution") }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0">
                 <a class="govuk-footer__link" href="https://github.com/jasperfordesq-ai/Project-NEXUS" rel="noopener noreferrer">{{ t("footer.source") }}</a>
               </p>
             </div>

@@ -33,14 +33,17 @@
       &nbsp;&middot;&nbsp;
       <a class="govuk-link govuk-link--no-visited-state{% if showUnreadOnly %} govuk-!-font-weight-bold{% endif %}" href="{{ urlFor('/notifications?filter=unread') }}"{% if showUnreadOnly %} aria-current="true"{% endif %}>{{ t("notifications.unread_filter") }}{% if unreadCount > 0 %} ({{ unreadCount }}){% endif %}</a>
     </p>
-    <div class="govuk-button-group govuk-!-margin-bottom-2">
-      {% if unreadCount > 0 %}
+    {# The condition moved outside the wrapper. With nothing unread this emitted
+       an empty button group that still carried its bottom margin, leaving an
+       unexplained gap above the list. #}
+    {% if unreadCount > 0 %}
+      <div class="govuk-button-group govuk-!-margin-bottom-2">
         <form method="post" action="{{ urlFor('/notifications/read-all') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("notifications.mark_all_read") }}</button>
         </form>
-      {% endif %}
-    </div>
+      </div>
+    {% endif %}
     {% if notifications and notifications.length > 0 %}
       <details class="govuk-details govuk-!-margin-bottom-2" data-module="govuk-details">
         <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("notifications.delete_all") }}</span></summary>

@@ -161,7 +161,14 @@
           <div class="govuk-inset-text"><p class="govuk-body">{{ t("polls.no_open") }}</p></div>
         {% endif %}
 
-        <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("polls.closed_section_title") }}</h2>
+        {# The open section above says "there are no open polls" when it is
+           empty; this one said nothing, so with no closed polls the member got
+           a "Closed polls" heading sitting over blank space. The heading is now
+           shown only when there is something under it — no new wording needed,
+           and the loop below already renders nothing in that case. #}
+        {% set anyClosed = false %}
+        {% for poll in polls %}{% if poll.status != "open" %}{% set anyClosed = true %}{% endif %}{% endfor %}
+        {% if anyClosed %}<h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("polls.closed_section_title") }}</h2>{% endif %}
         {% for poll in polls %}
           {% if poll.status != "open" %}
             <article class="nexus-alpha-card govuk-!-margin-bottom-6" id="poll-{{ poll.id }}">
