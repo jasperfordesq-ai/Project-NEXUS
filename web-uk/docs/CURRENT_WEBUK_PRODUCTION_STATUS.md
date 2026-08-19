@@ -1,6 +1,6 @@
 # Current Web UK Production Status (Goal W2)
 
-Last reviewed: 2026-08-17
+Last reviewed: 2026-08-19
 
 Status: **Canonical current — sole Web UK scoring source**
 
@@ -24,6 +24,59 @@ artefact.
 ## 🔴 How this number moved, and which rows went DOWN
 
 W1 banked `663/1000` (66.3%). W2 stands at `920/1000` (92.0%), rescored on 2026-08-13 (651 -> 710 -> 745 -> 730 -> 830 -> 836 -> 845 -> 851 -> 867 -> 873), then on 2026-08-16 (873 -> 917) when the two deferred production-evidence rows were re-derived against live measurement, then on 2026-08-17 (917 -> 920) when the route row's last deduction was closed by fetching both real community accessible domains. The later Irish-completion pass does not move the total: it closes the Irish blocker, while the localisation row's remaining deductions are cross-locale exact-English debt and 19 hardcoded page-title literals.
+
+### 🔴 2026-08-18/19 audit #5 — the number HOLDS at 920, and that is the honest answer
+
+A two-day audit prompted by the owner reporting that "several pages seem a bit off,
+the formatting isn't great" and suspecting remaining bugs. It found and fixed a great
+deal, and **earns nothing under the scoring rule below**, because every item repaired a
+fault that no cell had ever deducted. Recorded here so the work is visible without
+inflating the figure.
+
+**The cause of the reported off-ness.** 37 of this service's own CSS classes were used
+by 73 templates and defined by nothing, so they fell back to browser defaults: the
+members directory stacked instead of forming rows, card thumbnails sat above titles on
+the four main browse pages, threaded replies had no indentation at four levels of
+recursion, the chosen reaction and your own leaderboard row had no visible marking, job
+skills listed one per line, and blog/KB/legal articles rendered in browser-default
+typography. All 37 written; `tests/css-class-coverage.test.js` now fails the build on a
+class with no compiled rule.
+
+**Silent functional faults, none of which surfaced an error.** Choosing Private or
+Secret when converting an idea to a group produced a PUBLIC group (the visibility was
+never transmitted). Ideation drafts could never save or publish (the handler read field
+names the form does not send). "Every 2 weeks" recurring events were created weekly, and
+the check-in Print button did nothing, both because inline scripts are blocked by this
+service's own CSP. 110 templates silently dropped the session-timeout warning and the
+localised character counter by overriding the wrong layout block; the phase banner had
+the same defect and one page had already lost it.
+
+**Presentation and data.** Listing descriptions showed a literal `<br>`; marketplace
+pages showed raw enums; the seller page printed two values twice and fed a locale string
+to a progress bar (empty in comma-decimal locales); "1 votes"/"1 episodes"/"1 members"
+pluralisation; back link moved to the GDS position on 137 pages; 60 text/form pages
+constrained to a two-thirds column (108 deliberately left full width); error-page skip
+link made focusable; leaderboard statistics markup and size corrected; one genuine
+button wall (8 grey blocks) turned into links.
+
+**Stylesheet.** main.scss 2,643 → 1,372 lines: 157 rules nothing references, plus the
+unreachable `messages/conversation.njk` and the five rules only it used.
+
+**Why no row moves.** Route parity is unchanged at 707/707. The localisation row's two
+written deductions — 1,403 cross-locale byte-identical values and 19 hardcoded title
+literals — are both untouched; the untranslated ratchet held at 196. The manual WCAG row
+requires certification evidence, and while several real accessibility defects were fixed
+(skip-link focus, two missing nav landmarks, target size on the messages filter rows), no
+new manual certification was produced — **screenshots were impossible in that environment
+and the disposable e2e environment's port was occupied**, so the visual result of this
+work is still unseen on screen. That is a genuine gap, not a formality.
+
+**Deliberately not done, and why.** Thirteen counted labels remain wrong ("1 replies",
+"1 hours", "1 results" and similar) and 42 pages still lack a section caption. Neither has
+an existing translated twin to copy, so both need new plural forms and captions written in
+ten languages, including Irish, Arabic and Polish where the noun inflects. Guessing that
+grammar ships a different defect rather than a smaller one, and this project's rule is
+that Irish is hand-written. Left for a translator.
 
 ### 🔴 2026-08-14 continuation — the number held at 873 (the honest reason), then 2026-08-16 rose to 917 on production evidence
 
