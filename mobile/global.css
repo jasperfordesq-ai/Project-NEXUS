@@ -50,10 +50,28 @@
 @layer theme {
   :root {
     @variant dark {
-      /* Indigo/purple/cyan glow palette to match the web app */
-      --accent: oklch(0.71 0.16 280);            /* primary indigo */
-      --accent-foreground: oklch(0.98 0 0);
-      --accent-hover: oklch(0.65 0.16 280);
+      /* 🔴 The DEFAULT accent must equal FALLBACK_PRIMARY in
+       * lib/context/TenantContext.tsx (#006FEE). It was indigo, and that single
+       * disagreement WAS the two-brand-colour bug: `usePrimaryColor()` returns
+       * #006FEE when a community has no colour of its own, so every icon drawn by app
+       * code was NEXUS blue while every HeroUI button beside it was indigo.
+       *
+       * Per-community themes (generated/tenant-themes.css) fix the communities that
+       * HAVE a colour. This fixes the fallback — which is the majority case: nine of
+       * eleven live communities have no primary_color, and every brand-new one starts
+       * that way. Without this the fallback state still showed the clash it was
+       * supposed to avoid.
+       *
+       * 🔴 The SAME colour in both schemes, deliberately not lightened for dark. An
+       * earlier version lifted it and that broke 142 buttons in 52 files: they override
+       * their background to the community's un-lifted colour while their label follows
+       * --accent-foreground, so ink computed for the lifted shade landed on #006FEE at
+       * 3.83:1, down from white's 4.66:1. Keeping one colour means the theme and every
+       * override agree by construction. White label measures 4.66:1 on this blue.
+       * Guarded by lib/theme/defaultAccent.test.ts. */
+      --accent: rgb(0 111 238);
+      --accent-foreground: oklch(1 0 0);
+      --accent-hover: rgb(38 134 240);
 
       --background: oklch(0.13 0.02 280);        /* #0a0a0f */
       --foreground: oklch(0.94 0 0);
@@ -66,9 +84,11 @@
       --border-strong: oklch(1 0 0 / 20%);
     }
     @variant light {
-      --accent: oklch(0.55 0.20 280);
+      /* Matches FALLBACK_PRIMARY (#006FEE) — see the dark block above for why. White
+       * label measures 4.66:1 here, so it stays white. */
+      --accent: rgb(0 111 238);
       --accent-foreground: oklch(1 0 0);
-      --accent-hover: oklch(0.49 0.20 280);
+      --accent-hover: rgb(0 98 209);
       --border-strong: oklch(0 0 0 / 18%);
     }
   }

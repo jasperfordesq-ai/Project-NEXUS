@@ -19,13 +19,15 @@
     "`accent` is the community's own brand colour as stored in the database at",
     "tenants.configuration.primary_color. `accentDark` is optional: when omitted the",
     "generator lightens the accent for dark mode, mirroring what the platform default",
-    "does between its own light and dark values."
+    "does between its own light and dark values.",
+    "",
+    "ONLY communities whose colour DIFFERS from the platform default belong here. The",
+    "default accent in global.css is now FALLBACK_PRIMARY (#006FEE), which is what",
+    "usePrimaryColor() returns for a community with no colour of its own — so those",
+    "communities are already self-consistent and adding them here would generate a",
+    "theme identical to the default."
   ],
   "tenants": {
-    "hour-timebank": {
-      "accent": "#006FEE",
-      "note": "No primary_color set in the database, so this is the platform default NEXUS blue."
-    },
     "agoris": {
       "accent": "#0f766e",
       "note": "Teal. The only local tenant with a real primary_color, so it is the test case for a community whose colour is nothing like the platform default."

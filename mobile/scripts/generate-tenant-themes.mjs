@@ -149,11 +149,27 @@ export function themeName(slug, scheme) {
 
 function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks) {
   const baseHex = scheme === 'dark' ? (accentDarkHex ?? accentHex) : accentHex;
-  let accent = hexToRgb(baseHex);
+  const accent = hexToRgb(baseHex);
 
-  // With no explicit dark value, lift the accent towards white so it holds up on a
-  // dark ground — the same direction the platform default moves between its schemes.
-  if (scheme === 'dark' && !accentDarkHex) accent = shift(accent, 0.3);
+  // 🔴 The accent is NOT lightened for dark mode, and that is deliberate.
+  //
+  // An earlier version lifted it 30% towards white, mirroring what the platform's old
+  // indigo default did between its schemes. That broke 142 buttons across 52 files. Those
+  // buttons override their background to `usePrimaryColor()` — the community's UN-lifted
+  // colour — while their label still comes from `--accent-foreground`, which was computed
+  // for the LIFTED one. On NEXUS blue that put dark ink on #006FEE at 3.83:1, where it had
+  // previously been white at 4.66:1: a contrast regression introduced by the very change
+  // meant to fix the colours. No single label colour passes on both #006FEE and its
+  // lifted form, so the mismatch was structural, not a tuning problem.
+  //
+  // Keeping the accent at the community's actual colour in both schemes means the theme
+  // and every hand-written override are the same colour, so they cannot disagree — and it
+  // removes an invented transformation nobody asked for. A community that genuinely wants
+  // a different dark-mode shade can still say so with `accentDark`.
+  //
+  // Checked for both known colours: white label measures 4.66:1 on NEXUS blue and 5.47:1
+  // on the agoris teal, and each stays legible as a link on the dark ground (4.24:1 and
+  // 3.61:1).
 
   const foreground = foregroundFor(accent);
   const hover = shift(accent, scheme === 'dark' ? 0.12 : -0.12);
