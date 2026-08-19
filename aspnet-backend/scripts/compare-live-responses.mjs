@@ -182,6 +182,12 @@ async function ask(base, method, urlPath, tenant, token = null) {
 }
 
 
+/** Renders a capped diff list so the cap can never be read as the total. */
+function sample(list, total) {
+  const shown = list.join(', ');
+  return total > list.length ? `${shown}, … and ${total - list.length} more` : shown;
+}
+
 async function main() {
   const pathsFile = flag('paths', null);
   const specs = pathsFile
@@ -229,8 +235,8 @@ async function main() {
     const mark = verdict === 'MATCH' ? '✓' : verdict === 'MATCH_BUT_LIST_EMPTY' ? '~' : '✗';
     console.log(`${mark} ${verdict.padEnd(14)} ${String(laravel.status).padEnd(4)}→${String(aspnet.status).padEnd(4)} ${method} ${urlPath}`);
     if (verdict === 'SHAPE_DIFFERS') {
-      if (row.missing_in_aspnet.length) console.log(`      missing in ASP.NET: ${row.missing_in_aspnet.join(', ')}`);
-      if (row.extra_in_aspnet.length) console.log(`      extra in ASP.NET  : ${row.extra_in_aspnet.join(', ')}`);
+      if (row.missing_count) console.log(`      missing in ASP.NET (${row.missing_count}): ${sample(row.missing_in_aspnet, row.missing_count)}`);
+      if (row.extra_count) console.log(`      extra in ASP.NET   (${row.extra_count}): ${sample(row.extra_in_aspnet, row.extra_count)}`);
     }
   }
 

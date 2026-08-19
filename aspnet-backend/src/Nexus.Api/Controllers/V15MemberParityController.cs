@@ -319,19 +319,102 @@ public class V15MemberParityController : ControllerBase
         return listing == null ? NotFound(new { error = "Listing not found" }) : Ok(new { data = ListingDto(listing) });
     }
 
+    /// <summary>
+    /// POST /api/v2/listings — create a listing.
+    ///
+    /// 🔴 This validated NOTHING, and worse, it INVENTED DATA: an absent title became
+    /// the literal string "Untitled listing", an absent description was stored as null,
+    /// an unparseable type silently became "offer", and no category was ever required.
+    /// So a member — or a buggy client, or an empty form — could put a listing called
+    /// "Untitled listing" into a real community. The write harness found it on its first
+    /// run: Laravel answered 422 for the same body while this backend answered 201.
+    ///
+    /// Laravel refuses with ALL failures at once, 422, and Laravel's envelope:
+    ///   {"errors":[{"code":"VALIDATION_ERROR","message":"...","field":"title"}, …]}
+    /// Note the `field` key — a form uses it to mark the offending input.
+    ///
+    /// 🔴 THE RULES ARE PER-COMMUNITY CONFIGURATION, NOT CONSTANTS.
+    /// ListingService::validateData reads them from listing configuration, so hardcoding
+    /// them here would be wrong for any community that has changed them:
+    ///   listing.min_title_length        (default 5)
+    ///   listing.min_description_length  (default 20)
+    ///   listing.require_category        (default true)
+    ///   listing.allow_offers / allow_requests → the permitted `type` values
+    /// The same keys and defaults this backend already publishes in
+    /// /tenant/bootstrap's listing_config, so the switch and the enforcement finally
+    /// read the same rows.
+    /// </summary>
     [HttpPost("api/v2/listings")]
     public async Task<IActionResult> V2CreateListing([FromBody] JsonElement body)
     {
         var userId = CurrentUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
+        var tenantId = TenantId();
+        var config = await _db.Set<TenantConfig>().AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.Key.StartsWith("listing."))
+            .ToDictionaryAsync(c => c.Key, c => c.Value);
+
+        int ConfigInt(string key, int fallback, int min, int max) =>
+            config.TryGetValue($"listing.{key}", out var raw) && int.TryParse(raw, out var v)
+                ? Math.Clamp(v, min, max) : fallback;
+        bool ConfigBool(string key, bool fallback) =>
+            config.TryGetValue($"listing.{key}", out var raw)
+                ? raw is "1" or "true" or "True" or "TRUE" : fallback;
+
+        var minTitle = ConfigInt("min_title_length", 5, 1, 255);
+        var minDescription = ConfigInt("min_description_length", 20, 1, 10000);
+        var requireCategory = ConfigBool("require_category", true);
+
+        var allowedTypes = new List<string>();
+        if (ConfigBool("allow_offers", true)) allowedTypes.Add("offer");
+        if (ConfigBool("allow_requests", true)) allowedTypes.Add("request");
+
+        var title = GetString(body, "title");
+        var description = GetString(body, "description");
+        var typeRaw = GetString(body, "type");
+        var categoryId = GetInt(body, "category_id");
+
+        // 🔴 Collected, not short-circuited: Laravel reports every failure in one
+        // response so a form can mark all of its bad fields at once.
+        var errors = new List<object>();
+        void Fail(string field, string message) =>
+            errors.Add(new { code = "VALIDATION_ERROR", message, field });
+
+        if (string.IsNullOrWhiteSpace(title)) Fail("title", "The title field is required.");
+        else if (title.Trim().Length < minTitle)
+            Fail("title", $"The title field must be at least {minTitle} characters.");
+        else if (title.Trim().Length > 255)
+            Fail("title", "The title field must not be greater than 255 characters.");
+
+        if (string.IsNullOrWhiteSpace(description)) Fail("description", "The description field is required.");
+        else if (description.Trim().Length < minDescription)
+            Fail("description", $"The description field must be at least {minDescription} characters.");
+        else if (description.Trim().Length > 10000)
+            Fail("description", "The description field must not be greater than 10000 characters.");
+
+        if (string.IsNullOrWhiteSpace(typeRaw)) Fail("type", "The type field is required.");
+        else if (!allowedTypes.Contains(typeRaw.Trim().ToLowerInvariant()))
+            Fail("type", "The selected type is invalid.");
+
+        if (requireCategory && categoryId is null or <= 0)
+            Fail("category_id", "The category id field is required.");
+
+        if (errors.Count > 0)
+        {
+            return UnprocessableEntity(new { errors });
+        }
+
         var listing = new Listing
         {
-            TenantId = TenantId(),
+            TenantId = tenantId,
             UserId = userId.Value,
-            Title = GetString(body, "title") ?? "Untitled listing",
-            Description = GetString(body, "description"),
-            Type = Enum.TryParse<ListingType>(GetString(body, "type"), true, out var type) ? type : ListingType.Offer,
+            Title = title!.Trim(),
+            Description = description!.Trim(),
+            Type = string.Equals(typeRaw!.Trim(), "request", StringComparison.OrdinalIgnoreCase)
+                ? ListingType.Request
+                : ListingType.Offer,
+            CategoryId = categoryId,
             Status = ListingStatus.Active,
             Location = GetString(body, "location"),
             EstimatedHours = GetDecimal(body, "estimated_hours")

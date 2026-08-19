@@ -146,6 +146,13 @@ const stamp = (s) => `${s} ${RUN}`;
  *
  * `expect` is a documentation aid only — the verdict comes from comparing the two
  * live responses, never from this field.
+ *
+ * 🔴 `body(ctx)` receives a PER-BACKEND context, because some valid payloads cannot be
+ * written once for both. A listing needs a real category id, and the two backends mint
+ * different ids — so a single hardcoded body can only ever exercise the REFUSAL path.
+ * ctx.categoryId is resolved from each backend's own /api/v2/categories immediately
+ * before the run. Without this the corpus proved the two agree on rejecting a listing
+ * and said nothing about whether they agree on accepting one.
  */
 const CORPUS = [
   // ── auth lifecycle ─────────────────────────────────────────────────────────
@@ -188,15 +195,29 @@ const CORPUS = [
     body: () => ({ content: stamp('Write-harness post'), visibility: 'public' }),
   },
   {
-    name: 'create listing',
+    // 🔴 The SUCCESS path. Needs a per-backend category id and a description long
+    // enough to clear the configured minimum (20 characters by default), or it only
+    // ever measures the refusal.
+    name: 'create listing (valid)',
+    method: 'POST',
+    path: '/api/v2/listings',
+    body: (ctx) => ({
+      title: stamp('Write-harness listing'),
+      description: stamp('Created by the write-mode parity harness to exercise a valid create'),
+      type: 'offer',
+      category_id: ctx.categoryId,
+    }),
+  },
+  {
+    name: 'create listing (no category)',
     method: 'POST',
     path: '/api/v2/listings',
     body: () => ({
       title: stamp('Write-harness listing'),
-      description: stamp('Created by the write-mode parity harness'),
+      description: stamp('Created by the write-mode parity harness to exercise a valid create'),
       type: 'offer',
-      listing_type: 'offer',
     }),
+    expect: '422 when listing.require_category is on, which is the default',
   },
   {
     name: 'create listing (missing title)',
@@ -238,7 +259,25 @@ const CORPUS = [
   },
 ];
 
-async function send(base, spec, tenant, token) {
+/**
+ * Values that differ per backend and must be looked up rather than hardcoded.
+ * Resolved once per run, immediately before the corpus executes.
+ */
+async function resolveContext(base, tenant, token) {
+  const ctx = { categoryId: null };
+  try {
+    const r = await fetch(`${base}/api/v2/categories`, {
+      headers: { Accept: 'application/json', 'X-Tenant-ID': tenant, Authorization: `Bearer ${token}` },
+    });
+    const j = await r.json();
+    const rows = Array.isArray(j?.data) ? j.data : Array.isArray(j?.data?.items) ? j.data.items : [];
+    const first = rows.find((c) => Number.isInteger(c?.id));
+    if (first) ctx.categoryId = first.id;
+  } catch { /* leave null; the spec decides what to do without one */ }
+  return ctx;
+}
+
+async function send(base, spec, tenant, token, ctx) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -252,7 +291,7 @@ async function send(base, spec, tenant, token) {
     const response = await fetch(`${base}${spec.path}`, {
       method: spec.method,
       headers,
-      body: JSON.stringify(spec.body()),
+      body: JSON.stringify(spec.body(ctx)),
       signal: controller.signal,
     });
     const text = await response.text();
@@ -267,6 +306,12 @@ async function send(base, spec, tenant, token) {
   }
 }
 
+/** Renders a capped diff list so the cap can never be read as the total. */
+function sample(list, total) {
+  const shown = (list ?? []).join(', ');
+  return total > (list ?? []).length ? `${shown}, … and ${total - (list ?? []).length} more` : shown;
+}
+
 async function main() {
   const laravelToken = await login(LARAVEL, LARAVEL_AUTH, LARAVEL_TENANT);
   const aspnetToken = await login(ASPNET, ASPNET_AUTH, ASPNET_TENANT);
@@ -277,12 +322,16 @@ async function main() {
   console.log(`Run id  : ${RUN} (every create body carries it, so runs cannot collide)`);
   console.log(`Comparing ${CORPUS.length} mutations.\n`);
 
+  const laravelCtx = await resolveContext(LARAVEL, LARAVEL_TENANT, laravelToken);
+  const aspnetCtx = await resolveContext(ASPNET, ASPNET_TENANT, aspnetToken);
+  console.log(`Category id : Laravel ${laravelCtx.categoryId ?? '(none)'} / ASP.NET ${aspnetCtx.categoryId ?? '(none)'}`);
+
   const results = [];
   for (const spec of CORPUS) {
     // Sequential, not parallel: these mutate, and a later case may depend on the
     // state an earlier one left (accept-all before a gated write, for instance).
-    const laravel = await send(LARAVEL, spec, LARAVEL_TENANT, laravelToken);
-    const aspnet = await send(ASPNET, spec, ASPNET_TENANT, aspnetToken);
+    const laravel = await send(LARAVEL, spec, LARAVEL_TENANT, laravelToken, laravelCtx);
+    const aspnet = await send(ASPNET, spec, ASPNET_TENANT, aspnetToken, aspnetCtx);
 
     const verdict = classify(laravel, aspnet);
     const row = {
@@ -301,8 +350,8 @@ async function main() {
       `${mark} ${verdict.padEnd(21)} ${String(laravel.status).padEnd(4)}→${String(aspnet.status).padEnd(4)} `
       + `${spec.method.padEnd(5)} ${spec.path}   (${spec.name})`);
     if (verdict === 'SHAPE_DIFFERS') {
-      if (row.missing_in_aspnet?.length) console.log(`      missing in ASP.NET: ${row.missing_in_aspnet.join(', ')}`);
-      if (row.extra_in_aspnet?.length) console.log(`      extra in ASP.NET  : ${row.extra_in_aspnet.join(', ')}`);
+      if (row.missing_count) console.log(`      missing in ASP.NET (${row.missing_count}): ${sample(row.missing_in_aspnet, row.missing_count)}`);
+      if (row.extra_count) console.log(`      extra in ASP.NET   (${row.extra_count}): ${sample(row.extra_in_aspnet, row.extra_count)}`);
     }
   }
 

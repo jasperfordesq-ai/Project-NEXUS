@@ -168,12 +168,31 @@ function classify(laravel, aspnet) {
   return 'SHAPE_DIFFERS';
 }
 
+/**
+ * 🔴 The two lists are a SAMPLE, capped for readability — the counts are not.
+ *
+ * This cap was silently misleading before 2026-08-19: it emitted at most eight
+ * field names and nothing said so, so a listing-create response where Laravel
+ * returns 76 fields and this backend returns 11 was reported as "8 missing".
+ * Read as a total that is wrong by a factor of eight, and reviewing the sample
+ * looks like reviewing the difference.
+ *
+ * `missing_count` / `extra_count` are the real totals. Cite those; treat
+ * `missing_in_aspnet` / `extra_in_aspnet` as "the first few, to orient you".
+ */
+const DIFF_SAMPLE_LIMIT = 8;
+
 function describeShapeDiff(laravel, aspnet) {
   const l = fieldPaths(laravel.body);
   const a = fieldPaths(aspnet.body);
-  const missing = [...l].filter((f) => !a.has(f)).slice(0, 8);
-  const extra = [...a].filter((f) => !l.has(f)).slice(0, 8);
-  return { missing_in_aspnet: missing, extra_in_aspnet: extra };
+  const missing = [...l].filter((f) => !a.has(f));
+  const extra = [...a].filter((f) => !l.has(f));
+  return {
+    missing_count: missing.length,
+    extra_count: extra.length,
+    missing_in_aspnet: missing.slice(0, DIFF_SAMPLE_LIMIT),
+    extra_in_aspnet: extra.slice(0, DIFF_SAMPLE_LIMIT),
+  };
 }
 
 export { UNKNOWN_LIST, skeleton, fieldPaths, splitObject, compareSkeleton, classify, describeShapeDiff };
