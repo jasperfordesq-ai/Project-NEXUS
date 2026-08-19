@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/exchanges') }}">{{ t("actions.back_to_exchanges") }}</a>
@@ -39,7 +40,7 @@
   <span class="govuk-caption-xl">{{ t("exchanges.detail_title") }}</span>
   <h1 class="govuk-heading-xl">{{ exchange.listingTitle }}</h1>
   <p class="govuk-body-l">{{ exchange.roleText }}</p>
-  <strong class="govuk-tag {{ exchange.statusClass }} govuk-!-margin-bottom-4">{{ exchange.statusLabel }}</strong>
+  {{ govukTag({ text: exchange.statusLabel, classes: (exchange.statusClass) ~ " govuk-!-margin-bottom-4" }) }}
 
   {% if exchange.status in ["pending_provider", "pending_broker", "accepted", "in_progress", "pending_confirmation", "completed", "disputed", "cancelled", "declined", "expired"] %}
     <p class="govuk-body">{{ t("exchanges.status_descriptions." + exchange.status) }}</p>
@@ -86,9 +87,9 @@
         <dt class="govuk-summary-list__key">{{ t("exchanges.requester_confirmation_label") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if exchange.hasRequesterConfirmed %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("exchanges.confirmed") }}</strong>
+            {{ govukTag({ text: t("exchanges.confirmed"), classes: "govuk-tag--green" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--yellow">{{ t("exchanges.awaiting_confirmation") }}</strong>
+            {{ govukTag({ text: t("exchanges.awaiting_confirmation"), classes: "govuk-tag--yellow" }) }}
           {% endif %}
         </dd>
       </div>
@@ -96,9 +97,9 @@
         <dt class="govuk-summary-list__key">{{ t("exchanges.provider_confirmation_label") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if exchange.hasProviderConfirmed %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("exchanges.confirmed") }}</strong>
+            {{ govukTag({ text: t("exchanges.confirmed"), classes: "govuk-tag--green" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--yellow">{{ t("exchanges.awaiting_confirmation") }}</strong>
+            {{ govukTag({ text: t("exchanges.awaiting_confirmation"), classes: "govuk-tag--yellow" }) }}
           {% endif %}
         </dd>
       </div>

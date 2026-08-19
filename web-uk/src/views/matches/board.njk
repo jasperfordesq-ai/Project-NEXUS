@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% if statusMessage %}
@@ -69,7 +70,7 @@
                 {{ match.title }}
               {% endif %}
             </h2>
-            <strong class="govuk-tag govuk-tag--grey">{{ match.moduleLabel }}</strong>
+            {{ govukTag({ text: match.moduleLabel, classes: "govuk-tag--grey" }) }}
             {% if match.module == 'listing' %}
               <strong class="govuk-tag {% if match.type == 'request' %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ match.typeLabel }}</strong>
             {% endif %}
@@ -90,11 +91,11 @@
             <ul class="govuk-list nexus-alpha-inline-list govuk-!-margin-bottom-2">
               {% for reason in match.reasons %}
                 {% if loop.index <= 3 %}
-                  <li><strong class="govuk-tag govuk-tag--blue">{{ reason }}</strong></li>
+                  <li>{{ govukTag({ text: reason, classes: "govuk-tag--blue" }) }}</li>
                 {% endif %}
               {% endfor %}
               {% if match.reasons.length > 3 %}
-                <li><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_connections.matches.reasons_more", { count: match.reasons.length - 3 }) }}</strong></li>
+                <li>{{ govukTag({ text: t("govuk_alpha_connections.matches.reasons_more", { count: match.reasons.length - 3 }), classes: "govuk-tag--grey" }) }}</li>
               {% endif %}
             </ul>
           {% endif %}

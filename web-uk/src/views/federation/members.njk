@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -87,9 +88,9 @@
           {% if member.skills.length %}
             <p class="govuk-body-s govuk-!-margin-bottom-2 nexus-alpha-tag-list">
               {% for skill in member.visibleSkills %}
-                <strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong>
+                {{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}
               {% endfor %}
-              {% if member.moreSkillsLabel %}<strong class="govuk-tag govuk-tag--grey">{{ member.moreSkillsLabel }}</strong>{% endif %}
+              {% if member.moreSkillsLabel %}{{ govukTag({ text: member.moreSkillsLabel, classes: "govuk-tag--grey" }) }}{% endif %}
             </p>
           {% endif %}
 

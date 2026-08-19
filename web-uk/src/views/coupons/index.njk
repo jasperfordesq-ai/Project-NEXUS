@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ t("coupons.caption", { community: tenantName }) }}</span>
@@ -19,7 +20,7 @@
               <a class="govuk-link" href="{{ urlFor('/coupons/' + (coupon.id | string)) }}">{{ coupon.title }}</a>
             </h2>
             {% if coupon.discountLabel %}
-              <strong class="govuk-tag govuk-tag--green">{{ coupon.discountLabel }}</strong>
+              {{ govukTag({ text: coupon.discountLabel, classes: "govuk-tag--green" }) }}
             {% endif %}
           </div>
 

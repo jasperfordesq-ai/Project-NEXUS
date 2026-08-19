@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   {% set editNameError = status == "collection-name-required" %}
@@ -64,7 +65,7 @@
             {% endif %}
           </h2>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-            <strong class="govuk-tag govuk-tag--grey">{{ item.typeLabel }}</strong>
+            {{ govukTag({ text: item.typeLabel, classes: "govuk-tag--grey" }) }}
             {% if item.savedOn %}
               <span class="govuk-!-margin-left-1">{{ t("govuk_alpha_saved.detail.saved_on", { date: item.savedOn }) }}</span>
             {% endif %}

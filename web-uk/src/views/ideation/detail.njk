@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -41,9 +42,9 @@
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ challenge.title }}</h1>
     <span>
-      <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+      {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
       {% if challenge.is_featured %}
-        <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_ideation.detail.featured") }}</strong>
+        {{ govukTag({ text: t("govuk_alpha_ideation.detail.featured"), classes: "govuk-tag--yellow" }) }}
       {% endif %}
     </span>
   </div>
@@ -97,7 +98,7 @@
           <dt class="govuk-summary-list__key">{{ t("govuk_alpha_ideation.detail.tags") }}</dt>
           <dd class="govuk-summary-list__value">
             {% for tag in challenge.tags %}
-              <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ tag }}</strong>
+              {{ govukTag({ text: tag, classes: "govuk-tag--grey govuk-!-margin-right-1" }) }}
             {% endfor %}
           </dd>
         </div>
@@ -119,7 +120,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1" id="idea-{{ idea.id }}-title">{{ idea.title }}</h3>
-            <strong class="govuk-tag govuk-tag--blue">{{ idea.voteText }}</strong>
+            {{ govukTag({ text: idea.voteText, classes: "govuk-tag--blue" }) }}
           </div>
           {% if idea.description %}
             <p class="govuk-body govuk-!-margin-bottom-1">{{ idea.description | truncate(240) }}</p>

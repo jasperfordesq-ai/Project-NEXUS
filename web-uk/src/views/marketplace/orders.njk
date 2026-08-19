@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -41,7 +42,7 @@
       <section class="nexus-alpha-card govuk-!-margin-bottom-6">
         <div class="nexus-alpha-module-row">
           <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ order.orderNumberLabel }}</h2>
-          <strong class="govuk-tag {{ order.statusTagClass }}">{{ order.statusLabel }}</strong>
+          {{ govukTag({ text: order.statusLabel, classes: (order.statusTagClass) }) }}
         </div>
         <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-2">
           <div class="govuk-summary-list__row">

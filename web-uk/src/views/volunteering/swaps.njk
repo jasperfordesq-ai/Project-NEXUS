@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -90,8 +91,8 @@
       {% for swap in swaps %}
         <article class="nexus-alpha-card">
           <p class="govuk-!-margin-bottom-2">
-            <strong class="govuk-tag {{ swap.directionClassName }}">{{ swap.directionLabel }}</strong>
-            <strong class="govuk-tag {{ swap.status.className }}">{{ swap.status.label }}</strong>
+            {{ govukTag({ text: swap.directionLabel, classes: (swap.directionClassName) }) }}
+            {{ govukTag({ text: swap.status.label, classes: (swap.status.className) }) }}
           </p>
           {% if swap.direction == "sent" and swap.recipientName %}
             <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("vol_depth.swap_to", { name: swap.recipientName }) }}</p>

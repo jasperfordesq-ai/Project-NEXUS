@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 
 {% block mainContent %}
@@ -52,7 +53,7 @@
             <div class="nexus-alpha-card govuk-!-margin-bottom-4">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
                 {{ certificate.insuranceTypeLabel }}
-                <strong class="govuk-tag {{ certificate.statusTagClass }}">{{ certificate.statusLabel }}</strong>
+                {{ govukTag({ text: certificate.statusLabel, classes: (certificate.statusTagClass) }) }}
               </h3>
               <dl class="nexus-alpha-inline-list govuk-!-margin-bottom-0">
                 <div>

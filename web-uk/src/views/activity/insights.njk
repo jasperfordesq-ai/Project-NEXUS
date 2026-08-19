@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/activity') }}">{{ t("govuk_alpha_activity.insights.back_to_activity") }}</a>
@@ -48,8 +49,8 @@
       <p class="govuk-body">{{ t("govuk_alpha_activity.insights.chart_intro") }}</p>
       {% if activity.hasChart %}
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">
-          <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.chart_given") }}</strong>
-          <strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha_activity.insights.chart_received") }}</strong>
+          {{ govukTag({ text: t("govuk_alpha_activity.insights.chart_given"), classes: "govuk-tag--green" }) }}
+          {{ govukTag({ text: t("govuk_alpha_activity.insights.chart_received"), classes: "govuk-tag--turquoise" }) }}
         </p>
         <div role="img" aria-label="{{ t('govuk_alpha_activity.insights.chart_aria') }}">
           {% for month in activity.chartMonths %}
@@ -76,7 +77,7 @@
         <ul class="govuk-list govuk-list--spaced">
           {% for item in activity.timeline %}
             <li>
-              <strong class="govuk-tag {{ item.tagClass }}">{{ item.typeLabel }}</strong>
+              {{ govukTag({ text: item.typeLabel, classes: (item.tagClass) }) }}
               {% if item.text %} {{ item.text }}{% endif %}
               {% if item.dateLabel %}<span class="govuk-body-s nexus-alpha-meta"> - {{ item.dateLabel }}</span>{% endif %}
             </li>
@@ -119,7 +120,7 @@
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("polish_discovery.activity_net_balance") }}</dt>
             <dd class="govuk-summary-list__value">
-              <strong class="govuk-tag {{ activity.netBalanceInsight.tagClass }}">{{ activity.netBalanceInsight.label }}</strong>
+              {{ govukTag({ text: activity.netBalanceInsight.label, classes: (activity.netBalanceInsight.tagClass) }) }}
               <span class="govuk-visually-hidden">{{ activity.netBalanceInsight.meaning }}</span>
             </dd>
           </div>
@@ -135,10 +136,10 @@
               <li>
                 <span>{{ skill.name }}</span>
                 {% if skill.isOffering %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.skill_offering") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_activity.insights.skill_offering"), classes: "govuk-tag--green" }) }}
                 {% endif %}
                 {% if skill.isRequesting %}
-                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_activity.insights.skill_requesting") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_activity.insights.skill_requesting"), classes: "govuk-tag--blue" }) }}
                 {% endif %}
                 {% if skill.endorsementsLabel %}
                   <span class="govuk-body-s nexus-alpha-meta">{{ skill.endorsementsLabel }}</span>

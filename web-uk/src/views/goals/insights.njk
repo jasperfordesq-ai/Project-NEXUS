@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
@@ -31,7 +32,7 @@
         <dt class="govuk-summary-list__key">{{ t("govuk_alpha_goals.insights.next_checkin") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if insights.checkinDue %}
-            <strong class="govuk-tag govuk-tag--orange">{{ t("govuk_alpha_goals.insights.checkin_due") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_goals.insights.checkin_due"), classes: "govuk-tag--orange" }) }}
           {% else %}
             {{ insights.nextCheckinText }}
           {% endif %}
@@ -61,7 +62,7 @@
           <li class="nexus-alpha-card">
             <div class="nexus-alpha-module-row">
               <span class="govuk-body govuk-!-margin-bottom-0">{{ milestone.title }}</span>
-              <strong class="govuk-tag {{ milestone.tagClass }}">{{ milestone.statusLabel }}</strong>
+              {{ govukTag({ text: milestone.statusLabel, classes: (milestone.tagClass) }) }}
             </div>
           </li>
         {% endfor %}

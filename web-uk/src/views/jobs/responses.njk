@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.responses.caption") }}</span>
@@ -44,7 +45,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ interview.typeLabel }}</h3>
-            <strong class="govuk-tag {{ interview.tagClass }}">{{ t(interview.statusKey) }}</strong>
+            {{ govukTag({ text: t(interview.statusKey), classes: (interview.tagClass) }) }}
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.responses.for_opportunity", { title: interview.title }) }}</p>
           <p class="govuk-body govuk-!-margin-bottom-1">{% if interview.scheduledLabel %}{{ t("govuk_alpha_jobs.responses.scheduled_for", { date: interview.scheduledLabel }) }}{% else %}{{ t("govuk_alpha_jobs.responses.no_date") }}{% endif %}</p>
@@ -94,7 +95,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ offer.title }}</h3>
-            <strong class="govuk-tag {{ offer.tagClass }}">{{ t(offer.statusKey) }}</strong>
+            {{ govukTag({ text: t(offer.statusKey), classes: (offer.tagClass) }) }}
           </div>
           <p class="govuk-body govuk-!-margin-bottom-1">{{ offer.salaryLine }}</p>
           {% if offer.startLabel %}

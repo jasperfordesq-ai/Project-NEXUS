@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -20,7 +21,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ reservation.title }}</h2>
-            <strong class="govuk-tag {{ reservation.statusTagClass }}">{{ reservation.statusLabel }}</strong>
+            {{ govukTag({ text: reservation.statusLabel, classes: (reservation.statusTagClass) }) }}
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_commerce.pickups.window_label") }}: {{ reservation.slotStartLabel }}</p>
           {% if reservation.status == 'reserved' and reservation.qrCode %}

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
@@ -53,8 +54,8 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ goal.title }}</a>
             </h2>
-            <strong class="govuk-tag {{ goal.statusClass }}">{{ goal.statusLabel }}</strong>
-            <strong class="govuk-tag {{ goal.visibilityClass }}">{{ goal.visibilityLabel }}</strong>
+            {{ govukTag({ text: goal.statusLabel, classes: (goal.statusClass) }) }}
+            {{ govukTag({ text: goal.visibilityLabel, classes: (goal.visibilityClass) }) }}
           </div>
 
           {% if goal.description %}
@@ -62,7 +63,7 @@
           {% endif %}
 
           {% if goal.isOverdue %}
-            <strong class="govuk-tag govuk-tag--red govuk-!-margin-bottom-1">{{ t("polish_gamify.goals_overdue_label") }}</strong>
+            {{ govukTag({ text: t("polish_gamify.goals_overdue_label"), classes: "govuk-tag--red govuk-!-margin-bottom-1" }) }}
           {% endif %}
 
           {% if goal.streakCount > 0 %}

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -53,7 +54,7 @@
       {% for alert in dashboard.alerts %}
         <article class="nexus-alpha-card">
           <p class="govuk-!-margin-bottom-2">
-            <strong class="govuk-tag {{ alert.priority.className }}">{{ alert.priority.label }}</strong>
+            {{ govukTag({ text: alert.priority.label, classes: (alert.priority.className) }) }}
           </p>
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ alert.opportunityTitle }}</h2>
 
@@ -102,9 +103,9 @@
           {% endif %}
 
           {% if alert.myResponse == "accepted" %}
-            <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_volunteering.emergency.response_accepted") }}</strong></p>
+            <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_volunteering.emergency.response_accepted"), classes: "govuk-tag--green" }) }}</p>
           {% elif alert.myResponse == "declined" %}
-            <p class="govuk-body"><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.emergency.response_declined") }}</strong></p>
+            <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_volunteering.emergency.response_declined"), classes: "govuk-tag--grey" }) }}</p>
           {% else %}
             <div class="govuk-warning-text">
               <span class="govuk-warning-text__icon" aria-hidden="true">!</span>

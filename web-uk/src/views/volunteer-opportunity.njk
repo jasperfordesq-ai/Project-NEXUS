@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set opportunityTitle = opportunity.title or t("govuk_alpha.volunteering.detail_title") %}
 
@@ -37,7 +38,7 @@
       <span class="govuk-caption-xl">{{ t("govuk_alpha.volunteering.detail_title") }}</span>
       <h1 class="govuk-heading-xl">{{ opportunityTitle }}</h1>
       {% if opportunity.is_remote %}
-        <strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha.volunteering.remote") }}</strong>
+        {{ govukTag({ text: t("govuk_alpha.volunteering.remote"), classes: "govuk-tag--turquoise" }) }}
       {% endif %}
       {% if opportunity.description %}
         <div class="govuk-body govuk-!-margin-top-5">{{ opportunity.description | nl2br | safe }}</div>
@@ -117,7 +118,7 @@
 
           {% if opportunity.isApprovedApplicant and shift.id and not shift.isPast %}
             {% if opportunity.signedUpShiftId == shift.id %}
-              <p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha.volunteering.shift_signed_up") }}</strong></p>
+              <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha.volunteering.shift_signed_up"), classes: "govuk-tag--green" }) }}</p>
               <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/cancel') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.cancel_shift") }}</button>
@@ -128,7 +129,7 @@
                 <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.sign_up_shift") }}</button>
               </form>
             {% else %}
-              <strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha.volunteering.shift_full") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha.volunteering.shift_full"), classes: "govuk-tag--red" }) }}
             {% endif %}
           {% endif %}
         </article>

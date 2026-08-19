@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro categoryList(nodes) %}
   <ul class="govuk-list govuk-list--spaced">
@@ -56,13 +57,13 @@
               {{ member.name }}
             {% endif %}
             {% if member.proficiencyLabel %}
-              <strong class="govuk-tag govuk-tag--grey govuk-!-margin-left-1">{{ member.proficiencyLabel }}</strong>
+              {{ govukTag({ text: member.proficiencyLabel, classes: "govuk-tag--grey govuk-!-margin-left-1" }) }}
             {% endif %}
             {% if member.isOffering %}
-              <strong class="govuk-tag govuk-tag--green govuk-!-margin-left-1">{{ t("skills.offers") }}</strong>
+              {{ govukTag({ text: t("skills.offers"), classes: "govuk-tag--green govuk-!-margin-left-1" }) }}
             {% endif %}
             {% if member.isRequesting %}
-              <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-1">{{ t("skills.wants") }}</strong>
+              {{ govukTag({ text: t("skills.wants"), classes: "govuk-tag--blue govuk-!-margin-left-1" }) }}
             {% endif %}
           </li>
         {% endfor %}

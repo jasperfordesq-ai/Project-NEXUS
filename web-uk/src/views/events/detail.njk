@@ -418,8 +418,8 @@
                   <div class="govuk-!-margin-bottom-3">
                     <p class="govuk-body govuk-!-margin-bottom-1">
                       {{ option.label }}
-                      {% if option.isLeading %}<strong class="govuk-tag govuk-tag--green">{{ t("events.poll_leading") }}</strong>{% endif %}
-                      {% if option.isMine %}<strong class="govuk-tag govuk-tag--blue">{{ t("events.poll_your_choice") }}</strong>{% endif %}
+                      {% if option.isLeading %}{{ govukTag({ text: t("events.poll_leading"), classes: "govuk-tag--green" }) }}{% endif %}
+                      {% if option.isMine %}{{ govukTag({ text: t("events.poll_your_choice"), classes: "govuk-tag--blue" }) }}{% endif %}
                     </p>
                     <progress max="100" value="{{ option.percentage }}" aria-label="{{ option.label }}: {{ option.percentageRounded }}%">{{ option.percentageRounded }}%</progress>
                     <span class="govuk-body-s">{{ option.percentageRounded }}% &mdash; {{ tc("events.poll_per_option_votes", option.voteCount, { count: option.voteCount }) }}</span>
@@ -429,7 +429,7 @@
                 <div class="govuk-inset-text">{{ t("events.poll_results_pending_note") }}</div>
                 <ul class="govuk-list">
                   {% for option in poll.options %}
-                    <li>{{ option.label }} {% if option.isMine %}<strong class="govuk-tag govuk-tag--blue">{{ t("events.poll_your_choice") }}</strong>{% endif %}</li>
+                    <li>{{ option.label }} {% if option.isMine %}{{ govukTag({ text: t("events.poll_your_choice"), classes: "govuk-tag--blue" }) }}{% endif %}</li>
                   {% endfor %}
                 </ul>
               {% endif %}

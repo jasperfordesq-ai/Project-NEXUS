@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -24,7 +25,7 @@
       {% for item in items %}
         <li class="nexus-alpha-card">
           <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
-            <strong class="govuk-tag {{ item.tagClass }}">{{ item.label }}</strong>
+            {{ govukTag({ text: item.label, classes: (item.tagClass) }) }}
             {% if item.createdAtLabel %}
               <span class="govuk-body-s nexus-alpha-meta" aria-label="{{ item.createdAtLabel }}">
                 <time datetime="{{ item.createdAt }}" title="{{ item.createdAtLabel }}">{{ item.createdAtLabel }}</time>

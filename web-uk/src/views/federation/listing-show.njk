@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation/listings') }}" class="govuk-back-link">{{ t("federation.listings_browse.detail_back") }}</a>
@@ -19,12 +20,12 @@
 
   <p class="govuk-body-s govuk-!-margin-bottom-3 nexus-alpha-tag-list">
     {% if listing.type == "request" %}
-      <strong class="govuk-tag govuk-tag--purple">{{ listing.typeLabel }}</strong>
+      {{ govukTag({ text: listing.typeLabel, classes: "govuk-tag--purple" }) }}
     {% else %}
-      <strong class="govuk-tag govuk-tag--blue">{{ listing.typeLabel }}</strong>
+      {{ govukTag({ text: listing.typeLabel, classes: "govuk-tag--blue" }) }}
     {% endif %}
     {% if listing.categoryName %}
-      <strong class="govuk-tag govuk-tag--grey">{{ listing.categoryName }}</strong>
+      {{ govukTag({ text: listing.categoryName, classes: "govuk-tag--grey" }) }}
     {% endif %}
     {% if listing.tenantName %}
       <strong class="govuk-tag govuk-tag--grey">{{ t("federation.listings_browse.community_label") }}: {{ listing.tenantName }}</strong>

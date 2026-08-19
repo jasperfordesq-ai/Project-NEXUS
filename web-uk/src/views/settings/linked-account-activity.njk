@@ -12,6 +12,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -72,7 +73,7 @@
             {% set itemType = item.activity_type or '' %}
             {% set typeKey = itemType if itemType in knownTypes else 'other' %}
             <li class="govuk-!-margin-bottom-3">
-              <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_settings.linked.activity_type_" + typeKey) }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_settings.linked.activity_type_" + typeKey), classes: "govuk-tag--grey" }) }}
               {% if item.description %}
                 <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
               {% endif %}

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("account.caption", { community: tenantName }) }}</span>
@@ -16,9 +17,7 @@
         <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
           <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
           {% if item.badge and item.badge > 0 %}
-            <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">
-              {{ tc("messages.unread_count", item.badge) }}
-            </strong>
+            {{ govukTag({ text: tc("messages.unread_count", item.badge), classes: "govuk-tag--blue govuk-!-margin-left-2" }) }}
           {% endif %}
         </h2>
         <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>

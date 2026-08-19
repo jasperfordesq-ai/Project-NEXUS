@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -24,7 +25,7 @@
   {% endif %}
   {% set listingType = "request" if listing.type == "request" else "offer" %}
   {% set typeColour = "purple" if listingType == "request" else "blue" %}
-  {% set statusHtml %}<strong class="govuk-tag govuk-tag--{{ tagColour }}">{{ t("listings.status_values." + listing.status) if listing.status else "" }}</strong>{% endset %}
+  {% set statusHtml %}{{ govukTag({ text: t("listings.status_values." + listing.status) if listing.status else "", classes: "govuk-tag--" ~ (tagColour) }) }}{% endset %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -98,9 +99,9 @@
       <span class="govuk-caption-xl">{{ t("listings.detail_title") }}</span>
       <h1 class="govuk-heading-xl">{{ listing.title or listing.name or t("listings.detail_title") }}</h1>
       <p class="nexus-alpha-actions govuk-!-margin-bottom-4">
-        <strong class="govuk-tag govuk-tag--{{ typeColour }}">{{ t("listings." + listingType) }}</strong>
-        {% if listing.is_featured %}<strong class="govuk-tag govuk-tag--yellow">{{ t("listings.featured") }}</strong>{% endif %}
-        {% if listing.service_type and listing.service_type != "physical_only" %}<strong class="govuk-tag govuk-tag--turquoise">{{ t("listings.service_types." + listing.service_type) }}</strong>{% endif %}
+        {{ govukTag({ text: t("listings." + listingType), classes: "govuk-tag--" ~ (typeColour) }) }}
+        {% if listing.is_featured %}{{ govukTag({ text: t("listings.featured"), classes: "govuk-tag--yellow" }) }}{% endif %}
+        {% if listing.service_type and listing.service_type != "physical_only" %}{{ govukTag({ text: t("listings.service_types." + listing.service_type), classes: "govuk-tag--turquoise" }) }}{% endif %}
       </p>
 
       {% if listingImageUrl %}
@@ -132,7 +133,7 @@
       {% if listingSkillTags.length %}
         <h2 class="govuk-heading-m">{{ t("listings.skills_title") }}</h2>
         <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-6">
-          {% for skill in listingSkillTags %}<li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>{% endfor %}
+          {% for skill in listingSkillTags %}<li>{{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}</li>{% endfor %}
         </ul>
       {% endif %}
     </div>
@@ -187,12 +188,12 @@
           <div>
             <p class="govuk-body govuk-!-margin-bottom-1">
               <strong>{{ listingAuthor.name }}</strong>
-              {% if listingAuthorVerified %}<strong class="govuk-tag govuk-tag--green govuk-!-margin-left-1">{{ t("members.verified") }}</strong>{% endif %}
+              {% if listingAuthorVerified %}{{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green govuk-!-margin-left-1" }) }}{% endif %}
             </p>
             {% if listingAuthor.tagline %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ listingAuthor.tagline }}</p>{% endif %}
             {% if listingVerificationBadges.length %}
               <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-2" aria-label="{{ t('govuk_alpha_listings.detail.author_badges_heading') }}">
-                {% for badge in listingVerificationBadges %}<li><strong class="govuk-tag govuk-tag--green">{{ badge.label }}</strong></li>{% endfor %}
+                {% for badge in listingVerificationBadges %}<li>{{ govukTag({ text: badge.label, classes: "govuk-tag--green" }) }}</li>{% endfor %}
               </ul>
             {% endif %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">

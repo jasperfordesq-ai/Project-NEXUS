@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/messages') }}">{{ t("govuk_alpha_messages.groups.back_to_messages") }}</a>
@@ -75,9 +76,7 @@
                 {{ tc("govuk_alpha_messages.groups.members_count", group.participant_count or group.participantCount or 0, { count: group.participant_count or group.participantCount or 0 }) }}
               </p>
               {% if (group.unread_count or group.unreadCount or 0) > 0 %}
-                <strong class="govuk-tag govuk-tag--blue">
-                  {{ tc("govuk_alpha_messages.groups.unread_count", group.unread_count or group.unreadCount, { count: group.unread_count or group.unreadCount }) }}
-                </strong>
+                {{ govukTag({ text: tc("govuk_alpha_messages.groups.unread_count", group.unread_count or group.unreadCount, { count: group.unread_count or group.unreadCount }), classes: "govuk-tag--blue" }) }}
               {% endif %}
               {% set lastMessage = group.last_message or group.lastMessage %}
               {% if lastMessage and lastMessage.body %}

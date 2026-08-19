@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
@@ -29,7 +30,7 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha_ideation.campaigns.title") }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ campaign.title }}</h1>
-    <strong class="govuk-tag {{ campaign.statusClass }}">{{ t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status) }}</strong>
+    {{ govukTag({ text: t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status), classes: (campaign.statusClass) }) }}
   </div>
 
   {% if campaign.creatorName %}

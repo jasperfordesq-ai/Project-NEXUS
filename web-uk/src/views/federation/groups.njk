@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -64,7 +65,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               {{ group.name }}
               {% if group.privacy == "private" %}
-                <strong class="govuk-tag govuk-tag--yellow">{{ t("polish_federation.groups_private") }}</strong>
+                {{ govukTag({ text: t("polish_federation.groups_private"), classes: "govuk-tag--yellow" }) }}
               {% endif %}
             </h2>
 

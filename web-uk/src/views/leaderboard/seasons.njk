@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
@@ -34,7 +35,7 @@
       <div class="nexus-alpha-module-row">
         <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ seasons.current.name }}</h3>
         {% if seasons.current.endingSoon %}
-          <strong class="govuk-tag govuk-tag--orange">{{ t("govuk_alpha_gamification.seasons.ending_soon") }}</strong>
+          {{ govukTag({ text: t("govuk_alpha_gamification.seasons.ending_soon"), classes: "govuk-tag--orange" }) }}
         {% endif %}
       </div>
       <p class="govuk-body-s nexus-alpha-meta">

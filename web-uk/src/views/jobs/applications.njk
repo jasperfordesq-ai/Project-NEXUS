@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("jobs_t2.applications_caption", { community: tenantName or serviceName }) }}</span>
@@ -73,7 +74,7 @@
                 {{ app.title }}
               {% endif %}
             </h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ t(app.statusTranslationKey) }}</strong>
+            {{ govukTag({ text: t(app.statusTranslationKey), classes: "govuk-tag--blue" }) }}
           </div>
 
           {% if app.appliedOnLabel %}

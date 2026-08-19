@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("search.caption", { community: tenantName }) }}</span>
@@ -80,7 +81,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-0">
               {% if itemHref %}<a class="govuk-link" href="{{ urlFor(itemHref) }}">{{ itemTitle }}</a>{% else %}{{ itemTitle }}{% endif %}
             </h2>
-            {% if itemTag %}<strong class="govuk-tag {{ itemTagClass }}">{{ itemTag }}</strong>{% endif %}
+            {% if itemTag %}{{ govukTag({ text: itemTag, classes: (itemTagClass) }) }}{% endif %}
           </div>
         </div>
       {% endif %}

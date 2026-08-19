@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
@@ -56,7 +57,7 @@
               <label class="govuk-label govuk-checkboxes__label" for="poll-{{ poll.id }}">
                 {{ poll.question }}
                 {% if poll.attached %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_events.polls.attached_tag") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_events.polls.attached_tag"), classes: "govuk-tag--green" }) }}
                 {% endif %}
               </label>
             </div>

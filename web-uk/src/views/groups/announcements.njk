@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
@@ -46,10 +47,10 @@
           <h2 class="govuk-summary-card__title">
             {{ announcement.title }}
             {% if announcement.isPinned %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_groups.announcements.pinned_tag") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_groups.announcements.pinned_tag"), classes: "govuk-tag--blue" }) }}
             {% endif %}
             {% if announcement.isExpired %}
-              <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_groups.announcements.expired_tag") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_groups.announcements.expired_tag"), classes: "govuk-tag--grey" }) }}
             {% endif %}
           </h2>
           {% if isAdmin %}

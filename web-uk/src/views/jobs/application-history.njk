@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs/applications') }}">{{ t("govuk_alpha_jobs.history.back_link") }}</a>
@@ -23,7 +24,7 @@
     <ol class="govuk-list">
       {% for entry in history %}
         <li class="govuk-!-margin-bottom-4">
-          <strong class="govuk-tag govuk-tag--blue">{{ entry.statusLabel }}</strong>
+          {{ govukTag({ text: entry.statusLabel, classes: "govuk-tag--blue" }) }}
           {% if entry.fromLabel %}
             <span class="govuk-body-s nexus-alpha-meta"> - {{ entry.fromLabel }}</span>
           {% endif %}

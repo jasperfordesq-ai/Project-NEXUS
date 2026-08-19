@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
@@ -67,7 +68,7 @@
         <li class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ item.name }}</h2>
-            <strong class="govuk-tag govuk-tag--grey">{{ item.typeLabel }}</strong>
+            {{ govukTag({ text: item.typeLabel, classes: "govuk-tag--grey" }) }}
           </div>
           {% if item.description %}
             <p class="govuk-body">{{ item.description }}</p>
@@ -75,7 +76,7 @@
           <p class="govuk-body-s nexus-alpha-meta">{{ item.costLabel }}</p>
 
           {% if item.owned %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.shop.owned") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_gamification.shop.owned"), classes: "govuk-tag--green" }) }}
           {% elif item.canPurchase %}
             <form method="post" action="{{ urlFor('/achievements/shop/purchase') }}">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -83,7 +84,7 @@
               <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_gamification.shop.buy_button", { xp: item.cost }) }}</button>
             </form>
           {% else %}
-            <strong class="govuk-tag govuk-tag--red">{{ item.unavailableLabel }}</strong>
+            {{ govukTag({ text: item.unavailableLabel, classes: "govuk-tag--red" }) }}
           {% endif %}
         </li>
       {% endfor %}

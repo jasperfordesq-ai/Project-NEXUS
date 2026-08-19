@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -50,8 +51,8 @@
           <span class="govuk-caption-xl">{{ t("profile.own_caption") if isOwnProfile else t("profile.member_caption") }}</span>
           <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ displayName }}</h1>
           <div class="nexus-alpha-inline-flex-tags govuk-!-margin-bottom-2">
-            {% if identityVerified %}<strong class="govuk-tag govuk-tag--green">{{ t("profile.verified") }}</strong>{% endif %}
-            <strong class="govuk-tag govuk-tag--grey">{{ t("profile.profile_type_" + profileType) }}</strong>
+            {% if identityVerified %}{{ govukTag({ text: t("profile.verified"), classes: "govuk-tag--green" }) }}{% endif %}
+            {{ govukTag({ text: t("profile.profile_type_" + profileType), classes: "govuk-tag--grey" }) }}
           </div>
           {% if user.tagline %}<p class="govuk-body-l govuk-!-margin-top-2">{{ user.tagline }}</p>{% endif %}
           <p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/insights') }}">{{ t("govuk_alpha_members.nav.reputation") }}</a></p>
@@ -65,13 +66,13 @@
             {% if connectionState == 'none' %}
               <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="connect"><button class="govuk-button">{{ t("profile.connection.connect") }}</button></form>
             {% elif connectionState == 'pending_sent' %}
-              <strong class="govuk-tag govuk-tag--yellow">{{ t("profile.connection.request_sent") }}</strong>
+              {{ govukTag({ text: t("profile.connection.request_sent"), classes: "govuk-tag--yellow" }) }}
               <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="cancel"><button class="govuk-button govuk-button--secondary">{{ t("profile.connection.cancel_request") }}</button></form>
             {% elif connectionState == 'pending_received' %}
               <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="accept"><button class="govuk-button">{{ t("profile.connection.accept") }}</button></form>
               <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="decline"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.decline") }}</button></form>
             {% elif connectionState == 'connected' %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("profile.connection.connected") }}</strong>
+              {{ govukTag({ text: t("profile.connection.connected"), classes: "govuk-tag--green" }) }}
               <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="remove"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.remove") }}</button></form>
             {% endif %}
             </div>
@@ -95,7 +96,7 @@
           {% for badge in gamificationBadges %}
             <li>
               {% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}
-              <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong>
+              {{ govukTag({ text: badge.name, classes: "govuk-tag--blue" }) }}
             </li>
           {% endfor %}
         </ul>
@@ -128,9 +129,9 @@
                 {% set endorsement = profileEndorsements[skill.name] or { count: 0, viewerEndorsed: false } %}
                 <li class="govuk-!-margin-bottom-3">
                   <span class="govuk-!-font-weight-bold">{{ skill.name }}</span>
-                  {% if skill.isOffering %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_offering") }}</strong>{% endif %}
-                  {% if skill.isRequesting %}<strong class="govuk-tag govuk-tag--purple">{{ t("profile.skill_requesting") }}</strong>{% endif %}
-                  {% if endorsement.count %}<strong class="govuk-tag govuk-tag--green">{{ tc("profile.endorsement_count", endorsement.count, { count: endorsement.count }) }}</strong>{% endif %}
+                  {% if skill.isOffering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--blue" }) }}{% endif %}
+                  {% if skill.isRequesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--purple" }) }}{% endif %}
+                  {% if endorsement.count %}{{ govukTag({ text: tc("profile.endorsement_count", endorsement.count, { count: endorsement.count }), classes: "govuk-tag--green" }) }}{% endif %}
                   {% if not isOwnProfile %}
                     <form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/endorse') }}" class="govuk-!-margin-top-1">
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="skill_name" value="{{ skill.name }}"><input type="hidden" name="action" value="{{ 'remove' if endorsement.viewerEndorsed else 'endorse' }}">
@@ -147,7 +148,7 @@
             <div class="nexus-alpha-card-list">
               {% for listing in profileListings %}
                 {% set listingType = 'request' if listing.type == 'request' else 'offer' %}
-                <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3><strong class="govuk-tag {{ 'govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue' }}">{{ t("listings." + listingType) }}</strong>{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
+                <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3>{{ govukTag({ text: t("listings." + listingType), classes: ('govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue') }) }}{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
               {% endfor %}
             </div>
           {% else %}<div class="govuk-inset-text">{{ t("profile.empty_listings") }}</div>{% endif %}
@@ -155,7 +156,7 @@
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
           {% if profileActivity.length %}
             <ol class="govuk-list nexus-alpha-timeline">
-              {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3"><strong class="govuk-tag {{ activity.tagClass }}">{{ activity.label }}</strong>{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+              {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
             </ol>
           {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
         </div>
@@ -193,7 +194,7 @@
             {% endif %}
             <article class="nexus-alpha-card">
               <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ t("profile.review_by", { name: reviewerName }) }}</h3>
-              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--blue">{{ t("ux.rating_out_of", { rating: review.rating }) }}</strong><span class="govuk-visually-hidden">{{ t("polish_members.rating_accessible", { n: review.rating }) }}</span></p>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ govukTag({ text: t("ux.rating_out_of", { rating: review.rating }), classes: "govuk-tag--blue" }) }}<span class="govuk-visually-hidden">{{ t("polish_members.rating_accessible", { n: review.rating }) }}</span></p>
               {% if review.comment %}
                 <div class="govuk-body">{{ review.comment }}</div>
               {% endif %}

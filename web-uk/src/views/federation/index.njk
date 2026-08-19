@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
@@ -75,9 +76,9 @@
         <dt class="govuk-summary-list__key">{{ t("web_uk.federation_hub.status_label") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if stats.optedIn %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("federation.hub.optin_on") }}</strong>
+            {{ govukTag({ text: t("federation.hub.optin_on"), classes: "govuk-tag--green" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--grey">{{ t("federation.hub.optin_off") }}</strong>
+            {{ govukTag({ text: t("federation.hub.optin_off"), classes: "govuk-tag--grey" }) }}
           {% endif %}
         </dd>
       </div>
@@ -112,9 +113,9 @@
             <div class="nexus-alpha-module-row">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ partner.name }}</a></h3>
               {% if partner.isExternal %}
-                <strong class="govuk-tag govuk-tag--grey">{{ t("federation.levels.external") }}</strong>
+                {{ govukTag({ text: t("federation.levels.external"), classes: "govuk-tag--grey" }) }}
               {% elif partner.levelName %}
-                <strong class="govuk-tag govuk-tag--purple">{{ partner.levelName }}</strong>
+                {{ govukTag({ text: partner.levelName, classes: "govuk-tag--purple" }) }}
               {% endif %}
             </div>
             {% if partner.tagline %}<p class="govuk-body govuk-!-margin-bottom-2">{{ partner.tagline }}</p>{% endif %}

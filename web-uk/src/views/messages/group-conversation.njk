@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -50,13 +51,13 @@
           <li class="govuk-!-margin-bottom-2" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
             <span>{{ participant.displayName }}</span>
             {% if participant.id == currentUserId %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_messages.conversation.you_badge") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_messages.conversation.you_badge"), classes: "govuk-tag--green" }) }}
             {% endif %}
             {% if participant.role == "admin" %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_messages.conversation.admin_badge") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_messages.conversation.admin_badge"), classes: "govuk-tag--blue" }) }}
             {% endif %}
             {% if participant.is_online %}
-              <strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha_messages.conversation.online_badge") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_messages.conversation.online_badge"), classes: "govuk-tag--turquoise" }) }}
             {% endif %}
             {% if isAdmin and participant.id != currentUserId %}
               <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -83,10 +84,10 @@
             <div class="nexus-alpha-module-row">
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ event.title }}</h2>
               {% if event.isPast %}
-                <strong class="govuk-tag govuk-tag--grey">{{ t("federation.events_browse.past_label") }}</strong>
+                {{ govukTag({ text: t("federation.events_browse.past_label"), classes: "govuk-tag--grey" }) }}
               {% endif %}
               {% if event.isOnline %}
-                <strong class="govuk-tag govuk-tag--turquoise">{{ t("federation.events_browse.online_label") }}</strong>
+                {{ govukTag({ text: t("federation.events_browse.online_label"), classes: "govuk-tag--turquoise" }) }}
               {% endif %}
             </div>
 
@@ -100,7 +101,7 @@
 
             {% if event.tenantName %}
               <p class="govuk-body-s govuk-!-margin-bottom-1">
-                <strong class="govuk-tag govuk-tag--grey">{{ event.tenantName }}</strong>
+                {{ govukTag({ text: event.tenantName, classes: "govuk-tag--grey" }) }}
               </p>
             {% endif %}
 

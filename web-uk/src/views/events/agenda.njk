@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 {% from "events/agenda-fields.njk" import agendaFields with context %}
 
@@ -40,7 +41,7 @@
       {% for session in scheduledSessions %}
         <li class="govuk-!-margin-bottom-6">
           <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ session.title }}</h3>
-          <p class="govuk-body-s govuk-!-margin-bottom-2"><strong class="govuk-tag">{{ t("govuk_alpha.events.agenda.types." + session.type) }}</strong> <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha.events.agenda.visibilities." + session.visibility) }}</strong></p>
+          <p class="govuk-body-s govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha.events.agenda.types." + session.type) }) }} {{ govukTag({ text: t("govuk_alpha.events.agenda.visibilities." + session.visibility), classes: "govuk-tag--grey" }) }}</p>
           <dl class="govuk-summary-list govuk-summary-list--no-border">
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha.events.agenda.when") }}</dt><dd class="govuk-summary-list__value">{{ session.startLabel }} – {{ session.endLabel }}</dd></div>
             {% if session.track %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha.events.agenda.fields.track") }}</dt><dd class="govuk-summary-list__value">{{ session.track }}</dd></div>{% endif %}

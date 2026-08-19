@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   {% set gamificationNavGroup = "achievements" %}
@@ -83,7 +84,7 @@
       <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("polish_gamify.daily_reward_button") }}</button>
     </form>
   {% else %}
-    <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("polish_gamify.daily_reward_claimed") }}</strong></p>
+    <p class="govuk-body">{{ govukTag({ text: t("polish_gamify.daily_reward_claimed"), classes: "govuk-tag--green" }) }}</p>
   {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polish_gamify.challenges_title") }}</h2>
@@ -120,9 +121,9 @@
           <div class="nexus-alpha-module-row">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ challenge.title }}</h3>
             {% if challenge.claimed %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("polish_gamify.challenge_claimed_tag") }}</strong>
+              {{ govukTag({ text: t("polish_gamify.challenge_claimed_tag"), classes: "govuk-tag--green" }) }}
             {% elif challenge.completed %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("polish_gamify.challenge_completed_tag") }}</strong>
+              {{ govukTag({ text: t("polish_gamify.challenge_completed_tag"), classes: "govuk-tag--blue" }) }}
             {% endif %}
           </div>
           {% if challenge.description %}

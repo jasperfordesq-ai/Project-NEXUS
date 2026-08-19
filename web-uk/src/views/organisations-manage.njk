@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro roleLabel(role) %}
   {% if role == "owner" %}
@@ -72,7 +73,7 @@
           <article class="nexus-alpha-card">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ organisation.name }}</h3>
             <p class="govuk-body govuk-!-margin-bottom-0">
-              <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_organisations.manage.status_pending") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_organisations.manage.status_pending"), classes: "govuk-tag--yellow" }) }}
             </p>
             <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("govuk_alpha_organisations.manage.status_pending_note") }}</p>
           </article>

@@ -1,6 +1,7 @@
 {# Copyright (c) 2024-2026 Jasper Ford #}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 
 {% block beforeContent %}
@@ -29,7 +30,7 @@
   {% set guardianEvidence = evidence.guardian_consent or {} %}
   {% set permissions = safety.permissions or {} %}
   {% set rollout = safety.rollout or {} %}
-  <p class="govuk-body"><strong class="govuk-tag {% if rollout.mode == 'enforce' %}govuk-tag--green{% else %}govuk-tag--yellow{% endif %}">{{ t("event_safety.govuk.rollout." + (rollout.mode or "off")) }}</strong>{% if requirements %} <strong class="govuk-tag govuk-tag--grey">{{ t("event_safety.govuk.requirement_status." + (requirements.status or "draft")) }}</strong>{% endif %}</p>
+  <p class="govuk-body"><strong class="govuk-tag {% if rollout.mode == 'enforce' %}govuk-tag--green{% else %}govuk-tag--yellow{% endif %}">{{ t("event_safety.govuk.rollout." + (rollout.mode or "off")) }}</strong>{% if requirements %} {{ govukTag({ text: t("event_safety.govuk.requirement_status." + (requirements.status or "draft")), classes: "govuk-tag--grey" }) }}{% endif %}</p>
 
   {% if permissions.manage_requirements %}
     <section aria-labelledby="safety-policy-heading" class="govuk-!-margin-bottom-8">

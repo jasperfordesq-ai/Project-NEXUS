@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set organisationName = organisation.name or t("govuk_alpha.organisations.title") %}
 {% set organisationDescription = organisation.description or "" %}
@@ -96,7 +97,7 @@
             </h3>
 
             {% if opportunity.is_remote %}
-              <p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha.org_depth.opportunity_remote") }}</strong></p>
+              <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha.org_depth.opportunity_remote"), classes: "govuk-tag--turquoise" }) }}</p>
             {% endif %}
 
             {% if opportunity.summary %}

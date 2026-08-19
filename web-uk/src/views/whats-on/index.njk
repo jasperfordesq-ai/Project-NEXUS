@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -62,15 +63,15 @@
                   <span>{{ event.whenLabel }}</span>
                 {% endif %}
                 {% if status === 'cancelled' %}
-                  <strong class="govuk-tag govuk-tag--red govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.cancelled_tag") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_whats_on.index.cancelled_tag"), classes: "govuk-tag--red govuk-!-margin-left-2" }) }}
                 {% elif status === 'postponed' %}
-                  <strong class="govuk-tag govuk-tag--yellow govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.postponed_tag") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_whats_on.index.postponed_tag"), classes: "govuk-tag--yellow govuk-!-margin-left-2" }) }}
                 {% endif %}
                 {% if event.location and mode !== 'online' %}
                   <span class="govuk-!-margin-left-2">{{ event.location }}</span>
                 {% endif %}
                 {% if mode !== 'in_person' %}
-                  <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.online_tag") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_whats_on.index.online_tag"), classes: "govuk-tag--blue govuk-!-margin-left-2" }) }}
                 {% endif %}
               </p>
               {% if event.category and event.category.name %}

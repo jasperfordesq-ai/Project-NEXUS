@@ -13,6 +13,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
@@ -68,7 +69,7 @@
                 <div class="govuk-summary-list__row">
                   <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.guardians.your_answer") }}</dt>
                   <dd class="govuk-summary-list__value">
-                    <strong class="govuk-tag {{ guardian.stateTagClass }}">{{ t("govuk_alpha_settings.guardians.state_" + guardian.state) }}</strong>
+                    {{ govukTag({ text: t("govuk_alpha_settings.guardians.state_" + guardian.state), classes: (guardian.stateTagClass) }) }}
                   </dd>
                 </div>
                 {% if guardian.notes %}
@@ -168,7 +169,7 @@
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">{{ ward.ward_name or t("govuk_alpha_settings.common.unknown_member") }}</dt>
               <dd class="govuk-summary-list__value">
-                <strong class="govuk-tag {{ ward.stateTagClass }}">{{ t("govuk_alpha_settings.guardians.ward_state_" + ward.state) }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_settings.guardians.ward_state_" + ward.state), classes: (ward.stateTagClass) }) }}
               </dd>
             </div>
           {% endfor %}

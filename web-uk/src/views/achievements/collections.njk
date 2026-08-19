@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
@@ -31,7 +32,7 @@
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ collection.name }}</h2>
             {% if collection.completed %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.collections.completed") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_gamification.collections.completed"), classes: "govuk-tag--green" }) }}
             {% endif %}
           </div>
           {% if collection.description %}
@@ -40,7 +41,7 @@
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
             {{ t("govuk_alpha_gamification.collections.progress", { earned: collection.earnedCount, total: collection.totalCount }) }}
             {% if collection.rewardXp > 0 %}&middot; {{ t("govuk_alpha_gamification.collections.reward", { xp: collection.rewardXp }) }}{% endif %}
-            {% if collection.bonusClaimed %}&middot; <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.collections.bonus_claimed") }}</strong>{% endif %}
+            {% if collection.bonusClaimed %}&middot; {{ govukTag({ text: t("govuk_alpha_gamification.collections.bonus_claimed"), classes: "govuk-tag--blue" }) }}{% endif %}
           </p>
           <progress max="100" value="{{ collection.progressPercent }}" aria-label="{{ collection.name }}: {{ collection.progressPercent }}%">{{ collection.progressPercent }}%</progress>
 

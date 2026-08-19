@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
@@ -54,7 +55,7 @@
             </td>
             <td class="govuk-table__cell">{{ outcome.ideaTitle }}</td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag {{ outcome.statusClass }}">{{ outcome.statusLabel }}</strong>
+              {{ govukTag({ text: outcome.statusLabel, classes: (outcome.statusClass) }) }}
             </td>
           </tr>
         {% endfor %}

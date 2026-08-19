@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -29,7 +30,7 @@
           </p>
           {% if nexusScore.tierLabel %}
             <p class="govuk-!-margin-bottom-2">
-              <strong class="govuk-tag govuk-tag--purple">{{ nexusScore.tierLabel }}</strong>
+              {{ govukTag({ text: nexusScore.tierLabel, classes: "govuk-tag--purple" }) }}
             </p>
           {% endif %}
           {% if nexusScore.percentile > 0 %}
@@ -98,7 +99,7 @@
         <ul class="govuk-list">
           {% for badge in verificationBadges %}
             <li class="govuk-!-margin-bottom-2">
-              <strong class="govuk-tag govuk-tag--green">{{ badge.label }}</strong>
+              {{ govukTag({ text: badge.label, classes: "govuk-tag--green" }) }}
               {% if badge.grantedLabel %}
                 <span class="nexus-alpha-meta">{{ t("govuk_alpha_members.insights.verified_on", { date: badge.grantedLabel }) }}</span>
               {% endif %}
@@ -115,7 +116,7 @@
           {% for badge in earnedBadges %}
             <li>
               {% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}
-              <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong>
+              {{ govukTag({ text: badge.name, classes: "govuk-tag--blue" }) }}
             </li>
           {% endfor %}
         </ul>

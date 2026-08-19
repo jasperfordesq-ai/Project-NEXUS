@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
@@ -31,17 +32,17 @@
       {% else %}
         <nav class="nexus-alpha-actions govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_members.filters.heading') }}">
           {% if sort == 'name' and order == 'ASC' %}
-            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.all") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_members.filters.all"), classes: "govuk-tag--blue" }) }}
           {% else %}
             <a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_members.filters.all") }}</a>
           {% endif %}
           {% if sort == 'joined' and order == 'DESC' %}
-            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.new") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_members.filters.new"), classes: "govuk-tag--blue" }) }}
           {% else %}
             <a class="govuk-link" href="{{ urlFor('/members?sort=joined&order=DESC') }}">{{ t("govuk_alpha_members.filters.new") }}</a>
           {% endif %}
           {% if sort == 'hours_given' and order == 'DESC' %}
-            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.active") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_members.filters.active"), classes: "govuk-tag--blue" }) }}
           {% else %}
             <a class="govuk-link" href="{{ urlFor('/members?sort=hours_given&order=DESC') }}">{{ t("govuk_alpha_members.filters.active") }}</a>
           {% endif %}
@@ -142,13 +143,13 @@
                   <div class="nexus-alpha-member-row__content">
                     <div class="nexus-alpha-member-row__heading">
                       <h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a></h3>
-                      {% if member.isVerified %}<strong class="govuk-tag govuk-tag--green">{{ t("members.verified") }}</strong>{% endif %}
-                      {% if member.levelLabel %}<strong class="govuk-tag govuk-tag--turquoise">{{ member.levelLabel }}</strong>{% endif %}
-                      {% if member.connectionLabel %}<strong class="govuk-tag {{ member.connectionTagClass }}">{{ member.connectionLabel }}</strong>{% endif %}
+                      {% if member.isVerified %}{{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green" }) }}{% endif %}
+                      {% if member.levelLabel %}{{ govukTag({ text: member.levelLabel, classes: "govuk-tag--turquoise" }) }}{% endif %}
+                      {% if member.connectionLabel %}{{ govukTag({ text: member.connectionLabel, classes: (member.connectionTagClass) }) }}{% endif %}
                     </div>
                     {% if member.badges and member.badges.length %}
                       <ul class="govuk-list nexus-alpha-actions" aria-label="{{ t('polish_members.member_badges_label') }}">
-                        {% for badge in member.badges %}<li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}<strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong></li>{% endfor %}
+                        {% for badge in member.badges %}<li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}{{ govukTag({ text: badge.name, classes: "govuk-tag--blue" }) }}</li>{% endfor %}
                       </ul>
                     {% endif %}
                     {% if member.tagline %}<p class="govuk-body">{{ member.tagline }}</p>{% endif %}

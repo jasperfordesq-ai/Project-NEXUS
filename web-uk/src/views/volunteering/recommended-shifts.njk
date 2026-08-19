@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -36,9 +37,9 @@
             {% endif %}
           </h2>
           <p class="govuk-!-margin-bottom-2">
-            <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_volunteering.recommended.match_score", { score: shift.matchScore }) }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_volunteering.recommended.match_score", { score: shift.matchScore }), classes: "govuk-tag--green" }) }}
             {% if shift.alreadyApplied %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_volunteering.recommended.already_applied") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_volunteering.recommended.already_applied"), classes: "govuk-tag--blue" }) }}
             {% endif %}
           </p>
           <progress max="100" value="{{ shift.matchScore }}" aria-label="{{ t('govuk_alpha_volunteering.recommended.match_score', { score: shift.matchScore }) }}">{{ shift.matchScore }}%</progress>

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
@@ -65,7 +66,7 @@
               <a class="govuk-link" href="{{ urlFor('/group-exchanges/' + (exchange.id | string)) }}">{{ exchange.title }}</a>
             </td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag {{ exchange.statusClass }}">{{ exchange.statusLabel }}</strong>
+              {{ govukTag({ text: exchange.statusLabel, classes: (exchange.statusClass) }) }}
             </td>
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ exchange.totalHours }}</td>
           </tr>

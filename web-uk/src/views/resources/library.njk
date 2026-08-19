@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
@@ -123,7 +124,7 @@
               </div>
 
               {% if resource.category %}
-                <p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--grey">{{ resource.category.name }}</strong></p>
+                <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: resource.category.name, classes: "govuk-tag--grey" }) }}</p>
               {% endif %}
 
               {% if resource.description %}

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 
 {% block beforeContent %}
@@ -191,7 +192,7 @@
         <article class="nexus-alpha-card">
           <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ log.dateLabel }}</h3>
           <p class="govuk-!-margin-bottom-2">
-            <strong class="govuk-tag {{ log.status.className }}">{{ log.status.label }}</strong>
+            {{ govukTag({ text: log.status.label, classes: (log.status.className) }) }}
           </p>
           {% if log.status.note %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ log.status.note }}</p>

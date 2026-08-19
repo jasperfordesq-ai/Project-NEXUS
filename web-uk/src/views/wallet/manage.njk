@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/wallet') }}">{{ t("govuk_alpha_wallet.manage.back_to_wallet") }}</a>
@@ -43,9 +44,9 @@
       </dl>
       <p class="govuk-body govuk-!-margin-bottom-0">
         {% if wallet.pendingIn > 0 %}
-          <strong class="govuk-tag govuk-tag--yellow">{{ tc("govuk_alpha_wallet.balance.pending_badge_in", wallet.pendingIn | round, { count: wallet.pendingIn | round }) }}</strong>
+          {{ govukTag({ text: tc("govuk_alpha_wallet.balance.pending_badge_in", wallet.pendingIn | round, { count: wallet.pendingIn | round }), classes: "govuk-tag--yellow" }) }}
         {% else %}
-          <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_wallet.balance.no_pending") }}</strong>
+          {{ govukTag({ text: t("govuk_alpha_wallet.balance.no_pending"), classes: "govuk-tag--grey" }) }}
         {% endif %}
       </p>
     </div>

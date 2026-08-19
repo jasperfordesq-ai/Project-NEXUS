@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block beforeContent %}
@@ -47,7 +48,7 @@
                 <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string)) }}">{{ discussion.title }}</a>
               </h2>
               {% if discussion.isPinned %}
-                <strong class="govuk-tag govuk-tag--yellow">{{ t("groups.discussions.pinned") }}</strong>
+                {{ govukTag({ text: t("groups.discussions.pinned"), classes: "govuk-tag--yellow" }) }}
               {% endif %}
             </div>
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">

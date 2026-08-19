@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/nexus-score') }}">{{ t("govuk_alpha_gamification.common.back_to_nexus_score") }}</a>
@@ -49,7 +50,7 @@
             <td class="govuk-table__cell">{{ row.name }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.thresholdLabel }}</td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag {{ row.statusClass }}">{{ row.statusLabel }}</strong>
+              {{ govukTag({ text: row.statusLabel, classes: (row.statusClass) }) }}
             </td>
           </tr>
         {% endfor %}

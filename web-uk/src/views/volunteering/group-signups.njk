@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -56,9 +57,9 @@
         <article class="nexus-alpha-card">
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ reservation.groupName }}</h2>
           <p class="govuk-body govuk-!-margin-bottom-2">
-            <strong class="govuk-tag {{ reservation.status.className }}">{{ reservation.status.label }}</strong>
+            {{ govukTag({ text: reservation.status.label, classes: (reservation.status.className) }) }}
             {% if reservation.isLeader %}
-              <strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_volunteering.group_signups.leader_tag") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_volunteering.group_signups.leader_tag"), classes: "govuk-tag--purple" }) }}
             {% endif %}
           </p>
 
@@ -123,7 +124,7 @@
                 {% for member in reservation.members %}
                   <tr class="govuk-table__row">
                     <td class="govuk-table__cell">{{ member.name or ("#" + member.id) }}</td>
-                    <td class="govuk-table__cell"><strong class="govuk-tag {{ member.status.className }}">{{ member.status.label }}</strong></td>
+                    <td class="govuk-table__cell">{{ govukTag({ text: member.status.label, classes: (member.status.className) }) }}</td>
                     {% if reservation.isLeader and not reservation.isCancelled %}
                       <td class="govuk-table__cell">
                         {% if member.id and member.status.value == "confirmed" %}

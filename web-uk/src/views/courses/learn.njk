@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/courses/' + (course.id | string)) }}" class="govuk-back-link">{{ t("courses.back") }}</a>
@@ -113,7 +114,7 @@
                   <p class="govuk-body">{{ t("govuk_alpha_courses.quiz_awaiting_marking") }}</p>
                 {% else %}
                   <p class="govuk-body">{{ t("govuk_alpha_courses.quiz_last_score", { percent: quiz.last_attempt.score_percent or 0 }) }}
-                    {% if quiz.last_attempt.passed %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.quiz_passed") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha_courses.quiz_not_passed") }}</strong>{% endif %}
+                    {% if quiz.last_attempt.passed %}{{ govukTag({ text: t("govuk_alpha_courses.quiz_passed"), classes: "govuk-tag--green" }) }}{% else %}{{ govukTag({ text: t("govuk_alpha_courses.quiz_not_passed"), classes: "govuk-tag--red" }) }}{% endif %}
                   </p>
                 {% endif %}
               </div>
@@ -164,7 +165,7 @@
         {% endif %}
 
         {% if currentLesson.isCompleted %}
-          <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.lesson_completed") }}</strong></p>
+          <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_courses.lesson_completed"), classes: "govuk-tag--green" }) }}</p>
         {% else %}
           <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/complete') }}" class="govuk-!-margin-top-4">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">

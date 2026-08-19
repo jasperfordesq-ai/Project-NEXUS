@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -13,7 +14,7 @@
       <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.ranked.caption", { community: tenantName }) }}</span>
       <div class="nexus-alpha-module-row">
         <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ poll.question or t("govuk_alpha_gamification.ranked.title") }}</h1>
-        <strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.ranked.badge") }}</strong>
+        {{ govukTag({ text: t("govuk_alpha_gamification.ranked.badge"), classes: "govuk-tag--purple" }) }}
       </div>
 
       {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
@@ -45,7 +46,7 @@
           {% for row in rankedResults.rows %}
             {% set pct = ((row.votes / rankedResults.totalVoters) * 100) | round if rankedResults.totalVoters > 0 else 0 %}
             <div class="govuk-!-margin-bottom-3">
-              <p class="govuk-body govuk-!-margin-bottom-1">{{ row.text }}{% if rankedResults.totalVoters > 0 and row.votes == rankedResults.maxVotes and row.votes > 0 %} <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.ranked.winner") }}</strong>{% endif %}</p>
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ row.text }}{% if rankedResults.totalVoters > 0 and row.votes == rankedResults.maxVotes and row.votes > 0 %} {{ govukTag({ text: t("govuk_alpha_gamification.ranked.winner"), classes: "govuk-tag--green" }) }}{% endif %}</p>
               <progress max="100" value="{{ pct }}" aria-label="{{ row.text }}: {{ pct }}%">{{ pct }}%</progress>
               <span class="govuk-body-s">{{ pct }}% - {{ tc("govuk_alpha_gamification.ranked.first_choice_votes", row.votes, { count: row.votes }) }}</span>
             </div>

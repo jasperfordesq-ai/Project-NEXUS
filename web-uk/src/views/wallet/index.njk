@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   {% if status == "transfer-sent" %}
@@ -31,7 +32,7 @@
     <div class="nexus-alpha-stat"><dt>{{ t("wallet.balance_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.balance) }) }}</dd></div>
     <div class="nexus-alpha-stat"><dt>{{ t("wallet.earned_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.earned) }) }}</dd></div>
     <div class="nexus-alpha-stat"><dt>{{ t("wallet.spent_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.spent) }) }}</dd></div>
-    {% if wallet.pendingIn > 0 %}<div class="nexus-alpha-stat"><dt>{{ t("wallet.pending_in_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.pendingIn) }) }} <strong class="govuk-tag govuk-tag--yellow">{{ t("wallet.pending_in_badge") }}</strong></dd></div>{% endif %}
+    {% if wallet.pendingIn > 0 %}<div class="nexus-alpha-stat"><dt>{{ t("wallet.pending_in_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.pendingIn) }) }} {{ govukTag({ text: t("wallet.pending_in_badge"), classes: "govuk-tag--yellow" }) }}</dd></div>{% endif %}
   </dl>
 
   <section aria-labelledby="fund-heading" id="community-fund">

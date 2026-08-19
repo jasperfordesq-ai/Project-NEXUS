@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -34,11 +35,11 @@
           <article class="nexus-alpha-card govuk-!-margin-bottom-6" id="poll-{{ poll.id }}">
             <div class="nexus-alpha-module-row">
               <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question or t("govuk_alpha_gamification.poll_manage.title") }}</h2>
-              {% if poll.status == "open" %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.poll_manage.open_tag") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_gamification.poll_manage.closed_tag") }}</strong>{% endif %}
+              {% if poll.status == "open" %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_manage.open_tag"), classes: "govuk-tag--green" }) }}{% else %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_manage.closed_tag"), classes: "govuk-tag--grey" }) }}{% endif %}
             </div>
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
-              {% if poll.pollType == "ranked" %}<strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.poll_manage.ranked_tag") }}</strong> {% endif %}
-              {% if poll.isAnonymous %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.poll_manage.anonymous_tag") }}</strong> {% endif %}
+              {% if poll.pollType == "ranked" %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_manage.ranked_tag"), classes: "govuk-tag--purple" }) }} {% endif %}
+              {% if poll.isAnonymous %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_manage.anonymous_tag"), classes: "govuk-tag--blue" }) }} {% endif %}
               {{ tc("govuk_alpha_gamification.poll_manage.votes_count", poll.totalVotes, { count: poll.totalVotes }) }}
               {% if poll.expiresAt %} - {{ poll.expiresAt | formatDate }}{% endif %}
             </p>

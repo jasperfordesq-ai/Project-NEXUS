@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -48,7 +49,7 @@
                 {{ offer.listingTitle }}
               {% endif %}
             </h2>
-            <strong class="govuk-tag {{ offer.statusTagClass }}">{{ offer.statusLabel }}</strong>
+            {{ govukTag({ text: offer.statusLabel, classes: (offer.statusTagClass) }) }}
           </div>
           <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_commerce.offers.amount_label") }}:</strong> {{ offer.amountLabel }}</p>
           {# The seller's counter amount — the figure that will actually be charged if

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation/messages') }}" class="govuk-back-link">{{ t("fed2.messages.back_to_conversations") }}</a>
@@ -50,9 +51,9 @@
       <article class="nexus-alpha-card">
         <p class="govuk-body-s govuk-!-margin-bottom-1">
           {% if message.outbound %}
-            <strong class="govuk-tag govuk-tag--grey">{{ t("fed2.messages.sent_label") }}</strong>
+            {{ govukTag({ text: t("fed2.messages.sent_label"), classes: "govuk-tag--grey" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--blue">{{ t("fed2.messages.received_label") }}</strong>
+            {{ govukTag({ text: t("fed2.messages.received_label"), classes: "govuk-tag--blue" }) }}
           {% endif %}
         </p>
 
@@ -68,14 +69,14 @@
         {% if message.outbound %}
           <p class="govuk-body-s govuk-!-margin-bottom-0">
             {% if message.read %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("fed2.messages.read_label") }}</strong>
+              {{ govukTag({ text: t("fed2.messages.read_label"), classes: "govuk-tag--green" }) }}
             {% else %}
-              <strong class="govuk-tag govuk-tag--grey">{{ t("fed2.messages.delivered_label") }}</strong>
+              {{ govukTag({ text: t("fed2.messages.delivered_label"), classes: "govuk-tag--grey" }) }}
             {% endif %}
           </p>
         {% elif translateEnabled and translation and translation.id == message.id %}
           <div class="govuk-!-margin-top-2">
-            <p class="govuk-body-s govuk-!-margin-bottom-1"><strong class="govuk-tag govuk-tag--purple">{{ t("fed2.messages.translated_label") }}</strong></p>
+            <p class="govuk-body-s govuk-!-margin-bottom-1">{{ govukTag({ text: t("fed2.messages.translated_label"), classes: "govuk-tag--purple" }) }}</p>
             <p class="govuk-body govuk-!-margin-bottom-1">{{ translation.text | nl2br | safe }}</p>
             <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/federation/messages/conversation/' + conversation.partnerId + '?tenant_id=' + conversation.partnerTenantId) }}">{{ t("fed2.messages.view_original") }}</a></p>
           </div>

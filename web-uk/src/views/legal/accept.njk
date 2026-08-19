@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -32,9 +33,9 @@
             <dt class="govuk-summary-list__key">
               {{ document.title }}
               {% if document.isNew %}
-                <strong class="govuk-tag govuk-tag--blue">{{ t("legal.acceptance.new_tag") }}</strong>
+                {{ govukTag({ text: t("legal.acceptance.new_tag"), classes: "govuk-tag--blue" }) }}
               {% else %}
-                <strong class="govuk-tag govuk-tag--yellow">{{ t("legal.acceptance.updated_tag") }}</strong>
+                {{ govukTag({ text: t("legal.acceptance.updated_tag"), classes: "govuk-tag--yellow" }) }}
               {% endif %}
             </dt>
             <dd class="govuk-summary-list__value">

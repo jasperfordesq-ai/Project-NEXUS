@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -48,7 +49,7 @@
                 </p>
               {% endif %}
               {% if loop.first %}
-                <strong class="govuk-tag govuk-tag--blue govuk-!-margin-bottom-2">{{ t("blog.featured_label") }}</strong>
+                {{ govukTag({ text: t("blog.featured_label"), classes: "govuk-tag--blue govuk-!-margin-bottom-2" }) }}
               {% endif %}
               <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                 <a class="govuk-link" href="{{ urlFor('/blog/' + post.slug) }}">{{ post.title }}</a>

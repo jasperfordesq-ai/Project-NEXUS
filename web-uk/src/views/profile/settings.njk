@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -195,9 +196,9 @@
             {% for skill in mySkills %}
               <li>
                 <span class="govuk-!-font-weight-bold">{{ skill.skill_name }}</span>
-                {% if skill.is_offering %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_offering") }}</strong>{% endif %}
-                {% if skill.is_requesting %}<strong class="govuk-tag govuk-tag--purple">{{ t("profile.skill_requesting") }}</strong>{% endif %}
-                {% if skill.endorsement_count > 0 %}<strong class="govuk-tag govuk-tag--green">{{ tc("profile.endorsement_count", skill.endorsement_count) }}</strong>{% endif %}
+                {% if skill.is_offering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--blue" }) }}{% endif %}
+                {% if skill.is_requesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--purple" }) }}{% endif %}
+                {% if skill.endorsement_count > 0 %}{{ govukTag({ text: tc("profile.endorsement_count", skill.endorsement_count), classes: "govuk-tag--green" }) }}{% endif %}
                 <form method="post" action="{{ urlFor('/profile/skills/remove') }}" class="govuk-!-margin-top-1">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="user_skill_id" value="{{ skill.id }}">
@@ -511,7 +512,7 @@
           {% if not vetting.available %}
             <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.status_unavailable") }}</p>
           {% else %}
-            <p class="govuk-body govuk-!-margin-bottom-2"><strong class="govuk-tag {{ vetting.tagClass }}">{{ vetting.statusLabel }}</strong>{% if vetting.attestationLabel %}<span class="govuk-!-margin-left-2">{{ vetting.attestationLabel }}</span>{% endif %}</p>
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: vetting.statusLabel, classes: (vetting.tagClass) }) }}{% if vetting.attestationLabel %}<span class="govuk-!-margin-left-2">{{ vetting.attestationLabel }}</span>{% endif %}</p>
             {% if vetting.decision == "confirmed" and vetting.confirmedDate %}
               <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.confirmed_on", { date: vetting.confirmedDate }) }}</p>
             {% elif vetting.reviewPending %}

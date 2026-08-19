@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% if status %}
@@ -49,7 +50,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ show.title }}</h2>
-            <strong class="govuk-tag {{ show.statusTag }}">{{ show.statusLabel }}</strong>
+            {{ govukTag({ text: show.statusLabel, classes: (show.statusTag) }) }}
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("govuk_alpha_commerce.podcast_studio.episode_count", show.episodeCount, { count: show.episodeCount }) }}</p>
           <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string)) }}">{{ t("govuk_alpha_commerce.podcast_studio.manage_button") }}</a>

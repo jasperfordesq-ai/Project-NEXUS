@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -40,7 +41,7 @@
   <span class="govuk-caption-xl">{{ challenge.title }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.manage.heading") }}</h1>
-    <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+    {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
   </div>
 
   <ul class="govuk-list">

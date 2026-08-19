@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
@@ -118,11 +119,11 @@
             {% endif %}
           </div>
           {% if module.available %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("home.module_available") }}</strong>
+            {{ govukTag({ text: t("home.module_available"), classes: "govuk-tag--green" }) }}
           {% elseif module.needsSignIn %}
-            <strong class="govuk-tag govuk-tag--yellow">{{ t("auth.login_action") }}</strong>
+            {{ govukTag({ text: t("auth.login_action"), classes: "govuk-tag--yellow" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--grey">{{ t("home.module_unavailable") }}</strong>
+            {{ govukTag({ text: t("home.module_unavailable"), classes: "govuk-tag--grey" }) }}
           {% endif %}
         </div>
       </article>

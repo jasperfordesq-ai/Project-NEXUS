@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -125,7 +126,7 @@
             {# The colour must follow the price type, as it does on the other two cards — a
                hardcoded blue told a member a hybrid or money-only listing was priced in
                time credits. #}
-            <strong class="govuk-tag {{ item.cardPriceTagClass }}">{{ item.cardPriceLabel }}</strong>
+            {{ govukTag({ text: item.cardPriceLabel, classes: (item.cardPriceTagClass) }) }}
           </div>
         {% if item.conditionLabel %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.conditionLabel }}</p>

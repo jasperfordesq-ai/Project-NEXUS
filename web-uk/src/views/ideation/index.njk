@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or t("govuk_alpha_ideation.page.community_fallback") }}</span>
@@ -50,7 +51,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ challenge.title }}</a>
             </h2>
-            <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+            {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
           </div>
           {% if challenge.description %}
             <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description | truncate(160) }}</p>

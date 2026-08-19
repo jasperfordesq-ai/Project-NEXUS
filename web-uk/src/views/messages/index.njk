@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
@@ -15,7 +16,7 @@
       <h1 class="govuk-heading-xl">{{ t("messages.title") }}</h1>
       <p class="govuk-body-l">{{ t("messages.description") }}</p>
       {% if unreadCount > 0 %}
-        <p class="govuk-body"><strong class="govuk-tag govuk-tag--blue">{{ tc("polish_members.messages_unread_summary", unreadCount, { count: unreadCount }) }}</strong></p>
+        <p class="govuk-body">{{ govukTag({ text: tc("polish_members.messages_unread_summary", unreadCount, { count: unreadCount }), classes: "govuk-tag--blue" }) }}</p>
       {% endif %}
 
       {% set messagesActive = "direct" %}
@@ -120,7 +121,7 @@
                 </h2>
               </div>
               {% if conversationUnread > 0 %}
-                <strong class="govuk-tag govuk-tag--blue">{{ tc("messages.unread_count", conversationUnread, { count: conversationUnread }) }}</strong>
+                {{ govukTag({ text: tc("messages.unread_count", conversationUnread, { count: conversationUnread }), classes: "govuk-tag--blue" }) }}
               {% endif %}
               <p class="govuk-body govuk-!-margin-top-3">
                 <strong>{{ t("govuk_alpha.messages.last_message_label") }}:</strong>

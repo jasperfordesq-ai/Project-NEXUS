@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -22,9 +23,9 @@
       <h1 class="govuk-heading-xl">{{ event.title }}</h1>
 
       {% if status === 'cancelled' %}
-        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha_whats_on.index.cancelled_tag") }}</strong></p>
+        <p class="govuk-!-margin-bottom-4">{{ govukTag({ text: t("govuk_alpha_whats_on.index.cancelled_tag"), classes: "govuk-tag--red" }) }}</p>
       {% elif status === 'postponed' %}
-        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_whats_on.index.postponed_tag") }}</strong></p>
+        <p class="govuk-!-margin-bottom-4">{{ govukTag({ text: t("govuk_alpha_whats_on.index.postponed_tag"), classes: "govuk-tag--yellow" }) }}</p>
       {% endif %}
 
       <dl class="govuk-summary-list">

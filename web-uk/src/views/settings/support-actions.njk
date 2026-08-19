@@ -10,6 +10,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
@@ -114,7 +115,7 @@
                 {{ t("govuk_alpha_settings.support_actions." + action.typeKey) }} — {{ action.other_party_name or t("govuk_alpha_settings.common.unknown_member") }}
               </dt>
               <dd class="govuk-summary-list__value">
-                <strong class="govuk-tag {{ action.stateTagClass }}">{{ t("govuk_alpha_settings.support_actions.state_" + action.state) }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_settings.support_actions.state_" + action.state), classes: (action.stateTagClass) }) }}
               </dd>
               <dd class="govuk-summary-list__actions">
                 {% if action.state === 'pending' %}

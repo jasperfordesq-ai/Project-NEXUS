@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <span class="govuk-caption-xl">{{ t("activity.caption", { community: communityName }) }}</span>
@@ -75,10 +76,10 @@
           <dt class="govuk-summary-list__key">{{ skill.name }}</dt>
           <dd class="govuk-summary-list__value">
             {% if skill.isOffering %}
-              <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.skill_offering") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_activity.insights.skill_offering"), classes: "govuk-tag--green" }) }}
             {% endif %}
             {% if skill.isRequesting %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_activity.insights.skill_requesting") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_activity.insights.skill_requesting"), classes: "govuk-tag--blue" }) }}
             {% endif %}
             {% if skill.endorsementsLabel %}
               <span class="govuk-body-s nexus-alpha-meta">{{ skill.endorsementsLabel }}</span>

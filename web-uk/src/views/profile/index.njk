@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% if successMessage %}
@@ -25,9 +26,9 @@
       <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ displayName }}</h1>
       <div class="nexus-alpha-inline-flex-tags govuk-!-margin-bottom-2">
         {% if identityVerified %}
-          <strong class="govuk-tag govuk-tag--green">{{ t("profile.verified") }}</strong>
+          {{ govukTag({ text: t("profile.verified"), classes: "govuk-tag--green" }) }}
         {% endif %}
-        <strong class="govuk-tag govuk-tag--grey">{{ t("profile.profile_type_" ~ profileType) }}</strong>
+        {{ govukTag({ text: t("profile.profile_type_" ~ profileType), classes: "govuk-tag--grey" }) }}
       </div>
       {% if profile.tagline %}
         <p class="govuk-body-l govuk-!-margin-top-2">{{ profile.tagline }}</p>
@@ -85,8 +86,8 @@
           {% for skill in profileSkills %}
             <li>
               <span class="govuk-!-font-weight-bold">{{ skill.name }}</span>
-              {% if skill.isOffering %}<strong class="govuk-tag govuk-tag--green">{{ t("profile.skill_offering") }}</strong>{% endif %}
-              {% if skill.isRequesting %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_requesting") }}</strong>{% endif %}
+              {% if skill.isOffering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--green" }) }}{% endif %}
+              {% if skill.isRequesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--blue" }) }}{% endif %}
             </li>
           {% endfor %}
         </ul>
@@ -144,7 +145,7 @@
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
       {% if profileActivity.length %}
         <ol class="govuk-list nexus-alpha-timeline">
-          {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3"><strong class="govuk-tag {{ activity.tagClass }}">{{ activity.label }}</strong>{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+          {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3">{{ govukTag({ text: activity.label, classes: (activity.tagClass) }) }}{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
         </ol>
       {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
     </div>
@@ -191,7 +192,7 @@
         {% if profileBadges and profileBadges.length %}
           <ul class="govuk-list nexus-alpha-actions">
             {% for badge in profileBadges %}
-              <li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %} <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong></li>
+              <li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %} {{ govukTag({ text: badge.name, classes: "govuk-tag--blue" }) }}</li>
             {% endfor %}
           </ul>
         {% else %}

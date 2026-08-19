@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -57,7 +58,7 @@
               <span class="govuk-body-s nexus-alpha-meta">{{ coupon.code }}</span>
             </td>
             <td class="govuk-table__cell">{{ coupon.discountLabel }}</td>
-            <td class="govuk-table__cell"><strong class="govuk-tag {{ coupon.statusTagClass }}">{{ coupon.statusLabel }}</strong></td>
+            <td class="govuk-table__cell">{{ govukTag({ text: coupon.statusLabel, classes: (coupon.statusTagClass) }) }}</td>
             <td class="govuk-table__cell">
               <a class="govuk-link" href="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.coupons.action_edit") }}</a>
             </td>

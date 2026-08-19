@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set tabs = [
   { id: "accepted", labelKey: "fed2.connections.tab_accepted", emptyKey: "fed2.connections.empty_accepted" },
@@ -92,7 +93,7 @@
                   {% endif %}
 
                   {% if connection.isSent %}
-                    <p class="govuk-body-s govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--yellow">{{ t("fed2.connections.pending_label") }}</strong></p>
+                    <p class="govuk-body-s govuk-!-margin-bottom-2">{{ govukTag({ text: t("fed2.connections.pending_label"), classes: "govuk-tag--yellow" }) }}</p>
                   {% endif %}
 
                   {% if connection.isReceived and connection.message %}

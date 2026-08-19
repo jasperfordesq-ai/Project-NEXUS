@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -24,7 +25,7 @@
                 {% if version.versionLabel %}<span class="govuk-!-font-weight-regular"> — {{ version.versionLabel }}</span>{% endif %}
                 {# A tag, not a colour: the state has to be readable as text. #}
                 {% if version.isCurrent %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("legal.versions_current_tag") }}</strong>
+                  {{ govukTag({ text: t("legal.versions_current_tag"), classes: "govuk-tag--green" }) }}
                 {% endif %}
               </dt>
               <dd class="govuk-summary-list__value">

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/courses/instructor/' + (courseId | string) + '/edit') }}">{{ t("govuk_alpha_courses.back_to_course") }}</a>
@@ -42,7 +43,7 @@
       <article class="nexus-alpha-card govuk-!-margin-bottom-6">
         <div class="nexus-alpha-module-row">
           <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ attempt.learnerName }}</h2>
-          <strong class="govuk-tag govuk-tag--yellow">{{ attempt.quizTitle }}</strong>
+          {{ govukTag({ text: attempt.quizTitle, classes: "govuk-tag--yellow" }) }}
         </div>
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">{{ t("govuk_alpha_courses.grading_submitted", { date: attempt.submittedAt | date }) }}</p>
 

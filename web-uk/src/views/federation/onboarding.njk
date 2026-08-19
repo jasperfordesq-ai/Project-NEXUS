@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("govuk_alpha_federation.onboarding.back_link") }}</a>
@@ -201,9 +202,9 @@
               <dt class="govuk-summary-list__key">{{ t(row[0]) }}</dt>
               <dd class="govuk-summary-list__value">
                 {% if row[1] %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_federation.onboarding.summary_on") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_federation.onboarding.summary_on"), classes: "govuk-tag--green" }) }}
                 {% else %}
-                  <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_federation.onboarding.summary_off") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_federation.onboarding.summary_off"), classes: "govuk-tag--grey" }) }}
                 {% endif %}
               </dd>
             </div>
@@ -222,9 +223,9 @@
               <dt class="govuk-summary-list__key">{{ t(row[0]) }}</dt>
               <dd class="govuk-summary-list__value">
                 {% if row[1] %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_federation.onboarding.summary_on") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_federation.onboarding.summary_on"), classes: "govuk-tag--green" }) }}
                 {% else %}
-                  <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_federation.onboarding.summary_off") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_federation.onboarding.summary_off"), classes: "govuk-tag--grey" }) }}
                 {% endif %}
               </dd>
             </div>

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "feed/_comments.njk" import commentList %}
 
 {% block mainContent %}
@@ -47,7 +48,7 @@
       {% else %}
       <article class="nexus-alpha-card" id="feed-item-{{ item.type }}-{{ item.id }}">
         <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
-          <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_feed.item_types." + item.type) }}</strong>
+          {{ govukTag({ text: t("govuk_alpha_feed.item_types." + item.type), classes: "govuk-tag--grey" }) }}
           {% if item.authorAvatar %}
             <img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ item.authorAvatar | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">
           {% endif %}

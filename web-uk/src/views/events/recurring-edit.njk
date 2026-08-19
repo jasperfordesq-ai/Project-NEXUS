@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
 {% from "_date-input.njk" import nexusDateTimeInput %}
 
@@ -179,7 +180,7 @@
             <li>
               {% if occurrence.current %}
                 <span class="govuk-!-font-weight-bold">{{ occurrence.when }}</span>
-                <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_events.recurring_edit.this_date") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_events.recurring_edit.this_date"), classes: "govuk-tag--blue" }) }}
               {% else %}
                 <a class="govuk-link" href="{{ urlFor('/events/' + (occurrence.id | string)) }}">{{ occurrence.when or t("govuk_alpha_events.recurring_edit.view_date_link") }}</a>
               {% endif %}

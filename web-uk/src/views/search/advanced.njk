@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
@@ -124,7 +125,7 @@
               <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("govuk_alpha_search.filters.active_skills") }}</p>
               <ul class="govuk-list nexus-alpha-inline-list govuk-!-margin-bottom-0">
                 {% for skill in skillsList %}
-                  <li><strong class="govuk-tag govuk-tag--blue">{{ skill }}</strong></li>
+                  <li>{{ govukTag({ text: skill, classes: "govuk-tag--blue" }) }}</li>
                 {% endfor %}
               </ul>
             {% endif %}
@@ -247,9 +248,9 @@
               {% if listing.imageAssetUrl %}<img class="nexus-alpha-card-thumb" src="{{ listing.imageAssetUrl }}" alt="{{ t('govuk_alpha_search.results.image_alt', { title: listingTitle }) }}" width="120" height="90" loading="lazy" decoding="async">{% endif %}
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if listing.linkId %}<a class="govuk-link" href="{{ urlFor('/listings/' + (listing.linkId | string)) }}">{{ listingTitle }}</a>{% else %}{{ listingTitle }}{% endif %}</h3>
-                {% if listing.displayListingType == 'offer' %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_search.results.listing_offering") }}</strong>{% elif listing.displayListingType == 'request' %}<strong class="govuk-tag govuk-tag--orange">{{ t("govuk_alpha_search.results.listing_requesting") }}</strong>{% endif %}
+                {% if listing.displayListingType == 'offer' %}{{ govukTag({ text: t("govuk_alpha_search.results.listing_offering"), classes: "govuk-tag--green" }) }}{% elif listing.displayListingType == 'request' %}{{ govukTag({ text: t("govuk_alpha_search.results.listing_requesting"), classes: "govuk-tag--orange" }) }}{% endif %}
               </div>
-              {% if listing.is_featured %}<p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_search.results.featured") }}</strong></p>{% endif %}
+              {% if listing.is_featured %}<p class="govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha_search.results.featured"), classes: "govuk-tag--yellow" }) }}</p>{% endif %}
               {% if listing.displayDescription %}<p class="govuk-body govuk-!-margin-bottom-2">{{ truncate(listing.displayDescription, 200) }}</p>{% endif %}
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{% if listing.displayHours %}{{ t("govuk_alpha_search.results.hours_estimate", { hours: listing.displayHours }) }}{% else %}{{ t("govuk_alpha_search.results.hours_unknown") }}{% endif %}</p>
               {% if listing.linkId %}<p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/listings/' + (listing.linkId | string)) }}">{{ t("govuk_alpha_search.results.view_listing") }}</a></p>{% endif %}

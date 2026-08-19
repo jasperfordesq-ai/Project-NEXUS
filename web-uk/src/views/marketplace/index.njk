@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -75,7 +76,7 @@
             <div class="nexus-alpha-listing-row__body">
               <div class="nexus-alpha-module-row">
                 <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a></h2>
-                <strong class="govuk-tag {{ item.cardPriceTagClass }}">{{ item.cardPriceLabel }}</strong>
+                {{ govukTag({ text: item.cardPriceLabel, classes: (item.cardPriceTagClass) }) }}
               </div>
               {% if item.summary %}
                 <p class="govuk-body govuk-!-margin-bottom-1">{{ item.summary }}</p>

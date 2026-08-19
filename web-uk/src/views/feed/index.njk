@@ -254,7 +254,7 @@
                     {% for option in post.poll.options %}
                       <li>
                         <span class="govuk-!-font-weight-bold">{{ option.label }}</span>
-                        {% if option.isUserChoice %}<strong class="govuk-tag govuk-tag--blue">{{ t("feed.poll_your_choice") }}</strong>{% endif %}
+                        {% if option.isUserChoice %}{{ govukTag({ text: t("feed.poll_your_choice"), classes: "govuk-tag--blue" }) }}{% endif %}
                         <span class="govuk-body-s nexus-alpha-meta">{{ tc("feed.poll_votes", option.voteCount, { count: option.voteCount }) }}{% if option.percentage != null %} ({{ option.percentage }}%){% endif %}</span>
                         {% if option.percentage != null %}<progress class="nexus-alpha-poll-bar" max="100" value="{{ option.percentage }}" aria-label="{{ t('feed.poll_result_share', { option: option.label, percent: option.percentage }) }}">{{ option.percentage }}%</progress>{% endif %}
                       </li>

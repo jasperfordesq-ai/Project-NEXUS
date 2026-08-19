@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -55,10 +56,10 @@
         <article class="nexus-alpha-card">
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ entry.title }}</h2>
           {% if entry.isNotified %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("vol_depth.waitlist_spot_available") }}</strong>
+            {{ govukTag({ text: t("vol_depth.waitlist_spot_available"), classes: "govuk-tag--green" }) }}
             <p class="govuk-body govuk-!-margin-top-3">{{ t("vol_depth.waitlist_notified_hint") }}</p>
           {% else %}
-            <strong class="govuk-tag govuk-tag--yellow">{{ t("vol_depth.waitlist_position", { position: entry.position }) }}</strong>
+            {{ govukTag({ text: t("vol_depth.waitlist_position", { position: entry.position }), classes: "govuk-tag--yellow" }) }}
           {% endif %}
 
           <dl class="govuk-summary-list govuk-!-margin-top-4 govuk-!-margin-bottom-3">

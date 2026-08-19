@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/jobs/mine') }}" class="govuk-back-link">{{ t("jobs_t3.nav_mine") }}</a>
@@ -70,7 +71,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ app.applicantName }}</h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ app.statusLabel }}</strong>
+            {{ govukTag({ text: app.statusLabel, classes: "govuk-tag--blue" }) }}
           </div>
 
           {% if app.appliedOnLabel %}

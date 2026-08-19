@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -32,7 +33,7 @@
   <span class="govuk-caption-xl">{{ challenge.title }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ idea.title }}</h1>
-    <strong class="govuk-tag {{ idea.statusClass }}">{{ idea.statusLabel }}</strong>
+    {{ govukTag({ text: idea.statusLabel, classes: (idea.statusClass) }) }}
   </div>
 
   {% if idea.authorName %}
@@ -40,7 +41,7 @@
   {% endif %}
 
   <p class="govuk-body">
-    <strong class="govuk-tag govuk-tag--blue">{{ idea.voteText }}</strong>
+    {{ govukTag({ text: idea.voteText, classes: "govuk-tag--blue" }) }}
   </p>
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_ideation.idea.description_heading") }}</h2>

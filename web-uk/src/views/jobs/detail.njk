@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -36,7 +37,7 @@
   <span class="govuk-caption-xl">{{ job.posterName or tenantName or serviceName }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ job.title }}</h1>
-    <strong class="govuk-tag govuk-tag--blue">{{ t(job.typeTranslationKey) }}</strong>
+    {{ govukTag({ text: t(job.typeTranslationKey), classes: "govuk-tag--blue" }) }}
   </div>
 
   {% if not job.isOwner %}
@@ -99,7 +100,7 @@
     <h2 class="govuk-heading-m">{{ t("jobs.skills_label") }}</h2>
     <ul class="govuk-list nexus-alpha-tag-list">
       {% for skill in job.skillsList %}
-        <li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>
+        <li>{{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}</li>
       {% endfor %}
     </ul>
   {% endif %}
@@ -111,13 +112,13 @@
     {% if jobMatch.matched and jobMatch.matched.length %}
       <h3 class="govuk-heading-s govuk-!-margin-top-3">{{ t("jobs_t2.match_have") }}</h3>
       <ul class="govuk-list nexus-alpha-tag-list">
-        {% for skill in jobMatch.matched %}<li><strong class="govuk-tag govuk-tag--green">{{ skill }}</strong></li>{% endfor %}
+        {% for skill in jobMatch.matched %}<li>{{ govukTag({ text: skill, classes: "govuk-tag--green" }) }}</li>{% endfor %}
       </ul>
     {% endif %}
     {% if jobMatch.missing and jobMatch.missing.length %}
       <h3 class="govuk-heading-s govuk-!-margin-top-3">{{ t("jobs_t2.match_missing") }}</h3>
       <ul class="govuk-list nexus-alpha-tag-list">
-        {% for skill in jobMatch.missing %}<li><strong class="govuk-tag govuk-tag--orange">{{ skill }}</strong></li>{% endfor %}
+        {% for skill in jobMatch.missing %}<li>{{ govukTag({ text: skill, classes: "govuk-tag--orange" }) }}</li>{% endfor %}
       </ul>
     {% endif %}
   {% endif %}

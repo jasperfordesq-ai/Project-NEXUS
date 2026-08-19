@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
@@ -58,7 +59,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/courses/' + (course.id | string)) }}">{{ course.title }}</a>
             </h2>
-            <strong class="govuk-tag {{ course.costTagClass }}">{{ course.costLabel }}</strong>
+            {{ govukTag({ text: course.costLabel, classes: (course.costTagClass) }) }}
           </div>
           {% if course.excerpt %}
             <p class="govuk-body govuk-!-margin-bottom-1">{{ course.excerpt }}</p>

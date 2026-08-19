@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -45,7 +46,7 @@
   <span class="govuk-caption-xl">{{ course.authorName or tenantName }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ course.title }}</h1>
-    <strong class="govuk-tag {{ course.costTagClass }}">{{ course.costLabel }}</strong>
+    {{ govukTag({ text: course.costLabel, classes: (course.costTagClass) }) }}
   </div>
 
   {% if course.levelLabel %}
@@ -68,9 +69,9 @@
             {{ prerequisite.title }}
           {% endif %}
           {% if prerequisite.completed %}
-            <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.completed_tag") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_courses.completed_tag"), classes: "govuk-tag--green" }) }}
           {% else %}
-            <strong class="govuk-tag govuk-tag--grey">{{ t("courses.prerequisite_todo") }}</strong>
+            {{ govukTag({ text: t("courses.prerequisite_todo"), classes: "govuk-tag--grey" }) }}
           {% endif %}
         </li>
       {% endfor %}

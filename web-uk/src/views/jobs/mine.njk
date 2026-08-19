@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("jobs_t3.mine_caption", { community: tenantName or serviceName }) }}</span>
@@ -58,7 +59,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id) }}">{{ job.title }}</a>
             </h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ t(job.statusTranslationKey) }}</strong>
+            {{ govukTag({ text: t(job.statusTranslationKey), classes: "govuk-tag--blue" }) }}
           </div>
 
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">

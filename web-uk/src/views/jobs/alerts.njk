@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t4.caption", { community: tenantName }) }}</span>
@@ -52,9 +53,9 @@
             <div class="nexus-alpha-module-row">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ alert.primaryCriteria }}</h3>
               {% if alert.isActive %}
-                <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha.jobs_t4.active_tag") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha.jobs_t4.active_tag"), classes: "govuk-tag--green" }) }}
               {% else %}
-                <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha.jobs_t4.paused_tag") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha.jobs_t4.paused_tag"), classes: "govuk-tag--grey" }) }}
               {% endif %}
             </div>
 

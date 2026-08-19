@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("explore.caption", { community: tenantName }) }}</span>
@@ -40,7 +41,7 @@
           {% else %}
             {{ listing.title }}
           {% endif %}
-          <strong class="govuk-tag {{ listing.tagClass }} govuk-!-margin-left-1">{{ t("listings." + listing.type) }}</strong>
+          {{ govukTag({ text: t("listings." + listing.type), classes: (listing.tagClass) ~ " govuk-!-margin-left-1" }) }}
         </li>
       {% endfor %}
     </ul>

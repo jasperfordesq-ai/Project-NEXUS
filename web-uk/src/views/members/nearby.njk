@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -19,7 +20,7 @@
         <a class="govuk-link" href="{{ urlFor('/members?sort=joined&order=DESC') }}">{{ t("govuk_alpha_members.filters.new") }}</a>
         <a class="govuk-link" href="{{ urlFor('/members?sort=hours_given&order=DESC') }}">{{ t("govuk_alpha_members.filters.active") }}</a>
         <a class="govuk-link" href="{{ urlFor('/members/discover') }}">{{ t("govuk_alpha_members.filters.recommended") }}</a>
-        <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.near_me") }}</strong>
+        {{ govukTag({ text: t("govuk_alpha_members.filters.near_me"), classes: "govuk-tag--blue" }) }}
       </nav>
 
       {% if not hasLocation %}
@@ -93,13 +94,13 @@
                         <a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>
                       </h3>
                       {% if member.isVerified %}
-                        <strong class="govuk-tag govuk-tag--green">{{ t("members.verified") }}</strong>
+                        {{ govukTag({ text: t("members.verified"), classes: "govuk-tag--green" }) }}
                       {% endif %}
                       {% if member.levelLabel %}
-                        <strong class="govuk-tag govuk-tag--turquoise">{{ member.levelLabel }}</strong>
+                        {{ govukTag({ text: member.levelLabel, classes: "govuk-tag--turquoise" }) }}
                       {% endif %}
                       {% if member.connectionLabel %}
-                        <strong class="govuk-tag {{ member.connectionTagClass }}">{{ member.connectionLabel }}</strong>
+                        {{ govukTag({ text: member.connectionLabel, classes: (member.connectionTagClass) }) }}
                       {% endif %}
                     </div>
 

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -29,7 +30,7 @@
       {% for event in items %}
         <article class="nexus-alpha-card">
           <h2 class="govuk-heading-m">{{ event.title }}</h2>
-          {% if event.recurring %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_events.moderation.recurring_series") }}</strong>{% endif %}
+          {% if event.recurring %}{{ govukTag({ text: t("govuk_alpha_events.moderation.recurring_series"), classes: "govuk-tag--blue" }) }}{% endif %}
           <dl class="govuk-summary-list govuk-!-margin-top-3">
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.organizer") }}</dt><dd class="govuk-summary-list__value">{{ event.organizerName }}</dd></div>
             {% if event.submittedLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.submitted") }}</dt><dd class="govuk-summary-list__value">{{ event.submittedLabel }}</dd></div>{% endif %}

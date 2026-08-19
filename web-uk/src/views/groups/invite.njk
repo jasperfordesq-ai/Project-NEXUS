@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -95,7 +96,7 @@
               {% if invite.type == "email" and invite.email %}
                 {{ invite.email }}
               {% else %}
-                <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_groups.invite.pending_type_link") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_groups.invite.pending_type_link"), classes: "govuk-tag--blue" }) }}
               {% endif %}
             </td>
             <td class="govuk-table__cell">{{ invite.inviterName }}</td>

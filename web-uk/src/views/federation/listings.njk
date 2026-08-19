@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -106,7 +107,7 @@
 
             {% if listing.tenantName %}
               <p class="govuk-body-s govuk-!-margin-bottom-0">
-                <strong class="govuk-tag govuk-tag--grey">{{ listing.tenantName }}</strong>
+                {{ govukTag({ text: listing.tenantName, classes: "govuk-tag--grey" }) }}
               </p>
             {% endif %}
           </article>

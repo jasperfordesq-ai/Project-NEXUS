@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("fed2.messages.back") }}</a>
@@ -92,9 +93,9 @@
               <a class="govuk-link" href="{{ urlFor(thread.href) }}" title="{{ t('fed2.messages.open_conversation') }}">{{ thread.partnerName }}</a>
             </h3>
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-              <strong class="govuk-tag govuk-tag--grey">{{ thread.partnerTenantName }}</strong>
+              {{ govukTag({ text: thread.partnerTenantName, classes: "govuk-tag--grey" }) }}
               {% if thread.unreadCount > 0 %}
-                <strong class="govuk-tag govuk-tag--blue">{{ t("fed2.messages.unread_count", { count: thread.unreadCount }) }}</strong>
+                {{ govukTag({ text: t("fed2.messages.unread_count", { count: thread.unreadCount }), classes: "govuk-tag--blue" }) }}
                 <span class="govuk-visually-hidden">{{ tc("fed2.messages.unread_aria", thread.unreadCount, { count: thread.unreadCount }) }}</span>
               {% endif %}
             </p>

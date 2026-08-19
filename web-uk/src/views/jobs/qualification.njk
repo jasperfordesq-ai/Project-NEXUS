@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ qualification.jobId) }}">{{ t("govuk_alpha_jobs.shared.back_to_opportunity") }}</a>
@@ -17,7 +18,7 @@
   <div class="nexus-alpha-card govuk-!-margin-bottom-6">
     <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ t("govuk_alpha_jobs.qualification.overall_match") }}</h2>
     <p class="govuk-heading-l govuk-!-margin-bottom-1">{{ qualification.percentage }}%
-      <strong class="govuk-tag {{ qualification.levelTagClass }} govuk-!-margin-left-2">{{ qualification.levelLabel }}</strong>
+      {{ govukTag({ text: qualification.levelLabel, classes: (qualification.levelTagClass) ~ " govuk-!-margin-left-2" }) }}
     </p>
     <progress value="{{ qualification.percentage }}" max="100" aria-label="{{ t('govuk_alpha_jobs.qualification.overall_match') }}: {{ qualification.percentage }}%">{{ qualification.percentage }}%</progress>
     <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-top-1 govuk-!-margin-bottom-0">

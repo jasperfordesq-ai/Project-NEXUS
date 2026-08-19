@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro renderComment(comment) %}
   <li id="comment-{{ comment.id }}" class="nexus-alpha-module-row">
@@ -29,8 +30,8 @@
       <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_detail.caption", { community: tenantName }) }}</span>
       <div class="nexus-alpha-module-row">
         <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ poll.question }}</h1>
-        {% if poll.status == "open" %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.poll_detail.open_tag") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_gamification.poll_detail.closed_tag") }}</strong>{% endif %}
-        {% if poll.pollType == "ranked" %}<strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.poll_detail.ranked_tag") }}</strong>{% endif %}
+        {% if poll.status == "open" %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_detail.open_tag"), classes: "govuk-tag--green" }) }}{% else %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_detail.closed_tag"), classes: "govuk-tag--grey" }) }}{% endif %}
+        {% if poll.pollType == "ranked" %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_detail.ranked_tag"), classes: "govuk-tag--purple" }) }}{% endif %}
       </div>
 
       <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
@@ -77,7 +78,7 @@
           <div class="govuk-!-margin-bottom-3">
             <p class="govuk-body govuk-!-margin-bottom-1">
               {{ option.text }}
-              {% if poll.votedOptionId and poll.votedOptionId == option.id %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.poll_detail.your_choice") }}</strong>{% endif %}
+              {% if poll.votedOptionId and poll.votedOptionId == option.id %}{{ govukTag({ text: t("govuk_alpha_gamification.poll_detail.your_choice"), classes: "govuk-tag--blue" }) }}{% endif %}
             </p>
             <progress max="100" value="{{ option.percentage }}" aria-label="{{ option.text }}: {{ option.percentage }}%">{{ option.percentage }}%</progress>
             <span class="govuk-body-s">{{ option.percentage }}% - {{ tc("govuk_alpha_gamification.poll_detail.votes_count", option.voteCount, { count: option.voteCount }) }}</span>

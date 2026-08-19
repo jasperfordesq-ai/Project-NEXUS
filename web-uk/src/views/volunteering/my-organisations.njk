@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=organisations') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -53,7 +54,7 @@
             <a class="govuk-link" href="{{ urlFor('/organisations/' ~ organization.id) }}">{{ organization.name }}</a>
           </h2>
           <p class="govuk-!-margin-bottom-3">
-            <strong class="govuk-tag {{ organization.status.className }}">{{ organization.status.label }}</strong>
+            {{ govukTag({ text: organization.status.label, classes: (organization.status.className) }) }}
           </p>
           <dl class="govuk-summary-list govuk-!-margin-bottom-0">
             <div class="govuk-summary-list__row">
@@ -89,7 +90,7 @@
             </a>
           {% elif organization.canManage %}
             <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-1">
-              <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval") }}</strong>
+              {{ govukTag({ text: t("govuk_alpha_volunteering.my_orgs.awaiting_approval"), classes: "govuk-tag--yellow" }) }}
             </p>
             <p class="govuk-hint govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval_hint") }}</p>
           {% endif %}

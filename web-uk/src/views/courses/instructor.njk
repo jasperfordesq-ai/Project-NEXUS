@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/courses') }}" class="govuk-back-link">{{ t("courses.back") }}</a>
@@ -53,7 +54,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ course.title }}</h2>
-            <strong class="govuk-tag {{ course.instructorStatusClass }}">{{ course.instructorStatusLabel }}</strong>
+            {{ govukTag({ text: course.instructorStatusLabel, classes: (course.instructorStatusClass) }) }}
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
             {{ t("govuk_alpha_courses.enrolments_count", { count: course.enrollmentCount }) }}

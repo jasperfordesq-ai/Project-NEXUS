@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
@@ -53,7 +54,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/ideation/campaigns/' ~ campaign.id) }}">{{ campaign.title }}</a>
             </h2>
-            <strong class="govuk-tag {{ campaignStatusClasses[campaign.status] }}">{{ t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status) }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status), classes: (campaignStatusClasses[campaign.status]) }) }}
           </div>
           {% if campaign.description %}
             <p class="govuk-body govuk-!-margin-bottom-1">{{ campaign.description }}</p>

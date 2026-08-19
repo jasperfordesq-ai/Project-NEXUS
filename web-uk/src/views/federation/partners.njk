@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/federation') }}">{{ t("federation.partners_list.back") }}</a>
@@ -24,9 +25,9 @@
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ partner.name }}</a></h2>
             {% if partner.isExternal %}
-              <strong class="govuk-tag govuk-tag--blue">{{ t("federation.external_tag") }}</strong>
+              {{ govukTag({ text: t("federation.external_tag"), classes: "govuk-tag--blue" }) }}
             {% elif partner.levelLabel %}
-              <strong class="govuk-tag govuk-tag--purple">{{ partner.levelLabel }}</strong>
+              {{ govukTag({ text: partner.levelLabel, classes: "govuk-tag--purple" }) }}
             {% endif %}
           </div>
 
@@ -45,7 +46,7 @@
             <p class="govuk-body-s govuk-!-margin-bottom-2">
               <span class="nexus-alpha-meta">{{ t("federation.permissions_label") }}:</span>
               {% for permissionLabel in partner.permissionLabels %}
-                <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ permissionLabel }}</strong>
+                {{ govukTag({ text: permissionLabel, classes: "govuk-tag--grey govuk-!-margin-right-1" }) }}
               {% endfor %}
             </p>
           {% endif %}

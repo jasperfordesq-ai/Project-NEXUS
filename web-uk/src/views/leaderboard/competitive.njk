@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
@@ -99,7 +100,7 @@
               {% else %}
                 {{ row.name }}
               {% endif %}
-              {% if row.isCurrentUser %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.common.you") }}</strong>{% endif %}
+              {% if row.isCurrentUser %}{{ govukTag({ text: t("govuk_alpha_gamification.common.you"), classes: "govuk-tag--blue" }) }}{% endif %}
             </td>
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.scoreLabel }}</td>
           </tr>

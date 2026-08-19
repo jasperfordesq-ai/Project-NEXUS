@@ -16,7 +16,9 @@ describe('read-only member rating accessibility', () => {
       'utf8'
     );
     expect(template).not.toContain('app-star-display');
-    expect(template).toContain('class="govuk-tag govuk-tag--blue">{{ t("ux.rating_out_of"');
+    // The rating tag now goes through the govukTag macro; what matters is that the
+    // rating stays inside a tag and keeps its assistive companion, not the raw markup.
+    expect(template).toMatch(/govukTag\(\{ text: t\("ux\.rating_out_of"/);
     expect(template).toContain('class="govuk-visually-hidden">{{ t("polish_members.rating_accessible"');
   });
 });

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/coupons') }}" class="govuk-back-link">{{ t("polish_commerce.coupon_detail_back") }}</a>
@@ -16,7 +17,7 @@
   <h1 class="govuk-heading-xl">{{ coupon.title }}</h1>
 
   {% if coupon.discountLabel %}
-    <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ coupon.discountLabel }}</strong></p>
+    <p class="govuk-body">{{ govukTag({ text: coupon.discountLabel, classes: "govuk-tag--green" }) }}</p>
   {% endif %}
 
   {% if coupon.description %}

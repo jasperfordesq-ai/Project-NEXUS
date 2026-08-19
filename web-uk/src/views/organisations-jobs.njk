@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set organisationName = organisation.name or t("govuk_alpha_organisations.jobs.title") %}
 
@@ -44,7 +45,7 @@
               {% if job.typeLabel %}
                 <div>
                   <dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.jobs.term_type") }}</dt>
-                  <dd><strong class="govuk-tag {{ job.typeTagClass }}">{{ job.typeLabel }}</strong></dd>
+                  <dd>{{ govukTag({ text: job.typeLabel, classes: (job.typeTagClass) }) }}</dd>
                 </div>
               {% endif %}
 

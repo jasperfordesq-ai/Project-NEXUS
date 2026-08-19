@@ -1,3 +1,4 @@
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {# Copyright © 2024–2026 Jasper Ford #}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
@@ -9,7 +10,7 @@
 <h3 class="govuk-heading-m">{{ t("event_registration.settings.title") }}</h3>
 <p class="govuk-body">{{ t("event_registration.settings.description") }}</p>
 <p class="govuk-body">
-  <strong class="govuk-tag">{{ t("event_registration.statuses." + settings.status) if organizer.settings and settings.status else t("event_registration.settings.not_created") }}</strong>
+  {{ govukTag({ text: t("event_registration.statuses." + settings.status) if organizer.settings and settings.status else t("event_registration.settings.not_created") }) }}
   {% if organizer.settings %}{{ t("event_registration.settings.revision", { revision: settings.revision }) }}{% endif %}
 </p>
 <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/settings') }}" novalidate>
@@ -76,7 +77,7 @@
   <div class="govuk-summary-card">
     <div class="govuk-summary-card__title-wrapper">
       <h4 class="govuk-summary-card__title">{{ form.name }}</h4>
-      <strong class="govuk-tag">{{ t("event_registration.statuses." + form.status) }}</strong>
+      {{ govukTag({ text: t("event_registration.statuses." + form.status) }) }}
     </div>
     <div class="govuk-summary-card__content">
       <p class="govuk-body">{{ t("event_registration.forms.version", { version: form.version_number }) }}</p>

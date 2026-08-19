@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -92,9 +93,9 @@
             <li class="nexus-alpha-card">
               <p class="govuk-!-margin-bottom-1">
                 {% if message.role == "user" %}
-                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_aichat.you") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_aichat.you"), classes: "govuk-tag--blue" }) }}
                 {% else %}
-                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_aichat.assistant") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_aichat.assistant"), classes: "govuk-tag--green" }) }}
                 {% endif %}
               </p>
               <div class="govuk-body govuk-!-margin-bottom-0">{{ message.content | nl2br | safe }}</div>

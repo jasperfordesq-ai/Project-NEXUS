@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("clubs.caption", { community: tenantName }) }}</span>
@@ -30,7 +31,7 @@
               <img class="nexus-alpha-avatar" src="{{ club.logoUrl | thumb(96, 96) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="48" height="48">
             {% endif %}
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ club.name }}</h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ tc("clubs.members_count", club.memberCount, { count: club.memberCount }) }}</strong>
+            {{ govukTag({ text: tc("clubs.members_count", club.memberCount, { count: club.memberCount }), classes: "govuk-tag--blue" }) }}
           </div>
 
           {% if club.description %}

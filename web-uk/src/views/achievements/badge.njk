@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
@@ -19,9 +20,9 @@
   {% endif %}
 
   {% if badge.earned %}
-    <strong class="govuk-tag govuk-tag--green govuk-!-margin-bottom-4">{{ t("govuk_alpha_gamification.badge.earned_status") }}</strong>
+    {{ govukTag({ text: t("govuk_alpha_gamification.badge.earned_status"), classes: "govuk-tag--green govuk-!-margin-bottom-4" }) }}
   {% else %}
-    <strong class="govuk-tag govuk-tag--grey govuk-!-margin-bottom-4">{{ t("govuk_alpha_gamification.badge.not_earned_status") }}</strong>
+    {{ govukTag({ text: t("govuk_alpha_gamification.badge.not_earned_status"), classes: "govuk-tag--grey govuk-!-margin-bottom-4" }) }}
   {% endif %}
 
   <dl class="govuk-summary-list">

@@ -12022,7 +12022,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('A thoughtful neighbour.');
     expect(response.text).toContain('Grace Hopper');
     expect(response.text).toContain('<h3 class="govuk-heading-m govuk-!-margin-bottom-1">Review by Grace Hopper</h3>');
-    expect(response.text).toContain('<strong class="govuk-tag govuk-tag--blue">5 out of 5</strong>');
+    expect(response.text).toMatch(/<strong class="govuk-tag govuk-tag--blue">\s*5 out of 5\s*<\/strong>/);
     expect(response.text).not.toContain('app-star-display');
     expect(response.text).toContain('Builds useful machines with neighbours.');
     expect(response.text).toContain('Electronics');
@@ -16924,8 +16924,8 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('govuk-tag--blue">Message</strong>');
-    expect(response.text).toContain('govuk-tag--grey">Update</strong>');
+    expect(response.text).toMatch(/govuk-tag--blue">\s*Message\s*<\/strong>/);
+    expect(response.text).toMatch(/govuk-tag--grey">\s*Update\s*<\/strong>/);
     expect(response.text).toContain('Sign out');
     expect(response.text).not.toContain('name="group_key" value="message:21"');
     expect(response.text).toContain('name="group_key" value="system:23"');
@@ -19237,7 +19237,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Expected applications');
     expect(response.text).toContain('14 days');
     expect(response.text).toContain('Posted 4 days ago');
-    expect(response.text).toContain('govuk-tag--yellow">Below average</strong>');
+    expect(response.text).toMatch(/govuk-tag--yellow">\s*Below average\s*<\/strong>/);
     expect(response.text).toContain('Salary vs market');
     expect(response.text).toContain('+9% above average');
     expect(response.text).not.toContain('class="govuk-button" data-module="govuk-button" href="/jobs/501/pipeline"');
@@ -20019,7 +20019,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="https://calendar.google.com/calendar/render?');
     expect(response.text).toContain('Add to Google Calendar');
     expect(response.text).toContain('opens in new tab');
-    expect(response.text).toContain('govuk-tag govuk-tag--yellow">Awaiting your response');
+    expect(response.text).toMatch(/govuk-tag govuk-tag--yellow">\s*Awaiting your response/);
     expect(response.text).toContain('action="/jobs/interviews/33/accept"');
     expect(response.text).toContain('Accept interview');
     expect(response.text).toContain('action="/jobs/interviews/33/decline"');
@@ -20035,7 +20035,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('action="/jobs/offers/44/reject"');
     expect(response.text).toContain('Accepting this offer fills the role and, for timebank opportunities, transfers the agreed time credits. This cannot be undone.');
     expect(response.text).toContain('Expired Coordinator');
-    expect(response.text).toContain('govuk-tag govuk-tag--grey">Expired');
+    expect(response.text).toMatch(/govuk-tag govuk-tag--grey">\s*Expired/);
     expect(response.text).toContain('No pay specified');
     expect(response.text).not.toContain('action="/jobs/offers/45/accept"');
     expect(response.text).not.toContain('action="/jobs/offers/45/reject"');
@@ -24256,7 +24256,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Leading');
     expect(response.text).toContain('Your choice');
     expect(response.text).toContain('Thanks for voting. Results will be shown when the poll closes.');
-    expect(response.text).toContain('Outdoors <strong class="govuk-tag govuk-tag--blue">Your choice</strong>');
+    expect(response.text).toMatch(/Outdoors\s*<strong class="govuk-tag govuk-tag--blue">\s*Your choice\s*<\/strong>/);
     expect(response.text).not.toContain('Indoors: 74%');
     expect(response.text).toContain('This poll has no options yet.');
 
@@ -25930,8 +25930,8 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('class="govuk-checkboxes__input"');
     expect(page.text).toContain('Consent wording');
     expect(page.text.match(/<h4 class="govuk-summary-card__title">Selected members<\/h4>/g)).toHaveLength(2);
-    expect(page.text).toContain('<strong class="govuk-tag">Issued</strong>');
-    expect(page.text).toContain('<strong class="govuk-tag">Accepted</strong>');
+    expect(page.text).toMatch(/<strong class="govuk-tag">\s*Issued\s*<\/strong>/);
+    expect(page.text).toMatch(/<strong class="govuk-tag">\s*Accepted\s*<\/strong>/);
     expect(page.text).toContain('/events/42/registration/invitations/71/accept');
     expect(page.text).not.toContain('/events/42/registration/invitations/72/accept');
     expect(page.text).toContain('id="guest-phone" name="phone" type="tel"');
@@ -27875,7 +27875,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="group-subgroups"');
     expect(response.text).toContain('Subgroups');
     expect(response.text).toContain('Repair circle');
-    expect(response.text).toContain('>Private</strong>');
+    expect(response.text).toMatch(/>\s*Private\s*<\/strong>/);
     expect(response.text).toContain('4 members');
     expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/groups/repair-circle.png" alt=""`);
     expect(response.text).toContain('href="/acme/accessible/groups/901"');
@@ -28573,7 +28573,7 @@ describe('shared accessible frontend shell', () => {
     });
     expect(index.text).toContain('Public ladder offer');
     expect(api.getBookmarks).toHaveBeenCalledWith('test-token', { type: 'listing', page: 1, per_page: 50 });
-    expect(index.text).toContain('<strong class="govuk-tag govuk-tag--green">Saved</strong>');
+    expect(index.text).toMatch(/<strong class="govuk-tag govuk-tag--green">\s*Saved\s*<\/strong>/);
     expect(index.text).toContain('<option value="9" selected>Home and garden</option>');
     expect(index.text).toContain('href="/listings?q=ladder&amp;type=offer&amp;category_id=9&amp;hours=short&amp;service=remote&amp;near=10&amp;posted=7&amp;sort=recommended&amp;cursor=next-page"');
     expect(index.text).toContain('href="/listings/new"');
@@ -28621,7 +28621,7 @@ describe('shared accessible frontend shell', () => {
     expect(detail.text).toContain('About the member');
     expect(detail.text).toContain('Ada Lovelace');
     expect(api.getMemberVerificationBadges).toHaveBeenCalledWith('test-token', 77);
-    expect(detail.text).toContain('>Verified</strong>');
+    expect(detail.text).toMatch(/>\s*Verified\s*<\/strong>/);
     expect(detail.text).toContain('ID verified');
     expect(detail.text).toContain('Background check verified');
     expect(detail.text).not.toContain('Unsafe API fallback');

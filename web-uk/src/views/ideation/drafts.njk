@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -43,7 +44,7 @@
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ draft.title if draft.title else t("govuk_alpha_ideation.drafts.untitled") }}</h2>
-            <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_ideation.drafts.status") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_ideation.drafts.status"), classes: "govuk-tag--yellow" }) }}
           </div>
 
           {% if draft.updatedAt %}

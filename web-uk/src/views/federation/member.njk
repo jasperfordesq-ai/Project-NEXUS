@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/federation/members') }}" class="govuk-back-link">{{ t("federation.member.back") }}</a>
@@ -39,7 +40,7 @@
       <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ member.name }}</h1>
       {% if member.reputationCount > 0 %}
         <p class="govuk-body-s govuk-!-margin-bottom-1">
-          <strong class="govuk-tag {{ member.reputationTagClass }}">{{ t("fed2.reviews.reputation_label", { score: member.reputationScoreLabel }) }}</strong>
+          {{ govukTag({ text: t("fed2.reviews.reputation_label", { score: member.reputationScoreLabel }), classes: (member.reputationTagClass) }) }}
           <span class="nexus-alpha-meta">{{ member.reputationCountLabel }}</span>
         </p>
       {% endif %}
@@ -78,7 +79,7 @@
       <dd class="govuk-summary-list__value">
         {% if member.skills.length %}
           {% for skill in member.skills %}
-            <strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong>
+            {{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}
           {% endfor %}
         {% else %}
           {{ t("federation.member.no_skills") }}
@@ -95,9 +96,9 @@
       <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/opt-in') }}">{{ t("fed2.member_actions.optin_link") }}</a>
     {% else %}
       {% if member.connectionStatus == "accepted" %}
-        <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("fed2.member_actions.connect_accepted") }}</strong></p>
+        <p class="govuk-body">{{ govukTag({ text: t("fed2.member_actions.connect_accepted"), classes: "govuk-tag--green" }) }}</p>
       {% elif member.connectionStatus == "pending" or member.connectionStatus == "requested" %}
-        <p class="govuk-body"><strong class="govuk-tag govuk-tag--yellow">{{ t("fed2.member_actions.connect_pending") }}</strong></p>
+        <p class="govuk-body">{{ govukTag({ text: t("fed2.member_actions.connect_pending"), classes: "govuk-tag--yellow" }) }}</p>
       {% else %}
         <form method="post" action="{{ urlFor('/federation/connections') }}" class="govuk-!-margin-bottom-6">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -162,8 +163,8 @@
             {% endif %}
             {% if review.partnerName or review.verified %}
               <p class="govuk-body-s govuk-!-margin-bottom-1 nexus-alpha-tag-list">
-                {% if review.partnerName %}<strong class="govuk-tag govuk-tag--grey">{{ t("fed2.reviews.from_partner", { community: review.partnerName }) }}</strong>{% endif %}
-                {% if review.verified %}<strong class="govuk-tag govuk-tag--green">{{ t("fed2.reviews.verified") }}</strong>{% endif %}
+                {% if review.partnerName %}{{ govukTag({ text: t("fed2.reviews.from_partner", { community: review.partnerName }), classes: "govuk-tag--grey" }) }}{% endif %}
+                {% if review.verified %}{{ govukTag({ text: t("fed2.reviews.verified"), classes: "govuk-tag--green" }) }}{% endif %}
               </p>
             {% endif %}
             {% if review.comment %}

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
@@ -49,7 +50,7 @@
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                   <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ goal.title }}</a>
                 </h3>
-                <strong class="govuk-tag {{ goal.statusClass }}">{{ goal.statusLabel }}</strong>
+                {{ govukTag({ text: goal.statusLabel, classes: (goal.statusClass) }) }}
               </div>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.owned_by", { name: goal.ownerName }) }}</p>
               <progress max="100" value="{{ goal.progressPercent }}" aria-label="{{ goal.progressPercent }}%">{{ goal.progressPercent }}%</progress>

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/podcasts/studio') }}">{{ t("govuk_alpha_commerce.podcast_studio.back_to_studio") }}</a>
@@ -98,7 +99,7 @@
               {% if episode.episodeNumberLabel %}<span class="govuk-body-s nexus-alpha-meta">{{ episode.episodeNumberLabel }} - </span>{% endif %}
               {{ episode.title }}
             </span>
-            <strong class="govuk-tag {{ episode.statusTag }}">{{ episode.statusLabel }}</strong>
+            {{ govukTag({ text: episode.statusLabel, classes: (episode.statusTag) }) }}
           </div>
           <div class="nexus-alpha-actions govuk-!-margin-top-2">
             {% if episode.status != "published" %}

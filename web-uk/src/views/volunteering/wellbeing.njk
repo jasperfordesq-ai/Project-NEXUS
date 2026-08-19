@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -55,7 +56,7 @@
 
   <p class="govuk-body">
     {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
-    <strong class="govuk-tag {{ wellbeing.risk.className }}">{{ wellbeing.risk.label }}</strong>
+    {{ govukTag({ text: wellbeing.risk.label, classes: (wellbeing.risk.className) }) }}
   </p>
 
   <dl class="nexus-alpha-stat-grid">

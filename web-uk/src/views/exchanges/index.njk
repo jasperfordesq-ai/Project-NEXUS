@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {# Community-name caption, matching every sibling page — this previously
@@ -83,11 +84,11 @@
           <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
             <a class="govuk-link" href="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">{{ exchange.listingTitle }}</a>
           </h3>
-          <strong class="govuk-tag {{ exchange.statusClass }}">{{ exchange.statusLabel }}</strong>
+          {{ govukTag({ text: exchange.statusLabel, classes: (exchange.statusClass) }) }}
           {% if exchange.actionNeeded == 'respond' %}
-            <strong class="govuk-tag govuk-tag--red">{{ t("exchanges.action_respond") }}</strong>
+            {{ govukTag({ text: t("exchanges.action_respond"), classes: "govuk-tag--red" }) }}
           {% elif exchange.actionNeeded == 'confirm' %}
-            <strong class="govuk-tag govuk-tag--red">{{ t("exchanges.action_confirm") }}</strong>
+            {{ govukTag({ text: t("exchanges.action_confirm"), classes: "govuk-tag--red" }) }}
           {% endif %}
 
           <dl class="nexus-alpha-inline-list govuk-!-margin-top-3">

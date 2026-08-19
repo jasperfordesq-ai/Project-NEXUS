@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -164,7 +165,7 @@
                 <br><span class="govuk-hint govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.expenses.col_notes") }}: {{ expense.reviewNotes }}</span>
               {% endif %}
             </td>
-            <td class="govuk-table__cell"><strong class="govuk-tag {{ expense.status.className }}">{{ expense.status.label }}</strong></td>
+            <td class="govuk-table__cell">{{ govukTag({ text: expense.status.label, classes: (expense.status.className) }) }}</td>
             <td class="govuk-table__cell">{{ expense.submittedAtLabel or "—" }}</td>
           </tr>
         {% endfor %}

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -77,7 +78,7 @@
         <li class="nexus-alpha-card">
           <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
             {{ day.title }}
-            <strong class="govuk-tag {{ day.status.className }}">{{ day.status.label }}</strong>
+            {{ govukTag({ text: day.status.label, classes: (day.status.className) }) }}
           </h3>
           {% if day.description %}
             <p class="govuk-body">{{ day.description }}</p>
@@ -119,9 +120,9 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">{{ donation.amountLabel }} {{ donation.currency }}</td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag {{ donation.status.className }}">{{ donation.status.label }}</strong>
+              {{ govukTag({ text: donation.status.label, classes: (donation.status.className) }) }}
               {% if donation.isAnonymous %}
-                <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.donations.anonymous_tag") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_volunteering.donations.anonymous_tag"), classes: "govuk-tag--grey" }) }}
               {% endif %}
             </td>
             <td class="govuk-table__cell">{{ donation.methodLabel }}</td>

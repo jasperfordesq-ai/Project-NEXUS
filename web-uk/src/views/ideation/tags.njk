@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.tags.back_to_challenges") }}</a>
@@ -45,7 +46,7 @@
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ challenge.title }}</a>
               </h3>
-              <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+              {{ govukTag({ text: challenge.statusLabel, classes: (challenge.statusClass) }) }}
             </div>
             {% if challenge.description %}
               <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description }}</p>

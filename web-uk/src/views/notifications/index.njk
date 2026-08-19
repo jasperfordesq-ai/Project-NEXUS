@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block mainContent %}
@@ -71,9 +72,9 @@
       <div class="nexus-alpha-card">
         <div class="nexus-alpha-module-row">
           <p class="govuk-body govuk-!-margin-bottom-1">
-            <strong class="govuk-tag govuk-tag--{{ notification.categoryColour }}">{{ notification.categoryLabel }}</strong>
-            {% if notification.isGrouped %}<strong class="govuk-tag govuk-tag--purple">{{ t("notifications.group_tag", { count: notification.group_count or 1 }) }}</strong>{% endif %}
-            {% if notification.unread %}<strong class="govuk-tag govuk-tag--blue">{{ t("notifications.new_tag") }}</strong>{% endif %}
+            {{ govukTag({ text: notification.categoryLabel, classes: "govuk-tag--" ~ (notification.categoryColour) }) }}
+            {% if notification.isGrouped %}{{ govukTag({ text: t("notifications.group_tag", { count: notification.group_count or 1 }), classes: "govuk-tag--purple" }) }}{% endif %}
+            {% if notification.unread %}{{ govukTag({ text: t("notifications.new_tag"), classes: "govuk-tag--blue" }) }}{% endif %}
             {% if notificationLink %}<a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(notificationLink) }}">{{ notification.displayText }}</a>{% else %}{{ notification.displayText }}{% endif %}
           </p>
           <div class="nexus-alpha-actions">

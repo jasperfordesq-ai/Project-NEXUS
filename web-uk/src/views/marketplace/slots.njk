@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
@@ -54,10 +55,10 @@
               <span class="govuk-body-s nexus-alpha-meta">{{ slot.slotEndLabel }}</span>
               <div class="govuk-!-margin-top-1">
                 {% if slot.isRecurring %}
-                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_commerce.slots.recurring") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_commerce.slots.recurring"), classes: "govuk-tag--blue" }) }}
                 {% endif %}
                 {% if not slot.isActive %}
-                  <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_commerce.slots.inactive") }}</strong>
+                  {{ govukTag({ text: t("govuk_alpha_commerce.slots.inactive"), classes: "govuk-tag--yellow" }) }}
                 {% endif %}
               </div>
             </td>

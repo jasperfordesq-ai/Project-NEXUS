@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
@@ -56,7 +57,7 @@
                 <div class="nexus-alpha-module-row">
                   <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ template.title }}</h2>
                   {% if template.category %}
-                    <strong class="govuk-tag govuk-tag--grey">{{ template.category }}</strong>
+                    {{ govukTag({ text: template.category, classes: "govuk-tag--grey" }) }}
                   {% endif %}
                 </div>
 

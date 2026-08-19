@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace') }}">{{ t("marketplace.back") }}</a>
@@ -14,7 +15,7 @@
     <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ item.title }}</h1>
-  <p class="govuk-body"><strong class="govuk-tag {{ item.priceTagClass }}">{{ item.priceLabel }}</strong></p>
+  <p class="govuk-body">{{ govukTag({ text: item.priceLabel, classes: (item.priceTagClass) }) }}</p>
 
   {% if item.images.length == 1 %}
     <div class="nexus-alpha-detail-hero">

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block beforeContent %}
@@ -66,7 +67,7 @@
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>
             </h3>
-            <strong class="govuk-tag {{ member.roleClass }}">{{ member.roleLabel }}</strong>
+            {{ govukTag({ text: member.roleLabel, classes: (member.roleClass) }) }}
           </div>
           {% if not member.isOwner %}
             <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/members/' + (member.id | string)) }}">

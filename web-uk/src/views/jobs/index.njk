@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("jobs.caption", { community: tenantName or serviceName }) }}</span>
@@ -100,7 +101,7 @@
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id) }}">{{ job.title }}</a>
             </h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ t(job.typeTranslationKey) }}</strong>
+            {{ govukTag({ text: t(job.typeTranslationKey), classes: "govuk-tag--blue" }) }}
           </div>
 
           {% if job.posterName %}
@@ -109,19 +110,19 @@
 
           <ul class="govuk-list nexus-alpha-tag-list govuk-!-margin-bottom-1">
             {% if job.commitmentLabel %}
-              <li><strong class="govuk-tag govuk-tag--grey">{{ t(job.commitmentTranslationKey) }}</strong></li>
+              <li>{{ govukTag({ text: t(job.commitmentTranslationKey), classes: "govuk-tag--grey" }) }}</li>
             {% endif %}
             {% if job.isRemote %}
-              <li><strong class="govuk-tag govuk-tag--turquoise">{{ t("jobs_t2.remote_tag") }}</strong></li>
+              <li>{{ govukTag({ text: t("jobs_t2.remote_tag"), classes: "govuk-tag--turquoise" }) }}</li>
             {% endif %}
             {% if job.isFeatured %}
-              <li><strong class="govuk-tag govuk-tag--yellow">{{ t("jobs_t2.featured_tag") }}</strong></li>
+              <li>{{ govukTag({ text: t("jobs_t2.featured_tag"), classes: "govuk-tag--yellow" }) }}</li>
             {% endif %}
             {% if job.hasApplied %}
-              <li><strong class="govuk-tag govuk-tag--green">{{ t("jobs_t2.applied_tag") }}</strong></li>
+              <li>{{ govukTag({ text: t("jobs_t2.applied_tag"), classes: "govuk-tag--green" }) }}</li>
             {% endif %}
             {% if job.isSaved %}
-              <li><strong class="govuk-tag govuk-tag--purple">{{ t("jobs_t2.saved_tag") }}</strong></li>
+              <li>{{ govukTag({ text: t("jobs_t2.saved_tag"), classes: "govuk-tag--purple" }) }}</li>
             {% endif %}
           </ul>
 

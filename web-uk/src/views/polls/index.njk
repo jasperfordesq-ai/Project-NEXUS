@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro renderResults(poll) %}
   {% for option in poll.options %}
@@ -11,7 +12,7 @@
       <p class="govuk-body govuk-!-margin-bottom-1">
         {{ option.text }}
         {% if poll.votedOptionId and poll.votedOptionId == option.id %}
-          <strong class="govuk-tag govuk-tag--blue">{{ t("polls.your_choice") }}</strong>
+          {{ govukTag({ text: t("polls.your_choice"), classes: "govuk-tag--blue" }) }}
         {% endif %}
       </p>
       <progress max="100" value="{{ option.percentage }}" aria-label="{{ option.text }}: {{ option.percentage }}%">{{ option.percentage }}%</progress>
@@ -108,8 +109,8 @@
             <article class="nexus-alpha-card" id="poll-{{ poll.id }}">
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question }}</h3>
-                <strong class="govuk-tag govuk-tag--green">{{ t("polls.open_tag") }}</strong>
-                {% if poll.pollType == "ranked" %}<strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.nav.ranked_tag") }}</strong>{% endif %}
+                {{ govukTag({ text: t("polls.open_tag"), classes: "govuk-tag--green" }) }}
+                {% if poll.pollType == "ranked" %}{{ govukTag({ text: t("govuk_alpha_gamification.nav.ranked_tag"), classes: "govuk-tag--purple" }) }}{% endif %}
               </div>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
                 {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closes_on", { date: poll.expiresAt | formatDate }) }}{% endif %}
@@ -175,7 +176,7 @@
             <article class="nexus-alpha-card" id="poll-{{ poll.id }}">
               <div class="nexus-alpha-module-row">
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question }}</h3>
-                <strong class="govuk-tag govuk-tag--grey">{{ t("polls.closed_tag") }}</strong>
+                {{ govukTag({ text: t("polls.closed_tag"), classes: "govuk-tag--grey" }) }}
               </div>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
                 {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closed_on", { date: poll.expiresAt | formatDate }) }}{% endif %} - {{ tc("polls.votes_count", poll.totalVotes, { count: poll.totalVotes }) }}

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs/mine') }}">{{ t("govuk_alpha_jobs.shared.back_to_my_postings") }}</a>
@@ -70,7 +71,7 @@
           {% if candidate.skillsPreview.length %}
             <ul class="govuk-list nexus-alpha-tag-list govuk-!-margin-top-1 govuk-!-margin-bottom-1">
               {% for skill in candidate.skillsPreview %}
-                <li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>
+                <li>{{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}</li>
               {% endfor %}
             </ul>
           {% endif %}

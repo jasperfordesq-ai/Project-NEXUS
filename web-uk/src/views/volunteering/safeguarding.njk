@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -160,7 +161,7 @@
               <td class="govuk-table__cell">{{ training.type.label }}</td>
               <td class="govuk-table__cell">{{ training.completedAtLabel or "—" }}</td>
               <td class="govuk-table__cell">{{ training.expiresAtLabel or "—" }}</td>
-              <td class="govuk-table__cell"><strong class="govuk-tag {{ training.status.className }}">{{ training.status.label }}</strong></td>
+              <td class="govuk-table__cell">{{ govukTag({ text: training.status.label, classes: (training.status.className) }) }}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -246,8 +247,8 @@
                   <br><span class="govuk-hint govuk-!-font-size-16">{{ incident.descriptionExcerpt }}</span>
                 {% endif %}
               </td>
-              <td class="govuk-table__cell"><strong class="govuk-tag {{ incident.severity.className }}">{{ incident.severity.label }}</strong></td>
-              <td class="govuk-table__cell"><strong class="govuk-tag {{ incident.status.className }}">{{ incident.status.label }}</strong></td>
+              <td class="govuk-table__cell">{{ govukTag({ text: incident.severity.label, classes: (incident.severity.className) }) }}</td>
+              <td class="govuk-table__cell">{{ govukTag({ text: incident.status.label, classes: (incident.status.className) }) }}</td>
               <td class="govuk-table__cell">{{ incident.createdAtLabel or "—" }}</td>
             </tr>
           {% endfor %}

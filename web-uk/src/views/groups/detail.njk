@@ -127,7 +127,7 @@
       {% for announcement in pinnedAnnouncements %}
         <article class="nexus-alpha-card">
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-            <strong class="govuk-tag govuk-tag--blue">{{ t("polish_groups.announcement_pinned_tag") }}</strong>
+            {{ govukTag({ text: t("polish_groups.announcement_pinned_tag"), classes: "govuk-tag--blue" }) }}
           </p>
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ announcement.title }}</h3>
           {% if announcement.content %}<p class="govuk-body">{{ announcement.content }}</p>{% endif %}
@@ -166,7 +166,7 @@
                 <a class="govuk-link" href="{{ urlFor('/groups/' + (subGroup.id | string)) }}">{{ subGroup.name }}</a>
               </h3>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-                <strong class="govuk-tag {{ 'govuk-tag--grey' if subGroup.isPrivate else 'govuk-tag--green' }}">{{ t("govuk_alpha_groups.subgroups.visibility_private") if subGroup.isPrivate else t("govuk_alpha_groups.subgroups.visibility_public") }}</strong>
+                {{ govukTag({ text: t("govuk_alpha_groups.subgroups.visibility_private") if subGroup.isPrivate else t("govuk_alpha_groups.subgroups.visibility_public"), classes: ('govuk-tag--grey' if subGroup.isPrivate else 'govuk-tag--green') }) }}
                 <span aria-hidden="true"> | </span>
                 {{ tc("govuk_alpha_groups.subgroups.members_count", subGroup.memberCount, { count: subGroup.memberCount }) }}
               </p>

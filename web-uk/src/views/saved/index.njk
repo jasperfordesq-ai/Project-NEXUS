@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -44,7 +45,7 @@
             {% endif %}
           {% endif %}
           {% if item.type %}
-            <strong class="govuk-tag govuk-tag--grey govuk-!-margin-left-1">{{ item.label }}</strong>
+            {{ govukTag({ text: item.label, classes: "govuk-tag--grey govuk-!-margin-left-1" }) }}
           {% endif %}
           {% if item.itemId and item.type %}
             <form method="post" action="{{ urlFor('/saved/destroy') }}" class="nexus-alpha-linkform govuk-!-display-inline-block govuk-!-margin-left-2">

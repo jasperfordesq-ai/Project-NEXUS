@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/group-exchanges') }}">{{ t("actions.back_to_exchanges") }}</a>
@@ -13,7 +14,7 @@
   <span class="govuk-caption-xl" id="group-exchange-top">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ exchange.title }}</h1>
-    <strong class="govuk-tag {{ exchange.statusClass }}">{{ exchange.statusLabel }}</strong>
+    {{ govukTag({ text: exchange.statusLabel, classes: (exchange.statusClass) }) }}
   </div>
 
   {% if successMessage %}
