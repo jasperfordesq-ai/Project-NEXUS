@@ -258,7 +258,6 @@ function FilterPill({
       size="sm"
       variant={selected ? 'primary' : 'secondary'}
       onPress={onPress}
-      style={selected ? { backgroundColor: primary } : undefined}
     >
       <HeroButton.Label>{label}</HeroButton.Label>
       {selected ? <Ionicons name="checkmark-outline" size={13} color="#fff" /> : <Ionicons name="add-outline" size={13} color={theme.textSecondary} />}
@@ -408,7 +407,6 @@ function ApplicationCard({
               size="sm"
               variant="primary"
               className="rounded-lg"
-              style={{ backgroundColor: primary }}
               isDisabled={actionLoading}
               onPress={async () => {
                 setActionLoading(true);
@@ -851,7 +849,6 @@ function JobAlertsPanel({
                 variant="primary"
                 onPress={handleCreate}
                 isDisabled={busyKey === 'create'}
-                style={{ backgroundColor: primary }}
                 accessibilityLabel={t('alerts.create')}
               >
                 <Ionicons name="add-outline" size={17} color="#fff" />

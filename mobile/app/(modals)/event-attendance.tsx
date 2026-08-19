@@ -386,7 +386,6 @@ function AttendancePersonCard({
                   key={action}
                   size="sm"
                   variant={action === 'no_show' ? 'danger-soft' : action === 'check_in' ? 'primary' : 'secondary'}
-                  style={action === 'check_in' ? { backgroundColor: primary } : undefined}
                   isDisabled={activeMutation !== null}
                   accessibilityLabel={t('attendance.actionLabel', { action: t(`attendance.actions.${action}`), name })}
                   accessibilityState={{ busy }}

@@ -274,7 +274,6 @@ export default function EventRegistrationPanel({
                 size="sm"
                 variant={value === choice ? 'primary' : 'secondary'}
                 onPress={() => updateAnswer(question, choice)}
-                style={value === choice ? { backgroundColor: primary } : undefined}
               >
                 {choice}
               </Button>

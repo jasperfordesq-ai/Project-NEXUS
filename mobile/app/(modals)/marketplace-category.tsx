@@ -228,7 +228,6 @@ function MarketplaceCategoryScreen() {
                     <TagGroup.Item
                       key={id}
                       id={id}
-                      style={isSelected ? { backgroundColor: primary } : undefined}
                     >
                       <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                         {value ? t(`condition.${value}`) : t('category.allConditions')}
@@ -256,7 +255,6 @@ function MarketplaceCategoryScreen() {
                     <TagGroup.Item
                       key={value}
                       id={value}
-                      style={isSelected ? { backgroundColor: primary } : undefined}
                     >
                       <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                         {t(`advancedSearch.sortOptions.${value}`)}

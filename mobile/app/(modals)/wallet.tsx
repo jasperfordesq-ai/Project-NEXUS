@@ -433,10 +433,10 @@ function WalletActionPanel({
           <View className="gap-2">
             <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('actions.donateTo')}</Text>
             <View className="flex-row gap-2">
-              <HeroButton className="flex-1" variant={donationTarget === 'community_fund' ? 'primary' : 'secondary'} onPress={() => { setDonationTarget('community_fund'); setSelectedUser(null); }} style={donationTarget === 'community_fund' ? { backgroundColor: primary } : undefined}>
+              <HeroButton className="flex-1" variant={donationTarget === 'community_fund' ? 'primary' : 'secondary'} onPress={() => { setDonationTarget('community_fund'); setSelectedUser(null); }}>
                 <HeroButton.Label>{t('actions.communityFundOption')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" variant={donationTarget === 'user' ? 'primary' : 'secondary'} onPress={() => setDonationTarget('user')} style={donationTarget === 'user' ? { backgroundColor: primary } : undefined}>
+              <HeroButton className="flex-1" variant={donationTarget === 'user' ? 'primary' : 'secondary'} onPress={() => setDonationTarget('user')}>
                 <HeroButton.Label>{t('actions.memberOption')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -521,7 +521,7 @@ function WalletActionPanel({
           />
         </View>
 
-        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting} style={{ backgroundColor: primary }}>
+        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting}>
           {isSubmitting ? <Spinner size="sm" /> : <Ionicons name={action === 'transfer' ? 'send-outline' : 'heart-outline'} size={16} color="#fff" />}
           <HeroButton.Label>{t(action === 'transfer' ? 'actions.sendNow' : 'actions.donateNow')}</HeroButton.Label>
         </HeroButton>

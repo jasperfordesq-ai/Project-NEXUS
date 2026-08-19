@@ -90,7 +90,6 @@ function GroupExchangesScreenInner() {
             </View>
             <HeroButton
               variant="primary"
-              style={{ backgroundColor: primary }}
               onPress={() => router.push('/(modals)/new-group-exchange' as Href)}
               accessibilityLabel={t('groupExchanges.create.open')}
             >
@@ -103,7 +102,6 @@ function GroupExchangesScreenInner() {
                   key={value}
                   size="sm"
                   variant={status === value ? 'primary' : 'secondary'}
-                  style={status === value ? { backgroundColor: primary } : undefined}
                   onPress={() => setStatus(value)}
                   accessibilityState={{ selected: status === value }}
                 >

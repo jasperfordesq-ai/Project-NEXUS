@@ -316,7 +316,6 @@ export default function EventSafetyCard({
                       size="sm"
                       variant={relationship === value ? 'primary' : 'secondary'}
                       onPress={() => setRelationship(value)}
-                      style={relationship === value ? { backgroundColor: primary } : undefined}
                     >
                       {t(`safety.guardian.relationships.${value}`)}
                     </Button>

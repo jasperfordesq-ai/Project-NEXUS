@@ -791,7 +791,6 @@ function ExchangeDetailModalInner() {
               variant="primary"
               className="min-w-0 flex-1"
               isDisabled={isSubmitting}
-              style={{ backgroundColor: primary }}
               accessibilityLabel={t('detail.sendRequest')}
               onPress={() => void handleRequestExchange()}
             >
@@ -915,7 +914,7 @@ function ExchangeDetailModalInner() {
             size="md"
             variant="primary"
             isDisabled={isSubmitting}
-            style={{ backgroundColor: primary, flex: 1.78, minWidth: 148, height: 48 }}
+            style={{ flex: 1.78, minWidth: 148, height: 48 }}
             accessibilityLabel={
               primaryActionLabel
             }

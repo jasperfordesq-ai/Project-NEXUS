@@ -155,10 +155,10 @@ function MarketplaceOffersScreen() {
                 </View>
               </View>
               <View className="flex-row gap-2">
-                <HeroButton className="flex-1" variant={mode === 'received' ? 'primary' : 'secondary'} onPress={() => setMode('received')} style={mode === 'received' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="flex-1" variant={mode === 'received' ? 'primary' : 'secondary'} onPress={() => setMode('received')}>
                   <HeroButton.Label>{t('offers.received')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" variant={mode === 'sent' ? 'primary' : 'secondary'} onPress={() => setMode('sent')} style={mode === 'sent' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="flex-1" variant={mode === 'sent' ? 'primary' : 'secondary'} onPress={() => setMode('sent')}>
                   <HeroButton.Label>{t('offers.sentTab')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -333,7 +333,7 @@ function OfferCard({
               <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => setIsCountering(false)}>
                 <HeroButton.Label>{t('offers.cancelCounter')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" size="sm" variant="primary" onPress={submitCounter} style={{ backgroundColor: primary }}>
+              <HeroButton className="flex-1" size="sm" variant="primary" onPress={submitCounter}>
                 <HeroButton.Label>{t('offers.sendCounter')}</HeroButton.Label>
               </HeroButton>
             </View>

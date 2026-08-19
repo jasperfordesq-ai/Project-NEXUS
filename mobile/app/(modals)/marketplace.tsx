@@ -222,7 +222,7 @@ function MarketplaceScreen() {
                 </View>
 
                 <View className="flex-row gap-2">
-                  <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/new-marketplace-listing' as Href)} style={{ backgroundColor: primary }}>
+                  <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/new-marketplace-listing' as Href)}>
                     <Ionicons name="add-outline" size={16} color="#fff" />
                     <HeroButton.Label>{t('actions.sell')}</HeroButton.Label>
                   </HeroButton>
@@ -270,7 +270,6 @@ function MarketplaceScreen() {
                 size="sm"
                 variant={selectedCategory ? 'secondary' : 'primary'}
                 onPress={() => setSelectedCategory(undefined)}
-                style={!selectedCategory ? { backgroundColor: primary } : undefined}
               >
                 <HeroButton.Label>{t('filters.allCategories')}</HeroButton.Label>
               </HeroButton>
@@ -280,7 +279,6 @@ function MarketplaceScreen() {
                   size="sm"
                   variant={selectedCategory === category.id ? 'primary' : 'secondary'}
                   onPress={() => setSelectedCategory(category.id)}
-                  style={selectedCategory === category.id ? { backgroundColor: primary } : undefined}
                 >
                   <HeroButton.Label>{category.name}</HeroButton.Label>
                 </HeroButton>
@@ -294,7 +292,6 @@ function MarketplaceScreen() {
                   size="sm"
                   variant={priceType === value ? 'primary' : 'secondary'}
                   onPress={() => setPriceType(value)}
-                  style={priceType === value ? { backgroundColor: primary } : undefined}
                 >
                   <HeroButton.Label>{t(`filters.priceType.${value || 'all'}`)}</HeroButton.Label>
                 </HeroButton>

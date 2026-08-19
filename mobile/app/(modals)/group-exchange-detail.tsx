@@ -164,12 +164,12 @@ function GroupExchangeDetailScreenInner() {
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.actions.title')}</Text>
             <View className="flex-row flex-wrap gap-2">
               {canConfirm ? (
-                <HeroButton variant="primary" onPress={() => void runAction('confirm')} isDisabled={submitting} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => void runAction('confirm')} isDisabled={submitting}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.confirm')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
               {canComplete ? (
-                <HeroButton variant="primary" onPress={() => void runAction('complete')} isDisabled={submitting} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => void runAction('complete')} isDisabled={submitting}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.complete')}</HeroButton.Label>
                 </HeroButton>
               ) : null}

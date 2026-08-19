@@ -316,7 +316,6 @@ function PendingList({
                 variant={isActive ? 'secondary' : 'primary'}
                 isDisabled={submitting}
                 onPress={() => onStart(item)}
-                style={!isActive ? { backgroundColor: primary } : undefined}
               >
                 <Ionicons name="create-outline" size={14} color={isActive ? primary : '#fff'} />
                 <HeroButton.Label>{t('reviews.write')}</HeroButton.Label>
@@ -382,7 +381,7 @@ function PendingReviewForm({
         <HeroButton className="flex-1" variant="secondary" onPress={onCancel} isDisabled={submitting}>
           <HeroButton.Label>{t('reviews.cancel')}</HeroButton.Label>
         </HeroButton>
-        <HeroButton className="flex-1" variant="primary" onPress={onSubmit} isDisabled={rating < 1 || submitting} style={{ backgroundColor: primary }}>
+        <HeroButton className="flex-1" variant="primary" onPress={onSubmit} isDisabled={rating < 1 || submitting}>
           <HeroButton.Label>{t('reviews.submit')}</HeroButton.Label>
         </HeroButton>
       </View>

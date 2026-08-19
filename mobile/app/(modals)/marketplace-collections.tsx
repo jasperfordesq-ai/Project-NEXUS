@@ -300,14 +300,14 @@ function MarketplaceCollectionsScreen() {
                   </View>
                 </View>
                 <View className="flex-row gap-2">
-                  <HeroButton className="flex-1" variant={tab === 'collections' ? 'primary' : 'secondary'} onPress={() => setTab('collections')} style={tab === 'collections' ? { backgroundColor: primary } : undefined}>
+                  <HeroButton className="flex-1" variant={tab === 'collections' ? 'primary' : 'secondary'} onPress={() => setTab('collections')}>
                     <HeroButton.Label>{t('collections.collectionsTab')}</HeroButton.Label>
                   </HeroButton>
-                  <HeroButton className="flex-1" variant={tab === 'saved' ? 'primary' : 'secondary'} onPress={() => setTab('saved')} style={tab === 'saved' ? { backgroundColor: primary } : undefined}>
+                  <HeroButton className="flex-1" variant={tab === 'saved' ? 'primary' : 'secondary'} onPress={() => setTab('saved')}>
                     <HeroButton.Label>{t('collections.savedTab')}</HeroButton.Label>
                   </HeroButton>
                 </View>
-                <HeroButton variant="primary" onPress={() => setIsCreateOpen(true)} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => setIsCreateOpen(true)}>
                   <Ionicons name="add-outline" size={16} color="#fff" />
                   <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
                 </HeroButton>
@@ -416,7 +416,7 @@ function SavedSearchRow({
           </View>
         </View>
         <View className="flex-row gap-2">
-          <HeroButton className="flex-1" variant="primary" onPress={onRun} style={{ backgroundColor: primary }}>
+          <HeroButton className="flex-1" variant="primary" onPress={onRun}>
             <Ionicons name="play-outline" size={16} color="#fff" />
             <HeroButton.Label>{t('savedSearches.run')}</HeroButton.Label>
           </HeroButton>
@@ -470,7 +470,7 @@ function CreateCollectionModal({
           <FormInput label={t('collections.name')} value={name} onChangeText={onNameChange} placeholder={t('collections.namePlaceholder')} />
           <FormInput label={t('collections.description')} value={description} onChangeText={onDescriptionChange} placeholder={t('collections.descriptionPlaceholder')} multiline />
 
-          <HeroButton variant={isPublic ? 'primary' : 'secondary'} onPress={() => onPublicChange(!isPublic)} style={isPublic ? { backgroundColor: primary } : undefined}>
+          <HeroButton variant={isPublic ? 'primary' : 'secondary'} onPress={() => onPublicChange(!isPublic)}>
             <Ionicons name={isPublic ? 'globe-outline' : 'lock-closed-outline'} size={16} color={isPublic ? '#fff' : primary} />
             <HeroButton.Label>{isPublic ? t('collections.public') : t('collections.private')}</HeroButton.Label>
           </HeroButton>
@@ -479,7 +479,7 @@ function CreateCollectionModal({
             <HeroButton className="flex-1" variant="secondary" onPress={onClose}>
               <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton className="flex-1" variant="primary" onPress={onCreate} isDisabled={isCreating || !name.trim()} style={{ backgroundColor: primary }}>
+            <HeroButton className="flex-1" variant="primary" onPress={onCreate} isDisabled={isCreating || !name.trim()}>
               <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
             </HeroButton>
           </View>

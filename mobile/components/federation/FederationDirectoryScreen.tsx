@@ -465,7 +465,6 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
               size="sm"
               variant="primary"
               className="min-w-[46%] flex-1"
-              style={{ backgroundColor: primary }}
               onPress={() => router.push({
                 pathname: '/(modals)/federation-member',
                 params: member.is_external
@@ -1677,7 +1676,6 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
             onPress={() => void toggleFederationStatus()}
             isDisabled={isTogglingStatus}
             accessibilityLabel={federationEnabled ? t('directory.settings.disable') : t('directory.settings.enable')}
-            style={!federationEnabled ? { backgroundColor: primary } : undefined}
           >
             {isTogglingStatus ? <Spinner size="sm" /> : <Ionicons name={federationEnabled ? 'shield-outline' : 'shield-checkmark-outline'} size={16} color={federationEnabled ? theme.error : '#fff'} />}
             <HeroButton.Label>{federationEnabled ? t('directory.settings.disable') : t('directory.settings.enable')}</HeroButton.Label>
@@ -1733,7 +1731,6 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
                 size="sm"
                 variant={current.service_reach === reach ? 'primary' : 'secondary'}
                 onPress={() => setDraft((prev) => ({ ...(prev ?? current), service_reach: reach }))}
-                style={current.service_reach === reach ? { backgroundColor: primary } : undefined}
               >
                 <Ionicons name={reachIcon(reach)} size={14} color={current.service_reach === reach ? '#fff' : primary} />
                 <HeroButton.Label>{t(`directory.settings.reach.${reach}`)}</HeroButton.Label>
@@ -1746,7 +1743,6 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
             onPress={save}
             isDisabled={isSaving}
             accessibilityLabel={t('directory.settings.save')}
-            style={{ backgroundColor: primary }}
           >
             {isSaving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#fff" />}
             <HeroButton.Label>{t('directory.settings.save')}</HeroButton.Label>

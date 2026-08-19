@@ -379,7 +379,7 @@ function FilterStrip({ label, children }: { label: string; children: React.React
 function FilterButton({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
   const primary = usePrimaryColor();
   return (
-    <HeroButton className="max-w-full" size="sm" variant={active ? 'primary' : 'secondary'} onPress={onPress} style={active ? { backgroundColor: primary } : undefined}>
+    <HeroButton className="max-w-full" size="sm" variant={active ? 'primary' : 'secondary'} onPress={onPress}>
       <HeroButton.Label numberOfLines={1}>{label}</HeroButton.Label>
     </HeroButton>
   );

@@ -129,7 +129,7 @@ function CouponCard({ item, currency }: { item: PublicMerchantCoupon; currency?:
             ))}
           </View>
         ) : null}
-        <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/marketplace-coupon-detail', params: { id: String(item.id) } } as unknown as Href)} style={{ backgroundColor: primary }}>
+        <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/marketplace-coupon-detail', params: { id: String(item.id) } } as unknown as Href)}>
           <HeroButton.Label>{t('publicCoupons.details')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>

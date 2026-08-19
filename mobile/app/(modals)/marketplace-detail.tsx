@@ -564,7 +564,6 @@ function MarketplaceDetailScreen() {
                       variant={activeImage === index ? 'primary' : 'secondary'}
                       onPress={() => setActiveImage(index)}
                       accessibilityLabel={t('common:aria.carouselImage', { current: index + 1, total: images.length })}
-                      style={activeImage === index ? { backgroundColor: primary } : undefined}
                     >
                       {thumb ? <Image source={{ uri: thumb }} className="size-9 rounded-xl" resizeMode="cover" /> : <Ionicons name="image-outline" size={17} color={activeImage === index ? '#fff' : primary} />}
                     </HeroButton>
@@ -678,7 +677,7 @@ function MarketplaceDetailScreen() {
             <HeroCard.Body className="gap-3 p-4">
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('owner.title')}</Text>
               <View className="flex-row gap-2">
-                <HeroButton className="flex-1" variant="primary" onPress={() => router.push({ pathname: '/(modals)/edit-marketplace-listing', params: { id: String(listing.id) } } as unknown as Href)} style={{ backgroundColor: primary }}>
+                <HeroButton className="flex-1" variant="primary" onPress={() => router.push({ pathname: '/(modals)/edit-marketplace-listing', params: { id: String(listing.id) } } as unknown as Href)}>
                   <Ionicons name="create-outline" size={16} color="#fff" />
                   <HeroButton.Label>{t('owner.edit')}</HeroButton.Label>
                 </HeroButton>
@@ -706,7 +705,6 @@ function MarketplaceDetailScreen() {
                       accessibilityRole="radio"
                       accessibilityState={{ checked: checkoutPaymentMethod === 'cash' }}
                       testID="marketplace-payment-cash"
-                      style={checkoutPaymentMethod === 'cash' ? { backgroundColor: primary } : undefined}
                     >
                       <HeroButton.Label>{t('checkout.payWithMoney', { amount: priceLabel })}</HeroButton.Label>
                     </HeroButton>
@@ -720,7 +718,6 @@ function MarketplaceDetailScreen() {
                       accessibilityRole="radio"
                       accessibilityState={{ checked: checkoutPaymentMethod === 'time_credits' }}
                       testID="marketplace-payment-time-credits"
-                      style={checkoutPaymentMethod === 'time_credits' ? { backgroundColor: primary } : undefined}
                     >
                       <HeroButton.Label>{t('checkout.payWithTimeCredits', { count: Number(listing.time_credit_price ?? 0) })}</HeroButton.Label>
                     </HeroButton>
@@ -736,7 +733,6 @@ function MarketplaceDetailScreen() {
                       onPress={() => chooseFulfilment('pickup')}
                       accessibilityState={{ selected: fulfilmentChoice === 'pickup' }}
                       testID="marketplace-fulfilment-pickup"
-                      style={fulfilmentChoice === 'pickup' ? { backgroundColor: primary } : undefined}
                     >
                       <Ionicons name="location-outline" size={16} color={fulfilmentChoice === 'pickup' ? '#fff' : primary} />
                       <HeroButton.Label>{t('checkout.localPickup')}</HeroButton.Label>
@@ -759,7 +755,6 @@ function MarketplaceDetailScreen() {
                           onPress={() => chooseFulfilment(choice)}
                           accessibilityState={{ selected }}
                           testID={`marketplace-shipping-option-${option.id}`}
-                          style={selected ? { backgroundColor: primary } : undefined}
                         >
                           <Ionicons name="cube-outline" size={16} color={selected ? '#fff' : primary} />
                           <HeroButton.Label>{formatShippingOption(option)}</HeroButton.Label>
@@ -782,7 +777,6 @@ function MarketplaceDetailScreen() {
                         accessibilityLabel={formatPickupSlot(slot, t('pickup.slotFallback', { id: slot.id }))}
                         accessibilityState={{ selected: selectedSlotId === slot.id }}
                         testID={`marketplace-pickup-slot-${slot.id}`}
-                        style={selectedSlotId === slot.id ? { backgroundColor: primary } : undefined}
                       >
                         <HeroButton.Label onPress={() => togglePickupSlot(slot.id)}>{formatPickupSlot(slot, t('pickup.slotFallback', { id: slot.id }))}</HeroButton.Label>
                       </HeroButton>
@@ -827,7 +821,7 @@ function MarketplaceDetailScreen() {
                 </HeroButton>
               ) : null}
               {canBuy ? (
-                <HeroButton className="flex-1" variant="primary" onPress={handleBuyNow} isDisabled={isActionLoading || !fulfilmentReady || !pickupSlotReady} style={{ backgroundColor: primary }}>
+                <HeroButton className="flex-1" variant="primary" onPress={handleBuyNow} isDisabled={isActionLoading || !fulfilmentReady || !pickupSlotReady}>
                   <Ionicons name="card-outline" size={17} color="#fff" />
                   <HeroButton.Label>{t('detail.buyNow')}</HeroButton.Label>
                 </HeroButton>
@@ -852,7 +846,7 @@ function MarketplaceDetailScreen() {
             ) : collections.length === 0 ? (
               <View className="gap-3">
                 <EmptyState icon="folder-open-outline" title={t('collections.empty')} subtitle={t('collections.emptyHint')} />
-                <HeroButton variant="primary" onPress={() => { setCollectionOpen(false); router.push('/(modals)/marketplace-tools' as Href); }} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => { setCollectionOpen(false); router.push('/(modals)/marketplace-tools' as Href); }}>
                   <Ionicons name="add-outline" size={17} color="#fff" />
                   <HeroButton.Label>{t('collections.manage')}</HeroButton.Label>
                 </HeroButton>
@@ -879,7 +873,7 @@ function MarketplaceDetailScreen() {
             <View className="gap-3">
               <FormInput label={t('offers.amount')} value={offerAmount} onChangeText={setOfferAmount} placeholder={t('offers.amountPlaceholder')} keyboardType="decimal-pad" />
               <FormInput label={t('offers.message')} value={offerMessage} onChangeText={setOfferMessage} placeholder={t('offers.messagePlaceholder')} multiline />
-              <HeroButton variant="primary" onPress={handleSubmitOffer} isDisabled={isActionLoading} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" onPress={handleSubmitOffer} isDisabled={isActionLoading}>
                 <Ionicons name="send-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('offers.submit')}</HeroButton.Label>
               </HeroButton>
@@ -904,7 +898,7 @@ function MarketplaceDetailScreen() {
                       size="sm"
                       variant={reportReason === reason ? 'primary' : 'secondary'}
                       onPress={() => setReportReason(reason)}
-                      style={reportReason === reason ? { backgroundColor: primary } : { minWidth: '46%' }}
+                      style={{ minWidth: '46%' }}
                     >
                       <HeroButton.Label>{t(`detail.reportReasons.${reason}`)}</HeroButton.Label>
                     </HeroButton>

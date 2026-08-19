@@ -449,7 +449,7 @@ function WalletPanel({
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="document-text-outline" size={18} color={theme.textMuted} />}
           />
-          <HeroButton isDisabled={saving} onPress={() => void deposit()} style={{ backgroundColor: primary }}>
+          <HeroButton isDisabled={saving} onPress={() => void deposit()}>
             {saving ? <Spinner size="sm" /> : <Ionicons name="wallet-outline" size={16} color="#fff" />}
             <HeroButton.Label>{t('org.wallet.deposit')}</HeroButton.Label>
           </HeroButton>
@@ -533,7 +533,7 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
         <Input value={description} onChangeText={setDescription} placeholder={t('org.settings.descriptionPlaceholder')} placeholderTextColor={theme.textMuted} multiline />
         <Input value={contactEmail} onChangeText={setContactEmail} placeholder={t('org.settings.emailPlaceholder')} placeholderTextColor={theme.textMuted} keyboardType="email-address" autoCapitalize="none" />
         <Input value={website} onChangeText={setWebsite} placeholder={t('org.settings.websitePlaceholder')} placeholderTextColor={theme.textMuted} autoCapitalize="none" />
-        <HeroButton isDisabled={saving} onPress={() => void save()} style={{ backgroundColor: primary }}>
+        <HeroButton isDisabled={saving} onPress={() => void save()}>
           {saving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#fff" />}
           <HeroButton.Label>{t('org.settings.save')}</HeroButton.Label>
         </HeroButton>

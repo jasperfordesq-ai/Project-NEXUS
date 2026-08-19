@@ -325,7 +325,7 @@ function MemberProfileScreenInner() {
     return (
       <ScreenShell t={t} title={t('profileTitle')}>
         <CenteredState icon="warning-outline" color={theme.error} text={t('profile.loadError')}>
-          <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+          <HeroButton variant="primary" onPress={() => void refresh()}>
             <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
           </HeroButton>
         </CenteredState>
@@ -422,7 +422,7 @@ function MemberProfileScreenInner() {
                   {t('profile.ownProfileHint')}
                 </Text>
                 <View className="flex-row gap-2">
-                  <HeroButton className="flex-1" variant="primary" style={{ backgroundColor: primary }} onPress={openEditProfile}>
+                  <HeroButton className="flex-1" variant="primary" onPress={openEditProfile}>
                     <Ionicons name="create-outline" size={18} color="#fff" />
                     <HeroButton.Label>{t('profile.editProfile')}</HeroButton.Label>
                   </HeroButton>
@@ -571,7 +571,7 @@ function MemberProfileScreenInner() {
             <HeroButton
               className="min-w-0 flex-1"
               variant="primary"
-              style={{ minHeight: 48, paddingHorizontal: 8, backgroundColor: primary }}
+              style={{ minHeight: 48, paddingHorizontal: 8 }}
               accessibilityLabel={t('profile.editProfile')}
               onPress={openEditProfile}
             >
@@ -622,7 +622,7 @@ function MemberProfileScreenInner() {
             <HeroButton
               className="min-w-0 flex-1"
               variant="primary"
-              style={{ minHeight: 48, paddingHorizontal: 8, backgroundColor: primary }}
+              style={{ minHeight: 48, paddingHorizontal: 8 }}
               accessibilityLabel={t('profile.sendMessage')}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -855,7 +855,7 @@ function FederatedTransferCard({
           />
         </View>
 
-        <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submit()} style={{ backgroundColor: primary }}>
+        <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submit()}>
           {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="send-outline" size={16} color="#fff" />}
           <HeroButton.Label>{t('profile.sendCredits')}</HeroButton.Label>
         </HeroButton>
@@ -1045,7 +1045,7 @@ function ConnectionActions({
         <HeroCard.Body className="gap-3 px-4 py-4">
           <SectionTitle icon="person-add-outline" title={t('profile.pendingReceived')} primary={primary} theme={theme} />
           <View className="flex-row gap-2">
-            <HeroButton className="flex-1" variant="primary" isDisabled={isLoading} onPress={() => void onAccept()} style={{ backgroundColor: primary }}>
+            <HeroButton className="flex-1" variant="primary" isDisabled={isLoading} onPress={() => void onAccept()}>
               <HeroButton.Label>{t('profile.accept')}</HeroButton.Label>
             </HeroButton>
             <HeroButton className="flex-1" variant="secondary" isDisabled={isLoading} onPress={() => void onDecline()}>

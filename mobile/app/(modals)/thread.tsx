@@ -527,7 +527,7 @@ function ThreadScreenInner() {
     return (
       <ThreadShell title={threadTitle} backLabel={t('thread.goBack')}>
         <CenteredState icon="warning-outline" text={t('thread.loadError')} primary={primary}>
-          <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+          <HeroButton variant="primary" onPress={() => void refresh()}>
             <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
           </HeroButton>
         </CenteredState>
@@ -624,7 +624,7 @@ function ThreadScreenInner() {
                 <HeroButton.Label>{t('thread.voice.stop')}</HeroButton.Label>
               </HeroButton>
             ) : (
-              <HeroButton isIconOnly size="sm" variant="primary" style={{ backgroundColor: primary }} onPress={() => void handleSendVoice()} isDisabled={isSending} accessibilityLabel={t('thread.voice.send')}>
+              <HeroButton isIconOnly size="sm" variant="primary" onPress={() => void handleSendVoice()} isDisabled={isSending} accessibilityLabel={t('thread.voice.send')}>
                 {isSending ? <Spinner size="sm" /> : <Ionicons name="send" size={16} color="#fff" />}
               </HeroButton>
             )}
@@ -702,7 +702,6 @@ function ThreadScreenInner() {
               isIconOnly
               size="lg"
               variant="primary"
-              style={{ backgroundColor: primary }}
               onPress={handleSend}
               isDisabled={isSending || (!inputText.trim() && pendingAttachments.length === 0) || messagingRestriction?.messaging_disabled}
               accessibilityLabel={editingMessage ? t('thread.saveEdit') : t('thread.send')}

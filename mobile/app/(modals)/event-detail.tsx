@@ -697,7 +697,7 @@ function EventDetailScreenInner() {
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
                 {t('attendance.detailCta')}
               </Text>
-              <HeroButton variant="primary" style={{ backgroundColor: primary }} onPress={openAttendanceWorkspace}>
+              <HeroButton variant="primary" onPress={openAttendanceWorkspace}>
                 <Ionicons name="people-outline" size={18} color="#fff" />
                 <HeroButton.Label>{t('attendance.openWorkspace')}</HeroButton.Label>
               </HeroButton>
@@ -751,7 +751,6 @@ function EventDetailScreenInner() {
                   className="flex-1"
                   variant="primary"
                   isDisabled={updating}
-                  style={{ backgroundColor: primary }}
                   onPress={() => void handleAcceptWaitlistOffer()}
                   accessibilityLabel={t('detail.acceptOffer')}
                   accessibilityState={{ busy: updating }}
@@ -807,7 +806,6 @@ function EventDetailScreenInner() {
                   className={showGoingAction || showInterestedAction ? 'mt-3' : undefined}
                   variant={currentRelationship.registration.can_leave_waitlist ? 'secondary' : 'primary'}
                   isDisabled={updating}
-                  style={!currentRelationship.registration.can_leave_waitlist ? { backgroundColor: primary } : undefined}
                   onPress={handleToggleWaitlist}
                   accessibilityLabel={currentRelationship.registration.can_leave_waitlist ? t('detail.leaveWaitlist') : t('detail.joinWaitlist')}
                   accessibilityState={{ busy: updating }}
@@ -1211,7 +1209,6 @@ function EventReminderCard({
               size="sm"
               variant={enabled ? 'primary' : 'secondary'}
               isDisabled={saving}
-              style={enabled ? { backgroundColor: primary } : undefined}
               onPress={() => setEnabled((current) => !current)}
               accessibilityRole="switch"
               accessibilityState={{ checked: enabled, busy: saving }}
@@ -1229,7 +1226,6 @@ function EventReminderCard({
                   size="sm"
                   variant={selectedOption ? 'primary' : 'secondary'}
                   isDisabled={saving || !enabled}
-                  style={selectedOption ? { backgroundColor: primary } : undefined}
                   onPress={() => toggleReminder(minutes)}
                   accessibilityLabel={t(`reminders.option.${minutes}`)}
                   accessibilityState={{ selected: selectedOption, busy: saving }}
@@ -1277,7 +1273,6 @@ function EventReminderCard({
                   size="sm"
                   variant={channels[channel] ? 'primary' : 'secondary'}
                   isDisabled={saving || !enabled}
-                  style={channels[channel] ? { backgroundColor: primary } : undefined}
                   onPress={() => setChannels((current) => ({ ...current, [channel]: !current[channel] }))}
                   accessibilityState={{ selected: channels[channel] }}
                 >
@@ -1289,7 +1284,7 @@ function EventReminderCard({
               {t('reminders.resolved', { source: t(`reminders.source.${preferences.resolved.reminders_source}`) })}
             </Text>
             <View className="flex-row gap-2">
-              <HeroButton className="flex-1" variant="primary" isDisabled={saving} style={{ backgroundColor: primary }} onPress={() => void save()}>
+              <HeroButton className="flex-1" variant="primary" isDisabled={saving} onPress={() => void save()}>
                 <HeroButton.Label>{t('reminders.save')}</HeroButton.Label>
               </HeroButton>
               <HeroButton className="flex-1" variant="secondary" isDisabled={saving} onPress={() => void reset()}>
@@ -1382,7 +1377,6 @@ function EventPollsCard({
                           variant={selected ? 'primary' : 'secondary'}
                           size="sm"
                           isDisabled={votingPollId !== null || showResults}
-                          style={selected ? { backgroundColor: primary } : undefined}
                           onPress={() => void handleVote(poll, option.id)}
                           accessibilityLabel={label}
                           accessibilityState={{ selected, busy: votingPollId === poll.id }}
@@ -1609,7 +1603,6 @@ function RsvpButton({
       className="flex-1"
       variant={selected ? 'primary' : 'secondary'}
       isDisabled={disabled}
-      style={selected ? { backgroundColor: primary } : undefined}
       onPress={onPress}
       accessibilityLabel={label}
       accessibilityState={{ busy: loading, selected }}

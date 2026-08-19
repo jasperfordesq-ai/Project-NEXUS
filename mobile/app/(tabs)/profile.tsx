@@ -162,7 +162,7 @@ export default function MoreScreen() {
             </View>
 
             <View className="flex-row gap-3">
-              <HeroButton className="flex-1" variant="primary" onPress={() => navigate('/(modals)/edit-profile')} style={{ backgroundColor: primary }}>
+              <HeroButton className="flex-1" variant="primary" onPress={() => navigate('/(modals)/edit-profile')}>
                 <Ionicons name="create-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('editProfile')}</HeroButton.Label>
               </HeroButton>

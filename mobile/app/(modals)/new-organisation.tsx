@@ -235,7 +235,7 @@ function NewOrganisationInner() {
               <HeroButton className="flex-1" variant="secondary" onPress={() => router.back()} isDisabled={isSubmitting}>
                 <HeroButton.Label>{t('register.cancel')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" variant="primary" onPress={submit} isDisabled={isSubmitting} style={{ backgroundColor: primary }}>
+              <HeroButton className="flex-1" variant="primary" onPress={submit} isDisabled={isSubmitting}>
                 {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={16} color="#ffffff" />}
                 <HeroButton.Label>{t('register.submit')}</HeroButton.Label>
               </HeroButton>

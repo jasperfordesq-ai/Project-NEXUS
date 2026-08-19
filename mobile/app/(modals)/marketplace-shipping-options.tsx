@@ -255,13 +255,13 @@ function MarketplaceShippingOptionsScreen() {
                       {(form.currency && !CURRENCIES.includes(form.currency as (typeof CURRENCIES)[number])
                         ? [form.currency, ...CURRENCIES]
                         : CURRENCIES).map((currency) => (
-                        <HeroButton key={currency} size="sm" variant={form.currency === currency ? 'primary' : 'secondary'} onPress={() => update('currency', currency)} style={form.currency === currency ? { backgroundColor: primary } : undefined}>
+                        <HeroButton key={currency} size="sm" variant={form.currency === currency ? 'primary' : 'secondary'} onPress={() => update('currency', currency)}>
                           <HeroButton.Label>{currency}</HeroButton.Label>
                         </HeroButton>
                       ))}
                     </ScrollView>
                   </View>
-                  <HeroButton variant={form.isDefault ? 'primary' : 'secondary'} onPress={() => update('isDefault', !form.isDefault)} style={form.isDefault ? { backgroundColor: primary } : undefined}>
+                  <HeroButton variant={form.isDefault ? 'primary' : 'secondary'} onPress={() => update('isDefault', !form.isDefault)}>
                     <Ionicons name={form.isDefault ? 'checkmark-circle-outline' : 'ellipse-outline'} size={16} color={form.isDefault ? '#fff' : primary} />
                     <HeroButton.Label>{t('shipping.defaultToggle')}</HeroButton.Label>
                   </HeroButton>
@@ -271,7 +271,7 @@ function MarketplaceShippingOptionsScreen() {
                         <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
                       </HeroButton>
                     ) : null}
-                    <HeroButton className="flex-1" variant="primary" onPress={() => void save()} isDisabled={isSaving} style={{ backgroundColor: primary }}>
+                    <HeroButton className="flex-1" variant="primary" onPress={() => void save()} isDisabled={isSaving}>
                       <HeroButton.Label>{editingId ? t('shipping.update') : t('shipping.create')}</HeroButton.Label>
                     </HeroButton>
                   </View>

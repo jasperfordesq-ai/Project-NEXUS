@@ -402,10 +402,10 @@ function MarketplaceOrdersScreen() {
                 </View>
               </View>
               <View className="flex-row gap-2">
-                <HeroButton className="min-w-0 flex-1" variant={mode === 'purchases' ? 'primary' : 'secondary'} onPress={() => setMode('purchases')} style={mode === 'purchases' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="min-w-0 flex-1" variant={mode === 'purchases' ? 'primary' : 'secondary'} onPress={() => setMode('purchases')}>
                   <HeroButton.Label>{t('orders.purchases')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="min-w-0 flex-1" variant={mode === 'sales' ? 'primary' : 'secondary'} onPress={() => setMode('sales')} style={mode === 'sales' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="min-w-0 flex-1" variant={mode === 'sales' ? 'primary' : 'secondary'} onPress={() => setMode('sales')}>
                   <HeroButton.Label>{t('orders.sales')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -425,7 +425,6 @@ function MarketplaceOrdersScreen() {
                       <TagGroup.Item
                         key={tab}
                         id={tab}
-                        style={isSelected ? { backgroundColor: primary } : undefined}
                       >
                         <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                           {t(`orders.tabs.${tab}`)}
@@ -486,13 +485,13 @@ function MarketplaceOrdersScreen() {
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('orders.shippingMethod')}</Text>
                 <View className="flex-row flex-wrap gap-2">
                   {SHIPPING_METHODS.map((method) => (
-                    <HeroButton key={method} className="min-w-[46%] flex-1" size="sm" variant={shippingMethod === method ? 'primary' : 'secondary'} onPress={() => setShippingMethod(method)} style={shippingMethod === method ? { backgroundColor: primary } : undefined}>
+                    <HeroButton key={method} className="min-w-[46%] flex-1" size="sm" variant={shippingMethod === method ? 'primary' : 'secondary'} onPress={() => setShippingMethod(method)}>
                       <HeroButton.Label>{t(`orders.shippingMethods.${method}`)}</HeroButton.Label>
                     </HeroButton>
                   ))}
                 </View>
               </View>
-              <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitShipment()} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitShipment()}>
                 <Ionicons name="car-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('orders.confirmShipped')}</HeroButton.Label>
               </HeroButton>
@@ -542,11 +541,11 @@ function MarketplaceOrdersScreen() {
                 </View>
               </View>
               <OrderInput label={t('orders.ratingComment')} value={ratingComment} onChangeText={setRatingComment} placeholder={t('orders.ratingCommentPlaceholder')} multiline />
-              <HeroButton variant={isAnonymousRating ? 'primary' : 'secondary'} onPress={() => setIsAnonymousRating((value) => !value)} style={isAnonymousRating ? { backgroundColor: primary } : undefined}>
+              <HeroButton variant={isAnonymousRating ? 'primary' : 'secondary'} onPress={() => setIsAnonymousRating((value) => !value)}>
                 <Ionicons name={isAnonymousRating ? 'eye-off-outline' : 'eye-outline'} size={17} color={isAnonymousRating ? '#fff' : primary} />
                 <HeroButton.Label>{t('orders.anonymousRating')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitRating()} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitRating()}>
                 <Ionicons name="star-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('orders.submitRating')}</HeroButton.Label>
               </HeroButton>
@@ -571,7 +570,6 @@ function MarketplaceOrdersScreen() {
                       size="sm"
                       variant={disputeReason === reason ? 'primary' : 'secondary'}
                       onPress={() => setDisputeReason(reason)}
-                      style={disputeReason === reason ? { backgroundColor: primary } : undefined}
                     >
                       <HeroButton.Label>{t(`orders.disputeReasons.${reason}`)}</HeroButton.Label>
                     </HeroButton>
@@ -750,13 +748,13 @@ function OrderCard({
             </HeroButton>
           ) : null}
           {mode === 'purchases' && item.status === 'pending_payment' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment} style={{ backgroundColor: primary }}>
+            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment}>
               <Ionicons name="card-outline" size={14} color="#fff" />
               <HeroButton.Label>{t('orders.continuePayment')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'sales' && item.status === 'paid' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onShip} style={{ backgroundColor: primary }}>
+            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onShip}>
               <Ionicons name="car-outline" size={14} color="#fff" />
               <HeroButton.Label>{t('orders.markShipped')}</HeroButton.Label>
             </HeroButton>
@@ -884,7 +882,7 @@ function DeliveryOfferCard({
         ) : null}
         <View className="flex-row flex-wrap gap-2">
           {offer.status === 'pending' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onAccept} style={{ backgroundColor: primary }}>
+            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onAccept}>
               <Ionicons name="checkmark-circle-outline" size={14} color="#fff" />
               <HeroButton.Label>{t('orders.acceptDeliveryOffer')}</HeroButton.Label>
             </HeroButton>

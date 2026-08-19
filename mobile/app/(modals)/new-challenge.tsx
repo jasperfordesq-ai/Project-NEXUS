@@ -195,7 +195,6 @@ function NewChallengeScreen() {
                       className="flex-1"
                       variant={status === item ? 'primary' : 'secondary'}
                       onPress={() => setStatus(item)}
-                      style={status === item ? { backgroundColor: primary } : undefined}
                       accessibilityLabel={t(`ideation:create.status.${item}`)}
                     >
                       <Ionicons

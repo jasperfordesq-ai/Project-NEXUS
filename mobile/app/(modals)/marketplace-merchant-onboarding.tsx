@@ -280,7 +280,7 @@ function MarketplaceMerchantOnboardingScreen() {
         {completed ? (
           <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
             <HeroCard.Body className="gap-3 p-4">
-              <HeroButton variant="primary" onPress={() => router.replace('/(modals)/marketplace-my-listings' as Href)} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" onPress={() => router.replace('/(modals)/marketplace-my-listings' as Href)}>
                 <Ionicons name="albums-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('merchantOnboarding.goListings')}</HeroButton.Label>
               </HeroButton>
@@ -368,7 +368,7 @@ function MarketplaceMerchantOnboardingScreen() {
                     <HeroButton.Label>{t('common:back')}</HeroButton.Label>
                   </HeroButton>
                 ) : null}
-                <HeroButton className="flex-1" variant="primary" onPress={() => void next()} isDisabled={isSaving} style={{ backgroundColor: primary }}>
+                <HeroButton className="flex-1" variant="primary" onPress={() => void next()} isDisabled={isSaving}>
                   <HeroButton.Label>{step === 4 ? t('merchantOnboarding.complete') : t('merchantOnboarding.next')}</HeroButton.Label>
                   <Ionicons name="arrow-forward-outline" size={17} color="#fff" />
                 </HeroButton>
@@ -446,7 +446,7 @@ function ButtonGroup<T extends string>({
   return (
     <View className="flex-row gap-2">
       {values.map((value) => (
-        <HeroButton key={value} className="min-w-0 flex-1" variant={selected === value ? 'primary' : 'secondary'} onPress={() => onSelect(value)} style={selected === value ? { backgroundColor: primary } : undefined}>
+        <HeroButton key={value} className="min-w-0 flex-1" variant={selected === value ? 'primary' : 'secondary'} onPress={() => onSelect(value)}>
           <HeroButton.Label>{labelFor(value)}</HeroButton.Label>
         </HeroButton>
       ))}
@@ -507,7 +507,7 @@ function OpeningHoursRow({
         <View className="min-w-0 flex-1">
           <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>{t(`merchantOnboarding.days.${day}`)}</Text>
         </View>
-        <HeroButton size="sm" variant={isOpen ? 'primary' : 'secondary'} onPress={onToggle} style={isOpen ? { backgroundColor: primary } : undefined}>
+        <HeroButton size="sm" variant={isOpen ? 'primary' : 'secondary'} onPress={onToggle}>
           <HeroButton.Label>{isOpen ? t('merchantOnboarding.open') : t('merchantOnboarding.closed')}</HeroButton.Label>
         </HeroButton>
       </View>

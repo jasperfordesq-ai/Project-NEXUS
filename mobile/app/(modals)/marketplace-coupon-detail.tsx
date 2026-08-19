@@ -198,7 +198,7 @@ function CouponDetailCard({
           </View>
         ) : null}
         <View className="flex-row gap-2">
-          <HeroButton className="flex-1" variant="primary" onPress={onShare} style={{ backgroundColor: primary }}>
+          <HeroButton className="flex-1" variant="primary" onPress={onShare}>
             <Ionicons name="copy-outline" size={16} color="#fff" />
             <HeroButton.Label>{t('publicCoupons.useOnline')}</HeroButton.Label>
           </HeroButton>

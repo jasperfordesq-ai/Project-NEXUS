@@ -336,7 +336,6 @@ export default function ExchangesScreen() {
             isIconOnly
             size="sm"
             variant="primary"
-            style={{ backgroundColor: primary }}
             onPress={() => {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push('/(modals)/new-exchange');
@@ -381,7 +380,6 @@ export default function ExchangesScreen() {
         <HeroButton
           size="sm"
           variant={nearMeCoordinates ? 'primary' : 'secondary'}
-          style={nearMeCoordinates ? { backgroundColor: primary } : undefined}
           onPress={() => void handleNearMePress()}
           isDisabled={isLocating}
           accessibilityState={{ selected: nearMeCoordinates !== null, busy: isLocating }}
@@ -395,7 +393,6 @@ export default function ExchangesScreen() {
         <HeroButton
           size="sm"
           variant={showAdvancedFilters ? 'primary' : 'secondary'}
-          style={showAdvancedFilters ? { backgroundColor: primary } : undefined}
           onPress={() => setShowAdvancedFilters((current) => !current)}
           accessibilityState={{ expanded: showAdvancedFilters }}
         >
@@ -549,7 +546,7 @@ export default function ExchangesScreen() {
               <HeroCard.Body className="items-center gap-4">
                 <Ionicons name="warning-outline" size={30} color={primary} />
                 <Text className="text-center text-sm leading-5 text-danger">{error}</Text>
-                <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => void refresh()}>
                   <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                 </HeroButton>
               </HeroCard.Body>
@@ -569,7 +566,7 @@ export default function ExchangesScreen() {
                     <HeroButton.Label>{t('clearFilters')}</HeroButton.Label>
                   </HeroButton>
                 ) : (
-                  <HeroButton size="sm" variant="primary" style={{ backgroundColor: primary }} onPress={() => router.push('/(modals)/new-exchange')}>
+                  <HeroButton size="sm" variant="primary" onPress={() => router.push('/(modals)/new-exchange')}>
                     <Ionicons name="add" size={16} color="#fff" />
                     <HeroButton.Label>{t('newListing')}</HeroButton.Label>
                   </HeroButton>
@@ -627,7 +624,6 @@ function FilterButton({
     <HeroButton
       size="sm"
       variant={active ? 'primary' : 'secondary'}
-      style={active ? { backgroundColor: primary } : undefined}
       onPress={onPress}
       accessibilityState={{ selected: active }}
     >
@@ -697,7 +693,6 @@ function NearMeFilter({
               key={preset}
               size="sm"
               variant={appliedRadiusKm === preset ? 'primary' : 'secondary'}
-              style={appliedRadiusKm === preset ? { backgroundColor: primary } : undefined}
               onPress={() => onPresetPress(preset)}
               accessibilityState={{ selected: appliedRadiusKm === preset }}
             >

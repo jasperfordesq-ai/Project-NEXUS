@@ -58,6 +58,15 @@ function defaultAccent(scheme: 'light' | 'dark'): string {
   return '#' + [1, 2, 3].map((i) => Number(accent[i]).toString(16).padStart(2, '0')).join('');
 }
 
+/** Mix towards white, matching `shift()` in scripts/generate-tenant-themes.mjs. */
+function lift(hex: string, amount: number): string {
+  const clean = hex.replace(/^#/, '');
+  return '#' + [0, 2, 4]
+    .map((i) => parseInt(clean.slice(i, i + 2), 16))
+    .map((c) => Math.round(c + (255 - c) * amount).toString(16).padStart(2, '0'))
+    .join('');
+}
+
 function toLinear(channel: number): number {
   const c = channel / 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
@@ -81,18 +90,31 @@ describe('the default accent', () => {
     expect(defaultAccent('light')).toBe(fallbackPrimary());
   });
 
-  it('🔴 is the SAME colour in dark mode, not a lightened one', () => {
-    // An earlier version of this work lifted the dark accent 30% towards white, and it
-    // broke 142 buttons across 52 files: each overrides its background to the community's
-    // UN-lifted colour while its label follows `--accent-foreground`, so ink computed for
-    // the lifted shade landed on #006FEE at 3.83:1 where white had been 4.66:1 — a
-    // contrast regression caused by the very change meant to fix the colours.
+  it('🔴 is the SAME colour in dark mode — lightening it was tried twice and abandoned twice', () => {
+    // The full reasoning lives in scripts/generate-tenant-themes.mjs. In short: a lightened
+    // accent is a DIFFERENT colour from `usePrimaryColor()`, which everything the app paints
+    // by hand uses, so the two stop agreeing and it cascades:
     //
-    // No single label colour passes on both a colour and its lifted form, so the mismatch
-    // was structural. One accent per community, used in both schemes, is what makes the
-    // theme and every hand-written override agree by construction.
+    //   79 buttons overriding their own background      (swept away — worth doing anyway)
+    //   91 conditional overrides on toggle buttons      (swept away — worth doing anyway)
+    //   62 buttons with a hardcoded white ICON beside a label that would become dark ink
+    //
+    // The last group cannot be fixed cheaply: lib/theme/nativeVectorIconStyling.test.ts
+    // requires Ionicons to use the native `color` prop, so an icon cannot inherit a CSS
+    // variable — it would need a new hook threaded through 34 files.
+    //
+    // And it buys nothing that is missing. See the next test.
     expect(defaultAccent('dark')).toBe(defaultAccent('light'));
     expect(defaultAccent('dark')).toBe(fallbackPrimary());
+    expect(defaultAccent('dark')).not.toBe(lift(fallbackPrimary(), 0.3));
+  });
+
+  it('🔴 is legible on the dark ground WITHOUT being lightened', () => {
+    // This is the measurement that makes the decision above defensible rather than merely
+    // convenient. The accent is also `--link`, so it has to be readable as text on the
+    // near-black background: un-lifted it measures 4.24:1, comfortably over the 3:1 floor
+    // for UI text. As a solid button fill, lightening changes nothing about visibility.
+    expect(contrast(defaultAccent('dark'), '#0a0a0f')).toBeGreaterThanOrEqual(3);
   });
 
   it('puts a readable label on the light accent', () => {
@@ -106,21 +128,16 @@ describe('the default accent', () => {
     expect(contrast(defaultAccent('light'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('keeps a readable white label on the dark accent too', () => {
-    const css = fs.readFileSync(GLOBAL_CSS, 'utf8');
-    const dark = /@variant dark\s*\{([\s\S]*?)\n {4}\}/.exec(css)![1]!;
-
-    // Because the accent is the same colour in both schemes, the label is the same too:
-    // white, at 4.66:1 on #006FEE. Recomputed rather than trusted, so changing the
-    // default colour cannot silently leave an unreadable label behind.
+  it('keeps the same white label in dark mode, since it is the same accent', () => {
+    // One accent means one label. White measures 4.66:1 on this blue in either scheme.
+    // Recomputed rather than trusted, so changing the default colour cannot silently leave
+    // an unreadable label behind.
     expect(contrast(defaultAccent('dark'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
-    expect(dark).toMatch(/--accent-foreground:\s*oklch\(1 0 0\)/);
-  });
 
-  it('🔴 stays legible as a link colour on the dark background', () => {
-    // The accent is also `--link`. Not lightening it for dark mode means this has to be
-    // checked rather than assumed: #006FEE measures 4.24:1 on the near-black ground.
-    expect(contrast(defaultAccent('dark'), '#0a0a0f')).toBeGreaterThanOrEqual(3);
+    const css = fs.readFileSync(GLOBAL_CSS, 'utf8');
+    const dark = /@variant dark[\s\S]*?--accent-foreground:\s*([^;]+);/.exec(css);
+    expect(dark).not.toBeNull();
+    expect(dark![1]!.trim()).toBe('oklch(1 0 0)');
   });
 
   it('does not generate a redundant theme for the default colour', () => {

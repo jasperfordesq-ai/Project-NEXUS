@@ -281,7 +281,7 @@ function CreateCollectionCard({
         <Input label={t('collections.name')} value={name} onChangeText={setName} placeholder={t('collections.namePlaceholder')} />
         <Input label={t('collections.description')} value={description} onChangeText={setDescription} placeholder={t('collections.descriptionPlaceholder')} multiline />
         <Toggle value={isPublic} onValueChange={setIsPublic} label={t('collections.makePublic')} />
-        <HeroButton variant="primary" onPress={() => onSubmit({ name, description, isPublic })} isDisabled={isSubmitting} style={{ backgroundColor: primary }}>
+        <HeroButton variant="primary" onPress={() => onSubmit({ name, description, isPublic })} isDisabled={isSubmitting}>
           {isSubmitting ? <Spinner size="sm" /> : <Ionicons name="add-outline" size={17} color="#fff" />}
           <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
         </HeroButton>

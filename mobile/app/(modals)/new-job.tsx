@@ -291,7 +291,6 @@ function NewJobScreen() {
                 <HeroButton
                   variant={salaryNegotiable ? 'primary' : 'secondary'}
                   onPress={() => setSalaryNegotiable((value) => !value)}
-                  style={salaryNegotiable ? { backgroundColor: primary } : undefined}
                 >
                   <Ionicons name="cash-outline" size={15} color={salaryNegotiable ? '#fff' : primary} />
                   <HeroButton.Label>{t('create.salaryNegotiable')}</HeroButton.Label>
@@ -300,12 +299,12 @@ function NewJobScreen() {
             ) : null}
             <FormField label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
 
-            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)} style={isRemote ? { backgroundColor: primary } : undefined}>
+            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)}>
               <Ionicons name="globe-outline" size={15} color={isRemote ? '#fff' : primary} />
               <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
             </HeroButton>
 
-            <HeroButton variant={blindHiring ? 'primary' : 'secondary'} onPress={() => setBlindHiring((value) => !value)} style={blindHiring ? { backgroundColor: primary } : undefined}>
+            <HeroButton variant={blindHiring ? 'primary' : 'secondary'} onPress={() => setBlindHiring((value) => !value)}>
               <Ionicons name="eye-off-outline" size={15} color={blindHiring ? '#fff' : primary} />
               <HeroButton.Label>{t('create.blindHiring')}</HeroButton.Label>
             </HeroButton>
@@ -366,7 +365,6 @@ function ButtonGroup<T extends string>({
               <TagGroup.Item
                 key={value}
                 id={value}
-                style={isSelected ? { backgroundColor: primary } : undefined}
               >
                 <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                   {labelFor(value)}

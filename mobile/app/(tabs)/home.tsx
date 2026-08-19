@@ -324,7 +324,6 @@ export default function HomeScreen() {
                 <HeroButton
                   variant="primary"
                   onPress={() => void refresh()}
-                  style={{ backgroundColor: primary }}
                 >
                   <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                 </HeroButton>

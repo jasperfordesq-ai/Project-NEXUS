@@ -62,12 +62,18 @@
        * that way. Without this the fallback state still showed the clash it was
        * supposed to avoid.
        *
-       * 🔴 The SAME colour in both schemes, deliberately not lightened for dark. An
-       * earlier version lifted it and that broke 142 buttons in 52 files: they override
-       * their background to the community's un-lifted colour while their label follows
-       * --accent-foreground, so ink computed for the lifted shade landed on #006FEE at
-       * 3.83:1, down from white's 4.66:1. Keeping one colour means the theme and every
-       * override agree by construction. White label measures 4.66:1 on this blue.
+       * 🔴 The SAME colour in both schemes, deliberately NOT lightened for dark. Lifting
+       * it was tried twice and abandoned twice — see the long note in
+       * scripts/generate-tenant-themes.mjs for the full reasoning. In short: a lifted
+       * accent is a different colour from usePrimaryColor(), which everything the app
+       * paints by hand uses, so it cascades into ~230 edit sites (170 background
+       * overrides, since swept, plus 62 hardcoded white icons that cannot inherit a CSS
+       * variable because nativeVectorIconStyling.test.ts requires the native color prop).
+       * And it buys nothing that is missing: un-lifted, the accent as a link on the dark
+       * ground measures 4.24:1, above the 3:1 floor, and as a solid button fill lifting
+       * changes nothing.
+       *
+       * White label measures 4.66:1 on this blue in both schemes.
        * Guarded by lib/theme/defaultAccent.test.ts. */
       --accent: rgb(0 111 238);
       --accent-foreground: oklch(1 0 0);

@@ -247,7 +247,7 @@ export default function MessagesScreen() {
               <HeroCard.Body className="items-center gap-4">
                 <Ionicons name="warning-outline" size={30} color={primary} />
                 <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>{error}</Text>
-                <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => void refresh()}>
                   <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                 </HeroButton>
               </HeroCard.Body>
@@ -273,7 +273,7 @@ export default function MessagesScreen() {
                   </HeroButton>
                 ) : (
                   activeTab === 'inbox' ? (
-                    <HeroButton variant="primary" size="sm" onPress={openNewMessage} style={{ backgroundColor: primary }}>
+                    <HeroButton variant="primary" size="sm" onPress={openNewMessage}>
                     <Ionicons name="create-outline" size={16} color="#fff" />
                     <HeroButton.Label>{t('newMessage')}</HeroButton.Label>
                     </HeroButton>
@@ -371,7 +371,6 @@ function MessagesHeader({
                 variant="primary"
                 accessibilityLabel={t('newMessage')}
                 onPress={onNewMessage}
-                style={{ backgroundColor: primary }}
               >
                 <Ionicons name="create-outline" size={18} color="#fff" />
               </HeroButton>
@@ -484,7 +483,6 @@ function ConversationCard({
         <HeroButton
           variant="primary"
           className="my-2 mr-4 w-[92px] items-center justify-center gap-1 rounded-2xl px-2"
-          style={{ backgroundColor: primary }}
           accessibilityLabel={t('archiveConversationWithName', { name: otherName })}
           onPress={() => onArchive(conversation)}
         >

@@ -445,6 +445,9 @@ export default function JobDetailScreen() {
             <HeroButton.Label>{isSaved ? t('detail.saved') : t('detail.save')}</HeroButton.Label>
           </HeroButton>
         </View>
+        {/* Only the DISABLED tone is set below. The enabled branch used to repeat the
+            community colour, which variant="primary" already paints — and repeating it meant
+            the fill and the label came from different sources. */}
         <HeroButton
           variant="primary"
           accessibilityLabel={hasApplied ? t('detail.applied') : t('detail.apply')}
@@ -452,7 +455,7 @@ export default function JobDetailScreen() {
           onPress={() => {
             if (!hasApplied && !isClosed) setApplyModalVisible(true);
           }}
-          style={hasApplied || isClosed ? { backgroundColor: theme.textMuted } : { backgroundColor: primary }}
+          style={hasApplied || isClosed ? { backgroundColor: theme.textMuted } : undefined}
         >
           <Ionicons name={hasApplied ? 'checkmark-circle' : 'send-outline'} size={18} color="#fff" />
           <HeroButton.Label>{hasApplied ? t('detail.applied') : t('detail.apply')}</HeroButton.Label>
@@ -478,7 +481,6 @@ export default function JobDetailScreen() {
                 <HeroButton
                   className="mt-6 w-full"
                   variant="primary"
-                  style={{ backgroundColor: primary }}
                   onPress={handleCloseModal}
                 >
                   <HeroButton.Label>{t('detail.goBack')}</HeroButton.Label>
@@ -648,7 +650,7 @@ function OwnerToolsSection({
             <Ionicons name="git-network-outline" size={14} color={primary} />
             <HeroButton.Label>{t('detail.kanban_board')}</HeroButton.Label>
           </HeroButton>
-          <HeroButton size="sm" variant={job.status === 'open' ? 'secondary' : 'primary'} style={job.status === 'open' ? undefined : { backgroundColor: primary }} onPress={onToggleStatus}>
+          <HeroButton size="sm" variant={job.status === 'open' ? 'secondary' : 'primary'} onPress={onToggleStatus}>
             <Ionicons name={job.status === 'open' ? 'close-circle-outline' : 'refresh-outline'} size={14} color={job.status === 'open' ? theme.error : '#fff'} />
             <HeroButton.Label>{job.status === 'open' ? t('detail.close_vacancy') : t('detail.reopen_vacancy')}</HeroButton.Label>
           </HeroButton>
@@ -787,7 +789,7 @@ function OwnerApplicationCard({
           <Ionicons name="close-circle-outline" size={14} color={theme.error} />
           <HeroButton.Label>{t('owner.reject')}</HeroButton.Label>
         </HeroButton>
-        <HeroButton size="sm" variant="primary" style={{ backgroundColor: primary }} isDisabled={isUpdating} onPress={() => void updateStatus('interview')}>
+        <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void updateStatus('interview')}>
           <Ionicons name="calendar-outline" size={14} color="#fff" />
           <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
         </HeroButton>

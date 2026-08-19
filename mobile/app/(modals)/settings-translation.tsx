@@ -157,7 +157,6 @@ export default function SettingsTranslationScreen() {
                           onPress={() => setTargetLocale(option.value)}
                           isDisabled={isSaving || !autoTranslate}
                           accessibilityLabel={option.label}
-                          style={isSelected ? { backgroundColor: primary } : undefined}
                         >
                           <HeroButton.Label>{option.label}</HeroButton.Label>
                         </HeroButton>
@@ -167,7 +166,7 @@ export default function SettingsTranslationScreen() {
                 </HeroCard.Body>
               </HeroCard>
 
-              <HeroButton variant="primary" onPress={handleSave} isDisabled={isSaving} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" onPress={handleSave} isDisabled={isSaving}>
                 <HeroButton.Label>{isSaving ? t('translation.saving') : t('translation.save')}</HeroButton.Label>
               </HeroButton>
             </>

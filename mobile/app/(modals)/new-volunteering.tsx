@@ -226,7 +226,7 @@ function NewVolunteeringScreen() {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                   {organisations.map((org) => (
-                    <HeroButton key={org.id} size="sm" variant={organisationId === org.id ? 'primary' : 'secondary'} onPress={() => setOrganisationId(org.id)} style={organisationId === org.id ? { backgroundColor: primary } : undefined}>
+                    <HeroButton key={org.id} size="sm" variant={organisationId === org.id ? 'primary' : 'secondary'} onPress={() => setOrganisationId(org.id)}>
                       <HeroButton.Label>{org.name}</HeroButton.Label>
                     </HeroButton>
                   ))}
@@ -243,7 +243,7 @@ function NewVolunteeringScreen() {
             <FormField label={t('create.startLabel')} value={startDate} onChangeText={setStartDate} placeholder={t('create.datePlaceholder')} theme={theme} />
             <FormField label={t('create.endLabel')} value={endDate} onChangeText={setEndDate} placeholder={t('create.datePlaceholder')} theme={theme} />
 
-            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)} style={isRemote ? { backgroundColor: primary } : undefined}>
+            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)}>
               <Ionicons name="globe-outline" size={15} color={isRemote ? '#fff' : primary} />
               <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
             </HeroButton>

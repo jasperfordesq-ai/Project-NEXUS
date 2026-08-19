@@ -2988,11 +2988,11 @@ function GroupMarketplacePanel({ groupId, canView }: { groupId: number; canView:
           ) : statsApi.isLoading ? <Spinner size="sm" /> : null}
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-            <HeroButton size="sm" variant={selectedCategory === null ? 'primary' : 'secondary'} onPress={() => chooseCategory(null)} style={selectedCategory === null ? { backgroundColor: primary } : undefined}>
+            <HeroButton size="sm" variant={selectedCategory === null ? 'primary' : 'secondary'} onPress={() => chooseCategory(null)}>
               <HeroButton.Label>{t('marketplace:filters.allCategories')}</HeroButton.Label>
             </HeroButton>
             {(stats?.categories ?? []).map((category) => (
-              <HeroButton key={category.id} size="sm" variant={selectedCategory === category.id ? 'primary' : 'secondary'} onPress={() => chooseCategory(category)} style={selectedCategory === category.id ? { backgroundColor: primary } : undefined}>
+              <HeroButton key={category.id} size="sm" variant={selectedCategory === category.id ? 'primary' : 'secondary'} onPress={() => chooseCategory(category)}>
                 <HeroButton.Label>{category.name}</HeroButton.Label>
               </HeroButton>
             ))}

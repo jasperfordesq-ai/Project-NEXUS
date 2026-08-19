@@ -217,7 +217,6 @@ function StageSummary({
     <HeroButton
       className="min-w-[46%] flex-1"
       variant={active ? 'primary' : 'secondary'}
-      style={active ? { backgroundColor: primary } : undefined}
       onPress={onPress}
     >
       <HeroButton.Label>{t(`applications.status.${status}`)}</HeroButton.Label>
@@ -288,7 +287,7 @@ function PipelineApplicationCard({
               <HeroButton.Label>{t(`applications.status.${status}`)}</HeroButton.Label>
             </HeroButton>
           ))}
-          <HeroButton size="sm" variant="primary" style={{ backgroundColor: primary }} isDisabled={isUpdating} onPress={() => void moveTo('interview')}>
+          <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void moveTo('interview')}>
             <Ionicons name="calendar-outline" size={14} color="#fff" />
             <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
           </HeroButton>

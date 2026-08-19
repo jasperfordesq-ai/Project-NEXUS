@@ -751,7 +751,6 @@ function NewEventScreen() {
                       <TagGroup.Item
                         key={option.id}
                         id={option.id}
-                        style={isSelected ? { backgroundColor: primary } : undefined}
                       >
                         <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                           {option.label}
@@ -1009,7 +1008,7 @@ function FormField({
 
 function ToggleChip({ label, selected, onPress, primary }: { label: string; selected: boolean; onPress: () => void; primary: string }) {
   return (
-    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} onPress={onPress} style={selected ? { backgroundColor: primary } : undefined}>
+    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} onPress={onPress}>
       <HeroButton.Label>{label}</HeroButton.Label>
     </HeroButton>
   );
@@ -1052,7 +1051,7 @@ function AccessibilityChoice({
             ['yes', yesLabel],
             ['no', noLabel],
           ] as const).map(([id, optionLabel]) => (
-            <TagGroup.Item key={id} id={id} style={selected === id ? { backgroundColor: primary } : undefined}>
+            <TagGroup.Item key={id} id={id}>
               <TagGroup.ItemLabel>{optionLabel}</TagGroup.ItemLabel>
             </TagGroup.Item>
           ))}

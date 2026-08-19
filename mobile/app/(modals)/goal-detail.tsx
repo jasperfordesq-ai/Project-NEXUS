@@ -303,7 +303,6 @@ export default function GoalDetailScreen() {
                   variant="primary"
                   onPress={handleProgressSave}
                   isDisabled={isSaving || !Number.isFinite(Number(progressIncrement)) || Number(progressIncrement) <= 0}
-                  style={{ backgroundColor: primary }}
                 >
                   <HeroButton.Label>{isSaving ? t('detail.saving') : t('detail.saveProgress')}</HeroButton.Label>
                 </HeroButton>
@@ -330,7 +329,6 @@ export default function GoalDetailScreen() {
                     variant={selectedFrequency === frequency ? 'primary' : 'secondary'}
                     onPress={() => setSelectedFrequency(frequency)}
                     isDisabled={isSaving}
-                    style={selectedFrequency === frequency ? { backgroundColor: primary } : undefined}
                   >
                     <HeroButton.Label>{t(`detail.frequency.${frequency}`)}</HeroButton.Label>
                   </HeroButton>

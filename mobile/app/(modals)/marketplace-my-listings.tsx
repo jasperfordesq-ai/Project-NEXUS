@@ -281,7 +281,6 @@ function DashboardCard({
                 <TagGroup.Item
                   key={tab}
                   id={tab}
-                  style={isSelected ? { backgroundColor: primary } : undefined}
                 >
                   <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                     {t(`myListings.tabs.${tab}`, { count: listingTabCount(stats, tab) })}
@@ -351,7 +350,7 @@ function OnboardingNudge({ primary, onDismiss }: { primary: string; onDismiss: (
           </View>
         </View>
         <View className="flex-row gap-2">
-          <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/marketplace-merchant-onboarding' as Href)} style={{ backgroundColor: primary }}>
+          <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/marketplace-merchant-onboarding' as Href)}>
             <Ionicons name="storefront-outline" size={16} color="#fff" />
             <HeroButton.Label>{t('myListings.onboardingNudge.start')}</HeroButton.Label>
           </HeroButton>

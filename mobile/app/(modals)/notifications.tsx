@@ -142,7 +142,6 @@ export default function NotificationsScreen() {
             {unreadCount > 0 ? (
               <HeroButton
                 variant="primary"
-                style={{ backgroundColor: primary }}
                 onPress={() => void handleMarkAll()}
                 isDisabled={markingAll}
                 accessibilityLabel={t('markAllRead')}

@@ -451,7 +451,6 @@ function CommentComposer({
           variant="primary"
           isDisabled={isSubmitting || !draft.trim()}
           accessibilityLabel={sendLabel}
-          style={{ backgroundColor: primary }}
           onPress={onSubmit}
           className="h-12 w-12 rounded-full"
         >

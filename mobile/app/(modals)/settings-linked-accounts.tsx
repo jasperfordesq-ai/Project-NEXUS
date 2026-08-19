@@ -200,7 +200,7 @@ function SettingsLinkedAccountsScreen() {
               autoCapitalize="none"
               autoCorrect={false}
             />
-            <HeroButton variant="primary" style={{ backgroundColor: primary }} onPress={sendRequest} isDisabled={isSending}>
+            <HeroButton variant="primary" onPress={sendRequest} isDisabled={isSending}>
               <HeroButton.Label>{isSending ? t('linkedAccounts.sending') : t('linkedAccounts.sendRequest')}</HeroButton.Label>
             </HeroButton>
           </HeroCard.Body>

@@ -187,7 +187,6 @@ export default function PollsScreen() {
                     variant={showCreate ? 'secondary' : 'primary'}
                     onPress={() => setShowCreate((value) => !value)}
                     accessibilityLabel={t('pollsScreen.createPoll')}
-                    style={showCreate ? undefined : { backgroundColor: primary }}
                   >
                     <Ionicons name={showCreate ? 'close-outline' : 'add-circle-outline'} size={18} color={showCreate ? primary : theme.onPrimary} />
                     <HeroButton.Label>{showCreate ? t('common:buttons.cancel') : t('pollsScreen.createPoll')}</HeroButton.Label>
@@ -274,7 +273,7 @@ export default function PollsScreen() {
                     {t('pollsScreen.errorTitle')}
                   </Text>
                   <Text className="text-center text-sm text-danger">{error}</Text>
-                  <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+                  <HeroButton variant="primary" onPress={() => void refresh()}>
                     <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                   </HeroButton>
                 </HeroCard.Body>

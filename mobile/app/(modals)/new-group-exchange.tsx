@@ -209,7 +209,6 @@ function NewGroupExchangeScreen() {
                     key={value}
                     size="sm"
                     variant={splitType === value ? 'primary' : 'secondary'}
-                    style={splitType === value ? { backgroundColor: primary } : undefined}
                     onPress={() => setSplitType(value)}
                     accessibilityState={{ selected: splitType === value }}
                   >
@@ -333,7 +332,7 @@ function NewGroupExchangeScreen() {
               ) : null}
             </View>
 
-            <HeroButton variant="primary" style={{ backgroundColor: primary }} onPress={handleSubmit} isDisabled={!canSubmit}>
+            <HeroButton variant="primary" onPress={handleSubmit} isDisabled={!canSubmit}>
               <HeroButton.Label>{isSubmitting ? t('groupExchanges.create.saving') : t('groupExchanges.create.submit')}</HeroButton.Label>
             </HeroButton>
           </HeroCard.Body>

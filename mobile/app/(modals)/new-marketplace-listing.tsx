@@ -668,7 +668,6 @@ function ButtonGroup<T extends string>({
               <TagGroup.Item
                 key={value}
                 id={value}
-                style={isSelected ? { backgroundColor: primary } : undefined}
               >
                 <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                   {labelFor(value)}
@@ -699,11 +698,11 @@ function CategoryGroup({ categories, selected, onSelect, primary }: { categories
     <View className="gap-2">
       <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('forms.category')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 2 }}>
-        <HeroButton size="sm" variant={selected === null ? 'primary' : 'secondary'} onPress={() => onSelect(null)} style={selected === null ? { backgroundColor: primary } : undefined}>
+        <HeroButton size="sm" variant={selected === null ? 'primary' : 'secondary'} onPress={() => onSelect(null)}>
           <HeroButton.Label>{t('filters.noCategory')}</HeroButton.Label>
         </HeroButton>
         {categories.map((category) => (
-          <HeroButton key={category.id} size="sm" variant={selected === category.id ? 'primary' : 'secondary'} onPress={() => onSelect(category.id)} style={selected === category.id ? { backgroundColor: primary } : undefined}>
+          <HeroButton key={category.id} size="sm" variant={selected === category.id ? 'primary' : 'secondary'} onPress={() => onSelect(category.id)}>
             <HeroButton.Label>{category.name}</HeroButton.Label>
           </HeroButton>
         ))}
@@ -809,7 +808,6 @@ function TemplateSelectField({
             size="sm"
             variant={value === option ? 'primary' : 'secondary'}
             onPress={() => onChange(value === option ? '' : option)}
-            style={value === option ? { backgroundColor: primary } : undefined}
           >
             <HeroButton.Label>{option}</HeroButton.Label>
           </HeroButton>

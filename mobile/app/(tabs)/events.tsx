@@ -79,7 +79,7 @@ export default function EventsScreen() {
             <HeroCard.Body className="items-center gap-4">
               <Ionicons name="warning-outline" size={30} color={primary} />
               <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>{t('loadError')}</Text>
-              <HeroButton variant="primary" onPress={() => void refresh()} style={{ backgroundColor: primary }}>
+              <HeroButton variant="primary" onPress={() => void refresh()}>
                 <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>

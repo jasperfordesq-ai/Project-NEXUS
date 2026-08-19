@@ -178,25 +178,33 @@ function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks) {
   const baseHex = scheme === 'dark' ? (accentDarkHex ?? accentHex) : accentHex;
   const accent = hexToRgb(baseHex);
 
-  // 🔴 The accent is NOT lightened for dark mode, and that is deliberate.
+  // 🔴 The accent is NOT lightened for dark mode. This was tried twice and abandoned twice,
+  // and the reasoning is worth keeping so it is not tried a third time.
   //
-  // An earlier version lifted it 30% towards white, mirroring what the platform's old
-  // indigo default did between its schemes. That broke 142 buttons across 52 files. Those
-  // buttons override their background to `usePrimaryColor()` — the community's UN-lifted
-  // colour — while their label still comes from `--accent-foreground`, which was computed
-  // for the LIFTED one. On NEXUS blue that put dark ink on #006FEE at 3.83:1, where it had
-  // previously been white at 4.66:1: a contrast regression introduced by the very change
-  // meant to fix the colours. No single label colour passes on both #006FEE and its
-  // lifted form, so the mismatch was structural, not a tuning problem.
+  // The appeal is real: a deep brand colour on a near-black ground is harder to read, and
+  // HeroUI's own indigo default did move between its schemes. But lifting the accent makes
+  // the fill a DIFFERENT colour from `usePrimaryColor()`, and everything the app paints by
+  // hand uses the latter. Each attempt therefore cascaded:
   //
-  // Keeping the accent at the community's actual colour in both schemes means the theme
-  // and every hand-written override are the same colour, so they cannot disagree — and it
-  // removes an invented transformation nobody asked for. A community that genuinely wants
-  // a different dark-mode shade can still say so with `accentDark`.
+  //   79 buttons overriding their own background      (swept away — worth doing anyway)
+  //   91 conditional background overrides on toggles  (swept away — worth doing anyway)
+  //   62 buttons with a hardcoded white ICON beside a label that would become dark ink
   //
-  // Checked for both known colours: white label measures 4.66:1 on NEXUS blue and 5.47:1
-  // on the agoris teal, and each stays legible as a link on the dark ground (4.24:1 and
-  // 3.61:1).
+  // The last group cannot be fixed cheaply: `lib/theme/nativeVectorIconStyling.test.ts`
+  // enforces that Ionicons use the native `color` prop rather than a className, so an icon
+  // cannot simply inherit `--accent-foreground`; it would need a new hook threaded through
+  // 34 files.
+  //
+  // And the benefit it buys is already there without it. Un-lifted, the accent as a link on
+  // the dark ground measures 4.24:1 (NEXUS blue) and 3.61:1 (agoris teal) — both above the
+  // 3:1 floor for UI text. As a solid button fill, lifting changes nothing about
+  // visibility. So the lift costs ~230 edit sites and a less conventional look (a pale
+  // button with dark text for a primary action) to improve something that already passes.
+  //
+  // One accent per community, used in both schemes, keeps the theme and everything the app
+  // paints by hand identical by construction. `accentDark` remains for a community that
+  // genuinely wants a different dark shade — and that is then their explicit choice, with
+  // the label recomputed for it.
 
   const foreground = foregroundFor(accent);
   const hover = shift(accent, scheme === 'dark' ? 0.12 : -0.12);

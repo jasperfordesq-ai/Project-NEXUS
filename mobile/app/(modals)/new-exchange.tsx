@@ -286,7 +286,6 @@ function NewExchangeModalInner() {
                   key={value}
                   className="flex-1"
                   variant={type === value ? 'primary' : 'secondary'}
-                  style={type === value ? { backgroundColor: primary } : undefined}
                   onPress={() => setType(value)}
                   accessibilityState={{ selected: type === value }}
                 >
@@ -454,7 +453,6 @@ function NewExchangeModalInner() {
                         key={category.id}
                         size="sm"
                         variant={selected ? 'primary' : 'secondary'}
-                        style={selected ? { backgroundColor: primary } : undefined}
                         onPress={() => {
                           setCategoryId(category.id);
                           if (fieldErrors.category) setFieldErrors((current) => ({ ...current, category: undefined }));
@@ -498,7 +496,7 @@ function NewExchangeModalInner() {
             <HeroButton className="flex-1" variant="secondary" isDisabled={submitting} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton className="flex-1" variant="primary" isDisabled={submitting} style={{ backgroundColor: primary }} onPress={() => void handleSubmit()}>
+            <HeroButton className="flex-1" variant="primary" isDisabled={submitting} onPress={() => void handleSubmit()}>
               {submitting ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={18} color="#fff" />}
               <HeroButton.Label>{type === 'offer' ? t('postOffer') : t('postRequest')}</HeroButton.Label>
             </HeroButton>
@@ -582,7 +580,6 @@ function ChoiceGroup<T extends string>({
               key={value}
               size="sm"
               variant={selectedValue ? 'primary' : 'secondary'}
-              style={selectedValue ? { backgroundColor: primary } : undefined}
               onPress={() => onSelect(selectedValue ? '' : value)}
               accessibilityState={{ selected: selectedValue }}
             >

@@ -243,7 +243,7 @@ function MarketplaceToolsScreen() {
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 12 }}>
               {availableTabs.map((item) => (
-                <HeroButton key={item} size="sm" variant={tab === item ? 'primary' : 'secondary'} onPress={() => setTab(item)} style={tab === item ? { backgroundColor: primary } : undefined}>
+                <HeroButton key={item} size="sm" variant={tab === item ? 'primary' : 'secondary'} onPress={() => setTab(item)}>
                   <HeroButton.Label>{t(`tools.tabs.${item}`)}</HeroButton.Label>
                 </HeroButton>
               ))}
@@ -426,7 +426,6 @@ function ChoiceGroup<T extends string>({
             size="sm"
             variant={selected === value ? 'primary' : 'secondary'}
             onPress={() => onSelect(value)}
-            style={selected === value ? { backgroundColor: primary } : undefined}
           >
             <HeroButton.Label>{labelFor(value)}</HeroButton.Label>
           </HeroButton>
@@ -544,7 +543,6 @@ function PromotionProductRow({
     <HeroButton
       variant={selected ? 'primary' : 'secondary'}
       onPress={onPress}
-      style={selected ? { backgroundColor: primary } : undefined}
     >
       <View className="min-w-0 flex-1 items-start">
         <Text className="text-sm font-bold" style={{ color: selected ? '#fff' : theme.text }} numberOfLines={1}>{product.label}</Text>
@@ -704,7 +702,6 @@ function PickupsPanel() {
         <HeroButton
           variant={isRecurring ? 'primary' : 'secondary'}
           onPress={() => setIsRecurring((current) => !current)}
-          style={isRecurring ? { backgroundColor: primary } : undefined}
         >
           <HeroButton.Label>{t('tools.pickups.recurringWeekly')}</HeroButton.Label>
         </HeroButton>
@@ -990,7 +987,7 @@ function CouponsPanel() {
           <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('tools.coupons.discountType')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {COUPON_DISCOUNT_TYPES.map((type) => (
-              <HeroButton key={type} size="sm" variant={form.discountType === type ? 'primary' : 'secondary'} onPress={() => updateForm('discountType', type)} style={form.discountType === type ? { backgroundColor: primary } : undefined}>
+              <HeroButton key={type} size="sm" variant={form.discountType === type ? 'primary' : 'secondary'} onPress={() => updateForm('discountType', type)}>
                 <HeroButton.Label>{t(`tools.coupons.discountTypes.${type}`)}</HeroButton.Label>
               </HeroButton>
             ))}
@@ -1030,7 +1027,7 @@ function CouponsPanel() {
           <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('tools.coupons.status')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {COUPON_STATUSES.map((status) => (
-              <HeroButton key={status} size="sm" variant={form.status === status ? 'primary' : 'secondary'} onPress={() => updateForm('status', status)} style={form.status === status ? { backgroundColor: primary } : undefined}>
+              <HeroButton key={status} size="sm" variant={form.status === status ? 'primary' : 'secondary'} onPress={() => updateForm('status', status)}>
                 <HeroButton.Label>{t(`tools.coupons.statuses.${status}`)}</HeroButton.Label>
               </HeroButton>
             ))}
@@ -1040,13 +1037,13 @@ function CouponsPanel() {
           <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('tools.coupons.appliesTo')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {COUPON_APPLIES_TO.map((scope) => (
-              <HeroButton key={scope} size="sm" variant={form.appliesTo === scope ? 'primary' : 'secondary'} onPress={() => updateForm('appliesTo', scope)} style={form.appliesTo === scope ? { backgroundColor: primary } : undefined}>
+              <HeroButton key={scope} size="sm" variant={form.appliesTo === scope ? 'primary' : 'secondary'} onPress={() => updateForm('appliesTo', scope)}>
                 <HeroButton.Label>{t(`tools.coupons.applies.${scope}`)}</HeroButton.Label>
               </HeroButton>
             ))}
           </ScrollView>
         </View>
-        <HeroButton variant="primary" onPress={save} isDisabled={isSavingCoupon || !form.title.trim()} style={{ backgroundColor: primary }}>
+        <HeroButton variant="primary" onPress={save} isDisabled={isSavingCoupon || !form.title.trim()}>
           {isSavingCoupon ? <Spinner size="sm" /> : null}
           <HeroButton.Label>{isSavingCoupon ? t('tools.coupons.saving') : editingCoupon ? t('tools.coupons.update') : t('tools.coupons.create')}</HeroButton.Label>
         </HeroButton>
@@ -1446,7 +1443,7 @@ export function QrScannerSheet({
           <Surface variant="secondary" className="gap-2 rounded-panel-inner p-4">
             <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('tools.scanner.permissionTitle')}</Text>
             <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('tools.scanner.permissionHint')}</Text>
-            <HeroButton variant="primary" onPress={() => void requestPermission()} style={{ backgroundColor: primary }}>
+            <HeroButton variant="primary" onPress={() => void requestPermission()}>
               <HeroButton.Label>{t('tools.scanner.permissionAction')}</HeroButton.Label>
             </HeroButton>
           </Surface>

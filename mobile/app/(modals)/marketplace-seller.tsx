@@ -160,7 +160,6 @@ function SellerTabs({
           className="flex-1"
           variant={selected === tab ? 'primary' : 'secondary'}
           onPress={() => onSelect(tab)}
-          style={selected === tab ? { backgroundColor: primary } : undefined}
         >
           <HeroButton.Label>{t(`seller.${tab}Tab`)}</HeroButton.Label>
           <Chip size="sm" variant="secondary">
@@ -298,7 +297,7 @@ function SellerHeader({ profile, canMessage }: { profile: MarketplaceSellerProfi
         ) : null}
 
         {canMessage ? (
-          <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/thread', params: { recipientId: String(profile.user_id), name: profile.display_name } } as unknown as Href)} style={{ backgroundColor: primary }}>
+          <HeroButton variant="primary" onPress={() => router.push({ pathname: '/(modals)/thread', params: { recipientId: String(profile.user_id), name: profile.display_name } } as unknown as Href)}>
             <Ionicons name="chatbubble-outline" size={17} color="#fff" />
             <HeroButton.Label>{t('seller.message')}</HeroButton.Label>
           </HeroButton>

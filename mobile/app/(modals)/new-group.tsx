@@ -353,7 +353,6 @@ function NewGroupScreen() {
                         <TagGroup.Item
                           key={template.id}
                           id={template.id}
-                          style={isSelected ? { backgroundColor: primary } : undefined}
                         >
                           <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                             {template.name}
@@ -369,18 +368,18 @@ function NewGroupScreen() {
             <View className="gap-2">
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.visibilityLabel')}</Text>
               <View className="flex-row gap-2">
-                <HeroButton className="flex-1" variant={visibility === 'public' ? 'primary' : 'secondary'} onPress={() => setVisibility('public')} style={visibility === 'public' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="flex-1" variant={visibility === 'public' ? 'primary' : 'secondary'} onPress={() => setVisibility('public')}>
                   <Ionicons name="globe-outline" size={15} color={visibility === 'public' ? '#fff' : primary} />
                   <HeroButton.Label>{t('public')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" variant={visibility === 'private' ? 'primary' : 'secondary'} onPress={() => setVisibility('private')} style={visibility === 'private' ? { backgroundColor: primary } : undefined}>
+                <HeroButton className="flex-1" variant={visibility === 'private' ? 'primary' : 'secondary'} onPress={() => setVisibility('private')}>
                   <Ionicons name="lock-closed-outline" size={15} color={visibility === 'private' ? '#fff' : primary} />
                   <HeroButton.Label>{t('private')}</HeroButton.Label>
                 </HeroButton>
               </View>
             </View>
 
-            <HeroButton variant={isFederated ? 'primary' : 'secondary'} onPress={() => setIsFederated((value) => !value)} style={isFederated ? { backgroundColor: primary } : undefined}>
+            <HeroButton variant={isFederated ? 'primary' : 'secondary'} onPress={() => setIsFederated((value) => !value)}>
               <Ionicons name="git-network-outline" size={15} color={isFederated ? '#fff' : primary} />
               <HeroButton.Label>{t('create.federated')}</HeroButton.Label>
             </HeroButton>

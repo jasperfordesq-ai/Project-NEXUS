@@ -137,7 +137,7 @@ function FederationOnboardingScreen() {
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('directory.onboarding.reach')}</Text>
               <View className="flex-row flex-wrap gap-2">
                 {(['local_only', 'remote_ok', 'travel_ok'] as const).map((reach) => (
-                  <HeroButton key={reach} variant={settings.service_reach === reach ? 'primary' : 'secondary'} onPress={() => updateSetting('service_reach', reach)} style={settings.service_reach === reach ? { backgroundColor: primary } : undefined}>
+                  <HeroButton key={reach} variant={settings.service_reach === reach ? 'primary' : 'secondary'} onPress={() => updateSetting('service_reach', reach)}>
                     <HeroButton.Label>{t(`directory.settings.reach.${reach}`)}</HeroButton.Label>
                   </HeroButton>
                 ))}
@@ -196,7 +196,7 @@ function FederationOnboardingScreen() {
             <Ionicons name="arrow-back-outline" size={16} color={primary} />
             <HeroButton.Label>{t('common:back')}</HeroButton.Label>
           </HeroButton>
-          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving} style={{ backgroundColor: primary }}>
+          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving}>
             {isSaving ? <Spinner size="sm" /> : <Ionicons name={step === 3 ? 'checkmark-outline' : 'arrow-forward-outline'} size={16} color="#fff" />}
             <HeroButton.Label>{step === 3 ? t('directory.onboarding.finish') : t('directory.onboarding.next')}</HeroButton.Label>
           </HeroButton>

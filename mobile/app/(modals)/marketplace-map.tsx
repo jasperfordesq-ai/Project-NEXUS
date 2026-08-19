@@ -187,7 +187,7 @@ function MarketplaceMapScreen() {
                 ))}
               </FilterStrip>
               <View className="gap-2">
-                <HeroButton variant="primary" onPress={() => void search()} isDisabled={isLoading} style={{ backgroundColor: primary }}>
+                <HeroButton variant="primary" onPress={() => void search()} isDisabled={isLoading}>
                   <Ionicons name="locate-outline" size={16} color="#fff" />
                   <HeroButton.Label>{t('map.search')}</HeroButton.Label>
                 </HeroButton>
@@ -323,7 +323,7 @@ function FilterStrip({ label, children }: { label: string; children: ReactNode }
 function FilterButton({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
   const primary = usePrimaryColor();
   return (
-    <HeroButton size="sm" variant={active ? 'primary' : 'secondary'} onPress={onPress} style={active ? { backgroundColor: primary } : undefined}>
+    <HeroButton size="sm" variant={active ? 'primary' : 'secondary'} onPress={onPress}>
       <HeroButton.Label>{label}</HeroButton.Label>
     </HeroButton>
   );

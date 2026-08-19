@@ -146,7 +146,7 @@ export default function ExploreScreen() {
               </HeroCard.Description>
             </HeroCard.Header>
             <HeroCard.Footer className="flex-row gap-3 px-5 pb-5 pt-2">
-              <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/search' as Href)} style={{ backgroundColor: primary }}>
+              <HeroButton className="flex-1" variant="primary" onPress={() => router.push('/(modals)/search' as Href)}>
                 <Ionicons name="search-outline" size={18} color="#fff" />
                 <HeroButton.Label>{t('actions.search')}</HeroButton.Label>
               </HeroButton>

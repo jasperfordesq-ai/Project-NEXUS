@@ -299,7 +299,6 @@ function EditExchangeModalInner() {
                     key={value}
                     className="flex-1"
                     variant={type === value ? 'primary' : 'secondary'}
-                    style={type === value ? { backgroundColor: primary } : undefined}
                     onPress={() => setType(value)}
                     accessibilityState={{ selected: type === value }}
                   >
@@ -375,7 +374,6 @@ function EditExchangeModalInner() {
                       <TagGroup.Item
                         key={value}
                         id={value}
-                        style={isSelected ? { backgroundColor: primary } : undefined}
                       >
                         <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
                           {t(`serviceType.${value}`)}
@@ -502,7 +500,6 @@ function EditExchangeModalInner() {
                           key={category.id}
                           size="sm"
                           variant={selected ? 'primary' : 'secondary'}
-                          style={selected ? { backgroundColor: primary } : undefined}
                           onPress={() => {
                             setCategoryId(category.id);
                             if (fieldErrors.category) setFieldErrors((current) => ({ ...current, category: undefined }));
@@ -555,7 +552,7 @@ function EditExchangeModalInner() {
             <HeroButton className="flex-1" variant="secondary" isDisabled={saving} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton className="flex-1" variant="primary" isDisabled={saving} style={{ backgroundColor: primary }} onPress={() => void handleSave()}>
+            <HeroButton className="flex-1" variant="primary" isDisabled={saving} onPress={() => void handleSave()}>
               {saving ? <Spinner size="sm" /> : <Ionicons name="save-outline" size={18} color="#fff" />}
               <HeroButton.Label>{t('detail.saveChanges')}</HeroButton.Label>
             </HeroButton>
@@ -642,7 +639,6 @@ function ChoiceGroup<T extends string>({
               key={value}
               size="sm"
               variant={isSelected ? 'primary' : 'secondary'}
-              style={isSelected ? { backgroundColor: primary } : undefined}
               onPress={() => onSelect(isSelected ? '' : value)}
               accessibilityState={{ selected: isSelected }}
             >
