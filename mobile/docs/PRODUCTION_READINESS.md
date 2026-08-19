@@ -50,7 +50,7 @@ statement about attention, not about the app.
 | 8 | End-to-end journeys | **Adequate** | All 9 Maestro flows PASS against the local API (they had never been run); a nightly CI workflow exists but has never run |
 | 9 | Visual correctness | **Weak** | Contrast gated (37 assertions, found 7 real failures); screenshot diffing works and gates 3 signed-in screens at 0px repeatability — 3 more toured but not comparable, and 134 screens have no baseline |
 | 10 | iOS | **Unmeasured** | Never built or run in CI or locally; App Store Connect ID is still a placeholder |
-| 11 | Accessibility | **Adequate** | Re-measured: 2 of 44 interactive elements lack a label, and both are in unused code. WCAG AA contrast is checked. Touch-target size still unchecked |
+| 11 | Accessibility | **Adequate** | Re-measured: 2 of 44 interactive elements lack a label — one already exposes visible text, the other is in unused code. WCAG AA contrast is checked. Touch-target size and on-device screen-reader behaviour still unchecked |
 | 12 | Internationalisation | **Weak** | 7 locales against the platform's 11. `nl` `pl` `ja` are ~17,200 strings of ordinary work; **`ar` is blocked** — the app has no right-to-left support at all |
 | 13 | Offline & flaky-network behaviour | **Adequate for check-in, Weak elsewhere** | Offline check-in store now 94.97% covered, incl. the retry that stops a double-credit; mid-request connection loss still untested elsewhere |
 | 14 | Performance | **Unmeasured** | No startup-time, bundle-size or list-scroll budget |
