@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Obiekty',
     'index' => [
         'title' => 'Lokale partnerskie',
         'intro' => 'Lokalne miejsca, w których mile widziana jest Twoja przepustka członkowska. Każda pokazana oferta jest prowadzona przez sam obiekt.',

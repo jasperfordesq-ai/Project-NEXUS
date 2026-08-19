@@ -227,7 +227,7 @@ test('certifies a disposable private group and its owner-managed content through
     expect(discussionId).toBeGreaterThan(0);
     await expect(page.locator('h1')).toHaveText(discussionTitle);
     await expect(page.getByText('Disposable discussion content created through the Web UK member workflow.', { exact: true })).toHaveCount(2);
-    await expect(page.locator('#discussion-replies')).toHaveText('1 replies');
+    await expect(page.locator('#discussion-replies')).toHaveText('1 reply');
     await expectAccessibleReflow(page);
 
     await page.locator('#content').fill(discussionReply);

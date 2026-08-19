@@ -47,7 +47,7 @@
     {% if listing.hours_estimate or listing.estimated_hours %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("listings.hours_label") }}</dt>
-        <dd class="govuk-summary-list__value">{{ t("listings.hours", { count: listing.hours_estimate or listing.estimated_hours }) }}</dd>
+        <dd class="govuk-summary-list__value">{{ tc("listings.hours", listing.hours_estimate or listing.estimated_hours, { count: listing.hours_estimate or listing.estimated_hours }) }}</dd>
       </div>
     {% endif %}
     {% if authorName %}

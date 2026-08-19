@@ -51,7 +51,7 @@
               {% endif %}
             </div>
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
-              {% if discussion.authorName %}{{ t("groups.discussions.started_by", { name: discussion.authorName }) }} · {% endif %}{{ t("groups.discussions.replies_count", { count: discussion.replyCount }) }}
+              {% if discussion.authorName %}{{ t("groups.discussions.started_by", { name: discussion.authorName }) }} · {% endif %}{{ tc("groups.discussions.replies_count", discussion.replyCount, { count: discussion.replyCount }) }}
             </p>
           </article>
         {% endfor %}

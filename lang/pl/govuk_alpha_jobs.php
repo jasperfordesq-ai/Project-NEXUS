@@ -44,7 +44,7 @@ return [
         'above_average' => 'Powyżej średniej',
         'below_average' => 'Poniżej średniej',
         'estimated_time_to_fill' => 'Szacowany czas wypełnienia',
-        'days_value' => ':count dni',
+        'days_value' => '{0} 0 dni|{1} 1 dzień|[2,*] :count dni',
         'posted_days_ago' => 'Opublikowano :days dni temu',
         'not_available' => 'Niedostępne',
         'conversion_comparison' => 'Współczynnik konwersji vs średnia',

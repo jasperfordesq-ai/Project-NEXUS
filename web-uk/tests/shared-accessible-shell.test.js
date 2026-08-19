@@ -10700,7 +10700,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(t('search.title'));
     expect(response.text).toContain(t('search.caption', { community: 'Project NEXUS Accessible' }));
     expect(response.text).toContain(t('search.label'));
-    expect(response.text).toContain(t('search.results_count', { count: 9 }));
+    expect(response.text).toContain(createChoiceTranslator('ar')('search.results_count', 9, { count: 9 }));
+    expect(response.text).not.toContain('{0}');
+    expect(response.text).not.toContain('[2,*]');
     expect(response.text).toContain('href="/acme/accessible/search/advanced"');
     expect(response.text).toContain(t('govuk_alpha_search.nav.advanced'));
     expect(response.text).toContain(t('govuk_alpha.polish_core_a.search_filters_legend'));
@@ -15680,7 +15682,7 @@ describe('shared accessible frontend shell', () => {
       expect(response.text).toContain(t(key));
     }
     expect(response.text).toContain(t('polls.by_label', { name: 'Ada Lovelace' }));
-    expect(response.text).toContain(t('polls.votes_count', { count: 10 }));
+    expect(response.text).toContain(createChoiceTranslator('ar')('polls.votes_count', 10, { count: 10 }));
     // per_option_votes now carries plural forms, so the expectation must come
     // from the CHOICE translator. Built with plain t() it yields the whole
     // "{0} …|{1} …|[2,*] …" template, which is what the page itself used to
@@ -16834,7 +16836,12 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('&middot;');
     expect(response.text).not.toContain('app-notification-icon');
     expect(response.text).toContain('Avery and two others liked your post');
-    expect(response.text).toContain('From Avery, Morgan and 1 others');
+    expect(response.text).toContain(createChoiceTranslator('en')('notifications.actors_and_more', 1, {
+      names: 'Avery, Morgan',
+      count: 1
+    }));
+    expect(response.text).not.toContain('{0}');
+    expect(response.text).not.toContain('[2,*]');
     expect(response.text).toContain('href="/feed/posts/7"');
     expect(response.text).toContain('3 grouped');
     expect(response.text).toContain('2 days ago');
@@ -22783,7 +22790,9 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('<time datetime="2026-09-14T00:00:00.000Z">14 September 2026</time>');
     expect(signed.text).toContain('Please swap weeks here if you need help.');
     expect(signed.text).not.toContain('&lt;strong&gt;');
-    expect(signed.text).toContain('1 replies');
+    expect(signed.text).toContain(createChoiceTranslator('en')('groups.discussions.replies_count', 1, { count: 1 }));
+    expect(signed.text).not.toContain('{0}');
+    expect(signed.text).not.toContain('[2,*]');
     expect(signed.text).toContain('Reply by Sam Lee');
     expect(signed.text).toContain('<time datetime="2026-09-14T09:30:00.000Z">14 September 2026, 10:30</time>');
     expect(signed.text).toContain('14 September 2026, 10:30');

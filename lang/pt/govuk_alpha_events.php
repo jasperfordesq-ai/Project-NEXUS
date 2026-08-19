@@ -192,7 +192,7 @@ return [
         'offset_60' => '1 hora antes',
         'custom_label' => 'Adicione outro horário de lembrete em minutos',
         'custom_hint' => 'Insira um número inteiro de :min a :max.',
-        'custom_value' => ':count minutos antes',
+        'custom_value' => '{0} Na hora de início|{1} 1 minuto antes|[2,*] :count minutos antes',
         'channels' => 'Canais de entrega',
         'channels_hint' => 'Escolha cada canal de forma independente. A disponibilidade também pode depender do seu dispositivo e das configurações de notificação global.',
         'channel_email' => 'E-mail',

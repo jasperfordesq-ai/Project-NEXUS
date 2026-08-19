@@ -44,7 +44,7 @@ return [
         'above_average' => 'فوق المتوسط',
         'below_average' => 'أقل من المتوسط',
         'estimated_time_to_fill' => 'الوقت المقدر لملء',
-        'days_value' => ':count يوم',
+        'days_value' => '{0} 0 أيام|{1} يوم واحد|[2,*] :count يومًا',
         'posted_days_ago' => 'تم النشر قبل :days من الأيام',
         'not_available' => 'غير متوفر',
         'conversion_comparison' => 'معدل التحويل مقابل المتوسط',

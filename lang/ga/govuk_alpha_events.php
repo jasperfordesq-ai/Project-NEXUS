@@ -192,7 +192,7 @@ return [
         'offset_60' => '1 uair an chloig roimh',
         'custom_label' => 'Cuir am meabhrúcháin eile leis i nóiméid',
         'custom_hint' => 'Cuir isteach slánuimhir ó :min go :max.',
-        'custom_value' => ':count nóiméad roimhe sin',
+        'custom_value' => '{0} Ag an am tosaithe|{1} 1 nóiméad roimh ré|[2,*] :count nóiméad roimh ré',
         'channels' => 'Bealaí seachadta',
         'channels_hint' => 'Roghnaigh gach cainéal go neamhspleách. Is féidir le hinfhaighteacht a bheith ag brath ar do ghléas agus ar shocruithe fógra domhanda.',
         'channel_email' => 'Ríomhphost',

@@ -145,7 +145,7 @@
         {% if maxAttendees and attendeeCount >= maxAttendees %}
           <p class="govuk-!-margin-bottom-4">{{ govukTag({ text: t("events.full"), classes: "govuk-tag--red" }) }}</p>
         {% elif spotsLeft is not none and spotsLeft is defined %}
-          <p class="govuk-!-margin-bottom-4">{{ govukTag({ text: t("events.spots_left", { count: spotsLeft }), classes: "govuk-tag--green" }) }}</p>
+          <p class="govuk-!-margin-bottom-4">{{ govukTag({ text: tc("events.spots_left", spotsLeft, { count: spotsLeft }), classes: "govuk-tag--green" }) }}</p>
         {% endif %}
       </div>
 

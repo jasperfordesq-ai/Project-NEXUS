@@ -36,7 +36,7 @@ return [
         'empty_none' => 'Níl aon eagraíochtaí liostaithe fós.',
         'stat_opportunities' => '{0} Gan deis ar bith|{1} 1 deis|[2,*] :count deis',
         'stat_volunteers' => '{0} Gan oibrí deonach ar bith|{1} 1 oibrí deonach|[2,*] :count oibrí deonach',
-        'stat_hours' => ':count uair an chloig logáilte',
+        'stat_hours' => '{0} Gan aon uair an chloig logáilte|{1} 1 uair an chloig logáilte|[2,*] :count uair an chloig logáilte',
         'stat_rating' => 'Rátáil :rating as 5',
         'has_website' => 'Tá suíomh Gréasáin',
         'term_opportunities' => 'Deiseanna',

@@ -2481,6 +2481,78 @@ describe('Laravel-first Gamification sub-navigation source contract', () => {
   });
 });
 
+describe('section caption consistency', () => {
+  const viewsRoot = path.join(__dirname, '..', 'src', 'views');
+
+  it('keeps section captions on pages that belong to a parent area', () => {
+    const sectionPages = [
+      'premium/return.njk',
+      'profile/blocked.njk',
+      'profile/delete.njk',
+      'profile/settings.njk',
+      'profile/two-factor.njk',
+      'events/calendar-subscription-revoke.njk',
+      'events/calendar-subscriptions.njk',
+      'events/calendar.njk',
+      'events/communications.njk',
+      'events/registration-answers.njk',
+      'events/registration-form.njk',
+      'events/templates.njk',
+      'search/saved-delete.njk',
+      'settings/guardians.njk',
+      'settings/support-actions.njk',
+      'settings/supported-messages-purpose.njk',
+      'settings/supported-messages-thread.njk',
+      'settings/supported-messages.njk',
+      'jobs/bias-audit.njk',
+      'jobs/employer-brand.njk',
+      'jobs/talent-profile.njk',
+      'jobs/talent-search.njk',
+      'venues/checkin.njk',
+      'venues/index.njk',
+      'venues/pass.njk',
+      'marketplace/coupon-form.njk',
+      'marketplace/slot-form.njk',
+      'volunteering/create-opportunity.njk',
+      'volunteering/org-settings.njk',
+      'podcasts/form.njk',
+      'podcasts/manage.njk',
+      'whats-on/index.njk'
+    ];
+
+    for (const file of sectionPages) {
+      const source = fs.readFileSync(path.join(viewsRoot, file), 'utf8');
+      expect(source).toMatch(/class="govuk-caption-(?:l|xl)"/);
+    }
+  });
+
+  it('does not force a parent section onto standalone documents', () => {
+    const standalonePages = [
+      'confirm-delete.njk',
+      'error.njk',
+      'errors/403.njk',
+      'errors/404.njk',
+      'errors/413.njk',
+      'errors/419.njk',
+      'errors/429.njk',
+      'errors/500.njk',
+      'errors/503.njk',
+      'forgot-password.njk',
+      'login.njk',
+      'register.njk',
+      'reset-password.njk',
+      'tenant-chooser.njk',
+      'public-info/email-verify.njk',
+      'public-info/newsletter-unsubscribe.njk'
+    ];
+
+    for (const file of standalonePages) {
+      const source = fs.readFileSync(path.join(viewsRoot, file), 'utf8');
+      expect(source).not.toMatch(/class="govuk-caption-(?:l|xl)"/);
+    }
+  });
+});
+
 describe('GOV.UK Frontend palette compatibility', () => {
   it('avoids removed legacy colour names in the shared visual layer', () => {
     const source = fs.readFileSync(

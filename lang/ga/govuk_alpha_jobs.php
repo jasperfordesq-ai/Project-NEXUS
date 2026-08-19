@@ -44,7 +44,7 @@ return [
         'above_average' => 'Os cionn an mheáin',
         'below_average' => 'Faoi bhun an mheáin',
         'estimated_time_to_fill' => 'Am measta le líonadh',
-        'days_value' => ':count lá',
+        'days_value' => '{0} 0 lá|{1} 1 lá|[2,*] :count lá',
         'posted_days_ago' => 'Postáilte :days lá ó shin',
         'not_available' => 'Níl sé ar fáil',
         'conversion_comparison' => 'Ráta comhshó vs meán',

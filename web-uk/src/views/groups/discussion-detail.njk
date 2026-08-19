@@ -49,7 +49,7 @@
     <div class="govuk-body">{{ discussion.content | striptags | nl2br | safe }}</div>
   </article>
 
-  <h2 class="govuk-heading-l" id="discussion-replies">{{ t("groups.discussions.replies_count", { count: messages.length }) }}</h2>
+  <h2 class="govuk-heading-l" id="discussion-replies">{{ tc("groups.discussions.replies_count", messages.length, { count: messages.length }) }}</h2>
 
   {% if not messages.length %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.no_replies") }}</p></div>

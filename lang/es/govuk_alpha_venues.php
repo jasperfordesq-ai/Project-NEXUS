@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Espacios',
     'index' => [
         'title' => 'Lugares asociados',
         'intro' => 'Lugares locales que aceptan su pase de miembro. Cualquier oferta mostrada está gestionada por el propio recinto.',

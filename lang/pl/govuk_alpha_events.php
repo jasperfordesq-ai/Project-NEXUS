@@ -192,7 +192,7 @@ return [
         'offset_60' => '1 godzinę wcześniej',
         'custom_label' => 'Dodaj kolejny czas przypomnienia w minutach',
         'custom_hint' => 'Wprowadź liczbę całkowitą od :min do :max.',
-        'custom_value' => ':count minut wcześniej',
+        'custom_value' => '{0} W chwili rozpoczęcia|{1} 1 minutę wcześniej|[2,*] :count minut wcześniej',
         'channels' => 'Kanały dostawy',
         'channels_hint' => 'Wybierz każdy kanał niezależnie. Dostępność może również zależeć od Twojego urządzenia i globalnych ustawień powiadomień.',
         'channel_email' => 'E-mail',

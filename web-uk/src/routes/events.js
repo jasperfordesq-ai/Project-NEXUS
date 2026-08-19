@@ -2208,6 +2208,7 @@ async function renderCommunications(req, res, options = {}) {
   const broadcasts = collectionFrom(listResult).map((broadcast) => ({
     ...broadcast,
     versionLabel: formatNumber(broadcast?.version || 0),
+    recipientCount: Number(broadcast?.audience?.recipient_count || 0),
     recipientCountLabel: formatNumber(broadcast?.audience?.recipient_count || 0),
     delivery: {
       ...(broadcast?.delivery || {}),

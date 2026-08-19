@@ -67,18 +67,18 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">{{ t("exchanges.proposed_hours_label") }}</dt>
-      <dd class="govuk-summary-list__value">{{ t("exchanges.hours", { count: exchange.proposedHours }) }}</dd>
+      <dd class="govuk-summary-list__value">{{ tc("exchanges.hours", exchange.proposedHours, { count: exchange.proposedHours }) }}</dd>
     </div>
     {% if exchange.prepTime %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("exchanges.prep_time_label") }}</dt>
-        <dd class="govuk-summary-list__value">{{ t("exchanges.hours", { count: exchange.prepTime }) }}</dd>
+        <dd class="govuk-summary-list__value">{{ tc("exchanges.hours", exchange.prepTime, { count: exchange.prepTime }) }}</dd>
       </div>
     {% endif %}
     {% if exchange.finalHours %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("exchanges.final_hours_label") }}</dt>
-        <dd class="govuk-summary-list__value">{{ t("exchanges.hours", { count: exchange.finalHours }) }}</dd>
+        <dd class="govuk-summary-list__value">{{ tc("exchanges.hours", exchange.finalHours, { count: exchange.finalHours }) }}</dd>
       </div>
     {% endif %}
     {% if exchange.status == 'in_progress' or exchange.status == 'pending_confirmation' or exchange.status == 'completed' %}

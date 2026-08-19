@@ -16,6 +16,7 @@
   {% set marketplaceStatusSuccessHeadingKey = "states.success_title" %}
   {% include "marketplace/_status-banner.njk" %}
 
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.slots.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.slots.title_edit") }}</h1>
   {% set submitLabel = t("govuk_alpha_commerce.slots.submit_edit") %}
   {% include "marketplace/_slot-form.njk" %}

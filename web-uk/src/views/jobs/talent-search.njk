@@ -10,6 +10,7 @@
 {% endblock %}
 
 {% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("jobs.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.talent.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_jobs.talent.description") }}</p>
 

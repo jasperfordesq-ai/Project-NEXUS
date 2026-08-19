@@ -8,6 +8,7 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_venues.caption") }}</span>
       <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.checkin.title") }}</h1>
 
       {% set status = result.status if result else null %}

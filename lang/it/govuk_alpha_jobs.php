@@ -44,7 +44,7 @@ return [
         'above_average' => 'Sopra la media',
         'below_average' => 'Al di sotto della media',
         'estimated_time_to_fill' => 'Tempo stimato per il riempimento',
-        'days_value' => ':count giorni',
+        'days_value' => '{0} 0 giorni|{1} 1 giorno|[2,*] :count giorni',
         'posted_days_ago' => 'Pubblicato :days giorni fa',
         'not_available' => 'Non disponibile',
         'conversion_comparison' => 'Tasso di conversione rispetto alla media',

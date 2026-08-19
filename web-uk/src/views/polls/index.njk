@@ -177,7 +177,7 @@
                 <strong class="govuk-tag govuk-tag--grey">{{ t("polls.closed_tag") }}</strong>
               </div>
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
-                {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closed_on", { date: poll.expiresAt | formatDate }) }}{% endif %} - {{ t("polls.votes_count", { count: poll.totalVotes }) }}
+                {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closed_on", { date: poll.expiresAt | formatDate }) }}{% endif %} - {{ tc("polls.votes_count", poll.totalVotes, { count: poll.totalVotes }) }}
               </p>
               {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
               {% if poll.resultsVisible %}

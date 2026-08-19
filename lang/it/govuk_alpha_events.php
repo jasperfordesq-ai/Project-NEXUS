@@ -192,7 +192,7 @@ return [
         'offset_60' => '1 ora prima',
         'custom_label' => 'Aggiungi un altro orario del promemoria in minuti',
         'custom_hint' => 'Inserisci un numero intero da :min a :max.',
-        'custom_value' => ':count minuti prima',
+        'custom_value' => '{0} All\'ora di inizio|{1} 1 minuto prima|[2,*] :count minuti prima',
         'channels' => 'Canali di consegna',
         'channels_hint' => 'Scegli ciascun canale in modo indipendente. La disponibilità può dipendere anche dal dispositivo e dalle impostazioni di notifica globali.',
         'channel_email' => 'E-mail',

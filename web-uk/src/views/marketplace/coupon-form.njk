@@ -39,6 +39,7 @@
     </div>
   {% endif %}
 
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.coupons.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{% if isEdit %}{{ t("govuk_alpha_commerce.coupons.title_edit") }}{% else %}{{ t("govuk_alpha_commerce.coupons.title_create") }}{% endif %}</h1>
 
   <form method="post" action="{{ urlFor(action) }}" novalidate>

@@ -36,7 +36,7 @@ return [
         'empty_none' => 'Er zijn nog geen organisaties vermeld.',
         'stat_opportunities' => '{0} Geen mogelijkheden|{1} 1 mogelijkheid|[2,*] :count mogelijkheden',
         'stat_volunteers' => '{0} Geen vrijwilligers|{1} 1 vrijwilliger|[2,*] :count vrijwilligers',
-        'stat_hours' => ':count uur geregistreerd',
+        'stat_hours' => '{0} Geen uren geregistreerd|{1} 1 uur geregistreerd|[2,*] :count uur geregistreerd',
         'stat_rating' => 'Beoordeling :rating uit 5',
         'has_website' => 'Heeft een website',
         'term_opportunities' => 'Mogelijkheden',

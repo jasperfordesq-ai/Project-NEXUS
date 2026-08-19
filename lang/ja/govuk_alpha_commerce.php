@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => '支払い方法を1つ選択してください。',
         'payment_method_required' => '支払い方法を選択してください',
         'pay_with_money' => ':amountを支払う',
-        'pay_with_time_credits' => ':count時間クレジットで支払う',
+        'pay_with_time_credits' => '{0} 0時間クレジットで支払う|{1} 1時間クレジットで支払う|[2,*] :count時間クレジットで支払う',
         'delivery_option_cash_only' => '有料配送オプションは金銭で支払う場合のみ利用できます',
         'delivery_option_label' => 'この商品をどのように受け取りますか？',
         'delivery_option_hint' => '現地受け取り、または出品者の配送方法を選択してください。',

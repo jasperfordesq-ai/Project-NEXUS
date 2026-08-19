@@ -48,7 +48,7 @@
   {% elif not results or results.length == 0 %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("search.empty") }}</p></div>
   {% else %}
-    <p class="govuk-body nexus-alpha-result-count">{{ t("search.results_count", { count: totalResults }) }}</p>
+    <p class="govuk-body nexus-alpha-result-count">{{ tc("search.results_count", totalResults, { count: totalResults }) }}</p>
     {# The card-list wrapper supplies the top rule; without it the first result
        had no line above it and the set did not read as one list. #}
     <div class="nexus-alpha-card-list">

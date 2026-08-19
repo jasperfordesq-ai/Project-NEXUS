@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => '会場',
     'index' => [
         'title' => '提携会場',
         'intro' => 'メンバーパスを歓迎する地元の会場。表示されているオファーはすべて会場自体によって運営されています。',

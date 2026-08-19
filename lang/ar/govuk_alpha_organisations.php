@@ -36,7 +36,7 @@ return [
         'empty_none' => 'لم يتم إدراج أي منظمات حتى الآن.',
         'stat_opportunities' => '{0} لا توجد فرص|{1} فرصة واحدة|[2,*] :count فرصة',
         'stat_volunteers' => '{0} لا يوجد متطوعين|{1} متطوع واحد|[2,*] :count متطوع',
-        'stat_hours' => 'تم تسجيل :count ساعة',
+        'stat_hours' => '{0} لم تُسجَّل ساعات|{1} تم تسجيل ساعة واحدة|[2,*] تم تسجيل :count ساعة',
         'stat_rating' => 'التقييم :rating من أصل 5',
         'has_website' => 'لديه موقع على الانترنت',
         'term_opportunities' => 'فرص',

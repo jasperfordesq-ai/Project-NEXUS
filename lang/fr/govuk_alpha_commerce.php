@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => 'Choisissez un mode de paiement.',
         'payment_method_required' => 'Sélectionnez votre mode de paiement',
         'pay_with_money' => 'Payer :amount',
-        'pay_with_time_credits' => 'Payer avec :count crédits-temps',
+        'pay_with_time_credits' => '{0} Payer sans crédit-temps|{1} Payer avec 1 crédit-temps|[2,*] Payer avec :count crédits-temps',
         'delivery_option_cash_only' => 'Les options de livraison payantes ne sont disponibles qu’en cas de paiement en argent',
         'delivery_option_label' => 'Comment recevrez-vous cet article ?',
         'delivery_option_hint' => 'Choisissez le retrait sur place ou l’une des options de livraison du vendeur.',

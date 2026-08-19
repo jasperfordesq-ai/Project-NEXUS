@@ -192,7 +192,7 @@ return [
         'offset_60' => '1時間前',
         'custom_label' => '別のリマインダー時間を分単位で追加します',
         'custom_hint' => ':min から :max までの整数を入力します。',
-        'custom_value' => ':count 分前',
+        'custom_value' => '{0} 開始時|{1} 1分前|[2,*] :count分前',
         'channels' => '配送チャネル',
         'channels_hint' => '各チャンネルを個別に選択します。利用可能かどうかは、デバイスとグローバル通知設定によっても異なります。',
         'channel_email' => '電子メール',

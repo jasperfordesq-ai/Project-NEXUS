@@ -214,7 +214,7 @@ return [
         'payment_method_hint' => 'Choose one payment method.',
         'payment_method_required' => 'Select how you would like to pay',
         'pay_with_money' => 'Pay :amount',
-        'pay_with_time_credits' => 'Pay with :count time credits',
+        'pay_with_time_credits' => '{0} Pay with no time credits|{1} Pay with 1 time credit|[2,*] Pay with :count time credits',
         'delivery_option_cash_only' => 'Paid shipping options are only available when paying with money',
         'delivery_option_label' => 'How will you receive this item?',
         'delivery_option_hint' => 'Choose local pickup or one of the seller’s shipping options.',

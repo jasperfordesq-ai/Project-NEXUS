@@ -44,7 +44,7 @@ return [
         'above_average' => '平均以上',
         'below_average' => '平均以下',
         'estimated_time_to_fill' => '充填にかかる推定時間',
-        'days_value' => ':count 日',
+        'days_value' => '{0} 0日|{1} 1日|[2,*] :count日',
         'posted_days_ago' => ':days 日前に投稿',
         'not_available' => '利用不可',
         'conversion_comparison' => 'コンバージョン率と平均',

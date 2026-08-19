@@ -192,7 +192,7 @@ return [
         'offset_60' => '1 uur eerder',
         'custom_label' => 'Voeg nog een herinneringstijd toe in minuten',
         'custom_hint' => 'Voer een geheel getal in van :min tot :max.',
-        'custom_value' => ':count minuten eerder',
+        'custom_value' => '{0} Bij de start|{1} 1 minuut eerder|[2,*] :count minuten eerder',
         'channels' => 'Leveringskanalen',
         'channels_hint' => 'Kies elk kanaal afzonderlijk. De beschikbaarheid kan ook afhankelijk zijn van uw apparaat en de algemene meldingsinstellingen.',
         'channel_email' => 'E-mail',

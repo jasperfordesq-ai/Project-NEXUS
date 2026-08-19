@@ -47,7 +47,7 @@ return [
         'above_average' => 'Above average',
         'below_average' => 'Below average',
         'estimated_time_to_fill' => 'Estimated time to fill',
-        'days_value' => ':count days',
+        'days_value' => '{0} 0 days|{1} 1 day|[2,*] :count days',
         'posted_days_ago' => 'Posted :days days ago',
         'not_available' => 'Not available',
         'conversion_comparison' => 'Conversion rate vs average',

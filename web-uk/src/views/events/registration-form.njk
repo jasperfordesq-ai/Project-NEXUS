@@ -11,7 +11,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-<h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
+<span class="govuk-caption-xl">{{ t("event_registration.title") }}</span><h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
 <p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
 {% if formErrors and (formErrors | length) %}
 <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">

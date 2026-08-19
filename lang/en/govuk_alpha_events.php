@@ -204,7 +204,7 @@ return [
         'offset_60' => '1 hour before',
         'custom_label' => 'Add another reminder time in minutes',
         'custom_hint' => 'Enter a whole number from :min to :max.',
-        'custom_value' => ':count minutes before',
+        'custom_value' => '{0} At the start|{1} 1 minute before|[2,*] :count minutes before',
         'channels' => 'Delivery channels',
         'channels_hint' => 'Choose each channel independently. Availability can also depend on your device and global notification settings.',
         'channel_email' => 'Email',

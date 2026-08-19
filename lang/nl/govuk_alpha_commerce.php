@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => 'Kies één betaalmethode.',
         'payment_method_required' => 'Selecteer hoe u wilt betalen',
         'pay_with_money' => 'Betaal :amount',
-        'pay_with_time_credits' => 'Betaal met :count tijdtegoeden',
+        'pay_with_time_credits' => '{0} Betaal zonder tijdtegoeden|{1} Betaal met 1 tijdtegoed|[2,*] Betaal met :count tijdtegoeden',
         'delivery_option_cash_only' => 'Betaalde verzendopties zijn alleen beschikbaar bij betaling met geld',
         'delivery_option_label' => 'Hoe wilt u dit artikel ontvangen?',
         'delivery_option_hint' => 'Kies lokaal ophalen of een van de verzendopties van de verkoper.',

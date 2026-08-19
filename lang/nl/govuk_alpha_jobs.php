@@ -44,7 +44,7 @@ return [
         'above_average' => 'Boven het gemiddelde',
         'below_average' => 'Onder het gemiddelde',
         'estimated_time_to_fill' => 'Geschatte tijd om te vullen',
-        'days_value' => ':count dagen',
+        'days_value' => '{0} 0 dagen|{1} 1 dag|[2,*] :count dagen',
         'posted_days_ago' => ':days dagen geleden geplaatst',
         'not_available' => 'Niet beschikbaar',
         'conversion_comparison' => 'Conversiepercentage versus gemiddeld',

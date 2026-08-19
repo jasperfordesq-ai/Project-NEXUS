@@ -36,7 +36,7 @@ return [
         'empty_none' => 'Es wurden noch keine Organisationen aufgeführt.',
         'stat_opportunities' => '{0} Keine Chancen|{1} 1 Chance|[2,*] :count Chancen',
         'stat_volunteers' => '{0} Keine Freiwilligen|{1} 1 Freiwilliger|[2,*] :count Freiwillige',
-        'stat_hours' => ':count Stunden protokolliert',
+        'stat_hours' => '{0} Keine Stunden protokolliert|{1} 1 Stunde protokolliert|[2,*] :count Stunden protokolliert',
         'stat_rating' => 'Bewertung :rating von 5',
         'has_website' => 'Hat eine Website',
         'term_opportunities' => 'Gelegenheiten',

@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => 'Wählen Sie eine Zahlungsart.',
         'payment_method_required' => 'Wählen Sie aus, wie Sie bezahlen möchten',
         'pay_with_money' => ':amount bezahlen',
-        'pay_with_time_credits' => 'Mit :count Zeitguthaben bezahlen',
+        'pay_with_time_credits' => '{0} Ohne Zeitguthaben bezahlen|{1} Mit 1 Zeitguthaben bezahlen|[2,*] Mit :count Zeitguthaben bezahlen',
         'delivery_option_cash_only' => 'Kostenpflichtige Versandoptionen sind nur bei Zahlung mit Geld verfügbar',
         'delivery_option_label' => 'Wie möchten Sie diesen Artikel erhalten?',
         'delivery_option_hint' => 'Wählen Sie Abholung vor Ort oder eine Versandoption des Verkäufers.',

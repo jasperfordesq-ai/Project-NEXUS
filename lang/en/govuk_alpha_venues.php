@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Venues',
     'index' => [
         'title' => 'Partner venues',
         'intro' => 'Local venues that welcome your member pass. Any offer shown is run by the venue itself.',

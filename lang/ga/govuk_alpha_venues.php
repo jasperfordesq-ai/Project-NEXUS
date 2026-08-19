@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Ionaid',
     'index' => [
         'title' => 'Ionaid chomhpháirtíochta',
         'intro' => 'Ionaid áitiúla a chuireann fáilte roimh do phas ball. Is é an t-ionad féin a reáchtálann aon tairiscint a thaispeántar.',

@@ -38,7 +38,7 @@ return [
         'empty_none' => 'No organisations have been listed yet.',
         'stat_opportunities' => '{0} No opportunities|{1} 1 opportunity|[2,*] :count opportunities',
         'stat_volunteers' => '{0} No volunteers|{1} 1 volunteer|[2,*] :count volunteers',
-        'stat_hours' => ':count hours logged',
+        'stat_hours' => '{0} No hours logged|{1} 1 hour logged|[2,*] :count hours logged',
         'stat_rating' => 'Rating :rating out of 5',
         'has_website' => 'Has a website',
         'term_opportunities' => 'Opportunities',

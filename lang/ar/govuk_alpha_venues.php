@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'الأماكن',
     'index' => [
         'title' => 'أماكن الشركاء',
         'intro' => 'الأماكن المحلية التي ترحب ببطاقة العضوية الخاصة بك. يتم تشغيل أي عرض معروض بواسطة المكان نفسه.',

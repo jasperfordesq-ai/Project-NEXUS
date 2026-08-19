@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Locaties',
     'index' => [
         'title' => 'Partnerlocaties',
         'intro' => 'Lokale locaties die uw ledenpas verwelkomen. Elk getoond aanbod wordt beheerd door de locatie zelf.',

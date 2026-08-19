@@ -207,7 +207,7 @@ return [
         'payment_method_hint' => 'Roghnaigh modh íocaíochta amháin.',
         'payment_method_required' => 'Roghnaigh conas ba mhaith leat íoc',
         'pay_with_money' => 'Íoc :amount',
-        'pay_with_time_credits' => 'Íoc le :count creidmheas ama',
+        'pay_with_time_credits' => '{0} Íoc gan creidmheas ama|{1} Íoc le 1 chreidmheas ama|[2,*] Íoc le :count creidmheas ama',
         'delivery_option_cash_only' => 'Ní bhíonn roghanna seolta íoctha ar fáil ach nuair a íoctar le hairgead',
         'delivery_option_label' => 'Conas a gheobhaidh tú an t-earra seo?',
         'delivery_option_hint' => 'Roghnaigh bailiú áitiúil nó ceann de roghanna seolta an díoltóra.',

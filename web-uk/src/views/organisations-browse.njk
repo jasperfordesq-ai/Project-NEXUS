@@ -62,7 +62,7 @@
               <div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.browse.term_volunteers") }}</dt><dd>{{ tc("govuk_alpha_organisations.browse.stat_volunteers", organisation.volunteerCount, { count: formatLocaleNumber(organisation.volunteerCount) }) }}</dd></div>
             {% endif %}
             {% if organisation.totalHours > 0 %}
-              <div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.browse.term_hours") }}</dt><dd>{{ t("govuk_alpha_organisations.browse.stat_hours", { count: organisation.totalHoursLabel }) }}</dd></div>
+              <div><dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.browse.term_hours") }}</dt><dd>{{ tc("govuk_alpha_organisations.browse.stat_hours", organisation.totalHours, { count: organisation.totalHours }) }}</dd></div>
             {% endif %}
             {% if organisation.averageRating > 0 %}
               <div>

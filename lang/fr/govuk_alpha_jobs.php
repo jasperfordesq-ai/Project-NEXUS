@@ -44,7 +44,7 @@ return [
         'above_average' => 'Au-dessus de la moyenne',
         'below_average' => 'En dessous de la moyenne',
         'estimated_time_to_fill' => 'Temps estimé pour remplir',
-        'days_value' => ':count jours',
+        'days_value' => '{0} 0 jour|{1} 1 jour|[2,*] :count jours',
         'posted_days_ago' => 'Publié il y a :days jours',
         'not_available' => 'Pas disponible',
         'conversion_comparison' => 'Taux de conversion par rapport à la moyenne',

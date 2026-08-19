@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => 'اختر طريقة دفع واحدة.',
         'payment_method_required' => 'اختر كيف تود الدفع',
         'pay_with_money' => 'ادفع :amount',
-        'pay_with_time_credits' => 'ادفع باستخدام :count من الأرصدة الزمنية',
+        'pay_with_time_credits' => '{0} ادفع دون أرصدة زمنية|{1} ادفع باستخدام رصيد زمني واحد|[2,*] ادفع باستخدام :count رصيدًا زمنيًا',
         'delivery_option_cash_only' => 'تتوفر خيارات الشحن المدفوعة فقط عند الدفع بالمال',
         'delivery_option_label' => 'كيف ستستلم هذا العنصر؟',
         'delivery_option_hint' => 'اختر الاستلام المحلي أو أحد خيارات الشحن الخاصة بالبائع.',

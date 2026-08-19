@@ -78,7 +78,7 @@
           {% if buyError and buyError.target == 'payment_method' %}<p id="payment_method-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_title") }}:</span> {{ t(buyError.messageKey) }}</p>{% endif %}
           <div class="govuk-radios" data-module="govuk-radios">
             <div class="govuk-radios__item"><input class="govuk-radios__input" id="payment_method" name="payment_method" type="radio" value="cash"{% if selectedPayment == 'cash' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="payment_method">{{ t("govuk_alpha_commerce.buy.pay_with_money", { amount: item.moneyLabel }) }}</label></div>
-            <div class="govuk-radios__item"><input class="govuk-radios__input" id="payment_method-time-credits" name="payment_method" type="radio" value="time_credits"{% if selectedPayment == 'time_credits' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="payment_method-time-credits">{{ t("govuk_alpha_commerce.buy.pay_with_time_credits", { count: item.timeCreditPrice }) }}</label></div>
+            <div class="govuk-radios__item"><input class="govuk-radios__input" id="payment_method-time-credits" name="payment_method" type="radio" value="time_credits"{% if selectedPayment == 'time_credits' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="payment_method-time-credits">{{ tc("govuk_alpha_commerce.buy.pay_with_time_credits", item.timeCreditPrice, { count: item.timeCreditPrice }) }}</label></div>
           </div>
         </fieldset>
       </div>

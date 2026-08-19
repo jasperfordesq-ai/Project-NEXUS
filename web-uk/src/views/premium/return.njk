@@ -12,6 +12,7 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+  <span class="govuk-caption-l">{{ t("premium.caption", { community: tenantName or serviceName }) }}</span>
   {% if returnStatus == 'success' %}
     <div class="govuk-panel govuk-panel--confirmation">
       <h1 class="govuk-panel__title">{{ t("polish_commerce.premium_success_title") }}</h1>

@@ -109,8 +109,8 @@
             {% endif %}
             {% if shift.capacity %}
               <div>
-                <dt>{{ t("govuk_alpha.volunteering.shift_capacity", { count: shift.capacity }) }}</dt>
-                <dd>{{ t("govuk_alpha.volunteering.shift_spaces_left", { count: shift.spacesAvailable }) }}</dd>
+                <dt>{{ tc("govuk_alpha.volunteering.shift_capacity", shift.capacity, { count: shift.capacity }) }}</dt>
+                <dd>{{ tc("govuk_alpha.volunteering.shift_spaces_left", shift.spacesAvailable, { count: shift.spacesAvailable }) }}</dd>
               </div>
             {% endif %}
           </dl>

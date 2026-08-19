@@ -86,7 +86,7 @@
                 <dl class="nexus-alpha-inline-list">
                   {% if listing.categoryName %}<div><dt>{{ t("listings.category") }}</dt><dd>{{ listing.categoryName }}</dd></div>{% endif %}
                   {% if listing.location %}<div><dt>{{ t("listings.location") }}</dt><dd>{{ listing.location }}</dd></div>{% endif %}
-                  {% if listing.hoursEstimate %}<div><dt>{{ t("listings.hours_label") }}</dt><dd>{{ t("listings.hours", { count: listing.hoursEstimate }) }}</dd></div>{% endif %}
+                  {% if listing.hoursEstimate %}<div><dt>{{ t("listings.hours_label") }}</dt><dd>{{ tc("listings.hours", listing.hoursEstimate, { count: listing.hoursEstimate }) }}</dd></div>{% endif %}
                 </dl>
               </div>
               <div class="nexus-alpha-listing-row__action"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("actions.view_details") }}<span class="govuk-visually-hidden">{{ t("listings.for_listing", { title: listing.title }) }}</span></a></div>

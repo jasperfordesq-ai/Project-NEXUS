@@ -206,7 +206,7 @@ return [
         'payment_method_hint' => 'Escolha um método de pagamento.',
         'payment_method_required' => 'Selecione como pretende pagar',
         'pay_with_money' => 'Pagar :amount',
-        'pay_with_time_credits' => 'Pagar com :count créditos de tempo',
+        'pay_with_time_credits' => '{0} Pagar sem créditos de tempo|{1} Pagar com 1 crédito de tempo|[2,*] Pagar com :count créditos de tempo',
         'delivery_option_cash_only' => 'As opções de envio pagas só estão disponíveis ao pagar com dinheiro',
         'delivery_option_label' => 'Como irá receber este artigo?',
         'delivery_option_hint' => 'Escolha a recolha local ou uma das opções de envio do vendedor.',

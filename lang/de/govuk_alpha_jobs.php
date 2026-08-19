@@ -44,7 +44,7 @@ return [
         'above_average' => 'Überdurchschnittlich',
         'below_average' => 'Unterdurchschnittlich',
         'estimated_time_to_fill' => 'Geschätzte Zeit zum Füllen',
-        'days_value' => ':count Tage',
+        'days_value' => '{0} 0 Tage|{1} 1 Tag|[2,*] :count Tage',
         'posted_days_ago' => 'Vor :days Tagen gepostet',
         'not_available' => 'Nicht verfügbar',
         'conversion_comparison' => 'Conversion-Rate im Vergleich zum Durchschnitt',

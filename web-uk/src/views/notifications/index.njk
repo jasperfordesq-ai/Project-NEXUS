@@ -99,7 +99,7 @@
         {% if notification.isGrouped and notification.actors and notification.actors.length > 0 %}
           {% set actorNames = notification.actors | join(", ", "name") %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
-            {% if (notification.remaining_count or 0) > 0 %}{{ t("notifications.actors_and_more", { names: actorNames, count: notification.remaining_count }) }}{% else %}{{ t("notifications.actors_label", { names: actorNames }) }}{% endif %}
+            {% if (notification.remaining_count or 0) > 0 %}{{ tc("notifications.actors_and_more", notification.remaining_count, { names: actorNames, count: notification.remaining_count }) }}{% else %}{{ t("notifications.actors_label", { names: actorNames }) }}{% endif %}
           </p>
         {% endif %}
         {% if notification.displayWhen %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ notification.displayWhen }}</p>{% endif %}

@@ -25,6 +25,7 @@
     </div>
   {% endif %}
 
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.podcast_studio.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.podcast_studio.title_create") }}</h1>
 
   <form method="post" action="{{ urlFor(action) }}" enctype="multipart/form-data" novalidate>

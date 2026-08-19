@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'caption' => 'Veranstaltungsorte',
     'index' => [
         'title' => 'Partner-Veranstaltungsorte',
         'intro' => 'Lokale Veranstaltungsorte, die Ihren Mitgliedspass willkommen heißen. Das angezeigte Angebot wird vom Veranstaltungsort selbst durchgeführt.',

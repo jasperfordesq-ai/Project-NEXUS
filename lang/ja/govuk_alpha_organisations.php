@@ -36,7 +36,7 @@ return [
         'empty_none' => 'まだリストに記載されている組織はありません。',
         'stat_opportunities' => '{0} 機会なし|{1} 1 つの機会|[2,*] :count の機会',
         'stat_volunteers' => '{0} ボランティアなし|{1} ボランティア 1 人|[2,*] :count ボランティア',
-        'stat_hours' => ':count 時間が記録されました',
+        'stat_hours' => '{0} 0時間が記録されました|{1} 1時間が記録されました|[2,*] :count時間が記録されました',
         'stat_rating' => ':rating を 5 点中評価しています',
         'has_website' => 'ウェブサイトあり',
         'term_opportunities' => '機会',

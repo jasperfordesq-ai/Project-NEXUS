@@ -91,7 +91,7 @@
           <dl class="nexus-alpha-inline-list govuk-!-margin-top-3">
             <div>
               <dt>{{ t("exchanges.proposed_hours_label") }}</dt>
-              <dd>{{ t("exchanges.hours", { count: exchange.proposedHours }) }}</dd>
+              <dd>{{ tc("exchanges.hours", exchange.proposedHours, { count: exchange.proposedHours }) }}</dd>
             </div>
             <div>
               <dt>{% if exchange.isRequester %}{{ t("exchanges.provider_label") }}{% else %}{{ t("exchanges.requester_label") }}{% endif %}</dt>
