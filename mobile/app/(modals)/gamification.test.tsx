@@ -557,7 +557,9 @@ describe('GamificationScreen', () => {
     it('does not replace the page when the profile loaded but a section did not', () => {
       // Partial failure must still show what arrived. Blanking the whole screen because
       // the XP shop was unavailable would be a worse bug than the one being fixed.
-      mockLoadedGamification({ profile: mockProfile });
+      // The helper always resolves the profile call, which is exactly this case: profile
+      // present, the seven section loads empty.
+      mockLoadedGamification();
 
       const { queryByTestId } = render(<GamificationScreen />);
 
