@@ -188,6 +188,7 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 | [WRAPPER_POLICY.md](docs/WRAPPER_POLICY.md) | HeroUI Native wrapper-versus-primitive rules and locale guidance. |
 | [HEROUI_NATIVE_PARITY_AUDIT.md](docs/HEROUI_NATIVE_PARITY_AUDIT.md) | Maintained parity matrix and verification record. |
 | [ALERT_MIGRATION_PLAYBOOK.md](docs/ALERT_MIGRATION_PLAYBOOK.md) | Migration procedure for native alert and confirmation surfaces. |
+| [VISUAL_AUDIT.md](docs/VISUAL_AUDIT.md) | Screen-by-screen visual findings from the emulator sweep, and what the sweep does and does not prove. |
 | [.maestro/README.md](.maestro/README.md) | Maestro installation, test data, and native end-to-end flow instructions. |
 | [docs/generated/mobile-parity-matrix.md](docs/generated/mobile-parity-matrix.md) | GENERATED — route-level parity against the React member routes. `npm run parity:matrix`. |
 | [docs/generated/mobile-api-consumer-ledger.md](docs/generated/mobile-api-consumer-ledger.md) | GENERATED — every API endpoint this client calls, verified against Laravel's real routes. `npm run api:ledger`. |
