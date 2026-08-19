@@ -35,16 +35,29 @@
 {% set initials = firstInitial + lastInitial %}
 {% set fullName = firstName + ' ' + lastName %}
 
+{#
+  🔴 nexus-alpha-avatar, NOT app-avatar. This partial used the abandoned app-*
+  system: a 40/64px circle on the BRAND BLUE with white initials, while the 32
+  templates that write their own avatar markup use nexus-alpha-avatar — a 48px
+  circle on light grey with dark initials. The two met on the members journey:
+  grey circles down the directory, then a blue one of a different size on the
+  member's own profile. Same person, two identities, one click apart.
+
+  The 32-template treatment wins because it is the majority and it is the one
+  with the size, object-fit and reflow rules behind it. Sizes map exactly —
+  small 32px and large 64px are identical in both systems; the unsuffixed
+  default moves 40px → 48px to match the base class.
+#}
 {% set avatarSource = user.avatarUrl or user.avatar_url or user.avatar or user.profile_image or '' %}
-{% set avatarPx = 32 if size == 'small' else (64 if size == 'large' else 40) %}
+{% set avatarPx = 32 if size == 'small' else (64 if size == 'large' else 48) %}
 
 {% if avatarSource %}
-  <img class="app-avatar{% if size %} app-avatar--{{ size }}{% endif %} app-avatar--image"
+  <img class="nexus-alpha-avatar{% if size %} nexus-alpha-avatar--{{ size }}{% endif %}"
        src="{{ avatarSource | thumb(avatarPx * 2, avatarPx * 2) }}"
        width="{{ avatarPx }}" height="{{ avatarPx }}"
        alt="" loading="lazy" decoding="async">
 {% else %}
-  <span class="app-avatar{% if size %} app-avatar--{{ size }}{% endif %}" aria-hidden="true" title="{{ fullName | trim }}">
+  <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder{% if size %} nexus-alpha-avatar--{{ size }}{% endif %}" aria-hidden="true" title="{{ fullName | trim }}">
     {{ initials | upper if initials else '?' }}
   </span>
 {% endif %}
