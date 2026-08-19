@@ -1206,11 +1206,33 @@ public class CompatibilityAliasController : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
+        // 🔴 Refuse rather than invent. This saved the title as the literal "Untitled"
+        // when none was sent.
+        //
+        // 🔴 There is no Laravel contract for THIS route to copy: Laravel registers
+        // only the `/v2/` form (routes/api.php:1179) and 404s the bare one, so the
+        // shape below is this backend's own — matched to its v2 sibling, which already
+        // refuses correctly, rather than invented afresh. Whether the extra non-v2
+        // route should exist at all is recorded in
+        // docs/CURRENT_ASPNET_CONTRACT_STATUS.md; not inventing data is right either
+        // way, and React calls only the v2 spelling (ChallengeDetailPage.tsx:493).
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                errors = new[]
+                {
+                    new { code = "VALIDATION_REQUIRED_FIELD", message = "Title is required.", field = "title" }
+                }
+            });
+        }
+
         var idea = new Idea
         {
             TenantId = _tenantContext.GetTenantIdOrThrow(),
             AuthorId = userId.Value,
-            Title = request.Title?.Trim() ?? "Untitled",
+            Title = request.Title.Trim(),
             Content = request.Description?.Trim() ?? "",
             Category = $"challenge:{id}",
             Status = "submitted",
@@ -1741,17 +1763,22 @@ public class CompatibilityAliasController : ControllerBase
 
         var isV2 = IsV2Request();
 
-        var title = ReadStringProperty(request, "title", "name") ?? "Untitled task";
+        // 🔴 The fallback that used to sit on this line — `?? "Untitled task"` — made
+        // the guard below UNREACHABLE. A task posted with no title was saved under a
+        // fabricated one, and the check that looks like it prevents that could never
+        // fire, because the line above it guaranteed a non-empty value. Read as
+        // validated input; wasn't.
+        var title = ReadStringProperty(request, "title", "name");
         if (string.IsNullOrWhiteSpace(title))
-            return BadRequest(LaravelValidationError("title", "Task title is required"));
+            return GroupTaskValidationError("title", "Title is required");
 
         var status = ReadStringProperty(request, "status") ?? (isV2 ? "todo" : "open");
         if (isV2 && !IsValidTeamTaskStatus(status))
-            return BadRequest(LaravelValidationError("status", "Invalid task status"));
+            return GroupTaskValidationError("status", "Invalid status");
 
         var priority = ReadStringProperty(request, "priority") ?? "medium";
         if (isV2 && !IsValidTeamTaskPriority(priority))
-            return BadRequest(LaravelValidationError("priority", "Invalid task priority"));
+            return GroupTaskValidationError("priority", "Invalid priority");
 
         var description = ReadStringProperty(request, "description");
         var assignedTo = ReadIntProperty(request, "assigned_to");
@@ -3273,6 +3300,36 @@ public class CompatibilityAliasController : ControllerBase
 
     private static bool IsValidTeamTaskPriority(string priority) =>
         priority is "low" or "medium" or "high" or "urgent";
+
+    /// <summary>
+    /// The refusal envelope for group-task creation, measured against the running
+    /// disposable Laravel on 2026-08-19 — all three cases:
+    ///
+    ///   no/blank title   -> 422 {"errors":[{"code":"VALIDATION_ERROR",
+    ///                            "message":"Title is required","field":"title"}]}
+    ///   invalid status   -> 422 … "Invalid status"   / field "status"
+    ///   invalid priority -> 422 … "Invalid priority" / field "priority"
+    ///
+    /// 🔴 Three differences from what this backend sent, all of which matter to a
+    /// caller: the status was 400 not 422, the body carried an extra
+    /// <c>success:false</c> that Laravel does not send on this route, and the wording
+    /// differed ("Task title is required" vs "Title is required").
+    ///
+    /// 🔴 Deliberately NOT reusing <see cref="LaravelValidationError"/> below. That
+    /// helper adds <c>success:false</c> and its callers return 400, and it serves
+    /// other endpoints in this controller whose Laravel shapes have NOT been
+    /// measured. Changing it would push this one measurement onto all of them — the
+    /// exact over-generalisation that has already cost this workstream 22 wrong
+    /// endpoints once.
+    /// </summary>
+    private IActionResult GroupTaskValidationError(string field, string message) =>
+        UnprocessableEntity(new
+        {
+            errors = new[]
+            {
+                new { code = "VALIDATION_ERROR", message, field }
+            }
+        });
 
     private static object LaravelValidationError(string field, string message) => new
     {

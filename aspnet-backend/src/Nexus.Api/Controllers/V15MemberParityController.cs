@@ -1108,7 +1108,20 @@ public class V15MemberParityController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> V2CreateWalletCategory([FromBody] JsonElement body)
     {
-        var category = new TransactionCategory { TenantId = TenantId(), Name = GetString(body, "name") ?? "General", Description = GetString(body, "description"), Color = GetString(body, "color"), Icon = GetString(body, "icon") };
+        // 🔴 This saved the name as the literal "General" when none was sent. Laravel
+        // refuses, measured live on 2026-08-19 as an ADMIN against the disposable
+        // Laravel: 400 {"success":false,"error":"Name is required"}.
+        //
+        // 🔴 Note that envelope: a v1-style {success,error} body on a /api/v2 path.
+        // Laravel's error shapes are per-endpoint and do not follow the path prefix,
+        // which is why this was read rather than assumed from the v2 successes.
+        var name = GetString(body, "name");
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return BadRequest(new { success = false, error = "Name is required" });
+        }
+
+        var category = new TransactionCategory { TenantId = TenantId(), Name = name, Description = GetString(body, "description"), Color = GetString(body, "color"), Icon = GetString(body, "icon") };
         _db.TransactionCategories.Add(category);
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = category });

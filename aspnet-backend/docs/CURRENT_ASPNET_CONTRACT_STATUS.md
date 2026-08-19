@@ -359,6 +359,25 @@ stored blob back. Three are the real fault, where a fabricated value is **saved*
 | `POST /api/v2/wallet/categories` | 201, name saved as `"General"` | **400** `{"success":false,"error":"Name is required"}` |
 | `POST /api/ideation-challenges/{id}/ideas` | 201, title saved as `"Untitled"` | **404** — the route does not exist |
 
+**All three are FIXED and verified live** (behaviour re-checked against the rebuilt
+container, not inferred from the diff). The group-task refusals additionally match
+Laravel on all three of its cases, each measured: `Title is required` /
+`Invalid status` / `Invalid priority`, all 422, all `{errors:[…]}` with no `success`
+key. This backend had been answering 400, with different wording, plus a `success`
+key Laravel does not send — three differences at once on a single response.
+
+🔴 **The first attempt at this fix silently did not apply, and the lesson is about
+verification, not C#.** The new helper was appended before the file's last brace,
+which closes the NAMESPACE rather than the class (block-scoped namespace), so it
+landed inside an unrelated DTO class: 4 compile errors. The container still reported
+healthy, because it was still running the PREVIOUS image. `docker compose build`
+output had been sent to /dev/null, so nothing surfaced the failure.
+
+What caught it was probing the endpoints and seeing `"Untitled task"` come back
+again. A health check proves a container is answering; it proves nothing about WHICH
+build is answering. Never verify a fix by rebuilding and checking health — verify it
+by asking the endpoint what it now does.
+
 🔴 The group-task one has a validation check that **can never fire**:
 
 ```csharp
