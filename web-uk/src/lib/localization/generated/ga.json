@@ -1580,6 +1580,7 @@
                     "offer": "Tairiscintí",
                     "request": "Iarratais"
                 },
+                "item_heading_by": ":type le :name",
                 "item_types": {
                     "post": "Postáil",
                     "listing": "Liostú",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Bliantúil",
                 "interval_legend": "Tréimhse billeála",
                 "states": {
-                    "subscribe-failed": "Níorbh fhéidir linn do shíntiús a thosú. Bain triail eile as ar ball."
+                    "subscribe-failed": "Níorbh fhéidir linn do shíntiús a thosú. Bain triail eile as ar ball.",
+                    "no-subscription": "Níl síntiús gníomhach agat le bainistiú. Is féidir leat ceann a thosú thíos."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "Cineál árachais",
                 "provider_label": "Soláthraí árachais (roghnach)",
                 "policy_label": "Uimhir pholasaí (roghnach)",
+                "coverage_label": "Méid an chumhdaigh (roghnach)",
+                "coverage_hint": "Uimhreacha amháin. Mar shampla, 5000000",
+                "start_label": "Dáta tosaithe (roghnach)",
+                "start_hint": "Mar shampla, 27 3 2026",
+                "notes_label": "Nótaí (roghnach)",
+                "notes_hint": "Aon rud eile faoin bpolasaí seo, suas le 1,000 carachtar.",
                 "expiry_label": "Dáta éaga",
                 "expiry_hint": "Mar shampla, 27 3 2027",
                 "file_label": "Comhad teastais",

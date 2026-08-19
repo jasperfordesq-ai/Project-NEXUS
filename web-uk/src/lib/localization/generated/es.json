@@ -1580,6 +1580,7 @@
                     "offer": "Ofertas",
                     "request": "Solicitudes"
                 },
+                "item_heading_by": ":type de :name",
                 "item_types": {
                     "post": "Publicar",
                     "listing": "Listado",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Anual",
                 "interval_legend": "Período de facturación",
                 "states": {
-                    "subscribe-failed": "No hemos podido iniciar su suscripción. Por favor, inténtelo de nuevo más tarde."
+                    "subscribe-failed": "No hemos podido iniciar su suscripción. Por favor, inténtelo de nuevo más tarde.",
+                    "no-subscription": "No tiene una suscripción activa que gestionar. Puede iniciar una a continuación."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "tipo de seguro",
                 "provider_label": "Proveedor de seguros (opcional)",
                 "policy_label": "Número de póliza (opcional)",
+                "coverage_label": "Importe de la cobertura (opcional)",
+                "coverage_hint": "Solo números. Por ejemplo, 5000000",
+                "start_label": "Fecha de inicio (opcional)",
+                "start_hint": "Por ejemplo, 27 3 2026",
+                "notes_label": "Notas (opcional)",
+                "notes_hint": "Cualquier otra información sobre esta póliza, hasta 1000 caracteres.",
                 "expiry_label": "Fecha de vencimiento",
                 "expiry_hint": "Por ejemplo, 27 3 2027",
                 "file_label": "Archivo de certificado",

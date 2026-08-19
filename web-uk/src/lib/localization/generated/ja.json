@@ -1580,6 +1580,7 @@
                     "offer": "オファー",
                     "request": "リクエスト"
                 },
+                "item_heading_by": ":name さんの:type",
                 "item_types": {
                     "post": "ポスト",
                     "listing": "リスト",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "年払い",
                 "interval_legend": "請求期間",
                 "states": {
-                    "subscribe-failed": "サブスクリプションを開始できませんでした。後ほど再度お試しください。"
+                    "subscribe-failed": "サブスクリプションを開始できませんでした。後ほど再度お試しください。",
+                    "no-subscription": "管理できる有効なサブスクリプションはありません。以下から開始できます。"
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "保険の種類",
                 "provider_label": "保険会社（オプション）",
                 "policy_label": "ポリシー番号 (オプション)",
+                "coverage_label": "補償額（オプション）",
+                "coverage_hint": "数字のみを入力してください。たとえば、5000000 のようになります。",
+                "start_label": "開始日（オプション）",
+                "start_hint": "たとえば、2026 年 3 月 27 日のようになります。",
+                "notes_label": "メモ（オプション）",
+                "notes_hint": "この保険に関するその他の情報（1,000 文字まで）。",
                 "expiry_label": "有効期限",
                 "expiry_hint": "たとえば、2027 年 3 月 27 日のようになります。",
                 "file_label": "証明書ファイル",

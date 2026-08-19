@@ -573,6 +573,7 @@ return [
             'offer' => 'Tairiscintí',
             'request' => 'Iarratais',
         ],
+        'item_heading_by' => ':type le :name',
         'item_types' => [
             'post' => 'Postáil',
             'listing' => 'Liostú',
@@ -2913,6 +2914,7 @@ return [
         'interval_legend' => 'Tréimhse billeála',
         'states' => [
             'subscribe-failed' => 'Níorbh fhéidir linn do shíntiús a thosú. Bain triail eile as ar ball.',
+            'no-subscription' => 'Níl síntiús gníomhach agat le bainistiú. Is féidir leat ceann a thosú thíos.',
         ],
     ],
     'clubs' => [

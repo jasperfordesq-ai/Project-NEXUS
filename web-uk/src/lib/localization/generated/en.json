@@ -1580,6 +1580,7 @@
                     "offer": "Offers",
                     "request": "Requests"
                 },
+                "item_heading_by": ":type by :name",
                 "item_types": {
                     "post": "Post",
                     "listing": "Listing",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Yearly",
                 "interval_legend": "Billing period",
                 "states": {
-                    "subscribe-failed": "We could not start your recurring donation. Please try again later."
+                    "subscribe-failed": "We could not start your recurring donation. Please try again later.",
+                    "no-subscription": "You do not have an active recurring donation to manage. You can start one below."
                 }
             },
             "clubs": {
@@ -9847,6 +9849,12 @@
                 "type_label": "Type of insurance",
                 "provider_label": "Insurance provider (optional)",
                 "policy_label": "Policy number (optional)",
+                "coverage_label": "Amount of cover (optional)",
+                "coverage_hint": "Numbers only. For example, 5000000",
+                "start_label": "Start date (optional)",
+                "start_hint": "For example, 27 3 2026",
+                "notes_label": "Notes (optional)",
+                "notes_hint": "Anything else about this policy, up to 1,000 characters.",
                 "expiry_label": "Expiry date",
                 "expiry_hint": "For example, 27 3 2027",
                 "file_label": "Certificate file",

@@ -43,8 +43,11 @@ function numberValue(value) {
 }
 
 function hoursValue(value) {
+  // One decimal by default, two only when the value needs them (quarter-hours):
+  // the wallet said "100.00 hours" while the dashboard said "100.0" for the
+  // same balance. Both now share this min-1/max-2 shape.
   return new Intl.NumberFormat(getRequestIntlLocale(), {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 1,
     maximumFractionDigits: 2
   }).format(numberValue(value));
 }

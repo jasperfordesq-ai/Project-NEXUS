@@ -573,6 +573,7 @@ return [
             'offer' => 'Offres',
             'request' => 'Demandes',
         ],
+        'item_heading_by' => ':type de :name',
         'item_types' => [
             'post' => 'Publier',
             'listing' => 'Annonce',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Période de facturation',
         'states' => [
             'subscribe-failed' => 'Nous n\'avons pas pu démarrer votre abonnement. Veuillez réessayer ultérieurement.',
+            'no-subscription' => 'Vous n\'avez pas d\'abonnement actif à gérer. Vous pouvez en démarrer un ci-dessous.',
         ],
     ],
     'clubs' => [

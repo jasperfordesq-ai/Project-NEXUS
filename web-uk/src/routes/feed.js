@@ -208,6 +208,16 @@ function feedItemTypeLabel(type) {
   return labels[type] || 'Activity';
 }
 
+// The translated counterpart of feedItemTypeLabel, backed by feed.item_types —
+// the English map above is a last-resort fallback field only; anything a member
+// reads must come through here.
+function translatedFeedTypeLabel(type, t) {
+  const known = ['post', 'listing', 'event', 'goal', 'poll', 'review', 'job', 'challenge',
+    'volunteer', 'blog', 'discussion', 'badge_earned', 'level_up', 'transaction',
+    'connection', 'group', 'achievement', 'resource'];
+  return t(`feed.item_types.${known.includes(type) ? type : 'activity'}`);
+}
+
 function feedItemDeepLink(type, id) {
   const links = {
     listing: { href: `/listings/${id}`, labelKey: 'feed.view_typed.listing' },
@@ -460,7 +470,7 @@ router.get('/item/:type([a-z]+)/:id(\\d+)', asyncRoute(withTokenRefresh(async (r
     : null;
 
   res.render('feed/item', {
-    title: item.title || item.typeLabel,
+    title: item.title || translatedFeedTypeLabel(item.type, res.locals.t),
     activeNav: 'feed',
     alphaActiveNav: 'feed',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',

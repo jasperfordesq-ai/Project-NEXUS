@@ -573,6 +573,7 @@ return [
             'offer' => 'Aanbiedingen',
             'request' => 'Verzoeken',
         ],
+        'item_heading_by' => ':type van :name',
         'item_types' => [
             'post' => 'Na',
             'listing' => 'Lijst',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Factureringsperiode',
         'states' => [
             'subscribe-failed' => 'We konden uw abonnement niet starten. Probeer het later opnieuw.',
+            'no-subscription' => 'U heeft geen actief abonnement om te beheren. U kunt er hieronder een starten.',
         ],
     ],
     'clubs' => [

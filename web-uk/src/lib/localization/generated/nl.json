@@ -1580,6 +1580,7 @@
                     "offer": "Aanbiedingen",
                     "request": "Verzoeken"
                 },
+                "item_heading_by": ":type van :name",
                 "item_types": {
                     "post": "Na",
                     "listing": "Lijst",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Jaarlijks",
                 "interval_legend": "Factureringsperiode",
                 "states": {
-                    "subscribe-failed": "We konden uw abonnement niet starten. Probeer het later opnieuw."
+                    "subscribe-failed": "We konden uw abonnement niet starten. Probeer het later opnieuw.",
+                    "no-subscription": "U heeft geen actief abonnement om te beheren. U kunt er hieronder een starten."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "Soort verzekering",
                 "provider_label": "Verzekeringsmaatschappij (optioneel)",
                 "policy_label": "Polisnummer (optioneel)",
+                "coverage_label": "Dekkingsbedrag (optioneel)",
+                "coverage_hint": "Alleen cijfers. Bijvoorbeeld 5000000",
+                "start_label": "Begindatum (optioneel)",
+                "start_hint": "Bijvoorbeeld 27 3 2026",
+                "notes_label": "Opmerkingen (optioneel)",
+                "notes_hint": "Al het andere over deze polis, maximaal 1.000 tekens.",
                 "expiry_label": "Vervaldatum",
                 "expiry_hint": "Bijvoorbeeld 27 3 2027",
                 "file_label": "Certificaatbestand",

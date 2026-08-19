@@ -1580,6 +1580,7 @@
                     "offer": "Oferty",
                     "request": "Upraszanie"
                 },
+                "item_heading_by": ":type — :name",
                 "item_types": {
                     "post": "Opublikuj",
                     "listing": "Lista",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Roczny",
                 "interval_legend": "Okres rozliczeniowy",
                 "states": {
-                    "subscribe-failed": "Nie udało się uruchomić Twojej subskrypcji. Spróbuj ponownie później."
+                    "subscribe-failed": "Nie udało się uruchomić Twojej subskrypcji. Spróbuj ponownie później.",
+                    "no-subscription": "Nie masz aktywnej subskrypcji do zarządzania. Możesz rozpocząć ją poniżej."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "Rodzaj ubezpieczenia",
                 "provider_label": "Ubezpieczyciel (opcjonalnie)",
                 "policy_label": "Numer polisy (opcjonalnie)",
+                "coverage_label": "Suma ubezpieczenia (opcjonalnie)",
+                "coverage_hint": "Tylko cyfry. Na przykład 5000000",
+                "start_label": "Data rozpoczęcia (opcjonalnie)",
+                "start_hint": "Na przykład 27 3 2026",
+                "notes_label": "Uwagi (opcjonalnie)",
+                "notes_hint": "Wszelkie inne informacje o tej polisie, do 1000 znaków.",
                 "expiry_label": "Data wygaśnięcia",
                 "expiry_hint": "Na przykład 27 3 2027",
                 "file_label": "Plik certyfikatu",

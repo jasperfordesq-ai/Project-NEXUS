@@ -587,6 +587,7 @@ return [
             'offer' => 'Offers',
             'request' => 'Requests',
         ],
+        'item_heading_by' => ':type by :name',
         'item_types' => [
             'post' => 'Post',
             'listing' => 'Listing',
@@ -2948,6 +2949,7 @@ return [
         'interval_legend' => 'Billing period',
         'states' => [
             'subscribe-failed' => 'We could not start your recurring donation. Please try again later.',
+            'no-subscription' => 'You do not have an active recurring donation to manage. You can start one below.',
         ],
     ],
     'clubs' => [

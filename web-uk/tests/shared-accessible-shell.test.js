@@ -944,7 +944,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Time-credit balance');
     expect(response.text).toContain('8.5 hours');
     expect(response.text).toContain('Hours given');
-    expect(response.text).toContain('12.3');
+    expect(response.text).toContain('12.25');
     expect(response.text).toContain('Your progress');
     expect(response.text).toContain('Level 4');
     expect(response.text).toContain('1,250 XP');
@@ -2290,7 +2290,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Repair and reuse');
     expect(signed.text).toContain('Verified member');
     expect(signed.text).toContain('Hours given');
-    expect(signed.text).toContain('12.3');
+    expect(signed.text).toContain('12.25');
     expect(signed.text).toContain('I help with repair cafes.');
     expect(signed.text).toContain('Bike repair');
     expect(signed.text).toContain('Borrow a repair kit');
@@ -2341,7 +2341,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(translate('ar', 'profile.hours_given_label'));
     expect(response.text).toContain(new Intl.NumberFormat('ar', {
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 2
     }).format(12.25));
     expect(response.text).toContain(translate('ar', 'profile.about_title'));
     expect(response.text).toContain(translate('ar', 'profile.skills_title'));
@@ -4508,6 +4508,14 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Professional indemnity');
     expect(signed.text).toContain('Insurance provider (optional)');
     expect(signed.text).toContain('Policy number (optional)');
+    // The handler and API have always read these three; the form now offers
+    // them (they previously went up as empty strings on every upload).
+    expect(signed.text).toContain('Amount of cover (optional)');
+    expect(signed.text).toContain('name="coverage_amount"');
+    expect(signed.text).toContain('Start date (optional)');
+    expect(signed.text).toContain('name="start_date-day"');
+    expect(signed.text).toContain('Notes (optional)');
+    expect(signed.text).toContain('name="notes"');
     expect(signed.text).toContain('Expiry date');
     expect(signed.text).toContain('Certificate file');
     expect(signed.text).toContain('Save insurance record');
@@ -7204,8 +7212,8 @@ describe('shared accessible frontend shell', () => {
     });
     expect(response.text).toContain('Repair tools');
     expect(response.text).toContain('Garden help');
-    expect(response.text).toContain('−2.00');
-    expect(response.text).toContain('+3.00');
+    expect(response.text).toContain('−2.0');
+    expect(response.text).toContain('+3.0');
     expect(response.text).toContain('href="/wallet?filter=spent&amp;cursor=next-page#transactions"');
     expect(response.text).toContain('<nav class="govuk-pagination" aria-label="Transaction history">');
     expect(response.text).toContain('<span class="govuk-pagination__link-title">Next</span>');
@@ -7569,13 +7577,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Manage your credits');
     expect(response.text).toContain('See your pending credits at a glance, send credits to a member, or donate to the community fund.');
     expect(response.text).toContain('Your balance');
-    expect(response.text).toContain('8.00 hours');
+    expect(response.text).toContain('8.0 hours');
     expect(response.text).toContain('Earned');
-    expect(response.text).toContain('+25.00 hours');
+    expect(response.text).toContain('+25.0 hours');
     expect(response.text).toContain('Spent');
-    expect(response.text).toContain('-17.00 hours');
+    expect(response.text).toContain('-17.0 hours');
     expect(response.text).toContain('Pending');
-    expect(response.text).toContain('3.00 hours');
+    expect(response.text).toContain('3.0 hours');
     expect(response.text).toContain('You do not have enough credits for that.');
     expect(response.text).toContain('method="get" action="/wallet/manage"');
     expect(response.text).toContain('value="alex"');
@@ -7593,7 +7601,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('It is not a money donation.');
     expect(response.text).toContain('Donations move credits one way and cannot be undone.');
     expect(response.text).toContain('Community fund balance');
-    expect(response.text).toContain('5.00 hours');
+    expect(response.text).toContain('5.0 hours');
     expect(response.text).toContain('name="target" type="radio" value="user" checked');
     expect(response.text).toContain('name="recipient_id" value="77"');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
@@ -10454,6 +10462,15 @@ describe('shared accessible frontend shell', () => {
     expect(pricing.text.replace(/\s+/g, ' ')).toContain(`${t('premium.per_month')} · <strong>€50.00`);
     expect(pricing.text).toContain('Supporter badge');
     expect(pricing.text).toContain(t('premium.states.subscribe-failed'));
+
+    // /premium/manage bounces here when there is nothing to manage; the status
+    // previously mapped to nothing, so the member saw an unexplained pricing page.
+    const noSubscription = await request(app)
+      .get('/premium?status=no-subscription&locale=ar')
+      .set('Cookie', signedCookieHeader());
+    expect(noSubscription.status).toBe(200);
+    expect(noSubscription.text).toContain(t('premium.states.no-subscription'));
+    expect(noSubscription.text).not.toContain('govuk-error-summary');
     expect(pricing.text).toContain(t('premium.current_plan_title'));
     expect(pricing.text).toContain(t('premium.current_plan_notice', { name: 'Community Champion' }));
     expect(pricing.text).toContain(t('polish_commerce.premium_interval_heading'));
@@ -15108,7 +15125,7 @@ describe('shared accessible frontend shell', () => {
     expect(index.text).toContain('name="type" value="all"');
     expect(index.text).toContain('name="mode" value="ranking"');
     expect(index.text).toContain('action="/feed/posts/42/save"');
-    expect(index.text).toContain('Remove from saved<span class="govuk-visually-hidden"> Post</span>');
+    expect(index.text).toContain('Remove from saved<span class="govuk-visually-hidden"> Post by Current member</span>');
     expect(index.text).toContain('action="/feed/posts/42/update"');
     expect(index.text).toContain('action="/feed/posts/42/delete"');
     expect(index.text).toContain('href="https://cdn.example.test/feed/full.png" target="_blank" rel="noopener noreferrer"');

@@ -369,8 +369,8 @@ function profileStatsFrom(user, activityResult, listings, reviewSummary, gamific
   const level = numberOr([gamification?.level, user.level], 1);
   const xp = numberOr([gamification?.xp, gamification?.total_xp, gamification?.totalXp, user.xp], 0);
   return {
-    hoursGivenLabel: formatNumber(hoursGiven, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
-    hoursReceivedLabel: formatNumber(hoursReceived, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    hoursGivenLabel: formatNumber(hoursGiven, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
+    hoursReceivedLabel: formatNumber(hoursReceived, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
     listingsCountLabel: formatNumber(listingsCount),
     ratingLabel: rating === null ? '' : formatNumber(rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     levelLabel: formatNumber(level),

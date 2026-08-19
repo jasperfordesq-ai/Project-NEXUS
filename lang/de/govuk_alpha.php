@@ -573,6 +573,7 @@ return [
             'offer' => 'Angebote',
             'request' => 'Anfragen',
         ],
+        'item_heading_by' => ':type von :name',
         'item_types' => [
             'post' => 'Beitrag',
             'listing' => 'Auflistung',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Abrechnungszeitraum',
         'states' => [
             'subscribe-failed' => 'Ihr Abonnement konnte nicht gestartet werden. Bitte versuchen Sie es später erneut.',
+            'no-subscription' => 'Sie haben kein aktives Abonnement zu verwalten. Sie können unten eines starten.',
         ],
     ],
     'clubs' => [

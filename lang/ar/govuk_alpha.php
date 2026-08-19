@@ -573,6 +573,7 @@ return [
             'offer' => 'العروض',
             'request' => 'الطلبات',
         ],
+        'item_heading_by' => ':type من :name',
         'item_types' => [
             'post' => 'مشاركة',
             'listing' => 'القائمة',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'فترة الفوترة',
         'states' => [
             'subscribe-failed' => 'تعذّر بدء اشتراكك. يُرجى المحاولة مرة أخرى لاحقًا.',
+            'no-subscription' => 'ليس لديك اشتراك نشط لإدارته. يمكنك بدء اشتراك أدناه.',
         ],
     ],
     'clubs' => [

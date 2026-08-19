@@ -573,6 +573,7 @@ return [
             'offer' => 'Ofertas',
             'request' => 'Solicitações',
         ],
+        'item_heading_by' => ':type de :name',
         'item_types' => [
             'post' => 'Postar',
             'listing' => 'Listagem',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Período de faturação',
         'states' => [
             'subscribe-failed' => 'Não foi possível iniciar a sua subscrição. Por favor, tente novamente mais tarde.',
+            'no-subscription' => 'Não tem uma subscrição ativa para gerir. Pode iniciar uma abaixo.',
         ],
     ],
     'clubs' => [

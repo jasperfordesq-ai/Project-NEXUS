@@ -573,6 +573,7 @@ return [
             'offer' => 'Oferty',
             'request' => 'Upraszanie',
         ],
+        'item_heading_by' => ':type — :name',
         'item_types' => [
             'post' => 'Opublikuj',
             'listing' => 'Lista',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Okres rozliczeniowy',
         'states' => [
             'subscribe-failed' => 'Nie udało się uruchomić Twojej subskrypcji. Spróbuj ponownie później.',
+            'no-subscription' => 'Nie masz aktywnej subskrypcji do zarządzania. Możesz rozpocząć ją poniżej.',
         ],
     ],
     'clubs' => [

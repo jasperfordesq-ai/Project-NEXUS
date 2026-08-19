@@ -573,6 +573,7 @@ return [
             'offer' => 'オファー',
             'request' => 'リクエスト',
         ],
+        'item_heading_by' => ':name さんの:type',
         'item_types' => [
             'post' => 'ポスト',
             'listing' => 'リスト',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => '請求期間',
         'states' => [
             'subscribe-failed' => 'サブスクリプションを開始できませんでした。後ほど再度お試しください。',
+            'no-subscription' => '管理できる有効なサブスクリプションはありません。以下から開始できます。',
         ],
     ],
     'clubs' => [

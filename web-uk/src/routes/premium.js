@@ -163,7 +163,10 @@ function normalizeSubscription(subscription, t) {
 }
 
 const PRICING_STATUS_MESSAGES = {
-  'subscribe-failed': { type: 'error', messageKey: 'premium.states.subscribe-failed' }
+  'subscribe-failed': { type: 'error', messageKey: 'premium.states.subscribe-failed' },
+  // /premium/manage redirects here when there is nothing to manage; without an
+  // entry the member landed on the pricing page with no explanation at all.
+  'no-subscription': { type: 'info', messageKey: 'premium.states.no-subscription' }
 };
 
 const MANAGE_STATUS_MESSAGES = {

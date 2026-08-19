@@ -573,6 +573,7 @@ return [
             'offer' => 'Offerte',
             'request' => 'Richieste',
         ],
+        'item_heading_by' => ':type di :name',
         'item_types' => [
             'post' => 'Inviare',
             'listing' => 'Elenco',
@@ -2911,6 +2912,7 @@ return [
         'interval_legend' => 'Periodo di fatturazione',
         'states' => [
             'subscribe-failed' => 'Non è stato possibile avviare l\'abbonamento. Riprovare più tardi.',
+            'no-subscription' => 'Non è presente un abbonamento attivo da gestire. È possibile avviarne uno qui sotto.',
         ],
     ],
     'clubs' => [

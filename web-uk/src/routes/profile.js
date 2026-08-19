@@ -745,8 +745,8 @@ function ownProfileStats(profile, gamificationResult) {
   const xp = Math.trunc(numericProfileValue(profile.xp, gamification.xp));
 
   return {
-    hoursGivenLabel: formatProfileNumber(hoursGiven, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
-    hoursReceivedLabel: formatProfileNumber(hoursReceived, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    hoursGivenLabel: formatProfileNumber(hoursGiven, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
+    hoursReceivedLabel: formatProfileNumber(hoursReceived, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
     listingsCountLabel: formatProfileNumber(listingsCount, { maximumFractionDigits: 0 }),
     ratingLabel: rating === null ? '' : formatProfileNumber(rating, { maximumFractionDigits: 1 }),
     levelLabel: formatProfileNumber(level, { maximumFractionDigits: 0 }),

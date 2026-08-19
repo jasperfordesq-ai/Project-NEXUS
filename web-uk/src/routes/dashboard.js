@@ -52,9 +52,12 @@ function integerFrom(value, fallback = 0) {
 }
 
 function formatOneDecimal(value) {
+  // min 1 / max 2, matching the wallet's hoursValue: the two pages previously
+  // showed the same balance as "100.0" and "100.00", and clamping to one digit
+  // here would round a quarter-hour differently from the wallet.
   return new Intl.NumberFormat(getRequestIntlLocale(), {
     minimumFractionDigits: 1,
-    maximumFractionDigits: 1
+    maximumFractionDigits: 2
   }).format(numberFrom(value));
 }
 

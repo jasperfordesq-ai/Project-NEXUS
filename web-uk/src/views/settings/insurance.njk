@@ -102,11 +102,32 @@
             <input class="govuk-input govuk-!-width-two-thirds" id="policy_number" name="policy_number" type="text" maxlength="100">
           </div>
 
+          {# The handler and the API have always read coverage_amount, start_date
+             and notes — the form just never offered them, so every upload sent
+             three empty strings and a member could not record the cover amount. #}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="coverage_amount">{{ t("govuk_alpha_settings.insurance.coverage_label") }}</label>
+            <div id="coverage-amount-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.coverage_hint") }}</div>
+            <input class="govuk-input govuk-input--width-10" id="coverage_amount" name="coverage_amount" type="text" inputmode="numeric" maxlength="20" aria-describedby="coverage-amount-hint">
+          </div>
+
+          {{ nexusDateInput({
+  name: "start_date",
+  legend: t("govuk_alpha_settings.insurance.start_label"),
+  hint: t("govuk_alpha_settings.insurance.start_hint")
+}, t) }}
+
           {{ nexusDateInput({
   name: "expiry_date",
   legend: t("govuk_alpha_settings.insurance.expiry_label"),
   hint: t("govuk_alpha_settings.insurance.expiry_hint")
 }, t) }}
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="insurance_notes">{{ t("govuk_alpha_settings.insurance.notes_label") }}</label>
+            <div id="insurance-notes-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.notes_hint") }}</div>
+            <textarea class="govuk-textarea" id="insurance_notes" name="notes" rows="3" maxlength="1000" aria-describedby="insurance-notes-hint"></textarea>
+          </div>
 
           {% set fileError = errorAnchor == "certificate_file" and errorStatus %}
           <div class="govuk-form-group{% if fileError %} govuk-form-group--error{% endif %}">

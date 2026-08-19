@@ -1580,6 +1580,7 @@
                     "offer": "Angebote",
                     "request": "Anfragen"
                 },
+                "item_heading_by": ":type von :name",
                 "item_types": {
                     "post": "Beitrag",
                     "listing": "Auflistung",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Jährlich",
                 "interval_legend": "Abrechnungszeitraum",
                 "states": {
-                    "subscribe-failed": "Ihr Abonnement konnte nicht gestartet werden. Bitte versuchen Sie es später erneut."
+                    "subscribe-failed": "Ihr Abonnement konnte nicht gestartet werden. Bitte versuchen Sie es später erneut.",
+                    "no-subscription": "Sie haben kein aktives Abonnement zu verwalten. Sie können unten eines starten."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "Art der Versicherung",
                 "provider_label": "Versicherungsanbieter (optional)",
                 "policy_label": "Versicherungsnummer (optional)",
+                "coverage_label": "Deckungssumme (optional)",
+                "coverage_hint": "Nur Zahlen. Beispiel: 5000000",
+                "start_label": "Startdatum (optional)",
+                "start_hint": "Beispiel: 27.3.2026",
+                "notes_label": "Anmerkungen (optional)",
+                "notes_hint": "Alles Weitere zu dieser Police, bis zu 1.000 Zeichen.",
                 "expiry_label": "Ablaufdatum",
                 "expiry_hint": "Beispiel: 27.3.2027",
                 "file_label": "Zertifikatsdatei",

@@ -1580,6 +1580,7 @@
                     "offer": "Offres",
                     "request": "Demandes"
                 },
+                "item_heading_by": ":type de :name",
                 "item_types": {
                     "post": "Publier",
                     "listing": "Annonce",
@@ -3917,7 +3918,8 @@
                 "yearly_label": "Annuel",
                 "interval_legend": "Période de facturation",
                 "states": {
-                    "subscribe-failed": "Nous n'avons pas pu démarrer votre abonnement. Veuillez réessayer ultérieurement."
+                    "subscribe-failed": "Nous n'avons pas pu démarrer votre abonnement. Veuillez réessayer ultérieurement.",
+                    "no-subscription": "Vous n'avez pas d'abonnement actif à gérer. Vous pouvez en démarrer un ci-dessous."
                 }
             },
             "clubs": {
@@ -9866,6 +9868,12 @@
                 "type_label": "Type d'assurance",
                 "provider_label": "Assureur (facultatif)",
                 "policy_label": "Numéro de police (facultatif)",
+                "coverage_label": "Montant de la couverture (facultatif)",
+                "coverage_hint": "Chiffres uniquement. Par exemple, 5000000",
+                "start_label": "Date de début (facultatif)",
+                "start_hint": "Par exemple, 27 3 2026",
+                "notes_label": "Remarques (facultatif)",
+                "notes_hint": "Toute autre information sur cette police, jusqu'à 1 000 caractères.",
                 "expiry_label": "Date d’expiration",
                 "expiry_hint": "Par exemple, 27 3 2027",
                 "file_label": "Fichier de certificat",
