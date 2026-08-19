@@ -30,7 +30,7 @@
               <img class="nexus-alpha-avatar" src="{{ club.logoUrl | thumb(96, 96) }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="48" height="48">
             {% endif %}
             <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ club.name }}</h2>
-            <strong class="govuk-tag govuk-tag--blue">{{ t("clubs.members_count", { count: club.memberCount }) }}</strong>
+            <strong class="govuk-tag govuk-tag--blue">{{ tc("clubs.members_count", club.memberCount, { count: club.memberCount }) }}</strong>
           </div>
 
           {% if club.description %}

@@ -17137,7 +17137,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(t('clubs.caption', { community: 'Project NEXUS Accessible' }));
     expect(response.text).toContain('value="velo"');
     expect(response.text).toContain('Velo Club');
-    expect(response.text).toContain(t('clubs.members_count', { count: 24 }));
+    // members_count now carries plural forms, so the expectation comes from the
+    // CHOICE translator; plain t() would return the whole "{0} …|{1} …|[2,*] …"
+    // template, which is what the page printed before this was fixed.
+    expect(response.text).toContain(createChoiceTranslator('ar')('clubs.members_count', 24, { count: 24 }));
+    expect(response.text).not.toContain('[2,*]');
     expect(response.text).toContain('Sunday cycling tours around the lake');
     expect(response.text).toContain('Sundays at 9am');
     expect(response.text).toContain('mailto:chair@example.test');
