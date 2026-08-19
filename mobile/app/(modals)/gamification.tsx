@@ -48,6 +48,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
@@ -1124,7 +1125,26 @@ export default function GamificationScreen() {
   const [showcaseKeysOverride, setShowcaseKeysOverride] = useState<Set<string> | null>(null);
   const [isSavingShowcase, setIsSavingShowcase] = useState(false);
 
-  const { data: profileData, isLoading: profileLoading, refresh: refreshProfile } = useApi(
+  // 🔴 `error` is read here and nowhere else among these eight loads, deliberately.
+  // The profile is what the whole screen hangs off; the other seven fill in sections.
+  // Before this, none of the eight `error` values was read at all — the only four uses
+  // of `error` in this file are user ACTIONS (claim, purchase, save) — so a failed load
+  // had no path to the member at all: no message, no retry, nothing.
+  //
+  // 🔴 Scope, honestly: this does NOT explain the blank screen observed on the emulator
+  // on 2026-08-19, and must not be described as fixing it. Instrumenting this render
+  // showed `isLoading: false, hasProfile: true, profileErr: null` while the body painted
+  // nothing at all — data present, no error, still blank — so that is a separate and
+  // still-open RENDERING defect. See docs/PRODUCTION_READINESS.md; the leading suspicion
+  // is the zero-size layout failure documented at the top of `app/+not-found.tsx`, which
+  // bit that screen twice. This change is worth making on its own merits, because a
+  // genuine load failure previously had no way to reach the member either.
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    error: profileError,
+    refresh: refreshProfile,
+  } = useApi(
     () => getGamificationProfile(),
     [],
   );
@@ -1312,7 +1332,14 @@ export default function GamificationScreen() {
     { key: 'all_time', label: t('leaderboard.allTime') },
   ];
 
-  const isLoading = profileLoading || badgesLoading || scoreLoading || rewardLoading || challengesLoading || collectionsLoading || shopLoading;
+  // 🔴 `lbLoading` was missing from this list while being present in the two refresh
+  // effects above, so the screen could paint before the leaderboard arrived — which is
+  // the tab a `/leaderboard` link opens on.
+  const isLoading = profileLoading || badgesLoading || lbLoading || scoreLoading || rewardLoading || challengesLoading || collectionsLoading || shopLoading;
+
+  // Nothing to show AND the load failed. Partial failures deliberately do not reach here:
+  // if the profile arrived, the sections that loaded are still worth showing.
+  const hasFailedOutright = Boolean(profileError) && !profile;
 
   return (
     <ModalErrorBoundary>
@@ -1323,6 +1350,12 @@ export default function GamificationScreen() {
           <View className="flex-1 items-center justify-center">
             <LoadingSpinner />
           </View>
+        ) : hasFailedOutright ? (
+          <ErrorState
+            testID="gamification-load-failed"
+            onRetry={handleRefresh}
+            isRetrying={isRefreshing}
+          />
         ) : (
           <ScrollView
             className="flex-1"

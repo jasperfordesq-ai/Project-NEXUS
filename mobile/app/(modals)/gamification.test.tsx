@@ -537,4 +537,41 @@ describe('GamificationScreen', () => {
     expect(getByLabelText('Purchase Profile Sparkle').props.accessibilityState).toMatchObject({ disabled: true });
     expect(purchaseShopItem).not.toHaveBeenCalled();
   });
+
+  describe('a load that failed outright', () => {
+    // 🔴 This screen read `error` from NONE of its eight loads. The only four uses of
+    // `error` in the file are user actions (claim, purchase, save), so a failed load had
+    // no path to the member at all — not a message, not a retry. The screen is reachable
+    // by three link types (/achievements, /leaderboard, /nexus-score), so a member can
+    // arrive here from an email and find nothing.
+    const failedState = { data: null, isLoading: false, error: new Error('offline'), refresh: jest.fn() };
+
+    it('🔴 offers a retry instead of an empty screen', () => {
+      mockUseApi.mockReturnValue(failedState);
+
+      const { getByTestId } = render(<GamificationScreen />);
+
+      expect(getByTestId('gamification-load-failed')).toBeTruthy();
+    });
+
+    it('does not replace the page when the profile loaded but a section did not', () => {
+      // Partial failure must still show what arrived. Blanking the whole screen because
+      // the XP shop was unavailable would be a worse bug than the one being fixed.
+      mockLoadedGamification({ profile: mockProfile });
+
+      const { queryByTestId } = render(<GamificationScreen />);
+
+      expect(queryByTestId('gamification-load-failed')).toBeNull();
+    });
+
+    it('shows the spinner rather than the failure while still loading', () => {
+      // Order matters: an error from a first attempt must not flash a failure panel over
+      // a load that is still in flight.
+      mockUseApi.mockReturnValue({ ...failedState, isLoading: true });
+
+      const { queryByTestId } = render(<GamificationScreen />);
+
+      expect(queryByTestId('gamification-load-failed')).toBeNull();
+    });
+  });
 });
