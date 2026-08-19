@@ -44,3 +44,4 @@ screenshots/diff/
 # not baselines and not reproducible. Committing them would add megabytes per run
 # and put seeded member data in a public repository.
 screenshots/sweep/
+screenshots/sweep-largefont/

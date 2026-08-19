@@ -21,11 +21,15 @@ can and accepts live data, because a person is going to look at the images. Mixi
 them would either flood the comparison with false regressions or hold the sweep down
 to six screens and find nothing.
 
-Coverage: **31 screens in light and 31 in dark**, of 33 attempted (second pass,
-2026-08-19). The first pass reached only 16 of 26 — see
+Coverage: **31 screens in light, 31 in dark, and 31 at 1.3x text size** — 93 images,
+of 33 screens attempted. The first pass reached only 16 of 26; see
 [How the sweep was made reliable](#how-the-sweep-was-made-reliable) for what was
 wrong with it. Still not a complete audit — see
 [Gaps in this pass](#gaps-in-this-pass).
+
+Run a large-text pass with
+`adb shell settings put system font_scale 1.3` before `npm run screenshot:sweep`,
+and put it back to `1.0` afterwards.
 
 ---
 
@@ -185,37 +189,53 @@ sites twice or guessing on the owner's behalf.
 
 ---
 
-## 3. OPEN — scrolled content slides under the clock
+## 3. FIXED — scrolled content slid under the clock
 
-On any scrollable screen, content scrolls up behind the status bar with nothing
-behind it, so member-entered text collides with the clock and battery icons. Clearest
-on the registration form, where the "Last name" field and the time overlap and both
-become hard to read.
+On every scrollable screen, content scrolled up behind the status bar with nothing
+between them, so a member's own typing collided with the clock and battery icons and
+both became hard to read. Worst on the registration form, where the surname field and
+the time overlapped.
 
-This is systemic rather than one screen's mistake. The app is edge-to-edge — the
-default on Expo SDK 54, and required by Android 15 — so the status bar is transparent
-and content draws behind it. `app/_layout.tsx` sets `<StatusBar style={…} />`, which
-only chooses the icon colour; nothing paints a background. Screens do apply
-`paddingTop: insets.top`, which correctly positions content at rest but does not
-stop it scrolling underneath.
+Systemic, not one screen's mistake. The app draws edge-to-edge — the default on Expo
+SDK 54 and required by Android 15 — so the status bar is transparent and the window
+extends underneath it. `<StatusBar style={…} />` only chooses whether the system icons
+are drawn light or dark; it paints no background. Screens do set
+`paddingTop: insets.top`, which positions content correctly **at rest** but cannot
+stop it scrolling up underneath.
 
-The usual fix is a small scrim or an opaque strip the height of the inset behind the
-status bar. Not applied here because it belongs in the root layout and affects every
-screen in the app — worth doing deliberately rather than as a side-effect of a bug
-hunt.
+**Fix.** An opaque strip the height of `insets.top`, painted in `theme.bg`, added to
+`ThemedShell` in `app/_layout.tsx`. It sits after `<RootNavigator>` so it paints on
+top, and carries `pointerEvents="none"` so it never swallows a tap. Its height is the
+real inset, so it collapses to nothing on a device without one.
+
+**Verified that it does not hide anything.** The concern with painting over the top of
+the app is that it covers content which was previously visible — particularly on
+`app/(tabs)/create.tsx`, the one tab screen that applies no top inset of its own. Both
+were checked on the device: the Create screen has empty background there, and the More
+screen after the fix is pixel-for-pixel the same as the capture taken before it, with
+the card's accent bar and "YOUR TIMEBANK SPACE" eyebrow fully visible.
 
 ---
 
-## 4. OPEN — the feed's filter row is clipped mid-word
+## 4. FIXED — the feed's filter row was clipped mid-word
 
 On the Community Feed the horizontal filter chips (`All`, `Following`, `Saved`,
-`Posts`, `Exchanges`, …) run past the card's right edge and are cut off mid-word —
-"Exchan" — with no fade, shadow or partial-chip hint that the row scrolls. It reads
-as broken text rather than as scrollable content.
+`Posts`, `Exchanges`, …) were cut off mid-word — "Exchan" — with empty space after
+them and no hint that the row scrolls. It read as broken text rather than as more
+content to the right.
 
-The platform has a `ScrollShadow` pattern for exactly this on the web side. Not
-fixed here because it needs a look at the card's padding and the scroller's
-`contentContainerStyle` together, rather than a one-line change.
+**Fix.** `-mx-4` on the `ScrollView` cancels the Surface's base `p-4` so the row
+bleeds to the card's own edge, with `px-4` on the content container keeping the first
+chip aligned with the heading above it. A chip cut at the card boundary is the
+conventional "scroll for more" cue. Confirmed on the device: the row now runs to the
+card edge and the last chip is clipped by the card's rounded boundary rather than
+sliced mid-word with a gap behind it.
+
+🔴 **A gradient fade would be better, and `heroui-native` ships `ScrollShadow` for
+exactly this** — but it requires a `LinearGradientComponent`, and
+`expo-linear-gradient` is not a dependency of this app. Adding a native module and a
+rebuild for a fade was not justified; worth revisiting if that dependency arrives for
+another reason.
 
 ---
 
@@ -235,6 +255,31 @@ defect — recorded so it is a decision rather than an oversight.
 The level-up card renders "E2E UserA reached 3", then "Level 3", then "Reached
 Level 3!" — the same information three times in one card, and the first phrasing is
 missing the word "Level". A copy fix, in the gamification feed card.
+
+---
+
+## Large text (1.3x): better than expected, one thing to confirm
+
+Large text is where clipped labels usually appear, so this was the most likely source
+of further findings. It largely was not:
+
+- **The registration form holds up well.** Every label and field is readable, and "I
+  agree to the platform terms and privacy notice." wraps onto two lines instead of
+  being truncated.
+- **The More menu truncates properly** rather than clipping — long descriptions end
+  in an ellipsis ("…members, …") inside their row.
+- **The Create screen wraps cleanly**, all six action descriptions onto two lines.
+- **Tab-bar labels still fit** at 1.3x — "Messages" and "Listings" are not truncated.
+
+🔴 **One observation, NOT yet confirmed as a defect.** At 1.3x the More screen's
+"YOUR TIMEBANK SPACE" eyebrow appeared sliced at the top on a screen that had not been
+scrolled. It is *not* caused by the new status-bar strip — that was checked directly,
+and at normal text size the same screen is unchanged from before the fix. It may be a
+mid-layout capture rather than a real clip. Recorded as something to reproduce
+deliberately rather than asserted as a bug.
+
+Not covered: 1.5x and 2.0x, which Android also offers and where wrapping usually gives
+out.
 
 ---
 
@@ -294,9 +339,8 @@ Honest coverage, so nobody reads this as "the app has been audited":
 - **~106 screens still have no picture of any kind.** 31 of roughly 137 are covered.
 - **"Notifications" could not be reached** from the More menu and remains
   unphotographed.
-- **Only one device size, and default font size.** No small phone, no tablet, no
-  large-text setting — and large text is where clipped labels usually appear, so this
-  is a likely source of further findings.
+- **Only one device size.** No small phone and no tablet. Large text has now been
+  swept at 1.3x (see above) but not at 1.5x or 2.0x, where wrapping usually gives out.
 - **Nothing was checked against a real phone.** This is an emulator throughout.
 - **Screens behind an action are untouched** — anything reached by submitting a form,
   opening a member's profile, or entering a conversation. The sweep only walks
@@ -315,6 +359,6 @@ a clear header, a correctly blue "Create poll" button, and a proper empty state
 blank area. The registration form's password hint correctly says "At least 12
 characters", matching the real rule.
 
-The two systemic findings above — the brand-colour split and content sliding under
-the clock — account for most of what makes the app feel unfinished, and both are
-single decisions rather than long lists of repairs.
+Of the two systemic findings, **content sliding under the clock is now fixed**. The
+brand-colour split is the one that remains, and it is a single decision rather than a
+long list of repairs — 128 controls become consistent the moment it is made.

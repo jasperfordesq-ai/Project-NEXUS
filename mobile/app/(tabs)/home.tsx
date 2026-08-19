@@ -252,10 +252,29 @@ export default function HomeScreen() {
                 ) : null}
               </View>
 
+              {/*
+                The filter row scrolls, and it has to LOOK like it scrolls. It was
+                laid out inside the Surface's padding, so the last visible chip was
+                sliced mid-word ("Exchan") with a gap after it — which reads as broken
+                text rather than as more content to the right.
+
+                `-mx-4` cancels the Surface's base `p-4` so the row bleeds to the
+                card's own edge, and `px-4` inside the content container keeps the
+                first chip aligned with the heading above it. A chip cut at the card
+                boundary is the conventional "scroll for more" cue.
+
+                🔴 A gradient fade would be better still, and `heroui-native` ships
+                `ScrollShadow` for exactly this — but it requires
+                `LinearGradientComponent`, and `expo-linear-gradient` is not a
+                dependency of this app. Adding a native module and a rebuild for a
+                fade was not worth it here; revisit if that dependency arrives for
+                another reason.
+              */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-2 pr-2"
+                className="-mx-4"
+                contentContainerClassName="gap-2 px-4"
               >
                 {FILTER_OPTIONS.map((option) => (
                   <Chip

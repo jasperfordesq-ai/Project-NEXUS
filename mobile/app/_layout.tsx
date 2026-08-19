@@ -6,7 +6,7 @@
 import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
 
 import { useEffect, useRef } from 'react';
-import { LogBox } from 'react-native';
+import { LogBox, View } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
@@ -134,12 +134,44 @@ export default Sentry.wrap(RootLayout);
  */
 function ThemedShell() {
   const { navTheme, scheme } = useNavigationTheme();
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <ThemeProvider value={navTheme}>
         <RootNavigator />
       </ThemeProvider>
+      {/*
+        🔴 The strip behind the status bar. Without it, scrolled content passes
+        BEHIND the clock and battery icons with nothing between them, so a member's
+        own typing collides with the system text and both become unreadable — worst
+        on the registration form, where the surname field and the clock overlapped.
+
+        Why it is needed at all: the app draws edge-to-edge (the default on Expo SDK
+        54, and required by Android 15), so the status bar is transparent and the
+        window extends underneath it. `<StatusBar style>` above only chooses whether
+        the system icons are drawn light or dark; it paints no background. Screens do
+        set `paddingTop: insets.top`, which positions content correctly AT REST but
+        cannot stop it scrolling up underneath.
+
+        It sits AFTER <RootNavigator> so it paints on top, and is
+        `pointerEvents="none"` so it never intercepts a tap meant for the screen
+        beneath. Height is the real inset, so it is 0 on a device with no status-bar
+        inset rather than an assumed constant.
+      */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: theme.bg,
+        }}
+      />
     </>
   );
 }
