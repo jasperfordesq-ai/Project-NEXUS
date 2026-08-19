@@ -360,3 +360,50 @@ INSERT INTO federation_user_settings
      appear_in_federated_search, show_skills_federated, opted_in_at)
 SELECT id, 1, 1, 1, 1, 1, NOW() FROM users
 ON DUPLICATE KEY UPDATE federation_optin = 1, opted_in_at = NOW();
+
+-- ---------------------------------------------------------------------------
+-- 🔴 TENANT SLUG. TenantSeeder.php creates the master tenant with `slug => NULL`,
+-- so `X-Tenant-Slug` resolves to NOTHING on the disposable Laravel — while the
+-- ASP.NET seed's main tenant IS `acme`. That asymmetry means the two backends
+-- cannot be addressed by the same slug, and web-uk (which sends X-Tenant-Slug on
+-- every signed-out request) has to be pointed at a different community per
+-- backend. Setting it here rather than in a seeder because Laravel's seeders are
+-- read-only reference material for this workstream (see the header of this file).
+-- ---------------------------------------------------------------------------
+UPDATE tenants SET slug = 'acme' WHERE id = @T AND (slug IS NULL OR slug = '');
+
+-- ---------------------------------------------------------------------------
+-- 🔴 LEGAL DOCUMENT SYMMETRY. DemoShowcaseSeedData.cs:1615 seeds a Terms document
+-- with RequiresAcceptance = true, and NO Laravel seeder or fixture created one —
+-- so the legal-acceptance gate fired on ASP.NET and never on Laravel. Any
+-- comparison of a signed-in journey was therefore measuring two different
+-- journeys: one gated, one not. The acceptance rows below keep the gate SATISFIED
+-- for the fixture users, so the document exists on both sides without either
+-- backend's members being blocked mid-measurement.
+-- ---------------------------------------------------------------------------
+INSERT INTO legal_documents
+    (id, tenant_id, document_type, title, slug, requires_acceptance,
+     acceptance_required_for, is_active)
+VALUES (950001, @T, 'terms', 'Terms of Service', 'terms-of-service', 1, 'registration', 1)
+ON DUPLICATE KEY UPDATE title = VALUES(title), is_active = 1;
+
+-- `created_by` is NOT NULL with no default in this table, so it must be supplied.
+INSERT INTO legal_document_versions
+    (id, document_id, version_number, content, effective_date, published_at,
+     is_draft, is_current, created_by)
+VALUES (950001, 950001, '1.0',
+        'Fixture terms of service for contract-parity measurement.',
+        CURDATE(), NOW(), 0, 1, @UA)
+ON DUPLICATE KEY UPDATE is_current = 1, is_draft = 0;
+
+UPDATE legal_documents SET current_version_id = 950001 WHERE id = 950001;
+
+-- Accept it for every fixture user, so the gate is SATISFIED rather than pending.
+-- ASP.NET's seed leaves its members already accepted; without this the two backends
+-- would present the same document in two different states (has_pending true vs
+-- false), and a signed-in journey comparison would be measuring a gated journey
+-- against an ungated one.
+INSERT INTO user_legal_acceptances
+    (user_id, document_id, version_id, version_number, accepted_at, acceptance_method)
+SELECT id, 950001, 950001, '1.0', NOW(), 'registration' FROM users WHERE tenant_id = @T
+ON DUPLICATE KEY UPDATE accepted_at = NOW();

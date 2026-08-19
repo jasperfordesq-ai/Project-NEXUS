@@ -13,7 +13,7 @@ commits are now merged into published `main`; the inventory remains tied to the
 named implementation tree until regenerated on a later exact mainline SHA.
 Published product/schema commit `c767050a3eabd064bdf647695b9699b98186342b`
 adds `20260715184200_AddCompatibilityAuditEntriesTable`, taking the source to
-165 migration classes and 163 runtime IDs. The table was already represented
+165 migration classes and 163 runtime IDs (🔴 STALE — live at 2026-08-19 is **183** migration classes; recount with `ls aspnet-backend/src/Nexus.Api/Migrations/*.cs` excluding Designer/Snapshot files before quoting). The table was already represented
 by the model and therefore does not change the static table totals below. Its
 original exact-SHA CI Test job timed out. The later required-CI workflow at
 `b3f946b3` and test/evidence SHA `dbafc5c3` retain the same schema implementation;
@@ -425,7 +425,7 @@ are now merged into published `main`. Their implementation-tree comparator repor
 Laravel tables, 440 ASP.NET tables, 242 exact names, 216 missing Laravel exact
 names, 198 ASP.NET-only names, and 164 EF migration source files. Current
 product commit `c767050a` adds migration source/runtime ID 163 without changing
-those static table-name totals, so the current tree has 165 migration classes.
+those static table-name totals, so the tree had 165 migration classes at that time (🔴 live 2026-08-19: **183**).
 Each slice
 has its own focused build, test, model-drift, blank-replay, and populated-upgrade
 evidence above. The combined lineage now has a complete required exact-SHA CI

@@ -84,6 +84,13 @@ services:
       - Fido2__Origins__2=http://localhost:5180
       - Fido2__Origins__3=http://localhost:5173
       - Fido2__Origins__4=http://127.0.0.1:5173
+      # 🔴 5199 is the port scripts/smoke-react-against-aspnet.mjs serves the app on
+      # (deliberately not 5173, which belongs to the owner's own dev server). The CORS
+      # list already carried it; this one stopped at 5173, so a passkey ceremony driven
+      # from the smoke would have been refused as an unknown origin — a failure that
+      # looks like broken WebAuthn and is only a missing config line.
+      - Fido2__Origins__5=http://localhost:5199
+      - Fido2__Origins__6=http://127.0.0.1:5199
       - FileUpload__UploadsRoot=/app/uploads
       # Sentry — DSN read from .env (Sentry__Dsn). Empty = disabled.
       - Sentry__Dsn=${Sentry__Dsn:-}

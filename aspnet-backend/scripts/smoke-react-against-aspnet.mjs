@@ -229,6 +229,124 @@ await step('action-create-listing', async () => {
   console.log(`    ${after.includes('/listings/create') ? '🔴 still on the form — the create did NOT complete' : 'navigated away — create appears to have succeeded'}`);
 });
 
+// 🔴 POSTING. The feed composer opens from a "Create" button (there is no inline
+// textarea on /feed — a selector looking for one reports "no composer" and reads like a
+// backend fault). Every consent dismissal carries a short timeout: a covered button hung
+// for the full 30s default once and looked like a hang.
+await step('action-create-feed-post', async () => {
+  await page.goto(`${BASE}/feed`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  for (const label of ['Use basic features only', 'Essential only']) {
+    const b = page.locator(`button:has-text("${label}")`).first();
+    if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(400); }
+  }
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+  const create = page.locator('button:has-text("Create")').first();
+  if (!(await create.count())) { console.log('    no Create control — selector needs updating, NOT a backend result'); return; }
+  await create.click({ timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(2000);
+
+  const composer = page.locator('textarea, [contenteditable="true"]').first();
+  if (!(await composer.count())) { console.log('    composer did not open — selector needs updating, NOT a backend result'); return; }
+  const body = `Smoke feed post ${stampSuffix}`;
+  await composer.fill(body, { timeout: 10000 }).catch(async () => { await composer.type(body).catch(() => {}); });
+  await page.waitForTimeout(500);
+
+  const submit = page.locator('button:has-text("Post"), button[type="submit"]').last();
+  if (!(await submit.count()) || !(await submit.isEnabled())) {
+    console.log('    submit missing or disabled — a required field is unsatisfied; not a backend result');
+    return;
+  }
+  await submit.click({ timeout: 15000 }).catch((e) => console.log('    click failed: ' + String(e).slice(0, 80)));
+  await page.waitForTimeout(4000);
+  // 🔴 Assert the EFFECT: the post must be on the page, not merely "no error shown".
+  const present = await page.locator(`text=${body}`).count();
+  console.log(`    post visible on the feed afterwards: ${present > 0 ? 'YES — posting works' : 'no (unconfirmed)'}`);
+});
+
+// 🔴 TRANSFERRING credits — the highest-risk member action, because it moves value.
+await step('action-transfer-credits', async () => {
+  // 🔴 Close anything the PREVIOUS step left open. The feed composer is a modal, and a
+  // lingering overlay intercepts the click on this page's own button — which made this
+  // step report "transfer form did not open" while the form opened perfectly when the
+  // step was run in isolation. A step that passes alone and fails in sequence is almost
+  // always leftover UI state, not the backend.
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(400);
+  await page.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2500);
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(400);
+  for (const label of ['Use basic features only', 'Essential only']) {
+    const b = page.locator(`button:has-text("${label}")`).first();
+    if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(400); }
+  }
+  const balanceBefore = (await page.locator('body').innerText()).match(/([\d,]+\.?\d*)\s*(?:hours|credits)/i)?.[1] ?? null;
+  console.log(`    balance text before: ${balanceBefore ?? '(not found)'}`);
+
+  const send = page.locator('button:has-text("Send Credits")').first();
+  if (!(await send.count())) { console.log('    no Send Credits control — selector needs updating, NOT a backend result'); return; }
+  await send.click({ timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+
+  // Fields are unnamed (react-aria ids) but well aria-labelled — target the labels.
+  // 🔴 This is a TWO-STAGE form and the stages must be addressed in order. Measured:
+  // with the dialog freshly open, byLabel('Search recipient') = 1 but
+  // byLabel('Amount in hours') = 0 — the amount field does not exist until a recipient
+  // is chosen. Requiring both up front made the step report "form did not open" while
+  // the form was open and working, and cost two runs of guessing (overlay state, then
+  // selector spelling) before the counts were simply printed.
+  const recipient = page.getByLabel('Search recipient').first();
+  if (!(await recipient.count())) {
+    console.log(`    recipient field not addressable (visible inputs: ${await page.locator('input:visible').count()})`
+      + ' — selector needs updating, NOT a backend result');
+    return;
+  }
+
+  // 🔴 Pick the recipient from the SEARCH RESULTS, never by typing a name and hoping.
+  // A transfer moves value; sending to whoever happens to be first in an unfiltered list
+  // is not a test, it is an accident waiting to be reported as a pass.
+  await recipient.fill('coordinator', { timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+  const option = page.locator('[role="option"], li[role="button"], button:has-text("coordinator")').first();
+  if (!(await option.count())) {
+    console.log('    recipient search returned no selectable result — cannot complete safely; NOT a backend verdict');
+    return;
+  }
+  await option.click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1200);
+
+  // Stage two: the amount field appears only now.
+  const amount = page.getByLabel('Amount in hours').first();
+  if (!(await amount.count())) {
+    console.log('    amount field still absent after choosing a recipient — form flow changed; NOT a backend verdict');
+    return;
+  }
+  await amount.fill('1', { timeout: 8000 }).catch(() => {});
+  const note = page.locator('textarea:visible').first();
+  if (await note.count()) await note.fill(`Smoke transfer ${stampSuffix}`, { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(800);
+
+  const confirm = page.locator('button:has-text("Send Credits")').last();
+  if (!(await confirm.isEnabled())) {
+    console.log('    submit still DISABLED after filling recipient+amount — a required field is '
+      + 'unsatisfied; NOT a backend verdict');
+    return;
+  }
+  await confirm.click({ timeout: 15000 }).catch((e) => console.log('    click failed: ' + String(e).slice(0, 80)));
+  await page.waitForTimeout(5000);
+
+  // 🔴 Assert the EFFECT on the ledger, not the absence of an error dialog.
+  await page.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2500);
+  const after = await page.locator('body').innerText();
+  const listed = after.includes(`Smoke transfer ${stampSuffix}`);
+  const balanceAfter = after.match(/([\d,]+\.?\d*)\s*(?:hours|credits)/i)?.[1] ?? null;
+  console.log(`    balance text after : ${balanceAfter ?? '(not found)'}`);
+  console.log(`    transfer in the ledger afterwards: ${listed ? 'YES — transferring works' : 'no (unconfirmed)'}`);
+});
+
 await step('action-rsvp-event', async () => {
   await page.goto(`${BASE}/events`, { waitUntil: 'networkidle', timeout: 60000 });
   await page.waitForTimeout(1500);

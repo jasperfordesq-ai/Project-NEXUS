@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using Nexus.Api.Support.Events;
 using System.Collections.Concurrent;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -110,25 +111,41 @@ public class V15MemberParityController : ControllerBase
         }
 
         var total = await query.CountAsync();
-        var events = await query.OrderBy(e => e.StartsAt).Skip(Skip(page, limit)).Take(Limit(limit)).Select(e => new
+
+        // 🔴 Projected through EventContractMapper (contract_version 2), NOT a hand-rolled
+        // anonymous object. The flat shape this used to emit made the React client's own
+        // runtime validator reject EVERY row — 60 drift issues on this one endpoint — so
+        // the events list rendered empty and RSVP was unreachable. The client fails CLOSED
+        // (events-api.ts:1167-1211), which is why a partial fix is no fix: any missing or
+        // wrongly-typed key discards the whole response.
+        //
+        // Counts come from the RSVP rows so metrics/capacity are real rather than zeroed.
+        var rows = await query
+            .OrderBy(e => e.StartsAt)
+            .Skip(Skip(page, limit))
+            .Take(Limit(limit))
+            .Select(e => new
+            {
+                Event = e,
+                Confirmed = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Going),
+                // 🔴 `Maybe` is this backend's spelling of the interested state; Laravel's
+                // mapper treats "interested" and "maybe" as the same engagement
+                // (EventContractMapper.php:169). There is no RsvpStatus.Interested.
+                Interested = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Maybe),
+            })
+            .ToListAsync();
+
+        var viewerId = CurrentUserId();
+        var events = rows.Select(r => EventContractMapper.Event(r.Event, new EventContractMapper.Facts
         {
-            id = e.Id,
-            title = e.Title,
-            description = e.Description,
-            location = e.Location,
-            starts_at = e.StartsAt,
-            ends_at = e.EndsAt,
-            // Laravel's names, which the React dashboard actually reads.
-            start_date = e.StartsAt,
-            start_time = e.StartsAt,
-            end_date = e.EndsAt,
-            end_time = e.EndsAt,
-            image_url = e.ImageUrl,
-            max_attendees = e.MaxAttendees,
-            rsvp_count = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Going),
-            is_cancelled = e.IsCancelled,
-            created_at = e.CreatedAt
-        }).ToListAsync();
+            ViewerId = viewerId,
+            ConfirmedCount = r.Confirmed,
+            InterestedCount = r.Interested,
+            // 🔴 Abilities default to FALSE. Advertising a capability this backend does not
+            // enforce is worse than omitting a feature: the client renders a control that
+            // fails on use. Real policy wiring is the next step, not a default.
+            CanEdit = viewerId is not null && r.Event.CreatedById == viewerId,
+        })).ToList();
 
         return Ok(Paged(events, page, limit, total));
     }
@@ -228,11 +245,55 @@ public class V15MemberParityController : ControllerBase
         return Created($"api/v2/events/{ev.Id}", new { success = true, data = EventDto(ev) });
     }
 
+    /// <summary>
+    /// GET /api/v2/events/{id} — the event DETAIL view.
+    ///
+    /// 🔴 Must go through the same contract mapper as the list. Fixing only the list left
+    /// this returning the flat legacy shape, and the client's validator reported 12 drift
+    /// issues here — so an event could be listed but its page failed to render, and the
+    /// RSVP control never appeared. "The list works" is not "events work".
+    /// </summary>
     [HttpGet("api/v2/events/{id:int}")]
     public async Task<IActionResult> V2Event(int id)
     {
-        var ev = await _db.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
-        return ev == null ? NotFound(new { error = "Event not found" }) : Ok(new { data = EventDto(ev) });
+        var row = await _db.Events.AsNoTracking()
+            .Include(e => e.CreatedBy)
+            .Include(e => e.Group)
+            .Where(e => e.Id == id)
+            .Select(e => new
+            {
+                Event = e,
+                Confirmed = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Going),
+                Interested = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Maybe),
+                MyStatus = e.Rsvps
+                    .Where(r => r.UserId == CurrentUserId())
+                    .Select(r => r.Status)
+                    .FirstOrDefault(),
+            })
+            .FirstOrDefaultAsync();
+
+        if (row == null)
+        {
+            return NotFound(new { error = "Event not found" });
+        }
+
+        var viewerId = CurrentUserId();
+        return Ok(new
+        {
+            data = EventContractMapper.Event(row.Event, new EventContractMapper.Facts
+            {
+                ViewerId = viewerId,
+                LegacyRsvpStatus = row.MyStatus,
+                ConfirmedCount = row.Confirmed,
+                InterestedCount = row.Interested,
+                CanEdit = viewerId is not null && row.Event.CreatedById == viewerId,
+                // The viewer may register/withdraw depending on their current state — the
+                // client renders the RSVP control from these, so they must reflect reality.
+                CanRegister = row.MyStatus != Event.RsvpStatus.Going,
+                CanWithdraw = row.MyStatus == Event.RsvpStatus.Going,
+                CanSetInterest = true,
+            }),
+        });
     }
 
     [HttpPut("api/v2/events/{id:int}")]
@@ -309,8 +370,29 @@ public class V15MemberParityController : ControllerBase
     [HttpGet("api/v2/events/{id:int}/attendance")]
     public async Task<IActionResult> V2EventAttendees(int id)
     {
-        var attendees = await _db.EventRsvps.AsNoTracking().Where(r => r.EventId == id)
-            .Select(r => new { id = r.UserId, user_id = r.UserId, status = r.Status, responded_at = r.RespondedAt }).ToListAsync();
+        // 🔴 The roster is schema-checked SEPARATELY by the client. Mapping the list and
+        // the detail view still left this reporting 12 drift issues, so the RSVP control
+        // rendered while the people list behind it stayed empty.
+        var rows = await _db.EventRsvps.AsNoTracking()
+            .Where(r => r.EventId == id)
+            .Select(r => new
+            {
+                r.UserId,
+                r.Status,
+                r.RespondedAt,
+                FirstName = r.User != null ? r.User.FirstName : null,
+                LastName = r.User != null ? r.User.LastName : null,
+                Avatar = r.User != null ? r.User.AvatarUrl : null,
+            })
+            .ToListAsync();
+
+        var attendees = rows.Select(r => EventContractMapper.Roster(
+            r.UserId,
+            $"{r.FirstName} {r.LastName}".Trim(),
+            r.Avatar,
+            r.Status,
+            r.RespondedAt)).ToList();
+
         return Ok(new { data = attendees });
     }
 

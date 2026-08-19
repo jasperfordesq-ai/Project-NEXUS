@@ -31,6 +31,7 @@ public class TenantResolutionMiddleware
 
     // Cache key prefix for tenant validation
     private const string TenantCachePrefix = "tenant_valid:";
+    private const string TenantSlugCachePrefix = "tenant_slug:";
     private static readonly TimeSpan TenantCacheDuration = TimeSpan.FromSeconds(60);
 
     // Paths that don't require tenant resolution (they handle it themselves)
@@ -147,6 +148,28 @@ public class TenantResolutionMiddleware
         // Try to resolve tenant with security checks
         var (tenantId, source) = ResolveTenantIdSecure(context);
 
+        // 🔴 Fall back to X-Tenant-Slug, which is how the ACCESSIBLE frontend identifies
+        // a community on signed-out requests (web-uk/src/lib/api.js:124-136 attaches it
+        // whenever there is no bearer token). Until 2026-08-19 this middleware understood
+        // only the integer X-Tenant-ID, so every signed-out web-uk page answered
+        // 400 "Tenant context required" — /blog and /help were the two observed, but the
+        // fault was general to the whole signed-out surface. Laravel resolves the same
+        // header (app/Core/TenantContext.php), so a frontend that works there was
+        // unusable here for a reason that had nothing to do with the endpoint it called.
+        //
+        // Deliberately a FALLBACK, not a peer: an authenticated request still takes its
+        // tenant from the JWT claim and nothing else, so this cannot be used to override
+        // a signed-in user's tenant. It only fills the case the integer header would
+        // otherwise have had to fill.
+        if (!tenantId.HasValue && context.User.Identity?.IsAuthenticated != true)
+        {
+            var slugTenantId = await ResolveTenantIdFromSlugAsync(context, db, cache);
+            if (slugTenantId.HasValue)
+            {
+                (tenantId, source) = (slugTenantId, "HeaderSlug");
+            }
+        }
+
         if (tenantId.HasValue)
         {
             // Validate tenant exists and is active (cached for 60s)
@@ -192,7 +215,7 @@ public class TenantResolutionMiddleware
         await context.Response.WriteAsJsonAsync(new
         {
             error = "Tenant context required",
-            message = "X-Tenant-ID header is required for this endpoint"
+            message = "X-Tenant-ID or X-Tenant-Slug header is required for this endpoint"
         });
     }
 
@@ -216,6 +239,55 @@ public class TenantResolutionMiddleware
 
         cache.Set(cacheKey, isActive, TenantCacheDuration);
         return isActive;
+    }
+
+    /// <summary>
+    /// Resolves an UNAUTHENTICATED request's tenant from the <c>X-Tenant-Slug</c> header.
+    ///
+    /// Cached on the same 60-second window as <see cref="ValidateTenantAsync"/> so a
+    /// signed-out page render does not add a database round trip per request. Only active
+    /// tenants resolve, so an inactive community behaves exactly as it does by id.
+    ///
+    /// 🔴 Never called for authenticated requests — the caller guards on that. The JWT
+    /// claim is the only tenant source once a caller is signed in, and that must stay
+    /// true: accepting a slug there would let a header override a user's own tenant.
+    /// </summary>
+    private async Task<int?> ResolveTenantIdFromSlugAsync(
+        HttpContext context, NexusDbContext db, IMemoryCache cache)
+    {
+        if (!context.Request.Headers.TryGetValue("X-Tenant-Slug", out var raw))
+        {
+            return null;
+        }
+
+        var slug = raw.FirstOrDefault()?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(slug) || slug.Length > 100)
+        {
+            return null;
+        }
+
+        var cacheKey = TenantSlugCachePrefix + slug;
+        if (cache.TryGetValue(cacheKey, out int? cachedId))
+        {
+            return cachedId;
+        }
+
+        var resolved = await db.Tenants
+            .AsNoTracking()
+            .Where(t => t.Slug == slug && t.IsActive)
+            .Select(t => (int?)t.Id)
+            .FirstOrDefaultAsync();
+
+        // Negative results are cached too, so an unknown slug cannot become a cheap way
+        // to make every request hit the database.
+        cache.Set(cacheKey, resolved, TenantCacheDuration);
+
+        if (resolved is null)
+        {
+            _logger.LogDebug("X-Tenant-Slug {Slug} did not resolve to an active tenant", slug);
+        }
+
+        return resolved;
     }
 
     private (int? TenantId, string Source) ResolveTenantIdSecure(HttpContext context)

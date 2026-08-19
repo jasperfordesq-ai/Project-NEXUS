@@ -25,6 +25,14 @@ Every figure in this section was regenerated or probed on 2026-08-18 at monorepo
 | Full test suite | CI at `450535aab`: build, all six API shards, Messaging and image builds **all success**, on ASP.NET code byte-identical to HEAD. Local `dotnet test Nexus.sln -c Release`: **3,644 + 38 passed, 0 failed, 0 skipped**. |
 
 🔴 **One claim in R-6 is WITHDRAWN.** "`marketplace:complete-orders` absent means
+
+> 🔴 **WITHDRAWN CLAIM.** The sentence above (and the top-of-file summary's
+> "sellers are never paid out") is WRONG and was withdrawn on 2026-08-18.
+> `MarketplaceEscrowReleaseJob` does call `ProcessEligibleEscrowReleasesAsync`,
+> gated on `order.AutoCompleteAt` (`MarketplacePaymentService.cs:1952`). What IS
+> absent is a NON-ESCROW completion sweep. Kept rather than deleted so the
+> correction travels with the claim.
+
 sellers are never paid out" is wrong. `MarketplaceEscrowReleaseJob` calls
 `ProcessEligibleEscrowReleasesAsync`, whose `auto_timeout` trigger is gated on
 `order.AutoCompleteAt` (`MarketplacePaymentService.cs:1952`), so escrow-backed
@@ -781,7 +789,13 @@ Consequences for how you work:
 
 ## P0 — blocks production
 
-### R-1 `MEASURED + RATCHETED, triage OPEN` — 351 no-op action methods that report success
+### R-1 `MEASURED + RATCHETED, triage OPEN` — 319 no-op action methods that report success
+
+> 🔴 **This heading said 351 until 2026-08-19, and the per-file table below is the
+> pre-August split.** Live at HEAD, verified by running the checker:
+> `scripts/check-noop-stubs.ps1` reports **319**, matching
+> `scripts/noop-stubs-baseline.json`. The figures in the body are kept as the
+> historical record of how the ratchet was established; do not quote them as current.
 
 **Evidence:** detector = an action method whose entire body contains no `_db`, no
 `await`, no service call, yet returns `Ok(new {...})`/`Created`. Worst files:
@@ -1639,6 +1653,13 @@ needed" / "genuinely missing". Regenerate with
 ### R-15 `OPEN` — 5,424 missing translation keys
 
 11/11 locales present; 374 missing namespaces; 5,424 missing keys; 2,949 extra.
+🔴 TWO CORRECTIONS (2026-08-19): `LOCALIZATION_PARITY.md` states **2,951** extra, not
+2,949 — a small drift, recount before quoting. Far more importantly, **this figure
+does not measure ASP.NET at all**: `compare-laravel-localization-parity.ps1:542-545`
+labels `react-frontend/public/locales` (the SHARED React catalogues) as the `dotnet`
+side, so it compares Laravel `lang/` to a FRONTEND. The real backend ledger is
+`BACKEND_LOCALIZATION_CONTRACT.md`: no request-locale negotiation at all, 0 `.resx`,
+0 `IStringLocalizer`, a DB-backed `Translation` catalogue, 7 of 11 locales seeded.
 Regenerate with `scripts/compare-laravel-localization-parity.ps1`. Mechanical but
 large.
 

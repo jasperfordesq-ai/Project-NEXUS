@@ -57,6 +57,23 @@ public class AuthController : ControllerBase
 
     // Refresh token validity (7 days default)
     private const int RefreshTokenExpiryDays = 7;
+
+    /// <summary>
+    /// The refresh token's remaining life in SECONDS, as `refresh_expires_in`.
+    ///
+    /// 🔴 Every response that hands out a refresh_token must also report this. The
+    /// ACCESSIBLE frontend refuses to build a session without it: web-uk's
+    /// `rotatingSessionFrom` (web-uk/src/routes/auth.js:204-216) requires
+    /// access_token + refresh_token + expires_in + refresh_expires_in and throws
+    /// AUTH_SESSION_RESPONSE_INVALID (502) if any is missing or non-positive. Until
+    /// 2026-08-19 this backend omitted it on all four emitting paths, so signing in to
+    /// the accessible frontend against ASP.NET could not succeed at all — while the
+    /// signed-OUT pages looked healthy, which is why page-level probing missed it.
+    /// Laravel reports it from `TokenService::getRefreshTokenExpiry` on every one of
+    /// its equivalents (AuthController.php:446, 751; TotpController.php:372;
+    /// TwoFactorController.php:254).
+    /// </summary>
+    private const int RefreshTokenExpirySeconds = RefreshTokenExpiryDays * 24 * 60 * 60;
     // Password reset token validity. Shortened from 60 → 30 min on 2026-05-11
     // (audit finding) — industry baseline for password-reset windows.
     private const int PasswordResetExpiryMinutes = 30;
@@ -451,6 +468,7 @@ public class AuthController : ControllerBase
             refresh_token = refreshToken,
             token_type = "Bearer",
             expires_in = _tokenService.AccessTokenExpirySeconds,
+            refresh_expires_in = RefreshTokenExpirySeconds,
             user = new
             {
                 id = user.Id,
@@ -675,7 +693,8 @@ public class AuthController : ControllerBase
             access_token = accessToken,
             refresh_token = newRefreshToken,
             token_type = "Bearer",
-            expires_in = _tokenService.AccessTokenExpirySeconds
+            expires_in = _tokenService.AccessTokenExpirySeconds,
+            refresh_expires_in = RefreshTokenExpirySeconds
         });
     }
 
@@ -902,6 +921,7 @@ public class AuthController : ControllerBase
 
             responseData["access_token"] = accessToken;
             responseData["refresh_token"] = refreshToken;
+            responseData["refresh_expires_in"] = RefreshTokenExpirySeconds;
             responseData["token_type"] = "Bearer";
             responseData["expires_in"] = _tokenService.AccessTokenExpirySeconds;
         }
@@ -925,6 +945,7 @@ public class AuthController : ControllerBase
 
             responseData["access_token"] = accessToken;
             responseData["refresh_token"] = refreshToken;
+            responseData["refresh_expires_in"] = RefreshTokenExpirySeconds;
             responseData["token_type"] = "Bearer";
             responseData["expires_in"] = _tokenService.AccessTokenExpirySeconds;
             responseData["requires_verification"] = true;

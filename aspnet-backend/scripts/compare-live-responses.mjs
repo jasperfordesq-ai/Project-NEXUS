@@ -152,11 +152,36 @@ import {
 } from './lib/response-shape.mjs';
 
 
+/**
+ * Contract-negotiation headers the canonical React client sends on every request.
+ *
+ * 🔴 WITHOUT THESE THE HARNESS MEASURES A SHAPE NEITHER BACKEND SERVES THE REAL APP.
+ * Laravel's `NegotiateEventsContract` middleware answers the LEGACY v1 shape unless the
+ * request asks for the canonical version. Measured 2026-08-19 on the same endpoint:
+ *
+ *     no header               -> x-events-contract: 1, 77 keys, NO organizer/permissions
+ *     X-Events-Contract: 2    -> x-events-contract: 2, 58 keys, full v2 structure
+ *
+ * So every events measurement this harness ever produced compared ASP.NET's output
+ * against Laravel's v1 output — including the "76 fields missing" figure that drove a
+ * whole work package. The client sends these (events-api.ts:19, event-safety-api.ts:11,
+ * event-offline-checkin-api.ts:237); the harness must send exactly the same, or it is
+ * not measuring the contract the frontend actually consumes.
+ *
+ * Values are the versions the client pins, NOT "the latest" — the point is to reproduce
+ * the client's request, not to ask for the newest thing available.
+ */
+const CLIENT_CONTRACT_HEADERS = {
+  'X-Events-Contract': '2',
+  'X-Event-Safety-Contract': '1',
+  'X-Event-Checkin-Contract': '1',
+};
+
 async function ask(base, method, urlPath, tenant, token = null) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const headers = { Accept: 'application/json', 'X-Tenant-ID': tenant };
+    const headers = { Accept: 'application/json', 'X-Tenant-ID': tenant, ...CLIENT_CONTRACT_HEADERS };
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const response = await fetch(`${base}${urlPath}`, {
@@ -190,6 +215,25 @@ function sample(list, total) {
   return hidden > 0 ? `${shown}, … and ${hidden} more` : shown;
 }
 
+// 🔴 A FEATURE-FLAG PREFLIGHT WAS ATTEMPTED HERE AND REMOVED. Recording why, so the
+// next person does not rebuild the same unsound guard.
+//
+// The intent was sound: when the disposable Laravel is left half-prepared (its
+// features never switched on — see start-disposable-laravel.sh, which failed silently
+// this way on 2026-08-19), ~27 endpoints answer 403 FEATURE_DISABLED and this harness
+// faithfully reports all 27 as contract differences. A run in that state reads as a
+// large collapse that never happened.
+//
+// The guard read the feature map from /api/v2/tenant/bootstrap. That map DOES NOT
+// REFLECT THE STORED FLAGS: with the tenant row set to {"events":false} it still
+// reported 48 of 48 features ON, before AND after `php artisan cache:clear`. So the
+// check could not fail, and a guard that cannot fail is worse than none — it converts
+// "unverified" into a printed reassurance.
+//
+// To build it properly: probe an endpoint KNOWN to be feature-gated and refuse on a
+// 403 FEATURE_DISABLED response, rather than trusting a bootstrap projection. Until
+// then, run start-disposable-laravel.sh and READ ITS OUTPUT before measuring.
+
 async function main() {
   const pathsFile = flag('paths', null);
   const specs = pathsFile
@@ -201,6 +245,7 @@ async function main() {
 
   console.log(`Laravel : ${LARAVEL} (tenant ${LARAVEL_TENANT})`);
   console.log(`ASP.NET : ${ASPNET} (tenant ${ASPNET_TENANT})`);
+
 
   // 🔴 Printed every run so a number can never be read out of context. A
   // signed-out run that reports "401 on both" has proven the authorisation

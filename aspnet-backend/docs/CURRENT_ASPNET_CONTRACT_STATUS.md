@@ -115,21 +115,31 @@ generator's route-shape matching simply misses them (for example
 gaps are **9** — 6 paths absent entirely and 3 present without the required
 method:
 
-| Gap | Kind |
-| --- | --- |
-| `GET /api/messages/{message}/voice` | absent (404) |
-| `POST /api/csp-report` | absent |
-| `POST /api/events/{id}/attendance/code` | absent |
-| `POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}` | absent |
-| `GET /api/legal/status` | absent |
-| `GET /api/volunteering/credentials/{id}/download` | absent |
-| `GET /api/messages/{message}/attachments/{attachment}` | path exists, GET not served (405) |
-| `POST /api/legal/accept` | path exists, POST not served (405) |
-| `POST /api/legal/accept-all` | path exists, POST not served (405) |
+> 🔴 **RE-VERIFIED AT HEAD 2026-08-19: 4 of these 9 are CLOSED and a 5th is a FALSE
+> POSITIVE. Four remain.** The table is kept in its original form with a Status column
+> added, because the deduction below was reasoned from the original nine.
+
+| Gap | Kind | Status at HEAD |
+| --- | --- | --- |
+| `GET /api/messages/{message}/voice` | absent (404) | 🔴 **OPEN** |
+| `POST /api/csp-report` | absent | ✅ CLOSED (`SecurityReportController.cs:52-53`, commit `ce1ab79a5`) |
+| `POST /api/events/{id}/attendance/code` | absent | 🔴 **OPEN** — the one action web-uk cannot reach |
+| `POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}` | absent | ⚠️ **FALSE POSITIVE** — handler exists at `EventRegistrationProductController.cs:160`; only the ACTION VOCABULARY is unverified against Laravel's `EventAttendanceAction` enum |
+| `GET /api/legal/status` | absent | ✅ CLOSED (`LegalShortRoutesController.cs:78`) |
+| `GET /api/volunteering/credentials/{id}/download` | absent | 🔴 **OPEN** |
+| `GET /api/messages/{message}/attachments/{attachment}` | path exists, GET not served (405) | 🔴 **OPEN** — match Laravel's private-media headers (`MessageMediaController.php:70-80`) |
+| `POST /api/legal/accept` | path exists, POST not served (405) | ✅ CLOSED (`LegalShortRoutesController.cs:117`) |
+| `POST /api/legal/accept-all` | path exists, POST not served (405) | ✅ CLOSED (`LegalShortRoutesController.cs:215`) |
 
 So 2,658/2,667 at method level (99.66%). Deduction 4: the messages and event
 attendance gaps are client-consumed, and the legal trio is a whole Laravel
 controller family (`LegalController`) unserved at its non-v2 paths.
+
+🔴 **That rationale is now half-spent.** The legal trio and csp-report are CLOSED, so the
+"whole controller family unserved" half of the −4 no longer holds; at method level this is
+**2,662/2,667 (~99.81%)**. The category should re-score at the next transaction — but NOT
+here: rescoring outside a scoring transaction is exactly the silent-rescore this document
+forbids.
 
 **2. Semantic parity — 185/350.** Deduction 165, itemised:
 - **−60** 82 of 170 measured GET endpoints differ in shape.
@@ -679,6 +689,13 @@ in `compose.yml`, development only; production limits are untouched.
 
 ### What this does NOT prove — no points are claimed yet
 
+> 🔴 **PARTIALLY SUPERSEDED — read the dated sections ABOVE this one first.** When
+> written, this block correctly said web-uk had never been run against ASP.NET and
+> that only the proxied React pass existed. Both statements were overtaken the same
+> day: web-uk has now been run (with a Laravel control), the direct/CORS pass has
+> been run, and the events contract drift is now zero. The remaining caveats below
+> about exhaustiveness still stand.
+
 No score is banked for this. Banking needs a scoring pass at a fixed SHA, and the
 remaining evidence gaps are real:
 
@@ -775,6 +792,186 @@ that state would have reported a large false collapse.
 Fixed with a relative path (resolved by node against its cwd on every platform) plus an
 explicit emptiness guard that aborts rather than leaving the fixture half-applied.
 Verified after: 48 of 48 features on.
+
+## 2026-08-19 (Phase 1) — the accessible frontend could not sign in AT ALL, and RSVP is not a test gap
+
+Three findings, two fixed, one now causally explained. All three were invisible to
+page-level probing, and the reason they were invisible is the most useful part.
+
+### 1. `/blog` + `/help` were never about blog or help — FIXED
+
+web-uk identifies a community by SLUG on signed-out requests
+(`web-uk/src/lib/api.js:124-136` attaches `X-Tenant-Slug` whenever there is no bearer
+token). `TenantResolutionMiddleware.ResolveTenantIdSecure()` understood only the integer
+`X-Tenant-ID` and answered **400 "Tenant context required"** to all of them. Laravel
+resolves the same header (`app/Core/TenantContext.php`), so a frontend that works there
+was unusable here for a reason unrelated to the endpoint being called — which is why
+investigating the blog endpoint kept coming up empty. The blog endpoint was fine.
+
+Slug resolution added as a FALLBACK for unauthenticated requests only, cached on the
+same 60s window (negative results cached too, so an unknown slug cannot become a cheap
+way to hit the database every request). 🔴 An authenticated request still takes its
+tenant from the JWT claim and nothing else — accepting a slug there would let a header
+override a signed-in user's tenant, which is a cross-tenant escalation this codebase has
+had before. `TenantSlugHeaderResolutionTests` pins both directions.
+
+**Measured: 10 of 10 accessible pages now identical to the Laravel control**, rendering
+real content (comparable byte counts, zero error pages), where `/blog` and `/help`
+previously 400'd.
+
+### 2. 🔴 Nobody could SIGN IN to the accessible frontend against ASP.NET — FIXED
+
+web-uk refuses to build a session unless the response carries all four of
+`access_token`, `refresh_token`, `expires_in`, `refresh_expires_in`
+(`rotatingSessionFrom`, `web-uk/src/routes/auth.js:204-216`), throwing
+`AUTH_SESSION_RESPONSE_INVALID` (502) otherwise. **This backend omitted
+`refresh_expires_in` on all four of its emitting paths** — login, refresh-token, and the
+two 2FA/trusted-device dictionary paths. Laravel sends it on every equivalent
+(`AuthController.php:446,751`; `TotpController.php:372`; `TwoFactorController.php:254`).
+The value already existed here (`RefreshTokenExpiryDays = 7`); it was simply never
+reported. Now emitted from one named constant on all four paths.
+
+**Verified after the fix** (rebuilt container, live): login and refresh-token both now
+carry all four fields, `refresh_expires_in = 604800`.
+
+🔴 **End-to-end web-uk sign-in remains UNPROVEN, and that is a TEST gap, not a backend
+verdict.** Four browser/fetch probes failed to submit web-uk's login form — **no
+`POST /login` fires at all**, identically against BOTH backends, so it is the probe. The
+page carries FOUR submit buttons (cookie banner, language, search, login) and scoping to
+`form:has(input[type="password"])` did not fix it either. The backend fix above rests on
+the API responses and web-uk's own `rotatingSessionFrom` source, which is solid evidence
+that the blocker is removed — but "a member can sign in to the accessible site against
+ASP.NET" is not yet demonstrated. Do not report it as either working or broken.
+🔴 A prior session already recorded that this page has four submit buttons; consulting
+that note first would have saved three of the four attempts.
+
+🔴 **Why "10 of 10 pages identical" did not catch this.** Every one of those pages was
+SIGNED OUT. The authenticated ones redirected to `/login` — exactly what an
+unauthenticated probe expects. **"All pages match" and "nobody can sign in" are
+indistinguishable from outside** unless you assert on the login response itself. Same
+family as the tests that only prove the door is locked, repeated at the page level.
+`RotatingSessionEnvelopeTests` asserts the envelope directly, and asserts the two
+`*_expires_in` fields are POSITIVE NUMBERS rather than merely present, because web-uk
+does `Number(...)` and rejects 0, null and unparseable strings just as hard as absence.
+
+### 3. Member ACTIONS through the UI: posting PROVEN, transferring scoped, RSVP explained
+
+The 125-point category names three actions beyond listing-creation. State after this pass:
+
+| Action | Status |
+| --- | --- |
+| Create a listing | ✅ **PROVEN** end-to-end (form → `/listings/{id}` → `GET` returns the typed title) |
+| Post to the feed | ✅ **PROVEN** — the composer opens from a "Create" button, and the post is **visible on the feed afterwards**, which is the assertion that matters rather than "no error appeared" |
+| Transfer credits | ⚠️ Form opens, balance reads (16.5), recipient field addressable, results exist — **the result-item selector is wrong**. A precisely-scoped TEST gap, not a backend verdict. |
+| RSVP to an event | ⛔ **Blocked by the events contract** (below), not a test gap |
+
+🔴 **The transfer form is TWO-STAGE and that cost two runs of guessing.** Measured with
+the dialog freshly open: `byLabel('Search recipient')` = 1 but
+`byLabel('Amount in hours')` = **0** — the amount field does not exist until a recipient
+is chosen. Requiring both up front made the step report "transfer form did not open"
+while the form was open and working. Before that, a suspected leftover-modal overlay was
+"fixed" with an Escape press that changed nothing. **Printing both counts settled it in
+one run.** The step now addresses the stages in order and says which stage it reached.
+
+🔴 **A false defect the control caught.** `/api/v2/users?search=…` appeared to ignore its
+search term on ASP.NET (8 rows for any query). Controlled against Laravel: **identical —
+a no-match query returns everyone there too.** Not a parity gap; the directory simply
+does not filter on that parameter name on either backend. Reported here because the
+tempting write-up ("ASP.NET's member search is broken") would have been wrong.
+
+### 4. RSVP is NOT an independent test gap — it is blocked by the events contract
+
+Earlier runs reported "no RSVP control on the event page" and the honest label was "a
+test gap, do not report as working or broken". The cause is now established, and it is
+neither:
+
+```
+event DETAIL links on /events : 0
+contract drift captured        : /v2/events?when=upcoming&per_page=20 -> 60 issues
+```
+
+`events-api.ts`'s `parseResponse` fails CLOSED — a Zod failure rewrites the response to
+`success:false, code:'EVENTS_CONTRACT_DRIFT'`. So the client rejects **every row**, the
+list renders empty, and there is no event to open, let alone RSVP to. **RSVP is blocked
+by Phase 2 (the events v2 contract), not by a missing selector.** It will be re-tested
+the moment `EventContractMapper` is ported, and until then it must not be counted as
+either passing or failing.
+
+### A test fault worth recording
+
+A probe that drove web-uk's own login form returned **419 on BOTH backends** — its
+cookie/CSRF handling, not a backend fault. Known only because the control was run. The
+finding above rests on the API responses and web-uk's own source, not on that probe.
+
+## 2026-08-19 (Phase 2) — the events contract is ported, drift is ZERO, and the harness had been measuring the wrong shape
+
+### The port
+
+`aspnet-backend/src/Nexus.Api/Support/Events/EventContractMapper.cs` is a faithful port of
+Laravel's `app/Support/Events/EventContractMapper.php` (937 lines, `VERSION = 2`), wired
+into three call sites. Measured through the client's OWN runtime validator:
+
+| Measure | Before | After |
+| --- | ---: | ---: |
+| Contract-drift issues reported by the client | **60** on one endpoint | **0** across all |
+| Events rendered on `/events` | 0 | **5** |
+| RSVP control | unreachable | **clicked** |
+
+🔴 **It took THREE call sites, and each was invisible until the previous was fixed.**
+Mapping the list left the DETAIL view failing with 12 issues — an event could be listed
+but its page would not render. Fixing that left the ATTENDEES roster failing with 12
+more — the RSVP control appeared but the people list behind it stayed empty. Each surface
+the client schema-checks is validated separately; **"the list works" is not "events
+work"**, and there is no partial credit.
+
+Two entity members were invented and the build caught both: `Group.Slug` does not exist
+(the key is emitted as an honest `null` rather than derived from the name — deriving it
+would be the fabricated-data fault this workstream keeps finding), and there is no
+`RsvpStatus.Interested` — this backend spells it `Maybe`, which Laravel's mapper treats as
+the same engagement state (`EventContractMapper.php:169`).
+
+### 🔴 The harness had been comparing against a shape the app never receives
+
+Laravel's `NegotiateEventsContract` middleware serves the LEGACY v1 shape unless the
+request asks for the canonical version. The harness never sent the header. Measured on
+one endpoint, same fixture, same session:
+
+```
+no header                 -> x-events-contract: 1   77 keys   NO organizer/permissions
+X-Events-Contract: 2      -> x-events-contract: 2   58 keys   full v2 structure
+```
+
+**So every events measurement this harness ever produced compared ASP.NET's output against
+Laravel's v1 output** — including the "76 fields missing" figure that justified a whole
+work package. The client sends these headers (`events-api.ts:19`,
+`event-safety-api.ts:11`, `event-offline-checkin-api.ts:237`); the harness now sends
+exactly the same three, pinned to the versions the CLIENT pins rather than "the latest".
+
+Effect of that one-line correction on the events rows:
+
+| | Before header fix | After |
+| --- | --- | --- |
+| `/api/v2/events?when=upcoming` | SHAPE_DIFFERS, 48 missing / 117 extra | **envelope MATCHES** |
+| `/api/v2/events?mine=1` | SHAPE_DIFFERS, 48 missing / 117 extra | **envelope MATCHES** |
+
+Both now sit at MATCH_BUT_LIST_EMPTY. 🔴 **Read that verdict carefully — it does NOT mean
+the endpoint returned no events.** Both backends return rows for these queries (Laravel 1,
+ASP.NET 5, verified directly). The verdict fires on ANY empty list in the response,
+including a NESTED one: here it is `series_occurrences` / `recurrence.occurrences`, empty
+on both sides because neither fixture contains a recurring event. So the envelope agrees,
+the top-level row contract is compared, and the only untested part is the occurrence row
+shape. Honest, and a fixture question rather than a contract gap — but an endpoint-level
+reading of "list empty" would be wrong.
+
+🔴 **Overall MATCH is unchanged at 77/195.** Events moved out of "differing" into
+"envelope right, rows untestable" rather than into MATCH, so the headline number did not
+move. That is the honest read: the contract is fixed, the fixture is what now limits the
+measurement.
+
+🔴 **A remaining gap this exposed:** ASP.NET does NOT negotiate — it always serves v2.
+Laravel serves v1 to a client that asks for v1. The canonical app always asks for v2, so
+nothing is broken today, but a client pinned to v1 would receive a shape it cannot read.
+Recorded, not fixed.
 
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
@@ -1493,7 +1690,10 @@ is still active and refuses a self-grant with
 **F15 — SCHEDULED WORK — 17 of 71 Laravel scheduled units have a genuine
 counterpart (~24%).**
 🔴 **PARTLY CLOSED, remeasured 2026-08-18: 26 scheduled job classes, all 26
-registered as hosted services, against 70 Laravel scheduled units (~37%).**
+registered as hosted services, against **69** Laravel scheduled units (~38%).**
+🔴 The denominator read 70 here and 71 in R-6 until 2026-08-19. Counted live in
+`bootstrap/app.php`: 55 `->command()` + 1 `->job()` + 13 `->call()` = **69**.
+Recount before quoting; Laravel's schedule drifts.
 Several named absences below are now implemented (`support-actions:expire`,
 `safeguarding:clear-expired-monitoring`, `groups:prune-exports`,
 `marketplace:process-unacknowledged-reports`, `safeguarding:vetting-renewals`).
@@ -2124,6 +2324,15 @@ the absent-aggregate certification fact, but it does not automatically move any
 of the 55 open build/test/CI points without a fixed-rubric scoring transaction.
 
 ## Finite Ordered Backend Queue
+
+> 🔴 **STRUCTURAL WARNING (added 2026-08-19).** This is the ONLY queue this document
+> points to, yet it sits BELOW the "everything from here down is history / not the current
+> score" marker, and it is written against **Baseline 1** ("the remaining 288 points",
+> build/CI at 45/100) — not Baseline 2's 402 open and CI 85/100. So the queue is
+> simultaneously authoritative and formally marked historical. Treat the ORDERING as
+> current guidance and every NUMBER in it as stale. The live plan supersedes it: the
+> owner-approved full-completion plan of 2026-08-19 (eight phases, frontend-proven
+> depth), held in the session plan file.
 
 Complete these eight bounded packages in order unless an external dependency is
 recorded against a package. Do not turn a package into estimated score movement;

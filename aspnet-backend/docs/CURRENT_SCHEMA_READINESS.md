@@ -84,9 +84,9 @@ structural rather than a backlog being worked down.
 | EF migration classes | 183 | Source classes in the current tree, counted 2026-08-18 (excludes Designer and snapshot files). Latest: `20260817121949_AddSkillCategories`. |
 | Runtime-discovered migration IDs | 183 | Applicable chain from `InitialCreate` through `AddSkillCategories`. 🔴 Was 163 on 2026-08-14; twenty migrations landed between 2026-08-14 and 2026-08-17 (partner venues, support actions, account relationships, supporter message-view audits, authority attestations, platform capability overrides, revoked tokens, volunteer donation/project fields, skill categories). |
 | Intentionally quarantined classes | 2 | `FederationCoreExpansion` is superseded by later DDL; `AddTenantUpdatedAt` would duplicate the initial column. |
-| Laravel source table names | 458 | Static source union, not a database dump or completion denominator. |
-| ASP.NET represented table names | 440 | Static source union. |
-| Exact names | 242/458 (52.8%) | Diagnostic exact-name coverage only. |
+| Laravel source table names | 458 | 🔴 **STALE (July).** Live 2026-08-18: **472**. Static source union, not a database dump or completion denominator. |
+| ASP.NET represented table names | 440 | 🔴 **STALE (July).** Live 2026-08-18: **460**. Static source union. |
+| Exact names | 242/458 (52.8%) | 🔴 **STALE (July).** Live 2026-08-18: **257/472**, with **215** Laravel tables absent. Regenerate with `scripts/compare-laravel-schema-parity.ps1` before quoting. Diagnostic exact-name coverage only. |
 | Laravel-only exact names | 216 | 24 classified aliases, 20 compatibility-storage gaps, and 172 unclassified names. |
 | ASP.NET-only exact names | 198 | Requires classification; not automatically wrong or useful. |
 | Banked backend schema category | 118/150 | 🔴 **Rescored 2026-08-18 under Fixed Rubric Baseline 2** (`ASPNET-CONTRACT-R2`). Baseline 1's 129/150 is audit trail. Deduction 32: −20 for 215 Laravel tables with no ASP.NET counterpart, −12 for no populated-history upgrade proof. See [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md). |
