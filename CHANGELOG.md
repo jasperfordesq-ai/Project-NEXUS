@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Accessible frontend: the last four audit findings, now translated into all 11 languages.** Opening "manage your support" without an active supporter subscription no longer lands on an unexplained page — it now says there is nothing to manage yet. The insurance form gained the amount-of-cover, start-date and notes fields the system always expected but never offered (they were silently sent empty). A plain feed post no longer shows "Post" twice ("Post" tag over a "Post" heading) — the heading now says who wrote it, in the member's own language, where before the fallback was English-only for everyone. And the same time-credit balance no longer reads "100.00 hours" in the wallet but "100.0" on the dashboard — every page now formats hours the same way, keeping quarter-hour precision.
+
 ### Changed
 
 - **Accessible frontend: one consistent look for the controls members meet on every page.** "Load more" was built four different ways with four different gaps — it is now the same next-page control everywhere (19 places). Lists of cards were built four ways, some missing the dividing line above the first card — one treatment now. Section headings used three different spacing rhythms, sometimes on the same page — one now. Empty states ("nothing here yet") used four constructions — all now use the same bordered panel with a heading. Also: timeline pages show a marker dot per entry, wide tables show a soft edge shadow while there is more to scroll, statistics use aligned digits, thumbnails no longer make rows jump as photos load, a right-to-left layout misalignment was corrected, and printed pages gained proper margins, repeating table headers and readable status tags. Nothing needed new translations.
@@ -69,6 +73,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   One thing seen but **not** confirmed as a fault: at large text the More menu's small heading looked sliced at the top. It is not caused by the new strip — I checked that directly — and may just be a picture taken mid-layout. Written down as something to reproduce properly rather than claimed as a bug.
 
   Not covered: the two largest text settings Android offers, where wrapping usually gives out.
+
+- 🔴 **Found by accident, and more important than the fix that found it: the screenshot check could not see most changes to the app.** After fixing the rounding, I compared the app against its saved reference pictures to confirm the change. The check reported **"0 pixels different — everything matches"**. I had just measured the corners changing from 26 to 18 points, so both things could not be true.
+
+  Counting the differing pixels by hand gave **9,168** — the check was reporting 40. The cause is a tolerance setting: the check ignored any colour difference smaller than a certain amount, and this app is largely **light grey panels on white cards**, which are only a shade apart. So an entire class of change was invisible to it: a panel moving, a corner rounding differently, one surface swapped for a similar one. It would have said "perfect match" to all of them.
+
+  This matters beyond one setting. The mobile readiness report described those screens as "checked to the pixel", and that was **overstating the protection considerably** — I had been relying on a check that was mostly asleep.
+
+  Now tightened, and the number was chosen by measurement rather than taste: at the new setting an untouched screen still reports exactly zero, while both genuinely changed screens report a clear difference. One step tighter and an untouched screen reports 1.7% difference from ordinary rendering noise, which would have everyone ignoring it within a week.
+
+  It immediately earned its keep. With the tolerance corrected, the check **caught a second screen I did not know had changed** (the More menu), and its difference pictures marked exactly the twelve corners involved and nothing else. Both screens' references have been updated after I looked at those pictures.
+
+  There is now a test that fails if the tolerance ever drifts back, and I confirmed it goes red with the old settings restored.
+
+  **The pattern across this week is worth naming:** three separate faults where something reported success while doing nothing — a styling name that emitted no styling, a container that crushed an icon to a few pixels, and now a check that compared images and saw nothing. In each case the green result was the problem. I have started treating "this passed" as a claim needing evidence rather than a result.
 
 - **Fixed: a rounding value the app asked for 625 times had never been created — and a correction to what I told you about it.** The app asks for rounded panel corners 625 times across 99 files, using a name that was defined nowhere: not in the app's styles, not in the design library, and not at any point in this project's history. It was written against a convention nobody ever built, and the styling tool silently ignores a name it does not recognise.
 
