@@ -189,7 +189,20 @@ say "Switching every optional feature ON for the fixture community"
 # surface that can be compared. It does NOT mean features should default on.
 # Testing that a gate REFUSES correctly is a separate check against a fixture
 # with them off.
-FEATURES_JSON=$(node "$REPO_ROOT/aspnet-backend/scripts/all-features-on.mjs")
+# 🔴 RELATIVE path, deliberately. `MSYS_NO_PATHCONV=1` above disables MSYS's path
+# rewriting for the docker arguments, which means a POSIX "$REPO_ROOT/..." reaches
+# Windows node UNCONVERTED and it resolves "/c/platforms/..." against the drive root
+# as "C:\c\platforms\..." — MODULE_NOT_FOUND. Observed 2026-08-19: the script
+# carried on (the failure is inside a $(...) so `set -e` does not stop it), left
+# every optional feature OFF, and the next parity run would have measured ~27
+# endpoints answering 403 FEATURE_DISABLED as if that were a contract difference.
+# A relative path is resolved by node against its cwd on every platform.
+FEATURES_JSON=$(cd "$REPO_ROOT" && node aspnet-backend/scripts/all-features-on.mjs)
+if [ -z "$FEATURES_JSON" ]; then
+  echo "🔴 all-features-on.mjs produced nothing — refusing to leave the fixture" >&2
+  echo "   community with features OFF, which would corrupt the next measurement." >&2
+  exit 1
+fi
 docker exec "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   -e "UPDATE tenants SET features = '$FEATURES_JSON' WHERE id = 1;"
 echo "features switched on: $(node -e 'process.stdout.write(String(Object.keys(JSON.parse(process.argv[1])).length))' "$FEATURES_JSON")"
 

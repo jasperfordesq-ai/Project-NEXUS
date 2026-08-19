@@ -691,6 +691,91 @@ remaining evidence gaps are real:
 - Token REFRESH across expiry is untested; the run is short enough to live inside one
   access token.
 
+## 2026-08-19 (Phase 0) — the read corpus was a SAMPLE; the honest denominator is 195, and we score 77
+
+Full-completion plan Phase 0 ("truth first"). Three read-only explorers audited every
+gap inventory at HEAD; the corpora were then regenerated from the frontend's own source
+instead of hand-curated lists.
+
+### The corpus was 170 hand-picked paths. The frontend calls far more.
+
+`react-frontend/scripts/inventory-api-calls.mjs` is a committed TypeScript-AST walk over
+the whole frontend (`npm run inventory:api-calls`) that had **never been run in this
+checkout**. Run:
+
+```
+2,205 call sites / 2,016 unique method-endpoint pairs
+  438 unique STATIC GET endpoints      (vs 170 hand-curated)
+  392 unique STATIC write endpoints    (vs 19 hand-written scenarios)
+1,261 dynamic call sites (path built from a variable)
+```
+
+New committed converter `aspnet-backend/scripts/build-parity-corpus.mjs` turns that into
+harness inputs, splitting on two axes that matter:
+
+- **member vs admin** — the harnesses sign in as a MEMBER, so admin paths answer 403 on
+  both backends. That is a MATCH proving only that both refuse; counting it would inflate
+  the score with non-evidence. 195 member GETs / 243 admin GETs.
+- **static vs dynamic** — 1,172 dynamic paths cannot go in a corpus without inventing
+  ids, and an invented id measures how the two backends 404. Emitted as a coverage
+  LEDGER, never silently dropped.
+
+Writes are a ledger too, deliberately: a write needs a body and a body cannot be inferred
+from a call site. Phase 3 grows the hand-written scenarios toward the 392 and the ledger
+measures how far that got.
+
+### 🔴 The honest read baseline: 77 of 195 (39.5%)
+
+| | Old hand-curated corpus | **Generated member corpus** |
+| --- | ---: | ---: |
+| Contract-identical | 78 / 170 (46%) | **77 / 195 (39.5%)** |
+| Shape differs | 63 | 81 |
+| Envelope matches, rows untestable | 29 | 30 |
+| Status disagreements | 0 | 2 |
+| Non-JSON on both | — | 5 |
+
+**The fall is the denominator getting honest, not a regression** — 63 of the 195 paths
+were never in the old corpus, and only 10 of those 63 match. Nothing broke; we were
+measuring a friendly sample.
+
+The 5 non-JSON rows are agreement, not failure: `/api/changelog.md` and `/api/health.php`
+(static assets, 404 on both), two super-admin paths (403 on both), and
+`/api/v2/events/calendar/feed.ics` — an iCalendar feed, correctly not JSON, 200 on both.
+A later corpus pass should exclude the two static assets.
+
+### 🔴 A fourth LIVE Laravel defect: mobile navigation always 500s
+
+`GET /api/menus/mobile` returns **500 `MOBILE_MENU_LOAD_FAILED`** — and a CONTROL settles
+that it is not a fixture artifact: the **production-derived snapshot answers 500 too**, on
+a real community with real menu rows (unauthenticated GET only; the endpoint documents
+itself as guest-accessible). The disposable fixture has zero menu rows and fails
+identically, so the fault is independent of data.
+
+Narrowing: `/api/menus` answers **200** on the same instance, so `MenuManager::getMenu()`
+is healthy. `MenuController::mobile()` (`app/Http/Controllers/Api/MenuController.php:147-148`)
+iterates `foreach ($menu['items'] as $item)` over whatever `getMenu()` returned — and the
+`getDefaultMenu()` / `getLegacyMenu()` fallback shapes do not carry an `items` key, so it
+throws and the `catch (\Throwable)` at `:164` converts it to a 500 **without logging the
+exception**, which is why `storage/logs` holds nothing.
+
+ASP.NET answers this endpoint 200. **Not a contract to copy** — surfaced for the owner,
+not fixed, per the plan's read-only rule for Laravel.
+
+### Instrument fix: the fixture environment was silently left half-applied
+
+`start-disposable-laravel.sh:192` invoked
+`node "$REPO_ROOT/aspnet-backend/scripts/all-features-on.mjs"`. The script sets
+`MSYS_NO_PATHCONV=1` at `:41` (correctly, for the docker mount), so the POSIX
+`$REPO_ROOT` reached Windows node UNCONVERTED and resolved against the drive root as
+`C:\c\platforms\...` → MODULE_NOT_FOUND. Because the call sits inside `$(...)`, `set -e`
+did not stop the script: it carried on and left **every optional feature OFF**, which per
+the script's own comment makes ~27 endpoints answer 403 FEATURE_DISABLED. Measuring in
+that state would have reported a large false collapse.
+
+Fixed with a relative path (resolved by node against its cwd on every platform) plus an
+explicit emptiness guard that aborts rather than leaving the fixture half-applied.
+Verified after: 48 of 48 features on.
+
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
 🔴 Everything from here down is history. Baseline 1's 712/1000 is retained
