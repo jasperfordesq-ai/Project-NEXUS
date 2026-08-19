@@ -462,12 +462,19 @@ describe('the acceptance page', () => {
     expect(response.text).toContain('Updated');
   });
 
-  it('offers a way out', async () => {
+  it('offers a way out that actually works: sign-out is POST-only, so it must be a form', async () => {
     api.getLegalAcceptanceStatus.mockResolvedValue(PENDING);
 
     const response = await request(buildApp()).get('/legal-acceptance');
 
-    expect(response.text).toContain('href="/logout"');
+    // 🔴 This used to assert href="/logout" — a GET link to a POST-only route,
+    // which 404'd and closed the only exit from the acceptance gate. The way
+    // out must be a POST form carrying the CSRF token, like the header's.
+    expect(response.text).not.toContain('href="/logout"');
+    expect(response.text).toContain('action="/logout"');
+    const signOutForm = response.text.match(/<form method="post" action="\/logout"[\s\S]*?<\/form>/);
+    expect(signOutForm).not.toBeNull();
+    expect(signOutForm[0]).toContain('name="_csrf"');
   });
 
   it('works without JavaScript: one plain form with a CSRF token', async () => {

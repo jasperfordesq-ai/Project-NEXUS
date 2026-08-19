@@ -168,6 +168,13 @@ function transferPayload(body = {}) {
   const amountText = String(body.amount ?? '').trim();
   const amount = Number(amountText);
 
+  // Server-enforce the confirmation box. The template marks it `required`, but
+  // that is client-side only — a replayed or hand-crafted POST skips it. The
+  // members profile transfer route already guards this; this route claimed to.
+  if (!body.confirm) {
+    return { error: 'invalid' };
+  }
+
   if (!Number.isInteger(recipient) || recipient <= 0 || !amountText || !Number.isFinite(amount) || amount <= 0) {
     return { error: 'invalid' };
   }

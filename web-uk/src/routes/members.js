@@ -305,9 +305,12 @@ function normalizeDiscoverMember(member, t) {
     tagline: String(member.tagline || '').trim(),
     rankPercent,
     location: String(member.location || '').trim(),
-    hoursGivenLabel: t('members.hours_given', { count: given }),
-    hoursReceivedLabel: t('members.hours_received', { count: received }),
-    ratingLabel: Number.isFinite(rating) && rating > 0 ? t('members.rating', { rating: rating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }) : '',
+    // Values only: the templates render these inside a <dl> whose <dt> already
+    // says "Hours given" / "Rating", so a sentence here printed the label twice
+    // ("Hours given — 0 hours given", "Rating — Rating 4.5").
+    hoursGivenLabel: given.toLocaleString(getRequestIntlLocale()),
+    hoursReceivedLabel: received.toLocaleString(getRequestIntlLocale()),
+    ratingLabel: Number.isFinite(rating) && rating > 0 ? rating.toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '',
     isVerified: !!(member.is_verified || member.identity_verified),
     level,
     levelLabel: level > 0 ? t('polish_members.member_level_label', { n: level }) : '',

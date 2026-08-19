@@ -345,7 +345,12 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
   }
 
   if (step === 'safeguarding') {
-    const preferences = collectSafeguardingFromBody(req.body, req.rawUrlencodedBody);
+    // The template's "Skip" submit button posts skip=1. Honour it: skipping must
+    // not persist any safeguarding selection the member may have ticked first —
+    // this is sensitive, GDPR-noticed data, and "Skip" is a withdrawal of it.
+    const preferences = req.body.skip
+      ? []
+      : collectSafeguardingFromBody(req.body, req.rawUrlencodedBody);
     if (preferences.length > 0) {
       try {
         await saveOnboardingSafeguarding(req.token, preferences);

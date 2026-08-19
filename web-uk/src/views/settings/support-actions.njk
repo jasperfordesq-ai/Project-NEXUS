@@ -15,7 +15,7 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
 
       {% if statusKey and statusIsSuccess %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="support-status-title">
@@ -39,8 +39,8 @@
         </div>
       {% endif %}
 
-      <span class="govuk-caption-l">{{ t("govuk_alpha_settings.linked.caption") }}</span>
-      <h1 class="govuk-heading-l">{{ t("govuk_alpha_settings.support_actions.title") }}</h1>
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_actions.title") }}</h1>
       <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions.intro") }}</p>
 
       {% if not incoming.length %}

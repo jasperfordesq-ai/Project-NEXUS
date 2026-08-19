@@ -7,7 +7,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">{{ t("legal.caption", { community: tenantName }) }}</span>
+      <span class="govuk-caption-xl">{{ t("legal.caption", { community: tenantName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("legal.acceptance.title") }}</h1>
       <p class="govuk-body-l">{{ t("legal.acceptance.intro") }}</p>
 
@@ -63,10 +63,15 @@
       </form>
 
       {# 🔴 "I do not accept" must have an answer. Without a way out this page is a
-         trap: the member cannot use the platform and cannot leave it either. #}
-      <p class="govuk-body">
-        <a class="govuk-link" href="{{ urlFor('/logout') }}">{{ t("legal.acceptance.sign_out") }}</a>
-      </p>
+         trap: the member cannot use the platform and cannot leave it either.
+         Sign-out is POST-only (there is no GET /logout route), so this must be a
+         form like the header's — a plain link here 404s and the trap closes. #}
+      <form method="post" action="{{ urlFor('/logout') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+          {{ t("legal.acceptance.sign_out") }}
+        </button>
+      </form>
     </div>
   </div>
 {% endblock %}

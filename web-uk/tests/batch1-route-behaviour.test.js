@@ -125,9 +125,12 @@ describe('Batch 1 — wallet transfer refuses an empty idempotency key', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
+  // `confirm: '1'` mirrors the template's required confirmation checkbox — the
+  // route now enforces it server-side, so a POST without it is refused before
+  // the idempotency-key check is even reached.
   it('does NOT call the transfer API when idempotency_key is empty', async () => {
     await request(app).post('/transfer').type('form').send({
-      recipient_id: '5', amount: '3', note: 'hi', idempotency_key: '',
+      recipient_id: '5', amount: '3', note: 'hi', confirm: '1', idempotency_key: '',
     });
     expect(api.transferWalletCredits).not.toHaveBeenCalled();
   });
@@ -135,8 +138,15 @@ describe('Batch 1 — wallet transfer refuses an empty idempotency key', () => {
   it('DOES call the transfer API with a real idempotency key', async () => {
     api.transferWalletCredits.mockResolvedValue({ data: { ok: true } });
     await request(app).post('/transfer').type('form').send({
-      recipient_id: '5', amount: '3', note: 'hi', idempotency_key: 'abc-1234-def-5678',
+      recipient_id: '5', amount: '3', note: 'hi', confirm: '1', idempotency_key: 'abc-1234-def-5678',
     });
     expect(api.transferWalletCredits).toHaveBeenCalled();
+  });
+
+  it('does NOT call the transfer API when the confirmation box is not ticked', async () => {
+    await request(app).post('/transfer').type('form').send({
+      recipient_id: '5', amount: '3', note: 'hi', idempotency_key: 'abc-1234-def-5678',
+    });
+    expect(api.transferWalletCredits).not.toHaveBeenCalled();
   });
 });

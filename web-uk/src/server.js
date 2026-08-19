@@ -173,6 +173,17 @@ nunjucksEnv.addFilter('formatDate', (dateStr) => {
     const diffDays = Math.floor(diffMs / 86400000);
 
     const locale = getRequestLocale() || 'en';
+    // A FUTURE date must never render as "just now": every "ago" bucket below
+    // compares a negative difference, so without this guard an upcoming event
+    // start, a listing expiry or a poll close date all claimed to be "just now".
+    // Future values fall through to the absolute localised date instead.
+    if (diffMs < -60000) {
+      return formatLocaleDate(date, locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
     if (diffMins < 1) return translate(locale, 'govuk_alpha_connections.common.just_now');
     if (diffMins < 60) {
       return translateChoice(locale, 'govuk_alpha_connections.common.minutes_ago', diffMins, { count: diffMins });

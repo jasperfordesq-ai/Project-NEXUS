@@ -6,7 +6,7 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
-  <span class="govuk-caption-l">{{ t("volunteering.caption", { community: tenantName }) }}</span>
+  <span class="govuk-caption-xl">{{ t("volunteering.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("volunteering.title") }}</h1>
   <p class="govuk-body-l">{{ t("volunteering.description") }}</p>
 
@@ -112,6 +112,15 @@
         </div>
         <div class="govuk-notification-banner__content">
           <p class="govuk-notification-banner__heading">{{ t("volunteering.application_withdrawn") }}</p>
+        </div>
+      </div>
+    {% elif status == 'application-withdraw-failed' %}
+      {# The withdraw route redirects here on failure; without this branch the page
+         reloaded with no message and the member could not tell the withdraw was refused. #}
+      <div class="govuk-error-summary" role="alert" tabindex="-1" aria-labelledby="application-status-title">
+        <h2 class="govuk-error-summary__title" id="application-status-title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ t("volunteering.application_withdraw_failed") }}</p>
         </div>
       </div>
     {% endif %}
