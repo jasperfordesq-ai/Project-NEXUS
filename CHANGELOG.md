@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Accessible frontend: one consistent look for the controls members meet on every page.** "Load more" was built four different ways with four different gaps — it is now the same next-page control everywhere (19 places). Lists of cards were built four ways, some missing the dividing line above the first card — one treatment now. Section headings used three different spacing rhythms, sometimes on the same page — one now. Empty states ("nothing here yet") used four constructions — all now use the same bordered panel with a heading. Also: timeline pages show a marker dot per entry, wide tables show a soft edge shadow while there is more to scroll, statistics use aligned digits, thumbnails no longer make rows jump as photos load, a right-to-left layout misalignment was corrected, and printed pages gained proper margins, repeating table headers and readable status tags. Nothing needed new translations.
+
 ### Fixed
 
 - **Accessible frontend: dates in the future no longer claim to be "just now".** The shared relative-date formatter only understood the past, so an upcoming event on the dashboard, a listing's expiry date and an open poll's closing date all displayed as "just now". Future dates now show the actual date ("23 Aug 2026"). Proven in a real browser against the disposable test environment, plus a new regression test.
