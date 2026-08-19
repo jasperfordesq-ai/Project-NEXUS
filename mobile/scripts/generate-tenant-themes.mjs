@@ -39,14 +39,27 @@ import url from 'node:url';
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const MOBILE_ROOT = path.resolve(HERE, '..');
 
+const ARGS = process.argv.slice(2);
+const CHECK_ONLY = ARGS.includes('--check');
+
+/**
+ * `--palette <path>` and `--out <path>` exist so tests can run this generator against
+ * fixture colours. The alternative was exporting the colour arithmetic and importing it
+ * from a test, which jest cannot do here (the jest-expo preset does not transform .mjs),
+ * and re-implementing the arithmetic in the test would only prove the copy works.
+ */
+function argValue(flag) {
+  const i = ARGS.indexOf(flag);
+  return i !== -1 && ARGS[i + 1] ? ARGS[i + 1] : null;
+}
+
 const HEROUI_VARIABLES = path.join(
   MOBILE_ROOT, 'node_modules', 'heroui-native', 'lib', 'module', 'styles', 'variables.css'
 );
-const PALETTE = path.join(MOBILE_ROOT, 'config', 'tenant-palettes.json');
+const PALETTE = argValue('--palette') ?? path.join(MOBILE_ROOT, 'config', 'tenant-palettes.json');
 const OUT_DIR = path.join(MOBILE_ROOT, 'generated');
-const OUT_FILE = path.join(OUT_DIR, 'tenant-themes.css');
+const OUT_FILE = argValue('--out') ?? path.join(OUT_DIR, 'tenant-themes.css');
 
-const CHECK_ONLY = process.argv.slice(2).includes('--check');
 
 function fail(...lines) {
   for (const line of lines) console.error(`generate-tenant-themes: ${line}`);
@@ -91,9 +104,23 @@ function foregroundFor(rgb) {
   const ink = [15, 23, 42]; // slate-900, the app's darkest text tone
   const onWhite = contrastRatio(rgb, white);
   const onInk = contrastRatio(rgb, ink);
-  return onWhite >= 4.5 || onWhite >= onInk
+
+  // Pick the better of the two, not "white unless it fails". At the crossover a colour can
+  // miss 4.5:1 on BOTH, and taking the larger ratio is then the only sensible answer.
+  const choice = onWhite >= onInk
     ? { css: 'oklch(1 0 0)', label: 'white', ratio: onWhite }
     : { css: 'oklch(0.21 0.03 256)', label: 'ink', ratio: onInk };
+
+  // 🔴 Some accents cannot reach 4.5:1 with either label. A mid-lightness colour sits at
+  // the crossover: #8b5cf6 measures 4.23 on white and 4.22 on ink, so even the better
+  // pairing falls short of the AA requirement for normal-size text. It does clear the 3:1
+  // floor that applies to large text and UI components, so it is not unusable — but it is a
+  // compromise, and a compromise nobody is told about is exactly how the WCAG failures
+  // found earlier this week got into the app. So it is reported at generate time rather
+  // than shipped quietly. Fixing it properly needs a third option (an outline or
+  // tinted-surface button variant), which is a design decision, not arithmetic.
+  choice.belowAA = choice.ratio < 4.5;
+  return choice;
 }
 
 function toCssColor([r, g, b]) {
@@ -205,6 +232,7 @@ function generate() {
   if (slugs.length === 0) fail('config/tenant-palettes.json declares no tenants.');
 
   const report = [];
+  const warnings = [];
   const blocksCss = [];
 
   for (const slug of slugs) {
@@ -216,8 +244,10 @@ function generate() {
       blocksCss.push(built.css);
       report.push(
         `  ${themeName(slug, scheme).padEnd(28)} accent ${entry.accent}  ` +
-          `label ${built.foreground.label} at ${built.foreground.ratio.toFixed(2)}:1`
+          `label ${built.foreground.label} at ${built.foreground.ratio.toFixed(2)}:1` +
+          (built.foreground.belowAA ? '  [!] below 4.5:1 — clears the 3:1 UI floor only' : '')
       );
+      if (built.foreground.belowAA) warnings.push(`${slug} (${scheme})`);
     }
   }
 
@@ -242,6 +272,7 @@ function generate() {
   return {
     css: [...header, ...blocksCss, ...footer].join('\n'),
     report,
+    warnings,
     themeNames: slugs.flatMap((s) => ['light', 'dark'].map((sc) => themeName(s, sc))),
   };
 }
@@ -255,7 +286,7 @@ export function tenantThemeNames() {
 }
 
 function main() {
-  const { css, report, themeNames } = generate();
+  const { css, report, warnings, themeNames } = generate();
 
   if (CHECK_ONLY) {
     if (!fs.existsSync(OUT_FILE)) {
@@ -272,12 +303,24 @@ function main() {
     return;
   }
 
-  fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
   fs.writeFileSync(OUT_FILE, css, 'utf8');
 
   console.log(`generate-tenant-themes: wrote ${themeNames.length} themes to ${path.relative(MOBILE_ROOT, OUT_FILE)}`);
   for (const line of report) console.log(line);
   console.log('generate-tenant-themes: register these names in metro.config.js (it reads them from here).');
+  if (warnings.length > 0) {
+    console.warn('');
+    console.warn(
+      `generate-tenant-themes: [!] ${warnings.length} theme(s) cannot reach 4.5:1 with either ` +
+        `label colour — ${warnings.join(', ')}.`
+    );
+    console.warn(
+      'generate-tenant-themes: the better option was used and it clears the 3:1 floor for UI ' +
+        'text, but these accents need a design answer (an outline or tinted variant), not a ' +
+        'different label colour.'
+    );
+  }
 }
 
 main();

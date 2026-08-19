@@ -33,6 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The real app has now been run against the experimental ASP.NET backend for the first time, and it works — which immediately exposed two faults that comparing responses side by side had dismissed as cosmetic.** Development-only backend; nothing a member uses today is affected.
+
+  The unchanged app signs in and runs: the dashboard, listings, members and wallet pages all load real content, and **190 requests succeeded with none failing**. Nothing in the app was changed to achieve this — only which backend it points at, which is the whole point of the exercise.
+
+  **Why it was worth doing.** A tool already existed that asks both backends the same question and compares the answers. It had scored the events list as "differing by a few field names", which reads as tidying-up. In a real browser, one of those names turned out to be load-bearing: the app asks for an event's `start_date`, the experimental backend called it something else, so the app built an invalid date and **the entire "Upcoming events" panel on the dashboard collapsed into an error message**. The endpoint was returning a perfectly well-formed answer the whole time. Fixing it took the dashboard's visible content from 1,365 to 6,870 characters.
+
+  The second: the "Needs your attention" panel was left showing a raw internal label instead of a button word like "Review", because the backend never sent which action was needed.
+
+  🔴 **Both were fixed by ADDING the missing information, never by removing what was already there.** Removing risks breaking something that depends on it, and needs separate evidence per endpoint — that exact shortcut had already cost 82 failing tests earlier the same day.
+
+  🔴 **Honest about coverage.** This proves the app *starts and browses* against the experimental backend. It does not prove the accessible site does (never tried), does not test the app talking to the backend directly rather than through the development proxy (which is what would reveal cross-origin problems), covers five pages rather than all of them, exercises no member actions like posting or transferring credits, and is too short to test what happens when a login expires. No readiness score has been claimed for it.
+
 - **Accessible frontend: two more forms completed, quieter feed cards, and small polish.** Sellers marking an order as shipped can now include a tracking link and delivery method (the system always accepted them; the form never asked). Organisations approving or declining a volunteer can now attach a note the applicant will see. Both come with hand-written translations in all 11 languages. Quiet feed posts no longer stack "No likes · No comments" and "No reactions" above their buttons — counts appear once there is something to count. The matches pages format their average score correctly for right-to-left and Japanese readers, the header unread counter no longer looks like a phone-app bubble, and star ratings no longer flash a focus ring when clicked with a mouse. All verified against the disposable test environment, including creating a real poll and event through the forms.
 
 - **Six things members and employers could try to do have been failing with a server error every single time, and now work.** This is the live platform, not the experimental backend. Saving a search, running a saved search, posting an employer review, creating a job-offer template, previewing one, and the AI chat on a job vacancy all failed outright — every attempt, for every person, for months.
@@ -106,7 +118,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   **Adding a community is a one-line change plus an over-the-air update** — no app-store release. And until that update lands, a brand-new community simply gets the platform's default colours, which looks deliberate rather than broken. That fallback is not a nicety: without it the app would crash on launch for a community it did not recognise, and there is a test holding it in place that I confirmed goes red when removed.
 
-  **One detail worth knowing.** The label on a coloured button is worked out rather than assumed. A community might pick a pale colour that white text cannot be read against, so the script measures the contrast and picks white or near-black accordingly. It already made that call: in dark mode the teal button uses dark text, because white would have failed. The website hardcodes white and its own notes admit it is only checked for the default colour.
+  **One detail worth knowing.** The label on a coloured button is worked out rather than assumed. A community might pick a pale colour that white text cannot be read against, so the script measures the contrast and picks white or near-black accordingly. The website hardcodes white and its own notes admit that is only checked for the default colour.
+
+  🔴 **Correction to an earlier version of this note.** It said the teal button used dark text in dark mode "because white would have failed". That was true only while the app lightened each colour for dark mode — a step since removed, because it broke 142 buttons (see the entry below). Both colours in the list today use **white** text in both modes, measuring 4.66:1 and 5.47:1. The measuring still matters and is not idle: a yellow, mint or pale-blue brand colour would still be given dark text, and there is a test proving that rather than leaving the branch unexercised.
 
   **What is still to do:** the colour list currently holds two communities, because the real colours for the other nine live in the production database and I have not read them. And roughly 128 places still set an icon's colour by hand — those become unnecessary once the single colour is in place, and removing them is the next step. So this is the mechanism proven, not the job finished.
 
