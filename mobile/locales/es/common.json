@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Algo salió mal",
     "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "loadFailedTitle": "No se pudo cargar",
+    "loadFailedSubtitle": "Algo ha ido mal al cargar. Inténtalo de nuevo.",
     "network": "Error de red. Comprueba tu conexión.",
     "timeout": "La solicitud ha agotado el tiempo de espera. Comprueba tu conexión.",
     "requestFailedWithStatus": "La solicitud ha fallado con el estado {{status}}",

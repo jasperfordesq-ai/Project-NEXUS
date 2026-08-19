@@ -352,5 +352,7 @@
     "federationEvents": "Faigh imeachtaí ó phobail nasctha.",
     "federationSettings": "Déan athbhreithniú ar infheictheacht an chónaidhm agus ar roghanna comhroinnte.",
     "settings": "Slándáil, fógraí, sainroghanna agus rialuithe cuntais."
-  }
+  },
+  "sessionUnavailableTitle": "Níl do sheisiún ar fáil",
+  "sessionUnavailableSubtitle": "Níorbh fhéidir linn do phróifíl a lódáil. Sínigh isteach arís."
 }

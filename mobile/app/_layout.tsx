@@ -25,6 +25,7 @@ import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
 import { TenantProvider } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
 import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
@@ -110,6 +111,13 @@ function RootLayout() {
       <HeroUINativeProvider>
         <SafeAreaProvider>
           <RootInsetRecorder />
+          {/*
+            Shows notices published by infrastructure that has no provider of its own —
+            currently "you have been signed out". Renders nothing; must stay INSIDE
+            HeroUINativeProvider (which supplies the toast) and OUTSIDE ErrorBoundary, so
+            a screen-level crash cannot stop the sign-out message being delivered.
+          */}
+          <SessionNoticeHost />
           <ErrorBoundary>
             <TenantProvider>
               <AuthProvider>

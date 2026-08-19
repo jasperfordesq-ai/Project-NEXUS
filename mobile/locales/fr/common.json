@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Une erreur s'est produite",
     "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "loadFailedTitle": "Chargement impossible",
+    "loadFailedSubtitle": "Une erreur s'est produite lors du chargement. Veuillez réessayer.",
     "network": "Erreur réseau. Vérifiez votre connexion.",
     "timeout": "La requête a expiré. Vérifiez votre connexion.",
     "requestFailedWithStatus": "La requête a échoué avec le statut {{status}}",

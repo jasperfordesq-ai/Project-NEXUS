@@ -94,7 +94,7 @@ function GroupExchangesScreenInner() {
               accessibilityLabel={t('groupExchanges.create.open')}
             >
               <HeroButton.Label>{t('groupExchanges.create.open')}</HeroButton.Label>
-              <Ionicons name="add-outline" size={16} color={theme.onPrimary ?? '#fff'} />
+              <Ionicons name="add-outline" size={16} color={theme.onPrimary} />
             </HeroButton>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {statusFilters.map((value) => (

@@ -26,7 +26,7 @@ import {
 } from '@/lib/api/auth';
 import { useTranslation } from 'react-i18next';
 
-import { useOptionalAppToast } from '@/components/ui/AppToast';
+import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
 import { registerUnauthorizedCallback } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -68,7 +68,6 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation(['common']);
-  const { show: showToast } = useOptionalAppToast();
   const [user, setUser] = useState<AnyUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,13 +95,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Say what happened. Being returned to the login screen with no message is
     // indistinguishable from a crash or an unrequested logout, which is exactly how
     // members describe it when they report it.
-    showToast({
+    //
+    // Published rather than shown: this provider must not depend on a ToastProvider
+    // being above it. `SessionNoticeHost`, mounted inside the provider tree, does the
+    // showing. See lib/notices/sessionNoticeStore.ts for why the two earlier attempts
+    // at this (a direct hook call, then a try/catch hook) were both wrong.
+    sessionNoticeStore.publish({
       title: t('common:errors.sessionEndedTitle'),
       description: t('common:errors.unauthorized'),
       variant: 'warning',
     });
     router.replace('/(auth)/login');
-  }, [showToast, t]);
+  }, [t]);
 
   useEffect(() => {
     registerUnauthorizedCallback(handleUnauthorized);

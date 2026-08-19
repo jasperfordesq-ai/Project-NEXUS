@@ -197,8 +197,8 @@ export default function JobDetailScreen() {
     }
   }
 
-  const successColor = theme.success ?? '#22c55e';
-  const warningColor = theme.warning ?? '#f59e0b';
+  const successColor = theme.success;
+  const warningColor = theme.warning;
   const typeColor: Record<JobVacancy['type'], string> = {
     paid: successColor,
     volunteer: primary,
@@ -616,7 +616,7 @@ function OwnerToolsSection({
   onPipeline: () => void;
   onToggleStatus: () => void;
 }) {
-  const statusTone = job.status === 'open' ? theme.success ?? '#22c55e' : theme.warning ?? '#f59e0b';
+  const statusTone = job.status === 'open' ? theme.success : theme.warning;
   return (
     <HeroCard className="mb-4 rounded-panel p-0">
       <HeroCard.Body className="gap-4 p-4">

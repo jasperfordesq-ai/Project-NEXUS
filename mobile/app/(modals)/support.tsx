@@ -102,7 +102,7 @@ function SupportScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const { doc } = useLocalSearchParams<{ doc?: string | string[] }>();
   const theme = useTheme();
-  const tone = theme.info ?? '#0ea5e9';
+  const tone = theme.info;
   const initialDocumentKey = normalizeSupportDocumentKey(doc);
   const [selectedDocumentKey, setSelectedDocumentKey] = useState<string | null>(initialDocumentKey);
   const selectedDocument = selectedDocumentKey ? SUPPORT_DOCUMENTS[selectedDocumentKey] : null;

@@ -20,6 +20,9 @@ jest.mock('react-i18next', () => ({
       const map: Record<string, string> = {
         'timeBalance': 'Time balance',
         'hubEyebrow': 'Your timebank space',
+        'sessionUnavailableTitle': 'Your session is unavailable',
+        'sessionUnavailableSubtitle': 'We could not load your profile. Please sign in again.',
+        'auth:login.submit': 'Sign in',
         'balanceLabel': `${String(opts?.balance ?? '')} hrs · Time balance`,
         'viewWallet': 'View wallet',
         'editProfile': 'Edit profile',
@@ -169,6 +172,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 const defaultAuthState = {
+  isLoading: false,
   user: {
     id: 1,
     email: 'alice@example.com',
@@ -395,17 +399,44 @@ describe('MoreScreen (More tab)', () => {
     expect(getByTestId('profile-sign-out')).toBeTruthy();
   });
 
-  it('renders ProfileSkeleton when user is null', () => {
+  // 🔴 These two used to be one test called "renders ProfileSkeleton when user is null",
+  // because the screen could not tell the cases apart: `!user` meant both "still loading" and
+  // "finished, no session", and both drew a skeleton. A member whose session failed to restore
+  // therefore sat in front of a loading placeholder for ever, with no way out but to kill the
+  // app. This screen had no failure branch at all.
+  it('shows the skeleton WHILE auth is still resolving', () => {
     mockUseAuth.mockReturnValueOnce({
       user: null,
+      isLoading: true,
       displayName: '',
       logout: jest.fn(),
       refreshUser: jest.fn(),
     });
 
-    const { queryByText } = render(<MoreScreen />);
+    const { queryByText, queryByTestId } = render(<MoreScreen />);
+
+    expect(queryByText('Alice Smith')).toBeNull();
+    // Still loading is not a failure — no error state yet.
+    expect(queryByTestId('profile-session-unavailable')).toBeNull();
+  });
+
+  it('🔴 explains itself, with a way out, once auth has finished and there is no session', () => {
+    mockUseAuth.mockReturnValueOnce({
+      user: null,
+      isLoading: false,
+      displayName: '',
+      logout: jest.fn(),
+      refreshUser: jest.fn(),
+    });
+
+    const { queryByText, getByTestId } = render(<MoreScreen />);
+
     expect(queryByText('Alice Smith')).toBeNull();
     expect(queryByText('alice@example.com')).toBeNull();
+    // The dead end is the defect. There must be an explanation and an action.
+    expect(getByTestId('profile-session-unavailable')).toBeTruthy();
+    expect(queryByText('Your session is unavailable')).toBeTruthy();
+    expect(queryByText('Sign in')).toBeTruthy();
   });
 
   // AGPL-3.0-or-later Section 7(b): the notice AND the source link must both stay

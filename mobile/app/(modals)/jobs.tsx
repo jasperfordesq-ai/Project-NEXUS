@@ -84,8 +84,8 @@ function JobCard({
   t: (key: string, opts?: Record<string, unknown>) => string;
   onPress: () => void;
 }) {
-  const successColor = theme.success ?? '#22c55e';
-  const warningColor = theme.warning ?? '#f59e0b';
+  const successColor = theme.success;
+  const warningColor = theme.warning;
   const typeColor =
     item.type === 'paid'
       ? successColor

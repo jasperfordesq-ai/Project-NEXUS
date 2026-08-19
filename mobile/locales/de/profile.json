@@ -352,5 +352,7 @@
     "federationEvents": "Entdecken Sie Ereignisse aus verbundenen Communities.",
     "federationSettings": "Überprüfen Sie die Sichtbarkeit und Freigabeeinstellungen des Verbunds.",
     "settings": "Sicherheit, Benachrichtigungen, Einstellungen und Kontokontrollen."
-  }
+  },
+  "sessionUnavailableTitle": "Deine Sitzung ist nicht verfügbar",
+  "sessionUnavailableSubtitle": "Wir konnten dein Profil nicht laden. Bitte melde dich erneut an."
 }

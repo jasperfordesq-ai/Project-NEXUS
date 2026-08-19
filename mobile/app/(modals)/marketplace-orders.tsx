@@ -743,10 +743,11 @@ function OrderCard({
         ) : null}
         <View className="flex-row flex-wrap gap-2">
           {mode === 'purchases' && item.status === 'paid' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
               <Ionicons name="cube-outline" size={14} color={theme.textMuted} />
-              <HeroButton.Label>{t('orders.waitingShipment')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.waitingShipment')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'purchases' && item.status === 'pending_payment' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment}>
@@ -761,41 +762,47 @@ function OrderCard({
             </HeroButton>
           ) : null}
           {mode === 'sales' && item.status === 'pending_payment' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
               <Ionicons name="card-outline" size={14} color={theme.textMuted} />
-              <HeroButton.Label>{t('orders.awaitingPayment')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.awaitingPayment')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'sales' && item.status === 'shipped' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
               <Ionicons name="time-outline" size={14} color={theme.textMuted} />
-              <HeroButton.Label>{t('orders.awaitingConfirmation')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.awaitingConfirmation')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'sales' && item.status === 'delivered' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
               <Ionicons name="hourglass-outline" size={14} color={theme.textMuted} />
-              <HeroButton.Label>{t('orders.awaitingCompletion')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.awaitingCompletion')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'sales' && item.status === 'completed' ? (
             hasBuyerRating ? (
-              <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+              <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
                 <Ionicons name="star" size={14} color={theme.success} />
-                <HeroButton.Label>{t('orders.buyerRated')}</HeroButton.Label>
-              </HeroButton>
+                <Chip.Label>{t('orders.buyerRated')}</Chip.Label>
+
+              </Chip>
             ) : (
-              <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+              <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
                 <Ionicons name="checkmark-circle-outline" size={14} color={theme.success} />
-                <HeroButton.Label>{t('orders.saleCompleted')}</HeroButton.Label>
-              </HeroButton>
+                <Chip.Label>{t('orders.saleCompleted')}</Chip.Label>
+
+              </Chip>
             )
           ) : null}
           {mode === 'sales' && item.status === 'disputed' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="danger-soft" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="soft" color="danger">
               <Ionicons name="alert-circle-outline" size={14} color={theme.error} />
-              <HeroButton.Label>{t('orders.disputeOpen')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.disputeOpen')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'purchases' && item.status === 'shipped' ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onConfirmDelivery} style={{ backgroundColor: theme.success }}>
@@ -816,10 +823,11 @@ function OrderCard({
             </HeroButton>
           ) : null}
           {mode === 'purchases' && item.status === 'completed' && hasCurrentUserRating ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled>
+            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
               <Ionicons name="star" size={14} color={theme.success} />
-              <HeroButton.Label>{t('orders.rated')}</HeroButton.Label>
-            </HeroButton>
+              <Chip.Label>{t('orders.rated')}</Chip.Label>
+
+            </Chip>
           ) : null}
           {mode === 'purchases' && ['paid', 'processing', 'shipped', 'delivered'].includes(item.status) ? (
             <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled={isSubmitting} onPress={onDispute}>

@@ -135,6 +135,7 @@ jobs:
           DB_USER: root
           DB_PASS: testing
           APP_ENV: testing
+          APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
 
       - name: Seed the E2E fixture (3 users + 1 listing)
         run: php artisan db:seed --class=E2ETestDataSeeder --force
@@ -145,6 +146,7 @@ jobs:
           DB_USER: root
           DB_PASS: testing
           APP_ENV: testing
+          APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
           E2E_TENANT_ID: ${{ env.E2E_TENANT_ID }}
 
       # 🔴 NOT `php artisan serve`. That serves `public/`, which in this repo holds
@@ -163,6 +165,25 @@ jobs:
           DB_PASS: testing
           APP_ENV: local
           APP_DEBUG: 'true'
+          # 🔴 THIS is why the first run of this workflow failed (run 32218116959,
+          # 2026-08-19). The runner has no `.env` — it is gitignored — so neither
+          # JWT_SECRET nor APP_KEY was set. `TokenService::getSecretKey()` signs the
+          # mobile access token and falls back JWT_SECRET -> APP_KEY -> throw:
+          #
+          #   RuntimeException: Security configuration error: JWT_SECRET or APP_KEY must be set
+          #
+          # So login 500'd at the moment it tried to ISSUE a token. The readiness poll
+          # below therefore never saw success, timed out after 60s, and the emulator, the
+          # APK build and all nine Maestro flows were skipped.
+          #
+          # Note the shape of this bug: bad credentials returned a clean 401, and only a
+          # SUCCESSFUL login failed — so probing the endpoint the obvious way says the API
+          # is healthy. Reproduced in the app container against the real login route:
+          # with both cleared -> 500 + that message; with APP_KEY alone -> 200
+          # "success":true (the fallback at TokenService.php:48 covers it).
+          #
+          # The same fixed, non-secret test key ci.yml uses for every PHP job.
+          APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
           REDIS_HOST: 127.0.0.1
 
       # One step proves two things: the API is answering, AND the seeded account
@@ -177,8 +198,12 @@ jobs:
       - name: Wait for the API and confirm the seeded account authenticates
         run: |
           for i in $(seq 1 60); do
+            # `Accept: application/json` matters on the failure path: without it Laravel
+            # renders a server error as an HTML page, which is what run 32218116959
+            # captured — 600 bytes of the app shell instead of the error.
             body=$(curl -s --max-time 10 -X POST http://127.0.0.1:8090/api/auth/login \
               -H 'Content-Type: application/json' \
+              -H 'Accept: application/json' \
               -H "X-Tenant-Slug: ${{ env.TENANT_SLUG }}" \
               -d '{"email":"e2e.user.a@project-nexus.local","password":"TestPassword123!"}' || true)
             if echo "$body" | grep -q '"success"[[:space:]]*:[[:space:]]*true'; then
@@ -188,8 +213,28 @@ jobs:
             sleep 1
           done
           echo "::error::the API never accepted the seeded E2E account on :8090"
-          echo "--- last response ---"; echo "$body" | head -c 600
-          echo "--- server log ---"; cat "$RUNNER_TEMP/laravel.log" | tail -40
+          # 🔴 This block used to destroy its own evidence, which is why run 32218116959 had
+          # to be diagnosed by reading the application rather than its logs. Reproduced
+          # faithfully in the app container (php -S, both secrets cleared):
+          #
+          #   * The cause is in the RESPONSE BODY, not the server log. The `Accept` header
+          #     added to the request above is therefore the fix that matters: without it the
+          #     body was 600 bytes of `<!DOCTYPE html>` app shell; with it the body is
+          #     `{"message":"Security configuration error: JWT_SECRET or APP_KEY must be
+          #     set","exception":"RuntimeException",...}`.
+          #   * `tail -40` on the server log named the cause 0 times, measured — a Laravel
+          #     trace is ~70 lines, so the tail showed frames #34 onwards and cut off the
+          #     message. Raised to 120, but it is the SECONDARY source; its real job is the
+          #     case where the API never started, where there is no response body at all.
+          #   * `echo "$body" | head -c 600` also emitted "write error: Broken pipe", since
+          #     head exited first. Now a substring expansion, so nothing pipes.
+          #
+          # Deliberately NOT grepping the log for '"message"' — measured as finding nothing
+          # here, and a diagnostic that reliably prints nothing is worse than none at all.
+          echo "--- last response (1200 bytes) — the cause is normally HERE ---"
+          echo "${body:0:1200}"
+          echo "--- server log (last 120 lines) — for a server that never started ---"
+          tail -120 "$RUNNER_TEMP/laravel.log" || echo "(no server log at $RUNNER_TEMP/laravel.log)"
           exit 1
 
       # ── The app side ────────────────────────────────────────────────────────

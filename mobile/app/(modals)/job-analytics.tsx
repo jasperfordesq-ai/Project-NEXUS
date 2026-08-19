@@ -139,8 +139,8 @@ export default function JobAnalyticsScreen() {
 
           <View className="flex-row flex-wrap gap-3">
             <MetricCard icon="eye-outline" label={t('analytics.total_views')} value={formatNumber(analytics.total_views)} tint={primary} theme={theme} />
-            <MetricCard icon="people-outline" label={t('analytics.unique_viewers')} value={formatNumber(analytics.unique_viewers)} tint={theme.success ?? '#22c55e'} theme={theme} />
-            <MetricCard icon="document-text-outline" label={t('analytics.total_applications')} value={formatNumber(analytics.total_applications)} tint={theme.warning ?? '#f59e0b'} theme={theme} />
+            <MetricCard icon="people-outline" label={t('analytics.unique_viewers')} value={formatNumber(analytics.unique_viewers)} tint={theme.success} theme={theme} />
+            <MetricCard icon="document-text-outline" label={t('analytics.total_applications')} value={formatNumber(analytics.total_applications)} tint={theme.warning} theme={theme} />
             <MetricCard icon="trending-up-outline" label={t('analytics.conversion_rate')} value={`${analytics.conversion_rate}%`} tint={theme.info ?? primary} theme={theme} />
           </View>
 
@@ -159,7 +159,7 @@ export default function JobAnalyticsScreen() {
                 ) : null}
                 {analytics.scorecard_avg !== null ? (
                   <Chip size="sm" variant="secondary">
-                    <Ionicons name="star-outline" size={13} color={analytics.scorecard_avg >= 60 ? (theme.success ?? '#22c55e') : (theme.warning ?? '#f59e0b')} />
+                    <Ionicons name="star-outline" size={13} color={analytics.scorecard_avg >= 60 ? (theme.success) : (theme.warning)} />
                     <Chip.Label>{t('analytics.scorecard_value', { value: analytics.scorecard_avg })}</Chip.Label>
                   </Chip>
                 ) : null}
@@ -199,7 +199,7 @@ export default function JobAnalyticsScreen() {
                 value: Number(item.count),
               }))}
               maxValue={maxWeeklyApplications}
-              tint={theme.warning ?? '#f59e0b'}
+              tint={theme.warning}
               theme={theme}
             />
           ) : null}

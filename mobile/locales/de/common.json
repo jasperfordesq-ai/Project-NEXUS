@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Etwas ist schiefgelaufen",
     "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "loadFailedTitle": "Konnte nicht geladen werden",
+    "loadFailedSubtitle": "Beim Laden ist etwas schiefgegangen. Bitte versuche es erneut.",
     "network": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
     "timeout": "Zeitüberschreitung bei der Anfrage. Bitte überprüfe deine Verbindung.",
     "requestFailedWithStatus": "Die Anfrage ist mit Status {{status}} fehlgeschlagen",

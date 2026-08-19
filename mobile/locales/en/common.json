@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Something went wrong",
     "generic": "Something went wrong. Please try again.",
+    "loadFailedTitle": "Couldn't load this",
+    "loadFailedSubtitle": "Something went wrong while loading. Please try again.",
     "network": "Network error. Please check your connection.",
     "timeout": "Request timed out. Please check your connection.",
     "requestFailedWithStatus": "Request failed with status {{status}}",

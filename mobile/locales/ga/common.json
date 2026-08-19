@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Chuaigh rud éigin mícheart",
     "generic": "Chuaigh rud éigin mícheart. Déan iarracht arís.",
+    "loadFailedTitle": "Níorbh fhéidir é a lódáil",
+    "loadFailedSubtitle": "Chuaigh rud éigin amú agus é á lódáil. Bain triail eile as.",
     "network": "Earráid líonra. Seiceáil do nasc.",
     "timeout": "Chuaigh an t-iarratas thar am. Seiceáil do nasc.",
     "requestFailedWithStatus": "Theip ar an iarratas le stádas {{status}}",

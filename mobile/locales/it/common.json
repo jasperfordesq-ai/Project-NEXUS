@@ -61,6 +61,8 @@
   "errors": {
     "boundaryTitle": "Qualcosa è andato storto",
     "generic": "Qualcosa è andato storto. Riprova.",
+    "loadFailedTitle": "Caricamento non riuscito",
+    "loadFailedSubtitle": "Si è verificato un problema durante il caricamento. Riprova.",
     "network": "Errore di rete. Controlla la connessione.",
     "timeout": "La richiesta è scaduta. Controlla la connessione.",
     "requestFailedWithStatus": "La richiesta non è riuscita con stato {{status}}",

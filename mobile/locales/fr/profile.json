@@ -352,5 +352,7 @@
     "federationEvents": "Découvrez les événements des communautés connectées.",
     "federationSettings": "Vérifiez la visibilité de la fédération et les préférences de partage.",
     "settings": "Sécurité, notifications, préférences et contrôles de compte."
-  }
+  },
+  "sessionUnavailableTitle": "Votre session est indisponible",
+  "sessionUnavailableSubtitle": "Nous n'avons pas pu charger votre profil. Veuillez vous reconnecter."
 }

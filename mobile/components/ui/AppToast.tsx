@@ -67,32 +67,18 @@ export function useAppToast() {
 }
 
 /**
- * A toast that no-ops when there is no ToastProvider above it.
+ * 🔴 There is deliberately no `useOptionalAppToast()` here. One existed briefly and was
+ * removed, because a toast hook cannot be made optional safely.
  *
- * 🔴 For code that lives in a PROVIDER rather than a screen. `AuthProvider` needs to say
- * "you have been signed out", but making it call `useAppToast()` directly meant every test
- * that renders `AuthProvider` standalone died with "useToast must be used within a
- * ToastProvider" — eight of them immediately. The real app is fine (HeroUINativeProvider
- * wraps everything), so the failure was purely a coupling one: infrastructure had been made
- * to depend on presentation.
+ * heroui-native's `useToast` THROWS from inside when no ToastProvider is above it, so
+ * wrapping it in try/catch means the hooks after the throw never run — the hook COUNT
+ * differs between a tree with a provider and one without. `react-hooks/rules-of-hooks`
+ * failed the lint gate on exactly that, correctly; it only appeared to work because
+ * provider presence never changes for a given component instance. Its context is not
+ * exported, so there is no non-throwing way to read it either.
  *
- * This is the same lesson as `useOptionalPrimaryColor` in TenantContext — a component that
- * only wants to *look* right must not be able to take a screen down. A missing toast is an
- * acceptable degradation; a crash is not.
- *
- * Screens should keep using `useAppToast()`, which fails loudly if the provider is missing.
+ * Code that lives in a PROVIDER and needs to say something to the member should publish
+ * to `lib/notices/sessionNoticeStore.ts` instead, which needs no provider and no hooks.
+ * Screens use `useAppToast()` directly, which fails loudly — the right behaviour for a
+ * screen, which genuinely is inside the provider tree.
  */
-export function useOptionalAppToast(): Pick<ReturnType<typeof useAppToast>, 'show'> {
-  let show: ReturnType<typeof useAppToast>['show'] | null = null;
-
-  try {
-    // Calling the hook inside try/catch is safe here: the underlying useContext has already
-    // run by the time the guard throws, so hook order stays identical on every render.
-    ({ show } = useAppToast());
-  } catch {
-    show = null;
-  }
-
-  const noop = useCallback(() => '', []);
-  return { show: show ?? (noop as ReturnType<typeof useAppToast>['show']) };
-}

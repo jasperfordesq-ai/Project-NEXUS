@@ -16,6 +16,7 @@ import { useTenant, usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { ProfileSkeleton } from '@/components/ui/Skeleton';
+import ErrorState from '@/components/ui/ErrorState';
 import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
@@ -84,8 +85,8 @@ const ACCOUNT: MenuItem[] = [
 ];
 
 export default function MoreScreen() {
-  const { t } = useTranslation(['profile', 'common']);
-  const { user, displayName, logout } = useAuth();
+  const { t } = useTranslation(['profile', 'common', 'auth']);
+  const { user, displayName, logout, isLoading } = useAuth();
   const { hasFeature, hasModule } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -127,10 +128,33 @@ export default function MoreScreen() {
     });
   }
 
-  if (!user) {
+  // 🔴 `!user` used to mean BOTH of these, and both rendered a skeleton — so a member whose
+  // session failed to restore sat in front of a permanent loading placeholder with no way out
+  // but to kill the app. This screen had no failure branch at all (the readiness audit found
+  // zero references to `error` in it).
+  if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-background">
         <ProfileSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  // Auth has finished and there is still no member. The honest recovery is to sign in again —
+  // a "try again" button would have nothing to retry, since this screen reads the member from
+  // context rather than fetching. The app's start-up redirect normally prevents this state, so
+  // this is a safety net rather than a path anyone should reach; before, that safety net was an
+  // endless skeleton.
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <ErrorState
+          testID="profile-session-unavailable"
+          title={t('sessionUnavailableTitle')}
+          subtitle={t('sessionUnavailableSubtitle')}
+          retryLabel={t('auth:login.submit')}
+          onRetry={() => router.replace('/(auth)/login')}
+        />
       </SafeAreaView>
     );
   }

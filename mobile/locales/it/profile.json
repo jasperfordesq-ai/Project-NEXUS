@@ -352,5 +352,7 @@
     "federationEvents": "Scopri eventi dalle comunità connesse.",
     "federationSettings": "Controlla la visibilità della federazione e le preferenze di condivisione.",
     "settings": "Sicurezza, notifiche, preferenze e account controlli."
-  }
+  },
+  "sessionUnavailableTitle": "La tua sessione non è disponibile",
+  "sessionUnavailableSubtitle": "Non è stato possibile caricare il tuo profilo. Accedi di nuovo."
 }
