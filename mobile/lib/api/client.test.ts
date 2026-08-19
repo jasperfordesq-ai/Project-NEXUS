@@ -13,6 +13,7 @@ jest.mock('@/lib/storage', () => ({
 }));
 jest.mock('@/lib/constants', () => ({
   API_BASE_URL: 'https://test.api',
+  APP_VERSION: '1.2.0',
   STORAGE_KEYS: {
     AUTH_TOKEN: 'nexus_auth_token',
     REFRESH_TOKEN: 'nexus_refresh_token',
@@ -724,5 +725,71 @@ describe('🔴 a refresh that cannot REACH the server', () => {
     expect(mockStorage.remove).toHaveBeenCalledWith('nexus_auth_token');
     expect(mockStorage.remove).toHaveBeenCalledWith('nexus_refresh_token');
     expect(mockStorage.remove).toHaveBeenCalledWith('nexus_user_data');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The app version header
+//
+// 🔴 This is the un-retrofittable half of a force-update lever. The API can already tell a
+// request came from the mobile app, but not WHICH VERSION — so it has no way to refuse a
+// build that must stop being used. An over-the-air update only reaches devices whose runtime
+// version still matches, so a broken NATIVE build cannot be reached any other way.
+//
+// A binary already on someone's phone cannot be taught to send a header it was not built
+// with. Every release that ships without this one is permanently un-retirable, which is why
+// it lands before the server-side refusal exists.
+// ---------------------------------------------------------------------------
+
+describe('X-Nexus-Mobile-Version', () => {
+  beforeEach(() => {
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_auth_token' ? 'token' : null
+    );
+  });
+
+  it('is sent on an ordinary request', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+
+    await api.get('/api/v2/wallet/balance');
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['X-Nexus-Mobile-Version']).toBe('1.2.0');
+    // Sent alongside, not instead of, the existing marker.
+    expect((init.headers as Record<string, string>)['X-Nexus-Mobile']).toBe('1');
+  });
+
+  it('is sent on the refresh request too', async () => {
+    // The refresh endpoint builds its own headers, so it is a separate code path — and a
+    // version-gated API would refuse the refresh of a retired build as readily as any other
+    // call.
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_refresh_token' ? 'refresh-token' : null
+    );
+    fetchMock.mockResolvedValueOnce(mockResponse({ access_token: 'fresh' }));
+
+    await attemptTokenRefresh();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['X-Nexus-Mobile-Version']).toBe('1.2.0');
+    jest.advanceTimersByTime(3000);
+  });
+
+  it('is sent on the retry after a refresh', async () => {
+    // The retry rebuilds headers from the originals; if it dropped the version a
+    // version-gated API would see an inconsistent client.
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_auth_token' ? 'stale' : key === 'nexus_refresh_token' ? 'refresh-token' : null
+    );
+    fetchMock
+      .mockResolvedValueOnce(mockResponse({}, { status: 401 }))
+      .mockResolvedValueOnce(mockResponse({ access_token: 'fresh' }))
+      .mockResolvedValueOnce(mockResponse({ ok: true }));
+
+    await api.get('/api/v2/wallet/balance');
+
+    const [, retryInit] = fetchMock.mock.calls[2] as [string, RequestInit];
+    expect((retryInit.headers as Record<string, string>)['X-Nexus-Mobile-Version']).toBe('1.2.0');
+    jest.advanceTimersByTime(3000);
   });
 });

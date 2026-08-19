@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { API_BASE_URL, DEFAULT_TENANT, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
+import { API_BASE_URL, APP_VERSION, DEFAULT_TENANT, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
 import i18n from 'i18next';
 import { storage } from '@/lib/storage';
 
@@ -132,6 +132,7 @@ export async function authenticatedMediaRequest(path: string): Promise<{ uri: st
       Authorization: `Bearer ${token}`,
       'X-Tenant-Slug': tenantSlug?.trim() || DEFAULT_TENANT,
       'X-Nexus-Mobile': '1',
+      'X-Nexus-Mobile-Version': APP_VERSION,
     },
   };
 }
@@ -206,6 +207,7 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         'X-Nexus-Mobile': '1',
+        'X-Nexus-Mobile-Version': APP_VERSION,
       };
       headers['X-Tenant-Slug'] = tenantSlug || DEFAULT_TENANT;
 
@@ -302,6 +304,7 @@ async function request<T>(
   const headers: Record<string, string> = {
     Accept: 'application/json',
     'X-Nexus-Mobile': '1',
+    'X-Nexus-Mobile-Version': APP_VERSION,
     ...options.headers,
   };
 

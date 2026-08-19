@@ -52,6 +52,25 @@ export const DEFAULT_TENANT: string =
   (Constants.expoConfig?.extra?.defaultTenant as string | undefined) ??
   'hour-timebank';
 
+/**
+ * The app's own version, sent on every API request as `X-Nexus-Mobile-Version`.
+ *
+ * 🔴 This exists so a future release can be RETIRED. Today the API can tell that a request
+ * came from the mobile app (`X-Nexus-Mobile: '1'`) but not which version, so it has no way to
+ * refuse a build that must stop being used — and an over-the-air update only reaches devices
+ * whose runtime version still matches, so a broken NATIVE build is unreachable by any other
+ * means.
+ *
+ * The reason it is here BEFORE the server half exists: a binary already on someone's phone
+ * cannot be taught to send a header it was not built with. Every build that ships without
+ * this is permanently un-retirable. The server-side minimum-version refusal and the blocking
+ * screen that answers it are tracked as the next step.
+ *
+ * Falls back to the empty string rather than a guess: an absent header is honest, a wrong
+ * version is worse than none.
+ */
+export const APP_VERSION: string = Constants.expoConfig?.version ?? '';
+
 /** Secure storage keys */
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'nexus_auth_token',
