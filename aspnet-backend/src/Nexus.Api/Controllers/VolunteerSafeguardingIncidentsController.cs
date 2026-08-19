@@ -169,7 +169,11 @@ public class VolunteerSafeguardingIncidentsController : ControllerBase
             .Select(i => Summarise(i))
             .ToListAsync(ct);
 
-        return Ok(new { items, total, page, per_page = perPage });
+        // 🔴 Laravel sends {"data":{"items":[...],"total":N},"meta":{...}} — verified
+        // live 2026-08-19. Two problems here: the payload was at the ROOT with no `data`
+        // wrapper, and `page`/`per_page` are not part of Laravel's shape on this
+        // endpoint. base_url is added by LaravelDataEnvelopeFilter.
+        return Ok(new { data = new { items, total } });
     }
 
     /// <summary>

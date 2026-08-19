@@ -37,7 +37,10 @@ public sealed class VolunteerOrganisationWalletTests : IntegrationTestBase
         using (var before = await Client.GetAsync("/api/v2/wallet/balance"))
         {
             before.StatusCode.Should().Be(HttpStatusCode.OK);
-            visibleSentBefore = (await ReadJsonAsync(before)).GetProperty("sent_total").GetDecimal();
+            // 🔴 /api/v2/wallet/balance now wraps its figures in `data` and uses
+            // Laravel's names — verified live 2026-08-19. The partner federation
+            // endpoint keeps its own flat shape and is unaffected.
+            visibleSentBefore = (await ReadJsonAsync(before)).GetProperty("data").GetProperty("total_spent").GetDecimal();
         }
 
         using var response = await Client.PostAsJsonAsync(
@@ -84,8 +87,8 @@ public sealed class VolunteerOrganisationWalletTests : IntegrationTestBase
         {
             balance.StatusCode.Should().Be(HttpStatusCode.OK);
             var wallet = await ReadJsonAsync(balance);
-            wallet.GetProperty("balance").GetDecimal().Should().Be(personalBalanceBefore - 3m);
-            wallet.GetProperty("sent_total").GetDecimal().Should().Be(visibleSentBefore);
+            wallet.GetProperty("data").GetProperty("balance").GetDecimal().Should().Be(personalBalanceBefore - 3m);
+            wallet.GetProperty("data").GetProperty("total_spent").GetDecimal().Should().Be(visibleSentBefore);
         }
         using (var history = await Client.GetAsync("/api/v2/wallet/transactions"))
         {

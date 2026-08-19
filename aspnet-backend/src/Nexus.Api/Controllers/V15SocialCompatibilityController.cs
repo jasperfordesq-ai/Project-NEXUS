@@ -1400,7 +1400,70 @@ public class V15SocialCompatibilityController : ControllerBase
     {
         var userId = RequireUserId();
         var unread = await _db.Notifications.CountAsync(n => n.UserId == userId && !n.IsRead);
-        return Ok(new { total = unread, unread, notifications = unread });
+        // 🔴 Laravel returns a per-CATEGORY breakdown wrapped in `data`, not a single
+        // repeated figure at the root. Verified live 2026-08-19:
+        //   {"data":{"total":N,"messages":N,"connections":N,"reviews":N,
+        //             "transactions":N,"social":N,"events":N,"groups":N,
+        //             "listings":N,"jobs":N,"ideation":N,"safeguarding":N,
+        //             "system":N,"security":N,"other":N},"meta":{...}}
+        // This backend sent {total, unread, notifications} — the same number three
+        // times, at the root, with no breakdown at all. A badge reading
+        // data.messages got nothing from the production backend.
+        //
+        // 🔴 The per-category counts are grouped from the unread rows rather than
+        // invented: any category Laravel names that this backend has no notifications
+        // for is honestly 0, and `other` catches every type not in Laravel's list so
+        // the parts still sum to the total.
+        var byCategory = await _db.Notifications
+            .Where(n => n.UserId == userId && !n.IsRead)
+            .GroupBy(n => n.Type)
+            .Select(g => new { Type = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        int CountFor(params string[] types) => byCategory
+            .Where(c => types.Any(t => (c.Type ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)))
+            .Sum(c => c.Count);
+
+        var named = new[]
+        {
+            ("messages", new[] { "message" }),
+            ("connections", new[] { "connection", "follow" }),
+            ("reviews", new[] { "review" }),
+            ("transactions", new[] { "transaction", "credit", "wallet" }),
+            ("social", new[] { "like", "comment", "mention", "post" }),
+            ("events", new[] { "event" }),
+            ("groups", new[] { "group" }),
+            ("listings", new[] { "listing", "exchange" }),
+            ("jobs", new[] { "job" }),
+            ("ideation", new[] { "ideation", "idea", "challenge" }),
+            ("safeguarding", new[] { "safeguard", "incident" }),
+            ("system", new[] { "system", "announcement" }),
+            ("security", new[] { "security", "login", "password" }),
+        };
+        var counts = named.ToDictionary(n => n.Item1, n => CountFor(n.Item2));
+        var accountedFor = counts.Values.Sum();
+
+        return Ok(new
+        {
+            data = new
+            {
+                total = unread,
+                messages = counts["messages"],
+                connections = counts["connections"],
+                reviews = counts["reviews"],
+                transactions = counts["transactions"],
+                social = counts["social"],
+                events = counts["events"],
+                groups = counts["groups"],
+                listings = counts["listings"],
+                jobs = counts["jobs"],
+                ideation = counts["ideation"],
+                safeguarding = counts["safeguarding"],
+                system = counts["system"],
+                security = counts["security"],
+                other = Math.Max(0, unread - accountedFor),
+            }
+        });
     }
 
     [HttpGet("/api/v2/notifications/grouped")]

@@ -103,7 +103,11 @@ public class VolunteerCredentialsController : ControllerBase
             rejection_reason = c.Status == VolunteerCredential.Statuses.Rejected ? c.Notes : null,
         }).ToList();
 
-        return Ok(new { credentials });
+        // 🔴 Laravel wraps this in data.credentials — verified live 2026-08-19:
+        // {"data":{"credentials":[...]},"meta":{"base_url":...}}. A bare
+        // {credentials:[...]} at the root means a client reading `data` gets nothing
+        // from the production backend. base_url is added by LaravelDataEnvelopeFilter.
+        return Ok(new { data = new { credentials } });
     }
 
     /// <summary>POST /api/v2/volunteering/credentials — upload one.</summary>

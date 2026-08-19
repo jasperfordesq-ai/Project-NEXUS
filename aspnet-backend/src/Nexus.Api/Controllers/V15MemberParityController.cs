@@ -452,7 +452,7 @@ public class V15MemberParityController : ControllerBase
     {
         var targetUserId = CurrentUserId();
         if (targetUserId == null) return Unauthorized(new { error = "Invalid token" });
-        return await BuildWalletBalanceAsync(targetUserId.Value);
+        return await BuildV2WalletBalanceAsync(targetUserId.Value);
     }
 
     [HttpGet("api/partner/v1/wallet/balance/{userId:int}")]
@@ -481,6 +481,95 @@ public class V15MemberParityController : ControllerBase
             balance_hours = Math.Round(received - sent, 4),
             currency = "time_credits"
         });
+    }
+
+    /// <summary>
+    /// GET /api/v2/wallet/balance — the member's own wallet, in Laravel's shape.
+    ///
+    /// 🔴 Laravel wraps this in `data` and names the figures differently. Verified live
+    /// 2026-08-19:
+    ///   {"data":{"balance":N,"total_earned":N,"total_spent":N,"transaction_count":N,
+    ///            "currency":"hours","pending_incoming":N,"pending_outgoing":N,
+    ///            "pending_in":N,"pending_out":N},"meta":{...}}
+    /// This backend sent {balance, currency, received_total, sent_total} at the ROOT, so
+    /// a client reading data.total_earned got nothing from the production backend.
+    ///
+    /// 🔴 `pending_incoming`/`pending_outgoing` and `pending_in`/`pending_out` are BOTH
+    /// sent, carrying the same values. That duplication is Laravel's, not a mistake here:
+    /// the contract is what Laravel emits, and a client may read either spelling.
+    ///
+    /// 🔴 Deliberately NOT built on BuildWalletBalanceAsync. That helper also serves
+    /// /api/partner/v1/wallet/balance/{userId}, a federation endpoint with its own
+    /// contract and its own callers; re-shaping it would silently change the partner API.
+    /// The computation is shared, the envelope is not.
+    /// </summary>
+    private async Task<IActionResult> BuildV2WalletBalanceAsync(int targetUserId)
+    {
+        var (balance, earned, spent, transactionCount, pendingIn, pendingOut) =
+            await ComputeWalletFiguresAsync(targetUserId);
+
+        return Ok(new
+        {
+            data = new
+            {
+                balance,
+                total_earned = earned,
+                total_spent = spent,
+                transaction_count = transactionCount,
+                currency = "hours",
+                pending_incoming = pendingIn,
+                pending_outgoing = pendingOut,
+                pending_in = pendingIn,
+                pending_out = pendingOut,
+            }
+        });
+    }
+
+    /// <summary>
+    /// The wallet figures both the v2 member endpoint and the partner endpoint need.
+    /// Adapter transaction types are excluded from the visible earned/spent totals for
+    /// the same reason the partner helper excludes them: they are internal ledger
+    /// movements, not exchanges the member made.
+    /// </summary>
+    private async Task<(decimal Balance, decimal Earned, decimal Spent, int Count, decimal PendingIn, decimal PendingOut)>
+        ComputeWalletFiguresAsync(int targetUserId)
+    {
+        var received = await _db.Transactions
+            .Where(t => t.ReceiverId == targetUserId && t.Status == TransactionStatus.Completed)
+            .SumAsync(t => t.Amount);
+        var sent = await _db.Transactions
+            .Where(t => t.SenderId == targetUserId && t.Status == TransactionStatus.Completed)
+            .SumAsync(t => t.Amount);
+
+        var visibleReceived = await _db.Transactions
+            .Where(t => t.ReceiverId == targetUserId
+                && t.Status == TransactionStatus.Completed
+                && t.TransactionType != PersonalWalletLedgerService.VolunteerOrganisationBalanceAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringHourGiftAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringLoyaltyAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringHourEstateAdapterTransactionType)
+            .SumAsync(t => t.Amount);
+        var visibleSent = await _db.Transactions
+            .Where(t => t.SenderId == targetUserId
+                && t.Status == TransactionStatus.Completed
+                && t.TransactionType != PersonalWalletLedgerService.VolunteerOrganisationBalanceAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringHourGiftAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringLoyaltyAdapterTransactionType
+                && t.TransactionType != PersonalWalletLedgerService.CaringHourEstateAdapterTransactionType)
+            .SumAsync(t => t.Amount);
+
+        var transactionCount = await _db.Transactions
+            .CountAsync(t => (t.ReceiverId == targetUserId || t.SenderId == targetUserId)
+                && t.Status == TransactionStatus.Completed);
+
+        var pendingIn = await _db.Transactions
+            .Where(t => t.ReceiverId == targetUserId && t.Status == TransactionStatus.Pending)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+        var pendingOut = await _db.Transactions
+            .Where(t => t.SenderId == targetUserId && t.Status == TransactionStatus.Pending)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+
+        return (received - sent, visibleReceived, visibleSent, transactionCount, pendingIn, pendingOut);
     }
 
     private async Task<IActionResult> BuildWalletBalanceAsync(int targetUserId)

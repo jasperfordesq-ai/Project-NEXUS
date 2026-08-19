@@ -57,7 +57,11 @@ public sealed class VolunteerSafeguardingIncidentTests : IntegrationTestBase
 
         // The reporter can see their own.
         var mine = await Client.GetAsync("/api/v2/volunteering/incidents");
-        var items = (await mine.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items");
+        // 🔴 Laravel sends {"data":{"items":[...],"total":N}} — verified live 2026-08-19.
+        // The list used to sit at the root with `page`/`per_page` beside it, neither of
+        // which Laravel sends on this endpoint.
+        var items = (await mine.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data").GetProperty("items");
         items.EnumerateArray().Select(i => i.GetProperty("id").GetInt32())
             .Should().Contain(id, "the reporter's own list returned an empty array before");
 

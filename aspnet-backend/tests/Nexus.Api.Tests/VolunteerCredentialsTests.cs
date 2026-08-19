@@ -55,7 +55,13 @@ public sealed class VolunteerCredentialsTests : IntegrationTestBase
     {
         var response = await Client.GetAsync("/api/v2/volunteering/credentials");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        return (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("credentials");
+        // 🔴 Laravel wraps this in data.credentials — verified live 2026-08-19. The list
+        // used to sit at the root; a client reading `data` got nothing from the
+        // production backend. Asserting the wrapper here once keeps the tests below
+        // about credentials rather than about JSON.
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Object);
+        return body.GetProperty("data").GetProperty("credentials");
     }
 
     [Fact]
