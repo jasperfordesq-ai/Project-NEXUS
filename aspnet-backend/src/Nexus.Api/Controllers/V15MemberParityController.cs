@@ -72,6 +72,33 @@ public class V15MemberParityController : ControllerBase
         _eventLifecycle = eventLifecycle;
     }
 
+    /// <summary>
+    /// GET /api/v2/events — the list the React dashboard's "Upcoming events" panel reads.
+    ///
+    /// 🔴 This CRASHED that panel, and only running the real app found it. This list
+    /// emitted `starts_at`/`ends_at`; Laravel emits `start_date` and `start_time`.
+    /// `DashboardPage.tsx:561` does `new Date(event.start_date)`, so against this
+    /// backend it built an Invalid Date, and `formatMonthShort` — which calls
+    /// `Intl.DateTimeFormat.format()` with no isNaN guard, unlike its sibling
+    /// `formatDateValue` — threw `RangeError: Invalid time value`. The whole dashboard
+    /// section went to its error boundary ("Feature error in Dashboard").
+    ///
+    /// 🔴 No amount of response-shape diffing would have caught this. The endpoint
+    /// returns 200 with a well-formed list; the harness scored it as differing by some
+    /// field names, which reads as cosmetic. It took a browser to show that one of those
+    /// field names is load-bearing.
+    ///
+    /// Measured on the running disposable Laravel 2026-08-19:
+    ///   start_date "2026-08-26T13:01:01+00:00"  (also emits start_time)
+    ///   ASP.NET    start_date absent, start_time absent
+    ///
+    /// 🔴 The Laravel names are ADDED, and `starts_at`/`ends_at` are deliberately LEFT.
+    /// Adding is additive: worst case an unused key. Removing them is subtractive and
+    /// would need its own per-endpoint evidence — bundling a subtractive change with an
+    /// additive one on shared reasoning turned 82 tests red earlier the same day. That
+    /// this list carries two extra fields Laravel does not send is recorded as an open
+    /// item, not fixed here on the strength of this measurement.
+    /// </summary>
     [HttpGet("api/v2/events")]
     public async Task<IActionResult> V2Events([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
     {
@@ -91,6 +118,11 @@ public class V15MemberParityController : ControllerBase
             location = e.Location,
             starts_at = e.StartsAt,
             ends_at = e.EndsAt,
+            // Laravel's names, which the React dashboard actually reads.
+            start_date = e.StartsAt,
+            start_time = e.StartsAt,
+            end_date = e.EndsAt,
+            end_time = e.EndsAt,
             image_url = e.ImageUrl,
             max_attendees = e.MaxAttendees,
             rsvp_count = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Going),

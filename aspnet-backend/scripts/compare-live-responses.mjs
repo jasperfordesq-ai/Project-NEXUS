@@ -184,8 +184,10 @@ async function ask(base, method, urlPath, tenant, token = null) {
 
 /** Renders a capped diff list so the cap can never be read as the total. */
 function sample(list, total) {
-  const shown = list.join(', ');
-  return total > list.length ? `${shown}, … and ${total - list.length} more` : shown;
+  // The stored lists are COMPLETE; capping is this printer's job.
+  const shown = (list ?? []).slice(0, 8).join(', ');
+  const hidden = total - Math.min(8, (list ?? []).length);
+  return hidden > 0 ? `${shown}, … and ${hidden} more` : shown;
 }
 
 async function main() {

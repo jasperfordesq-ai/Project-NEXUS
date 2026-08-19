@@ -421,6 +421,276 @@ for the owner separately; changing Laravel is not part of this workstream.
   resource-create SUCCESS shape (Laravel returns a deliberate 8-field projection,
   not a raw row) has not been diffed.
 
+## 2026-08-19 (later) — the React app has now RUN against ASP.NET, for the first time ever
+
+The 125-point "unchanged frontend against both backends" category had **10 points and no
+evidence at all** — neither frontend had ever been pointed at this backend. That is no
+longer true.
+
+**The unchanged canonical React frontend signs in and runs against ASP.NET.** Login
+succeeds, tokens are issued, and `/dashboard`, `/listings`, `/members` and `/wallet` all
+render real content. **190 API calls, all successful**; the only non-2xx is a signed-out
+`401` on `/api/v2/me/fadp/consent`, which is correct behaviour.
+
+Configuration only — no frontend source was modified. Committed script:
+`aspnet-backend/scripts/smoke-react-against-aspnet.mjs`, driven by the existing
+`npm --prefix react-frontend run dev:dotnet` on port 5199.
+
+### 🔴 It found two real faults the response-diff harness had scored as cosmetic
+
+This is the argument for doing it, so it is worth stating precisely.
+
+| Fault | What the diff harness saw | What the browser saw |
+| --- | --- | --- |
+| `GET /api/v2/events` emitted `starts_at`, Laravel emits `start_date` | "some field names differ" | **the whole Upcoming-events dashboard section crashed** |
+| `needs-attention-count` omitted `action` | a missing field among several | the chip rendered the literal text `exchanges_attention.action.undefined` |
+
+The first is the sharper lesson. `DashboardPage.tsx:561` does
+`new Date(event.start_date)`; against ASP.NET that produced an Invalid Date, and
+`formatMonthShort` — which calls `Intl.DateTimeFormat.format()` with **no isNaN guard,
+unlike its sibling `formatDateValue`** — threw `RangeError: Invalid time value`, sending
+the section to its error boundary. The endpoint returned a well-formed 200 throughout.
+
+**Measured effect of the fix: dashboard visible text 1,365 → 6,870 characters.** Console
+errors 5 → 2, and neither survivor is a backend fault (the expected signed-out 401, and a
+React `key` warning inside `TopEndorsedWidget`).
+
+🔴 Both fixes are **ADDITIVE**: Laravel's field names were added and ASP.NET's existing
+`starts_at`/`ends_at`/`listing_id`/`created_at`/`updated_at` were LEFT in place. That this
+backend sends fields Laravel does not is a separate, SUBTRACTIVE change needing its own
+per-endpoint evidence — bundling the two on shared reasoning turned 82 tests red earlier
+the same day.
+
+🔴 The `action` derivation was copied from `app/Services/ExchangeService.php:161-166`
+(pending+provider → accept, pending_confirmation → confirm, completed → review, else
+active) because the disposable Laravel's fixture returns an empty list. **That is SOURCE
+evidence, weaker than this workstream's live-measurement standard, and is flagged in the
+code.** Measure it once a fixture exchange needing attention exists.
+
+### Three obstacles that are frontend chrome, not backend faults
+
+The first two smoke runs timed out clicking a disabled button, and the obvious reading —
+"the backend is refusing the login" — was wrong. Recorded so the next person does not lose
+the same hour:
+
+1. A cookie banner **and** an AI-features consent dialog overlay everything until dismissed.
+2. The email field is `name="username"` with `type="email"`, not `name="email"`.
+3. **Sign In stays DISABLED until a community is chosen** from a native `<select>` — the
+   real gate. Options offered: ACME Community Timebank, Globex Neighbourhood Network, ACME
+   Youth Programme, Smoke Hub, Smoke Branch.
+
+Also: `/health.php` 404s (ASP.NET serves `/health`) — cosmetic, expected, proxy-only. And
+`net::ERR_NO_BUFFER_SPACE` appeared once on a run while the 40-minute test suite was
+running concurrently: Windows socket exhaustion, a LOCAL artefact, not a backend fault.
+
+### 🔴 The DIRECT pass: the app was unusable cross-origin, and login was impossible
+
+The proxied pass above goes through Vite's dev proxy, so every request is same-origin and
+CORS is never exercised. The direct pass — browser calling `:5080` itself — was run next
+and failed hard:
+
+```
+Access to fetch at 'http://127.0.0.1:5080/api/auth/login'
+from origin 'http://127.0.0.1:5199' has been blocked by CORS policy:
+Request header field x-csrf-token is not allowed by Access-Control-Allow-Headers
+```
+
+**Login itself was refused before it left the browser, so nothing behind the login was
+reachable.** GETs were unaffected (36 succeeded), which is precisely why proxied testing
+never saw it.
+
+Two independent gaps, both fixed:
+
+1. **`Program.cs` `WithHeaders(...)` omitted `X-CSRF-Token`.** The canonical React client
+   sends it on writes. Rather than add the one header that failed first, every custom
+   header the React source sets was enumerated and compared against the allowlist; three
+   events headers (`X-Events-Contract`, `X-Event-Safety-Contract`,
+   `X-Event-Checkin-Contract`) were missing too. 🔴 `X-Federation-*`,
+   `X-Partner-Signature` and `X-Webhook-Signature` were deliberately NOT added — they are
+   server-to-server and never browser-sent; allowlisting them would widen a browser
+   policy for traffic that does not use it.
+
+2. **`compose.yml` never listed port 5173**, the React dev server's real port
+   (`react-frontend/vite.config.ts:323`). A preflight from `http://localhost:5173`
+   returned 204 with **no** `Access-Control-Allow-Origin`, which a browser treats as a
+   refusal. 🔴 `5273` is NOT a typo: `docs/PRODUCTION_READINESS_REMEDIATION.md:84-87`
+   documents running Vite on 5273 as a WORKAROUND for this exact gap. Both are kept —
+   the workaround still works and now the committed default does too. An unknown origin
+   is still refused (checked with `http://evil.example`), so nothing was opened up.
+
+**Both passes now succeed: 188 API calls, no failures, all four screens rendering.**
+
+### 🔴 A false pass I nearly reported, and the guard added because of it
+
+The first "direct pass" was still going through the proxy. `VITE_API_BASE` passed on the
+command line **never reaches `import.meta.env`**, so every request stayed same-origin —
+and it looked like a clean pass while proving nothing about CORS. Checking the recorded
+request URLs is what caught it.
+
+`scripts/smoke-react-against-aspnet.mjs` now **measures and reports its own transport
+mode** from the absolute URLs, and prints an explicit "this proves nothing about CORS"
+warning plus the exact setup steps when a run is proxied.
+
+🔴 Direct mode has **no committed configuration path**: `react-frontend/.gitignore:15`
+ignores `.env.*`, so the required `.env.dotnet-direct` cannot be checked in. The script
+documents how to create it. A committed `dev:dotnet:direct` script would need an approved
+frontend change.
+
+🔴 Local artefacts seen, neither a backend fault: one run makes ~190 calls against a
+200-per-60s dev rate limit, so back-to-back runs self-throttle into 429s; and
+`net::ERR_NO_BUFFER_SPACE` appeared once while the 40-minute test suite ran concurrently
+(Windows socket exhaustion).
+
+### The ACCESSIBLE frontend (web-uk) has now run against ASP.NET too — 4 of 6 pages identical
+
+The other half of the 125-point category. `web-uk` had never been pointed at this backend
+either. Configuration only, per `web-uk/src/lib/backend-contract.js`:
+
+```
+PORT=3099 COOKIE_SECRET=… ACCESSIBLE_BACKEND_TARGET=aspnet   ASPNET_BASE_URL=http://127.0.0.1:5080 ACCESSIBLE_TENANT_SLUG=acme node src/server.js
+```
+
+🔴 `ACCESSIBLE_TENANT_SLUG` must be set to `acme`; it defaults to `hour-timebank`, which
+does not exist in the ASP.NET seed. `COOKIE_SECRET` is required or the server exits
+immediately with one line and no HTTP listener. `API_BASE_URL` silently overrides the
+target — leave it unset.
+
+🔴 **A CONTROL was run, and it changed the conclusion.** A second web-uk instance was
+started against the disposable **Laravel** on port 3098 with everything else identical,
+because "it fails on ASP.NET" means nothing without knowing whether it fails on Laravel:
+
+| Page | ASP.NET (:3099) | Laravel control (:3098) | |
+| --- | --- | --- | --- |
+| `/` | 200 | 200 | same |
+| `/listings` | 200 | 200 | same |
+| `/login` | 200 | 200 | same |
+| `/events` | 302 → `/login?status=auth-required` | 302 | same — a sign-in gate, not a fault |
+| `/blog` | **400** | 200 | 🔴 **DIFFERS** |
+| `/help` | **400** | 200 | 🔴 **DIFFERS** |
+
+Without the control, the five 302s would have been written up as ASP.NET refusing to
+serve half the site. They are just the signed-out gate, behaving identically on both.
+
+**`/blog` and `/help` are real, reproducible ASP.NET-only failures** ("Sorry, there is a
+problem"). The cause is NOT yet isolated, and the obvious suspects have been eliminated:
+
+- `GET /api/v2/blog` returns **200 on both**, and ASP.NET's payload is a strict SUPERSET
+  — zero fields missing, eleven extra. So the list endpoint is not it.
+- The feature flags for `blog`, `help`, `support` and `resources` are byte-identical on
+  both bootstraps, so it is not a module gate.
+- `/api/v2/help/articles` and `/api/v2/support*` 404 on **both**, so a shared missing
+  route is not it either.
+
+Left as a precisely-scoped open item rather than a guess. Reproduce with the two-port
+control above.
+
+### 🔴 The BEST instrument in this workstream was already in the app, and was being thrown away
+
+The React app validates responses at runtime in development and logs **"contract drift"**
+with a structured list of what failed. It is the CLIENT'S OWN VERDICT on the contract —
+strictly better evidence than any external field diff, because it states what the app
+expected, not merely what differs. The smoke was truncating it to 200 characters and
+discarding it.
+
+Captured properly, the first message reports **60 issues on one endpoint**:
+
+```
+/v2/events?when=upcoming&per_page=20   (60 issues)
+   0.contract_version : invalid_value
+   0.primary_image    : invalid_type      0.organizer   : invalid_type
+   0.category         : invalid_type      0.location    : invalid_type
+   0.schedule         : invalid_type      0.relationship: invalid_type
+   0.online_access    : invalid_type      0.series      : invalid_type
+   0.permissions      : invalid_type      0.metrics     : invalid_type
+   0.updated_at       : invalid_type      … and 48 more
+```
+
+🔴 This is a bigger gap than "some field names differ". Laravel serves a **versioned,
+structured** events contract — `contract_version`, plus nested `organizer`, `schedule`,
+`location`, `permissions` and `metrics` objects. ASP.NET returns a flat legacy shape, so
+the client's schema rejects **every row**. The date-field fix earlier today made the
+dashboard render; it did not make this endpoint conform.
+
+**Prefer this instrument over `rank-read-differences.mjs` where it is available.** The
+ranking script infers interest from whether a field name appears in the source; this is
+the app itself failing validation. The ranking script remains useful for endpoints the
+app does not schema-check.
+
+`scripts/smoke-react-against-aspnet.mjs` now serialises these via `msg.args()` and prints
+them per endpoint, deduplicated.
+
+### Member ACTIONS and token refresh through the browser
+
+- 🔴 **Creating a listing through the UI: PROVEN.** The smoke fills the real form and
+  submits it; the app navigates to `/listings/23` and
+  `GET /api/v2/listings/23` returns the exact title the smoke typed. A member action now
+  works end to end against ASP.NET through the app's own form, CSRF handling and
+  validation — not just through the write harness, which speaks HTTP directly.
+
+  Four wrong turns on the way there, all of which LOOKED like backend faults:
+  1. `/listings/new` is not the route — it is `/listings/create` (`AppRoutes.tsx:990`).
+     `new` matches `listings/{id}`, so the app requested `/api/v2/listings/new`, got a
+     404, and the step reported "form not reachable".
+  2. The fields have **no `name` attribute** — HeroUI renders react-aria generated ids
+     (`react-aria…_r_bp_`). Target by LABEL.
+  3. A category is REQUIRED, so the submit stays disabled without one — the same shape as
+     the login form's community selector.
+  4. The consent dialogs re-appear on this page and a click on a covered button hung for
+     the full 30-second default. Every consent dismissal now carries a short timeout so a
+     covered button degrades instead of hanging.
+
+- **RSVP to an event: still not proven, but the reason is now precise.** The step reports
+  *"no event DETAIL links on the list (only create/filter links)"* — the events list page
+  renders no link matching `/events/<number>`, even though ASP.NET holds five events and
+  serves them on `GET /api/v2/events`. Worth investigating: it may be the list not
+  rendering rows, or a link pattern the selector does not know.
+
+  🔴 Two selector faults preceded that answer and BOTH read as backend gaps:
+  `a[href*="/events/"]` also matches `/events/create`, so the step opened the CREATE
+  form — whose buttons are "Select a category" and "Create Event" — and then reported
+  "no RSVP control on the event page" while never having opened an event. The selector
+  now requires a numeric id.
+
+  🔴 Still a TEST GAP until an event page is actually opened. Do not report RSVP as
+  either working or broken.
+- 🔴 **Token refresh: the browser step produced a FALSE NEGATIVE that nearly shipped as an
+  ASP.NET fault.** Deleting the access token from localStorage does not simulate expiry —
+  the client finds no token, redirects to `/login`, and never attempts a refresh. Asked
+  directly, the backend is fine:
+
+  ```
+  POST /api/auth/refresh          -> 200, new access token issued
+  the same refresh token again    -> 409 AUTH_REFRESH_SUPERSEDED   (correct rotation)
+  ```
+
+  🔴 Separately, and genuinely: **Laravel does not serve `/api/auth/refresh` at all.** Its
+  routes are `/auth/refresh-session` and `/auth/refresh-token` (`routes/api.php:3291,
+  3319`). The two backends disagree on the refresh ROUTE — a real contract gap, recorded
+  here rather than fixed, because which spelling the canonical client uses has not been
+  measured.
+
+### 🔴 The dev rate limit was corrupting the smoke's own results
+
+One smoke pass makes ~190 API calls; the extended pass exceeds 200, against a
+`RateLimiting__General__PermitLimit` of **200 per 60s**. The run throttled ITSELF and
+filled its report with 429s indistinguishable from backend faults — two "findings" (a
+missing form field, an empty events list) were nothing but rate limiting. Raised to 2000
+in `compose.yml`, development only; production limits are untouched.
+
+### What this does NOT prove — no points are claimed yet
+
+No score is banked for this. Banking needs a scoring pass at a fixed SHA, and the
+remaining evidence gaps are real:
+
+- **web-uk has still never been run against ASP.NET.** Half the category by name.
+- Only the PROXIED pass was run. The DIRECT pass (`VITE_API_BASE` straight at :5080),
+  which is what exposes CORS and preflight, has not been attempted — the dev allowlist in
+  `aspnet-backend/compose.yml:38-41` lacks 5173 and lists what looks like a typo, `5273`.
+- Five screens, read-only. No member action — posting, RSVPing, transferring — has been
+  driven through the UI.
+- Token REFRESH across expiry is untested; the run is short enough to live inside one
+  access token.
+
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
 🔴 Everything from here down is history. Baseline 1's 712/1000 is retained

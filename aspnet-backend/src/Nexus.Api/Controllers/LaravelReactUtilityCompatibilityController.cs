@@ -451,6 +451,38 @@ public sealed class LaravelReactUtilityCompatibilityController : ControllerBase
         return Data(new { enabled = true, results = Array.Empty<object>() });
     }
 
+    /// <summary>
+    /// GET /api/v2/exchanges/needs-attention-count — feeds the React dashboard's
+    /// "Needs your attention" card.
+    ///
+    /// 🔴 Found by RUNNING the app, not by diffing responses. This returned items with
+    /// no `action` field, so `DashboardPage.tsx:897` evaluated
+    /// <c>t(`exchanges_attention.action.${item.action}`)</c> to the literal key
+    /// `exchanges_attention.action.undefined`, logged a missing-translation error and
+    /// rendered the raw key text in the chip. `counterparty_name` and
+    /// `counterparty_avatar` were absent too — the card reads all three.
+    ///
+    /// The frontend's own contract (`AttentionExchange`, DashboardPage.tsx:823) is
+    /// id, status, action, listing_title, counterparty_name, counterparty_avatar, with
+    /// action constrained to accept | confirm | review | active | view.
+    ///
+    /// `action` derivation copied from Laravel's `ExchangeService::getNeedingAttention`
+    /// (app/Services/ExchangeService.php:161-166), read from source because the
+    /// disposable Laravel's fixture returns an empty list and could not be measured:
+    ///
+    ///   pending AND I am the provider     -> "accept"   (my turn to respond)
+    ///   pending_confirmation, mine missing -> "confirm"  (my turn to confirm hours)
+    ///   completed                          -> "review"   (my turn to review)
+    ///   otherwise                          -> "active"   (in flight / awaiting them)
+    ///
+    /// 🔴 Read from SOURCE, not measured live — flagged because that is weaker evidence
+    /// than this workstream's normal standard. When a fixture exchange needing attention
+    /// exists, measure it and confirm.
+    ///
+    /// 🔴 The extra fields this sends and Laravel does not (`listing_id`, `created_at`,
+    /// `updated_at`) are deliberately LEFT. Removing them is subtractive and needs its
+    /// own evidence; adding the missing three is additive and fixes the visible defect.
+    /// </summary>
     [Authorize]
     [HttpGet("/api/exchanges/needs-attention-count")]
     [HttpGet("/api/v2/exchanges/needs-attention-count")]
@@ -475,11 +507,41 @@ public sealed class LaravelReactUtilityCompatibilityController : ControllerBase
                 listing_id = e.ListingId,
                 listing_title = e.Listing != null ? e.Listing.Title : null,
                 created_at = e.CreatedAt,
-                updated_at = e.UpdatedAt
+                updated_at = e.UpdatedAt,
+                // Projected for the action/counterparty derivation below. EF cannot
+                // translate that logic, so it happens in memory on at most 5 rows.
+                is_provider = e.ProviderId == userId.Value || e.ListingOwnerId == userId.Value,
+                // The entity has FirstName/LastName, no Name — composed here rather
+                // than assumed. The frontend types counterparty_name as a plain string.
+                initiator_name = e.Initiator != null ? (e.Initiator.FirstName + " " + e.Initiator.LastName) : null,
+                initiator_avatar = e.Initiator != null ? e.Initiator.AvatarUrl : null,
+                provider_name = e.Provider != null ? (e.Provider.FirstName + " " + e.Provider.LastName) : null,
+                provider_avatar = e.Provider != null ? e.Provider.AvatarUrl : null,
+                is_initiator = e.InitiatorId == userId.Value
             })
             .ToListAsync();
 
-        return Data(new { count = rows.Count, items = rows });
+        var items = rows.Select(r => new
+        {
+            r.id,
+            r.status,
+            action = r.status switch
+            {
+                "requested" when r.is_provider => "accept",
+                "pendingconfirmation" => "confirm",
+                "pending_confirmation" => "confirm",
+                "completed" => "review",
+                _ => "active",
+            },
+            r.listing_id,
+            r.listing_title,
+            counterparty_name = ((r.is_initiator ? r.provider_name : r.initiator_name) ?? string.Empty).Trim(),
+            counterparty_avatar = r.is_initiator ? r.provider_avatar : r.initiator_avatar,
+            r.created_at,
+            r.updated_at,
+        }).ToList();
+
+        return Data(new { count = items.Count, items });
     }
 
     [Authorize]

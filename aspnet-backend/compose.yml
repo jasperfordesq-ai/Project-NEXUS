@@ -35,14 +35,36 @@ services:
       - Jwt__Secret=${JWT_SECRET:?JWT_SECRET environment variable is required}
       - Jwt__Issuer=
       - Jwt__Audience=
+      # 🔴 5173 is the canonical React dev server's ACTUAL port
+      # (react-frontend/vite.config.ts:323) and was MISSING here until 2026-08-19, so
+      # the committed `npm run dev:dotnet` could never talk to this backend directly —
+      # a preflight from http://localhost:5173 came back 204 with NO
+      # Access-Control-Allow-Origin, which a browser treats as a refusal. 5273 is not a
+      # typo: docs/PRODUCTION_READINESS_REMEDIATION.md:84-87 documents running Vite on
+      # 5273 as a WORKAROUND for this very gap. Both are kept — the workaround still
+      # works, and now the default does too. 5199 is the port
+      # scripts/smoke-react-against-aspnet.mjs uses, chosen so it never takes 5173 from
+      # the owner's own dev server. Both localhost and 127.0.0.1 are listed because CORS
+      # origins are exact string matches, not host lookups.
       - Cors__AllowedOrigins__0=http://localhost:5080
       - Cors__AllowedOrigins__1=http://localhost:5273
       - Cors__AllowedOrigins__2=http://localhost:5180
       - Cors__AllowedOrigins__3=http://localhost:5190
+      - Cors__AllowedOrigins__4=http://localhost:5173
+      - Cors__AllowedOrigins__5=http://127.0.0.1:5173
+      - Cors__AllowedOrigins__6=http://localhost:5199
+      - Cors__AllowedOrigins__7=http://127.0.0.1:5199
       # Rate limiting (relaxed for development)
       - RateLimiting__Auth__PermitLimit=10
       - RateLimiting__Auth__WindowSeconds=60
-      - RateLimiting__General__PermitLimit=200
+      # 🔴 Raised from 200 on 2026-08-19. A single pass of
+      # scripts/smoke-react-against-aspnet.mjs makes ~190 API calls, and the extended
+      # pass (member actions + token refresh) exceeds 200 — so the smoke throttled
+      # ITSELF and filled its own report with 429s that look exactly like backend
+      # faults. Two "findings" (a missing form field, an empty events list) turned out
+      # to be nothing but rate limiting. This is a DEVELOPMENT value only; production
+      # rate limits live in appsettings.Production.json and are untouched.
+      - RateLimiting__General__PermitLimit=2000
       - RateLimiting__General__WindowSeconds=60
       # RabbitMQ configuration
       - RabbitMq__Host=rabbitmq
@@ -55,9 +77,13 @@ services:
       # WebAuthn/Passkey (FIDO2) configuration
       - Fido2__ServerDomain=localhost
       - Fido2__ServerName=Project NEXUS
+      # Same omission as the CORS list above: passkey registration from the React dev
+      # server on 5173 would have been rejected as an unknown origin.
       - Fido2__Origins__0=http://localhost:5080
       - Fido2__Origins__1=http://localhost:5273
       - Fido2__Origins__2=http://localhost:5180
+      - Fido2__Origins__3=http://localhost:5173
+      - Fido2__Origins__4=http://127.0.0.1:5173
       - FileUpload__UploadsRoot=/app/uploads
       # Sentry — DSN read from .env (Sentry__Dsn). Empty = disabled.
       - Sentry__Dsn=${Sentry__Dsn:-}

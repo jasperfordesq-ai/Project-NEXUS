@@ -1,0 +1,333 @@
+// Copyright (c) 2024-2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+/**
+ * First runtime smoke of the UNCHANGED canonical React frontend against the ASP.NET
+ * backend. Configuration only — no frontend source is modified, which is the whole
+ * point: the completion gate is "two unchanged frontends by two backends".
+ *
+ * 🔴 Why this exists, when a response-diff harness already does. It measures a
+ * DIFFERENT thing, and it found faults the diff harness scored as cosmetic. First run,
+ * 2026-08-19:
+ *
+ *   - GET /api/v2/events emitted `starts_at` where Laravel emits `start_date`.
+ *     DashboardPage.tsx does `new Date(event.start_date)`, so it built an Invalid Date
+ *     and `formatMonthShort` threw RangeError. The whole "Upcoming events" dashboard
+ *     section fell into its error boundary. The endpoint returned a well-formed 200 the
+ *     entire time — the diff harness reported "some field names differ", which reads as
+ *     cosmetic. One of those names was load-bearing.
+ *   - /api/v2/exchanges/needs-attention-count omitted `action`, so the dashboard
+ *     rendered the literal key `exchanges_attention.action.undefined` in a chip.
+ *
+ * Dashboard visible text went 1,365 -> 6,870 characters once the first was fixed, which
+ * is the kind of evidence only a browser produces.
+ *
+ * Usage — start the app pointed at ASP.NET, then run this:
+ *
+ *   docker compose -f aspnet-backend/compose.yml up -d api      # or its usual start
+ *   npm --prefix react-frontend run dev:dotnet -- --port 5199 --strictPort
+ *   node aspnet-backend/scripts/smoke-react-against-aspnet.mjs
+ *
+ * 🔴 Port 5199, not 5173. 5173 is the owner's own Vite server; do not take it.
+ *
+ * 🔴 Three obstacles that are FRONTEND CHROME, not backend faults. The first two runs
+ * timed out clicking a disabled button and it looked like a backend problem:
+ *   1. a cookie banner and an AI-features dialog overlay everything until dismissed;
+ *   2. the email field is `name="username"` with `type="email"`, not `name="email"`;
+ *   3. Sign In stays DISABLED until a community is chosen from a native <select>.
+ * Satisfy all three or the run measures nothing.
+ *
+ * 🔴 ONE RUN PER MINUTE. A single pass makes ~190 API calls and the dev rate limit is
+ * 200 per 60 seconds (`RateLimiting__General__PermitLimit` in aspnet-backend/compose.yml),
+ * so a back-to-back run floods the console with 429s that look like backend faults and
+ * are not. Wait for the window, or raise the limit deliberately for a batch.
+ *
+ * 🔴 It asserts CONTENT, not just navigation. A redirect back to /login and a page whose
+ * only content is an error both count as failures — "the page loaded" is not evidence.
+ */
+
+import { chromium } from 'playwright';
+
+const BASE = process.env.SMOKE_BASE || 'http://127.0.0.1:5199';
+const EMAIL = 'member@acme.test';
+const PASSWORD = 'NexusV2!Demo#2026';
+
+const stampSuffix = process.env.SMOKE_STAMP || String(process.hrtime.bigint() % 100000n);
+const api = [];
+const consoleErrors = [];
+const pageErrors = [];
+
+function classify(url, status) {
+  if (status === 0) return 'transport';
+  if (status === 401 || status === 403) return 'auth';
+  if (status === 404 || status === 405) return 'route-missing';
+  if (status >= 500) return 'server-error';
+  return 'ok';
+}
+
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+const page = await ctx.newPage();
+
+page.on('response', (r) => {
+  const u = r.url();
+  if (u.includes('/api/')) api.push({ url: u.replace(BASE, ''), absolute: u, status: r.status(), phase: current });
+});
+page.on('requestfailed', (r) => {
+  const u = r.url();
+  if (u.includes('/api/')) api.push({ url: u.replace(BASE, ''), absolute: u, status: 0, phase: current, failure: r.failure()?.errorText });
+});
+// 🔴 The app validates responses at runtime in dev and logs "contract drift" with a
+// structured list of what is wrong. That is the CLIENT'S OWN VERDICT on the contract —
+// better evidence than any external field diff, because it says what the app expected
+// and what it got. It was being truncated to 200 characters and discarded; the first
+// captured message reported 60 issues on a single endpoint. Serialise it instead.
+const contractDrift = [];
+page.on('console', async (m) => {
+  if (m.type() !== 'error') return;
+  const text = m.text();
+  if (/contract drift/i.test(text)) {
+    try {
+      const args = await Promise.all(m.args().map((a) => a.jsonValue().catch(() => null)));
+      const detail = args.find((a) => a && typeof a === 'object' && a.endpoint);
+      if (detail) { contractDrift.push({ phase: current, ...detail }); return; }
+    } catch { /* fall through and keep the plain text */ }
+  }
+  consoleErrors.push({ phase: current, text: text.slice(0, 200) });
+});
+page.on('pageerror', (e) => pageErrors.push({ phase: current, text: String(e).slice(0, 200) }));
+
+let current = 'landing';
+async function step(name, fn) {
+  current = name;
+  try { await fn(); console.log(`  step ${name}: ok`); }
+  catch (e) { console.log(`  step ${name}: FAILED — ${String(e).split('\n')[0].slice(0, 160)}`); }
+}
+
+console.log(`Smoke: unchanged React app -> ASP.NET, via ${BASE}\n`);
+
+await step('landing', async () => {
+  await page.goto(BASE, { waitUntil: 'networkidle', timeout: 60000 });
+  console.log(`    title: ${JSON.stringify(await page.title())}`);
+  const bodyLen = (await page.locator('body').innerText()).trim().length;
+  console.log(`    visible text length: ${bodyLen}`);
+});
+
+// 🔴 Consent overlays block every click until dismissed, and the first smoke run
+// timed out on the Sign In button because of them — NOT because of the backend.
+// A cookie banner and an AI-features dialog both render above the form. Classify
+// these as frontend chrome, never as ASP.NET defects.
+await step('dismiss-consent', async () => {
+  for (const label of ['Essential only', 'Use basic features only']) {
+    const b = page.locator(`button:has-text("${label}")`).first();
+    if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(500); }
+  }
+});
+
+await step('login-page', async () => {
+  await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
+  for (const label of ['Essential only', 'Use basic features only']) {
+    const b = page.locator(`button:has-text("${label}")`).first();
+    if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(400); }
+  }
+  // 🔴 The field is name="username" with type="email" — not name="email".
+  console.log(`    username inputs: ${await page.locator('input[name="username"]').count()}`);
+});
+
+await step('select-community', async () => {
+  // 🔴 THE actual gate. Sign In stays disabled until a community is chosen — the
+  // login form carries a native <select> of communities (ACME, Globex, ACME Youth,
+  // Smoke Hub, Smoke Branch). The first two smoke runs timed out clicking a disabled
+  // button and it looked like a backend problem. It is not: it is a required field.
+  const opts = await page.locator('select option').allTextContents();
+  console.log(`    communities offered: ${JSON.stringify(opts.map((o) => o.trim()).filter(Boolean))}`);
+  await page.selectOption('select', { label: 'ACME Community Timebank' });
+  await page.waitForTimeout(600);
+});
+
+await step('login-submit', async () => {
+  await page.fill('input[name="username"]', EMAIL);
+  await page.fill('input[name="password"]', PASSWORD);
+  // 🔴 Sign In is DISABLED until the form validates, so waiting for enabled is part
+  // of the test rather than a workaround.
+  const submit = page.locator('button[type="submit"]:has-text("Sign In")').first();
+  await submit.waitFor({ state: 'visible', timeout: 15000 });
+  for (let i = 0; i < 20 && !(await submit.isEnabled()); i++) await page.waitForTimeout(250);
+  console.log(`    submit enabled: ${await submit.isEnabled()}`);
+  await submit.click();
+  await page.waitForTimeout(6000);
+  console.log(`    url after submit: ${page.url().replace(BASE, '') || '/'}`);
+  const token = await page.evaluate(() => Object.keys(localStorage).filter((k) => /token|auth/i.test(k)));
+  console.log(`    auth keys in localStorage: ${JSON.stringify(token)}`);
+});
+
+for (const [name, path] of [['dashboard', '/dashboard'], ['listings', '/listings'], ['members', '/members'], ['wallet', '/wallet']]) {
+  await step(name, async () => {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2500);
+    const url = page.url().replace(BASE, '');
+    const text = (await page.locator('body').innerText()).trim();
+    // 🔴 "the page loaded" is not evidence. A redirect back to /login, or a page
+    // whose only content is an error, both count as FAILED here.
+    const redirected = url.startsWith('/login') ? '  🔴 REDIRECTED TO LOGIN' : '';
+    const looksEmpty = text.length < 200 ? '  🔴 ALMOST NO CONTENT' : '';
+    console.log(`    ${path} -> ${url}  text=${text.length}${redirected}${looksEmpty}`);
+  });
+}
+
+// ── member ACTIONS through the UI ──────────────────────────────────────────────
+// 🔴 Everything above is READ-ONLY. A backend can serve every page correctly and still
+// refuse every action, and until 2026-08-19 no member action had ever been driven
+// through the browser against ASP.NET — only through the write harness, which speaks
+// HTTP directly and bypasses the app's own forms, CSRF handling and error surfacing.
+await step('action-create-listing', async () => {
+  // 🔴 `/listings/create`, not `/listings/new`. The wrong guess is not a harmless typo:
+  // `listings/new` matches the `listings/:id` route, so the app requests
+  // /api/v2/listings/new, gets a 404, and the step reports "form not reachable" — which
+  // reads exactly like a backend fault. Route confirmed at AppRoutes.tsx:990.
+  await page.goto(`${BASE}/listings/create`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+  // 🔴 Consent dialogs re-appear on this page too and overlay the form.
+  for (const label of ['Use basic features only', 'Essential only']) {
+    const b = page.locator(`button:has-text("${label}")`).first();
+    if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(400); }
+  }
+
+  // 🔴 The fields have NO `name` attribute — HeroUI renders react-aria generated ids
+  // (`react-aria…_r_bp_`), so `input[name="title"]` matches nothing and the step used to
+  // report "form not reachable", which reads like the page failed to load. It did not:
+  // the form was there, with a visible "Create Listing" submit. Target by LABEL.
+  const title = page.getByLabel(/title/i).first();
+  if (!(await title.count())) { console.log('    no title field — selector needs updating, NOT a backend result'); return; }
+  await title.fill(`Smoke listing ${stampSuffix}`, { timeout: 10000 });
+  const desc = page.getByLabel(/description/i).first();
+  if (await desc.count()) await desc.fill('Created by the runtime smoke to exercise a member action end to end.');
+  // 🔴 A category is REQUIRED (listing.require_category defaults on), so the submit stays
+  // disabled without one — the same shape as the login form's community selector. A click
+  // on a disabled button times out after 30s and looks like a hang.
+  const selects = page.locator('select');
+  for (let i = 0; i < await selects.count(); i += 1) {
+    const opts = await selects.nth(i).locator('option').count();
+    if (opts > 1) { await selects.nth(i).selectOption({ index: 1 }).catch(() => {}); }
+  }
+  await page.waitForTimeout(800);
+
+  const submit = page.locator('button[type="submit"]:has-text("Create Listing")').first();
+  if (!(await submit.count())) { console.log('    no Create Listing button — selector needs updating'); return; }
+  if (!(await submit.isEnabled())) {
+    console.log('    🔴 submit still DISABLED — a required field is unsatisfied; not a backend result');
+    return;
+  }
+  await submit.click({ timeout: 15000 }).catch((e) => console.log('    click failed: ' + String(e).slice(0, 90)));
+  await page.waitForTimeout(5000);
+  const after = page.url().replace(BASE, '');
+  console.log(`    after submit: ${after}`);
+  console.log(`    ${after.includes('/listings/create') ? '🔴 still on the form — the create did NOT complete' : 'navigated away — create appears to have succeeded'}`);
+});
+
+await step('action-rsvp-event', async () => {
+  await page.goto(`${BASE}/events`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  // 🔴 Must match /events/<NUMBER>. `a[href*="/events/"]` also matches `/events/create`,
+  // and picking that opened the CREATE form — whose buttons are "Select a category" and
+  // "Create Event", so the step then reported "no RSVP control on the event page" while
+  // never having opened an event at all. A selector fault that reads as a backend gap.
+  const hrefs = await page.locator('a[href*="/events/"]').evaluateAll((els) =>
+    els.map((e) => e.getAttribute('href')).filter((h) => /\/events\/\d+(?:[/?#]|$)/.test(h || '')));
+  if (!hrefs.length) { console.log('    no event DETAIL links on the list (only create/filter links)'); return; }
+  await page.goto(`${BASE}${hrefs[0].startsWith('/') ? hrefs[0] : `/${hrefs[0]}`}`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2500);
+  // Labels read from react-frontend/public/locales/en/events.json rather than guessed.
+  const rsvp = page.locator('button:has-text("Going"), button:has-text("Interested"), [aria-label="RSVP options"] button').first();
+  if (!(await rsvp.count())) { console.log('    no RSVP control on the event page'); return; }
+  await rsvp.click().catch(() => {});
+  await page.waitForTimeout(3000);
+  console.log('    RSVP control clicked');
+});
+
+// ── token refresh across expiry ────────────────────────────────────────────────
+// 🔴 A short smoke lives entirely inside one access token, so it can pass while refresh
+// is completely broken.
+//
+// 🔴 READ THE VERDICT CAREFULLY — this step reports CLIENT behaviour, not backend
+// health, and on 2026-08-19 it produced a FALSE NEGATIVE that nearly went into a report
+// as an ASP.NET fault. Deleting the access token from localStorage is NOT how expiry
+// works: the client finds no token at all and redirects to /login without ever
+// attempting a refresh. The backend was fine. Asked directly:
+//
+//     POST http://127.0.0.1:5080/api/auth/refresh  -> 200, new access token issued
+//     the same token a second time                 -> 409 AUTH_REFRESH_SUPERSEDED
+//                                                     (correct: refresh rotation)
+//
+// So "REFRESH FAILED" below means "this client did not silently recover from a missing
+// token", which is a reasonable client behaviour, NOT evidence the backend cannot
+// refresh. To test the backend, call the endpoint. To test true expiry, you need a
+// short-lived access token, not a deleted one.
+//
+// 🔴 Laravel does not serve /api/auth/refresh at all — its routes are
+// /auth/refresh-session and /auth/refresh-token (routes/api.php:3291, 3319). That the
+// two backends disagree on the refresh ROUTE is a real, separate contract gap.
+await step('token-refresh', async () => {
+  const before = await page.evaluate(() => ({
+    access: localStorage.getItem('nexus_access_token'),
+    refresh: localStorage.getItem('nexus_refresh_token'),
+  }));
+  if (!before.refresh) { console.log('    no refresh token stored — cannot test refresh'); return; }
+  await page.evaluate(() => localStorage.removeItem('nexus_access_token'));
+  console.log('    access token removed, refresh token kept');
+  await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(5000);
+  const after = await page.evaluate(() => localStorage.getItem('nexus_access_token'));
+  const url = page.url().replace(BASE, '');
+  const recovered = !!after && !url.startsWith('/login');
+  console.log(`    new access token issued: ${!!after}`);
+  console.log(`    landed on: ${url}`);
+  console.log(`    ${recovered ? 'client recovered silently' : 'client did NOT silently recover (see the note above — not a backend verdict)'}`);
+});
+
+await browser.close();
+
+// ── report ────────────────────────────────────────────────────────────────────
+const byClass = {};
+for (const r of api) {
+  const k = classify(r.url, r.status);
+  (byClass[k] ??= []).push(r);
+}
+console.log('\n─── API calls by outcome ───');
+for (const [k, rows] of Object.entries(byClass).sort((a, b) => b[1].length - a[1].length)) {
+  console.log(`${String(rows.length).padStart(4)}  ${k}`);
+}
+const bad = api.filter((r) => classify(r.url, r.status) !== 'ok');
+if (bad.length) {
+  console.log('\n─── failed requests (deduped) ───');
+  const seen = new Set();
+  for (const r of bad) {
+    const key = `${r.status} ${r.url.split('?')[0]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    console.log(`  ${String(r.status).padEnd(4)} ${classify(r.url, r.status).padEnd(14)} ${r.url.split('?')[0]}${r.failure ? '  ' + r.failure : ''}`);
+  }
+}
+if (contractDrift.length) {
+  console.log('\n─── the app\'s OWN contract-drift report ───');
+  console.log('🔴 This is the client saying the response does not match what it expects.');
+  for (const d of contractDrift) {
+    const issues = Array.isArray(d.issues) ? d.issues : [];
+    console.log(`  ${d.endpoint}  (${issues.length} issue(s))`);
+    const seen = new Set();
+    for (const i of issues) {
+      const line = typeof i === 'string' ? i : `${i.path ?? i.field ?? '?'}: ${i.message ?? i.code ?? JSON.stringify(i)}`;
+      if (seen.has(line)) continue;
+      seen.add(line);
+      if (seen.size <= 12) console.log(`      ${line}`);
+    }
+    if (seen.size > 12) console.log(`      … and ${seen.size - 12} more distinct issue(s)`);
+  }
+}
+
+console.log(`\nconsole errors: ${consoleErrors.length}, uncaught page errors: ${pageErrors.length}`);
+for (const e of [...consoleErrors, ...pageErrors].slice(0, 12)) console.log(`  [${e.phase}] ${e.text}`);

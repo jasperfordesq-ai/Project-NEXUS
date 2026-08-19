@@ -29,6 +29,14 @@ php:
   - 'composer.json'
   - 'composer.lock'
   - 'phpunit.xml'
+  # 🔴 The static-analysis CONFIG woke nothing when changed — same blind-spot class as
+  # Dockerfile.bluegreen below, and worse in one way: a change to phpstan.neon changes
+  # what the BLOCKING gate checks for every future build, and CI would not re-run the
+  # gate to find out. Proven on 2026-08-19: `reportMagicMethods: true` was added to
+  # phpstan.neon, pushed, and the next CI run reported "PHP Static Analysis: skipped"
+  # while still showing a green tick.
+  - 'phpstan.neon'
+  - 'phpstan-baseline.neon'
   - 'scripts/**'
   - 'Dockerfile'
   - 'Dockerfile.prod'

@@ -277,7 +277,27 @@ builder.Services.AddCors(options =>
                 // - X-Requested-With: Required by SignalR client
                 // - X-SignalR-User-Agent: SignalR connection metadata
                 // - Idempotency-Key: Canonical wallet transfer replay protection
-                .WithHeaders("Authorization", "Content-Type", "X-Api-Version", "X-Tenant-ID", "X-Tenant-Slug", "X-Message-View-Purpose", "X-Requested-With", "X-SignalR-User-Agent", "Idempotency-Key")
+                // 🔴 X-CSRF-Token was MISSING until 2026-08-19 and that made the app
+                // unusable cross-origin. The canonical React client sends it on writes,
+                // so a browser talking straight to this backend (rather than through
+                // Vite's dev proxy) had EVERY write refused before it left the browser:
+                //   "Access to fetch at .../api/auth/login has been blocked by CORS
+                //    policy: Request header field x-csrf-token is not allowed by
+                //    Access-Control-Allow-Headers"
+                // Login itself failed, so nothing behind the login was reachable at all.
+                // Reads were unaffected, which is why proxied testing never saw it.
+                //
+                // The three X-*-Contract headers are sent by the events safety and
+                // offline-checkin clients (react-frontend/src/lib/event-safety-api.ts,
+                // event-offline-checkin-api.ts) and were absent for the same reason.
+                //
+                // 🔴 Deliberately NOT added: X-Federation-*, X-Partner-Signature and
+                // X-Webhook-Signature. Those are server-to-server and never sent by a
+                // browser; allowlisting them here would widen a browser policy for
+                // traffic that does not use it. The list was derived by enumerating the
+                // headers the React source actually sets, not by adding the one that
+                // happened to fail first.
+                .WithHeaders("Authorization", "Content-Type", "X-Api-Version", "X-Tenant-ID", "X-Tenant-Slug", "X-Message-View-Purpose", "X-Requested-With", "X-SignalR-User-Agent", "Idempotency-Key", "X-CSRF-Token", "X-Events-Contract", "X-Event-Safety-Contract", "X-Event-Checkin-Contract")
                 // The React frontend uses fetch with credentials: 'include' for some
                 // public endpoints (bootstrap, tenant chooser, menus) so the browser
                 // will attach session cookies if present. Spec-compliant because we

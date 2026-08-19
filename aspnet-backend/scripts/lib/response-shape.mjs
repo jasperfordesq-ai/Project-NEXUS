@@ -187,12 +187,16 @@ function describeShapeDiff(laravel, aspnet) {
   const a = fieldPaths(aspnet.body);
   const missing = [...l].filter((f) => !a.has(f));
   const extra = [...a].filter((f) => !l.has(f));
+  // 🔴 FULL lists — the cap belongs to the DISPLAY, not the data. Until 2026-08-19
+  // this sliced here, so the archived JSON held only 322 of 868 differing field paths
+  // and any analysis built on the file silently covered a third of the evidence.
+  // Callers that print must slice; DIFF_SAMPLE_LIMIT is exported for them.
   return {
     missing_count: missing.length,
     extra_count: extra.length,
-    missing_in_aspnet: missing.slice(0, DIFF_SAMPLE_LIMIT),
-    extra_in_aspnet: extra.slice(0, DIFF_SAMPLE_LIMIT),
+    missing_in_aspnet: missing,
+    extra_in_aspnet: extra,
   };
 }
 
-export { UNKNOWN_LIST, skeleton, fieldPaths, splitObject, compareSkeleton, classify, describeShapeDiff };
+export { UNKNOWN_LIST, DIFF_SAMPLE_LIMIT, skeleton, fieldPaths, splitObject, compareSkeleton, classify, describeShapeDiff };
