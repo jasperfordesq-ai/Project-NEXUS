@@ -599,6 +599,12 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\ResolveTenant::class,
             \App\Http\Middleware\CheckMaintenanceMode::class,
+            // The server half of the mobile force-update lever. Sits high in the
+            // stack on purpose: a build too old to be trusted should be refused
+            // before it can authenticate, resolve anything, or mutate data. It acts
+            // ONLY on a request carrying X-Nexus-Mobile-Version and fails open, so
+            // it cannot affect the web frontend or the Capacitor wrapper.
+            \App\Http\Middleware\EnforceMobileMinimumVersion::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SeoRedirectMiddleware::class,
         ], append: [

@@ -6,6 +6,7 @@
 import { API_BASE_URL, APP_VERSION, DEFAULT_TENANT, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
 import i18n from 'i18next';
 import { storage } from '@/lib/storage';
+import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
 /**
  * Generic API client for the Project NEXUS PHP backend.
@@ -438,6 +439,23 @@ async function request<T>(
     // still throw so the caller does not mistake the refusal for success.
     if (code === 'LEGAL_ACCEPTANCE_REQUIRED') {
       onLegalAcceptanceRequiredCallback?.();
+    }
+
+    // 🔴 The client half of the force-update lever. The server refuses a build below
+    // its minimum with 426 Upgrade Required (App\Http\Middleware\EnforceMobileMinimumVersion),
+    // and this is the code that makes that refusal mean something to the member instead
+    // of appearing as an unexplained failure on every screen.
+    //
+    // Matched on the STATUS, not on the error code: 426 is unambiguous and reserved for
+    // exactly this, whereas a code string can be lost by an intermediary that rewrites
+    // the body. Published to a store rather than shown from here, because this module is
+    // infrastructure with no provider above it — see lib/updates/updateRequiredStore.ts.
+    //
+    // Still throws afterwards, deliberately. The request genuinely did not succeed, and a
+    // caller that treated a refusal as success would render an empty screen behind the
+    // blocking one.
+    if (response.status === 426) {
+      updateRequiredStore.require(updateRequiredStore.fromResponseBody(data));
     }
 
     throw new ApiResponseError(

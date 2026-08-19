@@ -26,6 +26,7 @@ import { TenantProvider } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
+import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
 import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
@@ -118,15 +119,17 @@ function RootLayout() {
             a screen-level crash cannot stop the sign-out message being delivered.
           */}
           <SessionNoticeHost />
-          <ErrorBoundary>
-            <TenantProvider>
-              <AuthProvider>
-                <RealtimeProvider>
-                  <ThemedShell />
-                </RealtimeProvider>
-              </AuthProvider>
-            </TenantProvider>
-          </ErrorBoundary>
+          <UpdateRequiredGate>
+            <ErrorBoundary>
+              <TenantProvider>
+                <AuthProvider>
+                  <RealtimeProvider>
+                    <ThemedShell />
+                  </RealtimeProvider>
+                </AuthProvider>
+              </TenantProvider>
+            </ErrorBoundary>
+          </UpdateRequiredGate>
         </SafeAreaProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>

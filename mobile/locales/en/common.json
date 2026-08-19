@@ -119,5 +119,12 @@
     "subtitle": "That page is not available in the app yet. You can open it in your browser instead.",
     "openInBrowser": "Open in browser",
     "goHome": "Go to home"
+  },
+  "updateRequired": {
+    "title": "Time to update",
+    "subtitle": "This version of the app is no longer supported. Update to carry on using it.",
+    "action": "Get the update",
+    "noLink": "We couldn't find the download link. Please check for an update in the usual place, or contact your community's organisers.",
+    "versions": "Latest version {{current}} · you have {{installed}}"
   }
 }

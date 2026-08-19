@@ -30,6 +30,7 @@ jest.mock('@/lib/constants', () => ({
 
 import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
+import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
@@ -791,5 +792,89 @@ describe('X-Nexus-Mobile-Version', () => {
     const [, retryInit] = fetchMock.mock.calls[2] as [string, RequestInit];
     expect((retryInit.headers as Record<string, string>)['X-Nexus-Mobile-Version']).toBe('1.2.0');
     jest.advanceTimersByTime(3000);
+  });
+});
+
+describe('a 426 from the version gate', () => {
+  // 🔴 The join between the two halves of the force-update lever. The server refuses an
+  // old build (App\Http\Middleware\EnforceMobileMinimumVersion); this is the code that
+  // turns that refusal into something the member can act on. Without it, a refused build
+  // shows unexplained failures on every screen and the whole lever is inert.
+
+  const REFUSAL = {
+    success: false,
+    error: { code: 'APP_UPDATE_REQUIRED', message: 'no longer supported' },
+    client_version: '1.1.0',
+    minimum_version: '1.2.0',
+    current_version: '1.3.0',
+    update_url: 'https://mobile.project-nexus.ie',
+  };
+
+  beforeEach(() => {
+    updateRequiredStore.__resetForTests();
+    // 🔴 mockClear, not just the store reset. `mockStorage.remove` accumulates calls
+    // across every test in this file, so "was the member signed out?" would see an
+    // earlier test's sign-out and fail for a reason that has nothing to do with 426.
+    // This exact leak has now caused a false failure twice in this suite.
+    mockStorage.remove.mockClear();
+  });
+
+  it('records what the server said', async () => {
+    fetchMock.mockResolvedValue(mockResponse(REFUSAL, { status: 426 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow();
+
+    expect(updateRequiredStore.getSnapshot()).toEqual({
+      clientVersion: '1.1.0',
+      minimumVersion: '1.2.0',
+      currentVersion: '1.3.0',
+      updateUrl: 'https://mobile.project-nexus.ie',
+    });
+  });
+
+  it('still throws, so a caller cannot mistake a refusal for success', async () => {
+    // A caller that treated 426 as success would render an empty screen behind the
+    // blocking one.
+    fetchMock.mockResolvedValue(mockResponse(REFUSAL, { status: 426 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toBeInstanceOf(ApiResponseError);
+  });
+
+  it('does not sign the member out', async () => {
+    // The reason it is 426 and not 403: the client treats 401/403 as a session decision
+    // and would clear the session instead of asking for an update.
+    fetchMock.mockResolvedValue(mockResponse(REFUSAL, { status: 426 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow();
+
+    expect(mockStorage.remove).not.toHaveBeenCalled();
+  });
+
+  it('is not triggered by any other error status', async () => {
+    for (const status of [400, 401, 403, 404, 409, 422, 500, 503]) {
+      updateRequiredStore.__resetForTests();
+      __resetRefreshStateForTests();
+      fetchMock.mockResolvedValue(mockResponse({ error: { code: 'NOPE' } }, { status }));
+
+      await api.get('/api/v2/feed').catch(() => undefined);
+
+      expect(updateRequiredStore.getSnapshot()).toBeNull();
+      jest.advanceTimersByTime(3000);
+    }
+  });
+
+  it('survives a 426 whose body is not what we expect', async () => {
+    // The one response the app cannot afford to mishandle: throwing while handling it
+    // would leave failures everywhere with no explanation.
+    fetchMock.mockResolvedValue(mockResponse('a plain string', { status: 426 }));
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow();
+
+    expect(updateRequiredStore.getSnapshot()).toEqual({
+      clientVersion: '',
+      minimumVersion: '',
+      currentVersion: '',
+      updateUrl: '',
+    });
   });
 });

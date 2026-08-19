@@ -119,5 +119,12 @@
     "subtitle": "Níl an leathanach sin ar fáil san aip go fóill. Is féidir leat é a oscailt sa bhrabhsálaí.",
     "openInBrowser": "Oscail sa bhrabhsálaí",
     "goHome": "Chuig an mbaile"
+  },
+  "updateRequired": {
+    "title": "Tá sé in am nuashonrú",
+    "subtitle": "Ní thacaítear leis an leagan seo den aip a thuilleadh. Nuashonraigh é chun leanúint ar aghaidh á úsáid.",
+    "action": "Faigh an nuashonrú",
+    "noLink": "Níorbh fhéidir linn an nasc íoslódála a aimsiú. Seiceáil an bhfuil nuashonrú ar fáil sa ghnáthláit, nó déan teagmháil le heagraithe do phobail.",
+    "versions": "An leagan is déanaí {{current}} · tá {{installed}} agat"
   }
 }

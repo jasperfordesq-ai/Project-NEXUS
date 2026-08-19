@@ -119,5 +119,12 @@
     "subtitle": "Cette page n'est pas encore disponible dans l'application. Vous pouvez l'ouvrir dans votre navigateur.",
     "openInBrowser": "Ouvrir dans le navigateur",
     "goHome": "Aller à l'accueil"
+  },
+  "updateRequired": {
+    "title": "Il est temps de mettre à jour",
+    "subtitle": "Cette version de l'application n'est plus prise en charge. Mettez-la à jour pour continuer à l'utiliser.",
+    "action": "Obtenir la mise à jour",
+    "noLink": "Nous n'avons pas trouvé le lien de téléchargement. Cherchez la mise à jour à l'endroit habituel ou contactez les organisateurs de votre communauté.",
+    "versions": "Dernière version {{current}} · vous avez {{installed}}"
   }
 }

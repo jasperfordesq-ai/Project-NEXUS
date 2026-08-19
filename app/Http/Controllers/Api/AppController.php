@@ -17,17 +17,38 @@ class AppController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
-    // VERSION SYNC — keep this in sync with these 2 other locations:
-    //   1. capacitor/android/app/build.gradle  →  versionName "1.1"
-    //   2. react-frontend/src/hooks/useAppUpdate.ts  →  APP_VERSION = '1.1'
-    // All three must match. Update all three together when releasing a new APK.
-    private const CURRENT_VERSION = '1.1';
+    /*
+     * 🔴 These describe the CAPACITOR wrapper around the React web app, not the Expo
+     * client in mobile/. They are two different artefacts on two different version
+     * lines; do not "tidy" them to match.
+     *
+     * The values moved to config/mobile.php unchanged. They were hardcoded constants
+     * here under a comment instructing the reader to keep them in step with
+     * `capacitor/android/app/build.gradle` — a path that is NOT in this repository
+     * (removed in df8bf84d6 and gitignored), so that instruction could not be
+     * followed and the numbers had no reachable second source to agree with.
+     * `react-frontend/src/hooks/useAppUpdate.ts` is the real consumer and still is.
+     *
+     * Being in config also means the minimum can be raised in an emergency without a
+     * code deploy, which is the entire point of a force-update lever.
+     */
+    private function capacitorCurrentVersion(): string
+    {
+        return (string) config('mobile.capacitor.current_version', '1.1');
+    }
 
-    // Minimum required version - users below this MUST update
-    private const MIN_REQUIRED_VERSION = '1.0';
+    private function capacitorMinimumVersion(): string
+    {
+        return (string) config('mobile.capacitor.minimum_version', '1.0');
+    }
 
-    // Update URL for APK download
-    private const UPDATE_URL = 'https://api.project-nexus.ie/downloads/nexus-latest.apk';
+    private function capacitorUpdateUrl(): string
+    {
+        return (string) config(
+            'mobile.capacitor.update_url',
+            'https://api.project-nexus.ie/downloads/nexus-latest.apk'
+        );
+    }
 
     // What's new in the latest version
     private const RELEASE_NOTES = [
@@ -59,8 +80,8 @@ class AppController extends BaseApiController
         $clientVersion = $this->input('version', '0.0.0');
         $platform = $this->input('platform', 'android');
 
-        $needsUpdate = version_compare($clientVersion, self::CURRENT_VERSION, '<');
-        $forceUpdate = version_compare($clientVersion, self::MIN_REQUIRED_VERSION, '<');
+        $needsUpdate = version_compare($clientVersion, $this->capacitorCurrentVersion(), '<');
+        $forceUpdate = version_compare($clientVersion, $this->capacitorMinimumVersion(), '<');
 
         // Get release notes for versions newer than client
         $releaseNotes = [];
@@ -72,18 +93,18 @@ class AppController extends BaseApiController
 
         $response = [
             'success' => true,
-            'current_version' => self::CURRENT_VERSION,
-            'min_required_version' => self::MIN_REQUIRED_VERSION,
+            'current_version' => $this->capacitorCurrentVersion(),
+            'min_required_version' => $this->capacitorMinimumVersion(),
             'client_version' => $clientVersion,
             'update_available' => $needsUpdate,
             'force_update' => $forceUpdate,
-            'update_url' => self::UPDATE_URL,
+            'update_url' => $this->capacitorUpdateUrl(),
             'release_notes' => $releaseNotes,
         ];
 
         // Add platform-specific info
         if ($platform === 'android') {
-            $response['update_url'] = self::UPDATE_URL;
+            $response['update_url'] = $this->capacitorUpdateUrl();
             $response['update_message'] = $forceUpdate
                 ? 'A critical update is required. Please update to continue using the app.'
                 : 'A new version is available with improvements and bug fixes.';
@@ -100,10 +121,10 @@ class AppController extends BaseApiController
     public function version(): JsonResponse
     {
         return $this->respondWithData([
-            'version' => self::CURRENT_VERSION,
-            'min_version' => self::MIN_REQUIRED_VERSION,
-            'update_url' => self::UPDATE_URL,
-            'release_notes' => self::RELEASE_NOTES[self::CURRENT_VERSION] ?? [],
+            'version' => $this->capacitorCurrentVersion(),
+            'min_version' => $this->capacitorMinimumVersion(),
+            'update_url' => $this->capacitorUpdateUrl(),
+            'release_notes' => self::RELEASE_NOTES[$this->capacitorCurrentVersion()] ?? [],
         ]);
     }
 
@@ -127,13 +148,38 @@ class AppController extends BaseApiController
         $version = preg_replace('/[^a-zA-Z0-9_.-]/', '', substr($version, 0, 20));
         $platform = preg_replace('/[^a-zA-Z0-9_.-]/', '', substr($platform, 0, 20));
 
-        \Illuminate\Support\Facades\Log::warning(sprintf(
-            "[APP LOG] Event: %s | Version: %s | Platform: %s | Data: %s",
+        $line = sprintf(
+            '[APP LOG] Event: %s | Version: %s | Platform: %s | Data: %s',
             $event,
             $version,
             $platform,
             json_encode($data)
-        ));
+        );
+
+        /*
+         * 🔴 The level decides whether anyone ever sees this.
+         *
+         * Everything used to be logged at `warning`, and the `sentry` log channel
+         * captures at `error` (config/logging.php), so a mobile crash report reached the
+         * log FILE and nothing else — no Sentry event, and therefore nothing in the
+         * nightly triage. Since the mobile app's own Sentry is disabled in all six build
+         * profiles, that made a crash on a member's phone invisible by two independent
+         * routes at once.
+         *
+         * A genuine crash is now logged at `error` so it reaches the automated triage; the
+         * analytics and warning traffic this endpoint also carries stays at `warning`, so
+         * raising the level does not flood it. Event names come from
+         * mobile/lib/observability/report.ts.
+         *
+         * Depends on production setting LOG_STACK=daily,stderr,sentry (see .env.example).
+         * Without that, this still lands in the log file — which is where it landed
+         * before, so the change cannot make things worse.
+         */
+        if ($event === 'mobile_error') {
+            \Illuminate\Support\Facades\Log::error($line);
+        } else {
+            \Illuminate\Support\Facades\Log::warning($line);
+        }
 
         return $this->respondWithData(['message' => __('api_controllers_1.app.log_recorded')]);
     }

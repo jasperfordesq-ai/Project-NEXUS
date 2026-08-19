@@ -119,5 +119,12 @@
     "subtitle": "Essa página ainda não está disponível na aplicação. Pode abri-la no seu navegador.",
     "openInBrowser": "Abrir no navegador",
     "goHome": "Ir para o início"
+  },
+  "updateRequired": {
+    "title": "É hora de atualizar",
+    "subtitle": "Esta versão da aplicação já não é suportada. Atualize-a para continuar a usá-la.",
+    "action": "Obter a atualização",
+    "noLink": "Não encontrámos o link de descarregamento. Procure a atualização no local habitual ou contacte os organizadores da sua comunidade.",
+    "versions": "Versão mais recente {{current}} · tem {{installed}}"
   }
 }
