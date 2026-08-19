@@ -80,6 +80,89 @@ found by looking at a picture. That is the argument for keeping the sweep.
 
 ---
 
+## 1a. FIXED — a rounding value that was never defined (and a corrected count)
+
+🔴 **This entry exists partly to correct an earlier overstatement of my own.** The
+first report of this said "632 square corners". That number was wrong, and the way it
+was wrong matters more than the fix.
+
+**The fault was real.** `rounded-panel` (391 uses) and `rounded-panel-inner` (241) —
+625 class-attribute uses across 99 files — were defined **nowhere**: not in
+`global.css`, not in `tailwind.config.js` (which contains only a `content` array), not
+in `heroui-native`, not in `react-frontend`, and not at any point in this repository's
+git history. The classes were written against a convention that was never created, and
+Tailwind v4 emits nothing for an unknown utility without warning.
+
+**But the damage was much smaller than the usage count**, because HeroUI's `Surface`,
+`Card` and `Button` all carry `rounded-3xl` (24px) in their own base classes. An inert
+class on one of those still leaves a rounded corner. Measured by classifying every use
+by the element it sits on:
+
+| Uses | Element | Actual effect |
+|---|---|---|
+| 382 | Surface / Card / Button asking for `panel` | **No defect** — wanted 24px, already had 24px |
+| 171 | Surface / Card / Button asking for `panel-inner` | 8px too round — wanted ~16px, got 24px |
+| **69** | plain `View` / `Image` / `NativePressable` | **Genuinely square** |
+
+So the honest scale is **69 square corners and 171 wrong ones**, not 625. The
+inflated figure is worth recording because it would invite someone to rip the whole
+convention out rather than define it — and because "the class is used 625 times and
+resolves to nothing" is a true sentence that leads to a false conclusion about impact.
+
+**Fix.** `--radius-panel: 1.5rem` and `--radius-panel-inner: 1rem` in the `@theme`
+block of `global.css`. `panel` deliberately matches HeroUI's own 24px surface radius,
+so the 382 accidentally-correct uses render exactly as before and the change is
+confined to the 240 that were wrong.
+
+**A third finding came out of the guard.** `rounded-button`, used once in
+`exchange-detail.tsx`, was also undefined. Removed rather than turned into a
+single-use token: `HeroButton size="sm"` already applies `rounded-3xl`, which is what
+it was reaching for.
+
+**Guarded** by `lib/theme/panelRadius.test.ts`, which scans class attributes across
+`app/` and `components/` and fails when any `rounded-*` utility is not defined in
+`global.css`, naming it and the file it appears in. It also asserts `panel-inner`
+stays smaller than `panel`, and that `panel` stays at HeroUI's 24px.
+
+🔴 Two flaws in the first version of that guard, both worth knowing because both are
+the same trap as the bug it protects against — **a check that appears to pass while
+examining the wrong thing**:
+
+1. It scanned raw file text, so it matched `rounded-button` inside the code comment
+   explaining why that utility had been removed, and reported a utility the app no
+   longer uses. Now restricted to class-attribute values, which is the accurate scope.
+2. `rounded-t-[30px]` stripped to an empty string and was reported as a phantom
+   utility named `''`. Empty and arbitrary values are now skipped.
+
+---
+
+## 1b. FIXED — colours that had already failed a contrast check were still in use
+
+Five colour values were replaced on 2026-08-18 for failing WCAG AA. The literals were
+left behind in six places, three of them filling a 72×72 tile behind a white icon on
+the **password-recovery screens** — exactly where a member who is already locked out
+has to read something:
+
+- `app/(auth)/forgot-password.tsx`, `app/(auth)/reset-password.tsx`,
+  `app/(auth)/verify-email.tsx` — `#16A34A` / `#DC2626` tile backgrounds, replaced with
+  `theme.success` / `theme.error`. White-on-token measures 5.8:1 and 6.5:1.
+- `app/(modals)/edit-exchange.tsx`, `app/(modals)/new-exchange.tsx`,
+  `app/(modals)/notifications.tsx` — dead `theme.warning ?? '#d97706'` and
+  `theme.info ?? '#3b82f6'` fallbacks, now just the token.
+
+**Every field on the `useTheme()` object is required**, so *every* `theme.X ?? literal`
+in this app is dead code that can never execute — there are roughly a dozen more of
+them (`job-analytics.tsx`, `job-detail.tsx`, `jobs.tsx`, `support.tsx`,
+`settings.tsx`, `blog-post.tsx`, …). The remainder are harmless but misleading, and
+are folded into the colour-token cleanup rather than done piecemeal here.
+
+Two decorative uses are deliberately **left alone**: `quick-create.tsx` (`#16a34a`)
+and `(tabs)/profile.tsx` (`#3b82f6`) are per-item icon tints in a menu, part of the
+~160-value decorative palette that needs a named token group and a design decision,
+not a mechanical swap.
+
+---
+
 ## 2. OPEN — the app shows two different brand colours at once
 
 **Severity: this is the reason the app "looks off". Needs an owner decision.**

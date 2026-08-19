@@ -121,7 +121,7 @@ export default function ResetPasswordScreen() {
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
-                style={{ backgroundColor: isSubmitted ? '#16A34A' : primary }}
+                style={{ backgroundColor: isSubmitted ? theme.success : primary }}
               >
                 <Ionicons name={isSubmitted ? 'checkmark-outline' : 'lock-closed-outline'} size={32} color="#fff" />
               </View>

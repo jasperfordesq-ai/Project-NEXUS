@@ -12,6 +12,30 @@
 
 @theme {
   --color-muted-foreground: var(--muted);
+
+  /* Panel radii.
+   *
+   * These two utilities were used 625 times across 99 files while being defined
+   * NOWHERE — not here, not in tailwind.config.js, not in heroui-native, and never
+   * at any point in this repository's history. Tailwind v4 emits nothing for an
+   * undefined utility, so every one of them was silently inert.
+   *
+   * The damage was smaller than the usage count suggests, because HeroUI's Surface,
+   * Card and Button carry `rounded-3xl` in their own base classes. Measured before
+   * defining these:
+   *   382 asked for `panel` on a component already at 24px  -> no visible defect
+   *   171 asked for `panel-inner` on such a component       -> 8px too round
+   *    69 sat on a plain View / Image / NativePressable     -> genuinely SQUARE
+   *
+   * Values chosen to match what the app was evidently written against: `panel` is
+   * HeroUI's own 24px surface radius (so the 382 stay as they render today), and
+   * `panel-inner` is one step down at 16px for nested content.
+   *
+   * 🔴 Guarded by lib/theme/panelRadius.test.ts, which fails if either token stops
+   * being defined while the classes are still in use. An undefined utility class
+   * cannot silently no-op again. */
+  --radius-panel: 1.5rem;
+  --radius-panel-inner: 1rem;
 }
 
 /* Project NEXUS brand override — mirrors react-frontend/src/styles/tokens.css.

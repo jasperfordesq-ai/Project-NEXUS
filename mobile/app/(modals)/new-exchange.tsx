@@ -312,7 +312,7 @@ function NewExchangeModalInner() {
             />
             {fieldErrors.title ? <ErrorText message={fieldErrors.title} theme={theme} /> : null}
             {isGenericTitle ? (
-              <Text className="rounded-2xl px-3 py-2 text-xs leading-5" style={{ color: theme.warning ?? '#d97706', backgroundColor: withAlpha(theme.warning ?? '#f59e0b', 0.12) }}>
+              <Text className="rounded-2xl px-3 py-2 text-xs leading-5" style={{ color: theme.warning, backgroundColor: withAlpha(theme.warning, 0.12) }}>
                 {t('form.titleTooGenericHint')}
               </Text>
             ) : null}

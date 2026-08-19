@@ -453,7 +453,7 @@ function categoryIcon(category: string | undefined | null): React.ComponentProps
 }
 
 function categoryColor(category: string | undefined | null, fallback: string, theme: Theme): string {
-  const info = theme.info ?? '#3b82f6';
+  const info = theme.info;
   const success = theme.success ?? '#22c55e';
   const warning = theme.warning ?? '#f59e0b';
   switch (category) {

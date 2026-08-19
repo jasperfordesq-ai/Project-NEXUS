@@ -94,6 +94,36 @@ const VOLATILE_SCREENS = new Set(['02-home-feed.png', '03-listings.png', '04-mes
 /** A difference this small is anti-aliasing noise, not a regression. */
 const MAX_DIFF_RATIO = 0.001; // 0.1% of compared pixels
 
+/**
+ * 🔴 These settings were `{ threshold: 0.02, includeAA: true }` and the gate was
+ * effectively blind. Measured on 2026-08-19 against a real, intended change — panel
+ * corner radii going from 24dp to 16dp on the wallet screen:
+ *
+ *   threshold 0.1  includeAA false ->     40 px (0.002%)  <- PASSED, reported "ok"
+ *   threshold 0.1  includeAA true  ->     48 px (0.002%)  <- still passes
+ *   threshold 0.05 includeAA true  ->  3,587 px (0.147%)
+ *   threshold 0.02 includeAA true  ->  9,886 px (0.406%)  <- matches a hand count
+ *
+ * The cause is not anti-aliasing, it is the threshold. pixelmatch's `threshold` is a
+ * YIQ colour-distance tolerance, and much of this app is a light grey surface on a
+ * white card — a delta of roughly 14/255 per channel. At 0.1 that entire class of
+ * change is inside the tolerance, so the gate could not see a tile move, a radius
+ * change, or a surface swap between similar light tones. It reported "0 px" and the
+ * readiness doc took that to mean "pixel-gated at 0px repeatability", which
+ * overstated the protection considerably.
+ *
+ * 0.02 is the floor, not a preference: at 0.01 an untouched login screen reports
+ * 42,240 differing pixels (1.7%) from ordinary render noise, which would make the
+ * gate cry wolf. At 0.02 login still reports exactly 0 while both genuinely changed
+ * screens report hundredths of a percent. `includeAA: true` is set because curve and
+ * edge changes are largely made of anti-aliased pixels, and discarding them is
+ * discarding the evidence.
+ *
+ * Guarded by scripts/screenshots.contrastSensitivity.test.mjs, which fails if these
+ * settings drift back to a tolerance that cannot see a grey-on-white change.
+ */
+const PIXELMATCH_OPTIONS = Object.freeze({ threshold: 0.02, includeAA: true });
+
 const args = process.argv.slice(2);
 const mode = args[0];
 const scheme = argValue('--scheme', 'light');
@@ -507,10 +537,7 @@ function doCompare() {
     }
 
     const diff = new PNG({ width: a.width, height: a.height });
-    const changed = pixelmatch(a.data, b.data, diff.data, a.width, a.height, {
-      threshold: 0.1,
-      includeAA: false,
-    });
+    const changed = pixelmatch(a.data, b.data, diff.data, a.width, a.height, PIXELMATCH_OPTIONS);
     const ratio = changed / (a.width * a.height);
 
     if (ratio > MAX_DIFF_RATIO) {

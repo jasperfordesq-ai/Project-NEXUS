@@ -955,12 +955,16 @@ function RelatedListingGroup({ title, listings, primary, theme }: { title: strin
     <View className="gap-2">
       <Text className="text-xs font-semibold uppercase text-muted-foreground">{title}</Text>
       <View className="flex-row flex-wrap gap-2">
+        {/* This button carried a `rounded-button` class that was never defined
+            anywhere, so it emitted no CSS. Removed rather than invented as a token:
+            `size="sm"` already applies rounded-3xl, which is what it was reaching
+            for. Guarded by lib/theme/panelRadius.test.ts. */}
         {listings.slice(0, 6).map((item) => (
           <HeroButton
             key={item.id}
             size="sm"
             variant="outline"
-            className="rounded-button px-3 py-2"
+            className="px-3 py-2"
             style={{ borderColor: primary }}
             onPress={() => router.push({ pathname: '/(modals)/exchange-detail', params: { id: String(item.id) } })}
             accessibilityLabel={item.title}

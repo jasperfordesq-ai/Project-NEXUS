@@ -14,6 +14,7 @@ import { Card as HeroCard, Spinner } from 'heroui-native';
 import { verifyEmail } from '@/lib/api/auth';
 import { ApiResponseError } from '@/lib/api/client';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useTheme } from '@/lib/hooks/useTheme';
 import Button from '@/components/ui/Button';
 
 type VerifyState = 'loading' | 'success' | 'error' | 'invalid';
@@ -24,6 +25,7 @@ export default function VerifyEmailScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
   const token = typeof params.token === 'string' ? params.token : '';
   const primary = usePrimaryColor();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [state, setState] = useState<VerifyState>(token ? 'loading' : 'invalid');
   const [message, setMessage] = useState<string | null>(null);
@@ -61,7 +63,13 @@ export default function VerifyEmailScreen() {
     };
   }, [token, t]);
 
-  const tone = state === 'success' ? '#16A34A' : state === 'error' || state === 'invalid' ? '#DC2626' : primary;
+  // `tone` fills a 72x72 tile behind a white icon, so it must clear 3:1 against
+  // white. The literals here were #16A34A and #DC2626 — the exact values replaced
+  // on 2026-08-18 for failing contrast, left behind in this file. The tokens are
+  // 5.8:1 and 6.5:1 against white respectively.
+  const tone = state === 'success'
+    ? theme.success
+    : state === 'error' || state === 'invalid' ? theme.error : primary;
   const icon = state === 'success' ? 'checkmark-outline' : state === 'error' || state === 'invalid' ? 'alert-outline' : 'mail-outline';
   const title =
     state === 'success'
