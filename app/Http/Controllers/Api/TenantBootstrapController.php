@@ -194,7 +194,21 @@ class TenantBootstrapController extends BaseApiController
         $cacheKey = $includeMaster ? 'tenants_list_public_all' : 'tenants_list_public';
         $cached = $this->redisCache->get($cacheKey);
 
-        if ($cached !== null) {
+        // 🔴 An EMPTY cached list is treated as no cache at all, and is never written.
+        //
+        // This endpoint feeds the community picker on the sign-in screen. On 2026-08-20 it
+        // was found serving `a:0:{}` — "No communities found." — while the database held
+        // four active tenants; deleting the key restored all four immediately. Because the
+        // old code stored the result unconditionally and only skipped the cache on `null`,
+        // one query that came back empty took the sign-in entry point down for five
+        // minutes, and every subsequent request re-served the emptiness rather than
+        // re-checking. Nobody would see an error; they would see a platform with no
+        // communities in it.
+        //
+        // A genuinely empty list means an installation with no active tenants, which can
+        // never be true in production, so paying for a query in that case costs nothing
+        // real and removes a way for the picker to go blank and stay blank.
+        if (!empty($cached)) {
             return $this->withPublicCache($this->respondWithData($cached), 300, 60);
         }
 
@@ -245,7 +259,10 @@ class TenantBootstrapController extends BaseApiController
             $data[] = $item;
         }
 
-        $this->redisCache->set($cacheKey, $data, 300);
+        // Only cache a real answer — see the note above the read.
+        if ($data !== []) {
+            $this->redisCache->set($cacheKey, $data, 300);
+        }
 
         return $this->withPublicCache($this->respondWithData($data), 300, 60);
     }

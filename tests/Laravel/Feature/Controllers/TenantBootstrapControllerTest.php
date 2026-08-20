@@ -400,6 +400,56 @@ class TenantBootstrapControllerTest extends TestCase
         $this->assertIsArray($data);
     }
 
+    /**
+     * 🔴 An empty cached community list must never be served or written.
+     *
+     * Found live on 2026-08-20: the picker on the sign-in screen said "No communities
+     * found." while the database held four active tenants. Redis was holding `a:0:{}`
+     * under `tenants_list_public`, and the old code skipped the cache only on `null`, so
+     * one query that came back empty blanked the sign-in entry point for five minutes and
+     * every request re-served the emptiness instead of re-checking. No error would appear
+     * anywhere — just a platform that seemed to contain no communities.
+     */
+    public function test_list_ignores_an_empty_cached_list_instead_of_serving_it(): void
+    {
+        /** @var RedisCache $cache */
+        $cache = app(RedisCache::class);
+        $cache->set('tenants_list_public', [], 300);
+
+        $response = $this->apiGet('/v2/tenants');
+
+        $response->assertStatus(200);
+        $slugs = array_column($response->json('data'), 'slug');
+        $this->assertContains(
+            $this->testTenantSlug,
+            $slugs,
+            'An empty cache entry was served instead of being re-read from the database.'
+        );
+    }
+
+    /**
+     * The read guard's other half: a real answer still gets cached, so the fix does not
+     * quietly turn a cached endpoint into an uncached one.
+     *
+     * 🔴 Deliberately NOT tested by forcing the query to return nothing. Deactivating
+     * every tenant is the only way to do that, and it also breaks tenant resolution for
+     * the request itself — the endpoint is never reached and the assertion passes for the
+     * wrong reason. An earlier version of this test did exactly that and failed with
+     * "Unable to resolve tenant".
+     */
+    public function test_list_still_caches_a_real_answer(): void
+    {
+        /** @var RedisCache $cache */
+        $cache = app(RedisCache::class);
+        $cache->delete('tenants_list_public');
+
+        $this->apiGet('/v2/tenants')->assertStatus(200);
+
+        $cached = $cache->get('tenants_list_public');
+        $this->assertNotEmpty($cached, 'A real tenant list should be cached.');
+        $this->assertContains($this->testTenantSlug, array_column($cached, 'slug'));
+    }
+
     public function test_list_contains_test_tenant(): void
     {
         $response = $this->apiGet('/v2/tenants');
