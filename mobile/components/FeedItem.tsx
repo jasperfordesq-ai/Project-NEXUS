@@ -161,6 +161,43 @@ const BOOKMARKABLE_TYPES = new Set<FeedItemType['type']>([
 ]);
 
 /**
+ * Feed item types the LIKE endpoint accepts — MUST stay in sync with
+ * App\Http\Controllers\Api\SocialController::VALID_LIKE_TARGETS.
+ *
+ * 🔴 This set existed on the web and not here, and its absence was a live bug. The
+ * heart in the card footer was rendered for EVERY feed item. On a milestone card
+ * (`level_up`, `badge_earned`) there is no entity to like or react to, and both
+ * endpoints refuse it — measured 2026-08-20 against the local API:
+ *
+ *   POST /api/v2/reactions  {target_type: "level_up"}     -> 400 Invalid target_type
+ *   POST /api/v2/feed/like  {target_type: "badge_earned"} -> 400 Invalid target_type
+ *
+ * So tapping that heart could only ever fail: the optimistic update flipped the icon,
+ * the request 400'd, the state reverted and a "reaction failed" toast appeared. On a
+ * gamification-heavy feed that is most of the cards — 3 of the first 4 in the test
+ * fixture. It reads as "the app cannot save my reactions", which is exactly how it was
+ * reported.
+ *
+ * `react-frontend/src/components/feed/FeedCard.tsx` fixed this by rendering NO
+ * like/react control on milestone cards, citing Sentry NEXUS-PHP-1Y. Mobile never got
+ * that fix. This is that fix.
+ */
+const LIKEABLE_TYPES = new Set<FeedItemType['type']>([
+  'post',
+  'listing',
+  'event',
+  'poll',
+  'goal',
+  'resource',
+  'volunteer',
+  'review',
+  'challenge',
+  'job',
+  'blog',
+  'discussion',
+]);
+
+/**
  * Feed item types that support emoji reactions — MUST stay in sync with
  * App\Services\ReactionService::VALID_TARGET_TYPES (mirrors the web
  * REACTABLE_FEED_TYPES in FeedCard.tsx).
@@ -213,9 +250,29 @@ function getDetailTarget(item: FeedItemType) {
     case 'challenge':
     case 'discussion':
     case 'resource':
+      return { pathname: '/(modals)/feed-item-detail', params: { id: String(item.id), type: item.type }, labelKey: 'detail.post' };
+    /*
+     * 🔴 `badge_earned` and `level_up` were in the list above, and the link they produced
+     * ALWAYS dead-ended. Found by walking the app on 2026-08-20: tapping "View post" on a
+     * badge card opens a screen reading "Not found. Something went wrong. Please try
+     * again." with a Retry button that fails identically for ever.
+     *
+     * Why it cannot work: the detail screen calls `getFeedItem(type, id)`, and
+     * `POLYMORPHIC_FEED_TYPES` in lib/api/feed.ts does not include these two — so
+     * `safeType` silently falls back to `'post'` and it fetches
+     * `GET /api/v2/feed/posts/<id>` with a GAMIFICATION event id. Measured:
+     *
+     *   GET /api/v2/feed/posts/674            -> 404 {"code":"NOT_FOUND","message":"Post not found"}
+     *   GET /api/v2/feed/items/listing/515    -> 200 (real content, for contrast)
+     *
+     * There is no post behind a milestone, so there is nothing to link to. Same family as
+     * the react/like control being rendered on these cards: an action offered on a card
+     * that has nothing behind it. Returning null removes the link rather than leaving a
+     * button whose only outcome is an error screen.
+     */
     case 'badge_earned':
     case 'level_up':
-      return { pathname: '/(modals)/feed-item-detail', params: { id: String(item.id), type: item.type }, labelKey: 'detail.post' };
+      return null;
     default:
       return null;
   }
@@ -297,6 +354,12 @@ function FeedItemInner({
   }, [liked, item.id, item.type, showToast, t]);
 
   const isReactable = REACTABLE_TYPES.has(item.type);
+  /**
+   * Whether a heart/emoji control can do anything at all for this item. A milestone
+   * card is neither reactable nor likeable, so showing one guarantees a 400 — see the
+   * LIKEABLE_TYPES note above.
+   */
+  const canRespond = isReactable || LIKEABLE_TYPES.has(item.type);
   const userReaction = reactions?.user_reaction ?? null;
 
   /**
@@ -753,32 +816,54 @@ function FeedItemInner({
         ) : null}
 
         <HeroCard.Footer className="flex-row items-center gap-2 px-4 py-3">
-          <HeroButton
-            size="sm"
-            variant={likeButtonActive ? 'secondary' : 'ghost'}
-            onPress={handleLikePress}
-            onPressIn={handleLikePressIn}
-            onPressOut={handleLikePressOut}
-            accessibilityLabel={likeButtonActive ? t('unlikePost') : t('likePost')}
-            accessibilityHint={isReactable ? t('reaction.longPressHint') : undefined}
-          >
-            <Animated.View style={{ transform: [{ scale: heartBtnScale }] }}>
-              {userReactionEmoji ? (
-                userReaction === 'time_credit' ? (
-                  <Ionicons name="time-outline" size={18} color={primary} />
+          {/*
+            🔴 Gated on `canRespond`. This control used to render on EVERY card, including
+            milestone cards where both the reaction and the like endpoint answer 400
+            "Invalid target_type" — so the heart there could only ever fail, revert, and
+            raise a "reaction failed" toast. Same fix, and same reasoning, as
+            react-frontend/src/components/feed/FeedCard.tsx (Sentry NEXUS-PHP-1Y): a
+            milestone is not user-authored content, there is nothing to react against, so
+            it gets no control rather than a broken one.
+          */}
+          {canRespond ? (
+            <HeroButton
+              size="sm"
+              variant={likeButtonActive ? 'secondary' : 'ghost'}
+              onPress={handleLikePress}
+              onPressIn={handleLikePressIn}
+              onPressOut={handleLikePressOut}
+              accessibilityLabel={likeButtonActive ? t('unlikePost') : t('likePost')}
+              accessibilityHint={isReactable ? t('reaction.longPressHint') : undefined}
+            >
+              <Animated.View style={{ transform: [{ scale: heartBtnScale }] }}>
+                {userReactionEmoji ? (
+                  userReaction === 'time_credit' ? (
+                    <Ionicons name="time-outline" size={18} color={primary} />
+                  ) : (
+                    <Text style={{ fontSize: 16 }}>{userReactionEmoji}</Text>
+                  )
                 ) : (
-                  <Text style={{ fontSize: 16 }}>{userReactionEmoji}</Text>
-                )
-              ) : (
-                <Ionicons name={likeButtonActive ? 'heart' : 'heart-outline'} size={18} color={likeButtonActive ? primary : theme.textMuted} />
-              )}
-            </Animated.View>
-            {(isReactable ? reactionTotal : likesCount) > 0 ? (
-              <HeroButton.Label style={{ color: likeButtonActive ? primary : theme.textMuted }}>
-                {isReactable ? reactionTotal : likesCount}
-              </HeroButton.Label>
-            ) : null}
-          </HeroButton>
+                  <Ionicons name={likeButtonActive ? 'heart' : 'heart-outline'} size={18} color={likeButtonActive ? primary : theme.textMuted} />
+                )}
+              </Animated.View>
+              {(isReactable ? reactionTotal : likesCount) > 0 ? (
+                <HeroButton.Label style={{ color: likeButtonActive ? primary : theme.textMuted }}>
+                  {isReactable ? reactionTotal : likesCount}
+                </HeroButton.Label>
+              ) : null}
+              {/*
+                🔴 The eight emoji reactions were invisible. `ReactionBar` offers 👍 ❤️ 😂
+                😮 😢 🎉 👏 ⏰, but the only way to reach it is a long press with no
+                affordance — so the app looked as though it had one reaction, a heart.
+                Reported as "the emojis are shit, there's just a heart". This chevron is
+                the smallest honest fix: it says more is available without changing what a
+                tap does (a tap stays a quick reaction, so nobody loses the fast path).
+              */}
+              {isReactable && !userReactionEmoji ? (
+                <Ionicons name="chevron-up" size={11} color={theme.textMuted} />
+              ) : null}
+            </HeroButton>
+          ) : null}
 
           {isCommentable ? (
             <HeroButton size="sm" variant={commentsVisible ? 'secondary' : 'ghost'} onPress={handleCommentPress}>

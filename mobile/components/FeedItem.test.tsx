@@ -381,3 +381,149 @@ describe('FeedItem', () => {
     expect(toggleReaction).toHaveBeenCalledWith('post', 601, 'celebrate');
   });
 });
+
+describe('the heart on cards nothing can be reacted to', () => {
+  /**
+   * 🔴 The bug this pins, reported from a real phone as "the emojis are shit, there's
+   * just a heart, and it fails to save my reactions".
+   *
+   * The footer heart was rendered for EVERY feed item type. On a milestone card
+   * (`level_up`, `badge_earned`) there is no entity to react to, and BOTH endpoints
+   * refuse it — measured against the local API on 2026-08-20:
+   *
+   *   POST /api/v2/reactions  {target_type:"level_up"}     -> 400 Invalid target_type
+   *   POST /api/v2/feed/like  {target_type:"badge_earned"} -> 400 Invalid target_type
+   *
+   * So the tap flipped the icon optimistically, the request failed, the state reverted
+   * and a "reaction failed" toast appeared. On a gamification-heavy feed that is most
+   * cards — 3 of the first 4 in the local fixture — which reads as "the app cannot save
+   * my reactions".
+   *
+   * The web fixed this by rendering no control at all (Sentry NEXUS-PHP-1Y). Mobile
+   * never got the fix. A rendering test cannot catch it by accident, because the button
+   * renders perfectly well; only the request it would make is impossible.
+   */
+  function milestone(type: 'level_up' | 'badge_earned') {
+    return {
+      id: 674,
+      type,
+      title: type === 'level_up' ? 'Level 3' : 'Gift Giver',
+      content: 'Reached Level 3!',
+      image_url: null,
+      user_id: 1,
+      author_name: 'E2E UserA',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-08-12T10:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+    } as unknown as FeedItemType;
+  }
+
+  // 🔴 Queried by accessibilityLabel, not testID. HeroUI's Button does NOT forward
+  // `testID` to the rendered node — the same class of dropped-prop trap as it dropping
+  // `role`. A testID-based assertion here passed for the milestone cases and failed for
+  // the control cases, i.e. it would have "proved" the fix while actually proving that
+  // no button exists under any circumstances. `t` is mocked to return the key, so the
+  // label is the raw key.
+  it.each(['level_up', 'badge_earned'] as const)(
+    '🔴 shows no react/like control on a %s card',
+    (type) => {
+      const { queryByLabelText } = render(<FeedItem item={milestone(type)} />);
+
+      expect(queryByLabelText('likePost')).toBeNull();
+      expect(queryByLabelText('unlikePost')).toBeNull();
+    }
+  );
+
+  it('still shows the control on a card that CAN be reacted to', () => {
+    // The other half of the guard: gating too aggressively would remove reactions from
+    // real content, which is a worse bug than the one being fixed.
+    const item = { ...milestone('level_up'), type: 'post' } as unknown as FeedItemType;
+
+    const { queryByLabelText } = render(<FeedItem item={item} />);
+
+    expect(queryByLabelText('likePost')).not.toBeNull();
+  });
+
+  it('keeps the control on a likeable-but-not-reactable type', () => {
+    // `resource` is in the server's like list; the point of the two sets is that either
+    // one is enough to justify a control.
+    const item = { ...milestone('level_up'), type: 'resource' } as unknown as FeedItemType;
+
+    const { queryByLabelText } = render(<FeedItem item={item} />);
+
+    expect(queryByLabelText('likePost')).not.toBeNull();
+  });
+});
+
+describe('the "View post" link on milestone cards', () => {
+  /**
+   * 🔴 Found by walking the app on a device, 2026-08-20. Tapping "View post" on a badge
+   * card opened a screen reading "Not found. Something went wrong. Please try again." with
+   * a Retry button that fails identically for ever.
+   *
+   * The detail screen calls `getFeedItem(type, id)`, and `POLYMORPHIC_FEED_TYPES` does not
+   * include `badge_earned` / `level_up` — so the type silently falls back to `'post'` and
+   * it fetches a POST using a gamification event id:
+   *
+   *   GET /api/v2/feed/posts/674         -> 404 "Post not found"
+   *   GET /api/v2/feed/items/listing/515 -> 200 (real content, for contrast)
+   *
+   * There is no post behind a milestone. Same family as the react/like control being
+   * offered on these cards.
+   */
+  function milestoneCard(type: 'level_up' | 'badge_earned') {
+    return {
+      id: 674,
+      type,
+      title: 'Level 3',
+      content: 'Reached Level 3!',
+      image_url: null,
+      user_id: 1,
+      author_name: 'E2E UserA',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-08-12T10:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+    } as unknown as FeedItemType;
+  }
+
+  // 🔴 Asserted on the VISIBLE TEXT, not accessibilityLabel. That button carries no
+  // accessibilityLabel at all, so a queryByLabelText assertion passed for the milestone
+  // cases AND failed for the control case — i.e. it "proved" the fix while really proving
+  // that no such label exists anywhere. Second time today that a query that matches
+  // nothing looked like a passing test. `t` is mocked to return the key.
+  it.each(['level_up', 'badge_earned'] as const)(
+    '🔴 offers no detail link on a %s card',
+    (type) => {
+      const { queryByText } = render(<FeedItem item={milestoneCard(type)} />);
+
+      expect(queryByText('detail.post')).toBeNull();
+    }
+  );
+
+  it('still offers the detail link on a real post', () => {
+    // The other direction: removing the link everywhere would be a worse bug.
+    const item = { ...milestoneCard('level_up'), type: 'post' } as unknown as FeedItemType;
+
+    const { queryByText } = render(<FeedItem item={item} />);
+
+    expect(queryByText('detail.post')).not.toBeNull();
+  });
+});
