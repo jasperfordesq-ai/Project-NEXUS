@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -21,6 +21,7 @@ using Nexus.Api.Entities;
 using Nexus.Api.Extensions;
 using Nexus.Api.Middleware;
 using Nexus.Api.Services;
+using Nexus.Api.Support.Feed;
 
 namespace Nexus.Api.Controllers;
 
@@ -143,16 +144,35 @@ public class V15SocialCompatibilityController : ControllerBase
     }
 
     [HttpGet("/api/v2/feed")]
-    public async Task<IActionResult> Feed([FromQuery] int page = 1, [FromQuery] int limit = 20)
+    public async Task<IActionResult> Feed(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        [FromQuery(Name = "per_page")] int? perPage = null,
+        [FromQuery] string? cursor = null,
+        [FromQuery] string? type = null)
     {
         var userId = RequireUserId();
         var safePage = Math.Max(page, 1);
-        var safeLimit = Math.Clamp(limit, 1, 100);
+        // 🔴 The React feed sends `per_page`, not `limit` (`FeedPage.tsx:313`). Reading only
+        // `limit` silently ignored the client's page size — it happened to agree at the
+        // default of 20, which is exactly why it went unnoticed. `limit` stays supported.
+        var safeLimit = Math.Clamp(perPage ?? limit, 1, 100);
+        // 🔴 The feed's filter tabs were doing NOTHING: `?type=` was not a parameter of this
+        // action, so every tab returned the identical unfiltered feed while Laravel filters
+        // properly. `null` here means "no type filter", covering `all`, an absent value, and
+        // the social filters this backend does not implement — see ResolveTypeFilter.
+        var typeFilter = FeedContractMapper.ResolveTypeFilter(type);
         var hidden = _db.HiddenPosts.Where(h => h.UserId == userId).Select(h => h.PostId);
         var muted = _db.MutedUsers.Where(m => m.UserId == userId).Select(m => m.MutedUserId);
         var postQuery = _db.FeedPosts
             .AsNoTracking()
             .Where(p => !p.IsHidden && !hidden.Contains(p.Id) && !muted.Contains(p.UserId));
+        // Posts are the `post` source type, so any OTHER type filter excludes them entirely.
+        if (typeFilter is not null && typeFilter != FeedActivitySourceTypes.Post)
+        {
+            postQuery = postQuery.Where(p => false);
+        }
+
         var activityQuery =
             from activity in _db.FeedActivities.AsNoTracking()
             join author in _db.Users.AsNoTracking()
@@ -162,6 +182,7 @@ public class V15SocialCompatibilityController : ControllerBase
                 && activity.IsVisible
                 && !activity.IsHidden
                 && !muted.Contains(activity.UserId)
+                && (typeFilter == null || activity.SourceType == typeFilter)
             select new FeedPageCandidate
             {
                 IsFeedPost = false,
@@ -183,10 +204,17 @@ public class V15SocialCompatibilityController : ControllerBase
         var postTotal = await postQuery.CountAsync();
         var activityTotal = await activityQuery.CountAsync();
         var total = postTotal + activityTotal;
-        var pageOffset = (long)(safePage - 1) * safeLimit;
+        // A cursor, when the client sends one back, wins over `page`: the React feed's
+        // infinite scroll only tracks a cursor and leaves `page` at its default, so
+        // honouring `page` in preference would re-serve the first page for ever.
+        var pageOffset = DecodeFeedOffsetCursor(cursor) ?? (long)(safePage - 1) * safeLimit;
         if (pageOffset >= total)
         {
-            return Ok(new { data = Array.Empty<object>(), meta = PageMeta(safePage, safeLimit, total) });
+            return Ok(new
+            {
+                data = Array.Empty<object>(),
+                meta = FeedPageMeta(safeLimit, pageOffset, 0, total),
+            });
         }
 
         // Pull only enough rows from each source to construct the requested
@@ -226,7 +254,7 @@ public class V15SocialCompatibilityController : ControllerBase
             .Take(fetchCount)
             .ToListAsync();
 
-        var data = posts
+        var pageCandidates = posts
             .Concat(activities)
             .OrderByDescending(candidate => candidate.IsPinned)
             .ThenByDescending(candidate => candidate.CreatedAt)
@@ -234,10 +262,20 @@ public class V15SocialCompatibilityController : ControllerBase
             .ThenBy(candidate => candidate.SourceType, StringComparer.Ordinal)
             .Skip((int)pageOffset)
             .Take(safeLimit)
-            .Select(MapFeedPageCandidate)
             .ToList();
 
-        return Ok(new { data, meta = PageMeta(safePage, safeLimit, total) });
+        // Engagement facts are batch-loaded for the assembled page, the way Laravel does
+        // it (`FeedService.php:572-640`) — one query per concern, never one per row.
+        var engagement = await LoadFeedEngagementAsync(pageCandidates, userId);
+        var data = pageCandidates
+            .Select(candidate => MapFeedPageCandidate(candidate, engagement))
+            .ToList();
+
+        return Ok(new
+        {
+            data,
+            meta = FeedPageMeta(safeLimit, pageOffset, data.Count, total),
+        });
     }
 
     [HttpPost("/api/social/feed")]
@@ -3809,106 +3847,183 @@ public class V15SocialCompatibilityController : ControllerBase
         }
     }
 
-    private static object MapFeedPageCandidate(FeedPageCandidate candidate)
+    /// <summary>
+    /// Page-scoped engagement facts, batch-loaded once per feed page.
+    /// </summary>
+    private sealed class FeedEngagement
     {
-        var author = candidate.AuthorId is int authorId
-            ? new
-            {
-                id = authorId,
-                name = candidate.AuthorName,
-                avatar_url = candidate.AuthorAvatarUrl
-            }
-            : null;
+        public Dictionary<string, int> ShareCounts { get; init; } = new(StringComparer.Ordinal);
+        public HashSet<string> Shared { get; init; } = new(StringComparer.Ordinal);
+        public HashSet<string> Bookmarked { get; init; } = new(StringComparer.Ordinal);
+        public Dictionary<int, Dictionary<string, object?>> Reactions { get; init; } = new();
 
-        if (candidate.IsFeedPost)
-        {
-            // Keep the established ASP post payload byte-for-byte compatible at
-            // the property level while the canonical activity projection is
-            // introduced alongside it.
-            return new
-            {
-                id = candidate.SourceId,
-                type = FeedActivitySourceTypes.Post,
-                content = candidate.Content,
-                image_url = candidate.ImageUrl,
-                group_id = candidate.GroupId,
-                user_id = candidate.UserId,
-                author,
-                likes_count = candidate.LikesCount,
-                comments_count = candidate.CommentsCount,
-                is_liked = candidate.IsLiked,
-                created_at = candidate.CreatedAt,
-                updated_at = candidate.UpdatedAt
-            };
-        }
-
-        var volunteerMetadata = candidate.SourceType == FeedActivitySourceTypes.VolunteerHours
-            ? ReadVolunteerHoursFeedMetadata(candidate.Metadata)
-            : default;
-        return new
-        {
-            id = candidate.SourceId,
-            type = candidate.SourceType,
-            title = candidate.Title,
-            content = candidate.Content,
-            image_url = candidate.ImageUrl,
-            group_id = candidate.GroupId,
-            user_id = candidate.UserId,
-            author,
-            likes_count = 0,
-            comments_count = 0,
-            is_liked = false,
-            created_at = candidate.CreatedAt,
-            organization = volunteerMetadata.Organization,
-            hours = volunteerMetadata.Hours
-        };
+        public static string Key(string type, int id) => $"{type}:{id}";
     }
 
-    private static VolunteerHoursFeedMetadata ReadVolunteerHoursFeedMetadata(string? metadata)
+    /// <summary>
+    /// Laravel's bookmarkable feed types (`FeedService.php:758`) mapped onto this backend's
+    /// <see cref="BookmarkContentType"/> enum. Note `blog` maps to `BlogPost`. Types absent
+    /// from this map are simply not bookmarkable, exactly as in Laravel.
+    /// </summary>
+    private static readonly Dictionary<string, BookmarkContentType> BookmarkableFeedTypes =
+        new(StringComparer.Ordinal)
+        {
+            [FeedActivitySourceTypes.Post] = BookmarkContentType.Post,
+            [FeedActivitySourceTypes.Listing] = BookmarkContentType.Listing,
+            [FeedActivitySourceTypes.Event] = BookmarkContentType.Event,
+            [FeedActivitySourceTypes.Job] = BookmarkContentType.Job,
+            [FeedActivitySourceTypes.Blog] = BookmarkContentType.BlogPost,
+            [FeedActivitySourceTypes.Discussion] = BookmarkContentType.Discussion,
+        };
+
+    private async Task<FeedEngagement> LoadFeedEngagementAsync(
+        List<FeedPageCandidate> candidates,
+        int userId)
     {
-        if (string.IsNullOrWhiteSpace(metadata))
+        var engagement = new FeedEngagement();
+        if (candidates.Count == 0)
         {
-            return default;
+            return engagement;
         }
 
-        try
+        var ids = candidates.Select(c => c.SourceId).Distinct().ToList();
+        var types = candidates.Select(c => c.SourceType).Distinct().ToList();
+
+        // share_count + is_shared. PostShare is polymorphic through
+        // OriginalType/OriginalPostId, matching Laravel's post_shares lookup.
+        var shareRows = await _db.PostShares
+            .AsNoTracking()
+            .Where(s => types.Contains(s.OriginalType) && ids.Contains(s.OriginalPostId))
+            .Select(s => new { s.OriginalType, s.OriginalPostId, s.UserId })
+            .ToListAsync();
+        foreach (var row in shareRows)
         {
-            using var document = JsonDocument.Parse(metadata);
-            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            var key = FeedEngagement.Key(row.OriginalType, row.OriginalPostId);
+            engagement.ShareCounts[key] = engagement.ShareCounts.GetValueOrDefault(key) + 1;
+            if (row.UserId == userId)
             {
-                return default;
+                engagement.Shared.Add(key);
             }
-
-            decimal? hours = null;
-            if (document.RootElement.TryGetProperty("hours", out var hoursValue))
-            {
-                if (hoursValue.ValueKind == JsonValueKind.Number && hoursValue.TryGetDecimal(out var numericHours))
-                {
-                    hours = numericHours;
-                }
-                else if (hoursValue.ValueKind == JsonValueKind.String
-                    && decimal.TryParse(
-                        hoursValue.GetString(),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
-                        out numericHours))
-                {
-                    hours = numericHours;
-                }
-            }
-
-            var organization = document.RootElement.TryGetProperty("organization", out var organizationValue)
-                && organizationValue.ValueKind == JsonValueKind.String
-                    ? organizationValue.GetString()
-                    : null;
-            return new VolunteerHoursFeedMetadata(hours, organization);
         }
-        catch (JsonException)
+
+        // is_bookmarked, for the six bookmarkable types only.
+        var bookmarkTypes = candidates
+            .Where(c => BookmarkableFeedTypes.ContainsKey(c.SourceType))
+            .Select(c => BookmarkableFeedTypes[c.SourceType])
+            .Distinct()
+            .ToList();
+        if (bookmarkTypes.Count > 0)
         {
-            // A malformed historical metadata blob must not make the whole feed
-            // unavailable. Its display-only metadata is omitted instead.
-            return default;
+            var bookmarkRows = await _db.Bookmarks
+                .AsNoTracking()
+                .Where(b => b.UserId == userId
+                    && bookmarkTypes.Contains(b.ContentType)
+                    && ids.Contains(b.ContentId))
+                .Select(b => new { b.ContentType, b.ContentId })
+                .ToListAsync();
+            var reverse = BookmarkableFeedTypes.ToDictionary(kv => kv.Value, kv => kv.Key);
+            foreach (var row in bookmarkRows)
+            {
+                if (reverse.TryGetValue(row.ContentType, out var feedType))
+                {
+                    engagement.Bookmarked.Add(FeedEngagement.Key(feedType, row.ContentId));
+                }
+            }
         }
+
+        // reactions, posts only. 🔴 PostReaction is keyed on PostId and is NOT polymorphic
+        // on this backend, so non-post rows have no reaction store at all and the key is
+        // omitted for them rather than emitted as an empty payload asserting "no reactions".
+        var postIds = candidates
+            .Where(c => c.SourceType == FeedActivitySourceTypes.Post)
+            .Select(c => c.SourceId)
+            .Distinct()
+            .ToList();
+        if (postIds.Count > 0)
+        {
+            var reactionRows = await _db.PostReactions
+                .AsNoTracking()
+                .Where(r => postIds.Contains(r.PostId))
+                .Select(r => new
+                {
+                    r.PostId,
+                    r.ReactionType,
+                    r.UserId,
+                    r.CreatedAt,
+                    AuthorName = r.User == null
+                        ? null
+                        : (r.User.FirstName + " " + r.User.LastName),
+                    AuthorAvatarUrl = r.User == null ? null : r.User.AvatarUrl
+                })
+                .ToListAsync();
+
+            foreach (var group in reactionRows.GroupBy(r => r.PostId))
+            {
+                var counts = group
+                    .GroupBy(r => r.ReactionType, StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
+                var mine = group.FirstOrDefault(r => r.UserId == userId)?.ReactionType;
+                // Laravel caps top_reactors at 3, newest first (ReactionService.php:394-402).
+                var topReactors = group
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Take(3)
+                    .Select(r => new Dictionary<string, object?>
+                    {
+                        ["id"] = r.UserId,
+                        ["name"] = (r.AuthorName ?? string.Empty).Trim(),
+                        ["avatar_url"] = string.IsNullOrWhiteSpace(r.AuthorAvatarUrl)
+                            ? null
+                            : r.AuthorAvatarUrl,
+                    })
+                    .ToList();
+
+                engagement.Reactions[group.Key] =
+                    FeedContractMapper.Reactions(counts, mine, topReactors);
+            }
+        }
+
+        return engagement;
+    }
+
+    private static object MapFeedPageCandidate(
+        FeedPageCandidate candidate,
+        FeedEngagement engagement)
+    {
+        var type = candidate.IsFeedPost ? FeedActivitySourceTypes.Post : candidate.SourceType;
+        var key = FeedEngagement.Key(type, candidate.SourceId);
+
+        return FeedContractMapper.Item(
+            new FeedContractMapper.Source
+            {
+                Id = candidate.SourceId,
+                Type = type,
+                IsFeedPost = candidate.IsFeedPost,
+                Title = candidate.Title,
+                Content = candidate.Content,
+                ImageUrl = candidate.ImageUrl,
+                GroupId = candidate.GroupId,
+                UserId = candidate.UserId,
+                AuthorId = candidate.AuthorId,
+                AuthorName = candidate.AuthorName,
+                AuthorAvatarUrl = candidate.AuthorAvatarUrl,
+                Metadata = candidate.Metadata,
+                // 🔴 The User entity has NO location column on this backend, so Laravel's
+                // listing fallback to the author's location cannot be reproduced. Left null
+                // rather than substituting an unrelated field.
+                UserLocation = null,
+                CreatedAt = candidate.CreatedAt,
+                UpdatedAt = candidate.UpdatedAt,
+            },
+            new FeedContractMapper.Facts
+            {
+                LikesCount = candidate.LikesCount,
+                CommentsCount = candidate.CommentsCount,
+                IsLiked = candidate.IsLiked,
+                ShareCount = engagement.ShareCounts.GetValueOrDefault(key),
+                IsShared = engagement.Shared.Contains(key),
+                IsBookmarked = engagement.Bookmarked.Contains(key),
+                Reactions = engagement.Reactions.GetValueOrDefault(candidate.SourceId),
+            });
     }
 
     /// <summary>
@@ -3922,6 +4037,73 @@ public class V15SocialCompatibilityController : ControllerBase
         per_page = limit,
         has_more = (long)Math.Max(page, 1) * limit < total,
     };
+
+    /// <summary>
+    /// The `/api/v2/feed` meta block, matching Laravel's `{per_page, has_more, cursor}`
+    /// (`base_url` is added by the envelope filter). The React feed reads `meta.has_more`
+    /// and `meta.cursor` at `FeedPage.tsx:342-343` and sends the cursor back on scroll.
+    ///
+    /// 🔴 This cursor encodes an OFFSET, not a keyset position, and Laravel's encodes
+    /// `{ts, id}`. That difference is deliberate and the client cannot observe it — the
+    /// cursor is opaque and merely echoed back. A keyset cursor cannot express this
+    /// endpoint's ordering, which puts pinned posts first regardless of date: a pinned row
+    /// would re-enter every page. An offset cursor is exactly as correct as the `page`
+    /// pagination this endpoint already does, and it makes infinite scroll work at all.
+    /// The known tradeoff, shared with `page`, is that rows arriving mid-scroll shift the
+    /// offset and can repeat one item; Laravel's keyset cursor does not have that flaw.
+    /// </summary>
+    private static object FeedPageMeta(int perPage, long offset, int returned, int total)
+    {
+        var consumed = offset + returned;
+        return new
+        {
+            per_page = perPage,
+            has_more = consumed < total,
+            // Laravel emits a cursor even when has_more is false (verified live), so the
+            // key is always present rather than conditionally absent.
+            cursor = EncodeFeedOffsetCursor(consumed),
+        };
+    }
+
+    private static string EncodeFeedOffsetCursor(long offset) =>
+        Convert.ToBase64String(Encoding.UTF8.GetBytes($"offset:{offset}"));
+
+    /// <summary>
+    /// Reads an offset cursor produced by <see cref="EncodeFeedOffsetCursor"/>. Anything
+    /// unrecognised — a forged value, a Laravel-issued keyset cursor left in a client's
+    /// state after a backend switch, or plain corruption — returns null so the caller falls
+    /// back to the first page instead of erroring. A cursor only selects a position in the
+    /// caller's own already-authorised feed, so no privilege rides on it; it is still parsed
+    /// strictly to a long and never interpolated anywhere.
+    /// </summary>
+    private static long? DecodeFeedOffsetCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor))
+        {
+            return null;
+        }
+
+        try
+        {
+            var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+            if (!decoded.StartsWith("offset:", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return long.TryParse(
+                decoded.AsSpan(7),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var offset) && offset >= 0
+                ? offset
+                : null;
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
 
     private static int? DecodeFeedCursor(string? cursor)
     {
@@ -4344,10 +4526,6 @@ public class V15SocialCompatibilityController : ControllerBase
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
-
-    private readonly record struct VolunteerHoursFeedMetadata(
-        decimal? Hours,
-        string? Organization);
 
     private sealed class SupportReportCompatRecord
     {

@@ -1169,6 +1169,344 @@ remaining context would leave it half-applied, which for a fail-closed client is
 than not starting: a partial union still fails validation, so the endpoint would be no
 better while looking as if it had been worked on.
 
+## 2026-08-20 (later) — the feed: 33 missing fields -> 1, and the scoping above was WRONG in its central claim
+
+**Outcome: `/api/v2/feed` goes from 33 missing fields to 1.** The one remaining is
+`data[].media`, a real schema gap (see below). A functional defect nothing had measured
+was also found and fixed: the React feed's infinite scroll could never advance.
+
+🔴 **The section immediately above got the hard part backwards, and the correction is the
+most reusable thing here.** It predicted "a materially bigger job than events or listings"
+because the shape is built in four places in a 1,915-line service. Reading the primary
+builder (`FeedService.php:489-542`) settled it in one pass:
+
+- **Laravel does NOT gate the type-specific fields by item type.** `start_date`, `rating`,
+  `job_type`, `badge_key`, `hours` and the rest are emitted on EVERY row, null when
+  absent. There is no per-type branching to reproduce, and adding any would have been a
+  divergence — the "union with honest nulls per row type" the plan called for is simply
+  a flat unconditional projection.
+- **Every type-specific value comes from ONE `metadata` JSON column**, not from joins to
+  events/jobs/badges tables. No extra queries, no schema dependency.
+
+So the four builders did not need reconciling: the plan's step 1 (read them all first) was
+still right, and it is what revealed that steps 2 and 3 were solving a problem that did not
+exist. Cost: one read of 70 lines. Had I trusted the scoping note instead, I would have
+built per-type branching that was wrong in a way tests would not catch.
+
+### What shipped
+
+- `src/Nexus.Api/Support/Feed/FeedContractMapper.cs` (new) — the flat projection, ported
+  from `FeedService.php:489-542` plus the batch block at `:572-640`, with
+  `react-frontend/src/components/feed/types.ts` (`interface FeedItem`) as the spec for what
+  the client actually reads.
+- `V15SocialCompatibilityController.Feed` — wired to the mapper; engagement facts
+  batch-loaded once per page; the dead inline projection and its two now-unused private
+  helpers deleted rather than left behind.
+
+Real data, not defaults, for four fields the previous projection omitted entirely:
+`share_count` and `is_shared` from `PostShares` (polymorphic via
+`OriginalType`/`OriginalPostId`, as Laravel does it), `is_bookmarked` from `Bookmarks`, and
+`reactions{counts,total,user_reaction,top_reactors}` from `PostReactions` — top reactors
+capped at 3 newest-first, matching `ReactionService.php:394-402`.
+
+### 🔴 The real find: the feed loaded correctly and could not be scrolled
+
+The field diff flagged `meta.cursor` as missing, which reads like a cosmetic envelope key.
+It was not. `FeedPage.tsx` sends `per_page` (`:313`) and paginates purely by cursor
+(`:321`, `:342-343`):
+
+- The endpoint read `limit`, never `per_page`. The two agree at the default of 20, which is
+  exactly why this went unnoticed.
+- With no `meta.cursor` in the response, the client's `cursorRef` stayed `undefined`, so
+  every infinite-scroll fetch sent no cursor and **re-requested the first page for ever**.
+
+Every response was a 200 with well-formed rows throughout. "The list loads" was true and
+"the feed works" was false — the same shape of illusion as events, where the list working
+said nothing about the detail view or the roster.
+
+Fixed by honouring `per_page` (keeping `limit`) and emitting `{per_page, has_more, cursor}`.
+🔴 **The cursor encodes an OFFSET; Laravel's encodes a signed `{ts, id}` keyset.** That is
+deliberate and documented at the helper: a keyset cursor cannot express this endpoint's
+ordering, which puts pinned posts first regardless of date, so a pinned row would re-enter
+every page. An offset cursor is exactly as correct as the `page` pagination already in
+place, is opaque to the client, and makes scrolling work; the shared tradeoff with `page` is
+that rows arriving mid-scroll can repeat one item, which Laravel's keyset does not.
+Unrecognised cursors — including a Laravel-issued one still held by a client that switched
+backends — fall back to the first page instead of erroring.
+
+### 🔴 A THIRD feed defect, behind the first two: the filter tabs did nothing
+
+Found by reading how the client builds the URL rather than by any diff.
+`FeedPage.tsx:312-325` sends `per_page`, `mode`, `personalised`, `tz`, `type` and
+`subtype`. The endpoint's signature accepted only `page` and `limit` — so **every filter tab
+returned the identical unfiltered feed.** Measured, same fixture:
+
+| `?type=` | Laravel | ASP.NET before | ASP.NET after |
+| --- | --- | --- | --- |
+| (none) / `all` | all rows | 19 rows | 19 rows |
+| `posts` | posts only | 19 rows | 17 rows, posts only |
+| `badge_earned` | 0 (none present) | 19 rows | 2 rows, badges only |
+| `events` | 0 | 19 rows | 0 |
+
+Fixed by porting `FeedService::TYPE_MAP` (`:93-99`) — all twelve pairs, pinned by a theory
+test, because one wrong pair silently shows an empty tab.
+
+🔴 **A trap that produced a false reading first.** The map keys are **PLURAL**
+(`events`, `posts`), and an unrecognised value silently falls back to the unfiltered feed. My
+first probe sent `?type=event` — singular — got the whole feed from BOTH backends, and read
+exactly like "Laravel does not filter either". It does. The fault was in my probe, not the
+backend; the fourth time this session's work has produced that pattern. Both the singular
+forms and the fallback are now pinned by tests.
+
+🔴 **AND I QUOTED THE WRONG CONTROLLER — caught before it was committed.** I read the
+parameter handling out of `app/Http/Controllers/Api/FeedController.php`. The route is
+`routes/api.php:931` → **`SocialController::feedV2`**. The live measurements above are
+unaffected (they measured behaviour, not code), and the type mapping matches what was
+observed either way, but the real handler accepts MORE than the wrong file suggested. This is
+why behaviour is measured and code is only ever used to explain it — the reverse would have
+shipped a confident, wrong parameter list.
+
+**Corrected: `SocialController::feedV2` reads `per_page` (1-100, default 20), `type`,
+`subtype`, `user_id`, `group_id` and `cursor`. It also resolves a `personalised` flag from the
+tenant and user toggles, which sets `mode` and applies `PersonalisedFeedService::rank()`.**
+
+So the accurate list of what ASP.NET still ignores on this endpoint:
+
+- **`subtype`** — Laravel filters on `metadata.listing_type` (`FeedService.php:299-303`).
+  A real gap: the listings feed cannot be narrowed to offers vs requests.
+- **`user_id`** — a profile feed. Laravel gates it on the target's `privacy_profile`. ASP.NET
+  ignoring it returns the ordinary feed, which is safe; implementing it without that gate
+  would not be, so it stays unimplemented until the check is ported with it.
+- **`group_id`** — a group-scoped feed.
+- **`mode` / `personalised`** — there is no ranking service on this backend, so "For you" and
+  "Recent" return the same order. `tz` is unused in Laravel's feed path too, so ignoring it
+  is not a divergence.
+- The SOCIAL scopes Laravel allows on `type` — `following`, `trending`, `for_you`, `groups`,
+  `saved` — are not type filters and are not implemented. `ResolveTypeFilter` returns null for
+  them, so the feed comes back unfiltered: the honest answer, where a wrong filter would be
+  worse.
+
+### Verification
+
+- Field diff vs the disposable Laravel on `:8091`: `data[].media` is the only key missing.
+- In the generated 195-endpoint member corpus, `GET /api/v2/feed?per_page=5` now reports
+  **`missing=1`** where it reported 33. 🔴 The corpus MATCH total moves only **77 -> 78**,
+  because the feed still counts as SHAPE_DIFFERS on that one absent key plus the two
+  deliberately-kept extras. Report the field-level movement AND the unchanged verdict — the
+  binary MATCH count is a blunt instrument and the events port hit exactly the same wall.
+  (A near-miss worth recording: `grep '^GET /api/v2/feed$'` returns nothing, because the
+  corpus entry carries a query string. I almost concluded the busiest member endpoint was
+  absent from the corpus. It is at line 53.)
+- Adjacent, unfixed, and cheap next time: **`GET /api/v2/feed/sidebar` is 11 fields short** —
+  the whole of `data.suggested_members[]`. `/api/v2/feed/hashtags/trending` already MATCHes.
+
+  🔴 **And it is serialising a RAW EF ENTITY, which is worth fixing ahead of the missing
+  fields.** `data.trending_hashtags[]` comes back as
+  `id,tenantId,tag,usageCount,createdAt,lastUsedAt,tenant,usages`:
+
+  - **camelCase EF property names** where the contract is snake_case, so a client reading
+    `usage_count` gets `undefined`. Laravel's shape is the one `/feed/hashtags/trending`
+    already produces correctly — reuse that projection rather than writing a new one.
+  - 🔴 **Two NAVIGATION PROPERTIES are exposed: `tenant` and `usages`.** They read `null` and
+    `[]` today purely because nothing eager-loads them. That is luck, not design: the day any
+    caller adds an `.Include()`, a member-facing response starts serialising the entire
+    tenant row and every usage row. This is the raw-entity-return fault class, and it should
+    be projected explicitly whether or not the missing fields are added.
+  🔴 The tenant there is id **1**, not the harness default of 2, and its users are the
+  `e2e.*@project-nexus.local` fixture accounts — a wrong guess costs two failed runs.
+- Live probe: `per_page=1` returns 1 row; page 1 (`post:4,post:18`) and the cursor's page 2
+  (`post:17,post:16`) share no ids; a garbage cursor returns page 1 without erroring.
+- The new build was confirmed to be the one answering by checking for a key only the new
+  mapper emits — a healthy container proves it answers, not which build answers.
+- `FeedContractMapperTests` + `FeedCursorPaginationTests` + `EventContractNegotiationTests`
+  (new). These assert behaviour, not key presence: emoji content is measured in code points
+  (a `string.Length` port truncates a 300-emoji post that PHP leaves whole, and can split a
+  surrogate pair), the cursor points exactly past the rows just served, a forged negative
+  offset is refused, all twelve filter pairs are pinned, and the legacy event `location` is
+  asserted to be a string and explicitly NOT a dictionary.
+- Full suite on the host: **3,739 passed / 0 failed in 39.78 min**, plus 38/38 for
+  `Nexus.Messaging.Tests` — both "Test Run Successful". Per class:
+  `FeedContractMapperTests` 21, `FeedCursorPaginationTests` 34,
+  `EventContractNegotiationTests` 19, `V15FeedActivityCompatibilityTests` 2,
+  `VolunteerHoursParityTests` 51 — all zero failures. (The negotiation class was re-run
+  filtered at 19/0 after one of its tests was rewritten; the full run had covered the
+  earlier version.) The preceding run was **3,685 / 2** —
+  🔴 Both failures were MY change and were real: `V15FeedActivityCompatibilityTests` and
+  `VolunteerHoursParityTests` asserted `content` is JSON **null** for a volunteer-hours row.
+  Laravel emits an empty STRING (`truncateWithFlag($row->content ?? '', 500)`), so the mapper
+  is right and the assertions encoded the old ASP.NET behaviour. Updated with the reason
+  recorded in place; **every leak assertion in both tests was left untouched and still
+  passes** — the private description is absent from the whole body and neither `description`
+  nor `metadata` is emitted. One of the two also pinned an EXACT 13-key list for post items,
+  which the field union necessarily breaks; it now asserts those 13 are all still present
+  plus that `metadata`, `description` and `_edge_rank` are absent, which is what the test was
+  protecting.
+
+🔴 **The browser smoke never visited `/feed`** — so the endpoint I rewrote had no
+browser-level evidence at all, and `/events` was equally unvisited, which is how the
+dashboard crash survived a "verified" events port. `/feed` and `/events` are now in the smoke's
+page list, with the reason written next to it. All six pages render against ASP.NET with
+**zero uncaught page errors**: dashboard 5,545 chars, feed 4,708, listings 4,533, events
+2,707, members 1,427, wallet 1,840. The one console error attributed to `[feed]` is a
+pre-existing React unique-key warning in `TopEndorsedWidget` — a frontend widget reading
+`/v2/members/top-endorsed`, which also fires on the login page before any feed loads, so it
+is unrelated to this work (surfaced, not fixed: frontend files are read-only here).
+
+### The 7 "extra in ASP.NET" keys are not 7 differences
+
+`data[].group_id` and `data[].updated_at` are pre-existing keys Laravel's builder does not
+emit; removing them is subtractive and needs its own evidence, so they stay. The other five
+are `reactions.counts.like`, `reactions.counts.love` and the three
+`reactions.top_reactors[]` fields — **data-dependent map keys, not schema.** Both backends
+emit `reactions`; the ASP.NET fixture has reactions on its posts and the Laravel fixture has
+none, so only ours has nested keys inside them. This is fixture asymmetry (Phase 0.3), and
+counting it as contract drift would be a false finding.
+
+### 🔴 NEXT, with the evidence already gathered: `/api/v2/events` ignores the client's parameters too
+
+Found while checking the v1 callers, and it is the SAME defect class as the feed's
+ignored `per_page` and `type` — so it should be taken next, while the pattern is fresh.
+`V15MemberParityController.V2Events` accepts only `page`, `limit` and `search`. The three
+v1 callers send more than that:
+
+| Caller | Sends | ASP.NET |
+| --- | --- | --- |
+| `DashboardPage.tsx:286` | `when=upcoming`, `per_page=3` | both ignored |
+| `groupDetail.ts:375-380` | `group_id`, `when=all`, `per_page`, `cursor` | all ignored |
+| `VereinFederationPanel.tsx:152` | `mine=1`, `limit=50` | `mine` ignored |
+
+Measured: the dashboard asks for **3** upcoming events and gets **5**. `group_id` being
+ignored means the group page's events tab shows events from every group, not that group's.
+
+🔴 **`when` is now PROVEN broken, not inferred.** The fixture held no past events, so the
+first pass could only say the parameter does not exist. Rather than leave it as a guess, a
+single past event (30 days ago) was inserted into the disposable ASP.NET dev database and
+removed again afterwards: **`?when=upcoming&per_page=3` returned it.** So the dashboard's
+"Upcoming events" widget shows FINISHED events, and asks for 3 while getting everything.
+Row count confirmed back at 5 after cleanup.
+
+That is the difference between "the action has no date predicate" and "a member sees last
+month's event under Upcoming" — and it took one insert to move from one to the other.
+
+Deliberately not fixed in this change: the commit is already verified end to end, and
+bolting on a second parameter cluster would leave the whole thing unverified. Each fix
+earns its own measurement.
+
+### Still open
+
+- **`data[].media`** — multi-image post carousels. There is no post-media table on this
+  backend at all, so the key is OMITTED rather than emitted as `[]`, which would assert
+  "this post has no images" where the truth is "this backend cannot know". Needs a table:
+  Phase 6, and until then multi-image posts render as single-image on ASP.NET.
+- `views_count` and `is_official` are emitted as `0`/`false`. No column exists here, and
+  Laravel itself guards both with `Schema::hasColumn` and defaults `views_count` to 0, so
+  this matches Laravel's own behaviour on a database without them.
+- No points are banked for any of this. Banking requires a scoring pass at a fixed SHA in
+  the five-block format.
+
+### 🔴 The smoke found a REGRESSION THIS WORKSTREAM CAUSED: the events port crashed the dashboard
+
+The single most important finding of the session, and it was invisible to the field diff.
+
+**What happened.** The 2026-08-19 events work ported `EventContractMapper.php` and wired it
+into the list, detail and roster. It did **not** port the negotiation. Laravel serves the
+canonical v2 shape **only** to a caller sending `X-Events-Contract: 2`, and legacy v1 to
+everyone else (`EventsController::eventContractVersion()`,
+`app/Http/Middleware/NegotiateEventsContract.php`). ASP.NET served **v2 unconditionally**.
+
+Measured on both backends, same fixture:
+
+| Request | Laravel `location` | ASP.NET `location` (before) |
+| --- | --- | --- |
+| no header | `"Riverside Hall"` (string) | `{label, latitude, longitude, mode, accessibility}` |
+| `X-Events-Contract: 2` | object, `contract_version: 2` | object, `contract_version: 2` |
+
+**Why it mattered.** Three React surfaces call the events list without that header — the
+dashboard (`DashboardPage.tsx:286`), group detail (`pages/groups/api/groupDetail.ts:383`)
+and the Verein federation panel (`VereinFederationPanel.tsx:152`). All three share the
+legacy `Event` type in `types/api.ts:735`, which declares **`location?: string`**, and the
+dashboard renders `{event.location}` straight into JSX (`:572`). An object there throws
+`Objects are not valid as a React child` — so **the entire dashboard unmounted with
+`Feature error in Dashboard`.**
+
+🔴 **The field diff scored events as FIXED the whole time, and always would have: a
+response diff compares the shape you ASKED for.** The harness sends
+`X-Events-Contract: 2` (added deliberately, after that same header being absent had made
+every earlier events measurement compare against v1). Adding it fixed the measurement and
+simultaneously blinded it to the default path — the only path three real screens use. Only
+the browser smoke caught this, which is exactly why the plan said to verify with BOTH.
+
+**Fixed** by `EventContractMapper.NegotiateVersion` + `DowngradeToLegacy`, applied at the
+list and detail actions, with `X-Events-Contract: <1|2>` and `Vary: X-Events-Contract` on
+the response. Verified live: no header and a junk header both give a string `location`, no
+`contract_version`, and header `1`; `X-Events-Contract: 2` is unchanged from before.
+Re-running the browser smoke: **`step dashboard: ok`**, console errors 13 -> 9 with both
+dashboard entries gone, API calls ok 390 -> 394.
+
+**Bounded by measurement, not by guesswork.** Laravel's v1 is a raw 77-key Eloquent row; v2
+has 58 keys. Of the **34 keys the two shapes share, exactly ONE changes type** — `location`.
+The 43 v1-only keys (`timezone_source`, the nine flat `accessibility_*` columns,
+`calendar_sequence`, `occurrence_key`, …) are **not** reproduced, and none of the three v1
+callers reads any of them — checked in context, where the apparent `award` and `user_id`
+matches turned out to be a Lucide icon import and query-string parameters. So the downgrade
+covers the whole measured incompatibility; the absent raw columns are a recorded gap.
+
+**Remaining narrower gap, stated rather than implied, with the evidence for why it matters.**
+The header and `Vary` are stamped inside the two controller actions, so they appear on
+success responses only. Laravel places its middleware deliberately **outermost** so the
+tokens survive auth/feature errors and cannot be dropped by a cache or CORS layer. Two
+measured consequences of stamping in the controller instead:
+
+- An auth or feature error from these routes carries no `X-Events-Contract` and no `Vary`.
+- Cross-origin, the response carries **two separate `Vary` lines** — `Vary: X-Events-Contract`
+  from the controller and `Vary: Origin` added by the CORS middleware afterwards. That is
+  valid HTTP and caches combine repeated field lines, so it is not a defect; but Laravel
+  merges them into one comma-separated header, and only an outermost middleware could do the
+  same here, because CORS runs after the controller. Verified live: same-origin gives the
+  single expected line.
+
+Moving this to ASP.NET middleware is the faithful end state.
+
+#### The attendees roster negotiates too — and is deliberately left alone
+
+Checked immediately, because one instance of a fault class usually means more. Laravel's
+`/api/v2/events/{id}/attendees` **does** negotiate: v1 rows are
+`avatar avatar_url first_name id last_name name rsvp_at rsvp_status status`, and v2 drops
+`first_name`/`last_name` while adding `attendance`, `engagement`, `member`, `registration`,
+`registered_at` and `contract_version`. ASP.NET serves v2 unconditionally here as well.
+
+🔴 **No caller is broken by it, verified rather than assumed** — so it is NOT being
+"fixed":
+
+- **web-uk sends no contract header at all**, but its `eventAttendee()`
+  (`web-uk/src/routes/events.js:554-568`) is written to accept BOTH shapes: it resolves a
+  name through `member.display_name → member.name → row.name → user.name → first+last`, and
+  a status through `registration.state`/`engagement.state` (v2) **or**
+  `rsvp_status`/`status` (v1).
+- In React, every actual attendees fetch goes through `lib/events-api.ts`, which pins
+  `X-Events-Contract: 2`. The other files matching "attendees" are referring to
+  `max_attendees`, not this endpoint.
+
+Recorded so the next session need not redo the analysis. Adding negotiation here with no
+broken consumer would be the same over-generalisation that cost this workstream 22 wrong
+endpoints once and 82 red tests another time — the events LIST was fixed because a real
+screen was measurably crashing, not because the pattern looked untidy.
+
+### Incidental finding — the app's own feed schema is wrong about LARAVEL, not about us
+
+`react-frontend/src/lib/api-schemas.ts:309` (`feedPostSchema`, the dev-only Zod layer)
+requires `updated_at` and a non-nullable `author.name`. Measured against the running
+Laravel: **it emits no `updated_at` on feed items at all** (checked directly, not inferred
+from the diff), so that dev-mode warning fires against the production backend too. ASP.NET
+emits `updated_at` on post rows and therefore satisfies the schema *more* closely than
+Laravel does.
+
+Surfaced, deliberately not fixed: it is a frontend file, and the fix is to relax the schema
+to match the backend both frontends actually run against, not to add a field to Laravel.
+The wider lesson for this workstream is that a frontend's own validator is an excellent
+instrument but is not automatically a statement of Laravel's contract — this one had
+drifted from it. Run the control before treating a schema as the spec.
+
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
 🔴 Everything from here down is history. Baseline 1's 712/1000 is retained

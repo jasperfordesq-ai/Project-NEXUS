@@ -163,7 +163,12 @@ await step('login-submit', async () => {
   console.log(`    auth keys in localStorage: ${JSON.stringify(token)}`);
 });
 
-for (const [name, path] of [['dashboard', '/dashboard'], ['listings', '/listings'], ['members', '/members'], ['wallet', '/wallet']]) {
+// 🔴 `/feed` was missing from this list until 2026-08-20, which is why a feed rewrite had
+// no browser-level evidence at all. `/events` is here for the same reason: the dashboard
+// crash caused by the events contract port was only ever going to be caught by rendering a
+// page, never by a response diff — a diff compares the shape you ASKED for, and the harness
+// asks for the canonical one. If you port a read endpoint, put its page in this list.
+for (const [name, path] of [['dashboard', '/dashboard'], ['feed', '/feed'], ['listings', '/listings'], ['events', '/events'], ['members', '/members'], ['wallet', '/wallet']]) {
   await step(name, async () => {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2500);

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.Globalization;
 using Nexus.Api.Entities;
 
 namespace Nexus.Api.Support.Events;
@@ -51,6 +52,63 @@ namespace Nexus.Api.Support.Events;
 public static class EventContractMapper
 {
     public const int Version = 2;
+
+    /// <summary>The version served when the caller does not ask for the canonical one.</summary>
+    public const int LegacyVersion = 1;
+
+    /// <summary>The negotiation header, matching Laravel's `NegotiateEventsContract`.</summary>
+    public const string ContractHeader = "X-Events-Contract";
+
+    /// <summary>
+    /// Laravel serves the canonical contract ONLY when the caller asks for it by exact
+    /// value; anything else — absent, blank, "1", "3", junk — gets legacy v1
+    /// (`EventsController::eventContractVersion()`, `NegotiateEventsContract`).
+    /// </summary>
+    public static int NegotiateVersion(string? requestedHeader) =>
+        (requestedHeader ?? string.Empty).Trim() == Version.ToString(CultureInfo.InvariantCulture)
+            ? Version
+            : LegacyVersion;
+
+    /// <summary>
+    /// Downgrades a canonical v2 projection to the legacy v1 shape, in place.
+    ///
+    /// 🔴 WHY THIS EXISTS. Porting the v2 mapper without the negotiation made this backend
+    /// serve v2 to EVERY caller, while Laravel serves v1 to anyone who does not send
+    /// `X-Events-Contract: 2`. Three React surfaces call the events list WITHOUT that
+    /// header — the dashboard (`DashboardPage.tsx:286`), group detail
+    /// (`pages/groups/api/groupDetail.ts:383`) and the Verein federation panel
+    /// (`VereinFederationPanel.tsx:152`) — and they share the legacy `Event` type, which
+    /// declares `location?: string`. The dashboard renders `{event.location}` directly
+    /// (`:572`), so an object there threw "Objects are not valid as a React child" and took
+    /// the whole dashboard down. Found by the browser smoke; the field diff had scored the
+    /// endpoint as fixed, because a diff compares the shape you ASKED for.
+    ///
+    /// 🔴 WHAT THIS IS NOT. Laravel's v1 is a raw Eloquent row: 77 keys, including 43 this
+    /// projection does not have (`timezone_source`, the nine flat `accessibility_*` columns,
+    /// `calendar_sequence`, `occurrence_key`, and so on). This does NOT reproduce them.
+    /// Measured rather than assumed: of the 34 keys the two Laravel shapes share, exactly
+    /// ONE changes type — `location`, string in v1 and object in v2 — and none of the three
+    /// v1 callers reads any of the 43 v1-only columns (checked in context; the apparent
+    /// `award` and `user_id` hits are a Lucide icon import and query-string parameters).
+    /// So this downgrade covers the whole measured incompatibility. The absent raw columns
+    /// remain a documented gap, to be filled if a caller is ever found that reads one.
+    /// </summary>
+    public static Dictionary<string, object?> DowngradeToLegacy(Dictionary<string, object?> canonical)
+    {
+        // v1 carries no version marker at all — its absence is how a client tells the
+        // shapes apart, so this must be removed rather than set to 1.
+        canonical.Remove("contract_version");
+
+        // The one measured type collision. `location_label` already carries the same string
+        // and is left in place: it is additive and harmless to a v1 client.
+        if (canonical.TryGetValue("location", out var location)
+            && location is Dictionary<string, object?> structured)
+        {
+            canonical["location"] = structured.TryGetValue("label", out var label) ? label : null;
+        }
+
+        return canonical;
+    }
 
     /// <summary>Laravel's MAINTAINED_RECURRENCE_ENGINE / _VERSION.</summary>
     private const string MaintainedRecurrenceEngine = "sabre-vobject";

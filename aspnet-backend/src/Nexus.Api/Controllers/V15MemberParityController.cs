@@ -146,7 +146,7 @@ public class V15MemberParityController : ControllerBase
             // enforce is worse than omitting a feature: the client renders a control that
             // fails on use. Real policy wiring is the next step, not a default.
             CanEdit = viewerId is not null && r.Event.CreatedById == viewerId,
-        })).ToList();
+        })).Select(ApplyEventContractNegotiation).ToList();
 
         return Ok(Paged(events, page, limit, total));
     }
@@ -281,19 +281,20 @@ public class V15MemberParityController : ControllerBase
         var viewerId = CurrentUserId();
         return Ok(new
         {
-            data = EventContractMapper.Event(row.Event, new EventContractMapper.Facts
-            {
-                ViewerId = viewerId,
-                LegacyRsvpStatus = row.MyStatus,
-                ConfirmedCount = row.Confirmed,
-                InterestedCount = row.Interested,
-                CanEdit = viewerId is not null && row.Event.CreatedById == viewerId,
-                // The viewer may register/withdraw depending on their current state — the
-                // client renders the RSVP control from these, so they must reflect reality.
-                CanRegister = row.MyStatus != Event.RsvpStatus.Going,
-                CanWithdraw = row.MyStatus == Event.RsvpStatus.Going,
-                CanSetInterest = true,
-            }),
+            data = ApplyEventContractNegotiation(
+                EventContractMapper.Event(row.Event, new EventContractMapper.Facts
+                {
+                    ViewerId = viewerId,
+                    LegacyRsvpStatus = row.MyStatus,
+                    ConfirmedCount = row.Confirmed,
+                    InterestedCount = row.Interested,
+                    CanEdit = viewerId is not null && row.Event.CreatedById == viewerId,
+                    // The viewer may register/withdraw depending on their current state — the
+                    // client renders the RSVP control from these, so they must reflect reality.
+                    CanRegister = row.MyStatus != Event.RsvpStatus.Going,
+                    CanWithdraw = row.MyStatus == Event.RsvpStatus.Going,
+                    CanSetInterest = true,
+                })),
         });
     }
 
@@ -2615,6 +2616,57 @@ public class V15MemberParityController : ControllerBase
                 has_more = hasMore,
             },
         };
+    }
+
+    /// <summary>
+    /// Serves the events contract the caller actually asked for, and advertises which one
+    /// was served.
+    ///
+    /// 🔴 Laravel serves canonical v2 ONLY to a caller sending `X-Events-Contract: 2`, and
+    /// legacy v1 to everyone else. This backend served v2 unconditionally, which crashed the
+    /// React dashboard — see <see cref="EventContractMapper.DowngradeToLegacy"/> for the
+    /// full account and the measurement that bounds it.
+    ///
+    /// The response header and `Vary` mirror `NegotiateEventsContract`. Laravel puts that
+    /// middleware deliberately OUTERMOST so a cache or CORS layer cannot drop the `Vary`
+    /// token, and so it is stamped even when the controller returns an auth or feature
+    /// error. Stamping here covers only success paths through these two actions; a
+    /// negotiated error response is a narrower remaining gap, recorded rather than implied.
+    /// `Vary` matters because the same URL legitimately returns two different shapes: a
+    /// shared cache without it would serve one caller's shape to the other.
+    /// </summary>
+    private Dictionary<string, object?> ApplyEventContractNegotiation(
+        Dictionary<string, object?> canonical)
+    {
+        var requested = Request.Headers[EventContractMapper.ContractHeader].ToString();
+        var version = EventContractMapper.NegotiateVersion(requested);
+
+        Response.Headers[EventContractMapper.ContractHeader] =
+            version.ToString(CultureInfo.InvariantCulture);
+        AppendVary(EventContractMapper.ContractHeader);
+
+        return version == EventContractMapper.Version
+            ? canonical
+            : EventContractMapper.DowngradeToLegacy(canonical);
+    }
+
+    /// <summary>Adds a token to `Vary` without duplicating one already present.</summary>
+    private void AppendVary(string token)
+    {
+        var existing = Response.Headers.Vary.ToString();
+        if (string.IsNullOrWhiteSpace(existing))
+        {
+            Response.Headers.Vary = token;
+            return;
+        }
+
+        var present = existing
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(t => string.Equals(t, token, StringComparison.OrdinalIgnoreCase));
+        if (!present)
+        {
+            Response.Headers.Vary = $"{existing}, {token}";
+        }
     }
 
     private static object EventDto(Event ev) => new

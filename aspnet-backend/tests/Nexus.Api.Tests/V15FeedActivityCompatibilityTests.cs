@@ -97,7 +97,15 @@ public sealed class V15FeedActivityCompatibilityTests : IntegrationTestBase
 
         var activity = items[activityIndex];
         activity.GetProperty("title").GetString().Should().Be("Volunteered 2.75 hours");
-        activity.GetProperty("content").ValueKind.Should().Be(JsonValueKind.Null);
+        // 🔴 EMPTY STRING, not null. Laravel runs content through
+        // `truncateWithFlag($row->content ?? '', 500)` (`FeedService.php:487,1108`), so a
+        // null column becomes `""`. This assertion expected `null` because that is what the
+        // old inline ASP.NET projection did; the FeedContractMapper now matches Laravel.
+        // The no-leak assertions in this test are UNCHANGED and still pass — the private
+        // description is absent from the whole response body, and neither `description` nor
+        // `metadata` is emitted. Only the null-vs-empty-string shape moved.
+        activity.GetProperty("content").ValueKind.Should().Be(JsonValueKind.String);
+        activity.GetProperty("content").GetString().Should().BeEmpty();
         activity.GetProperty("hours").GetDecimal().Should().Be(2.75m);
         activity.GetProperty("organization").GetString().Should().Be("Community Kitchen");
         activity.GetProperty("author").GetProperty("id").GetInt32().Should().Be(TestData.MemberUser.Id);
@@ -105,22 +113,33 @@ public sealed class V15FeedActivityCompatibilityTests : IntegrationTestBase
         activity.TryGetProperty("description", out _).Should().BeFalse();
         activity.TryGetProperty("metadata", out _).Should().BeFalse();
 
-        items[pinnedIndex].EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            new[]
-            {
-                "id",
-                "type",
-                "content",
-                "image_url",
-                "group_id",
-                "user_id",
-                "author",
-                "likes_count",
-                "comments_count",
-                "is_liked",
-                "created_at",
-                "updated_at"
-            });
+        // 🔴 This was an EXACT key list of the 13 keys the old inline projection emitted.
+        // The FeedContractMapper emits the full Laravel field union — 33 more keys the React
+        // `FeedItem` type reads (`content_truncated`, `views_count`, `share_count`,
+        // `is_shared`, `is_bookmarked`, `is_official`, and the type-specific block Laravel
+        // sends on every row). An exact list here would have to be rewritten on every
+        // contract change, so it now asserts what actually matters: the 13 established keys
+        // are all still present, and nothing sensitive appeared.
+        var pinnedKeys = items[pinnedIndex].EnumerateObject()
+            .Select(property => property.Name).ToList();
+        pinnedKeys.Should().Contain(new[]
+        {
+            "id",
+            "type",
+            "content",
+            "image_url",
+            "group_id",
+            "user_id",
+            "author",
+            "likes_count",
+            "comments_count",
+            "is_liked",
+            "created_at",
+            "updated_at",
+        });
+        pinnedKeys.Should().NotContain("metadata", "the raw metadata blob is never exposed");
+        pinnedKeys.Should().NotContain("description");
+        pinnedKeys.Should().NotContain("_edge_rank", "ranking signals must not reach a client");
         // 🔴 The feed's meta became `{per_page, has_more}` (plus base_url from the
         // envelope filter) in 8582235b2, matching Laravel's respondWithCollection.
         // There is no `total` — Laravel does not send one — so this threw

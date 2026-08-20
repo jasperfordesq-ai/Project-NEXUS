@@ -817,7 +817,13 @@ public sealed class VolunteerHoursParityTests : IntegrationTestBase
             .Single(item => item.GetProperty("type").GetString() == FeedActivitySourceTypes.VolunteerHours
                 && item.GetProperty("id").GetInt32() == logId);
         feedItem.GetProperty("title").GetString().Should().Be("Volunteered 2.75 hours");
-        feedItem.GetProperty("content").ValueKind.Should().Be(JsonValueKind.Null);
+        // 🔴 EMPTY STRING, not null — Laravel runs content through
+        // `truncateWithFlag($row->content ?? '', 500)`, so a null column becomes `""`
+        // (`FeedService.php:487,1108`). The old inline ASP.NET projection passed the null
+        // through; the FeedContractMapper now matches Laravel. The evidence-leak assertions
+        // in this test are UNCHANGED and still pass.
+        feedItem.GetProperty("content").ValueKind.Should().Be(JsonValueKind.String);
+        feedItem.GetProperty("content").GetString().Should().BeEmpty();
         feedItem.GetProperty("hours").GetDecimal().Should().Be(2.75m);
         feedItem.GetProperty("author").GetProperty("id").GetInt32().Should().Be(scenario.VolunteerUserId);
         feedItem.TryGetProperty("created_at", out _).Should().BeTrue();
