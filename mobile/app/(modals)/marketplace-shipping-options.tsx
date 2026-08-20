@@ -90,7 +90,7 @@ function MarketplaceShippingOptionsScreen() {
 
   if (!marketplaceEnabled) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('shipping.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-tools' as Href} />
         <EmptyState icon="car-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
       </SafeAreaView>
@@ -99,7 +99,7 @@ function MarketplaceShippingOptionsScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('shipping.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-tools' as Href} />
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner />
@@ -110,7 +110,7 @@ function MarketplaceShippingOptionsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('shipping.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-tools' as Href} />
         <View className="flex-1 justify-center px-4">
           <EmptyState
@@ -221,7 +221,7 @@ function MarketplaceShippingOptionsScreen() {
   const data = options.data?.data ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('shipping.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-tools' as Href} />
       <FlatList
         data={data}

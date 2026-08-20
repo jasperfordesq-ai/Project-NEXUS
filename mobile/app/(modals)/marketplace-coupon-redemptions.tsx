@@ -37,7 +37,7 @@ function MarketplaceCouponRedemptionsRedirect() {
   }, [safeCouponId]);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('tools.coupons.redemptionsTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-tools' as Href} />
       <View className="flex-1 items-center justify-center">
         <LoadingSpinner />

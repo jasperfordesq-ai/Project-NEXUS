@@ -167,7 +167,7 @@ function EventAttendanceScreenInner() {
 
   if (safeEventId <= 0) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('attendance.title')} backLabel={t('common:buttons.back')} fallbackHref="/(tabs)/events" />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-sm text-muted-foreground">{t('detail.invalidId')}</Text>
@@ -177,7 +177,7 @@ function EventAttendanceScreenInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={t('attendance.title')}
         backLabel={t('common:buttons.back')}

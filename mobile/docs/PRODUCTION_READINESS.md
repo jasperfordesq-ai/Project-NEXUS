@@ -66,7 +66,7 @@ dimension's own section; none is inherited from an earlier edition.
 | 6 | Release & native policy | **Strong** | `verify:release` + `verify:network-security`, both blocking, both passing |
 | 7 | Lint & code style | **Adequate (newly scored)** | 0 errors, 508 warnings under a cap. 🔴 It caught a real conditional-hook bug that had already shipped in a commit reported as verified — see below |
 | 8 | End-to-end journeys | **Weak (was Adequate)** | 9 Maestro flows exist and pass locally. The nightly CI workflow ran for the first time on 2026-08-19 and **failed**; cause now diagnosed and fixed, but unproven until the next push |
-| 9 | Visual correctness | **Weak** | Contrast gated; 3 screens pixel-gated at the corrected 0.02 sensitivity; 93 images over 31 screens photographed. ~106 screens never photographed. One confirmed blank screen still open (row 9.1) |
+| 9 | Visual correctness | **Weak** | Contrast gated; 3 screens pixel-gated; 93 images over 31 screens photographed; ~106 never photographed. 🔴 Two blank screens FIXED 2026-08-20 and the cause was systemic — `className` is inert on this app's SafeAreaView, so 112 files carry a dead one (row 9.1) |
 | 10 | iOS | **Unmeasured** | Never built or run, locally or in CI. App Store Connect ID still a placeholder |
 | 11 | Accessibility | **Adequate** | 2 of 44 interactive elements lack a label (one has visible text, one is dead code). Contrast checked. Touch-target size and real screen-reader use still unchecked |
 | 12 | Internationalisation | **Weak** | 7 locales (`de en es fr ga it pt`) against the platform's 11. `nl` `pl` `ja` are ordinary work; **`ar` is blocked** — no right-to-left support exists |
@@ -285,30 +285,60 @@ includeAA: true`, after the previous `0.1` reported 40px for a real 9,168px
 light-grey-on-white change. 93 images over 31 screens have been photographed;
 roughly 106 screens never have. See [VISUAL_AUDIT.md](VISUAL_AUDIT.md).
 
-### 9.1 🔴 OPEN: the rewards/leaderboard screen renders a blank body
+### 9.1 ✅ FIXED — and the cause was systemic, not one screen
 
-Confirmed on the emulator, 2026-08-19. Opening `https://app.project-nexus.ie/leaderboard`
-gives a title bar above an entirely empty body, unchanged over 45 seconds, with nothing
-in the device log.
+Two screens were showing a title bar above an entirely blank body: the rewards/leaderboard
+screen and **Goals**. Both are fixed, and the cause turned out to affect a whole class of
+screens.
 
-What has been ruled out, with evidence:
+**`className` does nothing on the SafeAreaView this app uses.** Every screen imports it
+from `react-native-safe-area-context`. uniwind patches className onto React Native's OWN
+components — its resolver list does include `SafeAreaView`, but that is the one exported by
+`react-native` — and it does not touch third-party packages. Nothing registers this one and
+uniwind exposes no `cssInterop`-style API to do so.
 
-- **Not a data problem.** Instrumenting the render printed
-  `isLoading: false, hasProfile: true, profileErr: null` while the body painted nothing.
-- **Not a server problem.** `/api/v2/gamification/{profile,badges,leaderboard}` all
-  return 200 with real data for the fixture account.
-- **Not the double-unwrap trap.** The mobile client's `request()` returns the whole
-  parsed body, so `profileData?.data` is correct here. (The "api.get already unwraps"
-  rule is a *React frontend* rule and does not apply to this client.)
+Measured: **112 files** write `className="flex-1 bg-background"` on it and **zero** import
+it from `react-native`. So on all of them neither the flex nor the background is applied.
 
-Leading suspicion is the zero-size layout failure documented at the top of
-`app/+not-found.tsx`, which bit that screen twice: content inside a
-`flex-1 items-center justify-center` wrapper rendering at zero size on a device while
-the view hierarchy shows nothing at all.
+Most screens survive that, which is why it went unnoticed for so long: content with an
+intrinsic height still lays out. A screen breaks only when a child needs the PARENT to have
+height — a `flex-1` ScrollView or FlatList, or the `flex-1 items-center justify-center`
+pattern. Then the SafeAreaView sizes to its content and the child collapses to zero height.
 
-Two genuine defects *were* found and fixed on that screen while investigating — it read
-`error` from none of its eight loads, and it omitted the leaderboard's loading flag —
-but neither explains the blank, and this row stays open.
+### How it was isolated, since three plausible theories were wrong first
+
+Each rejected by a single-variable test on the device:
+
+| Theory | Test | Result |
+| --- | --- | --- |
+| The `RefreshControl`'s colours were invalid | logged `primary` | `#006FEE` — valid. Rejected |
+| `contentContainerClassName` unsupported | removed it | no change. Rejected |
+| The ScrollView's own `className="flex-1"` | replaced with an inline style | no change. Rejected |
+| **The parent had no height** | fixed-height probe as a SIBLING vs INSIDE the ScrollView | sibling rendered, inside did not — **confirmed** |
+
+Adding `style={{ flex: 1 }}` to the SafeAreaView then made **1,753,102 pixels** appear.
+
+🔴 **This also closes an older mystery.** The comment at the top of `app/+not-found.tsx`
+records content wrapped in `flex-1 items-center justify-center` rendering "at zero size",
+and says "the centring container is the likely culprit but that was not isolated". Same
+root cause, now isolated.
+
+### What was changed, and how the scope was chosen
+
+**19 screens** got an explicit `style={{ flex: 1 }}` — those whose SafeAreaView relies on
+className for flex AND whose next element needs the parent's height. The predicate was
+validated against the device rather than trusted: it flags `goals` (confirmed blank before,
+rendering after) and does not flag `jobs` or `activity` (confirmed rendering both times,
+byte-identical screenshots after the change, so no regression).
+
+The other ~93 files keep their inert className deliberately. Rewriting them would risk
+changing layouts that currently look right, for no observable gain — measured, not assumed:
+of three flagged screens walked on the device, two rendered perfectly well. If that number
+ever grows, a wrapper component becomes worth the churn; `components/safeAreaFlex.test.ts`
+keeps it visible and blocks any NEW screen from arriving blank.
+
+One thing now visible that the blank page was hiding: on the rewards screen the six tab
+labels wrap onto two lines ("Bad ges", "Ch alle"). Cosmetic, recorded, not fixed.
 
 ### 9.2 A withdrawn finding, recorded so it is not "rediscovered"
 

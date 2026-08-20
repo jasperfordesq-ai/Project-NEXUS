@@ -1343,7 +1343,27 @@ export default function GamificationScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      {/*
+        🔴 `style={{ flex: 1 }}` is load-bearing, and `className` here is DEAD.
+
+        This SafeAreaView comes from `react-native-safe-area-context`. uniwind patches
+        className onto React Native's OWN components (its resolver list includes
+        `SafeAreaView` — the one in `react-native`), but it does not touch third-party
+        packages, and nothing registers this one. So `className="flex-1 bg-background"`
+        set neither the flex nor the background: it was inert.
+
+        Consequence, isolated on a device rather than guessed: with no flex on the parent,
+        the SafeAreaView sized to its content, so the top bar rendered and the ScrollView
+        below it — sized with `flex-1` — collapsed to ZERO HEIGHT. The screen showed a
+        title bar above a permanently blank body, with the data present and no error.
+        A fixed-height probe placed as a sibling of the ScrollView rendered; the same probe
+        placed INSIDE it did not. Adding this style made 1.75M pixels appear.
+
+        The className is left in place deliberately: it is what every other screen in this
+        app writes, and removing it here would hide that this whole pattern is inert. See
+        `lib/security/../components/safeAreaFlex.test.ts` for the guard and the wider count.
+      */}
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
 
         {isLoading ? (
@@ -1358,8 +1378,8 @@ export default function GamificationScreen() {
           />
         ) : (
           <ScrollView
-            className="flex-1"
-            contentContainerClassName="gap-4 px-4 pb-10"
+            style={{ flex: 1 }}
+            contentContainerStyle={{ gap: 16, paddingHorizontal: 16, paddingBottom: 40 }}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}

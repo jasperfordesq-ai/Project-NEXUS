@@ -58,7 +58,7 @@ export default function JobAnalyticsScreen() {
 
   if (safeId === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <EmptyState
           icon="analytics-outline"
@@ -73,7 +73,7 @@ export default function JobAnalyticsScreen() {
 
   if (analyticsApi.isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner />
@@ -84,7 +84,7 @@ export default function JobAnalyticsScreen() {
 
   if (analyticsApi.error || !analytics) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <EmptyState
           icon="analytics-outline"
@@ -102,7 +102,7 @@ export default function JobAnalyticsScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar
           title={t('analytics.title')}
           backLabel={t('common:back')}

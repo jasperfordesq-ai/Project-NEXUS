@@ -57,7 +57,7 @@ export default function JobPipelineScreen() {
 
   if (safeId === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('kanban.pipeline_title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <EmptyState
           icon="git-network-outline"
@@ -72,7 +72,7 @@ export default function JobPipelineScreen() {
 
   if (applicationsApi.isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('kanban.pipeline_title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner />
@@ -83,7 +83,7 @@ export default function JobPipelineScreen() {
 
   if (applicationsApi.error) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('kanban.pipeline_title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
         <EmptyState
           icon="git-network-outline"
@@ -100,7 +100,7 @@ export default function JobPipelineScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar
           title={t('kanban.pipeline_title')}
           backLabel={t('common:back')}

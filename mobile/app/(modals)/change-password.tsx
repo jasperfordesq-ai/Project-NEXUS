@@ -85,7 +85,7 @@ function ChangePasswordScreenInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('password.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
       <KeyboardAvoidingView
         className="flex-1"

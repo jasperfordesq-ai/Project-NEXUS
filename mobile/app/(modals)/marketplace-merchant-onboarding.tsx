@@ -229,7 +229,7 @@ function MarketplaceMerchantOnboardingScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('merchantOnboarding.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="flex-1 items-center justify-center px-6">
           <Text style={{ color: theme.textSecondary }}>{t('featureGate.description')}</Text>
@@ -240,7 +240,7 @@ function MarketplaceMerchantOnboardingScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('merchantOnboarding.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-my-listings' as Href} />
         <View className="flex-1 items-center justify-center"><LoadingSpinner /></View>
       </SafeAreaView>
@@ -248,7 +248,7 @@ function MarketplaceMerchantOnboardingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('merchantOnboarding.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-my-listings' as Href} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132, gap: 12 }}>
         <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>

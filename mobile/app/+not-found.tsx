@@ -25,10 +25,18 @@
  * (padding + an inner `items-center` group, with font size and weight given as inline
  * styles) renders correctly, verified on the emulator.
  *
- * Being honest about the diagnosis: the failing versions differed in THREE ways at
- * once — the centring container, className-vs-inline font styles, and the fact that a
- * force-stop restart was needed before the fix could be confirmed rather than fast
- * refresh. The centring container is the likely culprit but that was not isolated.
+ * 🔴 ISOLATED 2026-08-20, and it was the centring container — for a reason worth knowing,
+ * because it affects a whole class of screens. `className` does NOTHING on this
+ * SafeAreaView: it comes from `react-native-safe-area-context`, and uniwind only patches
+ * className onto React Native's own components. So `className="flex-1"` on the
+ * SafeAreaView never applied, the parent sized to its content, and any child sized with
+ * `flex-1` — including `flex-1 items-center justify-center` — collapsed to zero height.
+ * The same cause left the rewards/leaderboard and Goals screens completely blank. See
+ * `components/safeAreaFlex.test.ts` and section 9.1 of docs/PRODUCTION_READINESS.md.
+ *
+ * The earlier note here was honest that three things changed at once and the culprit was
+ * not isolated. It is now, so the layout below is safe on purpose rather than by luck:
+ * padding plus an intrinsic-height group needs nothing from its parent.
  * `EmptyState` is NOT at fault: it renders correctly elsewhere (the Polls screen shows
  * icon, title and subtitle), and an early note in this file blaming it was wrong.
  */
