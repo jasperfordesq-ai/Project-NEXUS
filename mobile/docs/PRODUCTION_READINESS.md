@@ -354,6 +354,38 @@ Use screenshots.** The only genuine stranding case is the dev client's own boots
 (`nexus://expo-development-client/?url=…`), which no member can receive — it costs
 developer time, not member time.
 
+### 9.3 🔴 An APK that passed every check and could not install on a phone
+
+2026-08-20. A locally built release APK was verified more thoroughly than anything else in
+this document — embedded JS bundle present, correct API host baked in, emulator loopback
+absent, certificate pins correct, right package, right signature, higher versionCode than
+the installed build — installed and launched on the emulator, reached the production API,
+and returned a real "Invalid credentials".
+
+It then refused to install on a real phone with a bare **"App not installed"**.
+
+**Cause.** The APK contained native libraries for **x86_64 only**. Every modern phone is
+`arm64-v8a`, so there was no code in it the phone could run. `npx expo run:android` writes
+`reactNativeArchitectures=<connected device abi>` into `android/gradle.properties` to make
+local dev builds fast, and a later `assembleRelease` inherits it silently. Measured against
+the app actually in use: theirs carries `arm64-v8a, armeabi-v7a, x86, x86_64` (77.9 MB),
+mine carried `x86_64` alone (50 MB) — and the size difference was visible the whole time.
+
+🔴 **The emulator could not have caught this, because the emulator IS x86_64.** Testing on
+it did not merely fail to find the bug — it actively produced the false confidence, since
+the one architecture present was the one being tested. This is the same shape as the
+`uniautomator dump` false critical and the pixel gate that was blind to grey-on-white: the
+measurement agreed with the mistake.
+
+Two wrong diagnoses were also offered before the evidence was read, and both are worth
+recording because they sounded authoritative: a signature mismatch (disproved — both APKs
+carry the *identical* debug certificate `fac61745…033b9c`) and a version downgrade
+(disproved — mine is versionCode 2 against the installed 1).
+
+**Now guarded.** `scripts/build-apk-local.sh` passes all four architectures explicitly and
+then inspects the finished artefact, refusing to report success if `arm64-v8a` or
+`armeabi-v7a` is missing. Checking the flag would not do: the point is to check the file.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
@@ -557,14 +589,15 @@ those restraints.
 
 - **Nothing has ever been distributed.** No artefact has reached a member. This is now the
   only thing between the app and a first install.
-- 🔴 **The Capacitor client's update URL is a 404.** `config/mobile.php` advertises
-  `https://api.project-nexus.ie/downloads/nexus-latest.apk`, checked 2026-08-20: it returns
-  404 and no such directory exists on the host or in either colour's container. That is the
-  address `AppController::checkVersion` gives the OLDER Capacitor app when it tells someone
-  to update, so pulling that lever today would send them nowhere. Not fixed here: creating
-  `nexus-latest.apk` changes what that app tells people to download, which is an owner
-  decision rather than a chore. (A locally built APK is now served from a random path under
-  the persistent uploads volume — see DISTRIBUTION.md.)
+- 🔴 **The Capacitor client's update URL is a 404 — but the download folder DOES exist.**
+  Builds have been distributed from `uploads/downloads/` since at least June 2026, which an
+  earlier pass of this document wrongly reported as "no downloads folder" after reading a
+  `head -8`-truncated directory listing as absence. What is genuinely broken is that
+  `config/mobile.php` advertises `/downloads/nexus-latest.apk` at the web ROOT, which 404s.
+  That is the address `AppController::checkVersion` gives the older Capacitor app when it
+  tells someone to update, so pulling that lever today would send them nowhere. Not
+  repointed here: changing it changes what that app tells people to download, which is an
+  owner decision.
 - Fixed earlier this session: the `website` channel — the profile behind the APK that
   `DISTRIBUTION.md` designates for public download, and the only current route to a
   member — had no publish path at all.

@@ -73,7 +73,20 @@ fi
 # SENTRY_DISABLE_AUTO_UPLOAD: without it the Sentry Gradle plugin tries to upload source
 # maps and can fail the build when no Sentry org/token is configured — which is the case
 # here, since crash reporting goes to our own API instead.
-SENTRY_DISABLE_AUTO_UPLOAD=true ./gradlew assembleRelease --no-daemon
+# 🔴 ALL FOUR architectures, passed explicitly, and this line is the whole reason this
+# script exists rather than a bare gradlew call.
+#
+# `npx expo run:android` WRITES `reactNativeArchitectures=<connected device abi>` into
+# android/gradle.properties to make local dev builds fast. Any later `assembleRelease`
+# inherits it silently. On 2026-08-20 that produced a 50MB APK containing ONLY x86_64
+# native libraries. It installed perfectly on the emulator — which IS x86_64 — and a real
+# arm64 phone refused it outright with a bare "App not installed", because there was no
+# code in it the phone could run.
+#
+# The APK was otherwise perfect: correct bundle, correct API host, correct certificate
+# pins, right package, right signature, higher version. Every check passed except the one
+# that mattered, and testing on the emulator could never have caught it.
+SENTRY_DISABLE_AUTO_UPLOAD=true ./gradlew assembleRelease   -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64 --no-daemon
 
 cd ..
 APK="android/app/build/outputs/apk/release/app-release.apk"
@@ -85,6 +98,24 @@ if [ ! -f "$APK" ]; then
 fi
 
 SIZE=$(du -h "$APK" | cut -f1)
+
+# 🔴 Verify the ARCHITECTURES in the artefact, not the flag we passed. A phone with no
+# matching native library refuses the install with no useful message, and the emulator
+# cannot reveal it.
+python - "$APK" <<'PY'
+import sys, zipfile
+from collections import Counter
+z = zipfile.ZipFile(sys.argv[1])
+abis = Counter(n.split('/')[1] for n in z.namelist() if n.startswith('lib/'))
+required = {'arm64-v8a', 'armeabi-v7a'}
+missing = required - set(abis)
+print(f"architectures in the APK: {dict(abis)}")
+if missing:
+    print(f"REFUSING: no {', '.join(sorted(missing))} — a real phone cannot install this.")
+    sys.exit(1)
+print("arm64-v8a present, so a modern phone can install it.")
+PY
+
 echo ""
 echo "APK built: ${APK}  (${SIZE})"
 echo ""

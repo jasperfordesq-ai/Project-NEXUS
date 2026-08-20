@@ -97,13 +97,25 @@ Before release builds:
 
 ## Where a built APK can be put on the live server
 
-🔴 **There is no `/downloads/` folder, and `config/mobile.php` advertises one.** Checked
-2026-08-20: `https://api.project-nexus.ie/downloads/nexus-latest.apk` returns **404**, and
-no such directory exists on the host or in either colour's container. That URL is what the
-CAPACITOR client's force-update prompt sends people to (`AppController::checkVersion`), so
-if that lever were ever pulled today it would send them to a dead link. Recorded rather
-than silently created, because creating `nexus-latest.apk` would also change what that
-other app tells people to download — a decision, not a chore.
+🔴 **The real download folder is `uploads/downloads/`**, served at
+`https://api.project-nexus.ie/uploads/downloads/<name>.apk`. Builds have been distributed
+from there since at least June 2026 (`timebank-global-2026-06-12-v8.apk`), and that is
+where the owner's phone downloads from.
+
+🔴 **`config/mobile.php` advertises a DIFFERENT path that 404s.** Checked 2026-08-20:
+`https://api.project-nexus.ie/downloads/nexus-latest.apk` returns **404** — the folder is
+under `uploads/`, not at the web root. That dead URL is what the CAPACITOR client's
+force-update prompt sends people to (`AppController::checkVersion`), so pulling that lever
+today would send them nowhere. Left as a recorded finding rather than silently repointed,
+because changing it changes what that app tells people to download — a decision, not a
+chore.
+
+🔴 **How this folder was missed, because the mistake is repeatable.** A first pass reported
+"there is no downloads folder" after checking `/downloads/` and `httpdocs/downloads`, then
+listing the uploads volume with `ls | head -8`. The volume's entries are tenant-id
+directories, so the listing began `1, 11, 2, 4, 5, 6, 7, 8` — and `downloads` sorted just
+past the cutoff. **A truncated listing was read as absence.** Never conclude "not there"
+from a `head`-limited listing; grep for the name instead.
 
 **Where a file CAN live durably.** The container's web root is baked into the image, so
 anything written into `httpdocs/` is lost on the next deploy. `httpdocs/uploads` is
