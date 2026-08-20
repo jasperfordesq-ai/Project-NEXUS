@@ -467,6 +467,72 @@ asserts the weakest form of the inequality: the touch targets alone, every gap a
 at zero. Relatedly, the wrap width carries 2dp of slack, because a cap set to exactly the
 content width produced rows of 3-3-2 on the device instead of 4-4.
 
+### 9.6 Screen width, swept properly — 31 screens at 360dp
+
+9.5 checked two screens at 360dp and said explicitly that the rest was unknown. This is
+that sweep: `node scripts/screenshots.mjs sweep` at `adb shell wm density 480`, which
+walks 31 screens on a 360dp device. **Three defects, and two of them were not about width
+at all.**
+
+| Screen | What 360dp showed | Verdict |
+| --- | --- | --- |
+| `FormActionFooter` (9 forms) | title collapsed to "Review y…", "Save changes" clipped off the edge | 🔴 **broken at 411dp too** |
+| `select-tenant` | community rows: a one-letter badge and a chevron, **no names** | 🔴 **broken at every width** |
+| `jobs` tab strip | "My A…", "My Po…" — four tabs sharing ~77dp each | narrow-screen only |
+| the other 28 | clean; stat tiles wrap, chip rows scroll as designed | ✅ |
+
+🔴 **Two of the three were width-independent, and both looked like width bugs.** The
+411dp control is the only thing that separated them. Do not skip it: filing
+`select-tenant` as a narrow-screen fault would have left the sign-in entry point broken
+on every phone while the ticket read "fixed".
+
+🔴 **A width threshold is a trap.** The footer fix first stacked only below 380dp. Zooming
+into the 411dp capture showed the submit button clipped there as well — the title needs
+~150dp and the two buttons ~250dp against the 395dp a 411dp phone offers. The threshold
+would have shipped the bug on the majority of phones and looked like a fix. There is no
+threshold now; the buttons wrap.
+
+Rejected on the device, recorded so they are not re-tried: `numberOfLines={2}` on the jobs
+tabs (still truncated, and broke a label mid-word as "My Pos / tings"); and
+`adjustsFontSizeToFit`, which is **iOS-only and does nothing on Android** — note
+`exchange-detail.tsx` already relies on it.
+
+**Two things about the harness itself.**
+
+- The sweep flow could never reach **Notifications**: it lives inside the collapsed "MY
+  SPACE" accordion, and `scrollUntilVisible` simply ran to the bottom of the menu. The run
+  reported 31 of 33 and that screen had never been photographed. Fixed in the flow.
+- 🔴 I wrote a pixel detector to flag content touching a screen edge. It flagged the
+  scroll indicator, so I taught it to ignore long uniform-grey columns — and it then
+  reported the edit-profile screen, **the one with the clipped button**, as `ok`. It
+  cannot separate a scrollbar from a clipped control. Treat its flags as hints and never
+  its silence as a pass; the screens were reviewed by eye regardless.
+
+### 9.7 Translation coverage — Weak, measured for the first time
+
+Not a layout finding, but found in the same pass and previously unmeasured. Of **5,752**
+English values per locale, the number still byte-identical to English:
+
+| Locale | Multi-word phrases still in English (conservative floor) |
+| --- | --- |
+| de | 640 (11%) |
+| es | 625 (11%) |
+| fr | 627 (11%) |
+| it | 636 (11%) |
+| pt | 629 (11%) |
+| **ga** | **75 (1%)** |
+
+Counting only phrases of three words or more, which cannot be coincidental — the raw
+identical-value count is roughly 1,500 per locale, but that includes brand names, single
+words and placeholder-only strings. Sampled to confirm: `groups.json` in German has 293 of
+325 values identical, 122 of them full English sentences (`"We could not create the group.
+Please try again."`).
+
+Irish is nearly complete; the five European languages are each missing about a ninth of
+the app. **No gate measures this** — `parity:check` compares key sets, so a locale file
+full of English passes. Nothing was changed here: 3,232 machine translations is a separate
+decision, not a side effect of a layout sweep.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
