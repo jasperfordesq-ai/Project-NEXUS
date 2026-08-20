@@ -46,7 +46,8 @@
     "update:website": "node scripts/publish-update.mjs website",
     "rollback:staging": "node scripts/rollback-update.mjs staging",
     "rollback:website": "node scripts/rollback-update.mjs website",
-    "rollback:production": "node scripts/rollback-update.mjs production"
+    "rollback:production": "node scripts/rollback-update.mjs production",
+    "build:apk": "bash scripts/build-apk-local.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
