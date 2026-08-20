@@ -5,8 +5,8 @@ see the Baseline table and the artifact links under it)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=598/1000 -->
-<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R2 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=653/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R3 -->
 
 🔴 **This score is unrelated to Web UK's.** Two 1000-point denominators exist in
 this repository and they measure different things: this one measures whether
@@ -24,44 +24,101 @@ live in `FULL_PARITY_REMEDIATION_RUNBOOK.md`; the update-transaction and
 state-label rules in `DOCUMENTATION_GOVERNANCE.md`; the report format at the
 bottom of this file.
 
-## Banked score — Fixed Rubric Baseline 2, 598/1000 (`ASPNET-CONTRACT-R2`, banked 2026-08-18)
+## Banked score — Fixed Rubric Baseline 3, 653/1000 (`ASPNET-CONTRACT-R3`, banked 2026-08-20)
 
-| Category | Banked | Maximum |
-| --- | ---: | ---: |
-| Active Laravel API route representation | 96 | 100 |
-| Semantic workflow and canonical-consumer contract parity | 185 | 350 |
-| Schema, migrations, data integrity, and upgrade safety | 118 | 150 |
-| Auth, tenant isolation, security, and localization | 74 | 100 |
-| Full build/test/CI evidence | 85 | 100 |
-| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 10 | 125 |
-| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 |
-| **Total** | **598** | **1000** |
+**Block 1 — Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R3` (same seven
+fixed-weight categories as R1/R2; no denominator change). Evidence boundary:
+monorepo `1c483377c` (pushed 2026-08-20 with owner approval;
+`aspnet-backend/src` and `tests` byte-identical to it at scoring time — the
+one later commit, `27350fed4`, is documentation-only). Laravel contract source:
+the same monorepo tree, exercised through the disposable Laravel on `:8091`
+with both parity fixtures re-applied immediately before measurement. CI
+evidence: platform-contracts run **32375659126** at `1c483377c` — **all
+ASP.NET jobs green** (build, image builds, Messaging, API shards 1–6; shard
+5's failure on the previous run did not reproduce). Scoring-record SHA: the
+commit carrying this section.
 
-Per-category evidence for this baseline: `HISTORY/STATUS_ARCHIVE_2026-08.md`
-(the "Fixed Rubric Baseline 2" section, preserved verbatim). Baseline 1
-(712/1000 under the pre-drift denominator, initially banked 620) is in
-`HISTORY/STATUS_ARCHIVE_2026-07.md`. A **Baseline 3 rescore is in progress**
-(owner-directed 2026-08-20): its evidence pack is regenerated and archived at
-`../../.local-docs-archive/baseline3/`; banking waits only on the CI run for
-push `1c483377c`. Until that transaction lands, 598 is the banked score and
-everything since 2026-08-18 is published-but-unscored.
+**Block 2 — Banked score.**
 
-## Published but unscored (movement since Baseline 2, all evidence live)
+| Category | Banked | Maximum | Movement vs B2 |
+| --- | ---: | ---: | ---: |
+| Active Laravel API route representation | 98 | 100 | +2 |
+| Semantic workflow and canonical-consumer contract parity | 210 | 350 | +25 |
+| Schema, migrations, data integrity, and upgrade safety | 118 | 150 | 0 |
+| Auth, tenant isolation, security, and localization | 82 | 100 | +8 |
+| Full build/test/CI evidence | 85 | 100 | 0 |
+| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 30 | 125 | +20 |
+| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 | 0 |
+| **Total** | **653** | **1000** | **+55** |
 
-| Measure | Baseline 2 | Now | Evidence |
-| --- | --- | --- | --- |
-| Reads contract-identical (member corpus) | 64/170 | **78/195** (+31 envelope-match-but-empty) | `baseline3/reads-195.json` |
-| Writes contract-identical | unmeasured at B2; first measured 08-19 | **10/18** | `baseline3/writes-18.json` |
-| Route operations matched / missing | 2,648 / 19 | **2,652 / 15** | `artifacts/parity/api/` (regenerated 2026-08-20) |
-| Feed item fields missing | 33 | **1** (`media` — no table) | `baseline3/` + feed diffs |
-| Listings fields missing | 50 | **0** | status archive 2026-08 |
-| Events client-side contract drift | 60 issues | **0**, incl. v1/v2 negotiation | status archive 2026-08 |
-| React browser smoke | did not exist | **16/16 steps**, 6 pages, 4 member actions, 0 uncaught errors | `baseline3/react-smoke.log` |
-| Full test suite (host) | 3,659 | **3,740 passed / 0 failed** + 38/38 Messaging | `baseline3/full-suite.log` |
-| No-op stubs | 319 | 319 (unchanged) | `baseline3/stubs.log` |
+Every deduction re-derives Baseline 2's own deduction structure against the
+2026-08-20 evidence pack (`../../.local-docs-archive/baseline3/` and
+`../artifacts/parity/`, regenerated the same day). Where a B2 deduction's
+measured basis improved, the deduction moved by the measurement; where the
+basis is unchanged, the deduction is unchanged.
 
-Commits: `49f97887d` … `04c1a8fac` (see the August archive for each entry's
-narrative). Pushed 2026-08-20 as `a4aaf4796..1c483377c` with owner approval.
+- **Routes 98 (−2).** B2's −4 covered 9 method-level client-consumed gaps.
+  Now 4 real (messages voice, attachments GET-405, events attendance code,
+  volunteering credential download), 1 struck as a false positive, 4 closed;
+  regenerated artifact 2,652 matched / 15 missing (was 2,648/19).
+- **Semantic 210 (−140).** −50 reads: 80 of 195 differ (41.0%) on the honest
+  generated corpus vs B2's 82 of 170 (48.2%) — B2's −60 scaled by the
+  measured differ rate — with events (incl. v1/v2 negotiation), listings and
+  feed now field-complete except `feed.media`. −55 stubs: 319 verified live,
+  unchanged. −35 writes: the 18-endpoint corpus is now MEASURED at 10/18
+  (B2's −50 was "entirely unmeasured"): −15 for the 8 differing, −20 because
+  uploads, realtime, side-effect verification and the wider 392-write ledger
+  remain unmeasured.
+- **Schema 118 (−32).** Unchanged evidence: 215 tables absent (257 matched,
+  183 EF migrations — zero schema change since 2026-08-17; the recent ports
+  were mapper-only), no populated-history upgrade proof (−20 / −12 as at B2).
+- **Auth/tenant/security/localization 82 (−18).** B2's −18 localization
+  deduction is **retired as mismeasured** — its instrument labels the SHARED
+  React catalogs as the 'dotnet' side and contains zero ASP.NET code (the
+  script now carries a score-integrity warning at the offending lines) — and
+  is **replaced by an honest −10** from the real ledger
+  (`BACKEND_LOCALIZATION_CONTRACT.md`): no request-locale negotiation at all,
+  no recipient-locale resolution, 7 of 11 locales seeded. −5 residual
+  security unchanged (R-4 subtree confinement, R-18 legal gate, R-20 passkey
+  rp_id, R-8 carer cluster, FCM legacy endpoint). −3 tenant isolation for the
+  absent tables, unchanged.
+- **Build/test/CI 85 (−15).** Same evidence class as B2, now at this SHA:
+  fresh CI green on every ASP.NET job (run 32375659126) plus the local host
+  suite 3,740/0 + 38/38 (`baseline3/full-suite.log`). The −15 (coverage/test-
+  quality gate −8, static contract −7) is unchanged.
+- **Frontend runtime proof 30 (−95).** B2's 10 was static readiness only —
+  neither frontend had ever run. +20 banks the canonical React side: a
+  COMMITTED, repeatable browser smoke (`scripts/smoke-react-against-aspnet.mjs`)
+  that signs in, renders 6 member pages, performs 4 member actions (create
+  listing, feed post, credit transfer, RSVP) and exercises token refresh
+  against ASP.NET in committed direct mode — 16/16 steps, 473 API calls ok,
+  zero uncaught page errors (`baseline3/react-smoke.log`). **web-uk banks
+  nothing new**: its page-pair result was manual, wrote no artifact, and no
+  committed web-uk-vs-ASP.NET instrument exists — building one is C.1 in the
+  queue below.
+- **Providers/jobs/ops 30 (−45).** Unchanged: jobs 26 of 69 (denominator
+  corrected from the previously written 70 — live count of
+  `bootstrap/app.php` registrations), −20; Meilisearch zero callers + FCM on
+  the retired endpoint, −12; no live-provider/operational proof, −13.
+
+**Block 3 — Published but unscored:** none. Everything through `04c1a8fac` is
+banked above; `27350fed4` is documentation-only.
+
+**Block 4 — Dirty/in-flight work:** 25 `web-uk/src/routes/*.js` files carry
+known CRLF phantom modifications from a concurrent workstream plus the nightly
+`sentry-triage-ledger.json`; none is ASP.NET's and none contributes points.
+Zero dirty `aspnet-backend` files at scoring time.
+
+**Block 5 — Certification gaps:** the 347 open points are itemised in "Open
+Certification Gates" below, restated against this baseline.
+
+**History:** Baseline 2 (598, `ASPNET-CONTRACT-R2`, 2026-08-18) with full
+per-category evidence: `HISTORY/STATUS_ARCHIVE_2026-08.md`. Baseline 1 (712
+under the pre-drift denominator, initially banked 620, 2026-07-14):
+`HISTORY/STATUS_ARCHIVE_2026-07.md`. R2's fall from R1 measured instrument
+improvement, not regression; R3's rise over R2 banks five days of measured
+work that had sat unbanked — the owner-directed cadence from here is a
+banking transaction at every certification tier, never a deferred bulk score.
 
 ## Required End State
 
@@ -86,28 +143,28 @@ ASP.NET-specific page branches do not satisfy the goal.
 
 ## Open Certification Gates
 
-The open deductions are Baseline 2's 402 points (Baseline 3 will restate
-them). They are independent proof gates, not one implementation queue:
+The open deductions are Baseline 3's **347 points**. They are independent
+proof gates, not one implementation queue:
 
-- **Semantic (165 open):** the SHAPE_DIFFERS tail of the member read corpus
+- **Semantic (140 open):** the SHAPE_DIFFERS tail of the member read corpus
   (80 of 195), the 8 differing writes, and everything unmeasured — 243 admin
   GETs, 392 writes, 1,172 dynamic paths (coverage ledgers exist; runnable
   corpora do not).
-- **Frontend runtime proof (115 open):** React journey certification beyond
+- **Frontend runtime proof (95 open):** React journey certification beyond
   the current 16-step smoke; a web-uk-vs-ASP.NET instrument that does not yet
   exist as committed code (the recorded page-pair results were manual).
 - **Schema/upgrade (32 open):** 215 absent tables (create what journeys need,
   via EF migrations); populated-history upgrade proof; preflight-failure proof.
-- **Security/localization (26 open):** R-4 subtree confinement, R-18 legal
+- **Security/localization (18 open):** R-4 subtree confinement, R-18 legal
   gate, R-20 passkey rp_id, R-8 carer cluster; request/recipient-locale
   negotiation per `BACKEND_LOCALIZATION_CONTRACT.md`.
-- **CI evidence (15 open):** a green `platform-contracts` aggregate at the
-  scoring SHA (push `1c483377c` pending at restructure time; the prior
-  covering run was red on one shard).
+- **CI evidence (15 open):** the coverage/test-quality gate (−8) and static
+  contract evidence (−7); the green aggregate at the scoring SHA exists (run
+  32375659126).
 - **Providers/ops (45 open):** jobs 26 of 69; Meilisearch indexing with zero
   callers; FCM on the retired endpoint; no processing at Laravel's
   `/api/v2/webhooks/stripe`. Live-provider certification is owner-gated.
-- **Routes (4 open):** messages voice + attachment media, events attendance
+- **Routes (2 points / 4 endpoints open):** messages voice + attachment media, events attendance
   code, volunteering credential download.
 
 Stateful certification uses the disposable Laravel (`:8091`) only. The

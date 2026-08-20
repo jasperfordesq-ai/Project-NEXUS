@@ -122,6 +122,28 @@ live in [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md)
 which remains the canonical current score. This runbook records the baseline's
 existence and denominator only.
 
+### Fixed Rubric Baseline 3 — named 2026-08-20 (`ASPNET-CONTRACT-R3`)
+
+Baselines 1 and 2 above are frozen and unrewritten. Baseline 3 is banked at
+monorepo `1c483377c` (pushed; every ASP.NET CI job green on platform-contracts
+run 32375659126) with a banked score of **653/1000**: 98 route representation,
+210 semantic parity, 118 schema/upgrade safety, 82 security and localization,
+85 build/test/CI, 30 unchanged-frontend runtime proof, and 30
+providers/operations/docs. Exact deductions are respectively 2, 140, 32, 18,
+15, 95 and 45. Same seven fixed-weight categories; no denominator change.
+
+Two things distinguish this transaction: it re-derives every Baseline 2
+deduction against a same-day regenerated evidence pack
+(`.local-docs-archive/baseline3/` plus `aspnet-backend/artifacts/parity/`),
+and it **retires one mismeasured deduction with its replacement stated** —
+B2's −18 "localization keys" came from an instrument whose 'dotnet' side is
+the shared React frontend's catalogs; R3 deducts −10 from the real backend
+ledger instead (`BACKEND_LOCALIZATION_CONTRACT.md`). The owner-directed
+cadence from Baseline 3 onward is a banking transaction at every
+certification tier, never a deferred bulk score. The full derivation lives in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md);
+this runbook records the baseline's existence and denominator only.
+
 ## Historical Published Evidence
 
 The two dated checkpoints below explain how Fixed Rubric Baseline 1 was first

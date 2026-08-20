@@ -48,20 +48,26 @@ testing has been by hand so far — building its automated test is next.
   start. Until backups work, nothing about this backend can touch production.
   This is infrastructure, not code, and it is in the owner's hands.
 
-## The score, and why it hasn't been going up
+## The score, and why it wasn't going up
 
 The formal score is a strict 1,000-point audit. It fell from 712 to 598 in
 August **because the measuring stick improved, not because the backend got
 worse** — audits found more surface to measure. Worse, weeks of real
 improvement was never formally "banked", so the number sat still while the
-work moved. Both problems are fixed as of 2026-08-20: a fresh score
-(**Baseline 3**) is being banked on regenerated evidence, and from now on the
-score is re-banked every time a batch of work is proven, not months later.
+work moved.
+
+**Both problems are fixed. The score is now 653 of 1,000** (Baseline 3,
+banked 2026-08-20 on same-day regenerated evidence, with every automated
+check green on GitHub for today's push). The rise banks: the feed, events and
+listings work; saving-actions measured for the first time; the browser proof
+that a member can actually use the app against this backend; and the removal
+of a deduction that had been measuring the wrong thing entirely. From now on
+the score is re-banked every time a batch of work is proven, not months
+later.
 
 ## The plan from here
 
-1. **Now:** bank Baseline 3 (waiting only on the automated checks for
-   today's push).
+1. **Done today:** documentation reorganised; Baseline 3 banked at 653.
 2. **Next:** certify the twelve everyday member journeys in a real browser —
    sign-up through settings — fixing whatever breaks, on both websites.
    This attacks the weakest category (frontends proven working: 10 of 125).
