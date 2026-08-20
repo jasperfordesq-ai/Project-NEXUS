@@ -19,6 +19,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import {
+  getMarketplaceCategories,
   getMarketplaceListings,
   marketplaceHasMore,
   marketplaceNextCursor,
@@ -47,6 +48,7 @@ function MarketplaceCategoryScreen() {
   const { hasFeature } = useTenant();
   const params = useLocalSearchParams<{
     id?: string | string[];
+    slug?: string | string[];
     name?: string | string[];
     q?: string | string[];
     price_min?: string | string[];
@@ -58,9 +60,56 @@ function MarketplaceCategoryScreen() {
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const categoryId = Number(firstParam(params.id));
-  const safeCategoryId = Number.isFinite(categoryId) && categoryId > 0 ? categoryId : 0;
+  const paramCategoryId = Number.isFinite(categoryId) && categoryId > 0 ? categoryId : 0;
+
+  /**
+   * 🔴 A deep link identifies a category by SLUG, not by number.
+   *
+   * The web route is `/marketplace/category/:slug`, and `+native-intent.ts` passes that
+   * slug straight through — while this screen only ever read a numeric `id`. So every
+   * deep link to a category rendered "Category not found. This category could not be
+   * opened." Verified on a device on 2026-08-20 with `nexus://marketplace/category/
+   * backwaren`, a category that exists.
+   *
+   * Resolving here rather than renaming the parameter, because the slug is the identifier
+   * the outside world has: it is what appears in a shared web link, an email, a QR code.
+   * The listings API needs a number, so the slug is looked up once against the category
+   * list and then the screen behaves exactly as it does for an in-app tap.
+   */
+  const slugParam = (firstParam(params.slug) ?? '').trim();
+  const [resolvedSlugId, setResolvedSlugId] = useState(0);
+  // The deep link carries no display name, so take it from the category we resolved —
+  // otherwise the header reads the generic "Category" for a link that knows exactly which.
+  const [resolvedSlugName, setResolvedSlugName] = useState('');
+  const [slugResolving, setSlugResolving] = useState(false);
+
+  useEffect(() => {
+    if (paramCategoryId || !slugParam) return;
+    let cancelled = false;
+    setSlugResolving(true);
+    void (async () => {
+      try {
+        const response = await getMarketplaceCategories();
+        const categories = Array.isArray(response?.data) ? response.data : [];
+        const match = categories.find((category) => category.slug === slugParam);
+        if (!cancelled) {
+          setResolvedSlugId(match?.id ?? 0);
+          setResolvedSlugName(match?.name ?? '');
+        }
+      } catch {
+        if (!cancelled) setResolvedSlugId(0);
+      } finally {
+        if (!cancelled) setSlugResolving(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [paramCategoryId, slugParam]);
+
+  const safeCategoryId = paramCategoryId || resolvedSlugId;
   const paramName = firstParam(params.name);
-  const categoryName = paramName && paramName.trim() ? paramName : t('category.title');
+  const categoryName = paramName && paramName.trim()
+    ? paramName
+    : resolvedSlugName || t('category.title');
   const initialQuery = firstParam(params.q) ?? '';
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
@@ -143,6 +192,11 @@ function MarketplaceCategoryScreen() {
       setListings((current) => current.map((listing) => listing.id === item.id ? item : listing));
       showToast({ title: t('common:errors.alertTitle'), description: t('common.save_failed'), variant: 'danger' });
     }
+  }
+
+  // Don't call it missing while the slug lookup is still running.
+  if (hasFeature('marketplace') && !safeCategoryId && slugResolving) {
+    return <LoadingSpinner />;
   }
 
   if (!hasFeature('marketplace') || !safeCategoryId) {

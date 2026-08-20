@@ -176,9 +176,21 @@ describe('the routes this outage actually broke', () => {
       .toBe('/(modals)/job-pipeline?id=7');
   });
 
-  it('treats a blog segment as a slug, not an id', () => {
+  /**
+   * 🔴 The VALUE is a slug; the PARAMETER is named `id`. Both halves matter.
+   *
+   * This test used to assert `?slug=why-timebanking`, which pinned a real defect in
+   * place: `blog-post.tsx` reads `useLocalSearchParams<{ id: string }>()` and then does
+   * `const slug = id`, so a parameter correctly named `slug` left the screen with no
+   * identifier at all. The test's title was right about the value and wrong about the
+   * name, and it kept the link broken while looking like protection.
+   *
+   * The name is confusing and the screen is the better place to fix it. Until then this
+   * asserts what actually works, and `deepLinkParams.test.ts` guards the general case.
+   */
+  it('treats a blog segment as a slug, under the name the screen reads', () => {
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/blog/why-timebanking'))
-      .toBe('/(modals)/blog-post?slug=why-timebanking');
+      .toBe('/(modals)/blog-post?id=why-timebanking');
   });
 
   it('reaches federation members and partners by id', () => {

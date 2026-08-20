@@ -255,7 +255,13 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         return appendParams('/(modals)/volunteering-detail', { ...params, id: detail });
       }
       if (id === 'org' && detail) {
-        return appendParams('/(modals)/volunteering-org-dashboard', { ...params, orgId: detail });
+        // 🔴 `id`, NOT `orgId`. volunteering-org-dashboard.tsx reads
+        // `useLocalSearchParams<{ id?: string }>()`, so an `orgId` param routed to the
+        // right screen and then rendered "Organisation not found." — verified on a device
+        // on 2026-08-20 against an organisation the signed-in member owned. In-app
+        // navigation (volunteering.tsx) has always passed `id`; only the deep link was
+        // wrong, which is why nobody hit it by tapping around.
+        return appendParams('/(modals)/volunteering-org-dashboard', { ...params, id: detail });
       }
       return appendParams('/(modals)/volunteering', params);
 
@@ -279,9 +285,14 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     // -- Content -------------------------------------------------------------
     case 'blog':
-      // The web route is /blog/:slug, so this segment is a slug, not a numeric id.
+      // 🔴 The web route is /blog/:slug, so this segment is a slug — but the parameter
+      // must still be called `id`, because blog-post.tsx reads
+      // `useLocalSearchParams<{ id: string }>()` and then does `const slug = id`. Passing
+      // a correctly-named `slug` left the screen with no identifier at all and it rendered
+      // empty. The name is confusing and the screen is where it should be fixed; the value
+      // being a slug is correct and deliberate.
       return id
-        ? appendParams('/(modals)/blog-post', { ...params, slug: id })
+        ? appendParams('/(modals)/blog-post', { ...params, id })
         : appendParams('/(modals)/blog', params);
 
     case 'kb':
