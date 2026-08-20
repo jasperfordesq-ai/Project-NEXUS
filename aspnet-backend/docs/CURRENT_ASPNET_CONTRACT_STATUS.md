@@ -213,10 +213,31 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
      uncaught page errors; every console error is a pre-known item
      (TopEndorsedWidget key warning ×N, `api/cookie-consent` CORS miss,
      `/me/fadp/consent` 401, the RSVP page's known-missing routes).
+   - ✅ **Sidebar, subtype and the poll feed (second tranche, 2026-08-20).**
+     The sidebar's `trending_hashtags` (a RAW EF entity — camelCase keys plus
+     `Tenant`/`Usages` navigation properties, one `.Include()` from
+     serialising a tenant row) and `suggested_groups` are REMOVED with the
+     subtractive rule's evidence: Laravel never emits either key from this
+     endpoint and neither frontend reads them from it. `suggested_members`
+     (which Laravel does emit) is deliberately NOT added — no live consumer
+     exists (React's PeopleYouMayKnowWidget is rendered by nothing), and the
+     frontend-proven depth rule puts unread fields out of scope. Feed
+     `?subtype=` now filters `metadata.listing_type` via jsonb containment
+     (Npgsql 10.0.3 has no JsonExtractPathText — checked in the provider DLL;
+     containment is the same predicate for string values), proven to
+     translate on real Postgres by its integration test. And a REAL missing
+     side effect found by the diff: **poll creation never published to the
+     feed** (12 dev polls, zero feed rows), so `poll_data` could never
+     appear; the feed activity is now recorded exactly as Laravel's
+     PollsController does (failure swallowed with a warning), and
+     `poll_data` is batch-loaded with Laravel's open-poll visibility rule
+     (non-creators see no counts until the poll closes). Proven end to end:
+     create a poll through the API → it appears in the feed with the exact
+     `PollData` keys React declares. `FeedSidebarAndSubtypeContractTests`
+     (3) pins all of it.
    - Still open in C: the rest of C.2's twelve journeys (sign-up incl. legal
      gate, messages send/receive, members connect, wallet history, feed
-     infinite scroll + reactions through the UI), `/api/v2/feed/sidebar`
-     raw-EF-entity projection, feed `subtype`, four route gaps (messages
+     infinite scroll + reactions through the UI), four route gaps (messages
      voice/attachment media, attendance code, credential download), token
      refresh across REAL expiry (the forced-401 probe shows the client sends
      the user to /login rather than silently recovering — client behaviour,

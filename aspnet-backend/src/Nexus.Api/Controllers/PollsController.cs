@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.Api.Extensions;
+using Nexus.Api.Data;
 using Nexus.Api.Services;
 
 namespace Nexus.Api.Controllers;
@@ -20,11 +21,19 @@ namespace Nexus.Api.Controllers;
 public class PollsController : ControllerBase
 {
     private readonly PollService _pollService;
+    private readonly FeedActivityService _feedActivity;
+    private readonly TenantContext _tenantContext;
     private readonly ILogger<PollsController> _logger;
 
-    public PollsController(PollService pollService, ILogger<PollsController> logger)
+    public PollsController(
+        PollService pollService,
+        FeedActivityService feedActivity,
+        TenantContext tenantContext,
+        ILogger<PollsController> logger)
     {
         _pollService = pollService;
+        _feedActivity = feedActivity;
+        _tenantContext = tenantContext;
         _logger = logger;
     }
 
@@ -120,6 +129,31 @@ public class PollsController : ControllerBase
 
         if (error != null)
             return BadRequest(new { error });
+
+        // 🔴 THE FEED PUBLICATION IS THE FIX (2026-08-20). Laravel records a feed
+        // activity for every created poll (PollsController.php:122-134); this backend
+        // did not, so its 12 dev polls produced ZERO poll rows in the feed — poll_data
+        // could never appear, and the gap was invisible until the write harness put a
+        // poll into both fixtures and only Laravel's feed showed it. Failure is
+        // swallowed with a warning exactly as Laravel swallows it: a feed hiccup must
+        // not fail poll creation.
+        try
+        {
+            await _feedActivity.RecordActivityAsync(
+                _tenantContext.GetTenantIdOrThrow(),
+                userId.Value,
+                FeedActivitySourceTypes.Poll,
+                poll!.Id,
+                new FeedActivityData
+                {
+                    Title = request.Title,
+                    GroupId = request.GroupId,
+                });
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "Feed activity recording failed for poll {PollId}.", poll!.Id);
+        }
 
         return CreatedAtAction(nameof(GetPoll), new { id = poll!.Id }, new
         {

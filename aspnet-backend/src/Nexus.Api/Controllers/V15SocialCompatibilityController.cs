@@ -149,7 +149,8 @@ public class V15SocialCompatibilityController : ControllerBase
         [FromQuery] int limit = 20,
         [FromQuery(Name = "per_page")] int? perPage = null,
         [FromQuery] string? cursor = null,
-        [FromQuery] string? type = null)
+        [FromQuery] string? type = null,
+        [FromQuery] string? subtype = null)
     {
         var userId = RequireUserId();
         var safePage = Math.Max(page, 1);
@@ -162,6 +163,21 @@ public class V15SocialCompatibilityController : ControllerBase
         // properly. `null` here means "no type filter", covering `all`, an absent value, and
         // the social filters this backend does not implement — see ResolveTypeFilter.
         var typeFilter = FeedContractMapper.ResolveTypeFilter(type);
+        // `subtype` filters on metadata.listing_type — Laravel compares the raw value
+        // against the jsonb path (`FeedService.php:299-303`), unvalidated, equality only.
+        // The React listings tab sends it to narrow offers vs requests.
+        //
+        // 🔴 Npgsql 10.0.3 has no JsonExtractPathText translator (checked in the provider
+        // DLL, not assumed), so this uses jsonb CONTAINMENT: `metadata @> {"listing_type":X}`.
+        // For string values that is the same predicate as Laravel's
+        // jsonb_extract_path_text equality; it would differ only for non-string values,
+        // and listing_type is always 'offer'/'request'. The fragment is built with the
+        // JSON serializer — never string-interpolated — so a hostile subtype cannot
+        // inject into the fragment.
+        var subtypeValue = string.IsNullOrWhiteSpace(subtype) ? null : subtype.Trim();
+        var subtypeFragment = subtypeValue is null
+            ? null
+            : JsonSerializer.Serialize(new Dictionary<string, string> { ["listing_type"] = subtypeValue });
         var hidden = _db.HiddenPosts.Where(h => h.UserId == userId).Select(h => h.PostId);
         var muted = _db.MutedUsers.Where(m => m.UserId == userId).Select(m => m.MutedUserId);
         var postQuery = _db.FeedPosts
@@ -169,6 +185,13 @@ public class V15SocialCompatibilityController : ControllerBase
             .Where(p => !p.IsHidden && !hidden.Contains(p.Id) && !muted.Contains(p.UserId));
         // Posts are the `post` source type, so any OTHER type filter excludes them entirely.
         if (typeFilter is not null && typeFilter != FeedActivitySourceTypes.Post)
+        {
+            postQuery = postQuery.Where(p => false);
+        }
+
+        // A set subtype excludes posts too: their metadata carries no listing_type, so in
+        // Laravel the jsonb predicate filters every post row out — NULL never equals it.
+        if (subtypeValue is not null)
         {
             postQuery = postQuery.Where(p => false);
         }
@@ -183,6 +206,10 @@ public class V15SocialCompatibilityController : ControllerBase
                 && !activity.IsHidden
                 && !muted.Contains(activity.UserId)
                 && (typeFilter == null || activity.SourceType == typeFilter)
+                // jsonb containment on the metadata column — see the note at
+                // subtypeFragment. NULL metadata / missing key never matches.
+                && (subtypeFragment == null
+                    || (activity.Metadata != null && EF.Functions.JsonContains(activity.Metadata, subtypeFragment)))
             select new FeedPageCandidate
             {
                 IsFeedPost = false,
@@ -1295,13 +1322,23 @@ public class V15SocialCompatibilityController : ControllerBase
             hours_received = await _db.Transactions.AsNoTracking().ExcludeInternalWalletAdapters().Where(t => t.TenantId == tenantId && t.ReceiverId == userId).SumAsync(t => (decimal?)t.Amount) ?? 0m
         };
 
-        var trending = await _db.Hashtags
-            .AsNoTracking()
-            .Where(h => h.TenantId == tenantId)
-            .OrderByDescending(h => h.UsageCount)
-            .Take(10)
-            .ToListAsync();
-
+        // 🔴 REMOVED 2026-08-20, with the per-endpoint evidence the subtractive rule
+        // demands: `trending_hashtags` and `suggested_groups` were keys LARAVEL NEVER
+        // EMITS from this endpoint (FeedSidebarController builds neither), and neither
+        // frontend reads them from here — React's FeedSidebar interface lists
+        // friends/community_stats/suggested_listings/top_categories/upcoming_events/
+        // popular_groups/profile_stats only (FeedSidebar.tsx:36-45), the explore page's
+        // trending hashtags come from /v2/explore, and the TrendingHashtags widget
+        // fetches /feed/hashtags/trending itself. Worse, `trending_hashtags` returned the
+        // RAW EF Hashtag entities — camelCase keys plus the `Tenant` and `Usages`
+        // navigation properties, null/empty today only because nothing eager-loads them:
+        // one future .Include() away from serialising a tenant row into a member-facing
+        // response. Do not reintroduce either key without a consumer AND a projection.
+        //
+        // `suggested_members` (which Laravel DOES emit) is deliberately NOT added: no
+        // live consumer exists in either frontend (React's PeopleYouMayKnowWidget is
+        // rendered by nothing), and the owner's frontend-proven depth rule puts unread
+        // fields out of scope. Recorded in the status doc rather than silently skipped.
         return Ok(new
         {
             success = true,
@@ -1313,9 +1350,7 @@ public class V15SocialCompatibilityController : ControllerBase
                 popular_groups = groups.Take(3).ToList(),
                 suggested_listings = suggestedListings,
                 friends,
-                profile_stats = profileStats,
-                trending_hashtags = trending,
-                suggested_groups = groups
+                profile_stats = profileStats
             }
         });
     }
@@ -3856,6 +3891,7 @@ public class V15SocialCompatibilityController : ControllerBase
         public HashSet<string> Shared { get; init; } = new(StringComparer.Ordinal);
         public HashSet<string> Bookmarked { get; init; } = new(StringComparer.Ordinal);
         public Dictionary<int, Dictionary<string, object?>> Reactions { get; init; } = new();
+        public Dictionary<int, Dictionary<string, object?>> PollData { get; init; } = new();
 
         public static string Key(string type, int id) => $"{type}:{id}";
     }
@@ -3982,6 +4018,74 @@ public class V15SocialCompatibilityController : ControllerBase
             }
         }
 
+        // poll_data, poll rows only — ported from Laravel's batchLoadPollData
+        // (`FeedService.php:1123-1238`), including its visibility rule: for an OPEN poll
+        // (active and not past its close), per-option counts, percentages and total_votes
+        // are hidden from everyone but the poll's creator, so live results cannot
+        // influence remaining voters. The creator always sees full results.
+        var pollIds = candidates
+            .Where(c => c.SourceType == FeedActivitySourceTypes.Poll)
+            .Select(c => c.SourceId)
+            .Distinct()
+            .ToList();
+        if (pollIds.Count > 0)
+        {
+            var polls = await _db.Polls
+                .AsNoTracking()
+                .Where(p => pollIds.Contains(p.Id))
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Title,
+                    p.Status,
+                    p.ClosesAt,
+                    p.CreatedById,
+                    Options = p.Options
+                        .OrderBy(o => o.SortOrder)
+                        .ThenBy(o => o.Id)
+                        .Select(o => new { o.Id, o.Text, VoteCount = o.Votes.Count })
+                        .ToList(),
+                    ViewerVoteOptionId = p.Votes
+                        .Where(v => v.UserId == userId)
+                        .Select(v => (int?)v.OptionId)
+                        .FirstOrDefault(),
+                })
+                .ToListAsync();
+
+            var now = DateTime.UtcNow;
+            foreach (var poll in polls)
+            {
+                var isActive = poll.Status == "active";
+                var isOpen = isActive && (poll.ClosesAt is null || poll.ClosesAt > now);
+                var isCreator = poll.CreatedById == userId;
+                var hideCounts = isOpen && !isCreator;
+                var totalVotes = poll.Options.Sum(o => o.VoteCount);
+
+                engagement.PollData[poll.Id] = new Dictionary<string, object?>
+                {
+                    ["id"] = poll.Id,
+                    // Laravel's polls table calls this `question`; this backend's is Title.
+                    ["question"] = poll.Title,
+                    ["options"] = poll.Options.Select(o => new Dictionary<string, object?>
+                    {
+                        ["id"] = o.Id,
+                        ["text"] = o.Text,
+                        ["vote_count"] = hideCounts ? null : o.VoteCount,
+                        ["percentage"] = hideCounts
+                            ? null
+                            : (object)(totalVotes > 0 ? Math.Round(o.VoteCount * 100.0 / totalVotes, 1) : 0),
+                    }).ToList(),
+                    ["total_votes"] = hideCounts ? null : (object)totalVotes,
+                    ["user_vote_option_id"] = poll.ViewerVoteOptionId,
+                    ["is_active"] = isActive,
+                    ["expires_at"] = poll.ClosesAt is null
+                        ? null
+                        : new DateTimeOffset(DateTime.SpecifyKind(poll.ClosesAt.Value, DateTimeKind.Utc))
+                            .ToString("yyyy-MM-ddTHH:mm:sszzz"),
+                };
+            }
+        }
+
         return engagement;
     }
 
@@ -4023,6 +4127,9 @@ public class V15SocialCompatibilityController : ControllerBase
                 IsShared = engagement.Shared.Contains(key),
                 IsBookmarked = engagement.Bookmarked.Contains(key),
                 Reactions = engagement.Reactions.GetValueOrDefault(candidate.SourceId),
+                PollData = type == FeedActivitySourceTypes.Poll
+                    ? engagement.PollData.GetValueOrDefault(candidate.SourceId)
+                    : null,
             });
     }
 
