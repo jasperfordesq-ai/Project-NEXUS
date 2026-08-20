@@ -1,5 +1,7 @@
 # Current ASP.NET Schema Readiness
 
+Status: **Canonical current - schema verdict source**
+
 > **Pre-consolidation paths.** Written before the 2026-08-09 move into the
 > platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
 > `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read

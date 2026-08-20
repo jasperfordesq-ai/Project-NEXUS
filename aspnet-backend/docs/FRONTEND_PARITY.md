@@ -15,15 +15,17 @@ state.
 Laravel source of truth:
 
 - `C:\platforms\htdocs\staging\react-frontend`
-- `C:\platforms\htdocs\staging\accessible-frontend`
-- `C:\platforms\htdocs\staging\routes\govuk-alpha.php`
-- `C:\platforms\htdocs\staging\routes\govuk-alpha-parity`
+- ~~the Blade accessible frontend~~ (deleted 2026-08-14): `accessible-frontend/`,
+  `routes/govuk-alpha.php` and `routes/govuk-alpha-parity` no longer exist; the final
+  Blade route inventory is frozen at `web-uk/scripts/blade-route-inventory.frozen.json`
+  (707 routes), and behaviour is defined by the GOV.UK Design System + WCAG 2.2,
+  `react-frontend/` and the Laravel API.
 
 Repository surfaces:
 
 - `apps/react-frontend` was deleted on 2026-08-09. This repository contains no
   React frontend and must not have one reintroduced.
-- `apps/web-uk` is the implementation target for the future shared accessible
+- `web-uk/` (repo root) is the shared accessible frontend — in production since 2026-08-14 — and the
   frontend. Its location in this repository does not make ASP.NET authoritative
   for its behaviour.
 - `apps/admin` was retired and deleted on 2026-08-09; the admin panel lives in
@@ -73,7 +75,7 @@ Current workstream status lives in `CURRENT_ASPNET_CONTRACT_STATUS.md` and
 
 Generated with `scripts/compare-laravel-frontend-parity.ps1` on 2026-07-04.
 These historical accessible counts are superseded for current Web UK work by
-`apps/web-uk/docs/generated/accessible-route-matrix.*`.
+`web-uk/docs/generated/accessible-route-matrix.*`.
 
 | Surface | Laravel source routes | .NET target routes | Matched | Missing from .NET | Extra in .NET |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -92,7 +94,7 @@ that copy was deleted on 2026-08-09, its side of the React comparison now
 always resolves empty — the scripts are guarded and still run, but their React
 route and localization deltas are meaningless and should be read as
 "no .NET-side React frontend exists" rather than as a parity gap. The accessible
-`apps/web-uk` comparison is unaffected.
+`web-uk/` comparison is unaffected.
 
 Future compatibility reports should instead inventory API calls made by
 `C:\platforms\htdocs\staging\react-frontend`, then verify that ASP.NET exposes
@@ -108,30 +110,29 @@ effects, or Laravel/ASP.NET runtime behavior.
 
 ## Accessible Frontend Direction And Authority
 
-Laravel Blade is the product/UI source of truth for browser routes, links,
+Laravel Blade WAS the product/UI source of truth for browser routes, links,
 layout, navigation, content hierarchy, forms, validation presentation,
-redirects, tenant behaviour, and workflows:
-
-```text
-C:\platforms\htdocs\staging\accessible-frontend
-C:\platforms\htdocs\staging\routes\govuk-alpha.php
-C:\platforms\htdocs\staging\routes\govuk-alpha-parity
-```
+redirects, tenant behaviour, and workflows — **it was deleted on 2026-08-14.**
+Its final route inventory is frozen at
+`web-uk/scripts/blade-route-inventory.frozen.json`, which
+`npm --prefix web-uk run route:matrix` diffs against. Beyond routes, behaviour
+is defined by the GOV.UK Design System + WCAG 2.2, `react-frontend/` and the
+Laravel API.
 
 The Laravel backend/API is separately authoritative for HTTP methods and paths,
 payloads, response envelopes, status codes, auth, roles, modules, uploads,
 downloads, persistence, and side effects.
 
-`apps/web-uk` keeps Express/Nunjucks/GOV.UK Frontend and is being completed as
-the future shared accessible frontend. ASP.NET is an incomplete future second
+`web-uk/` keeps Express/Nunjucks/GOV.UK Frontend and has been the production
+shared accessible frontend since 2026-08-14. ASP.NET is an incomplete future second
 backend, not a frontend source of truth. It must be made externally
 contract-identical by
 the separate backend workstream; Web UK must not acquire backend-specific page
 or workflow branches. Current implementation does not itself prove production
-readiness. The React utility-bar accessible link must continue
-pointing at the production Laravel accessible frontend until `apps/web-uk` has
-passed route, workflow, tenant-domain, auth, localization, accessibility, and
-runtime smoke certification.
+readiness. `web-uk/` IS the production accessible frontend (Blade deleted 2026-08-14);
+its Laravel-side certification status lives in
+`web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`. ASP.NET switching remains a
+separate certification gate.
 
 The Laravel repository, schema, and ordinary local database are read-only from
 the Web UK workstream. Mutation, upload, download, and destructive certification
@@ -224,8 +225,10 @@ current Web UK queue; use the Laravel-first status document.
 - Request bodies, query parameters, response envelopes, pagination, validation
   errors, auth/tenant errors, upload behavior, realtime config, and status codes
   are compatible with Laravel.
-- Every Laravel accessible route under `govuk-alpha*` has an equivalent
-  `apps/web-uk` route, view, form method, validation behavior, and API support.
+- Every route in the frozen Blade inventory
+  (`web-uk/scripts/blade-route-inventory.frozen.json`) has an equivalent
+  `web-uk/` route, view, form method, validation behavior, and API support —
+  enforced by `npm --prefix web-uk run route:matrix` (707/707 matched).
 - Admin, super-admin, partner, broker, and accessible surfaces are tracked
   independently.
 - Compatibility is proven with a route/API matrix, ASP.NET regression tests, and

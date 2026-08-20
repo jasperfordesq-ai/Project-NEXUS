@@ -1,5 +1,7 @@
 # ASP.NET database: what the backup position actually is
 
+Status: **Maintained reference - backup-position record**
+
 **Established 2026-08-16 by read-only inspection of the production host.**
 This corrects a claim carried in several documents since 2026-08-10, which has
 been the stated reason for treating this backend as untouchable.

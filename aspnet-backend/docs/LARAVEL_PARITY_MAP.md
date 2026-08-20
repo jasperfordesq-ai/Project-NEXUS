@@ -147,8 +147,8 @@ Use the production Laravel React
 frontend at `C:\platforms\htdocs\staging\react-frontend` as the contract target
 for ASP.NET backend compatibility.
 
-For current `apps/web-uk` accessible frontend work, read
-`apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` and then its generated
+For current `web-uk/` accessible frontend work, read
+`web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` and then its generated
 matrix. At the historical 2026-07-08 merge commit `f7c80d32`, that matrix reported 608/608 Laravel accessible routes
 matched, 0 missing, 2 extra local exchange workflow routes, and 3 ignored
 infrastructure routes.

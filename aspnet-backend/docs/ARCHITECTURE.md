@@ -63,7 +63,7 @@ persistence, providers, or workflows.
 | --- | --- | --- |
 | Laravel backend | `C:\platforms\htdocs\staging` | Production behavior and API/workflow contract; read-only from this repository. |
 | Canonical React frontend | `C:\platforms\htdocs\staging\react-frontend` | Production API consumer and call-site contract source; unchanged for ASP.NET contract-identity proof. |
-| Laravel accessible UI/routes | `C:\platforms\htdocs\staging\accessible-frontend` and `routes/govuk-alpha*` | Browser experience, content, route, form, redirect, accessibility, and workflow source for Web UK; read-only. |
+| ~~Laravel accessible UI/routes~~ | *(deleted 2026-08-14)* — the Blade accessible frontend, `routes/govuk-alpha.php` and `routes/govuk-alpha-parity` no longer exist | Behaviour is defined by the GOV.UK Design System + WCAG 2.2 (presentation), `react-frontend/` (member capability) and the Laravel API (contract); the final Blade route inventory is frozen at `web-uk/scripts/blade-route-inventory.frozen.json`. |
 | ASP.NET API | `src/Nexus.Api/Controllers`, `src/Nexus.Api/Program.cs` | Laravel-contract-identical JSON API target, auth, tenant resolution, admin routes, health, and OpenAPI. |
 | ASP.NET domain services | `src/Nexus.Api/Services` | Business rules, integrations, and background operations. |
 | ASP.NET data model | `src/Nexus.Api/Entities`, `src/Nexus.Api/Data`, `src/Nexus.Api/Migrations` | Tenant-aware EF persistence and forward-only migrations. |
@@ -80,7 +80,7 @@ canonical status sources:
 
 - `CURRENT_ASPNET_CONTRACT_STATUS.md` for the current ASP.NET fixed-rubric score,
   evidence SHAs, published-but-unscored work, blockers, and next queue;
-- `../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for the current
+- `../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` for the current
   accessible frontend score, route/API ledgers, certification boundary, and
   next queue;
 - `FULL_PARITY_REMEDIATION_RUNBOOK.md` for the shared 1000-point rubric and

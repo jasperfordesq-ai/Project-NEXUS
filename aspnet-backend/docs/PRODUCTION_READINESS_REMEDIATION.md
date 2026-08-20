@@ -1,5 +1,7 @@
 # ASP.NET Production-Readiness Remediation Backlog
 
+Status: **Maintained reference - verified-defect backlog (the re-verified block wins over older items below it)**
+
 **Opened 2026-08-15 at monorepo HEAD `870c1e989`.** This is the single actionable
 list of everything standing between the ASP.NET backend and running a real
 community. It exists so a future session does not have to rediscover any of it.

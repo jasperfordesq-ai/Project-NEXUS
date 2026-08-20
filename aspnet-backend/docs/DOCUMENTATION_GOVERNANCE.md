@@ -19,7 +19,7 @@ agent instructions.
 | Laravel production authority, ASP.NET strategic role, and any future promotion decision gate | [`ADR-0002`](decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md) | ASP.NET is optional rather than an assumed successor; traffic growth alone never authorizes production use |
 | ASP.NET banked score, score provenance, and certification gaps | [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md) | Link to it; do not publish a competing current overall score |
 | ASP.NET schema pause/restart verdict and current migration-chain boundary | [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) | Link to it; keep the schema category score in the ASP.NET status and detailed dated evidence in `SCHEMA_PARITY.md` |
-| Accessible Web UK banked score, ownership, blockers, and queue | [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Link to it; do not treat the old handoff log as current |
+| Accessible Web UK banked score, ownership, blockers, and queue | [`CURRENT_WEBUK_PRODUCTION_STATUS.md`](../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md) | Link to it; do not treat the old handoff log as current |
 | Fixed 1000-point rubric, 2x2 end state, shared evidence gates, and execution loop | [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) | Reuse its denominator and category definitions exactly; follow each canonical status document for its live queue |
 | Runtime boundaries and two-frontends-by-two-backends shape | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Link to it; do not draw a competing current architecture |
 | React retirement and unchanged-client policy | [`REACT_FRONTEND_RETIREMENT.md`](REACT_FRONTEND_RETIREMENT.md) | Retirement is complete: the copy was deleted 2026-08-09. Preserve the do-not-recreate and Laravel-consumer rules |
@@ -73,7 +73,7 @@ Every score must identify:
 - certification evidence still missing.
 
 Only `CURRENT_ASPNET_CONTRACT_STATUS.md` states the current ASP.NET overall
-score. Only `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` states the current Web UK
+score. Only `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` states the current Web UK
 overall score. Never blend the two totals. Never lower or raise a prior score
 because scope was silently rediscovered; create a named drift baseline and show
 the delta.
@@ -194,8 +194,11 @@ Documentation health is 1000/1000 under pause-readiness Baseline D3 only when:
   counts are dated, and representation is not called semantic certification;
 - active safety rules contain no ordinary-database testing exception and old
   handoffs/checkpoints are explicitly historical; and
-- the consistency script, Markdown link checker, relevant focused tests,
-  configuration/YAML/Compose validation, and `git diff --check` all pass;
+- the live documentation gates all pass — `scripts/check-markdown-links.ps1`,
+  the repo-root `npm run check:docs` and `node scripts/check-doc-scores.mjs`,
+  relevant focused tests, configuration/YAML/Compose validation, and
+  `git diff --check` (`check-documentation-consistency.ps1` was deleted
+  2026-08-10 and is no longer part of any gate);
 - the pause handoff states an exact read order, evidence boundary, schema
   verdict, restart prompts, and resume-authorization fence; and
 - the pause-readiness guard proves one clean `main` worktree, no local topic

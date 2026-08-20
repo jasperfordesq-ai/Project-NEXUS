@@ -7,7 +7,7 @@ Status: **Maintained reference — fixed rubric and cross-workstream completion 
 This is the maintained execution map for completing both contract-identity
 workstreams. The filename is retained for link stability:
 
-1. finish `apps/web-uk` as the accessible frontend against the Laravel backend;
+1. finish `web-uk/` (repo root) as the accessible frontend against the Laravel backend;
 2. make the ASP.NET backend externally contract-identical to Laravel for both the
    canonical Laravel React frontend and the accessible frontend.
 
@@ -22,7 +22,7 @@ handoffs remain useful for detailed implementation history and commands.
 
 For live workstream scores, published-versus-dirty boundaries, and remaining
 deductions, read `CURRENT_ASPNET_CONTRACT_STATUS.md` and
-`../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`. This runbook owns
+`../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`. This runbook owns
 the fixed rubric and evidence gates, but deliberately does not mirror either
 current overall score.
 
@@ -32,14 +32,15 @@ all three open tasks are recorded in
 [`RESTART_INCIDENT_2026-07-15.md`](RESTART_INCIDENT_2026-07-15.md). Interrupted
 or recovered dirty work never changes a banked score.
 
-## Development Pause Fence — 2026-07-15
+## Authorization Boundary (the 2026-07-15 pause was LIFTED on 2026-08-14)
 
-Development is paused. Read
-[`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](PROJECT_PAUSE_HANDOFF_2026-07-15.md)
-before using this runbook. The loop below is a method for a future explicitly
-authorized phase; it is not standing authority to implement, migrate, deploy,
-commit, push, provision infrastructure, or touch production merely because this
-file was opened. A new user instruction must name the workstream and scope.
+Local implementation, tests and migrations are authorized again (owner
+instruction, 2026-08-14 — recorded in `../CLAUDE.md`). What remains true from
+the pause era: this runbook is a method, not standing authority — production
+deployment, production-container operations and live-provider actions each
+require a separate explicit owner instruction naming the workstream and
+scope. The pause record itself is a Historical checkpoint:
+[`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](PROJECT_PAUSE_HANDOFF_2026-07-15.md).
 
 ## Objective
 
@@ -49,7 +50,7 @@ model:
 | Frontend | Laravel backend | ASP.NET backend |
 | --- | --- | --- |
 | Canonical React at `C:\platforms\htdocs\staging\react-frontend` | Source-of-truth baseline | Same contracts and workflows, runtime-certified |
-| Accessible Web UK at `apps/web-uk` | Laravel-first and fully certified | Same Web UK code and page flows, runtime-certified after backend parity |
+| Accessible Web UK at `C:\platforms\htdocs\staging\web-uk` | Laravel-first and fully certified | Same Web UK code and page flows, runtime-certified after backend parity |
 
 Do not achieve this by adding ASP.NET-specific behavior to the canonical React
 frontend or page-level backend adapters to Web UK. ASP.NET must implement the
@@ -61,10 +62,9 @@ Laravel contracts.
 | --- | --- | --- |
 | Laravel backend | `C:\platforms\htdocs\staging` | Read-only reference |
 | Canonical React frontend | `C:\platforms\htdocs\staging\react-frontend` | Read-only contract consumer |
-| Laravel accessible frontend | `C:\platforms\htdocs\staging\accessible-frontend` | Read-only visual, content, accessibility, and workflow reference |
-| Laravel accessible routes | `C:\platforms\htdocs\staging\routes\govuk-alpha.php` and `routes\govuk-alpha-parity` | Read-only route truth |
-| ASP.NET backend | `C:\platforms\htdocs\asp.net-backend\src` | Backend implementation target |
-| Accessible Web UK | `C:\platforms\htdocs\asp.net-backend\apps\web-uk` | Accessible implementation target |
+| ~~Laravel Blade accessible frontend~~ | *(deleted 2026-08-14)* | `accessible-frontend/`, `routes/govuk-alpha.php` and `routes/govuk-alpha-parity` no longer exist. Behaviour is defined by GOV.UK Design System + WCAG 2.2 (presentation), `react-frontend/` (member capability) and the Laravel API (contract); the final Blade route inventory is frozen at `web-uk/scripts/blade-route-inventory.frozen.json` (707 routes) |
+| ASP.NET backend | `C:\platforms\htdocs\staging\aspnet-backend\src` | Backend implementation target |
+| Accessible Web UK | `C:\platforms\htdocs\staging\web-uk` | Accessible implementation target (production accessible frontend — read-only from this workstream) |
 | ~~Legacy React copy~~ | *(deleted 2026-08-09)* | Retired and removed from the repository; do not recreate |
 
 Before any production deployment or production-container action, stop and read
@@ -1074,7 +1074,7 @@ semantic workflow parity.
 
 Laravel at `C:\platforms\htdocs\staging` and the canonical React frontend remain
 the read-only contract sources. This backend-only slice did not authorize or
-require frontend changes; preserve unrelated `apps/web-uk` edits.
+require frontend changes; preserve unrelated `web-uk/` (repo root) edits.
 
 The new safeguarding domain stores metadata only. Migration 112 creates the
 five exact Laravel tables `tenant_safeguarding_settings`,
@@ -1421,7 +1421,7 @@ baseline below. It does not change the ASP.NET workstream scores.
 
 | Surface | Score | Meaning |
 | --- | ---: | --- |
-| Web UK Laravel-first implementation | 900/1000 | An independent pre-publication audit scored 896; publishing the clean, documented `apps/web-uk` slice supplies the remaining repository-hygiene points, but substantive component, workflow, localization, and manual-accessibility gaps remain. |
+| Web UK Laravel-first implementation | 900/1000 | An independent pre-publication audit scored 896; publishing the clean, documented `web-uk/` (repo root) slice supplies the remaining repository-hygiene points, but substantive component, workflow, localization, and manual-accessibility gaps remain. |
 | Web UK Laravel-first certification | 765/1000 | An independent pre-publication audit scored 760; publication improves reproducibility, while live mutation/upload/destructive evidence and manual certification remain materially incomplete. |
 | Web UK ASP.NET switchability proof | 80/1000 | Unchanged and outside this Laravel-first session. |
 
@@ -2022,7 +2022,7 @@ Do not claim completion until all of the following are true:
 Do not duplicate either live queue in this runbook:
 
 - Web UK Laravel-first blockers, ownership, and its finite ordered packages live
-  in `../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`.
+  in `../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`.
 - ASP.NET banked deductions, published-versus-dirty boundary, and backend
   certification gates live in `CURRENT_ASPNET_CONTRACT_STATUS.md`.
 
@@ -2121,8 +2121,8 @@ The production-derived ordinary local database is read-only and is not a
 fixture, even when a script creates unique rows or attempts cleanup.
 
 Use the certification commands and ownership boundaries documented in
-`apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`; consult
-`apps/web-uk/docs/CURRENT_WEB_UK_HANDOFF.md` only as historical detail. Record
+`web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`; consult
+`web-uk/docs/CURRENT_WEB_UK_HANDOFF.md` only as historical detail. Record
 every exhaustive module/body-text chunk and do not extrapolate from one chunk.
 
 ## Evidence And Blocker Rules

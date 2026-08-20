@@ -542,6 +542,16 @@ try {
     # IMPORTANT: this read <TargetRoot>\apps\react-frontend\public\locales until
     # 2026-08-10. That app was deleted upstream in f27412bb, and $TargetRoot is
     # aspnet-backend/ in any case, so it never resolved.
+    #
+    # 🔴 SCORE-INTEGRITY WARNING (2026-08-20). The rows below are labelled
+    # 'dotnet' but they are the SHARED React frontend's i18next catalogs —
+    # they contain zero ASP.NET code. The artifact's "keys missing" figure
+    # (5,424 at the 2026-08-18 run) therefore measures Laravel lang/ against a
+    # FRONTEND and must never be scored as an ASP.NET backend deduction; it
+    # was, once, as −18 in Baseline 2. The real backend localization ledger is
+    # docs/BACKEND_LOCALIZATION_CONTRACT.md (request-locale negotiation,
+    # recipient locale, seeded locales). Keep this comparison for what it is:
+    # a Laravel-vs-React catalog drift report.
     $targetRows = @(Get-LocalizationKeys $ReactLocalesRoot '' 'dotnet' $KeyLocales)
     $sourceKeyRows = @($sourceRows | Where-Object { $_.key -ne '__namespace_present__' })
     $targetKeyRows = @($targetRows | Where-Object { $_.key -ne '__namespace_present__' })

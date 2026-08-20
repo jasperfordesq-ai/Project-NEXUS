@@ -1,5 +1,7 @@
 # Contract parity: every aspect, what it needs, and how it is measured
 
+Status: **Maintained reference - parity working plan**
+
 **Goal (owner, 2026-08-16):** both frontends must talk to either backend and get
 carbon-copy answers. Production deployment, backups and live payment keys are
 explicitly **out of scope** — this backend runs locally and in development only.
@@ -73,7 +75,7 @@ inside them was never exercised. They are deliberately NOT counted as passes.
 🔴 **What 164/170 does and does not mean.** It means: for every one of those
 endpoints, an anonymous GET to both backends returns the same status and the
 same JSON shape. It does NOT mean the endpoints are equivalent behind
-authentication, that writes behave the same, or that the 229 do-nothing handlers
+authentication, that writes behave the same, or that the do-nothing handlers (319 live; see the status doc)
 have gained bodies. The corpus is the GET requests the React frontend makes;
 most resolve to 401 on both sides, which proves the authorisation boundary
 matches and nothing about the payload behind it. Authenticated comparison is the
@@ -513,7 +515,7 @@ bodies. Discount Laravel's debug-mode keys (trap 1 above).
 
 ---
 
-## 5. The 229 do-nothing endpoints
+## 5. The do-nothing endpoints (319 live; the R-29 triage names 229 CLIENT-CALLED among them)
 
 **Status: known, itemised, unchanged.**
 
@@ -531,7 +533,7 @@ working endpoint that returns the wrong shape.
 
 **Status: ~205 absent (was 211; six added 2026-08-16). Zero phantom tables.**
 
-Many of the 229 cannot be implemented without a table first. That is design
+Many of the 229 client-called stubs cannot be implemented without a table first. That is design
 work, not plumbing.
 
 **What to do:** per subsystem, and only for subsystems a client actually calls
@@ -714,7 +716,7 @@ environment first; then this batch is mechanical and verifiable in one pass.
 2. **`tenant/bootstrap`** — every page load depends on it
 3. **Error shapes** — extend the harness, then fix
 4. **web-uk path extraction** — turn one measured frontend into two
-5. **The 229**, ordered by harness verdict
+5. **The client-called stubs (229 of the 319)**, ordered by harness verdict
 6. **Tables**, per called subsystem
 7. Pagination → localization → uploads/realtime/side effects
 

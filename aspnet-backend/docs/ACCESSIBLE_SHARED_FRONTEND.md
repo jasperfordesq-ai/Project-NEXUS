@@ -1,5 +1,7 @@
 # Accessible Shared Frontend Direction
 
+Status: **Maintained reference - superseded in part; read the 2026-08-11 status header first**
+
 > 🔴 **Status header added 2026-08-11.** On that date the owner decided `web-uk`
 > becomes the production accessible frontend and the Laravel Blade accessible
 > frontend retires. Read `docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` at the repository

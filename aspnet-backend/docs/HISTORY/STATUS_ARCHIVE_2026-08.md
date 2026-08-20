@@ -1,0 +1,2507 @@
+# ASP.NET Status Archive — August 2026 (Baseline 2 era and the unbanked sprint)
+
+Status: **Historical checkpoint — do NOT use these scores or queues as current.**
+Canonical replacement: [../CURRENT_ASPNET_CONTRACT_STATUS.md](../CURRENT_ASPNET_CONTRACT_STATUS.md).
+
+Preserved verbatim (dates, SHAs, commands intact). Contents, chronological:
+the 2026-08-14 re-audit, the 2026-08-15 fresh audit, the 2026-08-17 parity
+entries, **Fixed Rubric Baseline 2 (598/1000, `ASPNET-CONTRACT-R2`) with its
+full per-category evidence**, and the dated 2026-08-19/2026-08-20 work entries
+whose movement was banked into Baseline 3.
+
+---
+## 2026-08-14 Re-Audit Against Laravel HEAD (Advisory)
+
+A full evidence re-audit ran on 2026-08-14 against monorepo HEAD
+`5afb43ff73dae9acb9f3e76ff0670ed0c21e4139` (Laravel and ASP.NET inspected at the
+same monorepo SHA). Every comparison below was regenerated from the live code on
+that day, not read from documentation. **This section is advisory: it banks zero
+points and performs no fixed-rubric scoring transaction.** The banked score
+above remains 712/1000 against the frozen `903d03d3` baseline. The audit session
+was interrupted after the evidence was gathered and before a drift-adjusted
+scoring transaction could be recorded; per the rubric policy, drift is recorded
+here as a separately named position, never as a silent rescore.
+
+### Route representation against Laravel HEAD
+
+- **2,600 of 2,667 Laravel operations matched; 67 missing.** At the frozen
+  `903d03d3` baseline the same gate was 2,601/2,601 with 0 missing. Nothing
+  regressed on the ASP.NET side: all 67 are Laravel endpoints shipped after the
+  2026-07-15 freeze.
+- The regenerated canonical React call-site matrix
+  ([`generated/canonical-react-contracts/README.md`](../generated/canonical-react-contracts/README.md))
+  records 2,407 static call-site rows, 2,078 unique method/path contracts,
+  1,899 method-evidenced, 179 method-unresolved, **59 ASP.NET static gaps**
+  (0 at the freeze) and 16 Laravel static gaps.
+- **Partner venues closed later on 2026-08-14 (unscored):** all fourteen
+  partner-venue routes (five member, nine admin) are now implemented with the
+  Laravel contract — feature gate `features.partner_venues` (default off,
+  middleware-shaped 403 body), 64-hex member pass with in-place rotation, the
+  full recordVisit rule ladder (invalid pass 404 / forbidden 403 /
+  needs_venue / database-enforced one-visit-per-day / self-scan block /
+  venue-visit XP and challenge completions), admin CRUD with Laravel
+  validation and the bare thirteen-key 201 store shape, staff roster,
+  lifetime-vs-window summary, and the sanitised CSV export. Storage is
+  migration 164 (`20260814164515_AddPartnerVenueTables`, proven zero-to-164
+  on a disposable PostgreSQL); the staff roster is a dedicated
+  `partner_venue_staff` table rather than Laravel's shared `org_members`
+  pivot, a deliberate internal divergence because the ASP.NET `org_members`
+  mapping hard-pins `org_type='volunteer'` with an FK to `vol_organizations`
+  — the externally observable roster contract is identical. Pinned by
+  `tests/Nexus.Api.Tests/PartnerVenuesTests.cs` (15 tests).
+- **Support actions / carer sub-accounts: foundation landed 2026-08-14
+  (unscored), full workflow mapped and queued.** The `SupportTiers` permission
+  engine is ported with its safety rules pinned by 9 unit tests (dead
+  `can_view_messages` boolean, drop-not-clamp caps, staff cap), and migration
+  165 (`20260814173908_AddProxyActingUserAttribution`, proven zero-to-165)
+  adds the nullable acting-user attribution columns to `listings` and
+  `transactions`. The complete contract map and five-step build order
+  (relationship-model upgrade → `support_pending_actions` workflow → proxy
+  execution → supervised message viewing → admin attestation) is banked in
+  `.local-docs-archive/aspnet-support-actions-blueprint-2026-08-14.md` —
+  start there, do not re-research. **Blueprint step 1 (relationship model)
+  landed later on 2026-08-14 (unscored):** migration 166
+  (`20260814175625_AddAccountRelationships`) creates `account_relationships`
+  and the append-only `account_relationship_events` (UPDATE refused by a
+  database trigger, proven by test), carries legacy `sub_accounts` rows across
+  with tier-mapped permissions, and the relationship endpoints
+  (`/users/me/sub-accounts*`, `/users/me/parent-accounts*` including the two
+  previously missing member routes: PUT `parent-accounts/{id}/permissions`
+  and POST `parent-accounts/{id}/message-access/withdraw`) now enforce the
+  Laravel tier rules: supporter expansion refused with
+  MEMBER_APPROVAL_REQUIRED, boolean true never escalates, dead
+  `can_view_messages` never surfaces, withdraw always available. Pinned by
+  `AccountRelationshipTests` (11 tests); two legacy tests updated to the
+  current contract in the same commit. **Step 2 (pending-action workflow) also
+  landed 2026-08-14 (unscored):** migration 167
+  (`20260814190006_AddSupportPendingActions`) creates `support_pending_actions`
+  with the hashed single-use token, 14-day expiry, and the nullable-unique
+  one-open-message-ask-per-relationship key; all seven workflow routes are
+  implemented (prepare / index / confirm / decline / cancel and the two
+  anonymous token routes with the read-only-GET / mutating-POST split);
+  confirmation executes for real — listings and wallet transfers land with the
+  supported member as owner/sender and the supporter stamped as ActingUserId —
+  authority is re-checked at use time (AUTHORITY_CHANGED auto-cancel), and
+  message access rises ONLY through this workflow. Pinned by
+  `SupportActionWorkflowTests` (10 tests). **Step 3 (represent-tier proxy
+  execution) also landed 2026-08-14 (unscored):** the four direct endpoints
+  (child listings, listing image, transfer, wallet) enforce the represent
+  tier — co_decide never authorises acting alone — with fail-closed audit
+  attribution (the listing commits with its audit row or not at all), the
+  supported member always the owner/sender and always notified, the carer's
+  own balance provably untouched, and the wallet summary gated on the credits
+  tier by design. Pinned by `SubAccountProxyTests` (6 tests). **Step 4
+  (supervised message viewing) also landed 2026-08-14 (unscored):** migration
+  168 (`20260814193140_AddSupporterMessageViewAudits`) creates the append-only
+  `supporter_message_view_audits` (UPDATE refused by trigger, proven by test);
+  the two GET routes require a stated purpose (header first, blank refused,
+  no audit row on refusal), write the audit row BEFORE fetching, read AS the
+  member (their deletions invisible, unread counts stripped, nothing ever
+  marked read), and there is deliberately no write route under the prefix.
+  Pinned by `SupporterMessageViewTests` (7 tests). **Step 5 (staff
+  attestation) also landed 2026-08-14 (unscored), completing the subsystem:**
+  the broker-or-admin queue (`GET /v2/admin/safeguarding/support-actions`,
+  both names loaded, never the raw payload) and the attest endpoint (channel
+  required ∈ phone/in_person/paper, witness optional ≤160) confirm through
+  the same shared path with `attested_offline` provenance, so authority
+  lapses and safeguarding restrictions refuse attestation identically, and
+  the supported member is always notified. Pinned by
+  `SupportActionAttestationTests` (5 tests). **The support-actions / carer
+  sub-accounts cluster is now implemented end to end (39 pinning tests
+  total).** Residue: the `restriction-status` notice flags on the ordinary
+  messages surface, and email delivery of the confirm-token link (currently
+  bell-notification only).
+- **Guardian consent & authority attestations closed later on 2026-08-14
+  (unscored):** all nine routes implemented with the Laravel contract —
+  the ward-only state machine (pending→consented/declined,
+  consented→withdrawn/declined, declined/withdrawn→consented; idempotent
+  repeats write nothing; ending consent resets every tier and cancels open
+  prepared actions; declined/withdrawn keep status pending — revoked stays
+  staff-only), the deliberately minimal my-wards read, ward-only tier grants
+  with messages silently stripped and expansion re-checking the contact
+  policy both ways, and authority attestations (migration 169:
+  `support_authority_attestations` + append-only events with DB triggers;
+  closed vocabularies; evidence fields refused on key presence; free text
+  encrypted at rest, private notes never returned; attest failures 422 even
+  for NOT_FOUND; revocation never touches tiers — a record, not
+  authorisation). Error-shape quirks copied deliberately (422
+  VALIDATION_ERROR with the "Resource not found" message on malformed ids;
+  indistinguishable 404 for not-yours/not-live). Pinned by
+  `GuardianArrangementTests` (13 tests). Storage note: Laravel's
+  `safeguarding_assignments` is a read-only archive; these endpoints run on
+  `account_relationships` with `proposed_by_user_id` set, exactly as Laravel.
+- **Small-endpoint batch closed later on 2026-08-14 (unscored):** admin
+  challenge CRUD (4 routes, Laravel wire shape incl. the four-type vocabulary,
+  hand-rolled validation order, JSON-null-skipping partial updates; the
+  ChallengeType enum gained the Laravel values, stored as strings, and
+  badge_reward maps to a Badge slug), `GET /v2/admin/badge-counts` (all eight
+  keys; the five sources with no ASP.NET tables are honestly 0), and the two
+  anonymous public-events routes (double feature gate with public_events OFF
+  by default; the sixteen-key allowlist projection plus description and
+  accessibility on detail; first-name-only organiser; indistinguishable 404;
+  cursor pagination not yet implemented — the React client never sends one).
+  Pinned by `SmallParityEndpointsTests` (6 tests). **Second small batch closed
+  2026-08-15 (unscored):** platform capabilities GET/PUT (migration 170:
+  `platform_capability_overrides`; the six-capability allowlist is the
+  security boundary; platform-super gate refusing tenant supers), federation
+  external-status (every switch honestly OFF in the exact Laravel shape — no
+  external federation exists here), performance summary (the pinned contract
+  shape with `meta.recording_enabled=false` — no recorder exists here, and
+  the dashboard renders its honest recording-off state), and the five
+  attendance-reward routes (events.attendance_credit_amount column; the
+  pre-existing claims ledger entity gained its admin surface: config
+  round-trip with ceiling validation, ledger + reversal deliberately
+  surviving the feature flag, kill-switch blocking retries, community-mint /
+  member-reclaim transactions, one reversal per reward database-enforced).
+  Pinned by `SuperOpsAndRewardsTests` (6 tests). **Impersonation closed
+  2026-08-15 (unscored) — this completes all 59 React-consumed route gaps
+  from the re-audit.** Migration 171 adds `revoked_tokens` (UNIQUE jti = the
+  single-use guarantee). The mint (`/v2/admin/super/users/{id}/impersonate`)
+  issues a 5-minute one-time PROOF that authenticates nothing as a bearer —
+  the JWT pipeline now rejects `type=impersonation` and denylist-checks
+  `impersonation_jti`, failing closed. The anonymous exchange
+  (`/v2/auth/impersonate/exchange`, absolute v2 route so no v1 twin) consumes
+  the proof single-use and mints a 15-minute session with NO refresh token,
+  re-checking authority at spend time; end (`/v2/auth/impersonate/end`)
+  revokes only that session's jti. `X-Tenant-Slug`/`X-Message-View-Purpose`
+  added to the CORS allowlist. Pinned by `ImpersonationTests` (5 tests).
+  **Scope divergence recorded honestly:** Laravel confines a hub/regional
+  super admin to its own tenant subtree via SuperPanelAccess; this backend
+  has no subtree authorization model (its platform-super policy is
+  platform-wide), so cross-tenant impersonation scope is not narrowed beyond
+  the super gate — that is a pre-existing gap, not introduced here.
+  Residues across the batch: no performance recorder (summary reports
+  recording off), attendance-claim creation on check-in not yet wired (the
+  ledger and its admin operations are), and the legacy
+  `/v2/admin/users/{id}/impersonate` still mints a live token (untouched to
+  avoid breaking its pinning tests; the canonical proof flow is the new
+  `/super/` route).
+- The 59 React-consumed gaps cluster into post-freeze subsystems: partner
+  venues (member and admin — closed above), support actions and carer sub-account operations
+  (prepare/confirm/decline, child listings, messages, transfers, wallet),
+  guardian consent and safeguarding member/admin endpoints (my-guardians,
+  my-wards, authority attestations, support-action attestation), event
+  attendance rewards and claims, gamification challenge administration, admin
+  impersonation (`/admin/super/users/{id}/impersonate`,
+  `/auth/impersonate/exchange`, `/auth/impersonate/end`), platform
+  capabilities, federation external status, admin badge counts, the admin
+  performance summary, and public events.
+
+### Laravel drift since the 2026-07-15 freeze
+
+- **547 commits in 32 days.** The API grew by 67 endpoints (none removed),
+  4 changes were formally breaking, and 26 new database migrations shipped.
+- The **legal-acceptance enforcement gate** (Laravel, 2026-08-11) blocks
+  member write actions until terms are accepted. At audit time ASP.NET could
+  record an acceptance but had no enforcement equivalent. **Closed later on
+  2026-08-14 (unscored):** `LegalAcceptanceGateMiddleware` now enforces the
+  fourteen gated routes with the exact Laravel contract (403 /
+  `LEGAL_ACCEPTANCE_REQUIRED` / `success:false`; modes off/report/write/all
+  with write as default and invalid-fallback; fail-open; admin and partner
+  bypass; report-mode `X-Legal-Acceptance-Pending` header), the
+  acceptance-status endpoint publishes `has_pending` / `enforcement_blocking`
+  / `blocking_pending` in the Laravel shape, and accept-all genuinely records
+  acceptances instead of returning a hardcoded success. Pinned by
+  `tests/Nexus.Api.Tests/LegalAcceptanceGateTests.cs` (14 tests). Version-level
+  acceptance staleness ("outdated") remains open until the legal schema gains
+  version rows (queue package 5).
+- Five heavily used areas were rewritten beneath routes ASP.NET does match —
+  super-admin, sub-accounts, safeguarding, login/auth, and broker — so route
+  presence in those areas no longer implies behavioral identity. They need
+  fresh semantic evidence under queue package 2.
+- Static schema-name drift: 229 Laravel tables now have no ASP.NET counterpart
+  and 197 ASP.NET tables have no Laravel counterpart (name comparison only).
+- Localization drift: 363 Laravel translation namespaces and 5,424 English keys
+  are missing on the ASP.NET side.
+
+### ASP.NET code state and test evidence
+
+- The ASP.NET implementation is unchanged since the pause except two
+  maintenance changes on 2026-08-10: the .NET 8 to .NET 10 upgrade, and making
+  unimplemented admin endpoints return honest not-implemented responses instead
+  of fabricated success. 165 migration classes were confirmed on disk; no
+  hidden not-implemented stubs masking as working code were found.
+- **Full local Release test run (2026-08-14, .NET 10): `Nexus.Api.Tests`
+  3,386/3,386 passed in 32m 24s; `Nexus.Messaging.Tests` 38/38 passed in
+  2m 7s; 0 failed, 0 skipped.** TRX evidence:
+  `tests/Nexus.Api.Tests/TestResults/full-audit.trx` and
+  `tests/Nexus.Messaging.Tests/TestResults/full-audit.trx`. This is a local
+  run, not an exact-SHA CI aggregate; it banks nothing under the build/test/CI
+  category on its own.
+- The four retired ASP.NET production containers were confirmed by read-only
+  inspection to be stopped, not removed.
+
+### Web UK switch readiness (queue package 3)
+
+The backend switch genuinely exists (`ACCESSIBLE_BACKEND_TARGET=aspnet`, no
+ASP.NET-specific branches in the frontend), but only roughly 1–2% of the 696
+API calls Web UK makes have ever been proven against ASP.NET, and the promised
+Web UK-to-ASP.NET comparison matrix does not exist. Package 3 is fully open.
+
+### Effect on the queue
+
+The eight-package queue below stands. The drift concentrates additional work in
+packages 2 (semantic evidence for the rewritten areas), 3 (Web UK matrix), 4–6
+(the four new subsystems, the legal-acceptance gate, schema and localization
+drift), and adds the 67-endpoint route gap as new representation work that must
+be reconciled before the route category can be re-banked against any
+newer-than-`903d03d3` Laravel baseline.
+
+
+## 2026-08-15 Fresh Audit At HEAD `870c1e989` (Advisory, Partially Complete)
+
+Regenerated from live code at monorepo HEAD `870c1e989`, after the 14-commit
+implementation run that closed the 59 React-consumed route gaps. **Advisory: banks
+zero points, performs no scoring transaction.**
+
+🔴 **Coverage is incomplete and must not be read as a clean bill of health.** Nine
+adversarial reviewers were commissioned to attack this week's work and the five
+Laravel-rewritten areas; **eight were killed mid-run by account credit exhaustion**
+and returned no findings. One completed (React super-panel client inventory).
+Everything recorded below was verified directly on disk in the main session. The
+unfinished attack surface is listed at the end and is still owed.
+
+### Mechanical inventories (regenerated)
+
+| Comparison | Result |
+| --- | --- |
+| API routes | 2,659 matched, **8 missing** (was 67 on 2026-08-14 — the 59 closures are independently confirmed by the repo's own comparison script) |
+| Canonical React matrix | 2,078 unique contracts, **0 static ASP.NET gaps**, 179 method-unresolved |
+| Schema | 472 Laravel source tables vs 452 ASP.NET; 253 matched; **219 missing**, 199 extra |
+| Localization | 11/11 locales; **5,424 missing keys**, 374 missing namespaces |
+
+Route existence ≠ contract identity. The matrix proves paths resolve statically;
+it proves nothing about payloads, status codes, or side effects.
+
+### Verified findings
+
+**F1 — SECURITY — no subtree confinement for regional super admins.**
+🔴 **CLOSED, verified 2026-08-18.** `Support/Authorization/SuperPanelAccess.cs`
+now models `master` and `regional` with a materialised-path subtree check, and
+`Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants` and
+`MaxDepth`. The text below describing the concept as absent is history.
+ Laravel
+confines a hub-tenant super admin (`level = regional`) to its own tenant subtree:
+`app/Core/SuperPanelAccess.php:172` sets the level, `canAccessTenant()` at `:190`
+enforces it, and it is called from `AdminSuperController.php` (35 sites),
+`TenantVisibilityService.php` (10), `SuperAdminAuditService.php` (4),
+`EnsureSuperPanelAccess.php` (3) and `UsersController.php` (2). In ASP.NET the
+entire concept is absent — the only occurrence of the name anywhere in
+`src/Nexus.Api/` is an explanatory comment in `AdminSuperImpersonationController.cs`.
+A regional super admin who sees only their own communities on Laravel would, on
+ASP.NET, see and act on **every tenant on the platform**, impersonation included.
+Pre-existing, not introduced this week, and a hard production blocker on its own.
+
+**F2 — BREAKS-CLIENT — message voice playback and attachment download absent.**
+`routes/api.php:586-587` expose `GET /v2/messages/{message}/attachments/{attachment}`
+and `GET /v2/messages/{message}/voice` (`MessageMediaController`). ASP.NET has no
+counterpart; `MessageAttachmentsController.cs` is a different feature (list `:29`,
+attach `:68`, remove `:105`). `web-uk` renders audio from this contract
+(`src/routes/messages.js:391`, `views/messages/direct-conversation.njk:123`), so on
+ASP.NET a voice message cannot be played and an attachment cannot be downloaded.
+
+**F3 — VERIFY — event guest attendance action vocabulary.** React calls
+`POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}`
+(`react-frontend/src/lib/event-registration-api.ts:477`). ASP.NET's
+`EventRegistrationProductController.cs:160` constrains the action to
+`^(check_in|check_out|no_show|undo)$`. The Laravel vocabulary has not been
+compared; a wider Laravel set would break check-in.
+
+**F4 — DIVERGENCE — expired support actions are silent.** ASP.NET does enforce
+expiry at read/execute time (`SupportPendingActionService.cs:177,204,291`), so an
+expired request is inert rather than exploitable. But Laravel additionally runs
+`support-actions:expire` daily (`bootstrap/app.php:57`, `ExpireSupportActions.php`)
+whose stated purpose is that "the supporter is notified so an expiry is never
+silent". ASP.NET has no such job, so the supporter is never told. This is a gap in
+the work delivered this week.
+
+**F5 — OPERATIONAL — scheduled work is roughly one third covered.** Laravel
+schedules **56** commands in `bootstrap/app.php`; ASP.NET registers **20** jobs
+under `Services/Scheduled/` via `ScheduledHostedService`. Email sending does exist
+(`Services/EmailNotificationService.cs`, `FallbackEmailService : IEmailService`), so
+the platform is not mute — but retention enforcement, backup verification, queue
+liveness, GDPR overdue checks, stuck-webhook checks, email health alerts and the
+event notification outbox have no verified counterpart.
+
+**F6 — SCHEMA — 188 Laravel tables have no trace in ASP.NET at all.** Of the 219
+unmatched Laravel tables, 31 are at least referenced somewhere in ASP.NET source;
+**188 appear nowhere in `src/Nexus.Api/**/*.cs`**. They are not concentrated in one
+excluded module — advertising (4), AI/agent (9), partner API/OAuth (4), challenge
+depth (5) and billing/community funds (4) account for only ~27 of the 188. This is
+the largest unquantified risk in the project and needs table-by-table triage into
+"same thing renamed", "Laravel-only, never needed" and "genuinely missing".
+
+### Cleared — do not re-raise
+
+- **Regional analytics without the `/v2` prefix.** React calls the non-`/v2` form
+  (`lib/api.ts:32` `API_BASE='/api'`; `RegionalAnalyticsAdminPage.tsx:98`).
+  `RegionalAnalyticsSuperAdminController.cs` registers **both** — class route
+  `api/super-admin/regional-analytics` (`:23`) plus absolute `/api/v2/...` twins on
+  every action (`:38-175`). Matches.
+- **Super-admin provisioning requests.** `routes/api.php:3196-3200` vs
+  `AdminProvisioningController.cs:118-173`. Matches.
+- **Broker `archives`.** Present at `AdminCompatibility2Controller.cs:599`, not
+  missing. Of the broker routes genuinely absent (`exchanges/{id}/resolve-dispute`,
+  `exchanges/{id}/reverse`), **neither is called by `react-frontend/src/broker/`**,
+  so they are not client-breaking.
+- **Super-admin route existence.** Every endpoint in the completed React
+  super-panel client inventory resolves to an ASP.NET route. Shapes and
+  authorization semantics remain unverified (F1 is the authorization half).
+
+### Client contract notes worth keeping
+
+- `adminApi.ts:2665` `getFederationStatus` has no callers — dead client method.
+- `FederationTenantFeatures.tsx:100` casts through `unknown` to read a nested
+  `data.features.*` shape that contradicts its declared type at `adminApi.ts:2709`
+  — a live mismatch against Laravel too.
+- Super audit endpoints return a **bare array with no total**; `SuperAuditLog.tsx`
+  and `FederationAuditLog.tsx` synthesise pagination from page length. ASP.NET must
+  return the same bare-array shape or pagination breaks silently.
+- Impersonation client contract confirmed: `UserShow.tsx:207` reads `res.data.token`
+  and `:213` reads `res.data.tenant_slug` — both present in the implementation.
+
+### Second pass, same day: what the completed reviewers found (all verified on disk)
+
+Three of the eight owed reviews were re-run after the credit reset and completed.
+Every finding below was re-verified in the main session against the named lines.
+
+**F7 — CRITICAL — three webhook handlers return HTTP 200 while discarding the
+event.**
+🔴 **CLOSED, verified 2026-08-18.** All three now return **501 Not Implemented**
+with `success:false` and log an error, so the event stays in the sender's retry
+queue instead of being destroyed. History.
+ `Controllers/MiscParityController.cs` (class route `api`, all
+`[AllowAnonymous]`):
+
+- `:1328` `POST /api/webhooks/stripe` → `Ok(new { received = true })`. No signature
+  verification, no body read, no work. **Stripe treats 200 as success and never
+  retries**, so a payment event is destroyed permanently.
+- `:1319` `POST /api/webhooks/identity/{provider}` → same. A member completes an
+  identity check with any of the four providers and the result is discarded.
+- `:1324` `POST /api/webhooks/sendgrid/events` → same. Bounces and spam complaints
+  are thrown away, so sender reputation degrades invisibly.
+
+This is worse than a missing route: a 404 makes the sender retry or alarm, a 200
+stub destroys the event *and* reports success. Note the real, hardened Stripe
+handlers do exist elsewhere (`Phase72Controllers.cs:103` donations with HMAC +
+replay window + fail-closed in Production; `MarketplaceController.cs:1741`), which
+is exactly why a route-level audit sees "Stripe webhook: present".
+
+**F8 — CRITICAL — 349 action methods return success-shaped payloads while doing no
+work at all.**
+🔴 **STILL OPEN but the count has moved: 349 → 319** as of 2026-08-18
+(`scripts/check-noop-stubs.ps1`, shrink-only baseline). The class of defect and the
+worst-offending files are unchanged.
+ Measured with a body-level detector (an action whose entire body
+contains no `_db`, no `await`, no service call, yet returns `Ok(new {...})` /
+`Created`). Worst files: `MiscParityController.cs` (84),
+`AdminCompatibility2Controller.cs` (56), `AdminCompatibility3Controller.cs` (42),
+`ReactFrontendCompatibilityController.cs` (31), `FrontendApiParityController.cs`
+(20), `MemberParityController.cs` (19). Includes destructive admin operations that
+silently do nothing: `POST super/tenants` returns `success = true, id = 0` and
+creates no tenant (`AdminCompatibility3Controller.cs:633`); `PUT super/tenants/{id}`
+(`:641`), `DELETE super/tenants/{id}` (`:649`), `reactivate` (`:657`),
+`toggle-hub` (`:665`), `move` (`:673`), `POST super/users` (`:697`),
+`PUT super/users/{id}` (`:705`), group member promote/demote/remove
+(`AdminCompatibility2Controller.cs:681-691`). Full list:
+`.local-docs-archive/noop_stubs.json`.
+🔴 **This is the explanation for "0 static route gaps".** The routes exist and
+return plausible 200s, so every route-level comparison passes while the feature
+does nothing. No route inventory can detect this class; only body inspection or
+runtime proof can.
+
+**F9 — ARCHITECTURAL — ASP.NET has no tenant hierarchy at all.**
+🔴 **CLOSED, verified 2026-08-18** — the hierarchy columns listed as missing below
+now exist on `Entities/Tenant.cs`. History.
+ The `Tenant`
+entity and the `tenants` table carry `Id, Slug, Name, Domain, Tagline, LogoUrl,
+IsActive, CreatedAt, UpdatedAt` — **no parent, no path, no depth, no
+allows_subtenants**. Laravel's whole hub/sub-tenant model and the subtree scoping
+in F1 are built on `tenants.path`. Consequently `GET super/tenants/hierarchy`
+returns a hardcoded empty array (`AdminCompatibility3Controller.cs:626`). F1 is
+therefore not "add a permission check" — the data model it would check does not
+exist.
+
+**F10 — SECURITY — guardian consent tokens resolve across every tenant.**
+`Services/EventSafetyService.cs:40` looks up
+`SingleOrDefaultAsync(x => x.TokenHash == hash)` under `IgnoreQueryFilters()` with
+**no `TenantId` predicate**, from an `[AllowAnonymous]` endpoint. Laravel binds the
+token to the tenant twice over: the hash itself is HMAC-keyed with the app key over
+`event-safety|{tenantId}|guardian-token|{token}`
+(`app/Support/Events/EventSafetyFoundationSupport.php:180-187`) and the query adds
+`where('tenant_id', $tenantId)` (`app/Services/EventGuardianConsentService.php:371,
+382-385`).
+
+**F11 — SECURITY — guardian email blind hash is unkeyed.**
+`EventSafetyService.cs:39` stores `GuardianEmailBlindHash = Hash(email)` where
+`Hash` is bare `SHA256` (`:55`). Laravel uses an app-key-keyed HMAC
+(`EventGuardianConsentService.php:205-209`). Anyone with read access to
+`event_guardian_consents` can dictionary-confirm which guardian email belongs to
+which minor without touching the ciphertext column — defeating the point of
+encrypting it.
+
+**F12 — SAFEGUARDING — guardian consent expires 24 hours after request,
+unconditionally.** `EventSafetyService.cs:39` sets
+`ExpiresAt = DateTime.UtcNow.AddDays(1)`. Laravel reads
+`events.safety.guardian_consent_ttl_days` (default 30) and **forces the expiry past
+event start + 1 day**, throwing `event_guardian_consent_expiry_invalid` otherwise
+(`EventGuardianConsentService.php:196-203`). For any event more than a day out the
+consent expires before the event and the minor is blocked.
+
+**F13 — SECURITY — the consent-mutation trigger is missing.** Laravel's
+`trg_event_guardian_consent_update`
+(`database/migrations/2026_07_11_000060_create_event_safety_foundation.php:728-733`)
+guards the encrypted identity columns, `token_hash`, `minor_user_id`, `expires_at`
+and the pending→active→withdrawn/expired state machine in the database. ASP.NET's
+`20260713015034_EventSafetyWorkflowParity.cs:344-357` creates only
+`..._history_no_update` and `..._consent_no_delete` — **no UPDATE trigger on
+`event_guardian_consents`**, so a bad UPDATE can rewrite a guardian's encrypted
+identity or resurrect a withdrawn consent. Laravel creates 21 triggers here,
+ASP.NET 13.
+
+**F14 — SECURITY — a minor can grant their own guardian consent.**
+`GrantGuardianAsync` (`EventSafetyService.cs:40`) checks token hash, expiry, email
+blind hash and `Status == "pending"` only. Laravel additionally re-checks the minor
+is still active and refuses a self-grant with
+`event_guardian_minor_self_grant_forbidden`
+(`EventGuardianConsentService.php:389-400`).
+
+**F15 — SCHEDULED WORK — 17 of 71 Laravel scheduled units have a genuine
+counterpart (~24%).**
+🔴 **PARTLY CLOSED, remeasured 2026-08-18: 26 scheduled job classes, all 26
+registered as hosted services, against **69** Laravel scheduled units (~38%).**
+🔴 The denominator read 70 here and 71 in R-6 until 2026-08-19. Counted live in
+`bootstrap/app.php`: 55 `->command()` + 1 `->job()` + 13 `->call()` = **69**.
+Recount before quoting; Laravel's schedule drifts.
+Several named absences below are now implemented (`support-actions:expire`,
+`safeguarding:clear-expired-monitoring`, `groups:prune-exports`,
+`marketplace:process-unacknowledged-reports`, `safeguarding:vetting-renewals`).
+🔴 **And one claim below is WITHDRAWN:** "`marketplace:complete-orders` absent
+means sellers are never paid out" is wrong — `MarketplaceEscrowReleaseJob` calls
+`ProcessEligibleEscrowReleasesAsync` with an `auto_timeout` trigger gated on
+`AutoCompleteAt`, so escrow-backed orders do pay out.
+ The earlier "56 vs 20" understated Laravel: `bootstrap/app.php`
+also has 1 `->job()` and 14 `->call()` closures. Compliance/data-loss absences:
+`retention:enforce`, `backup:verify`, `gdpr:check-overdue-requests`,
+`safeguarding:purge-message-copies`, `safeguarding:review-flags`,
+`safeguarding:vetting-renewals`, `safeguarding:clear-expired-monitoring`,
+`support-actions:expire`, `groups:prune-exports`,
+`marketplace:process-unacknowledged-reports` (DSA 24h). Member-visible: nothing
+scheduled publishes (feed, groups, podcasts), nothing reminds (events, interviews,
+renewals, dues), nothing expires (waitlist offers, pending orders, promotions),
+`marketplace:complete-orders` absent means **sellers are never paid out**.
+Operational blindness: `slo:check`, `monitoring:alarm-selftest`, `email:health-alert`,
+`queue:verify-liveness`, `horizon:snapshot`, `stripe:check-stuck-webhooks`. Also
+`safeguarding:sla-escalate` runs hourly in ASP.NET vs every 15 minutes in Laravel.
+
+**F16 — Meilisearch incremental indexing is effectively absent.**
+`Services/MeilisearchService.cs` `IndexDocumentAsync` (`:146`), `IndexDocumentsAsync`
+(`:168`), `DeleteDocumentAsync` (`:190`) have **no callers** outside the service. The
+only writer is `ReindexTenantAsync`, reachable solely from manual admin endpoints
+(`AdminSearchController.cs:64,83`). New or edited content never reaches the index and
+deleted items stay findable.
+
+**F17 — FCM push targets a decommissioned endpoint.**
+`Services/PushNotificationService.cs:558-570` uses the FCM **legacy** HTTP API
+(`https://fcm.googleapis.com/fcm/send`), which Google has retired. Treat as
+implemented-but-non-functional until moved to FCM HTTP v1. Pusher realtime is real
+(`PusherEventPublisher.cs:23,57`) but logs unconfigured credentials and send
+failures at **Debug** and returns silently (`:52,:79,:83`) — realtime can be entirely
+dead with nothing visible.
+
+**F18 — IMPERSONATION — the legacy route is not the same endpoint.** Laravel's
+`/v2/admin/users/{id}/impersonate` mints the same single-use 5-minute **proof**
+(`AdminUsersController.php:1479` → `TokenService.php:794-803`). ASP.NET's same path
+returns `_tokenService.GenerateJwt(user)` — **an ordinary, immediately usable access
+token** (`AdminCompatibilityController.cs:768`), bypassing the exchange's spend-time
+re-checks entirely. It is also gated with `PlatformSuperAdminOnly` (`:743-747`) where
+Laravel uses `tenant-super-admin` (`routes/api.php:3229-3231`) — reinstating exactly
+the bug Laravel fixed on 2026-08-05, so a community super-admin gets 403 for every
+target. Inactive targets: Laravel returns **200 with `gate_warning`/`gate_code`**
+(`AdminUsersController.php:1508-1511`), ASP.NET returns **409** (`:764-766`).
+
+**F19 — IMPERSONATION — the super mint route admits callers Laravel refuses.**
+Laravel's `super-panel` gate admits `master` (platform super/god) or `regional`
+(super-admin of a tenant **that has children**) —
+`app/Http/Middleware/EnsureSuperPanelAccess.php:14-45,66-80`. ASP.NET admits any
+`IsTenantSuperAdmin` unconditionally (`AdminSuperImpersonationController.cs:59-65`),
+so a super-admin of a leaf tenant is denied by Laravel and granted by ASP.NET.
+Smaller divergences in the same flow: the exchange compares the proof's tenant
+against the raw `X-Tenant-ID` **header** and skips the check when it is absent
+(`ImpersonationController.cs:84-88`) where Laravel compares the **resolved**
+`TenantContext::getId()` (`AuthController.php:798-805`); and `user_name`/`admin_name`
+fall back to the **email address** (`ImpersonationController.cs:135,138`) where
+Laravel emits an empty string (`AuthController.php:865,868`) — a PII-shaped
+difference in a response body.
+
+The `/v2/auth/impersonate/exchange` + `/end` pair itself held up under attack:
+paths, TTLs (300s/900s), the full key set, absence of a refresh token, and every
+exchange rejection code/status matched.
+
+### Correction to F2 (issued the same day)
+
+F2 called the missing voice/attachment routes BREAKS-CLIENT. That over-claimed.
+ASP.NET stores voice as a `FileUpload` + `MessageAttachment` and returns
+`AudioUrl = /api/files/{id}/download` (`MemberParityController.cs` voice-send path),
+`web-uk` renders whatever `audio_url` the payload carries
+(`src/routes/messages.js:391`), and React has no hardcoded
+`GET /messages/{id}/voice`. So the clients follow the server-provided URL and
+playback plausibly works. The Laravel routes are still absent — a contract
+divergence, and any consumer that hardcodes Laravel's path would break — but
+"members cannot play voice messages" was not established. Downgraded to
+CONTRACT-DIVERGENCE pending runtime proof.
+
+### Correction to a stated residue
+
+The status doc previously recorded "consent-token emails not delivered" as an
+ASP.NET residue. At HEAD that is wrong, and inverted: ASP.NET **does** email the
+guardian a link containing the **plaintext token**
+(`EventSafetyService.cs:39`, falling back to `http://localhost:5173` when
+`Frontend:BaseUrl` is unset), while Laravel deliberately never returns or emails the
+plaintext token, keeping it inside an AES-GCM delivery envelope
+(`EventGuardianConsentService.php:48-49,326,352`).
+
+**F20 — CARER CLUSTER — nine divergences, four of them in this week's work.**
+Verified on disk:
+
+- **SECURITY, FIXED in this commit:** no throttle on the support-action answer
+  paths. Laravel throttles `confirm`, `decline` and the unauthenticated emailed
+  token confirm at `nexus-route-10-per-1m` (`routes/api.php:905,906,913`);
+  `Controllers/SupportActionsController.cs` carried no limiter and
+  `RateLimitingMiddleware.cs` had no entry, leaving a single-use token that
+  authorises a credit transfer brute-forceable.
+- **SECURITY (latent), FIXED in this commit:** `SupportTiers.AtLeast`
+  (`Support/Safeguarding/SupportTiers.cs:110-115`) validated neither the
+  capability nor the required tier, so an unrecognised `minimum` ranked 0 and
+  every check passed — including for a `none` grant. Laravel refuses both inputs
+  (`app/Support/Safeguarding/SupportTiers.php:216-226`). Every current caller
+  passes a constant, so it was latent, but the safe default was inverted.
+- **BREAKS-CLIENT, open:** `GET /v2/users/me/sub-accounts/{childId}/activity` is a
+  stub — `Controllers/UsersParityController.cs:510` returns
+  `Ok(new { data = Array.Empty<object>(), sub_account_id = subAccountId })` with no
+  relationship lookup, no `activity ≥ assist` check, no 403 for a caller with no
+  relationship, and an extra top-level key Laravel never sends.
+- **Open:** the `onboarding-required` gate is missing from all four proxy write
+  paths (`routes/api.php:882,883,898,903` carry it; ASP.NET's
+  `OnboardingRequiredMiddleware` path table does not list them), so a carer who has
+  not completed onboarding can create listings, transfer credits and prepare
+  support actions.
+- **Open:** `message_view_last_at` — Laravel's "when did my supporter last read my
+  messages" accountability signal (`SubAccountController.php:50-55`) — does not
+  exist anywhere in the ASP.NET source.
+- **Open:** ASP.NET exposes an undeclared parallel `api/sub-accounts` subsystem
+  (`Controllers/SubAccountsController.cs:19`, nine actions incl. `pool-transfer`)
+  backed by a separate `SubAccount` entity, with **no Laravel counterpart** — it
+  moves credits through a route the Laravel contract does not define.
+- Confirmed matches under attack: the tier engine core (ordering, both caps,
+  drop-not-clamp, `can_view_messages` hard-false), the pending-action shapes and
+  rejection codes, and all 21 carer routes resolving at the same verb and path
+  (via `Routing/AdminV2RouteAliasConvention.cs`).
+- Not audited, flagged honestly: `acting_user_id` + `org_audit_log` side-effect
+  parity in `SubAccountProxyService.cs`.
+
+### Still owed (the five reviews not yet re-run)
+
+Impersonation deep contract; carer/sub-accounts cluster; safeguarding/guardian
+consent incl. append-only trigger comparison; the eight small endpoint groups
+(challenges, badges, public events, super ops, performance-summary shape,
+attendance rewards, capabilities, federation status); partner venues; the legal
+gate's fail-open vs fail-closed behaviour; super-admin response shapes; the
+login/auth area; broker response shapes; and the full providers/integrations
+inventory (Stripe live, the four identity providers, OIDC/SSO, audience sync).
+
+
+## 2026-08-17 — Live response parity on the React GET corpus: 136 -> 164 of 170
+
+This section records **measured response behaviour**, not a rubric score. The
+banked score at the time (`712/1000`, Baseline 1) was untouched by it; nothing in
+this section had been through the rubric's
+evidence gates. Read it as: what happens today when both running backends are
+asked the same question.
+
+Instrument: `scripts/compare-live-responses.mjs`, against the running Laravel
+(`127.0.0.1:8090`, tenant 2) and the running dev ASP.NET (`127.0.0.1:5080`,
+tenant 1). Corpus: the 170 GET paths the canonical React frontend calls. Method
+and traps: [`CONTRACT_PARITY_PLAN.md`](../CONTRACT_PARITY_PLAN.md).
+
+| | Start of day | End of day |
+| --- | --- | --- |
+| Same status AND same JSON shape | 136 | **164** |
+| Envelope matches, contents untestable (empty list / null field one side) | — | 6 |
+| Different | 38 | **0** |
+| Endpoints open to anonymous callers that Laravel protects | 9 | **0** |
+
+Four defects behind that, each invisible to every source-tree instrument in this
+repository:
+
+1. **`/api/v2` alias routes executed without authentication.**
+   `AdminV2RouteAliasConvention` built controller-level aliases as a bare
+   `SelectorModel`, which under endpoint routing carries no `[Authorize]`
+   metadata. Eleven endpoints ran their action body for anonymous callers; ten
+   returned 403 only because the owning community had that section switched off.
+   A route inventory counts the alias as present either way.
+2. **`[AllowAnonymous]` beats `[Authorize]`** regardless of specificity, so three
+   marketplace endpoints read as protected in source and were open in fact.
+3. **Feature switches split across two key spellings.** The gates read
+   `features.{flag}`; `/tenant/bootstrap` read `feature.{flag}` for all forty
+   flags it publishes. A community's setting therefore reached the enforcement
+   half or the display half, never both. Now centralised in
+   `Support/TenantFeatureKeys.cs`, which reads both.
+4. **`skills/categories` answered from the wrong table.** No `skill_categories`
+   table existed here, so the endpoint returned listing categories: a 200 with
+   plausible content describing a different taxonomy. Added as an entity plus
+   migration `20260817121949_AddSkillCategories`; the full chain replays clean
+   from empty on a disposable PostgreSQL, and
+   `has-pending-model-changes` is green.
+
+🔴 **That signed-out number was never the real number.** Most of the 170 resolve
+to 401 on both sides, which proves the authorisation boundary agrees and says
+nothing about the payload behind it. Later the same day a disposable Laravel
+made the signed-in comparison possible, and it read **17/170**. See the section
+below.
+
+## 2026-08-17 (later) — SIGNED-IN parity: 17 -> 57 of 170
+
+🔴 **Read this before quoting the signed-out score.** With a disposable Laravel
+to sign in to, the same 170 React GET paths scored **17/170**, not 164/170. The
+signed-out run was honest about what it measured and useless as a summary: the
+401s were hiding every payload.
+
+`bash aspnet-backend/scripts/start-disposable-laravel.sh` builds a second
+Laravel on `:8091` from the committed schema plus `E2ETestDataSeeder` —
+synthetic fixtures, **no real member data** — so it can be signed into, written
+to and destroyed. The harness now refuses to send credentials to `:8090`.
+
+| Change | Identical | Envelope right, rows untestable | Differing |
+| --- | --- | --- | --- |
+| first signed-in run | 17 | 8 | 145 |
+| `meta` added by a shared filter | 31 | 21 | 118 |
+| both fixtures given the same features | 42 | 21 | 107 |
+| six authorisation/validation fixes | 47 | 21 | 102 |
+| stray `success` flag removed | **57** | **31** | **82** |
+
+Endpoints where the two disagree about whether to answer at all: **29 -> 2**.
+
+**Six defects behind the login, four of them authorisation:**
+
+1. `jobs/talent-search` listed every member who had made themselves visible TO
+   EMPLOYERS, to any signed-in member. Laravel restricts it to admin tiers and
+   to members who have posted a vacancy.
+2. `federation/activity` and `federation/messages` served members who had never
+   opted in. Federation publishes a member's profile beyond their own community;
+   the opt-in is the consent, and it was not being read.
+3. `marketplace/promotions/products` ignored the promotions setting, which is a
+   SECOND switch on top of the marketplace feature and defaults off.
+4. `me/push-campaigns` — paid notifications to a community's members — had no
+   feature gate at all.
+5. `exchanges/check` answered `can_exchange: true` for a request naming no
+   listing. Laravel returns 400 VALIDATION_REQUIRED_FIELD.
+6. `kb/search` returned every published article for an empty query; Laravel
+   requires `q`.
+
+**Two shared-envelope fixes**, both applied in one filter
+(`Filters/LaravelDataEnvelopeFilter.cs`) because in Laravel they come from one
+shared base controller, not from 89 separate decisions:
+`meta.base_url` added, and the `success` flag removed, on `/api/v2` GETs
+returning `data`. Measured 89-vs-0 and 41-vs-0 — never wrong in the other
+direction on any measured endpoint.
+
+🔴 **Still not covered:** writes, uploads, realtime, and the 229 do-nothing
+handlers. And 31 endpoints have a correct envelope whose ROW contract is
+untested because the fixture holds only three users and one listing — richer
+fixtures are the next thing that raises real confidence, not the next code
+change.
+
+## 2026-08-17 (later still) — richer fixture rows: the untestable column 39 -> 17
+
+The prediction in the paragraph above was right, and this is the measurement.
+Two changes since: sixteen list endpoints were corrected to report `meta` rather
+than `pagination` (57 -> 59), then the disposable Laravel was given realistic
+content.
+
+| | Before fixture | After fixture |
+| --- | --- | --- |
+| Same status AND same JSON shape | 59 | **61** |
+| Envelope matches, rows untestable | 39 | **17** |
+| Different | 72 | **92** |
+| Status disagreements | 0 | **0** |
+
+`E2ETestDataSeeder` leaves the fixture at **4 users, 1 listing, 8 categories and
+nothing else**. Endpoint by endpoint, **Laravel was the empty side in 35 of the
+39** — ASP.NET already had rows. `scripts/parity-fixture.sql` (applied by
+`start-disposable-laravel.sh`) seeds one realistic row per entity the React
+corpus reads.
+
+🔴 **The 20 endpoints that moved into "different" are pre-existing row-level
+defects the thin fixture was hiding, not new breakage.** Judge this change by the
+untestable column. The identical count rising by 2 is incidental, and quoting it
+as the win would misread what happened.
+
+🔴 **Every filter was read off the running Laravel's query log rather than
+guessed** — a row that fails the real `WHERE` clause seeds nothing, which looks
+exactly like not having run the fixture. `categories` alone serves three
+contracts keyed by `type`; the feed reads `feed_activity` and not `feed_posts`;
+`/blog/categories` discards any post containing "lorem ipsum". Full list of traps
+in [`CONTRACT_PARITY_PLAN.md`](../CONTRACT_PARITY_PLAN.md).
+
+🔴 **A harness hole was found and is NOT yet fixed.** `compareSkeleton` can never
+return "different" once either side is an empty list, because its guard
+(`b.startsWith('[')`) is tautological against the `'[?]'` marker. Six endpoints
+are consequently reported as untestable when they are really envelope
+divergences — Laravel `{data:{items:[…]}}` against ASP.NET `{data:[…]}` on
+`/coupons`, `/jobs/my-applications`, `/me/verein-dues`,
+`/volunteering/donations`, `/volunteering/training`, and
+`{data:{profile:null}}` against `{data:null}` on `/jobs/saved-profile`. Fixing
+the rule will move these into the differing column; that is its own measured
+step.
+
+No ASP.NET source changed in that step, so the banked score is untouched.
+
+### 🔴 The richer fixture immediately found a credential disclosure
+
+`GET /api/v2/connections/suggestions` was
+`Ok(new { data = await _db.Users...ToListAsync() })` — **the whole `User` entity, to
+any signed-in ordinary member**. Verified live before the fix: every suggested
+member carried
+
+- `passwordHash` — the bcrypt hash, crackable offline
+- `totpSecretEncrypted` — the second factor
+- `emailVerificationCode`, `email`, `authenticationInvalidatedAt`
+- every admin flag (`isSuperAdmin`, `isGod`, …) and `suspensionReason`
+
+Laravel sends seven fields and not one is sensitive. This is the same defect class
+as the `users/search` leak: **returning an EF entity publishes whatever the entity
+happens to hold, so the disclosure grows silently as columns are added.** It sat
+behind the login, which is why the signed-out run never saw it, and behind an
+empty Laravel list, which is why it read as "envelope matches" until the fixture
+had rows.
+
+Fixed by projecting the exact Laravel field set, read off the running Laravel and
+`ConnectionSuggestionController.php` rather than inferred: `data` is an **object**
+holding `suggestions` (not a bare list), `limit` defaults to 5 and clamps to
+1..20, candidates exclude self/inactive/suspended, and `mutual_connections_count`
+and `connection_status` are the constants Laravel hard-codes. `shared_skills` is
+computed from the relational `UserSkills` because this backend has no
+`users.skills` JSON column — same meaning and shape, a deliberate internal
+difference.
+
+Pinned by `tests/Nexus.Api.Tests/ConnectionSuggestionsDisclosureTests.cs` (4
+tests, all passing). The disclosure test asserts against the **raw response text**
+rather than named properties, so a future entity column cannot leak past it.
+`AdminV2RouteAliasRuntimeTests` re-run green (234/234).
+
+A corpus-wide sweep for the same defect class then ran against **both** backends
+(all 170 paths, signed in, looking for `passwordHash`, `totpSecret`,
+`emailVerificationCode`, `remember_token`, `api_key` and eleven more). Result:
+**no other credential disclosure**. Two lesser findings —
+`marketplace/seller/dashboard` exposed `suspensionReason` (fixed below), and
+`/api/v2/categories` exposes a stray `reset_token` column on **both** backends,
+which is schema cruft on the `categories` table rather than a user credential and
+is contract-identical, so it is recorded and deliberately not "fixed".
+
+### The five `data.items` envelopes — differing 87 → 82
+
+Exposed by fixing the harness hole above. Laravel wraps these rows in an object
+under `data`, this backend returned a bare list, so a client looping over `data`
+gets nothing from the production backend:
+
+| Endpoint | Laravel |
+| --- | --- |
+| `/api/v2/coupons` | `{items}` |
+| `/api/v2/jobs/my-applications` | `{items, cursor, has_more}` |
+| `/api/v2/me/verein-dues` | `{items, total}` |
+| `/api/v2/volunteering/donations` | `{items, next_cursor}` |
+| `/api/v2/volunteering/training` | `{items, cursor, has_more}` |
+
+🔴 **Four different pagination shapes across five endpoints.** There is no rule to
+generalise, and which wrapper a Laravel route emits is not derivable from its
+response — each was read live. Applying one shape to all five would repeat the
+`per_page`/`has_more` over-generalisation that cost 22 endpoints in a single run.
+
+All five now report envelope-correct. Their rows stay uncompared because the
+ASP.NET fixture holds none for these entities — the mirror image of the Laravel
+fixture problem solved earlier, and the next fixture job.
+
+### 🔴 `main` was red, from two earlier commits, and is green again
+
+A full `dotnet test Nexus.sln -c Release` run read **3,636 passed / 8 failed** (read
+the COUNT — this runner exits 0 with failures present). None of the eight came from
+the work in this section; all were pre-existing, in files this session never
+touched, from two earlier commits:
+
+| Test | Cause |
+| --- | --- |
+| `RegistrationPolicyTests.GetPublicConfig_DefaultPolicy_ReturnsStandard` | `b60c8398d` |
+| `RegistrationPolicyTests.GetPolicy_AsAdmin_ReturnsPolicy` | `b60c8398d` |
+| `UsersControllerTests.GetMe_AsMember_ReturnsOk` | `b60c8398d` |
+| `V15FeedActivityCompatibilityTests.FeedV2_Merges…` | `8582235b2` |
+| `VolunteeringControllerTests.ListOpportunities_ReturnsPublishedByDefault` | `8582235b2` |
+
+Two distinct mistakes, both worth recognising again:
+
+🔴 **The verb-not-path mistake, for the fourth time.** Three tests asserted a v2 GET
+carries no `success` on paths that are **not** `/api/v2` —
+`/api/registration/config`, `/api/registration/admin/policy`, `/api/users/me`.
+`LaravelDataEnvelopeFilter` is deliberately scoped to `/api/v2/`, so it never runs
+on them and the v1 envelope `{success, data}` stands. Laravel has **no counterpart
+route at all** for the registration pair, and only the v2 form of `users/me`
+(routes/api.php:755) — so there was no Laravel contract these could have been
+matching. The same correction had already been applied once in
+`LaravelReactFrontendContractTests`, whose own comment says the sweep "classified
+it by HTTP verb alone and missed that the PATH matters too". It was applied to that
+one file and not to these three.
+
+🔴 **A shape change landed without its tests.** `8582235b2` converted sixteen list
+endpoints from `pagination:{page,limit,total,pages}` to `meta:{per_page,has_more}`,
+which is right — but two tests still read `pagination.total` / `meta.total`, and
+Laravel sends no `total` on either endpoint. Both now assert the keys Laravel
+actually sends. The sibling `/applications` test still reads `pagination` and is
+left alone, because that endpoint was not part of that change.
+
+Verified: the four affected classes plus every area changed in this section run
+**114 passed / 0 failed**.
+
+🔴 **A second full run found three MORE of the same two mistakes**, which the first
+run's log had truncated away (it was piped through `tail -40`, so only 4 of its 8
+failures were ever visible — read the whole log, not its tail):
+
+- `JobsControllerTests.ListJobs_AsAuthenticated_ReturnsOk` — still read
+  `pagination.total` after `8582235b2`. `/api/v2/jobs` is one of the few endpoints
+  that genuinely carries `total`, so it is still asserted, just under `meta`.
+- `LaravelReactFrontendContractTests.AuthOAuthV2_…` and
+  `LaravelReactUtilityCompatibilityTests.SsoAndOauthRoutes_…` — the "no `success`,
+  always `meta`" rule applied to **three** OAuth/SSO endpoints that are genuinely
+  `/api/v2` paths and still do not follow it. Verified against the running Laravel:
+  `/api/v2/auth/oauth/enabled-providers`, `/api/v2/auth/sso/providers` and
+  `/api/v2/auth/oauth/me/identities` all answer `{"success":true, …}` with **no
+  meta and no data**, because those Laravel routes use a raw `response()->json()`
+  instead of a base-controller helper. `LaravelDataEnvelopeFilter` encodes the same
+  boundary from the other side — it only acts on a body that HAS a `data` key — so
+  ASP.NET already matched and the tests were wrong.
+
+That makes **eight** instances of this one over-generalisation, across five files.
+The lesson is not "check the verb": it is that **an endpoint's envelope is a
+property of the Laravel ROUTE, not of its method or its prefix**, and the only way
+to know is to ask the running Laravel.
+
+🔴 **Noted while verifying, NOT changed:** Laravel's
+`/api/v2/auth/oauth/me/identities` reports `supported_providers`
+`["google","facebook"]`; this backend also offers `"apple"`. A real divergence in
+the provider list, separate from the envelope, needing its own decision.
+
+Final verification for this batch: **176 passed / 0 failed** across every changed
+area.
+
+### The nine raw-record endpoints — 62 → 64 identical, differing 90 → 82
+
+Worked deliberately as a cluster, because both of the day's real faults came from
+one pattern: **an action returning an EF entity instead of a projection.** All nine
+are now projected explicitly. Their nested `tenant` / `user` / `participants`
+navigation properties were null at the time of the audit — no active leak — but
+each was one `.Include` from publishing member records, which is exactly how the
+`connections/suggestions` disclosure would have grown.
+
+Four were not formatting problems at all:
+
+1. 🔴 **`gamification/engagement-history` answered from the WRONG TABLE.** It
+   returned raw `XpLog` rows — individual point awards — where Laravel returns one
+   row per month from `monthly_engagement`. A 200 with plausible content describing
+   something else entirely, the same class as `skills/categories` answering from
+   listing categories.
+2. **`wallet/categories` returned the raw entity and skipped Laravel's feature
+   gate** — Laravel answers `{"balance":0,"enabled":false}` when the community has
+   the wallet switched off, not an empty list or a 403.
+   🔴 **CORRECTION, issued 2026-08-17 after the fix was already committed
+   (`110effbe5`):** that commit and an earlier version of this entry claimed the
+   query "had NO TENANT PREDICATE" and "returned every community's categories to
+   any signed-in member". **That was wrong.** An explicit `Where(TenantId == …)` is
+   not the only thing that scopes a query in this backend:
+   `NexusDbContext.OnModelCreating` walks every entity type and applies
+   `ApplyTenantQueryFilter` to anything implementing `ITenantEntity` (:741-750), and
+   `TransactionCategory` implements it. Verified rather than argued — a row was
+   inserted for another tenant and the endpoint did not return it. **No data was
+   ever exposed.** The explicit `Where` was kept because it makes the scoping
+   legible at the call site, but it changed no behaviour.
+3. **`/api/v2/groups` had no visibility or status filter**, so private, secret,
+   inactive and child groups would all be listed. Laravel filters to
+   `status='active'`, top-level-or-featured, and public or where the caller is the
+   owner/an active member. Stated precisely: this is a **missing filter in the code
+   path**, not observed exposure — the demo tenant holds only public, active
+   groups, so nothing was actually disclosed here either.
+4. **`gamification/member-spotlight`** returned one member as an object where
+   Laravel returns a list, and ranked purely by XP so the same person is spotlit
+   for ever; Laravel picks at random, seeded by the day.
+
+`gamification/challenges` and `gamification/personal-journey` now MATCH.
+`groups/form-capabilities` moved to envelope-correct.
+
+### 🔴 The envelope filter was itself renaming keys to PascalCase
+
+`LaravelDataEnvelopeFilter.ToMutableMap` reflected over properties using
+`property.Name`. Converting an object to a dictionary bypasses serialisation
+entirely, so `[JsonPropertyName]` was never consulted — and a dictionary's keys are
+written verbatim, because MVC's camelCase setting is a *property* naming policy,
+not a dictionary-key one.
+
+So **every endpoint whose body or meta is a typed record had its keys renamed the
+moment the filter touched it.** Measured on `/api/v2/caring-community/markt`: the
+meta record declares `total`, `page`, `per_page`, `has_more`,
+`marketplace_available` and the live response carried `Total`, `Page`, `PerPage`,
+`HasMore`, `MarketplaceAvailable`. The endpoint was correct; the filter broke it.
+Now honours the attribute, then falls back to the same camelCase policy MVC would
+have applied — a no-op for the anonymous objects that make up nearly every action.
+
+### 🔴 The features fixture was switching three modules OFF
+
+`all-features-on.mjs` derived its list from `FEATURE_DEFAULTS` only, and its output
+**replaces** `tenants.features` wholesale. `wallet`, `listings` and `messages` are
+MODULES (`MODULE_DEFAULTS`), so they were absent from the written value — and
+`TenantContext::hasFeature()` merges over `FEATURE_DEFAULTS` only, so a key in
+neither reads as OFF. `WalletFeaturesController::listCategories` checks
+`hasFeature('wallet')`, so the fixture was serving Laravel's feature-disabled body
+while ASP.NET served real data, and the harness reported a contract difference that
+was pure fixture disagreement. Same trap as the CORS subdomain allowlist: a
+replacement value silently drops what the defaults would have supplied.
+
+### 🔴 A live React-against-Laravel defect, reported and deliberately NOT changed
+
+Found while checking `realtime/config` consumers, and it is **not** an ASP.NET
+problem:
+
+- Laravel's `RealtimeController::config` (:21-36) sends exactly six keys —
+  `driver, key, cluster, ws_host, ws_port, force_tls`. No `enabled`.
+- `PusherContext.tsx:152` stores the config only when `response.data.enabled` is
+  truthy, and `:168` refuses to construct the client without it.
+- `api.ts` synthesises `success: true` and unwraps `data`, so `response.success` is
+  not the blocker — `data.enabled` is simply `undefined`.
+- `PusherContext.tsx:186` is the **only** place the frontend constructs a Pusher
+  client; `NotificationsContext` has a test asserting it does not.
+
+Therefore the React app's realtime connection cannot start against Laravel. This
+needs a live production check and an owner decision — whether Laravel gains
+`enabled` or the client stops requiring it — so nothing was changed. ASP.NET keeps
+`enabled` and `authEndpoint` as a **documented divergence**, because removing them
+to match Laravel exactly would break realtime on this backend too, and the parity
+rule forbids fixing a difference by breaking the client.
+
+### What is left on these nine
+
+`/api/v2/groups` still lacks `slug`, `is_featured`, `template_id`,
+`template_features`, `allow_federated_members`, `federated_visibility`,
+`source_idea_id`, `source_challenge_id` — **no column exists for any of them** — and
+Laravel additionally returns ~15 junk columns on that row (`ancestor`, `certa`,
+`apply`, `distance`, `errors`, `pages`, …). Reproducing schema cruft is a decision,
+not a projection fix. `GroupsPage.tsx` reads `is_featured`, `posts_count`,
+`recent_members` and `tags`, so those are real client gaps, not cosmetic.
+
+### `marketplace/seller/dashboard` — 62/170, and money that should not have been added up
+
+🔴 **Laravel refuses to sum unlike currencies and this backend did it anyway.**
+`MarketplaceSellerService.php:249-266` groups completed orders by currency and
+then sets `total_revenue` and `revenue_currency` to **null** when there is more
+than one, with a comment saying it will not "pretend unlike currencies are
+equal". ASP.NET summed every order and hard-coded `"EUR"`, so a seller paid in two
+currencies saw one meaningless number under the wrong symbol.
+
+It also never sent `revenue_by_currency` — which `MyListingsPage.tsx:373`
+**prefers over the single figure** — so the seller's revenue panel was silently
+falling back. That is a client-facing gap, not a shape nit.
+
+The response also carried `data.profile`, the raw `SellerProfile` **entity**:
+camelCase keys, `stripeAccountId`, `suspensionReason`, and a nested `user`
+navigation property that is null only because nothing eager-loads it — one
+`.Include` from publishing a whole User record. Laravel sends counters only.
+Removed after verifying no React call site and no test reads `profile`,
+`listings` or `orders`.
+
+Endpoint now MATCHes: **61 → 62 identical, 91 → 90 differing.**
+
+🔴 **A pre-existing red test on `main` was found and fixed in passing.**
+`MarketplaceControllerTests.PromotionProductsV2_MatchesLaravelReactSelectorContract`
+asserted 200 and got 403: the `marketplace.promotions_enabled` gate landed
+earlier the same day without the test being updated. The gate is correct — that
+setting defaults off on both backends — so the test now switches it on rather
+than asserting the un-gated behaviour back into existence. `MarketplaceControllerTests`
+32/32 green.
+
+---
+
+Evidence: `dotnet test Nexus.sln --configuration Release`. 🔴 Read the pass
+COUNT, never the exit code — this runner exits 0 with failures present, observed
+again on 2026-08-17 (`Failed: 2 ... [exited with code 0]`).
+
+---
+
+
+## Fixed Rubric Baseline 2 — 598/1000 (rescored 2026-08-18)
+
+<!-- Rubric id ASPNET-CONTRACT-R2. Baseline 1 (712/1000) is retained below as
+     audit trail and is NOT rewritten, per the runbook's rule that Laravel drift
+     creates a separately named baseline rather than a silent rescore. -->
+
+**Evidence boundary:** monorepo `8f6d527bd87d9c07cc5c619bf397b2cad7592f41`
+(branch `main`). `aspnet-backend/src` and `aspnet-backend/tests` are byte-identical
+to `450535aab`, the most recent commit whose CI run actually executed the ASP.NET
+jobs. Every number below was regenerated from live code on 2026-08-18, not read
+from a previous document.
+
+| Category | Banked | Maximum | Open |
+| --- | ---: | ---: | ---: |
+| Active Laravel API route representation | 96 | 100 | 4 |
+| Semantic workflow and canonical-consumer contract parity | 185 | 350 | 165 |
+| Schema, migrations, data integrity, and upgrade safety | 118 | 150 | 32 |
+| Auth, tenant isolation, security, and localization | 74 | 100 | 26 |
+| Full build/test/CI evidence | 85 | 100 | 15 |
+| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 10 | 125 | 115 |
+| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 | 45 |
+| **Total** | **598** | **1000** | **402** |
+
+### 🔴 Why the score FELL from 712 while the backend improved
+
+This is the single most important thing to understand about this rescore, and it
+must not be reported as a regression.
+
+**The code got better.** Since the 2026-08-15 audit: the tenant hierarchy and
+regional-super-admin subtree confinement now exist (F1/F9 closed); the three
+webhook handlers that returned HTTP 200 while discarding the event now refuse with
+501 and leave it in the sender's retry queue (F7 closed); no-op handlers fell from
+349 to 319; scheduled jobs rose from 20 to 26, all registered; and the full test
+suite is green in CI across every shard.
+
+**The measurement got honest, and it is what moved the number.** The 307/350
+banked for semantic parity under Baseline 1 was set when **no instrument existed
+that could compare a response**. Parity was inferred from route inventories and
+implemented workflow families. `scripts/compare-live-responses.mjs` (2026-08-16)
+and a signed-in disposable Laravel (2026-08-17) can now ask both backends the same
+question. Measured on the 170 GET paths the canonical React frontend actually
+calls, signed in:
+
+| | Count |
+| --- | ---: |
+| Same status AND same JSON shape | **64** |
+| Envelope matches, row contract untested (one side has no rows) | 24 |
+| Different | 82 |
+| Status disagreements | 0 |
+
+37.6% of the most-used read surface is contract-identical. Banking 87.7% against
+that would be indefensible. The drop is 122 points of *discovered* divergence, not
+122 points of new breakage.
+
+Movement by category, Baseline 1 → Baseline 2:
+
+| Category | R1 | R2 | Driver |
+| --- | ---: | ---: | --- |
+| Route representation | 100 | 96 | Laravel drift: 9 genuine method-level gaps |
+| Semantic parity | 307 | **185** | First direct response measurement: 64/170 |
+| Schema/upgrade | 129 | 118 | 215 Laravel tables absent; no populated-history upgrade proof |
+| Auth/tenant/security/localization | 97 | **74** | F1/F9 closed (+), but 5,424 localization keys absent (−) |
+| Build/test/CI | 45 | **85** | Fresh-checkout CI green on every ASP.NET job |
+| Dual-backend frontend runtime proof | 10 | 10 | Unchanged — neither frontend has been run against ASP.NET |
+| Providers/jobs/ops/docs | 24 | 30 | Webhooks refuse (+); Meilisearch/FCM still non-functional (−) |
+
+### Evidence behind each category
+
+All commands were run on 2026-08-18 from `aspnet-backend/`.
+
+**1. Route representation — 96/100.**
+`scripts/compare-laravel-api-parity.ps1` reports 2,667 source operations,
+2,648 matched, **19 missing**. 🔴 That 19 is NOT the gap count: probing each one
+against the running API with its own HTTP method shows **10 are served** and the
+generator's route-shape matching simply misses them (for example
+`GET /api/auth/oauth/enabled-providers` answers 200). The genuine method-level
+gaps are **9** — 6 paths absent entirely and 3 present without the required
+method:
+
+> 🔴 **RE-VERIFIED AT HEAD 2026-08-19: 4 of these 9 are CLOSED and a 5th is a FALSE
+> POSITIVE. Four remain.** The table is kept in its original form with a Status column
+> added, because the deduction below was reasoned from the original nine.
+
+| Gap | Kind | Status at HEAD |
+| --- | --- | --- |
+| `GET /api/messages/{message}/voice` | absent (404) | 🔴 **OPEN** |
+| `POST /api/csp-report` | absent | ✅ CLOSED (`SecurityReportController.cs:52-53`, commit `ce1ab79a5`) |
+| `POST /api/events/{id}/attendance/code` | absent | 🔴 **OPEN** — the one action web-uk cannot reach |
+| `POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}` | absent | ⚠️ **FALSE POSITIVE** — handler exists at `EventRegistrationProductController.cs:160`; only the ACTION VOCABULARY is unverified against Laravel's `EventAttendanceAction` enum |
+| `GET /api/legal/status` | absent | ✅ CLOSED (`LegalShortRoutesController.cs:78`) |
+| `GET /api/volunteering/credentials/{id}/download` | absent | 🔴 **OPEN** |
+| `GET /api/messages/{message}/attachments/{attachment}` | path exists, GET not served (405) | 🔴 **OPEN** — match Laravel's private-media headers (`MessageMediaController.php:70-80`) |
+| `POST /api/legal/accept` | path exists, POST not served (405) | ✅ CLOSED (`LegalShortRoutesController.cs:117`) |
+| `POST /api/legal/accept-all` | path exists, POST not served (405) | ✅ CLOSED (`LegalShortRoutesController.cs:215`) |
+
+So 2,658/2,667 at method level (99.66%). Deduction 4: the messages and event
+attendance gaps are client-consumed, and the legal trio is a whole Laravel
+controller family (`LegalController`) unserved at its non-v2 paths.
+
+🔴 **That rationale is now half-spent.** The legal trio and csp-report are CLOSED, so the
+"whole controller family unserved" half of the −4 no longer holds; at method level this is
+**2,662/2,667 (~99.81%)**. The category should re-score at the next transaction — but NOT
+here: rescoring outside a scoring transaction is exactly the silent-rescore this document
+forbids.
+
+**2. Semantic parity — 185/350.** Deduction 165, itemised:
+- **−60** 82 of 170 measured GET endpoints differ in shape.
+- **−55** `scripts/check-noop-stubs.ps1` reports **319** action methods returning
+  success-shaped payloads with no database access and no service call. Worst
+  files: `MiscParityController` 87, `AdminCompatibility2Controller` 52,
+  `AdminCompatibility3Controller` 33, `ReactFrontendCompatibilityController` 30.
+  Matches the shrink-only baseline; down from 349 on 2026-08-15.
+- **−50** writes, uploads, realtime and side effects are **entirely unmeasured**.
+  The harness is GET/HEAD only. 208 write-response test assertions remain
+  unverified against Laravel.
+Credit retained for genuinely implemented and pinned workflow families: partner
+venues (15 tests), support actions / carer sub-accounts (39), guardian consent and
+authority attestations (13), the legal acceptance gate (14), impersonation (5),
+and the two small-endpoint batches (12).
+
+**3. Schema/migrations/upgrade — 118/150.**
+`scripts/compare-laravel-schema-parity.ps1`: 472 Laravel source tables, 460
+ASP.NET tables, 257 matched, **215 missing**, 203 extra. 410 Laravel migrations vs
+**183** ASP.NET migration classes on disk (latest
+`20260817121949_AddSkillCategories`). Deduction 32: −20 for the 215 absent tables,
+−12 because no populated-history upgrade has been proven to complete without row
+loss, and no deliberately invalid tenant/financial history has been shown to fail
+preflight without partial schema change.
+
+**4. Auth/tenant/security/localization — 74/100.** Deduction 26:
+- **−18** localization depth. `scripts/compare-laravel-localization-parity.ps1`:
+  20,240 Laravel keys, 3,431 matched, **5,424 missing**, 374 missing namespaces.
+  26.8% of Laravel's keys have no ASP.NET counterpart. This alone made the 97/100
+  banked under Baseline 1 impossible to defend.
+- **−5** residual security items: FCM push targets a decommissioned endpoint, and
+  `oauth/me/identities` advertises a provider (`apple`) Laravel does not.
+- **−3** tenant isolation is unproven for the 215 absent tables, since a table
+  that does not exist cannot have its scoping tested.
+🔴 **Genuine improvements banked here:** `Support/Authorization/SuperPanelAccess.cs`
+now models `master` and `regional` levels with a materialised-path subtree check,
+and `Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants`
+and `MaxDepth`. F1 and F9 are **closed**. Tenant scoping is also enforced globally
+rather than per call site: `NexusDbContext.OnModelCreating` applies a tenant query
+filter to every `ITenantEntity` by reflection — verified empirically on 2026-08-17
+by inserting a row for another tenant and confirming it was not returned.
+
+**5. Build/test/CI — 85/100.**
+- CI run at `450535aab` (2026-08-17 20:42): **ASP.NET build success, all six API
+  test shards success, Messaging tests success, image builds success.** GitHub
+  Actions checks out fresh, so this satisfies the "clean checkout" requirement.
+- `aspnet-backend/src` and `tests` are **unchanged** between `450535aab` and HEAD,
+  so that aggregate covers the current ASP.NET code.
+- Local confirmation 2026-08-18, `dotnet test Nexus.sln -c Release`:
+  `Nexus.Api.Tests` **3,644 passed / 0 failed / 0 skipped**, `Nexus.Messaging.Tests`
+  **38 passed / 0 failed**.
+- 🔴 Read the pass COUNT, never the exit code: this runner exits 0 with failures
+  present, observed repeatedly.
+- 🔴 And never trust a green tick alone. The most recent *overall* green run
+  (`83df7d815`) had **every ASP.NET job SKIPPED** by the changed-paths filter. A
+  workflow conclusion of "success" is not evidence that this backend was tested;
+  the job-level conclusions are.
+Deduction 15: −8 no coverage or test-quality gate evidence, −7 the static contract
+inventory job was skipped in the covering run, so its assertions are unproven at
+this SHA.
+
+**6. Dual-backend unchanged-frontend runtime proof — 10/125.** Unchanged, and the
+largest single block of open points. Neither the canonical React frontend nor Web
+UK has been run against ASP.NET. 🔴 `compare-live-responses.mjs` is **not** this
+proof: it compares two backends directly and starts no frontend. Web UK's own
+switch (`ACCESSIBLE_BACKEND_TARGET=aspnet`) exists but has never been exercised.
+
+**7. Providers/jobs/integrations/ops/docs — 30/75.** Deduction 45:
+- **−20** scheduled coverage: **26** scheduled job classes, all 26 registered as
+  hosted services, against **70** scheduled units in Laravel's `bootstrap/app.php`
+  (~37%). Still absent by name: `retention:enforce`, `backup:verify`,
+  `gdpr:check-overdue-requests`, `slo:check`, `queue:verify-liveness`,
+  `email:health-alert`, `stripe:check-stuck-webhooks`.
+- **−12** two integrations are implemented but non-functional: Meilisearch
+  incremental indexing (`IndexDocumentAsync`, `IndexDocumentsAsync`,
+  `DeleteDocumentAsync` have **zero callers** outside the service, so new content
+  never reaches the index and deleted items stay findable), and FCM push
+  (`PushNotificationService.cs:570` defaults to `fcm.googleapis.com/fcm/send`,
+  the legacy endpoint Google has retired).
+- **−13** no live-provider or operational proof: no Stripe live run, no identity
+  provider exercised, no backup/restore drill recorded for this backend.
+🔴 **Corrections banked here:** the three webhook handlers now return **501** and
+log an error rather than `Ok(new { received = true })`, so a Stripe, identity or
+SendGrid event is retried by the sender instead of being destroyed — F7 closed.
+And `MarketplaceEscrowReleaseJob` does call `ProcessEligibleEscrowReleasesAsync`
+with an `auto_timeout` trigger gated on `AutoCompleteAt`, so the earlier claim
+that "sellers are never paid out" is **withdrawn** for escrow-backed orders.
+
+---
+
+
+## 2026-08-19 — WRITES are measured now: 6 -> 10 of 18, and the envelope rule extended on 11-of-11 evidence
+
+Writes were the last completely unmeasured surface. They are measured now, and
+the count moved from **6 of 18 to 10 of 18 contract-identical** on the same
+corpus. The read side was re-measured immediately afterwards and is **unchanged
+at 79 of 170**, so nothing was traded for this.
+
+| | Before | After |
+| --- | --- | --- |
+| Same status AND same JSON shape | 6 | **10** |
+| Different shape | 8 | **6** |
+| Status disagreements | 3 | **1** |
+| Non-JSON on both sides | 1 | **1** |
+
+### Two endpoints INVENTED data rather than refusing
+
+`POST /api/v2/listings` and `POST /api/v2/events` both accepted anything and
+substituted values for whatever was missing — literally `?? "Untitled listing"`
+and `?? DateTime.UtcNow.AddDays(7)`. So an event posted with no date was created
+a week from whenever the request arrived, and an event posted with an
+unrecognised date field was given that fabricated date instead of the one
+supplied. Laravel refuses both.
+
+The listing rules are **per community, not constants**: `ListingService::validateData`
+reads `min_title_length`, `min_description_length`, `require_category`,
+`allow_offers` and `allow_requests` from tenant config. This backend was already
+publishing those in `/tenant/bootstrap`'s `listing_config` and never applying them.
+
+🔴 **Laravel's validation envelopes are per-endpoint, not global.** Listings return
+`{"code":"VALIDATION_ERROR","field":…}`; events return lowercase
+`{"code":"validation_failed","details":{field:[messages]}}` plus `success:false`;
+resources return `{"code":"VALIDATION_REQUIRED_FIELD","field":…}`. Three different
+shapes on three creates. Each was read from the live response — unifying them
+would have been wrong three ways.
+
+### `POST /api/v2/resources` answered 500 where Laravel answers 400
+
+A non-multipart request reached `ReadFormAsync`, which throws
+`InvalidOperationException("Incorrect Content-Type: application/json")`, and the
+error handler turned that into a 500 with a stack trace. All five of its refusals
+now carry Laravel's exact codes and wording, measured individually: no title, no
+file, an 11 MB upload (`FILE_TOO_LARGE` / "File exceeds 10MB limit"), an `.exe`
+(`FILE_TYPE_NOT_ALLOWED` / "File type not allowed") and a `.pdf` with `MZ` content
+("This file type is not allowed (HTML/SVG/PHP)").
+
+### `LaravelDataEnvelopeFilter` covers writes for `meta` — and the `success` strip was REVERTED after 82 red tests
+
+The filter was GET/HEAD-only, and its own docblock said why: no instrument had ever
+compared a write. Now one has.
+
+```
+2xx Laravel writes carrying a `data` key      : 11
+...of those, also carrying meta.base_url      : 11
+...of those, carrying a top-level `success`   :  0
+counter-examples in either direction          :  0
+```
+
+🔴 **Half of this shipped and half was reverted. The half that was reverted is the
+more useful record.**
+
+The change had two parts, and treating them as one claim was the mistake:
+
+| | Direction | Evidence | Outcome |
+| --- | --- | --- | --- |
+| Add `meta.base_url` to writes | **additive** | writes 11-of-11, 0 counter-examples | **shipped** |
+| Strip top-level `success` from writes | **subtractive** | 41-to-0, but taken across 170 **GET** endpoints | **reverted** |
+
+The partial run showed six admin tests failing and the tempting read was "admin must
+be different — narrow the filter". That was worth checking, and the check was
+worthwhile: signing in to the disposable Laravel as its own admin
+(`e2e.admin@project-nexus.local` / `AdminPassword123!`, from `E2ETestDataSeeder`)
+showed `POST admin/registration/resume-signups`, `PUT admin/retention/policies/*`
+and `PUT admin/settings/header-colors` all return `{data, meta}` with **no**
+`success`. Laravel really is consistent.
+
+🔴 **But the full run failed 82 tests, not six** — and 3,577 passed, which is how a
+40-minute run still exits 0. Eleven samples cannot license removing a key from every
+write in the backend; they establish only that those eleven Laravel writes omit it.
+So the strip was scoped back to reads, where its own 41-to-0 count was taken.
+
+🔴 **The decisive check: the strip bought NOTHING.** Re-measured with it reverted,
+write parity is **10 of 18 — unchanged**. The whole 6 -> 10 movement came from the
+`meta` addition and the per-endpoint fixes. It cost 82 red tests for zero measured
+gain. Had the score dropped, this would have been a real trade-off to weigh; it did
+not, so there was nothing to weigh.
+
+The six test edits were reverted with it. They were changed on the blanket rule, and
+once the rule is gone they would have been asserting something this backend does not
+do.
+
+🔴 **Still open, and now precisely stated:** Laravel omits `success` on those three
+measured admin writes and this backend sends it. That is a real divergence. Closing
+it means editing those handlers, per endpoint, against a live read — not widening a
+filter. Any future attempt needs a per-endpoint `success` count on writes taken the
+way the 41-to-0 read count was taken.
+
+🔴 The `/api/v2` restriction stays even for writes. Seven of the eight member
+samples are v2; exactly one is not (`POST /api/legal/accept-all`, which does carry
+meta). One sample is not a rule, so that route emits its own meta in
+`LegalShortRoutesController` instead of widening the filter.
+
+### 🔴 A measurement defect: every field-level figure in this workstream was understated
+
+`describeShapeDiff` capped its two lists at `.slice(0, 8)` with nothing marking the
+truncation, so "8 missing fields" was the display cap being read as a count. Both
+harnesses now print the true total beside the sample. Re-read honestly, the write
+divergences are much larger than recorded: created group **77** fields short,
+created listing 67, created poll 38, created goal 37, profile update 22.
+
+Nothing about either backend changed here. What changed is that the numbers are no
+longer quietly wrong, and reviewing the eight-name sample is no longer mistakable
+for reviewing the difference.
+
+### Harness changes
+
+- `body(ctx)` now receives a **per-backend** context. A valid listing needs a real
+  category id and the two backends mint different ids, so a single fixed body could
+  only ever exercise the refusal. `ctx.categoryId` is resolved from each backend's
+  own `/api/v2/categories` just before the run. That immediately exposed a
+  divergence the refusal had hidden.
+- Corpus widened 13 -> 18 (group, event, goal, resource, notification preferences)
+  specifically to raise N before extending a shared filter.
+- Every row now records `laravel_envelope` / `aspnet_envelope` observations, so the
+  count that justifies an envelope change is evidence in a file rather than a claim
+  in a commit message.
+
+### 🔴 The invented-data sweep: three more, and a LARAVEL defect
+
+The two creates that invented data were found by chance, so every `??` fallback on
+a request field in `src/Nexus.Api/Controllers` was swept. Most are harmless — a
+`?? "Unknown"` filling a name in a RESPONSE, or a defensive default when reading a
+stored blob back. Three are the real fault, where a fabricated value is **saved**:
+
+| Endpoint | ASP.NET | Laravel (measured) |
+| --- | --- | --- |
+| `POST /api/v2/groups/{id}/tasks` | 201, title saved as `"Untitled task"` | **422** `{"code":"VALIDATION_ERROR","message":"Title is required","field":"title"}` |
+| `POST /api/v2/wallet/categories` | 201, name saved as `"General"` | **400** `{"success":false,"error":"Name is required"}` |
+| `POST /api/ideation-challenges/{id}/ideas` | 201, title saved as `"Untitled"` | **404** — the route does not exist |
+
+**All three are FIXED and verified live** (behaviour re-checked against the rebuilt
+container, not inferred from the diff). The group-task refusals additionally match
+Laravel on all three of its cases, each measured: `Title is required` /
+`Invalid status` / `Invalid priority`, all 422, all `{errors:[…]}` with no `success`
+key. This backend had been answering 400, with different wording, plus a `success`
+key Laravel does not send — three differences at once on a single response.
+
+🔴 **The first attempt at this fix silently did not apply, and the lesson is about
+verification, not C#.** The new helper was appended before the file's last brace,
+which closes the NAMESPACE rather than the class (block-scoped namespace), so it
+landed inside an unrelated DTO class: 4 compile errors. The container still reported
+healthy, because it was still running the PREVIOUS image. `docker compose build`
+output had been sent to /dev/null, so nothing surfaced the failure.
+
+What caught it was probing the endpoints and seeing `"Untitled task"` come back
+again. A health check proves a container is answering; it proves nothing about WHICH
+build is answering. Never verify a fix by rebuilding and checking health — verify it
+by asking the endpoint what it now does.
+
+🔴 The group-task one has a validation check that **can never fire**:
+
+```csharp
+var title = ReadStringProperty(request, "title", "name") ?? "Untitled task";
+if (string.IsNullOrWhiteSpace(title))                      // dead: the line above
+    return BadRequest(LaravelValidationError("title", …));  // guarantees a value
+```
+
+The placeholder is applied on the line above the guard, so the guard's condition is
+unreachable. It reads like validated input and is not. One handler serves both the
+v2 and non-v2 spellings (it branches on `IsV2Request()`), so both are affected.
+
+🔴 **Two routes exist here that Laravel does not have.**
+`POST /api/groups/{id}/tasks` and `POST /api/ideation-challenges/{id}/ideas` are
+registered without the `/v2/` prefix; Laravel registers only `/v2/` forms
+(`routes/api.php:1179, 3765`) and 404s the bare ones. React calls only the `/v2/`
+spellings (`ChallengeDetailPage.tsx:493`, `TeamTasks.tsx:190`), so nothing depends
+on the extras. Note the ASP.NET v2 ideas handler ALREADY validates correctly (400
+`VALIDATION_REQUIRED_FIELD`) — it is the non-v2 twin that invents.
+
+🔴 **A defect in LARAVEL, not this backend.** `POST /api/v2/ideation-challenges/{id}/ideas`
+with no `title` makes **Laravel** answer **500**:
+`Undefined array key "title"` at `app/Services/IdeationChallengeService.php:425`.
+That is live production code reachable by any client that omits the field. It is
+NOT a contract to reproduce — ASP.NET's 400 is the better answer and stays. Raised
+for the owner separately; changing Laravel is not part of this workstream.
+
+### What is left on writes
+
+- `POST /api/v2/groups` is the worst remaining: **77** fields short, and it returns
+  `{success, message, group}` — the payload under `group`, not `data`, with
+  camelCase field names (`isPrivate`, `imageUrl`). It is the only write still
+  sending a top-level `success`, because the filter requires a `data` key to act.
+- Created poll (38), goal (37), listing (67) and profile update (22) are field-level
+  tails, all of them Laravel returning a raw Eloquent model plus appended attributes.
+- `POST /api/v2/search/saved` makes **Laravel itself** answer 500. Not a contract to
+  copy; it needs its own diagnosis.
+- `PUT /api/v2/users/me/notification-preferences` 404s on both. The path was my
+  guess and is wrong on both backends — find the real one before counting it.
+- Multipart writes are still uncompared: the harness posts JSON only, so the
+  resource-create SUCCESS shape (Laravel returns a deliberate 8-field projection,
+  not a raw row) has not been diffed.
+
+## 2026-08-19 (later) — the React app has now RUN against ASP.NET, for the first time ever
+
+The 125-point "unchanged frontend against both backends" category had **10 points and no
+evidence at all** — neither frontend had ever been pointed at this backend. That is no
+longer true.
+
+**The unchanged canonical React frontend signs in and runs against ASP.NET.** Login
+succeeds, tokens are issued, and `/dashboard`, `/listings`, `/members` and `/wallet` all
+render real content. **190 API calls, all successful**; the only non-2xx is a signed-out
+`401` on `/api/v2/me/fadp/consent`, which is correct behaviour.
+
+Configuration only — no frontend source was modified. Committed script:
+`aspnet-backend/scripts/smoke-react-against-aspnet.mjs`, driven by the existing
+`npm --prefix react-frontend run dev:dotnet` on port 5199.
+
+### 🔴 It found two real faults the response-diff harness had scored as cosmetic
+
+This is the argument for doing it, so it is worth stating precisely.
+
+| Fault | What the diff harness saw | What the browser saw |
+| --- | --- | --- |
+| `GET /api/v2/events` emitted `starts_at`, Laravel emits `start_date` | "some field names differ" | **the whole Upcoming-events dashboard section crashed** |
+| `needs-attention-count` omitted `action` | a missing field among several | the chip rendered the literal text `exchanges_attention.action.undefined` |
+
+The first is the sharper lesson. `DashboardPage.tsx:561` does
+`new Date(event.start_date)`; against ASP.NET that produced an Invalid Date, and
+`formatMonthShort` — which calls `Intl.DateTimeFormat.format()` with **no isNaN guard,
+unlike its sibling `formatDateValue`** — threw `RangeError: Invalid time value`, sending
+the section to its error boundary. The endpoint returned a well-formed 200 throughout.
+
+**Measured effect of the fix: dashboard visible text 1,365 → 6,870 characters.** Console
+errors 5 → 2, and neither survivor is a backend fault (the expected signed-out 401, and a
+React `key` warning inside `TopEndorsedWidget`).
+
+🔴 Both fixes are **ADDITIVE**: Laravel's field names were added and ASP.NET's existing
+`starts_at`/`ends_at`/`listing_id`/`created_at`/`updated_at` were LEFT in place. That this
+backend sends fields Laravel does not is a separate, SUBTRACTIVE change needing its own
+per-endpoint evidence — bundling the two on shared reasoning turned 82 tests red earlier
+the same day.
+
+🔴 The `action` derivation was copied from `app/Services/ExchangeService.php:161-166`
+(pending+provider → accept, pending_confirmation → confirm, completed → review, else
+active) because the disposable Laravel's fixture returns an empty list. **That is SOURCE
+evidence, weaker than this workstream's live-measurement standard, and is flagged in the
+code.** Measure it once a fixture exchange needing attention exists.
+
+### Three obstacles that are frontend chrome, not backend faults
+
+The first two smoke runs timed out clicking a disabled button, and the obvious reading —
+"the backend is refusing the login" — was wrong. Recorded so the next person does not lose
+the same hour:
+
+1. A cookie banner **and** an AI-features consent dialog overlay everything until dismissed.
+2. The email field is `name="username"` with `type="email"`, not `name="email"`.
+3. **Sign In stays DISABLED until a community is chosen** from a native `<select>` — the
+   real gate. Options offered: ACME Community Timebank, Globex Neighbourhood Network, ACME
+   Youth Programme, Smoke Hub, Smoke Branch.
+
+Also: `/health.php` 404s (ASP.NET serves `/health`) — cosmetic, expected, proxy-only. And
+`net::ERR_NO_BUFFER_SPACE` appeared once on a run while the 40-minute test suite was
+running concurrently: Windows socket exhaustion, a LOCAL artefact, not a backend fault.
+
+### 🔴 The DIRECT pass: the app was unusable cross-origin, and login was impossible
+
+The proxied pass above goes through Vite's dev proxy, so every request is same-origin and
+CORS is never exercised. The direct pass — browser calling `:5080` itself — was run next
+and failed hard:
+
+```
+Access to fetch at 'http://127.0.0.1:5080/api/auth/login'
+from origin 'http://127.0.0.1:5199' has been blocked by CORS policy:
+Request header field x-csrf-token is not allowed by Access-Control-Allow-Headers
+```
+
+**Login itself was refused before it left the browser, so nothing behind the login was
+reachable.** GETs were unaffected (36 succeeded), which is precisely why proxied testing
+never saw it.
+
+Two independent gaps, both fixed:
+
+1. **`Program.cs` `WithHeaders(...)` omitted `X-CSRF-Token`.** The canonical React client
+   sends it on writes. Rather than add the one header that failed first, every custom
+   header the React source sets was enumerated and compared against the allowlist; three
+   events headers (`X-Events-Contract`, `X-Event-Safety-Contract`,
+   `X-Event-Checkin-Contract`) were missing too. 🔴 `X-Federation-*`,
+   `X-Partner-Signature` and `X-Webhook-Signature` were deliberately NOT added — they are
+   server-to-server and never browser-sent; allowlisting them would widen a browser
+   policy for traffic that does not use it.
+
+2. **`compose.yml` never listed port 5173**, the React dev server's real port
+   (`react-frontend/vite.config.ts:323`). A preflight from `http://localhost:5173`
+   returned 204 with **no** `Access-Control-Allow-Origin`, which a browser treats as a
+   refusal. 🔴 `5273` is NOT a typo: `docs/PRODUCTION_READINESS_REMEDIATION.md:84-87`
+   documents running Vite on 5273 as a WORKAROUND for this exact gap. Both are kept —
+   the workaround still works and now the committed default does too. An unknown origin
+   is still refused (checked with `http://evil.example`), so nothing was opened up.
+
+**Both passes now succeed: 188 API calls, no failures, all four screens rendering.**
+
+### 🔴 A false pass I nearly reported, and the guard added because of it
+
+The first "direct pass" was still going through the proxy. `VITE_API_BASE` passed on the
+command line **never reaches `import.meta.env`**, so every request stayed same-origin —
+and it looked like a clean pass while proving nothing about CORS. Checking the recorded
+request URLs is what caught it.
+
+`scripts/smoke-react-against-aspnet.mjs` now **measures and reports its own transport
+mode** from the absolute URLs, and prints an explicit "this proves nothing about CORS"
+warning plus the exact setup steps when a run is proxied.
+
+🔴 Direct mode has **no committed configuration path**: `react-frontend/.gitignore:15`
+ignores `.env.*`, so the required `.env.dotnet-direct` cannot be checked in. The script
+documents how to create it. A committed `dev:dotnet:direct` script would need an approved
+frontend change.
+
+🔴 Local artefacts seen, neither a backend fault: one run makes ~190 calls against a
+200-per-60s dev rate limit, so back-to-back runs self-throttle into 429s; and
+`net::ERR_NO_BUFFER_SPACE` appeared once while the 40-minute test suite ran concurrently
+(Windows socket exhaustion).
+
+### The ACCESSIBLE frontend (web-uk) has now run against ASP.NET too — 4 of 6 pages identical
+
+The other half of the 125-point category. `web-uk` had never been pointed at this backend
+either. Configuration only, per `web-uk/src/lib/backend-contract.js`:
+
+```
+PORT=3099 COOKIE_SECRET=… ACCESSIBLE_BACKEND_TARGET=aspnet   ASPNET_BASE_URL=http://127.0.0.1:5080 ACCESSIBLE_TENANT_SLUG=acme node src/server.js
+```
+
+🔴 `ACCESSIBLE_TENANT_SLUG` must be set to `acme`; it defaults to `hour-timebank`, which
+does not exist in the ASP.NET seed. `COOKIE_SECRET` is required or the server exits
+immediately with one line and no HTTP listener. `API_BASE_URL` silently overrides the
+target — leave it unset.
+
+🔴 **A CONTROL was run, and it changed the conclusion.** A second web-uk instance was
+started against the disposable **Laravel** on port 3098 with everything else identical,
+because "it fails on ASP.NET" means nothing without knowing whether it fails on Laravel:
+
+| Page | ASP.NET (:3099) | Laravel control (:3098) | |
+| --- | --- | --- | --- |
+| `/` | 200 | 200 | same |
+| `/listings` | 200 | 200 | same |
+| `/login` | 200 | 200 | same |
+| `/events` | 302 → `/login?status=auth-required` | 302 | same — a sign-in gate, not a fault |
+| `/blog` | **400** | 200 | 🔴 **DIFFERS** |
+| `/help` | **400** | 200 | 🔴 **DIFFERS** |
+
+Without the control, the five 302s would have been written up as ASP.NET refusing to
+serve half the site. They are just the signed-out gate, behaving identically on both.
+
+**`/blog` and `/help` are real, reproducible ASP.NET-only failures** ("Sorry, there is a
+problem"). The cause is NOT yet isolated, and the obvious suspects have been eliminated:
+
+- `GET /api/v2/blog` returns **200 on both**, and ASP.NET's payload is a strict SUPERSET
+  — zero fields missing, eleven extra. So the list endpoint is not it.
+- The feature flags for `blog`, `help`, `support` and `resources` are byte-identical on
+  both bootstraps, so it is not a module gate.
+- `/api/v2/help/articles` and `/api/v2/support*` 404 on **both**, so a shared missing
+  route is not it either.
+
+Left as a precisely-scoped open item rather than a guess. Reproduce with the two-port
+control above.
+
+### 🔴 The BEST instrument in this workstream was already in the app, and was being thrown away
+
+The React app validates responses at runtime in development and logs **"contract drift"**
+with a structured list of what failed. It is the CLIENT'S OWN VERDICT on the contract —
+strictly better evidence than any external field diff, because it states what the app
+expected, not merely what differs. The smoke was truncating it to 200 characters and
+discarding it.
+
+Captured properly, the first message reports **60 issues on one endpoint**:
+
+```
+/v2/events?when=upcoming&per_page=20   (60 issues)
+   0.contract_version : invalid_value
+   0.primary_image    : invalid_type      0.organizer   : invalid_type
+   0.category         : invalid_type      0.location    : invalid_type
+   0.schedule         : invalid_type      0.relationship: invalid_type
+   0.online_access    : invalid_type      0.series      : invalid_type
+   0.permissions      : invalid_type      0.metrics     : invalid_type
+   0.updated_at       : invalid_type      … and 48 more
+```
+
+🔴 This is a bigger gap than "some field names differ". Laravel serves a **versioned,
+structured** events contract — `contract_version`, plus nested `organizer`, `schedule`,
+`location`, `permissions` and `metrics` objects. ASP.NET returns a flat legacy shape, so
+the client's schema rejects **every row**. The date-field fix earlier today made the
+dashboard render; it did not make this endpoint conform.
+
+**Prefer this instrument over `rank-read-differences.mjs` where it is available.** The
+ranking script infers interest from whether a field name appears in the source; this is
+the app itself failing validation. The ranking script remains useful for endpoints the
+app does not schema-check.
+
+`scripts/smoke-react-against-aspnet.mjs` now serialises these via `msg.args()` and prints
+them per endpoint, deduplicated.
+
+### Member ACTIONS and token refresh through the browser
+
+- 🔴 **Creating a listing through the UI: PROVEN.** The smoke fills the real form and
+  submits it; the app navigates to `/listings/23` and
+  `GET /api/v2/listings/23` returns the exact title the smoke typed. A member action now
+  works end to end against ASP.NET through the app's own form, CSRF handling and
+  validation — not just through the write harness, which speaks HTTP directly.
+
+  Four wrong turns on the way there, all of which LOOKED like backend faults:
+  1. `/listings/new` is not the route — it is `/listings/create` (`AppRoutes.tsx:990`).
+     `new` matches `listings/{id}`, so the app requested `/api/v2/listings/new`, got a
+     404, and the step reported "form not reachable".
+  2. The fields have **no `name` attribute** — HeroUI renders react-aria generated ids
+     (`react-aria…_r_bp_`). Target by LABEL.
+  3. A category is REQUIRED, so the submit stays disabled without one — the same shape as
+     the login form's community selector.
+  4. The consent dialogs re-appear on this page and a click on a covered button hung for
+     the full 30-second default. Every consent dismissal now carries a short timeout so a
+     covered button degrades instead of hanging.
+
+- **RSVP to an event: still not proven, but the reason is now precise.** The step reports
+  *"no event DETAIL links on the list (only create/filter links)"* — the events list page
+  renders no link matching `/events/<number>`, even though ASP.NET holds five events and
+  serves them on `GET /api/v2/events`. Worth investigating: it may be the list not
+  rendering rows, or a link pattern the selector does not know.
+
+  🔴 Two selector faults preceded that answer and BOTH read as backend gaps:
+  `a[href*="/events/"]` also matches `/events/create`, so the step opened the CREATE
+  form — whose buttons are "Select a category" and "Create Event" — and then reported
+  "no RSVP control on the event page" while never having opened an event. The selector
+  now requires a numeric id.
+
+  🔴 Still a TEST GAP until an event page is actually opened. Do not report RSVP as
+  either working or broken.
+- 🔴 **Token refresh: the browser step produced a FALSE NEGATIVE that nearly shipped as an
+  ASP.NET fault.** Deleting the access token from localStorage does not simulate expiry —
+  the client finds no token, redirects to `/login`, and never attempts a refresh. Asked
+  directly, the backend is fine:
+
+  ```
+  POST /api/auth/refresh          -> 200, new access token issued
+  the same refresh token again    -> 409 AUTH_REFRESH_SUPERSEDED   (correct rotation)
+  ```
+
+  🔴 Separately, and genuinely: **Laravel does not serve `/api/auth/refresh` at all.** Its
+  routes are `/auth/refresh-session` and `/auth/refresh-token` (`routes/api.php:3291,
+  3319`). The two backends disagree on the refresh ROUTE — a real contract gap, recorded
+  here rather than fixed, because which spelling the canonical client uses has not been
+  measured.
+
+### 🔴 The dev rate limit was corrupting the smoke's own results
+
+One smoke pass makes ~190 API calls; the extended pass exceeds 200, against a
+`RateLimiting__General__PermitLimit` of **200 per 60s**. The run throttled ITSELF and
+filled its report with 429s indistinguishable from backend faults — two "findings" (a
+missing form field, an empty events list) were nothing but rate limiting. Raised to 2000
+in `compose.yml`, development only; production limits are untouched.
+
+### What this does NOT prove — no points are claimed yet
+
+> 🔴 **PARTIALLY SUPERSEDED — read the dated sections ABOVE this one first.** When
+> written, this block correctly said web-uk had never been run against ASP.NET and
+> that only the proxied React pass existed. Both statements were overtaken the same
+> day: web-uk has now been run (with a Laravel control), the direct/CORS pass has
+> been run, and the events contract drift is now zero. The remaining caveats below
+> about exhaustiveness still stand.
+
+No score is banked for this. Banking needs a scoring pass at a fixed SHA, and the
+remaining evidence gaps are real:
+
+- **web-uk has still never been run against ASP.NET.** Half the category by name.
+- Only the PROXIED pass was run. The DIRECT pass (`VITE_API_BASE` straight at :5080),
+  which is what exposes CORS and preflight, has not been attempted — the dev allowlist in
+  `aspnet-backend/compose.yml:38-41` lacks 5173 and lists what looks like a typo, `5273`.
+- Five screens, read-only. No member action — posting, RSVPing, transferring — has been
+  driven through the UI.
+- Token REFRESH across expiry is untested; the run is short enough to live inside one
+  access token.
+
+## 2026-08-19 (Phase 0) — the read corpus was a SAMPLE; the honest denominator is 195, and we score 77
+
+Full-completion plan Phase 0 ("truth first"). Three read-only explorers audited every
+gap inventory at HEAD; the corpora were then regenerated from the frontend's own source
+instead of hand-curated lists.
+
+### The corpus was 170 hand-picked paths. The frontend calls far more.
+
+`react-frontend/scripts/inventory-api-calls.mjs` is a committed TypeScript-AST walk over
+the whole frontend (`npm run inventory:api-calls`) that had **never been run in this
+checkout**. Run:
+
+```
+2,205 call sites / 2,016 unique method-endpoint pairs
+  438 unique STATIC GET endpoints      (vs 170 hand-curated)
+  392 unique STATIC write endpoints    (vs 19 hand-written scenarios)
+1,261 dynamic call sites (path built from a variable)
+```
+
+New committed converter `aspnet-backend/scripts/build-parity-corpus.mjs` turns that into
+harness inputs, splitting on two axes that matter:
+
+- **member vs admin** — the harnesses sign in as a MEMBER, so admin paths answer 403 on
+  both backends. That is a MATCH proving only that both refuse; counting it would inflate
+  the score with non-evidence. 195 member GETs / 243 admin GETs.
+- **static vs dynamic** — 1,172 dynamic paths cannot go in a corpus without inventing
+  ids, and an invented id measures how the two backends 404. Emitted as a coverage
+  LEDGER, never silently dropped.
+
+Writes are a ledger too, deliberately: a write needs a body and a body cannot be inferred
+from a call site. Phase 3 grows the hand-written scenarios toward the 392 and the ledger
+measures how far that got.
+
+### 🔴 The honest read baseline: 77 of 195 (39.5%)
+
+| | Old hand-curated corpus | **Generated member corpus** |
+| --- | ---: | ---: |
+| Contract-identical | 78 / 170 (46%) | **77 / 195 (39.5%)** |
+| Shape differs | 63 | 81 |
+| Envelope matches, rows untestable | 29 | 30 |
+| Status disagreements | 0 | 2 |
+| Non-JSON on both | — | 5 |
+
+**The fall is the denominator getting honest, not a regression** — 63 of the 195 paths
+were never in the old corpus, and only 10 of those 63 match. Nothing broke; we were
+measuring a friendly sample.
+
+The 5 non-JSON rows are agreement, not failure: `/api/changelog.md` and `/api/health.php`
+(static assets, 404 on both), two super-admin paths (403 on both), and
+`/api/v2/events/calendar/feed.ics` — an iCalendar feed, correctly not JSON, 200 on both.
+A later corpus pass should exclude the two static assets.
+
+### 🔴 A fourth LIVE Laravel defect: mobile navigation always 500s
+
+`GET /api/menus/mobile` returns **500 `MOBILE_MENU_LOAD_FAILED`** — and a CONTROL settles
+that it is not a fixture artifact: the **production-derived snapshot answers 500 too**, on
+a real community with real menu rows (unauthenticated GET only; the endpoint documents
+itself as guest-accessible). The disposable fixture has zero menu rows and fails
+identically, so the fault is independent of data.
+
+Narrowing: `/api/menus` answers **200** on the same instance, so `MenuManager::getMenu()`
+is healthy. `MenuController::mobile()` (`app/Http/Controllers/Api/MenuController.php:147-148`)
+iterates `foreach ($menu['items'] as $item)` over whatever `getMenu()` returned — and the
+`getDefaultMenu()` / `getLegacyMenu()` fallback shapes do not carry an `items` key, so it
+throws and the `catch (\Throwable)` at `:164` converts it to a 500 **without logging the
+exception**, which is why `storage/logs` holds nothing.
+
+ASP.NET answers this endpoint 200. **Not a contract to copy** — surfaced for the owner,
+not fixed, per the plan's read-only rule for Laravel.
+
+### Instrument fix: the fixture environment was silently left half-applied
+
+`start-disposable-laravel.sh:192` invoked
+`node "$REPO_ROOT/aspnet-backend/scripts/all-features-on.mjs"`. The script sets
+`MSYS_NO_PATHCONV=1` at `:41` (correctly, for the docker mount), so the POSIX
+`$REPO_ROOT` reached Windows node UNCONVERTED and resolved against the drive root as
+`C:\c\platforms\...` → MODULE_NOT_FOUND. Because the call sits inside `$(...)`, `set -e`
+did not stop the script: it carried on and left **every optional feature OFF**, which per
+the script's own comment makes ~27 endpoints answer 403 FEATURE_DISABLED. Measuring in
+that state would have reported a large false collapse.
+
+Fixed with a relative path (resolved by node against its cwd on every platform) plus an
+explicit emptiness guard that aborts rather than leaving the fixture half-applied.
+Verified after: 48 of 48 features on.
+
+## 2026-08-19 (Phase 1) — the accessible frontend could not sign in AT ALL, and RSVP is not a test gap
+
+Three findings, two fixed, one now causally explained. All three were invisible to
+page-level probing, and the reason they were invisible is the most useful part.
+
+### 1. `/blog` + `/help` were never about blog or help — FIXED
+
+web-uk identifies a community by SLUG on signed-out requests
+(`web-uk/src/lib/api.js:124-136` attaches `X-Tenant-Slug` whenever there is no bearer
+token). `TenantResolutionMiddleware.ResolveTenantIdSecure()` understood only the integer
+`X-Tenant-ID` and answered **400 "Tenant context required"** to all of them. Laravel
+resolves the same header (`app/Core/TenantContext.php`), so a frontend that works there
+was unusable here for a reason unrelated to the endpoint being called — which is why
+investigating the blog endpoint kept coming up empty. The blog endpoint was fine.
+
+Slug resolution added as a FALLBACK for unauthenticated requests only, cached on the
+same 60s window (negative results cached too, so an unknown slug cannot become a cheap
+way to hit the database every request). 🔴 An authenticated request still takes its
+tenant from the JWT claim and nothing else — accepting a slug there would let a header
+override a signed-in user's tenant, which is a cross-tenant escalation this codebase has
+had before. `TenantSlugHeaderResolutionTests` pins both directions.
+
+**Measured: 10 of 10 accessible pages now identical to the Laravel control**, rendering
+real content (comparable byte counts, zero error pages), where `/blog` and `/help`
+previously 400'd.
+
+### 2. 🔴 Nobody could SIGN IN to the accessible frontend against ASP.NET — FIXED
+
+web-uk refuses to build a session unless the response carries all four of
+`access_token`, `refresh_token`, `expires_in`, `refresh_expires_in`
+(`rotatingSessionFrom`, `web-uk/src/routes/auth.js:204-216`), throwing
+`AUTH_SESSION_RESPONSE_INVALID` (502) otherwise. **This backend omitted
+`refresh_expires_in` on all four of its emitting paths** — login, refresh-token, and the
+two 2FA/trusted-device dictionary paths. Laravel sends it on every equivalent
+(`AuthController.php:446,751`; `TotpController.php:372`; `TwoFactorController.php:254`).
+The value already existed here (`RefreshTokenExpiryDays = 7`); it was simply never
+reported. Now emitted from one named constant on all four paths.
+
+**Verified after the fix** (rebuilt container, live): login and refresh-token both now
+carry all four fields, `refresh_expires_in = 604800`.
+
+🔴 **End-to-end web-uk sign-in remains UNPROVEN, and that is a TEST gap, not a backend
+verdict.** Four browser/fetch probes failed to submit web-uk's login form — **no
+`POST /login` fires at all**, identically against BOTH backends, so it is the probe. The
+page carries FOUR submit buttons (cookie banner, language, search, login) and scoping to
+`form:has(input[type="password"])` did not fix it either. The backend fix above rests on
+the API responses and web-uk's own `rotatingSessionFrom` source, which is solid evidence
+that the blocker is removed — but "a member can sign in to the accessible site against
+ASP.NET" is not yet demonstrated. Do not report it as either working or broken.
+🔴 A prior session already recorded that this page has four submit buttons; consulting
+that note first would have saved three of the four attempts.
+
+🔴 **Why "10 of 10 pages identical" did not catch this.** Every one of those pages was
+SIGNED OUT. The authenticated ones redirected to `/login` — exactly what an
+unauthenticated probe expects. **"All pages match" and "nobody can sign in" are
+indistinguishable from outside** unless you assert on the login response itself. Same
+family as the tests that only prove the door is locked, repeated at the page level.
+`RotatingSessionEnvelopeTests` asserts the envelope directly, and asserts the two
+`*_expires_in` fields are POSITIVE NUMBERS rather than merely present, because web-uk
+does `Number(...)` and rejects 0, null and unparseable strings just as hard as absence.
+
+### 3. Member ACTIONS through the UI: posting PROVEN, transferring scoped, RSVP explained
+
+The 125-point category names three actions beyond listing-creation. State after this pass:
+
+| Action | Status |
+| --- | --- |
+| Create a listing | ✅ **PROVEN** end-to-end (form → `/listings/{id}` → `GET` returns the typed title) |
+| Post to the feed | ✅ **PROVEN** — the composer opens from a "Create" button, and the post is **visible on the feed afterwards**, which is the assertion that matters rather than "no error appeared" |
+| Transfer credits | ⚠️ Form opens, balance reads (16.5), recipient field addressable, results exist — **the result-item selector is wrong**. A precisely-scoped TEST gap, not a backend verdict. |
+| RSVP to an event | ⛔ **Blocked by the events contract** (below), not a test gap |
+
+🔴 **The transfer form is TWO-STAGE and that cost two runs of guessing.** Measured with
+the dialog freshly open: `byLabel('Search recipient')` = 1 but
+`byLabel('Amount in hours')` = **0** — the amount field does not exist until a recipient
+is chosen. Requiring both up front made the step report "transfer form did not open"
+while the form was open and working. Before that, a suspected leftover-modal overlay was
+"fixed" with an Escape press that changed nothing. **Printing both counts settled it in
+one run.** The step now addresses the stages in order and says which stage it reached.
+
+🔴 **A false defect the control caught.** `/api/v2/users?search=…` appeared to ignore its
+search term on ASP.NET (8 rows for any query). Controlled against Laravel: **identical —
+a no-match query returns everyone there too.** Not a parity gap; the directory simply
+does not filter on that parameter name on either backend. Reported here because the
+tempting write-up ("ASP.NET's member search is broken") would have been wrong.
+
+### 4. RSVP is NOT an independent test gap — it is blocked by the events contract
+
+Earlier runs reported "no RSVP control on the event page" and the honest label was "a
+test gap, do not report as working or broken". The cause is now established, and it is
+neither:
+
+```
+event DETAIL links on /events : 0
+contract drift captured        : /v2/events?when=upcoming&per_page=20 -> 60 issues
+```
+
+`events-api.ts`'s `parseResponse` fails CLOSED — a Zod failure rewrites the response to
+`success:false, code:'EVENTS_CONTRACT_DRIFT'`. So the client rejects **every row**, the
+list renders empty, and there is no event to open, let alone RSVP to. **RSVP is blocked
+by Phase 2 (the events v2 contract), not by a missing selector.** It will be re-tested
+the moment `EventContractMapper` is ported, and until then it must not be counted as
+either passing or failing.
+
+### A test fault worth recording
+
+A probe that drove web-uk's own login form returned **419 on BOTH backends** — its
+cookie/CSRF handling, not a backend fault. Known only because the control was run. The
+finding above rests on the API responses and web-uk's own source, not on that probe.
+
+## 2026-08-19 (Phase 2) — the events contract is ported, drift is ZERO, and the harness had been measuring the wrong shape
+
+### The port
+
+`aspnet-backend/src/Nexus.Api/Support/Events/EventContractMapper.cs` is a faithful port of
+Laravel's `app/Support/Events/EventContractMapper.php` (937 lines, `VERSION = 2`), wired
+into three call sites. Measured through the client's OWN runtime validator:
+
+| Measure | Before | After |
+| --- | ---: | ---: |
+| Contract-drift issues reported by the client | **60** on one endpoint | **0** across all |
+| Events rendered on `/events` | 0 | **5** |
+| RSVP control | unreachable | **clicked** |
+
+🔴 **It took THREE call sites, and each was invisible until the previous was fixed.**
+Mapping the list left the DETAIL view failing with 12 issues — an event could be listed
+but its page would not render. Fixing that left the ATTENDEES roster failing with 12
+more — the RSVP control appeared but the people list behind it stayed empty. Each surface
+the client schema-checks is validated separately; **"the list works" is not "events
+work"**, and there is no partial credit.
+
+Two entity members were invented and the build caught both: `Group.Slug` does not exist
+(the key is emitted as an honest `null` rather than derived from the name — deriving it
+would be the fabricated-data fault this workstream keeps finding), and there is no
+`RsvpStatus.Interested` — this backend spells it `Maybe`, which Laravel's mapper treats as
+the same engagement state (`EventContractMapper.php:169`).
+
+### 🔴 The harness had been comparing against a shape the app never receives
+
+Laravel's `NegotiateEventsContract` middleware serves the LEGACY v1 shape unless the
+request asks for the canonical version. The harness never sent the header. Measured on
+one endpoint, same fixture, same session:
+
+```
+no header                 -> x-events-contract: 1   77 keys   NO organizer/permissions
+X-Events-Contract: 2      -> x-events-contract: 2   58 keys   full v2 structure
+```
+
+**So every events measurement this harness ever produced compared ASP.NET's output against
+Laravel's v1 output** — including the "76 fields missing" figure that justified a whole
+work package. The client sends these headers (`events-api.ts:19`,
+`event-safety-api.ts:11`, `event-offline-checkin-api.ts:237`); the harness now sends
+exactly the same three, pinned to the versions the CLIENT pins rather than "the latest".
+
+Effect of that one-line correction on the events rows:
+
+| | Before header fix | After |
+| --- | --- | --- |
+| `/api/v2/events?when=upcoming` | SHAPE_DIFFERS, 48 missing / 117 extra | **envelope MATCHES** |
+| `/api/v2/events?mine=1` | SHAPE_DIFFERS, 48 missing / 117 extra | **envelope MATCHES** |
+
+Both now sit at MATCH_BUT_LIST_EMPTY. 🔴 **Read that verdict carefully — it does NOT mean
+the endpoint returned no events.** Both backends return rows for these queries (Laravel 1,
+ASP.NET 5, verified directly). The verdict fires on ANY empty list in the response,
+including a NESTED one: here it is `series_occurrences` / `recurrence.occurrences`, empty
+on both sides because neither fixture contains a recurring event. So the envelope agrees,
+the top-level row contract is compared, and the only untested part is the occurrence row
+shape. Honest, and a fixture question rather than a contract gap — but an endpoint-level
+reading of "list empty" would be wrong.
+
+🔴 **Overall MATCH is unchanged at 77/195.** Events moved out of "differing" into
+"envelope right, rows untestable" rather than into MATCH, so the headline number did not
+move. That is the honest read: the contract is fixed, the fixture is what now limits the
+measurement.
+
+🔴 **A remaining gap this exposed:** ASP.NET does NOT negotiate — it always serves v2.
+Laravel serves v1 to a client that asks for v1. The canonical app always asks for v2, so
+nothing is broken today, but a client pinned to v1 would receive a shape it cannot read.
+Recorded, not fixed.
+
+## 2026-08-20 — a planned fix STRUCK OFF as a false lead, and where the false lead came from
+
+The approved plan carried a Phase 1 item: *"Blog envelope: ASP.NET returns a bare array +
+no `categories`; web-uk's category chips silently vanish. Match Laravel's
+`{items, categories, has_more, cursor}` read live."*
+
+**Measured before implementing. It is wrong in every part:**
+
+```
+web-uk's exact call, /api/v2/blog?per_page=12, field-path diff
+  MISSING in ASP.NET : NONE
+  EXTRA   in ASP.NET : 11 (content, updated_at, meta_keywords, canonical_url,
+                       og_image_url, noindex, author{id,name,avatar}, meta.cursor)
+  `categories` key   : absent on BOTH
+```
+
+Both backends return `data` as an ARRAY with near-identical meta (Laravel lacks only
+`cursor`). ASP.NET's response is a strict SUPERSET, which web-uk tolerates. And the
+category chips render on NEITHER backend — checked on the live pages, 0 category filter
+links on both. So there was no gap, no regression, and nothing to fix.
+
+🔴 **Where the false lead came from, because that matters more than the item.** It came
+from a subagent's exploration report during the audit, describing the Laravel shape as
+`{items, categories, has_more, cursor}`. I copied it into the plan without measuring it.
+Every other item in that plan carries a live measurement; this one carried a quotation.
+**A subagent report is a lead, not evidence** — the same standard as any other claim in
+this workstream. Had I implemented it, I would have changed a correct response to match a
+shape Laravel does not serve, and the harness would then have reported a NEW difference
+caused entirely by the fix.
+
+Struck from the plan. The remaining Phase 1 item (a committed configuration path for
+direct mode) stands.
+
+## 2026-08-20 — direct mode is now a COMMITTED script, and two of my own claims were wrong
+
+### Phase 1 closed: `npm run dev:dotnet:direct`
+
+`react-frontend/package.json` now carries a committed direct-mode script:
+
+```
+dev:dotnet:direct = cross-env VITE_BACKEND_TARGET=dotnet
+                    VITE_API_BASE=http://127.0.0.1:5080/api
+                    VITE_API_URL=http://127.0.0.1:5080
+                    npm run dev -- --mode dotnet --port 5199 --strictPort
+```
+
+Verified: **3 calls to :5080, 0 proxied** on the landing page, and a full smoke reporting
+**421 direct / 11 proxied**. Port 5199 is deliberate — it is in both the CORS and Fido2
+origin allowlists, and it is not 5173 (the owner's own dev server).
+`check-backend-guardrails.mjs` passes: Laravel remains the default and no page or
+component is backend-aware.
+
+### 🔴 CORRECTION 1: "VITE_API_BASE on the command line does not reach import.meta.env"
+
+**That claim, recorded earlier in this document and in the smoke script's own header, is
+WRONG.** It does reach it. Proven by running exactly that command on a spare port (5198)
+with the local `.env.dotnet-direct` moved aside: the app called
+`http://127.0.0.1:5080/api/v2/tenant/bootstrap` directly. The requests then failed — but
+with a **CORS** error, because 5198 is not in the allowlist, not because the variable was
+ignored. I had read the failure as "the variable did not apply" when it had applied
+perfectly and something downstream refused.
+
+Consequence: the claim that direct mode "has no committed configuration path" and would
+need "an approved frontend change" was also wrong. A committed npm script was always
+sufficient, and `docs/REACT-DUAL-BACKEND.md:117-119` already prescribed exactly that.
+
+### 🔴 CORRECTION 2: the smoke did NOT report its own transport mode
+
+An earlier session reported that the smoke "now measures and reports its own transport
+mode". **It did not.** The patch that added that block asserted twice, the second
+assertion failed, and Python wrote nothing — so the block never existed while the claim
+was made. The drift reporter and console handler from adjacent patches DID land, which is
+why the file looked plausibly complete.
+
+It exists now and is verified running (421 direct / 11 proxied above). The comment in it
+records that it was once claimed before it existed, because that is the failure worth
+remembering: **a patch that aborts leaves no trace in the output you are reading, and
+"I added it" is not the same as "it ran".** Check the artefact, not the intent.
+
+## 2026-08-20 (Phase 3 begins) — listings 50 fields short -> ZERO, and the removed guard's failure mode arrived within the hour
+
+### Listings: the top-ranked endpoint, closed
+
+`rank-read-differences.mjs` put `/api/v2/listings` first: 50 fields missing, 42 of those
+names appearing in the React source. Verified against the listings UI specifically (grep,
+not assumption) it reads `category`, `user`, `author_name`, `image_url`, `hours_estimate`,
+`is_favorited`, `author_rating`, `service_type`.
+
+`Support/Listings/ListingContractMapper.cs` now projects it. Result: **50 missing -> 0.**
+
+The 5 remaining "extra" fields are both accounted for and deliberate:
+- `estimated_hours` — the dual spelling. Laravel uses `hours_estimate`; this backend
+  emitted `estimated_hours`. BOTH are kept: renaming is subtractive and needs its own
+  per-endpoint evidence, adding the Laravel spelling is additive and fixes the client.
+- `category.{id,name,slug,color}` — ASP.NET's fixture listing HAS a category and
+  Laravel's does not. Fixture asymmetry, not a contract gap.
+
+🔴 **HONEST NULLS, NOT INVENTED VALUES.** About fifteen fields Laravel sends have no
+column on this backend's `Listing` entity — `sdg_goals`, `price`, `service_type`,
+`availability`, `renewal_count`, `save_count`, `contact_count`, `moderation_status`, the
+author-reputation trio, distance/match. The KEY is emitted so a client reading
+`listing.service_type` does not get `undefined` where Laravel gives a value, but the value
+is an explicit null. Two invented properties were caught by the compiler on the way
+(`Category.Color` and a stray `category_id_alias` key I typed by mistake); `Category` has
+no colour column at all, so that is an honest null too.
+
+🔴 **Laravel's `meta` differs BY ENDPOINT — do not unify it.** Measured, same session:
+
+```
+/api/v2/listings -> per_page, has_more, cursor, page, total, total_items
+/api/v2/events   -> per_page, has_more
+/api/v2/groups   -> per_page, has_more
+```
+
+The shared `Paged()` helper therefore keeps emitting the MINIMUM, and listings opts into
+the richer block via `richPagination: true`. Adding those four keys to the helper would
+have made events and groups emit keys Laravel does not send — gratuitous divergence
+introduced by a parity fix, and the third appearance of the over-generalisation that cost
+22 wrong endpoints once and 82 red tests another time.
+
+### 🔴 The guard I deleted would have caught what happened next
+
+A measurement mid-way through this work returned **48/195** — a 30-point collapse, with 43
+status disagreements where there had been 1. Cause: Laravel's `features` column still held
+`{"events":false}` from MY OWN earlier test of the bootstrap cache, so ~40 endpoints
+answered 403 FEATURE_DISABLED and the harness faithfully reported every one as a contract
+difference.
+
+That is precisely the failure mode the feature-flag preflight was built for, arriving
+inside an hour of its removal. Removing it was still correct — it could not fail, and a
+guard that cannot fail converts "unverified" into a printed reassurance. But this is the
+argument for building it PROPERLY: probe an endpoint known to be feature-gated and refuse
+on the real 403, rather than trusting a bootstrap projection that does not reflect stored
+flags.
+
+After restoring the flags: **78/195**, up from 77.
+
+### The guard, rebuilt on the real refusal and PROVEN BOTH WAYS
+
+Rebuilt the same day against a signal that actually moves with the flags. Endpoint choice
+was measured, not guessed:
+
+| Probe candidate | features ON | features `{}` | verdict |
+| --- | --- | --- | --- |
+| `/api/v2/caring-community/emergency-alerts` | 200 | **403 FEATURE_DISABLED** | ✅ usable |
+| `/api/v2/events` | 200 | 200 | ✗ rejected — feature defaults on |
+| `/api/v2/gamification/profile` | 200 | 200 | ✗ rejected — feature defaults on |
+
+Two of the three candidates could never go red, which is the whole reason the first
+attempt was worthless. Proven both directions:
+
+```
+features ON   -> "Preflight: features ON (… -> 200) — environment is measurable."   exit 0
+features '{}' -> "🔴 REFUSING TO MEASURE: … answered 403 FEATURE_DISABLED"          exit 2
+```
+
+🔴 It also cannot pass silently: if the probe itself cannot run it prints that the run is
+UNVERIFIED rather than reporting a pass. A preflight that could not execute must never
+read as one that succeeded — the failure the first version made.
+
+## 2026-08-20 — the FEED is the next ranked endpoint, and it is NOT another events-style port
+
+Scoped before starting, so the next session knows what it is walking into.
+
+`/api/v2/feed` ranks second after listings: **33 fields missing, and all 33 are names the
+React source reads.** But it is a materially bigger job than events or listings, for a
+structural reason:
+
+- Events had ONE source of truth: `app/Support/Events/EventContractMapper.php`, a single
+  937-line class with named methods per sub-object. A faithful port was mechanical.
+- The feed shape is built inside **`app/Services/FeedService.php` (1,915 lines) in at
+  least FOUR separate places** (`:495`, `:872`, `:1422`, `:1729` all build
+  `content_truncated`), with `reactions` attached conditionally at `:1743`.
+
+**Why the missing list looks strange.** The feed is a POLYMORPHIC activity stream, so
+Laravel emits a UNION of per-type fields, most of them null on any given row:
+`start_date` (events), `rating` (reviews), `job_type`/`commitment`/`submission_deadline`
+(jobs), `badge_key`/`badge_name`/`badge_icon`/`new_level` (achievements),
+`credits_offered` (exchanges), `listing_type`, `ideas_count`, `organization`. Plus
+cross-cutting ones: `reactions{counts,total,user_reaction,top_reactors}`, `media`,
+`is_bookmarked`, `is_shared`, `is_official`, `detail_path`, `views_count`, `share_count`.
+
+**Recommended approach when it is picked up:**
+1. Read all four builders in `FeedService` and derive the union ONCE — do not port one
+   builder and assume the others match, which is the mistake the events work made three
+   times over (list, then detail, then roster).
+2. Emit the full union with honest nulls per row type, as `ListingContractMapper` does.
+3. `reactions` is conditional in Laravel (`:1743`) — check whether the client tolerates
+   its absence before deciding to always emit it.
+4. Verify with the smoke's drift capture AND the field diff, not one or the other.
+
+🔴 **Deliberately NOT started here.** Beginning a four-builder union port with limited
+remaining context would leave it half-applied, which for a fail-closed client is worse
+than not starting: a partial union still fails validation, so the endpoint would be no
+better while looking as if it had been worked on.
+
+## 2026-08-20 (later) — the feed: 33 missing fields -> 1, and the scoping above was WRONG in its central claim
+
+**Outcome: `/api/v2/feed` goes from 33 missing fields to 1.** The one remaining is
+`data[].media`, a real schema gap (see below). A functional defect nothing had measured
+was also found and fixed: the React feed's infinite scroll could never advance.
+
+🔴 **The section immediately above got the hard part backwards, and the correction is the
+most reusable thing here.** It predicted "a materially bigger job than events or listings"
+because the shape is built in four places in a 1,915-line service. Reading the primary
+builder (`FeedService.php:489-542`) settled it in one pass:
+
+- **Laravel does NOT gate the type-specific fields by item type.** `start_date`, `rating`,
+  `job_type`, `badge_key`, `hours` and the rest are emitted on EVERY row, null when
+  absent. There is no per-type branching to reproduce, and adding any would have been a
+  divergence — the "union with honest nulls per row type" the plan called for is simply
+  a flat unconditional projection.
+- **Every type-specific value comes from ONE `metadata` JSON column**, not from joins to
+  events/jobs/badges tables. No extra queries, no schema dependency.
+
+So the four builders did not need reconciling: the plan's step 1 (read them all first) was
+still right, and it is what revealed that steps 2 and 3 were solving a problem that did not
+exist. Cost: one read of 70 lines. Had I trusted the scoping note instead, I would have
+built per-type branching that was wrong in a way tests would not catch.
+
+### What shipped
+
+- `src/Nexus.Api/Support/Feed/FeedContractMapper.cs` (new) — the flat projection, ported
+  from `FeedService.php:489-542` plus the batch block at `:572-640`, with
+  `react-frontend/src/components/feed/types.ts` (`interface FeedItem`) as the spec for what
+  the client actually reads.
+- `V15SocialCompatibilityController.Feed` — wired to the mapper; engagement facts
+  batch-loaded once per page; the dead inline projection and its two now-unused private
+  helpers deleted rather than left behind.
+
+Real data, not defaults, for four fields the previous projection omitted entirely:
+`share_count` and `is_shared` from `PostShares` (polymorphic via
+`OriginalType`/`OriginalPostId`, as Laravel does it), `is_bookmarked` from `Bookmarks`, and
+`reactions{counts,total,user_reaction,top_reactors}` from `PostReactions` — top reactors
+capped at 3 newest-first, matching `ReactionService.php:394-402`.
+
+### 🔴 The real find: the feed loaded correctly and could not be scrolled
+
+The field diff flagged `meta.cursor` as missing, which reads like a cosmetic envelope key.
+It was not. `FeedPage.tsx` sends `per_page` (`:313`) and paginates purely by cursor
+(`:321`, `:342-343`):
+
+- The endpoint read `limit`, never `per_page`. The two agree at the default of 20, which is
+  exactly why this went unnoticed.
+- With no `meta.cursor` in the response, the client's `cursorRef` stayed `undefined`, so
+  every infinite-scroll fetch sent no cursor and **re-requested the first page for ever**.
+
+Every response was a 200 with well-formed rows throughout. "The list loads" was true and
+"the feed works" was false — the same shape of illusion as events, where the list working
+said nothing about the detail view or the roster.
+
+Fixed by honouring `per_page` (keeping `limit`) and emitting `{per_page, has_more, cursor}`.
+🔴 **The cursor encodes an OFFSET; Laravel's encodes a signed `{ts, id}` keyset.** That is
+deliberate and documented at the helper: a keyset cursor cannot express this endpoint's
+ordering, which puts pinned posts first regardless of date, so a pinned row would re-enter
+every page. An offset cursor is exactly as correct as the `page` pagination already in
+place, is opaque to the client, and makes scrolling work; the shared tradeoff with `page` is
+that rows arriving mid-scroll can repeat one item, which Laravel's keyset does not.
+Unrecognised cursors — including a Laravel-issued one still held by a client that switched
+backends — fall back to the first page instead of erroring.
+
+### 🔴 A THIRD feed defect, behind the first two: the filter tabs did nothing
+
+Found by reading how the client builds the URL rather than by any diff.
+`FeedPage.tsx:312-325` sends `per_page`, `mode`, `personalised`, `tz`, `type` and
+`subtype`. The endpoint's signature accepted only `page` and `limit` — so **every filter tab
+returned the identical unfiltered feed.** Measured, same fixture:
+
+| `?type=` | Laravel | ASP.NET before | ASP.NET after |
+| --- | --- | --- | --- |
+| (none) / `all` | all rows | 19 rows | 19 rows |
+| `posts` | posts only | 19 rows | 17 rows, posts only |
+| `badge_earned` | 0 (none present) | 19 rows | 2 rows, badges only |
+| `events` | 0 | 19 rows | 0 |
+
+Fixed by porting `FeedService::TYPE_MAP` (`:93-99`) — all twelve pairs, pinned by a theory
+test, because one wrong pair silently shows an empty tab.
+
+🔴 **A trap that produced a false reading first.** The map keys are **PLURAL**
+(`events`, `posts`), and an unrecognised value silently falls back to the unfiltered feed. My
+first probe sent `?type=event` — singular — got the whole feed from BOTH backends, and read
+exactly like "Laravel does not filter either". It does. The fault was in my probe, not the
+backend; the fourth time this session's work has produced that pattern. Both the singular
+forms and the fallback are now pinned by tests.
+
+🔴 **AND I QUOTED THE WRONG CONTROLLER — caught before it was committed.** I read the
+parameter handling out of `app/Http/Controllers/Api/FeedController.php`. The route is
+`routes/api.php:931` → **`SocialController::feedV2`**. The live measurements above are
+unaffected (they measured behaviour, not code), and the type mapping matches what was
+observed either way, but the real handler accepts MORE than the wrong file suggested. This is
+why behaviour is measured and code is only ever used to explain it — the reverse would have
+shipped a confident, wrong parameter list.
+
+**Corrected: `SocialController::feedV2` reads `per_page` (1-100, default 20), `type`,
+`subtype`, `user_id`, `group_id` and `cursor`. It also resolves a `personalised` flag from the
+tenant and user toggles, which sets `mode` and applies `PersonalisedFeedService::rank()`.**
+
+So the accurate list of what ASP.NET still ignores on this endpoint:
+
+- **`subtype`** — Laravel filters on `metadata.listing_type` (`FeedService.php:299-303`).
+  A real gap: the listings feed cannot be narrowed to offers vs requests.
+- **`user_id`** — a profile feed. Laravel gates it on the target's `privacy_profile`. ASP.NET
+  ignoring it returns the ordinary feed, which is safe; implementing it without that gate
+  would not be, so it stays unimplemented until the check is ported with it.
+- **`group_id`** — a group-scoped feed.
+- **`mode` / `personalised`** — there is no ranking service on this backend, so "For you" and
+  "Recent" return the same order. `tz` is unused in Laravel's feed path too, so ignoring it
+  is not a divergence.
+- The SOCIAL scopes Laravel allows on `type` — `following`, `trending`, `for_you`, `groups`,
+  `saved` — are not type filters and are not implemented. `ResolveTypeFilter` returns null for
+  them, so the feed comes back unfiltered: the honest answer, where a wrong filter would be
+  worse.
+
+### Verification
+
+- Field diff vs the disposable Laravel on `:8091`: `data[].media` is the only key missing.
+- In the generated 195-endpoint member corpus, `GET /api/v2/feed?per_page=5` now reports
+  **`missing=1`** where it reported 33. 🔴 The corpus MATCH total moves only **77 -> 78**,
+  because the feed still counts as SHAPE_DIFFERS on that one absent key plus the two
+  deliberately-kept extras. Report the field-level movement AND the unchanged verdict — the
+  binary MATCH count is a blunt instrument and the events port hit exactly the same wall.
+  (A near-miss worth recording: `grep '^GET /api/v2/feed$'` returns nothing, because the
+  corpus entry carries a query string. I almost concluded the busiest member endpoint was
+  absent from the corpus. It is at line 53.)
+- Adjacent, unfixed, and cheap next time: **`GET /api/v2/feed/sidebar` is 11 fields short** —
+  the whole of `data.suggested_members[]`. `/api/v2/feed/hashtags/trending` already MATCHes.
+
+  🔴 **And it is serialising a RAW EF ENTITY, which is worth fixing ahead of the missing
+  fields.** `data.trending_hashtags[]` comes back as
+  `id,tenantId,tag,usageCount,createdAt,lastUsedAt,tenant,usages`:
+
+  - **camelCase EF property names** where the contract is snake_case, so a client reading
+    `usage_count` gets `undefined`. Laravel's shape is the one `/feed/hashtags/trending`
+    already produces correctly — reuse that projection rather than writing a new one.
+  - 🔴 **Two NAVIGATION PROPERTIES are exposed: `tenant` and `usages`.** They read `null` and
+    `[]` today purely because nothing eager-loads them. That is luck, not design: the day any
+    caller adds an `.Include()`, a member-facing response starts serialising the entire
+    tenant row and every usage row. This is the raw-entity-return fault class, and it should
+    be projected explicitly whether or not the missing fields are added.
+  🔴 The tenant there is id **1**, not the harness default of 2, and its users are the
+  `e2e.*@project-nexus.local` fixture accounts — a wrong guess costs two failed runs.
+- Live probe: `per_page=1` returns 1 row; page 1 (`post:4,post:18`) and the cursor's page 2
+  (`post:17,post:16`) share no ids; a garbage cursor returns page 1 without erroring.
+- The new build was confirmed to be the one answering by checking for a key only the new
+  mapper emits — a healthy container proves it answers, not which build answers.
+- `FeedContractMapperTests` + `FeedCursorPaginationTests` + `EventContractNegotiationTests`
+  (new). These assert behaviour, not key presence: emoji content is measured in code points
+  (a `string.Length` port truncates a 300-emoji post that PHP leaves whole, and can split a
+  surrogate pair), the cursor points exactly past the rows just served, a forged negative
+  offset is refused, all twelve filter pairs are pinned, and the legacy event `location` is
+  asserted to be a string and explicitly NOT a dictionary.
+- Full suite on the host: **3,739 passed / 0 failed in 39.78 min**, plus 38/38 for
+  `Nexus.Messaging.Tests` — both "Test Run Successful". Per class:
+  `FeedContractMapperTests` 21, `FeedCursorPaginationTests` 34,
+  `EventContractNegotiationTests` 19, `V15FeedActivityCompatibilityTests` 2,
+  `VolunteerHoursParityTests` 51 — all zero failures. (The negotiation class was re-run
+  filtered at 19/0 after one of its tests was rewritten; the full run had covered the
+  earlier version.) The preceding run was **3,685 / 2** —
+  🔴 Both failures were MY change and were real: `V15FeedActivityCompatibilityTests` and
+  `VolunteerHoursParityTests` asserted `content` is JSON **null** for a volunteer-hours row.
+  Laravel emits an empty STRING (`truncateWithFlag($row->content ?? '', 500)`), so the mapper
+  is right and the assertions encoded the old ASP.NET behaviour. Updated with the reason
+  recorded in place; **every leak assertion in both tests was left untouched and still
+  passes** — the private description is absent from the whole body and neither `description`
+  nor `metadata` is emitted. One of the two also pinned an EXACT 13-key list for post items,
+  which the field union necessarily breaks; it now asserts those 13 are all still present
+  plus that `metadata`, `description` and `_edge_rank` are absent, which is what the test was
+  protecting.
+
+🔴 **The browser smoke never visited `/feed`** — so the endpoint I rewrote had no
+browser-level evidence at all, and `/events` was equally unvisited, which is how the
+dashboard crash survived a "verified" events port. `/feed` and `/events` are now in the smoke's
+page list, with the reason written next to it. All six pages render against ASP.NET with
+**zero uncaught page errors**: dashboard 5,545 chars, feed 4,708, listings 4,533, events
+2,707, members 1,427, wallet 1,840. The one console error attributed to `[feed]` is a
+pre-existing React unique-key warning in `TopEndorsedWidget` — a frontend widget reading
+`/v2/members/top-endorsed`, which also fires on the login page before any feed loads, so it
+is unrelated to this work (surfaced, not fixed: frontend files are read-only here).
+
+### The 7 "extra in ASP.NET" keys are not 7 differences
+
+`data[].group_id` and `data[].updated_at` are pre-existing keys Laravel's builder does not
+emit; removing them is subtractive and needs its own evidence, so they stay. The other five
+are `reactions.counts.like`, `reactions.counts.love` and the three
+`reactions.top_reactors[]` fields — **data-dependent map keys, not schema.** Both backends
+emit `reactions`; the ASP.NET fixture has reactions on its posts and the Laravel fixture has
+none, so only ours has nested keys inside them. This is fixture asymmetry (Phase 0.3), and
+counting it as contract drift would be a false finding.
+
+### 🔴 NEXT, with the evidence already gathered: `/api/v2/events` ignores the client's parameters too
+
+Found while checking the v1 callers, and it is the SAME defect class as the feed's
+ignored `per_page` and `type` — so it should be taken next, while the pattern is fresh.
+`V15MemberParityController.V2Events` accepts only `page`, `limit` and `search`. The three
+v1 callers send more than that:
+
+| Caller | Sends | ASP.NET |
+| --- | --- | --- |
+| `DashboardPage.tsx:286` | `when=upcoming`, `per_page=3` | both ignored |
+| `groupDetail.ts:375-380` | `group_id`, `when=all`, `per_page`, `cursor` | all ignored |
+| `VereinFederationPanel.tsx:152` | `mine=1`, `limit=50` | `mine` ignored |
+
+Measured: the dashboard asks for **3** upcoming events and gets **5**. `group_id` being
+ignored means the group page's events tab shows events from every group, not that group's.
+
+🔴 **`when` is now PROVEN broken, not inferred.** The fixture held no past events, so the
+first pass could only say the parameter does not exist. Rather than leave it as a guess, a
+single past event (30 days ago) was inserted into the disposable ASP.NET dev database and
+removed again afterwards: **`?when=upcoming&per_page=3` returned it.** So the dashboard's
+"Upcoming events" widget shows FINISHED events, and asks for 3 while getting everything.
+Row count confirmed back at 5 after cleanup.
+
+That is the difference between "the action has no date predicate" and "a member sees last
+month's event under Upcoming" — and it took one insert to move from one to the other.
+
+Deliberately not fixed in this change: the commit is already verified end to end, and
+bolting on a second parameter cluster would leave the whole thing unverified. Each fix
+earns its own measurement.
+
+### Still open
+
+- **`data[].media`** — multi-image post carousels. There is no post-media table on this
+  backend at all, so the key is OMITTED rather than emitted as `[]`, which would assert
+  "this post has no images" where the truth is "this backend cannot know". Needs a table:
+  Phase 6, and until then multi-image posts render as single-image on ASP.NET.
+- `views_count` and `is_official` are emitted as `0`/`false`. No column exists here, and
+  Laravel itself guards both with `Schema::hasColumn` and defaults `views_count` to 0, so
+  this matches Laravel's own behaviour on a database without them.
+- No points are banked for any of this. Banking requires a scoring pass at a fixed SHA in
+  the five-block format.
+
+### 🔴 The smoke found a REGRESSION THIS WORKSTREAM CAUSED: the events port crashed the dashboard
+
+The single most important finding of the session, and it was invisible to the field diff.
+
+**What happened.** The 2026-08-19 events work ported `EventContractMapper.php` and wired it
+into the list, detail and roster. It did **not** port the negotiation. Laravel serves the
+canonical v2 shape **only** to a caller sending `X-Events-Contract: 2`, and legacy v1 to
+everyone else (`EventsController::eventContractVersion()`,
+`app/Http/Middleware/NegotiateEventsContract.php`). ASP.NET served **v2 unconditionally**.
+
+Measured on both backends, same fixture:
+
+| Request | Laravel `location` | ASP.NET `location` (before) |
+| --- | --- | --- |
+| no header | `"Riverside Hall"` (string) | `{label, latitude, longitude, mode, accessibility}` |
+| `X-Events-Contract: 2` | object, `contract_version: 2` | object, `contract_version: 2` |
+
+**Why it mattered.** Three React surfaces call the events list without that header — the
+dashboard (`DashboardPage.tsx:286`), group detail (`pages/groups/api/groupDetail.ts:383`)
+and the Verein federation panel (`VereinFederationPanel.tsx:152`). All three share the
+legacy `Event` type in `types/api.ts:735`, which declares **`location?: string`**, and the
+dashboard renders `{event.location}` straight into JSX (`:572`). An object there throws
+`Objects are not valid as a React child` — so **the entire dashboard unmounted with
+`Feature error in Dashboard`.**
+
+🔴 **The field diff scored events as FIXED the whole time, and always would have: a
+response diff compares the shape you ASKED for.** The harness sends
+`X-Events-Contract: 2` (added deliberately, after that same header being absent had made
+every earlier events measurement compare against v1). Adding it fixed the measurement and
+simultaneously blinded it to the default path — the only path three real screens use. Only
+the browser smoke caught this, which is exactly why the plan said to verify with BOTH.
+
+**Fixed** by `EventContractMapper.NegotiateVersion` + `DowngradeToLegacy`, applied at the
+list and detail actions, with `X-Events-Contract: <1|2>` and `Vary: X-Events-Contract` on
+the response. Verified live: no header and a junk header both give a string `location`, no
+`contract_version`, and header `1`; `X-Events-Contract: 2` is unchanged from before.
+Re-running the browser smoke: **`step dashboard: ok`**, console errors 13 -> 9 with both
+dashboard entries gone, API calls ok 390 -> 394.
+
+**Bounded by measurement, not by guesswork.** Laravel's v1 is a raw 77-key Eloquent row; v2
+has 58 keys. Of the **34 keys the two shapes share, exactly ONE changes type** — `location`.
+The 43 v1-only keys (`timezone_source`, the nine flat `accessibility_*` columns,
+`calendar_sequence`, `occurrence_key`, …) are **not** reproduced, and none of the three v1
+callers reads any of them — checked in context, where the apparent `award` and `user_id`
+matches turned out to be a Lucide icon import and query-string parameters. So the downgrade
+covers the whole measured incompatibility; the absent raw columns are a recorded gap.
+
+**Remaining narrower gap, stated rather than implied, with the evidence for why it matters.**
+The header and `Vary` are stamped inside the two controller actions, so they appear on
+success responses only. Laravel places its middleware deliberately **outermost** so the
+tokens survive auth/feature errors and cannot be dropped by a cache or CORS layer. Two
+measured consequences of stamping in the controller instead:
+
+- An auth or feature error from these routes carries no `X-Events-Contract` and no `Vary`.
+- Cross-origin, the response carries **two separate `Vary` lines** — `Vary: X-Events-Contract`
+  from the controller and `Vary: Origin` added by the CORS middleware afterwards. That is
+  valid HTTP and caches combine repeated field lines, so it is not a defect; but Laravel
+  merges them into one comma-separated header, and only an outermost middleware could do the
+  same here, because CORS runs after the controller. Verified live: same-origin gives the
+  single expected line.
+
+Moving this to ASP.NET middleware is the faithful end state.
+
+#### The attendees roster negotiates too — and is deliberately left alone
+
+Checked immediately, because one instance of a fault class usually means more. Laravel's
+`/api/v2/events/{id}/attendees` **does** negotiate: v1 rows are
+`avatar avatar_url first_name id last_name name rsvp_at rsvp_status status`, and v2 drops
+`first_name`/`last_name` while adding `attendance`, `engagement`, `member`, `registration`,
+`registered_at` and `contract_version`. ASP.NET serves v2 unconditionally here as well.
+
+🔴 **No caller is broken by it, verified rather than assumed** — so it is NOT being
+"fixed":
+
+- **web-uk sends no contract header at all**, but its `eventAttendee()`
+  (`web-uk/src/routes/events.js:554-568`) is written to accept BOTH shapes: it resolves a
+  name through `member.display_name → member.name → row.name → user.name → first+last`, and
+  a status through `registration.state`/`engagement.state` (v2) **or**
+  `rsvp_status`/`status` (v1).
+- In React, every actual attendees fetch goes through `lib/events-api.ts`, which pins
+  `X-Events-Contract: 2`. The other files matching "attendees" are referring to
+  `max_attendees`, not this endpoint.
+
+Recorded so the next session need not redo the analysis. Adding negotiation here with no
+broken consumer would be the same over-generalisation that cost this workstream 22 wrong
+endpoints once and 82 red tests another time — the events LIST was fixed because a real
+screen was measurably crashing, not because the pattern looked untidy.
+
+### Incidental finding — the app's own feed schema is wrong about LARAVEL, not about us
+
+`react-frontend/src/lib/api-schemas.ts:309` (`feedPostSchema`, the dev-only Zod layer)
+requires `updated_at` and a non-nullable `author.name`. Measured against the running
+Laravel: **it emits no `updated_at` on feed items at all** (checked directly, not inferred
+from the diff), so that dev-mode warning fires against the production backend too. ASP.NET
+emits `updated_at` on post rows and therefore satisfies the schema *more* closely than
+Laravel does.
+
+Surfaced, deliberately not fixed: it is a frontend file, and the fix is to relax the schema
+to match the backend both frontends actually run against, not to add a field to Laravel.
+The wider lesson for this workstream is that a frontend's own validator is an excellent
+instrument but is not automatically a statement of Laravel's contract — this one had
+drifted from it. Run the control before treating a schema as the spec.
+
