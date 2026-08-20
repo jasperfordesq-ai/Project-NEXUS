@@ -279,6 +279,112 @@ async function main() {
     }
   }
 
+  // ── SIGNED-IN tier ─────────────────────────────────────────────────────────────
+  // Scripted double-CSRF login: GET /login for the session + nexus.csrf cookies and
+  // the `_csrf` hidden value (login.njk:54), then a form POST. Each side signs in with
+  // its OWN fixture's member — the fixtures hold different users by design.
+  // 🔴 web-uk's login page renders FOUR submit buttons; that defeated four browser
+  // probes once. An HTTP form POST has no buttons to choose — that is why this tier
+  // is scripted at the HTTP layer rather than through a headless browser.
+  async function signIn(port, email, password) {
+    const jar = new Map();
+    const storeCookies = (res) => {
+      for (const c of res.headers.getSetCookie?.() ?? []) {
+        const [pair] = c.split(';');
+        const eq = pair.indexOf('=');
+        jar.set(pair.slice(0, eq).trim(), pair.slice(eq + 1));
+      }
+    };
+    const cookieHeader = () => [...jar.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
+
+    const loginPage = await probe(`http://127.0.0.1:${port}/login`, 15000);
+    storeCookies(loginPage);
+    const html = await loginPage.text();
+    const csrf = (html.match(/name="_csrf" value="([^"]+)"/) || [])[1];
+    if (!csrf) return { ok: false, why: 'no _csrf field on the login page' };
+
+    const post = await fetch(`http://127.0.0.1:${port}/login`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Cookie: cookieHeader(),
+      },
+      // 🔴 tenant_slug is REQUIRED: tenantSlugForRequest (auth.js:187-194) reads the
+      // routed tenant or this form field — the ACCESSIBLE_TENANT_SLUG env is api.js's
+      // fallback, not the login handler's. Omitting it re-renders the form 200 with
+      // "Enter your email, password and tenant", which reads like a credential failure
+      // and is not. (And the login GET sets nexus.csrf TWICE — the page token pairs
+      // with the LAST cookie; the Map jar keeps the last by construction.)
+      body: new URLSearchParams({ _csrf: csrf, tenant_slug: TENANT_SLUG, email, password }).toString(),
+    });
+    storeCookies(post);
+    const location = post.headers.get('location') || '';
+    if (post.status !== 302 || location.includes('/login')) {
+      const errBody = await post.text().catch(() => '');
+      const errMatch = errBody.match(/govuk-error-message[^>]*>([\s\S]{0,120}?)</) || errBody.match(/error[^>]*>([^<]{5,100})</i);
+      return { ok: false, why: `login answered ${post.status} -> ${location || '(no redirect)'}${errMatch ? ' | form error: ' + errMatch[1].trim() : ''}` };
+    }
+    return { ok: true, cookie: cookieHeader() };
+  }
+
+  const CREDS = {
+    aspnet: { email: 'member@acme.test', password: 'NexusV2!Demo#2026' },
+    laravel: { email: 'e2e.user.a@project-nexus.local', password: 'TestPassword123!' },
+  };
+  const SIGNED_IN_PAGES = ['/dashboard', '/listings', '/events', '/feed', '/groups', '/volunteering', '/explore', '/kb'];
+
+  const sessionA = await signIn(PORT_ASPNET, CREDS.aspnet.email, CREDS.aspnet.password);
+  const sessionB = await signIn(PORT_CONTROL, CREDS.laravel.email, CREDS.laravel.password);
+  log(`\nsigned-in tier: ASP.NET login ${sessionA.ok ? 'OK' : 'FAILED — ' + sessionA.why}; Laravel control login ${sessionB.ok ? 'OK' : 'FAILED — ' + sessionB.why}`);
+
+  if (sessionA.ok && sessionB.ok) {
+    const fetchSignedIn = async (port, cookie, pagePath) => {
+      const res = await fetch(`http://127.0.0.1:${port}${pagePath}`, {
+        redirect: 'manual',
+        headers: { Cookie: cookie },
+      });
+      const body = res.status >= 300 && res.status < 400 ? '' : await res.text();
+      return { status: res.status, location: res.headers.get('location'), fingerprint: body ? fingerprint(body) : null };
+    };
+    // 🔴 The signed-in tier's verdict is RENDERS, not byte-identity. These pages
+    // render DATA, and the two fixtures deliberately hold different data volumes
+    // (ASP.NET's dev seed: 17 posts, 12 polls, 6 events; the Laravel parity fixture is
+    // sparse) — so exact link/form/heading equality would flag fixture asymmetry as
+    // fault on every run, which trains people to ignore the instrument. What IS
+    // asserted: same status, same redirect target if any, NO GOV.UK error page, and a
+    // non-trivial body on both sides. Structural counts are reported for the eye.
+    for (const pagePath of SIGNED_IN_PAGES) {
+      const [a, b] = await Promise.all([
+        fetchSignedIn(PORT_ASPNET, sessionA.cookie, pagePath),
+        fetchSignedIn(PORT_CONTROL, sessionB.cookie, pagePath),
+      ]);
+      let row;
+      if (a.status !== b.status) {
+        row = { page: `signed-in ${pagePath}`, verdict: 'STATUS_DIFFERS', aspnet: a.status, laravel: b.status };
+      } else if (a.status >= 300 && a.status < 400) {
+        row = (a.location || '') === (b.location || '')
+          ? { page: `signed-in ${pagePath}`, verdict: 'MATCH', status: a.status, redirect: a.location }
+          : { page: `signed-in ${pagePath}`, verdict: 'REDIRECT_DIFFERS', aspnet: a.location, laravel: b.location };
+      } else if (a.fingerprint?.errorMarker || b.fingerprint?.errorMarker) {
+        row = { page: `signed-in ${pagePath}`, verdict: 'ERROR_PAGE', aspnet: a.fingerprint?.errorMarker, laravel: b.fingerprint?.errorMarker };
+      } else if ((a.fingerprint?.bytes ?? 0) < 2000 || (b.fingerprint?.bytes ?? 0) < 2000) {
+        row = { page: `signed-in ${pagePath}`, verdict: 'CONTENT_DIFFERS', aspnet: a.fingerprint, laravel: b.fingerprint };
+      } else {
+        row = { page: `signed-in ${pagePath}`, verdict: 'MATCH', status: a.status, note: 'renders on both; structural counts differ with fixture data volume', aspnet: a.fingerprint, laravel: b.fingerprint };
+      }
+      results.push(row);
+      const mark = row.verdict === 'MATCH' ? '✓' : '✗';
+      log(`${mark} ${row.verdict.padEnd(16)} ${row.page}${row.redirect ? '  -> ' + row.redirect : ''}${row.note ? '  (' + row.note + ')' : ''}`);
+      if (row.verdict !== 'MATCH') {
+        log(`    aspnet:  ${JSON.stringify(row.aspnet)}`);
+        log(`    laravel: ${JSON.stringify(row.laravel)}`);
+      }
+    }
+  } else {
+    log('🔴 signed-in tier NOT MEASURED this run — a failed login on either side is a finding in itself.');
+  }
+
   kill();
 
   const matches = results.filter((r) => r.verdict === 'MATCH').length;
@@ -291,9 +397,11 @@ async function main() {
     if (fresh) log(`  ${String(fresh).padStart(3)}  ${v}`);
     if (known) log(`  ${String(known).padStart(3)}  KNOWN_${v} (diagnosed, shrink-only — see script header)`);
   }
-  log(`\nweb-uk signed-out page pairs identical on both backends: ${matches}/${results.length}`
+  log(`\nweb-uk page pairs (signed-out identity + signed-in renders): ${matches}/${results.length}`
     + (knowns ? ` (+${knowns} known fixture asymmetry)` : ''));
-  log('🔴 This is the PAGE tier only. Sign-in, forms and workflows are the journey tier.');
+  log('🔴 Signed-out rows assert structural identity; signed-in rows assert RENDERS '
+    + '(status/redirect/error-page/minimum body), because the fixtures hold different '
+    + 'data volumes. Form submissions and workflows remain the journey tier.');
 
   if (JSON_OUT) {
     const artifact = {

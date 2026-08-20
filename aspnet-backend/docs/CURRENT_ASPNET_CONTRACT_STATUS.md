@@ -295,7 +295,25 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
      content growth only via a text-length heuristic (the card selector needs
      a testid); token refresh across REAL expiry still untested (the
      forced-401 probe shows the client routes to /login — client behaviour,
-     not a backend verdict); and the web-uk signed-in tier remains.
+     not a backend verdict).
+   - ✅ **The web-uk SIGNED-IN tier is now measured (2026-08-20, later).** The
+     instrument scripts the real double-CSRF login at the HTTP layer (the
+     four-submit-button page defeated browser probes; a form POST has no
+     buttons to choose). Recipe earned the hard way and recorded in the
+     script: the login GET sets `nexus.csrf` TWICE and the page token pairs
+     with the LAST cookie; and `tenant_slug` is a REQUIRED form field —
+     `tenantSlugForRequest` (auth.js:187) reads the routed tenant or the form,
+     NOT the env, and omitting it re-renders 200 with "Enter your email,
+     password and tenant", which reads like a credential failure and is not.
+     Result: both logins succeed (each side with its own fixture's member),
+     and all 8 signed-in member pages (/dashboard /listings /events /feed
+     /groups /volunteering /explore /kb) RENDER against ASP.NET as against
+     the Laravel control — same statuses, no error pages. **19/20 page pairs
+     + 1 diagnosed fixture asymmetry.** Signed-in rows deliberately assert
+     RENDERS rather than byte-identity: the fixtures hold different data
+     volumes, and exact structural equality would flag fixture asymmetry as
+     fault on every run. Form submissions through web-uk remain the journey
+     tier.
 3. **D — stubs and semantic tail, interleaved with C**: implement the
    client-called stubs journeys hit, delete the 63 uncalled (owner sees the
    list first), validator-first semantic order, security items R-4 / R-18 /
