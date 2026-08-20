@@ -61,6 +61,7 @@ import {
   type VolunteeringResponse,
 } from '@/lib/api/volunteering';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { canPostAnyOpportunity } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -79,6 +80,16 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
+
+/**
+ * The same nine keys as a value, for validating a `?tab=` deep link. Declared next to the
+ * type on purpose: a tab added to one and not the other is a tab no link can reach, and
+ * `deepLinkTabs.test.ts` fails if they fall out of step.
+ */
+const TAB_KEYS: readonly TabKey[] = [
+  'opportunities', 'applications', 'shifts', 'swaps', 'hours',
+  'certificates', 'expenses', 'donations', 'organisations',
+];
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const EXPENSE_TYPES: VolunteerExpenseType[] = ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'];
 
@@ -283,10 +294,12 @@ function HeroHeader({
   activeCount,
   applicationsCount,
   verifiedHours,
+  canPostOpportunity,
 }: {
   activeCount: number;
   applicationsCount: number;
   verifiedHours: number;
+  canPostOpportunity: boolean;
 }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
@@ -320,13 +333,26 @@ function HeroHeader({
         </View>
 
         <View className="flex-row flex-wrap gap-2">
-          <ActionPill
-            label={t('createOpportunity')}
-            icon="add-outline"
-            onPress={() => router.push('/(modals)/new-volunteering' as Href)}
-            primary={primary}
-            tone="primary"
-          />
+          {/*
+            🔴 Gated. This pill used to render for everyone, while `new-volunteering.tsx`
+            correctly refuses to publish without an approved organisation you own or
+            administer — so a member with none could tap it, fill in the whole form, and
+            find the submit button dead. This screen already fetches getMyOrganisations(),
+            so it had the answer and ignored it. Same shape as the feed cards that offered
+            a reaction the server refuses: an action with nothing behind it.
+
+            The rule is shared with the form via lib/volunteering/postingPermission.ts so
+            the button and the form cannot drift apart again.
+          */}
+          {canPostOpportunity ? (
+            <ActionPill
+              label={t('createOpportunity')}
+              icon="add-outline"
+              onPress={() => router.push('/(modals)/new-volunteering' as Href)}
+              primary={primary}
+              tone="primary"
+            />
+          ) : null}
           <ActionPill
             label={t('browseOrganisations')}
             icon="business-outline"
@@ -1571,7 +1597,19 @@ function VolunteeringScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
-  const initialTab = params.tab === 'organisations' ? 'organisations' : 'opportunities';
+  /**
+   * 🔴 Every tab, not just one. This read `params.tab === 'organisations' ? … :
+   * 'opportunities'`, so of the nine tabs a link could name, eight silently landed on
+   * Opportunities — including `?tab=hours`, which is where a volunteer records the hours
+   * they worked. Verified on a device on 2026-08-20: `nexus://volunteering?tab=hours`
+   * opened Opportunities and gave no hint that it had ignored the request.
+   *
+   * Validated against TAB_KEYS rather than cast, so an unknown value still falls back to
+   * Opportunities instead of leaving the screen on a tab that does not exist.
+   */
+  const initialTab: TabKey = TAB_KEYS.includes(params.tab as TabKey)
+    ? (params.tab as TabKey)
+    : 'opportunities';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
@@ -1733,6 +1771,7 @@ function VolunteeringScreenInner() {
               activeCount={opportunities.length}
               applicationsCount={applications.length}
               verifiedHours={verifiedHours}
+              canPostOpportunity={canPostAnyOpportunity(organisations)}
             />
 
             <Surface variant="secondary" className="rounded-panel p-2">

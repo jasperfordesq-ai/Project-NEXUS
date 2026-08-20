@@ -13,6 +13,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { createOpportunity, getMyOrganisations, getOpportunity, updateOpportunity, type VolunteerOpportunity, type VolunteeringOrganisation } from '@/lib/api/volunteering';
+import { canPostForOrganisation } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -29,10 +30,6 @@ function unwrapOrgs(response: { data?: VolunteeringOrganisation[]; items?: Volun
   }
 
   return Array.isArray(response?.items) ? response.items : [];
-}
-
-function canPostForOrganisation(org: VolunteeringOrganisation): boolean {
-  return ['approved', 'active'].includes(org.status ?? '') && ['owner', 'admin'].includes(org.member_role ?? '');
 }
 
 function parseDateOnly(value: string): number | null {
