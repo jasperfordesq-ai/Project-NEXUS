@@ -386,6 +386,40 @@ carry the *identical* debug certificate `fac61745…033b9c`) and a version downg
 then inspects the finished artefact, refusing to report success if `arm64-v8a` or
 `armeabi-v7a` is missing. Checking the flag would not do: the point is to check the file.
 
+### 9.4 🔴 The feed offered three actions on cards that had nothing behind them
+
+Reported from a real phone, 2026-08-20: *"the emojis are shit, there's just a heart, and it
+fails to save my reactions."* All three parts were true, and none was what it looked like.
+Found by walking the app on the emulator against the local API — not by reading code.
+
+| What the member saw | What was actually happening |
+| --- | --- |
+| "It fails to save my reactions" | The heart was rendered on EVERY card. On a milestone card both endpoints refuse it: `POST /api/v2/reactions {target_type:"level_up"}` → **400**, `POST /api/v2/feed/like {target_type:"badge_earned"}` → **400**. The tap flipped the icon, the request failed, the state reverted, a toast appeared |
+| "The app has downgraded" | 3 of the first 4 feed items in the fixture are milestone cards, so most hearts were guaranteed to fail. On real content reactions always worked — verified persisting as `{"counts":{"celebrate":1}}` |
+| "There's just a heart" | All eight reactions exist (👍 ❤️ 😂 😮 😢 🎉 👏 ⏰) but only a long press reaches them, with no affordance. The app genuinely looked like it had one reaction |
+
+A third defect was hit by accident during the same walk: **"View post" on a milestone card
+always dead-ends** at *"Not found. Something went wrong."* `getDetailTarget` routed those
+types to the feed-item detail screen, but `POLYMORPHIC_FEED_TYPES` excludes them, so
+`getFeedItem` silently falls back to `'post'` and fetches a post with a gamification id —
+`GET /api/v2/feed/posts/674` → **404 "Post not found"**.
+
+🔴 **All three are the same shape: an action offered on a card with nothing behind it.**
+And the reaction one had already been found and fixed on the web, citing Sentry
+NEXUS-PHP-1Y — mobile simply never received the fix. Worth checking, whenever mobile
+misbehaves, whether `react-frontend` already solved it.
+
+**Fixed** (commit `d8e88d2df`) and verified on the device: milestone cards now show only
+Share, the exchange card shows the heart with a hint, long-press offers all eight, and a
+tapped reaction survived a full app restart. Listings, Messages and More were walked in the
+same pass and are healthy.
+
+🔴 **Two of my own new assertions were false-passing** and are noted in the test file:
+`testID` is not forwarded by HeroUI's Button, and the detail link carries no
+accessibilityLabel — so both queries matched nothing and "passed" while proving the
+opposite of what they claimed. Both now assert on visible text. That is the third variant
+of this failure today, after `uiautomator dump` and the emulator's architecture.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
