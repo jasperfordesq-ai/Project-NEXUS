@@ -235,14 +235,38 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
      create a poll through the API → it appears in the feed with the exact
      `PollData` keys React declares. `FeedSidebarAndSubtypeContractTests`
      (3) pins all of it.
+   - ✅ **Route gaps: 3 of 4 CLOSED (third tranche, 2026-08-20).**
+     `GET /api/v2/messages/{m}/voice` and `.../attachments/{a}` now serve
+     private message media with Laravel's exact header set (private no-store,
+     nosniff, sandboxing CSP, same-site CORP — verified byte-identical live),
+     participant-only (sender or conversation participant; 403 non-participant,
+     404 unknown/invisible; cross-tenant callers 404 via the query filter).
+     Voice messages were uploadable but never fetchable — a received voice
+     message could not be played. Proven end to end: upload a real Ogg through
+     the app's own endpoint, fetch it back through both route spellings. (The
+     server's magic-byte sniffing rightly rejected a fake blob first — the
+     upload path's defence works.) `GET /api/v2/volunteering/credentials/{id}/download`
+     serves the owner's credential as a named attachment, re-checking Laravel's
+     TYPE ALLOWLIST on download (a type outside it must not download even for
+     its owner), 404-never-403 for other callers.
+     `MessageMediaDeliveryTests` (7) pins the whole matrix.
+   - 🔴 **The 4th gap is NOT a route patch and is re-classified:**
+     `POST /api/v2/events/{id}/attendance/code` verifies SIGNED `nqx2_`
+     check-in credentials (`EventCheckinCredentialService`), enforces
+     attendance versioning + idempotency, and deliberately answers
+     unreadable-credential and invisible-subject identically so it cannot be
+     used to probe who is registered. ASP.NET has none of the offline-checkin
+     credential subsystem (its `offline-checkin/*` routes 404 in the smoke).
+     A shallow accept-any-credential implementation would be the invents-data
+     fault class. Blocked on: the offline-checkin credential subsystem as its
+     own work package (Phase D/E).
    - Still open in C: the rest of C.2's twelve journeys (sign-up incl. legal
      gate, messages send/receive, members connect, wallet history, feed
-     infinite scroll + reactions through the UI), four route gaps (messages
-     voice/attachment media, attendance code, credential download), token
-     refresh across REAL expiry (the forced-401 probe shows the client sends
-     the user to /login rather than silently recovering — client behaviour,
-     not a backend verdict), the `api/cookie-consent` CORS/route miss, and
-     the web-uk signed-in tier.
+     infinite scroll + reactions through the UI), token refresh across REAL
+     expiry (the forced-401 probe shows the client sends the user to /login
+     rather than silently recovering — client behaviour, not a backend
+     verdict), the `api/cookie-consent` CORS/route miss, and the web-uk
+     signed-in tier.
 3. **D — stubs and semantic tail, interleaved with C**: implement the
    client-called stubs journeys hit, delete the 63 uncalled (owner sees the
    list first), validator-first semantic order, security items R-4 / R-18 /

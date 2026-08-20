@@ -183,6 +183,78 @@ public class VolunteerCredentialsController : ControllerBase
     }
 
     /// <summary>DELETE /api/v2/volunteering/credentials/{id} — remove mine.</summary>
+    /// <summary>
+    /// GET /api/v2/volunteering/credentials/{id}/download — the last of Baseline 3's
+    /// four route gaps. A member could upload a credential here but never retrieve it.
+    ///
+    /// The contract is Laravel's `VolunteerCertificateController::downloadCredential`:
+    /// owner-only (id + user + tenant — 404, never 403, so the response does not
+    /// confirm someone else's credential exists), the credential TYPE must be on the
+    /// ALLOWLIST (Laravel re-checks `VolunteerCredentialPolicy::isAllowed` on download,
+    /// not just upload — a row that predates the policy must not become retrievable),
+    /// and the file streams as an attachment under the stored display name.
+    /// </summary>
+    [HttpGet("api/v2/volunteering/credentials/{id:int}/download")]
+    [HttpGet("api/volunteering/credentials/{id:int}/download")]
+    public async Task<IActionResult> Download(int id)
+    {
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized(new { error = "Invalid token" });
+
+        var credential = await _db.VolunteerCredentials
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId.Value);
+        if (credential is null
+            || !AllowedTypes.Contains(credential.CredentialType)
+            || string.IsNullOrWhiteSpace(credential.FileUrl))
+        {
+            return NotFound(new { error = "Credential not found" });
+        }
+
+        // FileUrl is the stable download URL this controller's Upload wrote
+        // ("/api/files/{id}/download", FileUploadService.GetDownloadUrl) — parse the
+        // upload id back out and resolve the file owner-and-tenant-scoped.
+        var match = System.Text.RegularExpressions.Regex.Match(
+            credential.FileUrl, @"/api/files/(\d+)/download");
+        if (!match.Success || !int.TryParse(match.Groups[1].Value, out var uploadId))
+        {
+            return NotFound(new { error = "Credential not found" });
+        }
+
+        var upload = await _db.FileUploads
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == uploadId);
+        if (upload is null)
+        {
+            return NotFound(new { error = "Credential not found" });
+        }
+
+        var fullPath = _fileService.GetFullPath(upload);
+        if (!System.IO.File.Exists(fullPath))
+        {
+            return NotFound(new { error = "Credential not found" });
+        }
+
+        var downloadName = string.IsNullOrWhiteSpace(credential.FileName)
+            ? upload.OriginalFilename
+            : credential.FileName;
+        var mime = string.IsNullOrWhiteSpace(upload.ContentType)
+            ? "application/octet-stream"
+            : upload.ContentType;
+        return PhysicalFile(fullPath, mime, downloadName);
+    }
+
+    /// <summary>
+    /// Laravel's `VolunteerCredentialPolicy::ALLOWED_TYPES` — the download re-check's
+    /// allowlist, distinct from `ProhibitedTypes` above (which the UPLOAD refuses):
+    /// a type that is neither prohibited nor allowed still must not download.
+    /// </summary>
+    private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "first_aid", "safeguarding", "manual_handling", "food_hygiene",
+        "driving_licence", "professional_registration", "other",
+    };
+
     [HttpDelete("api/v2/volunteering/credentials/{id:int}")]
     [HttpDelete("api/volunteering/credentials/{id:int}")]
     public async Task<IActionResult> Delete(int id)
