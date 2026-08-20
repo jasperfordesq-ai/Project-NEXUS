@@ -285,7 +285,15 @@ public class PublicCompatibilityEndpointsTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.TryGetProperty("consented", out var consented).Should().BeTrue();
-        consented.GetBoolean().Should().BeFalse();
+        // 🔴 Updated 2026-08-20 with the shape change it pins: the old `consented` key
+        // was one LARAVEL NEVER SENDS and no frontend reads (the client reads
+        // `data`/`data.consent` only) — it was removed when the endpoint was reshaped
+        // to Laravel's live-captured contract. An anonymous visitor with no record
+        // gets data:null plus meta.base_url. CookieConsentContractTests carries the
+        // full shape matrix; this test keeps the anonymous-OK guarantee.
+        content.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Null);
+        content.GetProperty("meta").GetProperty("base_url").GetString().Should().NotBeNullOrEmpty();
+        content.TryGetProperty("consented", out _).Should().BeFalse(
+            "the key was a divergence from Laravel and must not return");
     }
 }

@@ -2436,6 +2436,25 @@ public class V15SocialCompatibilityController : ControllerBase
         return Ok(new { success = true, data = redemption });
     }
 
+    /// <remarks>
+    /// 🔴 REWRITTEN 2026-08-20, and the story is worth keeping. Every consent save from
+    /// the browser had been failing as what LOOKED like a CORS block ("No
+    /// Access-Control-Allow-Origin header"). The real fault: TWO controllers owned
+    /// POST /api/cookie-consent (this one and CompatibilityAliasController's alias), so
+    /// every POST threw AmbiguousMatchException — a 500 whose error response carries no
+    /// CORS headers, which the browser reports as CORS. The alias is deleted; this is
+    /// the one owner, per the route-ownership invariant.
+    ///
+    /// The shapes are Laravel's, captured LIVE (CookieConsentController + service):
+    /// - POST accepts {functional, analytics, marketing} (the React client's exact
+    ///   payload, CookieConsentContext.tsx:203-208 — its old reader here looked for a
+    ///   "preferences" key the client never sends) and returns
+    ///   data: {id, consent: {essential, functional, analytics, marketing, created_at}}.
+    /// - GET returns the caller's newest row as an explicit SNAKE_CASE projection —
+    ///   the raw EF entity this used to return serialized camelCase, and the extra
+    ///   "consented" key was one Laravel never sends and nothing reads (both verified
+    ///   before removal).
+    /// </remarks>
     [HttpGet("/api/cookie-consent")]
     [AllowAnonymous]
     public async Task<IActionResult> CookieConsent([FromQuery] string? session_id = null)
@@ -2444,8 +2463,39 @@ public class V15SocialCompatibilityController : ControllerBase
         var query = _db.CookieConsents.AsQueryable();
         query = userId.HasValue ? query.Where(c => c.UserId == userId) : query.Where(c => c.SessionId == session_id);
         var row = await query.OrderByDescending(c => c.UpdatedAt ?? c.ConsentedAt).FirstOrDefaultAsync();
-        return row == null ? Ok(new { data = (object?)null, consented = false }) : Ok(new { data = row, consented = true });
+        // This route is NOT under /api/v2, so LaravelDataEnvelopeFilter deliberately
+        // leaves it alone — but Laravel's respondWithData seeds meta.base_url on every
+        // surface, so the actions emit it themselves (the LegalShortRoutesController
+        // precedent for non-v2 Laravel-shaped routes).
+        var meta = new { base_url = $"{Request.Scheme}://{Request.Host}" };
+        if (row == null)
+        {
+            return Ok(new { data = (object?)null, meta });
+        }
+
+        return Ok(new
+        {
+            data = new Dictionary<string, object?>
+            {
+                ["id"] = row.Id,
+                ["session_id"] = row.SessionId,
+                ["user_id"] = row.UserId,
+                ["tenant_id"] = row.TenantId,
+                ["essential"] = row.NecessaryCookies,
+                ["analytics"] = row.AnalyticsCookies,
+                ["marketing"] = row.MarketingCookies,
+                ["functional"] = row.PreferenceCookies,
+                ["created_at"] = Iso(row.CreatedAt),
+                ["updated_at"] = Iso(row.UpdatedAt ?? row.CreatedAt),
+            },
+            meta,
+        });
     }
+
+    private static string? Iso(DateTime? value) => value is null
+        ? null
+        : new DateTimeOffset(DateTime.SpecifyKind(value.Value, DateTimeKind.Utc))
+            .ToString("yyyy-MM-ddTHH:mm:sszzz");
 
     [HttpPost("/api/cookie-consent")]
     [AllowAnonymous]
@@ -2459,13 +2509,33 @@ public class V15SocialCompatibilityController : ControllerBase
             NecessaryCookies = true,
             AnalyticsCookies = ReadBool(body, "analytics", "analytics_cookies") ?? false,
             MarketingCookies = ReadBool(body, "marketing", "marketing_cookies") ?? false,
-            PreferenceCookies = ReadBool(body, "preferences", "preference_cookies") ?? false,
+            // 🔴 The client's key is `functional` (mapped from its "preferences" toggle);
+            // the old `preferences` reader here never matched, so every consent stored
+            // functional=false regardless of choice.
+            PreferenceCookies = ReadBool(body, "functional", "preferences", "preference_cookies") ?? true,
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
             UserAgent = Request.Headers.UserAgent.FirstOrDefault()
         };
         _db.CookieConsents.Add(row);
         await _db.SaveChangesAsync();
-        return Ok(new { success = true, data = row });
+
+        // Laravel's store shape, captured live: data.{id, consent:{...}}.
+        return Ok(new
+        {
+            data = new Dictionary<string, object?>
+            {
+                ["id"] = row.Id,
+                ["consent"] = new Dictionary<string, object?>
+                {
+                    ["essential"] = true,
+                    ["functional"] = row.PreferenceCookies,
+                    ["analytics"] = row.AnalyticsCookies,
+                    ["marketing"] = row.MarketingCookies,
+                    ["created_at"] = Iso(row.CreatedAt),
+                },
+            },
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" },
+        });
     }
 
     [HttpPut("/api/cookie-consent/{id:int}")]

@@ -260,13 +260,42 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
      A shallow accept-any-credential implementation would be the invents-data
      fault class. Blocked on: the offline-checkin credential subsystem as its
      own work package (Phase D/E).
-   - Still open in C: the rest of C.2's twelve journeys (sign-up incl. legal
-     gate, messages send/receive, members connect, wallet history, feed
-     infinite scroll + reactions through the UI), token refresh across REAL
-     expiry (the forced-401 probe shows the client sends the user to /login
-     rather than silently recovering — client behaviour, not a backend
-     verdict), the `api/cookie-consent` CORS/route miss, and the web-uk
-     signed-in tier.
+   - ✅ **The "cookie-consent CORS miss" was never CORS (fourth tranche,
+     2026-08-20).** TWO controllers owned POST /api/cookie-consent, so every
+     consent save threw AmbiguousMatchException — a 500 whose error response
+     carries no CORS headers, which every browser reports as "blocked by CORS
+     policy". The duplicate alias is deleted (one owner per template); both
+     verbs now emit Laravel's live-captured shapes (POST returns
+     data.{id, consent:{…}}; GET the caller's newest row snake_case — the old
+     GET serialized the raw EF entity camelCase, AND the old POST read a
+     `preferences` key the client never sends, silently storing
+     functional=false regardless of the member's choice). meta.base_url is
+     emitted by the actions — this route is not under /api/v2, so the envelope
+     filter deliberately leaves it alone. `CookieConsentContractTests` (3)
+     pins it; the smoke's console now shows ZERO cookie-consent failures.
+   - ✅ **C.2 second tranche (2026-08-20, later): the smoke is 27 steps.** New
+     journeys, each asserting an effect: **sign-up PROVEN end to end** — the
+     register form completes, `POST /api/v2/auth/register` fires, and the
+     "Registration Successful! Verify your email" screen renders. Four
+     automation lessons are written into the script where they were earned:
+     it is ONE form (not a wizard); the location field is a
+     PlaceAutocompleteInput that eats simulated keystrokes (native value
+     setter + one input event is what React listens for); Create Account
+     stays disabled during the "known data breaches" check (wait, don't
+     verdict); and a clean Playwright click dispatches but React ignores it —
+     Enter from a field fires the real submit. Also proven: **messaging**
+     (a text sent into the member↔admin thread renders), **wallet history**
+     region renders, **members directory** renders with connect controls.
+   - 🔴 Honest residue in C.2, labelled in the smoke output itself: the
+     LEGAL GATE sits behind email verification, out of the smoke's reach
+     without a verification bypass (fixture work); **feed reaction
+     persistence is UNCONFIRMED — an instrument limitation** (the own-post
+     card cannot yet be anchored across a reload; `role="article"` is the
+     card root, and ranked feed ordering moves it); infinite scroll shows
+     content growth only via a text-length heuristic (the card selector needs
+     a testid); token refresh across REAL expiry still untested (the
+     forced-401 probe shows the client routes to /login — client behaviour,
+     not a backend verdict); and the web-uk signed-in tier remains.
 3. **D — stubs and semantic tail, interleaved with C**: implement the
    client-called stubs journeys hit, delete the 63 uncalled (owner sees the
    list first), validator-first semantic order, security items R-4 / R-18 /

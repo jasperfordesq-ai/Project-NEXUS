@@ -81,41 +81,14 @@ public class CompatibilityAliasController : ControllerBase
     // ══════════════════════════════════════════════════════════════════════════
 
     // ──────────────────────────────────────────────
-    // Cookie Consent alias
     // Frontend: POST /cookie-consent
-    // Backend:  POST /api/consent/accept
     // ──────────────────────────────────────────────
-
-    /// <summary>
-    /// POST /api/cookie-consent — Alias for POST /api/consent/accept.
-    /// (GET handled by V15SocialCompatibilityController.CookieConsent.)
-    /// </summary>
-    [HttpPost("api/cookie-consent")]
-    [AllowAnonymous]
-    public async Task<IActionResult> CookieConsentAlias([FromBody] CookieConsentAliasRequest request)
-    {
-        // Just record consent — the CookieConsentController handles the real logic.
-        // This is a lightweight alias that stores the preference directly.
-        var userId = User.GetUserId();
-
-        var consent = new CookieConsent
-        {
-            TenantId = _tenantContext.TenantId ?? 0,
-            UserId = userId,
-            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
-            UserAgent = Request.Headers.UserAgent.ToString(),
-            NecessaryCookies = true,
-            AnalyticsCookies = request.Analytics,
-            MarketingCookies = request.Marketing,
-            PreferenceCookies = request.Functional ?? true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.Set<CookieConsent>().Add(consent);
-        await _db.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Cookie consent recorded" });
-    }
+    //
+    // 🔴 The POST /api/cookie-consent alias that lived here was DELETED on 2026-08-20:
+    // V15SocialCompatibilityController.StoreCookieConsent owns the same template, so
+    // EVERY consent save threw AmbiguousMatchException — a 500 whose error response has
+    // no CORS headers, which every browser reported as a CORS block. One owner per
+    // route template; the V15 action is the survivor (it also carries the GET).
 
     // ──────────────────────────────────────────────
     // Feed POST alias
@@ -3719,25 +3692,6 @@ public class CompatibilityAliasController : ControllerBase
     }
 
     private sealed record AvailabilitySlotInput(int DayOfWeek, string StartTime, string EndTime, string? Note);
-}
-
-// ──────────────────────────────────────────────
-// DTOs for CompatibilityAliasController
-// ──────────────────────────────────────────────
-
-public class CookieConsentAliasRequest
-{
-    [JsonPropertyName("accepted")]
-    public bool Accepted { get; set; } = true;
-
-    [JsonPropertyName("analytics")]
-    public bool Analytics { get; set; }
-
-    [JsonPropertyName("marketing")]
-    public bool Marketing { get; set; }
-
-    [JsonPropertyName("functional")]
-    public bool? Functional { get; set; }
 }
 
 public class FeedPostAliasRequest
