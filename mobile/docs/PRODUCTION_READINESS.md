@@ -196,9 +196,18 @@ today, but a single CA rotation would brick it"*. Deliberately **not** in the bl
 path (it makes a real TLS connection; a network blip reddening a release gate teaches
 people to ignore gates), and it exits **2** for "could not check" so an unreachable host
 can never read as a pass. `lib/security/certificatePinning.test.ts` covers the offline
-half — the retired leaf cannot be re-added, expiry keeps its headroom, and the generated
-Android project must match the source byte for byte, since the plugin copies it at
-prebuild and an edit to the source alone would otherwise ship nothing.
+half — the retired leaf cannot be re-added, at least two pins must exist, and the expiry
+keeps its headroom.
+
+🔴 Which file is authoritative, since getting it backwards sends someone hunting for a
+file that is not in the repository: `mobile/android/` is **gitignored**
+(`mobile/.gitignore:8`, 0 tracked files), like the Capacitor project. The committed
+**source** — `mobile/android-network-security-config.xml` — is the single source of truth,
+and the Expo plugin copies it into the native project at prebuild on whichever machine
+builds. Editing the source alone is correct and sufficient; git refuses the generated
+copy. The test's byte-for-byte assertion guards the opposite hazard — a **stale local
+prebuild**, where a build from this machine would carry old pins while the repository
+looks right.
 
 ---
 

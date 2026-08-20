@@ -74,12 +74,23 @@ describe('android certificate pinning', () => {
     expect(fs.readFileSync(SOURCE, 'utf8')).not.toMatch(/cleartextTrafficPermitted="true"/);
   });
 
-  it('🔴 the generated Android project matches the source byte for byte', () => {
-    // The Expo plugin `plugins/with-android-network-security.js` copies the source
-    // verbatim at prebuild. If the two drift, the file that actually ships is the
-    // generated one — so an edit to the source alone would silently do nothing.
+  it('🔴 a local prebuilt project has not drifted from the source', () => {
+    // 🔴 Which file is authoritative, stated precisely, because getting this backwards
+    // sends someone hunting for a file that is not in the repository.
+    //
+    // `mobile/android/` is GITIGNORED (mobile/.gitignore:8 `android/`, 0 tracked files),
+    // exactly like the Capacitor project. So the file committed here — the SOURCE — is
+    // the single source of truth, and `plugins/with-android-network-security.js` copies
+    // it into the native project at prebuild on whichever machine builds. Editing the
+    // source alone is therefore correct and sufficient; the generated file must NOT be
+    // committed, and git refuses it.
+    //
+    // What this assertion is for is the opposite hazard: a STALE local prebuild. A build
+    // from this machine uses the generated copy, so if it predates a source edit, the
+    // binary carries the old pins while the repository looks correct.
     if (!fs.existsSync(GENERATED)) {
-      // No prebuilt project on this machine; the source assertions above still hold.
+      // No prebuilt project here — the normal state for a fresh clone. The source
+      // assertions above are the ones that matter and have already run.
       return;
     }
 
