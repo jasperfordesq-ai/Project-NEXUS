@@ -31,7 +31,7 @@ const FALLBACK_PRIMARY = '#006FEE';
 const TENANT_CONFIG_CACHE_PREFIX = 'nexus_tenant_config';
 
 function tenantConfigCacheKey(slug: string): string {
-  return `${TENANT_CONFIG_CACHE_PREFIX}:${slug}`;
+  return `${TENANT_CONFIG_CACHE_PREFIX}_${slug}`;
 }
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
