@@ -126,5 +126,10 @@
     "action": "Obter a atualização",
     "noLink": "Não encontrámos o link de descarregamento. Procure a atualização no local habitual ou contacte os organizadores da sua comunidade.",
     "versions": "Versão mais recente {{current}} · tem {{installed}}"
+  },
+  "updateReady": {
+    "title": "Atualização pronta",
+    "description": "Foi descarregada uma nova versão. Reinicie para a usar.",
+    "action": "Reiniciar agora"
   }
 }

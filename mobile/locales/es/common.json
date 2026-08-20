@@ -126,5 +126,10 @@
     "action": "Obtener la actualización",
     "noLink": "No encontramos el enlace de descarga. Busca la actualización en el lugar habitual o ponte en contacto con los organizadores de tu comunidad.",
     "versions": "Última versión {{current}} · tienes {{installed}}"
+  },
+  "updateReady": {
+    "title": "Actualización lista",
+    "description": "Se ha descargado una nueva versión. Reinicia para usarla.",
+    "action": "Reiniciar ahora"
   }
 }

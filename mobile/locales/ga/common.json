@@ -126,5 +126,10 @@
     "action": "Faigh an nuashonrú",
     "noLink": "Níorbh fhéidir linn an nasc íoslódála a aimsiú. Seiceáil an bhfuil nuashonrú ar fáil sa ghnáthláit, nó déan teagmháil le heagraithe do phobail.",
     "versions": "An leagan is déanaí {{current}} · tá {{installed}} agat"
+  },
+  "updateReady": {
+    "title": "Nuashonrú réidh",
+    "description": "Íoslódáladh leagan nua. Atosaigh chun é a úsáid.",
+    "action": "Atosaigh anois"
   }
 }

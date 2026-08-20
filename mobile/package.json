@@ -42,7 +42,11 @@
     "screenshot:sweep": "node scripts/screenshots.mjs sweep",
     "themes:generate": "node scripts/generate-tenant-themes.mjs",
     "themes:check": "node scripts/generate-tenant-themes.mjs --check",
-    "check:cert-pins": "node scripts/check-cert-pins.mjs"
+    "check:cert-pins": "node scripts/check-cert-pins.mjs",
+    "update:website": "node scripts/publish-update.mjs website",
+    "rollback:staging": "node scripts/rollback-update.mjs staging",
+    "rollback:website": "node scripts/rollback-update.mjs website",
+    "rollback:production": "node scripts/rollback-update.mjs production"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -46,6 +46,38 @@ for (const channel of pinnedChannels) {
       'that cannot receive an update is a build that cannot be fixed after release'
   );
 }
+
+// 🔴 …and a way to TAKE IT BACK. Publishing had guards; undoing a publish had none, so the
+// one control you reach for while something is actively broken was the only one that could
+// be aimed at the wrong channel unchecked. A channel you can break and cannot unbreak is
+// worse than one you cannot publish to at all, because the damage is already live.
+//
+// The rollback list is DUPLICATED rather than shared: `publish-update.mjs` is a script with
+// top-level side effects (importing it would publish), and this file reads its source with
+// the regex above, so moving the map into a shared module would silently defeat the check
+// immediately preceding this one. Duplication that is asserted beats sharing that breaks a
+// gate — so the assertion is that the two lists agree.
+const rollbacker = fs.readFileSync(new URL('./rollback-update.mjs', import.meta.url), 'utf8');
+const rollbackableChannels = new Set(
+  (rollbacker.match(/const ROLLBACKABLE_CHANNELS = \[([^\]]*)\]/)?.[1] ?? '')
+    .split(',')
+    .map((entry) => entry.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+);
+for (const channel of pinnedChannels) {
+  assert(
+    rollbackableChannels.has(channel),
+    `build channel "${channel}" has no rollback path in scripts/rollback-update.mjs — a bad ` +
+      'update on that channel could not be taken back'
+  );
+}
+for (const channel of publishableChannels) {
+  assert(
+    rollbackableChannels.has(channel),
+    `channel "${channel}" can be published to but not rolled back — the two scripts have ` +
+      'drifted apart'
+  );
+}
 assert(app.plugins?.includes('./plugins/with-android-network-security'), 'Android network security config plugin is required');
 assert(!network.includes('trustkit-config'), 'Android config contains an unsupported TrustKit element');
 assert((network.match(/<pin digest="SHA-256">/g) ?? []).length >= 2, 'certificate pin set needs primary and backup pins');

@@ -126,5 +126,10 @@
     "action": "Scarica l'aggiornamento",
     "noLink": "Non abbiamo trovato il link per il download. Cerca l'aggiornamento nel posto solito o contatta gli organizzatori della tua comunità.",
     "versions": "Ultima versione {{current}} · hai {{installed}}"
+  },
+  "updateReady": {
+    "title": "Aggiornamento pronto",
+    "description": "È stata scaricata una nuova versione. Riavvia per usarla.",
+    "action": "Riavvia ora"
   }
 }

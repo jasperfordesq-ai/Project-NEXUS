@@ -73,7 +73,7 @@ dimension's own section; none is inherited from an earlier edition.
 | 13 | Offline & flaky network | **Adequate for check-in, Weak elsewhere** | Offline check-in store 94.97% covered incl. the double-credit guard; a dropped connection no longer signs a member out (fixed this session) |
 | 14 | Performance | **Unmeasured** | No startup-time, bundle-size or scroll budget of any kind |
 | 15 | Observability & ops | **Adequate (was Weak, same day)** | Sentry is still off in all six profiles, but every report now ALSO goes to our own API and is logged at `error`, so a crash reaches the owner with no account, no DSN and no owner action. 13 report sites redirected; a credential leak in one of them fixed |
-| 16 | Distribution & update lever | **Adequate (was Weak, same day)** | **The force-update lever is complete and proven end-to-end on a device.** Server refuses an old build with 426; the app replaces its whole UI with a blocking screen. `expo-updates` still unused; rollback wrapper still absent |
+| 16 | Distribution & update lever | **Adequate** | Force-update lever complete and proven on a device. Rollback wrapper and the "update ready — restart" prompt both added 2026-08-20, so all three update controls now exist. Still true: **nothing has ever been distributed** |
 | 17 | Store readiness | **Unmeasured (new row)** | No listing, screenshots, public privacy URL or Data Safety answers. `versionCode` is 2 and `autoIncrement` never exercised. Two policy risks flagged below |
 
 ---
@@ -520,13 +520,43 @@ The registration is tested separately from the logic
 happily when the middleware is not wired into `bootstrap/app.php` at all — verified by
 mutation: removing the registration turns that test red.
 
+### The other two update controls — added 2026-08-20
+
+**Rollback.** Publishing had careful guards; *undoing* a publish had none, so the one
+control you reach for while something is actively broken was the only one that could be
+aimed at the wrong channel unchecked. `scripts/rollback-update.mjs` wraps
+`eas update:rollback` with per-channel approval variables.
+
+🔴 It deliberately does **not** require a clean worktree or main, unlike the publisher. A
+rollback ships nothing from your machine — it re-points a channel at an update EAS already
+has — and whoever runs it is by definition mid-emergency, possibly with a half-written fix
+in the tree. Refusing them then is friction with no safety behind it. The approval variable
+stays, because a rollback IS a publish: it changes what every member's app runs.
+
+`verify:release` now asserts that every pinned channel has **both** a publish and a
+rollback path and that the two scripts have not drifted — mutation-verified by removing
+`website` from the rollback list, which fails both new assertions. Exercised for real:
+unknown channel → exit 64; `production` without approval → exit 77 with nothing published;
+`staging` reaches eas-cli. (Nothing was actually rolled back: `~/.expo/state.json` holds
+only an anonymous install id, no auth session, so eas-cli had no credentials.)
+
+**"Update ready" prompt.** `updates.checkAutomatically` is `ON_LOAD`, so the app already
+fetched a published fix in the background and applied it on some later cold start —
+silently. Nothing in the app code touched `expo-updates` at all, so a fix could sit
+downloaded on a phone for days while the member kept hitting the bug it repaired.
+`components/ui/UpdateReadyHost.tsx` now offers a restart when one is pending.
+
+🔴 It is deliberately the OPPOSITE of `UpdateRequiredScreen`: a dismissable toast, never
+blocking. Conflating the two would be the worst outcome — a blocking prompt for an optional
+restart trains people to dismiss the one that matters. It also says nothing when
+`Updates.isEnabled` is false (dev client, Expo Go), where "Restart" would do nothing, and
+announces once per pending update rather than on every render. Nine tests cover exactly
+those restraints.
+
 ### Still open here
 
-- **Nothing has ever been distributed.** No artefact has reached a member.
-- **`expo-updates` is unused in app code**, so a published over-the-air update is picked up
-  only on a later cold start, silently. No "update ready — restart" prompt exists.
-- **No rollback wrapper.** `eas update:rollback` exists as a CLI command with none of the
-  guards `publish-update.mjs` applies.
+- **Nothing has ever been distributed.** No artefact has reached a member. This is now the
+  only thing between the app and a first install.
 - Fixed earlier this session: the `website` channel — the profile behind the APK that
   `DISTRIBUTION.md` designates for public download, and the only current route to a
   member — had no publish path at all.

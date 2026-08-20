@@ -126,5 +126,10 @@
     "action": "Obtenir la mise à jour",
     "noLink": "Nous n'avons pas trouvé le lien de téléchargement. Cherchez la mise à jour à l'endroit habituel ou contactez les organisateurs de votre communauté.",
     "versions": "Dernière version {{current}} · vous avez {{installed}}"
+  },
+  "updateReady": {
+    "title": "Mise à jour prête",
+    "description": "Une nouvelle version a été téléchargée. Redémarrez pour l'utiliser.",
+    "action": "Redémarrer"
   }
 }

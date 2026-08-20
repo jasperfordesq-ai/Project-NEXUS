@@ -95,6 +95,51 @@ Before release builds:
 5. Confirm the EAS project ID is available through `EAS_PROJECT_ID` or `EXPO_PUBLIC_EAS_PROJECT_ID`.
 6. Build a new native binary; push, camera, and location changes cannot be delivered by OTA alone.
 
+## Sending an update, and taking one back
+
+```bash
+cd mobile
+npm run update:staging                                          # internal testers
+NEXUS_APPROVE_WEBSITE_OTA=yes    npm run update:website          # public download build
+NEXUS_APPROVE_PRODUCTION_OTA=yes npm run update:production       # store build
+```
+
+Publishing requires a **clean worktree**, and the two public channels also require **main**
+— it ships the code in your tree, so an unreviewed change must not be able to leave.
+
+```bash
+npm run rollback:staging
+NEXUS_APPROVE_WEBSITE_ROLLBACK=yes    npm run rollback:website
+NEXUS_APPROVE_PRODUCTION_ROLLBACK=yes npm run rollback:production
+```
+
+🔴 **Rollback deliberately does NOT require a clean worktree or main.** It ships nothing
+from your machine — it re-points a channel at an update EAS already has — and whoever runs
+it is by definition mid-emergency, quite possibly with a half-written fix in the tree. It
+does still require the per-channel approval variable, because a rollback is itself a
+publish: it changes what every member's app runs, and that is the guard that stops one
+meant for staging landing on production while someone is under pressure.
+
+**A rollback is not instant.** It does not delete the bad update; members receive the
+previous one on their next check, applied on the next cold start — or immediately, if they
+accept the "Update ready" prompt (`components/ui/UpdateReadyHost.tsx`).
+
+`npm run verify:release` asserts that every channel a build can be pinned to has **both** a
+publish path and a rollback path, and that the two scripts have not drifted apart. A channel
+you can break and cannot unbreak is worse than one you cannot publish to at all, because the
+damage is already live.
+
+## What an over-the-air update cannot do
+
+`updates.checkAutomatically` is `ON_LOAD` with `fallbackToCacheTimeout: 0`, so the app
+fetches a published update in the background and applies it on the **next cold start**. It
+is silent unless the member accepts the "Update ready" prompt, so do not assume a published
+fix is in use the moment it is published.
+
+Anything native — permissions, push, camera, location, the certificate pins in
+`android-network-security-config.xml` — needs a new binary. An OTA update cannot replace
+packaged native configuration.
+
 ## Sentry source maps
 
 The EAS build profiles currently set `SENTRY_DISABLE_AUTO_UPLOAD=true` so Sentry source-map upload cannot block APK/AAB packaging while Sentry organization/project/token values are not configured. Runtime Sentry reporting can still be configured separately. Re-enable source-map upload only after setting `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` in EAS.

@@ -126,5 +126,10 @@
     "action": "Update holen",
     "noLink": "Wir konnten den Download-Link nicht finden. Suche das Update an der gewohnten Stelle oder wende dich an die Organisatoren deiner Gemeinschaft.",
     "versions": "Neueste Version {{current}} · du hast {{installed}}"
+  },
+  "updateReady": {
+    "title": "Update bereit",
+    "description": "Eine neue Version wurde heruntergeladen. Starte neu, um sie zu nutzen.",
+    "action": "Jetzt neu starten"
   }
 }

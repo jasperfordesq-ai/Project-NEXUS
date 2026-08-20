@@ -26,6 +26,7 @@ import { TenantProvider } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
+import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
 import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
@@ -119,6 +120,12 @@ function RootLayout() {
             a screen-level crash cannot stop the sign-out message being delivered.
           */}
           <SessionNoticeHost />
+          {/*
+            Offers a restart when a downloaded update is waiting. Renders nothing, needs
+            the toast provider above it, and is deliberately NON-blocking — the opposite of
+            UpdateRequiredGate below, which refuses to let a too-old build continue.
+          */}
+          <UpdateReadyHost />
           <UpdateRequiredGate>
             <ErrorBoundary>
               <TenantProvider>

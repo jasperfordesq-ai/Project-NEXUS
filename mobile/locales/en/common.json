@@ -126,5 +126,10 @@
     "action": "Get the update",
     "noLink": "We couldn't find the download link. Please check for an update in the usual place, or contact your community's organisers.",
     "versions": "Latest version {{current}} · you have {{installed}}"
+  },
+  "updateReady": {
+    "title": "Update ready",
+    "description": "A new version has been downloaded. Restart to use it.",
+    "action": "Restart now"
   }
 }
