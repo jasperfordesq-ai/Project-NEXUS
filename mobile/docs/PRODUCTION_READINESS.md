@@ -557,6 +557,14 @@ those restraints.
 
 - **Nothing has ever been distributed.** No artefact has reached a member. This is now the
   only thing between the app and a first install.
+- 🔴 **The Capacitor client's update URL is a 404.** `config/mobile.php` advertises
+  `https://api.project-nexus.ie/downloads/nexus-latest.apk`, checked 2026-08-20: it returns
+  404 and no such directory exists on the host or in either colour's container. That is the
+  address `AppController::checkVersion` gives the OLDER Capacitor app when it tells someone
+  to update, so pulling that lever today would send them nowhere. Not fixed here: creating
+  `nexus-latest.apk` changes what that app tells people to download, which is an owner
+  decision rather than a chore. (A locally built APK is now served from a random path under
+  the persistent uploads volume — see DISTRIBUTION.md.)
 - Fixed earlier this session: the `website` channel — the profile behind the APK that
   `DISTRIBUTION.md` designates for public download, and the only current route to a
   member — had no publish path at all.

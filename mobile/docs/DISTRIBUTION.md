@@ -95,6 +95,38 @@ Before release builds:
 5. Confirm the EAS project ID is available through `EAS_PROJECT_ID` or `EXPO_PUBLIC_EAS_PROJECT_ID`.
 6. Build a new native binary; push, camera, and location changes cannot be delivered by OTA alone.
 
+## Where a built APK can be put on the live server
+
+🔴 **There is no `/downloads/` folder, and `config/mobile.php` advertises one.** Checked
+2026-08-20: `https://api.project-nexus.ie/downloads/nexus-latest.apk` returns **404**, and
+no such directory exists on the host or in either colour's container. That URL is what the
+CAPACITOR client's force-update prompt sends people to (`AppController::checkVersion`), so
+if that lever were ever pulled today it would send them to a dead link. Recorded rather
+than silently created, because creating `nexus-latest.apk` would also change what that
+other app tells people to download — a decision, not a chore.
+
+**Where a file CAN live durably.** The container's web root is baked into the image, so
+anything written into `httpdocs/` is lost on the next deploy. `httpdocs/uploads` is
+different: it is the `nexus-php-uploads` Docker volume, mounted by BOTH colours, so it
+survives deploys and colour switches — and it is already served as static files.
+
+```bash
+# from the repo root, with .secrets.local/deploy.env loaded as in the deploy docs
+scp -i "$PROD_SSH_KEY" mobile/android/app/build/outputs/apk/release/app-release.apk     "$PROD_SSH_HOST:/tmp/nexus-<version>-<random>.apk"
+ssh -i "$PROD_SSH_KEY" -o RequestTTY=force "$PROD_SSH_HOST"   "sudo mkdir -p /var/lib/docker/volumes/nexus-php-uploads/_data/builds &&    sudo mv /tmp/nexus-<version>-<random>.apk /var/lib/docker/volumes/nexus-php-uploads/_data/builds/ &&    sudo chown www-data:www-data /var/lib/docker/volumes/nexus-php-uploads/_data/builds/nexus-<version>-<random>.apk"
+```
+
+Served at `https://api.project-nexus.ie/uploads/builds/<name>.apk`, with content type
+`application/vnd.android.package-archive`, so a phone offers to install it. Always verify
+the served bytes against the local file (`sha256sum`) before installing — a truncated
+upload installs as a corrupt app.
+
+🔴 **Use a RANDOM filename, not a guessable one, while builds are debug-signed.** The debug
+keystore's private key ships with Android Studio and is public, so anyone can sign a
+different APK with the same key and a phone will accept it as an update over this one. An
+unguessable path is what keeps a convenience link from being an attack surface. A guessable
+public download waits on a real upload keystore — see the signing note below.
+
 ## Building an APK on this machine, without paying for a cloud build
 
 ```bash
