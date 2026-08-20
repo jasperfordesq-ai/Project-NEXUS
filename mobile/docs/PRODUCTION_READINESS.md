@@ -420,6 +420,53 @@ accessibilityLabel — so both queries matched nothing and "passed" while provin
 opposite of what they claimed. Both now assert on visible text. That is the third variant
 of this failure today, after `uiautomator dump` and the emulator's architecture.
 
+### 9.5 🔴 Two controls that fit the emulator and fell off a real phone
+
+Found immediately after 9.4, by rendering **one build and one card at two screen
+densities** (`adb shell wm density 480` gives 360dp on a 1080px device). Neither defect is
+visible at 411dp — the emulator's own width, and every Pixel — which is precisely why both
+survived.
+
+| Control | 411dp (what we test on) | 360dp (a very common Android width) |
+| --- | --- | --- |
+| `ReactionBar` | all 8 reactions, 13dp spare | `clap` half off the card edge, `time_credit` entirely off-screen — **6 of 8 reachable, no affordance saying otherwise** |
+| `FeedItem` action row | reaction, comment, share, **save** | save clipped away completely |
+
+🔴 **Nothing in the gate inventory can see this.** The pixel gate captures three screens at
+one fixed size; the render tests run in jsdom, which has no layout engine and therefore
+cannot detect an overflow at any width. Screen width is currently an **unmeasured
+dimension** of this app — 360dp was tested here for the first time, and only these two
+screens were walked at it. Treat the rest as unknown rather than fine.
+
+Two fixes were tried on the device and rejected before the one that shipped:
+
+1. **Shrink the reaction targets.** One row of eight cannot fit the pill's ~312dp above
+   35dp per target — under the accessible-target floor — and it would shrink them on every
+   phone to fix a minority.
+2. **Scroll the row horizontally.** Reachable, but verified to read as *"there are six"*:
+   the pill ends in a tidy rounded edge with the seventh just past the clip, so nothing
+   suggests a swipe. Unreachable → undiscoverable is not a fix, least of all in the
+   component already at fault in 9.4 for being undiscoverable.
+
+**Shipped** (commit `294586010`): the pill wraps — 8 in a row where there is room, 4 + 4
+where there is not, always at 44dp — and the action row drops its word labels below 380dp
+with `flex-wrap` retained as a backstop. Verified at 360dp: all eight visible at full size,
+all four buttons on one line, and a reaction saved and survived a restart.
+
+🔴 **Hiding a Label removes the button's accessible name.** That label *was* what a screen
+reader announced. Both buttons gained an explicit `accessibilityLabel`, and the comment
+button's now carries the count in both modes — better than before. Without that step this
+fix would have degraded TalkBack while looking correct to everyone else. Any future
+"hide the label when space is tight" change owes the same check.
+
+🔴 **My first version of the guard test was wrong in the informative direction.** It
+modelled the full layout — gaps, pill padding, container inset, card margin — and asserted
+382dp needed against 363dp available at 411dp, i.e. that it overflowed on the very screen
+the screenshots show it fitting on. The model was wrong, not the screenshots. The test now
+asserts the weakest form of the inequality: the touch targets alone, every gap and padding
+at zero. Relatedly, the wrap width carries 2dp of slack, because a cap set to exactly the
+content width produced rows of 3-3-2 on the device instead of 4-4.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
