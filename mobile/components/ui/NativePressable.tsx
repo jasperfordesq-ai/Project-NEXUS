@@ -5,7 +5,13 @@
 
 import React, { useCallback } from 'react';
 import { Pressable } from 'react-native';
-import type { AccessibilityRole, GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
+import type {
+  AccessibilityRole,
+  AccessibilityState,
+  GestureResponderEvent,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { PressableFeedback } from 'heroui-native';
 
 import * as Haptics from '@/lib/haptics';
@@ -21,6 +27,12 @@ interface NativePressableProps {
   haptics?: boolean;
   accessibilityLabel?: string;
   accessibilityRole?: AccessibilityRole;
+  /**
+   * Passed through so a row that represents a CHOICE can announce whether it is the
+   * chosen one. Without it a screen reader reads every option identically, and the
+   * selected state exists only as a colour — which is also a contrast-only signal.
+   */
+  accessibilityState?: AccessibilityState;
   testID?: string;
   className?: string;
   contentClassName?: string;
@@ -36,6 +48,7 @@ export default function NativePressable({
   haptics = true,
   accessibilityLabel,
   accessibilityRole = 'button',
+  accessibilityState,
   testID,
   className,
   contentClassName,
@@ -57,6 +70,7 @@ export default function NativePressable({
       <Pressable
         accessibilityLabel={accessibilityLabel}
         accessibilityRole={accessibilityRole}
+        accessibilityState={accessibilityState}
         className={`overflow-hidden ${className ?? ''}`}
         disabled={disabled}
         onLongPress={onLongPress}
@@ -77,6 +91,7 @@ export default function NativePressable({
     <FeedbackRoot
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState}
       animation={useScale ? false : 'disable-all'}
       className={`overflow-hidden ${className ?? ''}`}
       isDisabled={disabled}

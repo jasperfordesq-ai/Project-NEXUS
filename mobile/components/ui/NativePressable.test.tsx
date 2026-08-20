@@ -14,22 +14,28 @@ jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, View } = require('react-native');
 
+  /**
+   * 🔴 This mock SPREADS its remaining props, because the real component does
+   * (`...restProps` onto its AnimatedPressable) and because an earlier version of this
+   * mock destructured a fixed list and silently dropped everything else. That made a
+   * perfectly working `accessibilityState` look broken: the test reported
+   * `selected: undefined` and the near-conclusion was that heroui-native swallows the
+   * prop and the API should be removed. It was the mock. A mock that accepts fewer props
+   * than the thing it stands in for does not fail — it reports a defect that is not there.
+   */
   const PressableFeedback = ({
     children,
     isDisabled,
     onPress,
-    accessibilityLabel,
-    accessibilityRole,
+    ...rest
   }: {
     children: React.ReactNode;
     isDisabled?: boolean;
     onPress?: () => void;
-    accessibilityLabel?: string;
-    accessibilityRole?: string;
+    [key: string]: unknown;
   }) => (
     <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole={accessibilityRole}
+      {...rest}
       disabled={isDisabled}
       onPress={isDisabled ? undefined : onPress}
       testID="native-pressable"
@@ -81,5 +87,25 @@ describe('NativePressable', () => {
 
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
     expect(onPress).not.toHaveBeenCalled();
+  });
+  /**
+   * 🔴 A row that represents a CHOICE has to be able to say it is the chosen one.
+   * Added on 2026-08-20 when select-tenant.tsx moved off HeroButton (which collapsed the
+   * community names to zero width) and would otherwise have lost its selected state,
+   * leaving the choice expressed only as a background colour — invisible to a screen
+   * reader and to anyone who cannot distinguish the two greys.
+   */
+  it('forwards accessibilityState so a selected row announces itself', () => {
+    const { getByLabelText } = render(
+      <NativePressable
+        accessibilityLabel="Hour Timebank"
+        accessibilityState={{ selected: true }}
+        onPress={() => {}}
+      >
+        <Text>Hour Timebank</Text>
+      </NativePressable>,
+    );
+
+    expect(getByLabelText('Hour Timebank').props.accessibilityState).toMatchObject({ selected: true });
   });
 });

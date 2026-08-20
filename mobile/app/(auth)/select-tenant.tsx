@@ -18,6 +18,7 @@ import { useAuthContext } from '@/lib/context/AuthContext';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import NativePressable from '@/components/ui/NativePressable';
 import Button from '@/components/ui/Button';
 
 export default function SelectTenantScreen() {
@@ -93,11 +94,27 @@ export default function SelectTenantScreen() {
         renderItem={({ item }) => {
           const isActive = item.slug === tenantSlug;
 
+          /**
+           * 🔴 NativePressable, NOT HeroButton. Wrapping a full-width card in a
+           * HeroButton sized the card to its own content and centred it, and — the
+           * damaging part — gave the `flex-1` name block ZERO width, so the community
+           * NAME and its subtitle rendered invisibly. Every row showed nothing but a
+           * one-letter badge and a chevron, on the screen a member uses to choose which
+           * community to sign in to.
+           *
+           * 🔴 This was broken at EVERY width. It was found while checking narrow screens
+           * and looked like a narrow-screen fault; the control at 411dp was identical,
+           * which is the only reason it was not filed as one. Always run the wide-screen
+           * control before blaming the width.
+           *
+           * Same shape as the SafeAreaView finding in components/safeAreaFlex.test.ts: a
+           * `flex-1` child collapses to nothing when its parent has no definite size.
+           * NativePressable is a plain Pressable, so it takes the width it is given.
+           */
           return (
-            <HeroButton
-              variant="ghost"
-              feedbackVariant="scale"
-              className="w-full p-0"
+            <NativePressable
+              feedback="scale"
+              className="w-full"
               onPress={() => void handleSelect(item)}
               accessibilityLabel={item.name}
               accessibilityState={{ selected: isActive }}
@@ -146,7 +163,7 @@ export default function SelectTenantScreen() {
                   </View>
                 </HeroCard.Body>
               </HeroCard>
-            </HeroButton>
+            </NativePressable>
           );
         }}
         ListEmptyComponent={
