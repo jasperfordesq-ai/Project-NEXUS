@@ -533,6 +533,65 @@ the app. **No gate measures this** — `parity:check` compares key sets, so a lo
 full of English passes. Nothing was changed here: 3,232 machine translations is a separate
 decision, not a side effect of a layout sweep.
 
+### 9.8 Two accounts on two emulators — the first two-sided journey walked
+
+Every previous walk was one account tapping through screens. This one ran **two emulators
+side by side** (`nexus_test` on port 5554, a second AVD `nexus_test_b` on 5556), signed in
+as `e2e.user.a` and `e2e.user.b`, and put them through the whole volunteering loop against
+one local API. Both devices run the same Metro bundle, so a change is live on both at once.
+
+**The journey completed**: A registered an organisation → an admin approved it → A published
+an opportunity → B found it and applied → A saw the application and approved it → B saw it
+as approved. Every step was confirmed in the database as well as on screen.
+
+Working correctly, and worth recording as tested: form validation on both forms (submit
+with the confirmation unticked gives a clear red message and writes nothing; submit with an
+empty title raises a toast); the Apply button disappears once applied, so a member cannot
+apply twice; counters update; the organisation is auto-selected when a member manages
+exactly one.
+
+**Four defects, all in the same family — an action offered where nothing is behind it.**
+
+| Where | What happened |
+| --- | --- |
+| Volunteering hub | "Create opportunity" shown to everyone; the form it opens refuses to publish without an approved organisation. Fixed — the hub already had the data |
+| `volunteering/org/{id}` deep link | supplied `orgId`, screen reads `id` → "Organisation not found." for an organisation the member OWNS. Fixed |
+| `marketplace/category/{slug}` deep link | supplied `slug`, screen read a numeric `id` → "Category not found." Fixed by resolving the slug |
+| `blog/{slug}` deep link | supplied `slug`, screen reads `id` and treats it as a slug. Fixed |
+
+🔴 **In-app navigation hid all three deep-link faults.** Every one of them passed the right
+value under the wrong name, and the in-app `router.push` calls had always used the right
+name — so tapping through the app could never reveal them. `+native-intent.coverage.test.ts`
+proves each link maps to a screen that *exists*, which is not the same as one that *works*.
+`app/deepLinkParams.test.ts` now compares supplied names against what each screen reads.
+
+🔴 **A test was holding one of the defects in place.** The blog case asserted
+`?slug=why-timebanking` under the title "treats a blog segment as a slug, not an id" —
+correct about the value, wrong about the name, and therefore protecting the bug.
+
+🔴 **`?tab=` honoured one of nine tabs.** `volunteering.tsx` compared `params.tab` against
+`'organisations'` only, so eight tab links — including `hours`, where a volunteer records
+the time they gave — landed silently on Opportunities. Fixed in source with a guard
+(`app/deepLinkTabs.test.ts`), **but NOT confirmed on a device**: after the change the link
+still opened Opportunities, Metro had rebuilt, and the cause was not established. Treat the
+runtime behaviour as open and instrument what `params.tab` actually holds.
+
+**Two of my own measurements were worthless and are recorded so they are not repeated.**
+The first "confirmation" of the category defect proved nothing — the slug belonged to a
+different tenant *and* the marketplace feature is disabled for the test community, so that
+screen reports "not found" regardless. And a claim that a volunteer cannot log hours was
+wrong: the panel receives a merged list that includes organisations from approved
+applications, and the server accepts the post (verified, log id 586). I had misread a prop
+name.
+
+**Still not walked**: logging hours and verifying them through the UI, shift sign-up, swaps,
+expenses, certificates and donations. The endpoints exist and the hours POST is confirmed
+working; the screens are untested.
+
+**Local fixture state created by this walk** (development database only): marketplace
+feature enabled for tenant 2, category `garden-tools`, organisation 109 "Riverside Community
+Garden" owned by user 674, opportunity 128, application 239, hours log 586.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
