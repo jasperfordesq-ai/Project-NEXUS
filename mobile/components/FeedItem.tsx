@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Platform, Pressable, Share, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -290,6 +290,26 @@ function FeedItemInner({
   const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
   const theme = useTheme();
+
+  /**
+   * 🔴 Word labels come off the action row on narrow phones.
+   *
+   * The row is four controls wide at its widest and two of them carry words ("Comment",
+   * "Share"). At 411dp — the emulator, and every Pixel — that fits. At 360dp, a very
+   * common Android width, the save button was pushed off the card edge and clipped away
+   * with nothing to show it existed. Measured 2026-08-20 at both densities on one build.
+   *
+   * The footer also carries `flex-wrap`, which alone is enough to stop anything being
+   * clipped — but it produces a lopsided two-line row, so this keeps a single tidy line
+   * instead and leaves the wrap as the backstop for a width nobody anticipated.
+   *
+   * 🔴 Dropping a Label REMOVES the button's accessible name, because that is what a
+   * screen reader was reading. Both buttons therefore gain an explicit
+   * `accessibilityLabel` below — without it this "fix" would have made the row worse for
+   * anyone using TalkBack while looking fine to everyone else.
+   */
+  const { width: screenWidth } = useWindowDimensions();
+  const compactActions = screenWidth < 380;
 
   const [liked, setLiked] = useState(item.is_liked ?? false);
   const [likesCount, setLikesCount] = useState(item.likes_count ?? 0);
@@ -815,7 +835,16 @@ function FeedItemInner({
           </View>
         ) : null}
 
-        <HeroCard.Footer className="flex-row items-center gap-2 px-4 py-3">
+        {/*
+          🔴 `flex-wrap` is not cosmetic. This row is four controls wide at its widest
+          (reaction, comment, share, save) and two of them carry text labels. That fits a
+          411dp phone — the emulator and every Pixel — and on a **360dp** phone, a very
+          common Android width, the save button was pushed past the card edge and clipped
+          away entirely. Measured on 2026-08-20 by rendering the same card at both
+          densities: present at 411dp, gone at 360dp. Wrapping means the row gets shorter
+          rather than shorter-by-one-button, and nothing changes on a wide screen.
+        */}
+        <HeroCard.Footer className="flex-row flex-wrap items-center gap-2 px-4 py-3">
           {/*
             🔴 Gated on `canRespond`. This control used to render on EVERY card, including
             milestone cards where both the reaction and the like endpoint answer 400
@@ -866,17 +895,31 @@ function FeedItemInner({
           ) : null}
 
           {isCommentable ? (
-            <HeroButton size="sm" variant={commentsVisible ? 'secondary' : 'ghost'} onPress={handleCommentPress}>
+            <HeroButton
+              size="sm"
+              variant={commentsVisible ? 'secondary' : 'ghost'}
+              onPress={handleCommentPress}
+              accessibilityLabel={commentsCount > 0 ? t('stats.comments', { count: commentsCount }) : t('comment')}
+            >
               <Ionicons name="chatbubble-outline" size={17} color={theme.textMuted} />
-              <HeroButton.Label style={{ color: commentsVisible ? primary : theme.textMuted }}>
-                {commentsCount > 0 ? t('stats.comments', { count: commentsCount }) : t('comment')}
-              </HeroButton.Label>
+              {/* Compact keeps the COUNT — that is information — and drops only the word. */}
+              {!compactActions || commentsCount > 0 ? (
+                <HeroButton.Label style={{ color: commentsVisible ? primary : theme.textMuted }}>
+                  {compactActions
+                    ? commentsCount
+                    : commentsCount > 0
+                      ? t('stats.comments', { count: commentsCount })
+                      : t('comment')}
+                </HeroButton.Label>
+              ) : null}
             </HeroButton>
           ) : null}
 
-          <HeroButton size="sm" variant="ghost" onPress={() => void handleShare()}>
+          <HeroButton size="sm" variant="ghost" onPress={() => void handleShare()} accessibilityLabel={t('share')}>
             <Ionicons name="share-social-outline" size={17} color={theme.textMuted} />
-            <HeroButton.Label style={{ color: theme.textMuted }}>{t('share')}</HeroButton.Label>
+            {compactActions ? null : (
+              <HeroButton.Label style={{ color: theme.textMuted }}>{t('share')}</HeroButton.Label>
+            )}
           </HeroButton>
 
           {canBookmark ? (
