@@ -418,6 +418,18 @@ appId: ie.project.nexus
       - tapOn: "More"
       - waitForAnimationToEnd:
           timeout: 6000
+      # 🔴 "MY SPACE" is a COLLAPSED accordion, and Notifications lives inside it. Without
+      # this tap, `scrollUntilVisible` scrolls to the bottom of the More menu, never finds
+      # the label, and the step fails — which is exactly what happened on 2026-08-20: the
+      # sweep reported 31 of 33 screens and Notifications had silently never been
+      # photographed. A screen that cannot be reached is a screen nobody is looking at.
+      - scrollUntilVisible:
+          element: "MY SPACE"
+          direction: DOWN
+          timeout: 20000
+      - tapOn: "MY SPACE"
+      - waitForAnimationToEnd:
+          timeout: 4000
       - scrollUntilVisible:
           element: "Notifications"
           direction: DOWN

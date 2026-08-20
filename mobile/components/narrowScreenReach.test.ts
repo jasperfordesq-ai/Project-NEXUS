@@ -124,3 +124,68 @@ describe('the feed card action row cannot drop a button off the edge', () => {
     expect(source).toMatch(/onPress=\{handleCommentPress\}\s*\n\s*accessibilityLabel=/);
   });
 });
+
+describe('the jobs tab strip keeps its labels readable', () => {
+  it('wraps to two per row on a narrow phone instead of truncating', () => {
+    const source = read('app/(modals)/jobs.tsx');
+
+    expect(source).toMatch(/const tabsPerRow = screenWidth < \d+ \? 2 : 4;/);
+    expect(source).toMatch(/<View className="min-w-0 flex-row flex-wrap gap-1">/);
+    expect(source).toContain("flexBasis: tabsPerRow === 2 ? '46%' : '22%'");
+  });
+
+  it('keeps the labels on ONE line, because two did not help', () => {
+    // 🔴 `numberOfLines={2}` was tried and rejected on the device: "My Applications" was
+    // still truncated to "My Appli…" and "My Postings" broke mid-word as "My Pos / tings".
+    // A quarter of a 360dp screen is not enough for these words on any number of lines.
+    const source = read('app/(modals)/jobs.tsx');
+    const strip = source.slice(source.indexOf('flex-row flex-wrap gap-1'));
+
+    expect(strip).toMatch(/numberOfLines=\{1\}/);
+  });
+});
+
+describe('the shared form footer cannot clip its submit button', () => {
+  it('puts the actions below the text and lets them wrap', () => {
+    const source = read('components/ui/FormActionFooter.tsx');
+
+    expect(source).toContain('<View className="flex-row flex-wrap gap-2">');
+    expect(source).toContain('flexGrow: 1');
+    expect(source).toContain("flexBasis: 'auto'");
+  });
+
+  it('does NOT decide by screen width', () => {
+    // 🔴 The first fix stacked only below 380dp. Zooming into the 411dp capture showed
+    // "Save changes" clipped there too — the title needs ~150dp and the buttons ~250dp,
+    // which does not fit the 395dp a 411dp phone offers. A width threshold here would
+    // have shipped the bug on the majority of phones while looking like a fix.
+    expect(read('components/ui/FormActionFooter.tsx')).not.toContain('useWindowDimensions');
+  });
+
+  it('does not put flex-1 on the text block now that the container is a column', () => {
+    // 🔴 `flex-1` in a column means "leftover HEIGHT from a basis of zero". Carried over
+    // from the row layout, it collapsed the title and subtitle to nothing.
+    // 🔴 Asserted on the JSX attribute, not on a slice of the file: the comment above
+    // that element explains the trap and therefore mentions `flex-1` itself, so a
+    // substring search over the region matched the explanation and "failed" the fix.
+    expect(read('components/ui/FormActionFooter.tsx')).not.toContain('className="min-w-0 flex-1"');
+  });
+});
+
+describe('the community picker rows are full width', () => {
+  it('wraps each row in NativePressable, not HeroButton', () => {
+    // 🔴 A HeroButton sized the card to its own content and gave the `flex-1` name block
+    // ZERO width, so every community showed only a one-letter badge and a chevron — on the
+    // screen used to choose which community to sign in to. Broken at EVERY width; the
+    // 411dp control is the only reason it was not filed as a narrow-screen fault.
+    const source = read('app/(auth)/select-tenant.tsx');
+    const row = source.slice(source.indexOf('renderItem='), source.indexOf('ListEmptyComponent') > -1
+      ? source.indexOf('ListEmptyComponent')
+      : source.length);
+
+    expect(row).toContain('<NativePressable');
+    expect(row).not.toContain('<HeroButton');
+    // The selected row must still announce itself, which HeroButton was providing.
+    expect(row).toContain('accessibilityState={{ selected: isActive }}');
+  });
+});

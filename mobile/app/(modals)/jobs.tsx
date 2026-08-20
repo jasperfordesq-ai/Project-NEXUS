@@ -10,6 +10,7 @@ import {
   Text,
   RefreshControl,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -895,6 +896,9 @@ export default function JobsScreen() {
   const theme = useTheme();
 
   const [activeTab, setActiveTab] = useState<JobsTab>('browse');
+  // See the tab-bar comment below: four across does not fit a narrow phone.
+  const { width: screenWidth } = useWindowDimensions();
+  const tabsPerRow = screenWidth < 380 ? 2 : 4;
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -1078,8 +1082,28 @@ export default function JobsScreen() {
       </View>
 
       <Surface variant="secondary" className="mx-4 mb-3 rounded-panel-inner p-1">
-        {/* Tab bar */}
-        <View className="min-w-0 flex-row gap-1">
+        {/*
+          🔴 Tab bar. TWO PER ROW on a narrow phone, four across on a wide one.
+
+          Four across gives each tab a quarter of the strip — about 77dp on a 360dp
+          phone — and "My Applications" truncated to "My A…", "My Postings" to "My Po…".
+          Measured at 360dp on 2026-08-20; all four fit the 411dp emulator, which is why
+          this was never seen.
+
+          Two rejected alternatives, both tried:
+            - `numberOfLines={2}`: still truncated ("My Appli…") and broke the other
+              label mid-word as "My Pos / tings". A quarter of 360dp is not enough for
+              these words on any number of lines.
+            - a horizontally scrolling strip (the pattern group-detail.tsx uses): needs a
+              minimum width per tab, and four tabs at any usable minimum ALSO overflow
+              411dp — so it would hide tabs on phones where all four fit today.
+
+          🔴 Do not judge this in English. German is longer ("Meine Bewerbungen") and
+          Portuguese longer still ("Minhas candidaturas"), so any width that just fits
+          English is the wrong width. `adjustsFontSizeToFit` is not a way out either: it
+          is iOS-only and does nothing on Android.
+        */}
+        <View className="min-w-0 flex-row flex-wrap gap-1">
           {(['browse', 'myApplications', 'myPostings', 'alerts'] as const).map((tab) => {
             const selected = activeTab === tab;
             return (
@@ -1087,15 +1111,21 @@ export default function JobsScreen() {
                 key={tab}
                 size="sm"
                 variant={selected ? 'primary' : 'ghost'}
-                className="min-w-0 flex-1 rounded-panel-inner"
-                style={{ backgroundColor: selected ? primary : 'transparent' }}
+                className="min-w-0 rounded-panel-inner"
+                // `flexBasis` drives the wrap: just under half forces two per row and
+                // still leaves room for the gap; a quarter keeps all four on one line.
+                style={{
+                  flexGrow: 1,
+                  flexBasis: tabsPerRow === 2 ? '46%' : '22%',
+                  backgroundColor: selected ? primary : 'transparent',
+                }}
                 onPress={() => setActiveTab(tab)}
                 accessibilityRole="tab"
                 accessibilityState={{ selected }}
                 accessibilityLabel={t(`tabs.${tab}`)}
               >
                 <HeroButton.Label
-                  style={{ color: selected ? '#fff' : theme.textSecondary }}
+                  style={{ color: selected ? '#fff' : theme.textSecondary, textAlign: 'center' }}
                   numberOfLines={1}
                 >
                   {t(`tabs.${tab}`)}
