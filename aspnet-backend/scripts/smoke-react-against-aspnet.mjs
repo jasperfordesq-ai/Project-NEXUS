@@ -410,6 +410,29 @@ await step('token-refresh', async () => {
 await browser.close();
 
 // ── report ────────────────────────────────────────────────────────────────────
+
+// 🔴 Report WHICH TRANSPORT the run actually used, measured from the recorded URLs —
+// never inferred from how the process was launched.
+//
+// A run launched with VITE_API_BASE set was once reported as the "direct pass" while
+// every request still went through Vite's proxy. A proxied run cannot exercise CORS at
+// all, so mistaking one for the other means reporting a pass that proved nothing.
+//
+// 🔴 This block was itself claimed as present before it existed: an earlier patch that
+// added it aborted on a failed assertion and wrote nothing, and the claim went into a
+// report anyway. Absolute URLs to the API port are the only evidence that settles it.
+const directCalls = api.filter((r) => /:5080\//.test(r.absolute ?? '')).length;
+const proxiedCalls = api.length - directCalls;
+console.log('\n─── transport mode (measured, not assumed) ───');
+console.log(`  direct  (cross-origin, exercises CORS): ${directCalls}`);
+console.log(`  proxied (same-origin via Vite)        : ${proxiedCalls}`);
+if (directCalls === 0) {
+  console.log('  🔴 PROXIED RUN — this proves NOTHING about CORS. For the direct pass:');
+  console.log('       npm --prefix react-frontend run dev:dotnet:direct');
+  console.log('     (committed script; serves on 5199, which is in the backend CORS and');
+  console.log('      Fido2 origin allowlists. No .env file needed.)');
+}
+
 const byClass = {};
 for (const r of api) {
   const k = classify(r.url, r.status);

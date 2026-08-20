@@ -10,6 +10,7 @@
     "dev": "vite",
     "dev:laravel": "cross-env VITE_BACKEND_TARGET=laravel VITE_API_URL=http://localhost:8090 npm run dev -- --mode laravel",
     "dev:dotnet": "cross-env VITE_BACKEND_TARGET=dotnet VITE_API_URL=http://localhost:5080 npm run dev -- --mode dotnet",
+    "dev:dotnet:direct": "cross-env VITE_BACKEND_TARGET=dotnet VITE_API_BASE=http://127.0.0.1:5080/api VITE_API_URL=http://127.0.0.1:5080 npm run dev -- --mode dotnet --port 5199 --strictPort",
     "copy-locales": "node scripts/copy-locales.mjs",
     "copy-changelog": "node scripts/copy-changelog.mjs",
     "inventory:api-calls": "node scripts/inventory-api-calls.mjs",

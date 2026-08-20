@@ -973,6 +973,202 @@ Laravel serves v1 to a client that asks for v1. The canonical app always asks fo
 nothing is broken today, but a client pinned to v1 would receive a shape it cannot read.
 Recorded, not fixed.
 
+## 2026-08-20 — a planned fix STRUCK OFF as a false lead, and where the false lead came from
+
+The approved plan carried a Phase 1 item: *"Blog envelope: ASP.NET returns a bare array +
+no `categories`; web-uk's category chips silently vanish. Match Laravel's
+`{items, categories, has_more, cursor}` read live."*
+
+**Measured before implementing. It is wrong in every part:**
+
+```
+web-uk's exact call, /api/v2/blog?per_page=12, field-path diff
+  MISSING in ASP.NET : NONE
+  EXTRA   in ASP.NET : 11 (content, updated_at, meta_keywords, canonical_url,
+                       og_image_url, noindex, author{id,name,avatar}, meta.cursor)
+  `categories` key   : absent on BOTH
+```
+
+Both backends return `data` as an ARRAY with near-identical meta (Laravel lacks only
+`cursor`). ASP.NET's response is a strict SUPERSET, which web-uk tolerates. And the
+category chips render on NEITHER backend — checked on the live pages, 0 category filter
+links on both. So there was no gap, no regression, and nothing to fix.
+
+🔴 **Where the false lead came from, because that matters more than the item.** It came
+from a subagent's exploration report during the audit, describing the Laravel shape as
+`{items, categories, has_more, cursor}`. I copied it into the plan without measuring it.
+Every other item in that plan carries a live measurement; this one carried a quotation.
+**A subagent report is a lead, not evidence** — the same standard as any other claim in
+this workstream. Had I implemented it, I would have changed a correct response to match a
+shape Laravel does not serve, and the harness would then have reported a NEW difference
+caused entirely by the fix.
+
+Struck from the plan. The remaining Phase 1 item (a committed configuration path for
+direct mode) stands.
+
+## 2026-08-20 — direct mode is now a COMMITTED script, and two of my own claims were wrong
+
+### Phase 1 closed: `npm run dev:dotnet:direct`
+
+`react-frontend/package.json` now carries a committed direct-mode script:
+
+```
+dev:dotnet:direct = cross-env VITE_BACKEND_TARGET=dotnet
+                    VITE_API_BASE=http://127.0.0.1:5080/api
+                    VITE_API_URL=http://127.0.0.1:5080
+                    npm run dev -- --mode dotnet --port 5199 --strictPort
+```
+
+Verified: **3 calls to :5080, 0 proxied** on the landing page, and a full smoke reporting
+**421 direct / 11 proxied**. Port 5199 is deliberate — it is in both the CORS and Fido2
+origin allowlists, and it is not 5173 (the owner's own dev server).
+`check-backend-guardrails.mjs` passes: Laravel remains the default and no page or
+component is backend-aware.
+
+### 🔴 CORRECTION 1: "VITE_API_BASE on the command line does not reach import.meta.env"
+
+**That claim, recorded earlier in this document and in the smoke script's own header, is
+WRONG.** It does reach it. Proven by running exactly that command on a spare port (5198)
+with the local `.env.dotnet-direct` moved aside: the app called
+`http://127.0.0.1:5080/api/v2/tenant/bootstrap` directly. The requests then failed — but
+with a **CORS** error, because 5198 is not in the allowlist, not because the variable was
+ignored. I had read the failure as "the variable did not apply" when it had applied
+perfectly and something downstream refused.
+
+Consequence: the claim that direct mode "has no committed configuration path" and would
+need "an approved frontend change" was also wrong. A committed npm script was always
+sufficient, and `docs/REACT-DUAL-BACKEND.md:117-119` already prescribed exactly that.
+
+### 🔴 CORRECTION 2: the smoke did NOT report its own transport mode
+
+An earlier session reported that the smoke "now measures and reports its own transport
+mode". **It did not.** The patch that added that block asserted twice, the second
+assertion failed, and Python wrote nothing — so the block never existed while the claim
+was made. The drift reporter and console handler from adjacent patches DID land, which is
+why the file looked plausibly complete.
+
+It exists now and is verified running (421 direct / 11 proxied above). The comment in it
+records that it was once claimed before it existed, because that is the failure worth
+remembering: **a patch that aborts leaves no trace in the output you are reading, and
+"I added it" is not the same as "it ran".** Check the artefact, not the intent.
+
+## 2026-08-20 (Phase 3 begins) — listings 50 fields short -> ZERO, and the removed guard's failure mode arrived within the hour
+
+### Listings: the top-ranked endpoint, closed
+
+`rank-read-differences.mjs` put `/api/v2/listings` first: 50 fields missing, 42 of those
+names appearing in the React source. Verified against the listings UI specifically (grep,
+not assumption) it reads `category`, `user`, `author_name`, `image_url`, `hours_estimate`,
+`is_favorited`, `author_rating`, `service_type`.
+
+`Support/Listings/ListingContractMapper.cs` now projects it. Result: **50 missing -> 0.**
+
+The 5 remaining "extra" fields are both accounted for and deliberate:
+- `estimated_hours` — the dual spelling. Laravel uses `hours_estimate`; this backend
+  emitted `estimated_hours`. BOTH are kept: renaming is subtractive and needs its own
+  per-endpoint evidence, adding the Laravel spelling is additive and fixes the client.
+- `category.{id,name,slug,color}` — ASP.NET's fixture listing HAS a category and
+  Laravel's does not. Fixture asymmetry, not a contract gap.
+
+🔴 **HONEST NULLS, NOT INVENTED VALUES.** About fifteen fields Laravel sends have no
+column on this backend's `Listing` entity — `sdg_goals`, `price`, `service_type`,
+`availability`, `renewal_count`, `save_count`, `contact_count`, `moderation_status`, the
+author-reputation trio, distance/match. The KEY is emitted so a client reading
+`listing.service_type` does not get `undefined` where Laravel gives a value, but the value
+is an explicit null. Two invented properties were caught by the compiler on the way
+(`Category.Color` and a stray `category_id_alias` key I typed by mistake); `Category` has
+no colour column at all, so that is an honest null too.
+
+🔴 **Laravel's `meta` differs BY ENDPOINT — do not unify it.** Measured, same session:
+
+```
+/api/v2/listings -> per_page, has_more, cursor, page, total, total_items
+/api/v2/events   -> per_page, has_more
+/api/v2/groups   -> per_page, has_more
+```
+
+The shared `Paged()` helper therefore keeps emitting the MINIMUM, and listings opts into
+the richer block via `richPagination: true`. Adding those four keys to the helper would
+have made events and groups emit keys Laravel does not send — gratuitous divergence
+introduced by a parity fix, and the third appearance of the over-generalisation that cost
+22 wrong endpoints once and 82 red tests another time.
+
+### 🔴 The guard I deleted would have caught what happened next
+
+A measurement mid-way through this work returned **48/195** — a 30-point collapse, with 43
+status disagreements where there had been 1. Cause: Laravel's `features` column still held
+`{"events":false}` from MY OWN earlier test of the bootstrap cache, so ~40 endpoints
+answered 403 FEATURE_DISABLED and the harness faithfully reported every one as a contract
+difference.
+
+That is precisely the failure mode the feature-flag preflight was built for, arriving
+inside an hour of its removal. Removing it was still correct — it could not fail, and a
+guard that cannot fail converts "unverified" into a printed reassurance. But this is the
+argument for building it PROPERLY: probe an endpoint known to be feature-gated and refuse
+on the real 403, rather than trusting a bootstrap projection that does not reflect stored
+flags.
+
+After restoring the flags: **78/195**, up from 77.
+
+### The guard, rebuilt on the real refusal and PROVEN BOTH WAYS
+
+Rebuilt the same day against a signal that actually moves with the flags. Endpoint choice
+was measured, not guessed:
+
+| Probe candidate | features ON | features `{}` | verdict |
+| --- | --- | --- | --- |
+| `/api/v2/caring-community/emergency-alerts` | 200 | **403 FEATURE_DISABLED** | ✅ usable |
+| `/api/v2/events` | 200 | 200 | ✗ rejected — feature defaults on |
+| `/api/v2/gamification/profile` | 200 | 200 | ✗ rejected — feature defaults on |
+
+Two of the three candidates could never go red, which is the whole reason the first
+attempt was worthless. Proven both directions:
+
+```
+features ON   -> "Preflight: features ON (… -> 200) — environment is measurable."   exit 0
+features '{}' -> "🔴 REFUSING TO MEASURE: … answered 403 FEATURE_DISABLED"          exit 2
+```
+
+🔴 It also cannot pass silently: if the probe itself cannot run it prints that the run is
+UNVERIFIED rather than reporting a pass. A preflight that could not execute must never
+read as one that succeeded — the failure the first version made.
+
+## 2026-08-20 — the FEED is the next ranked endpoint, and it is NOT another events-style port
+
+Scoped before starting, so the next session knows what it is walking into.
+
+`/api/v2/feed` ranks second after listings: **33 fields missing, and all 33 are names the
+React source reads.** But it is a materially bigger job than events or listings, for a
+structural reason:
+
+- Events had ONE source of truth: `app/Support/Events/EventContractMapper.php`, a single
+  937-line class with named methods per sub-object. A faithful port was mechanical.
+- The feed shape is built inside **`app/Services/FeedService.php` (1,915 lines) in at
+  least FOUR separate places** (`:495`, `:872`, `:1422`, `:1729` all build
+  `content_truncated`), with `reactions` attached conditionally at `:1743`.
+
+**Why the missing list looks strange.** The feed is a POLYMORPHIC activity stream, so
+Laravel emits a UNION of per-type fields, most of them null on any given row:
+`start_date` (events), `rating` (reviews), `job_type`/`commitment`/`submission_deadline`
+(jobs), `badge_key`/`badge_name`/`badge_icon`/`new_level` (achievements),
+`credits_offered` (exchanges), `listing_type`, `ideas_count`, `organization`. Plus
+cross-cutting ones: `reactions{counts,total,user_reaction,top_reactors}`, `media`,
+`is_bookmarked`, `is_shared`, `is_official`, `detail_path`, `views_count`, `share_count`.
+
+**Recommended approach when it is picked up:**
+1. Read all four builders in `FeedService` and derive the union ONCE — do not port one
+   builder and assume the others match, which is the mistake the events work made three
+   times over (list, then detail, then roster).
+2. Emit the full union with honest nulls per row type, as `ListingContractMapper` does.
+3. `reactions` is conditional in Laravel (`:1743`) — check whether the client tolerates
+   its absence before deciding to always emit it.
+4. Verify with the smoke's drift capture AND the field diff, not one or the other.
+
+🔴 **Deliberately NOT started here.** Beginning a four-builder union port with limited
+remaining context would leave it half-applied, which for a fail-closed client is worse
+than not starting: a partial union still fails validation, so the endpoint would be no
+better while looking as if it had been worked on.
+
 ## Baseline 1 (712/1000) and all dated sections below are AUDIT TRAIL
 
 🔴 Everything from here down is history. Baseline 1's 712/1000 is retained

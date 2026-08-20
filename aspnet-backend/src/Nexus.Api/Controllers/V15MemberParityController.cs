@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 using Nexus.Api.Support.Events;
+using Nexus.Api.Support.Listings;
 using System.Collections.Concurrent;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -458,21 +459,39 @@ public class V15MemberParityController : ControllerBase
         if (Request.Path.Value?.Contains("featured", StringComparison.OrdinalIgnoreCase) == true) query = query.Where(l => l.IsFeatured);
 
         var total = await query.CountAsync();
-        var listings = await query.OrderByDescending(l => l.CreatedAt).Skip(Skip(page, limit)).Take(Limit(limit)).Select(l => new
+        // 🔴 Projected through ListingContractMapper, not a hand-rolled anonymous object.
+        // This endpoint was the worst remaining read: 50 fields short of Laravel, 42 of
+        // them names the React source reads. The listings UI specifically reads `category`,
+        // `user`, `author_name`, `image_url`, `hours_estimate`, `is_favorited`,
+        // `author_rating` and `service_type` — verified by grep, not assumed.
+        var viewerId = CurrentUserId();
+        var rows = await query
+            .OrderByDescending(l => l.CreatedAt)
+            .Skip(Skip(page, limit))
+            .Take(Limit(limit))
+            .Include(l => l.User)
+            .Include(l => l.Category)
+            .ToListAsync();
+
+        // Favourites in ONE query rather than per row — an N+1 here would be a
+        // performance fault introduced by a parity fix.
+        var ids = rows.Select(l => l.Id).ToList();
+        var favourited = viewerId is null
+            ? new HashSet<int>()
+            : (await _db.ListingFavorites.AsNoTracking()
+                .Where(fav => fav.UserId == viewerId && ids.Contains(fav.ListingId))
+                .Select(fav => fav.ListingId)
+                .ToListAsync()).ToHashSet();
+
+        var listings = rows.Select(l => ListingContractMapper.Listing(l, new ListingContractMapper.Facts
         {
-            id = l.Id,
-            title = l.Title,
-            description = l.Description,
-            type = l.Type.ToString().ToLowerInvariant(),
-            status = l.Status.ToString().ToLowerInvariant(),
-            location = l.Location,
-            estimated_hours = l.EstimatedHours,
-            is_featured = l.IsFeatured,
-            view_count = l.ViewCount,
-            created_at = l.CreatedAt,
-            user_id = l.UserId
-        }).ToListAsync();
-        return Ok(Paged(listings, page, limit, total));
+            ViewerId = viewerId,
+            IsFavorited = favourited.Contains(l.Id),
+        })).ToList();
+
+        // Listings is one of the endpoints whose Laravel meta carries the richer
+        // pagination block — measured, not assumed. See Paged().
+        return Ok(Paged(listings, page, limit, total, richPagination: true));
     }
 
     [HttpGet("api/v2/listings/saved")]
@@ -2545,17 +2564,55 @@ public class V15MemberParityController : ControllerBase
     /// base_url is added by <see cref="Nexus.Api.Filters.LaravelDataEnvelopeFilter"/>,
     /// which fills it into an existing meta rather than replacing one.
     /// </summary>
-    private static object Paged<T>(IEnumerable<T> data, int page, int limit, int total)
+    /// <summary>
+    /// 🔴 Laravel's `meta` differs BY ENDPOINT, so this helper deliberately emits the
+    /// MINIMUM. Measured on the disposable Laravel, same session:
+    ///
+    ///   /api/v2/listings -> per_page, has_more, cursor, page, total, total_items
+    ///   /api/v2/events   -> per_page, has_more
+    ///   /api/v2/groups   -> per_page, has_more
+    ///
+    /// Adding the four richer keys here would make events and groups emit keys Laravel
+    /// does NOT send — gratuitous divergence introduced by a parity fix, and the same
+    /// over-generalisation that cost this workstream 22 wrong endpoints once and 82 red
+    /// tests another time. Endpoints that need the richer block pass
+    /// <paramref name="richPagination"/>; the default stays minimal.
+    ///
+    /// `base_url` is added by LaravelDataEnvelopeFilter, not here.
+    /// </summary>
+    private static object Paged<T>(IEnumerable<T> data, int page, int limit, int total,
+        bool richPagination = false)
     {
         var perPage = Limit(limit);
         var currentPage = Math.Max(page, 1);
+        var hasMore = (long)currentPage * perPage < total;
+
+        if (richPagination)
+        {
+            return new
+            {
+                data,
+                meta = new
+                {
+                    per_page = perPage,
+                    has_more = hasMore,
+                    // `cursor` is null when there is no next page — Laravel emits the key
+                    // either way, so it must be present rather than omitted.
+                    cursor = (string?)null,
+                    page = currentPage,
+                    total,
+                    total_items = total,
+                },
+            };
+        }
+
         return new
         {
             data,
             meta = new
             {
                 per_page = perPage,
-                has_more = (long)currentPage * perPage < total,
+                has_more = hasMore,
             },
         };
     }

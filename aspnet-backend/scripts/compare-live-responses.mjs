@@ -230,9 +230,77 @@ function sample(list, total) {
 // check could not fail, and a guard that cannot fail is worse than none — it converts
 // "unverified" into a printed reassurance.
 //
-// To build it properly: probe an endpoint KNOWN to be feature-gated and refuse on a
-// 403 FEATURE_DISABLED response, rather than trusting a bootstrap projection. Until
-// then, run start-disposable-laravel.sh and READ ITS OUTPUT before measuring.
+// REBUILT PROPERLY on 2026-08-20, on the real refusal rather than a projection — see
+// assertFeaturesEnabled below.
+
+/**
+ * The endpoint the feature-gate preflight probes.
+ *
+ * 🔴 Chosen because it is MEASURED to change with the flags, which the bootstrap feature
+ * map is not. Same session, same fixture, Laravel :8091:
+ *
+ *     features all on   -> 200 {"data":[],"meta":{…}}
+ *     features '{}'      -> 403 {"errors":[{"code":"FEATURE_DISABLED",…}]}
+ *
+ * `/api/v2/events` and `/api/v2/gamification/profile` were tried first and REJECTED as
+ * signals: both stay 200 with the flags cleared, because their features default on. A
+ * probe that cannot go red is the mistake this replaces.
+ */
+const FEATURE_GATE_PROBE = '/api/v2/caring-community/emergency-alerts';
+
+/**
+ * Refuses to measure a half-prepared fixture.
+ *
+ * When the disposable Laravel's optional features are off, ~27 endpoints answer 403
+ * FEATURE_DISABLED and this harness faithfully reports every one as a contract
+ * difference. That is not hypothetical twice over: start-disposable-laravel.sh failed
+ * silently this way on 2026-08-19, and on 2026-08-20 a leftover `{"events":false}` from a
+ * previous experiment produced a 30-point false collapse (48/195 against a true 78/195)
+ * with 43 phantom status disagreements.
+ *
+ * 🔴 Cannot pass silently. If the probe itself cannot run it WARNS and says the run is
+ * unverified, because a preflight that could not execute must never read as one that
+ * passed.
+ */
+async function assertFeaturesEnabled(token) {
+  if (!token) {
+    console.log('Preflight: skipped (no Laravel credentials — signed-out runs are not gated).');
+    return;
+  }
+
+  let status;
+  let body = '';
+  try {
+    const response = await fetch(`${LARAVEL}${FEATURE_GATE_PROBE}`, {
+      headers: {
+        Accept: 'application/json',
+        'X-Tenant-ID': LARAVEL_TENANT,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    status = response.status;
+    body = await response.text();
+  } catch (error) {
+    console.log(`⚠️  Preflight could not run (${error.message}). This run is UNVERIFIED for a`);
+    console.log('   half-prepared fixture — treat any large drop with suspicion.');
+    return;
+  }
+
+  if (status === 403 && body.includes('FEATURE_DISABLED')) {
+    console.error('');
+    console.error('🔴 REFUSING TO MEASURE: the Laravel fixture community has its optional');
+    console.error(`   features OFF — ${FEATURE_GATE_PROBE} answered 403 FEATURE_DISABLED.`);
+    console.error('   About 27 endpoints refuse in this state and this harness would report');
+    console.error('   every one as a contract difference (measured: a 30-point false collapse).');
+    console.error('   Fix it, then re-run:');
+    console.error('     bash aspnet-backend/scripts/start-disposable-laravel.sh');
+    console.error('   or against a running instance, apply all-features-on.mjs to tenants.features.');
+    console.error('');
+    process.exit(2);
+  }
+
+  console.log(`Preflight: features ON (${FEATURE_GATE_PROBE} -> ${status}) — environment is measurable.`);
+}
 
 async function main() {
   const pathsFile = flag('paths', null);
@@ -245,6 +313,8 @@ async function main() {
 
   console.log(`Laravel : ${LARAVEL} (tenant ${LARAVEL_TENANT})`);
   console.log(`ASP.NET : ${ASPNET} (tenant ${ASPNET_TENANT})`);
+
+  await assertFeaturesEnabled(laravelToken);
 
 
   // 🔴 Printed every run so a number can never be read out of context. A
