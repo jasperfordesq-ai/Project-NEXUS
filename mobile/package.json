@@ -41,7 +41,8 @@
     "prepare": "cd .. && husky mobile/.husky || true",
     "screenshot:sweep": "node scripts/screenshots.mjs sweep",
     "themes:generate": "node scripts/generate-tenant-themes.mjs",
-    "themes:check": "node scripts/generate-tenant-themes.mjs --check"
+    "themes:check": "node scripts/generate-tenant-themes.mjs --check",
+    "check:cert-pins": "node scripts/check-cert-pins.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

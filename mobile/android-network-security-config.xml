@@ -2,20 +2,57 @@
 <!--
   Android Network Security Configuration for Project NEXUS
 
-  Certificate pinning: pins the live leaf SPKI and the Google Trust Services
-  WE1 intermediate SPKI as the rotation-safe backup.
+  Certificate pinning for api.project-nexus.ie: the Google Trust Services WE1
+  INTERMEDIATE as the primary pin, and the GTS Root R4 as the rotation-safe
+  backup. Deliberately NOT the leaf.
 
-  Pins last verified: 2026-07-14 — run scripts/get-cert-pins.sh to refresh after certificate rotation.
-  Keep BACKUP pins from an intermediate CA so a certificate rotation doesn't lock users out.
+  🔴 Why the leaf pin was REMOVED on 2026-08-20, because re-adding it would
+  recreate a live problem rather than tighten anything.
+
+  The leaf certificate has a 90-DAY lifetime (measured: notBefore 2026-08-10,
+  notAfter 2026-11-08) and rotates automatically. Pinning it therefore guarantees
+  the pin goes stale about four times a year. It already had: this file claimed
+  "Pins last verified: 2026-07-14" and by 2026-08-20 the pinned leaf
+  (Owkg3TiAdb9cU+XKSXkJfvD2tCx+supL5btxtXNJaJE=) matched NOTHING in the live
+  chain, which had rotated to Qk4GkShf/CuASLSvDeBlIeHwQ8obPwOyh0sGZ+cOZ1M=.
+
+  The app kept working only because Android trusts a chain when ANY certificate in
+  it matches ANY pin, so the intermediate pin carried it alone. That is the backup
+  pin doing exactly the job it was added for — but it left the app one pin deep,
+  with no spare, which is the state that bricks an app if the CA rotates.
+
+  And the leaf pin was buying nothing. With the intermediate pinned, the effective
+  constraint is already "a certificate issued by GTS WE1"; adding the leaf narrows
+  nothing while guaranteeing quarterly staleness and inviting exactly the false
+  confidence found above — a "last verified" date that was five weeks out of date.
+
+  What is pinned now, and how long each is good for (measured from the live chain):
+
+    WE1 intermediate   notAfter 2029-02-20  — primary
+    GTS Root R4        a root; lifetime in decades — backup
+
+  Two pins at different depths means an intermediate rotation cannot lock anyone
+  out, which was the one remaining way this could take the app down.
+
+  Refresh procedure: `bash scripts/get-cert-pins.sh` prints the live chain, and
+  `node scripts/check-cert-pins.mjs` checks these pins against it. The 90-day
+  expiry headroom is enforced by `npm run verify:release`.
 -->
 <network-security-config>
   <domain-config cleartextTrafficPermitted="false">
     <domain includeSubdomains="false">api.project-nexus.ie</domain>
-    <pin-set expiration="2027-01-01">
-      <!-- Leaf certificate pin — verified 2026-07-14 via scripts/get-cert-pins.sh -->
-      <pin digest="SHA-256">Owkg3TiAdb9cU+XKSXkJfvD2tCx+supL5btxtXNJaJE=</pin>
-      <!-- Intermediate CA backup pin — verified 2026-07-14 from the live chain -->
+    <!--
+      expiration is a FAIL-OPEN safety valve: after this date Android stops
+      enforcing the pin set entirely, so the app keeps working but loses pinning.
+      Set ~12 months out and reviewed deliberately, rather than far enough away to
+      be forgotten. `verify:release` fails once fewer than 90 days remain, so the
+      gate goes red around 2027-06-03 — long before pinning silently lapses.
+    -->
+    <pin-set expiration="2027-09-01">
+      <!-- GTS WE1 intermediate — verified 2026-08-20 from the live chain, notAfter 2029-02-20 -->
       <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+      <!-- GTS Root R4 — verified 2026-08-20 from the live chain; survives an intermediate rotation -->
+      <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
     </pin-set>
   </domain-config>
 

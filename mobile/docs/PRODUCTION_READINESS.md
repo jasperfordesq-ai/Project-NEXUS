@@ -145,10 +145,62 @@ cd mobile && npm run verify:release && npm run verify:network-security
 
 → both pass.
 
-`verify:release` gained an assertion this session: every channel that is pinned must
+`verify:release` gained an assertion on 2026-08-19: every channel that is pinned must
 also have a publish path, derived from the publisher's own source so the two cannot
-drift. Certificate pinning expires **2027-01-01** and the gate demands 90 days'
-headroom, so it turns red around **2026-10-03** — see row 16.
+drift.
+
+🔴 **Certificate pinning: the 2026-10-03 deadline is CLOSED, and refreshing it found a
+live problem the deadline was hiding.** Handled 2026-08-20 — see 6.1.
+
+### 6.1 🔴 The pinned certificate was already stale, and no gate could see it
+
+Refreshing the pins ahead of the October deadline found a live problem rather than a
+routine date change.
+
+```bash
+bash scripts/get-cert-pins.sh api.project-nexus.ie
+```
+
+→ live leaf `Qk4GkShf/CuASLSvDeBlIeHwQ8obPwOyh0sGZ+cOZ1M=`, while the config pinned
+`Owkg3TiAdb9cU+XKSXkJfvD2tCx+supL5btxtXNJaJE=` under the comment *"Pins last verified:
+2026-07-14"*. **The pinned leaf matched nothing in the live chain** — about five weeks
+out of date, with every gate green throughout.
+
+Why: the leaf has a **90-day lifetime** (measured `notBefore 2026-08-10`,
+`notAfter 2026-11-08`) and rotates automatically, so pinning it guarantees staleness
+roughly four times a year.
+
+The app kept working only because Android trusts a chain when ANY certificate matches ANY
+pin, so the intermediate backup carried it alone. That is the backup doing its job — and
+it left the app **one pin deep with no spare**, which is the state that bricks an app the
+moment a CA rotates. A date-based gate could never have caught it: the expiry was fine.
+
+**What changed.** The leaf pin was removed and the config now pins the GTS WE1
+intermediate (`notAfter 2029-02-20`) plus the GTS Root R4 — two pins at *different chain
+depths*, so an intermediate rotation cannot lock anyone out. Expiry moved to
+**2027-09-01**, which keeps `verify:release` green until about 2027-06-03. The leaf pin
+was buying nothing anyway: with the intermediate pinned, the effective constraint is
+already "issued by GTS WE1".
+
+**The gap that let it happen is now covered.**
+
+```bash
+npm run check:cert-pins
+```
+
+→ `2 declared, 3 served` · both PINNED · `OK — 2 pins match, at different chain depths`
+
+Run against yesterday's config it reports the exact diagnosis and exits 1:
+`STALE Owkg3Ti…` then *"only ONE declared pin matches the live chain — the app works
+today, but a single CA rotation would brick it"*. Deliberately **not** in the blocking CI
+path (it makes a real TLS connection; a network blip reddening a release gate teaches
+people to ignore gates), and it exits **2** for "could not check" so an unreachable host
+can never read as a pass. `lib/security/certificatePinning.test.ts` covers the offline
+half — the retired leaf cannot be re-added, expiry keeps its headroom, and the generated
+Android project must match the source byte for byte, since the plugin copies it at
+prebuild and an edit to the source alone would otherwise ship nothing.
+
+---
 
 ## 7. Lint and code style — Adequate (newly scored)
 
@@ -440,9 +492,12 @@ mutation: removing the registration turns that test red.
   `DISTRIBUTION.md` designates for public download, and the only current route to a
   member — had no publish path at all.
 
-**Hard date: certificate pinning expires 2027-01-01 and the gate requires 90 days'
-headroom, so `verify:network-security` turns red around 2026-10-03** — and it is in the
-release gate, so it blocks web deploys too. `mobile/scripts/get-cert-pins.sh` refreshes it.
+Certificate pinning is no longer a pending date — closed 2026-08-20, see 6.1. Two
+corrections to what this document said about it: the 90-day check lives in
+`verify-release-config.mjs:53` (i.e. `verify:release`), **not** in
+`verify:network-security`; and the mechanism by which it blocks a web deploy is the
+nightly full CI run plus the deploy verifier failing closed, not the push-triggered run
+(where a mobile-untouched push skips the job entirely).
 
 ## 17. Store readiness — Unmeasured (new row)
 
@@ -509,23 +564,28 @@ Ordered by what blocks what, not by effort.
 
 ### P1 — before ANY distribution (target: mid-September)
 
-1. **Complete the force-update lever.** The client half shipped this session
-   (`X-Nexus-Mobile-Version` on every request). Still needed: a server minimum-version
-   response, a blocking screen the app shows when it is too old, and an
-   `expo-updates` "update ready — restart" prompt. **This must precede the first
-   distributed binary**; everything else on this list can be added afterwards.
-2. **Turn crash reporting on** (owner action: Sentry project + DSN), and add mobile to
-   `scripts/sentry-triage.mjs`.
+1. ✅ **Force-update lever — DONE 2026-08-19**, both halves, proven on a device. See
+   row 16. The remaining third of the update story is still open: `expo-updates` is
+   unused, so a published fix is picked up only on a later cold start, silently, with no
+   "update ready — restart" prompt.
+2. ✅ **Crash reporting — DONE 2026-08-19** by a different route than planned. Rather
+   than waiting on an owner account, all 13 report sites now also post to our own API and
+   crashes are logged at `error`, so they reach the existing nightly triage. A Sentry
+   project would add grouping and symbolication and remains an owner action;
+   `scripts/sentry-triage.mjs` has the slot.
 3. **Rollback runbook** — an `eas update:rollback` wrapper with `publish-update.mjs`'s
    guards. Pin `eas-cli` rather than resolving `@latest` at publish time.
 4. **Close row 9.1** — the blank rewards/leaderboard screen.
 5. Adopt `ErrorState` across the remaining modals that still have no failure branch.
 6. Narrow `ACCESS_FINE_LOCATION` or write the justification.
 
-### P2 — hard date
+### P2 — hard date: ✅ DONE 2026-08-20
 
-**Refresh the certificate pins by mid-September.** The gate goes red around 2026-10-03
-and blocks web deploys as well. `mobile/scripts/get-cert-pins.sh`.
+Was "refresh the certificate pins by mid-September, the gate goes red around 2026-10-03
+and blocks web deploys as well". Closed — and the refresh turned out to be a live fault
+rather than a date change, because the pinned leaf was already five weeks stale. See 6.1.
+The next deliberate review is around **2027-06-03**, when the new expiry comes inside the
+gate's 90-day window.
 
 ### P3 — distribution
 

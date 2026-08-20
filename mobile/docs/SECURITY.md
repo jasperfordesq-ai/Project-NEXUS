@@ -86,11 +86,52 @@ separate `app.json` entry.
 bash scripts/get-cert-pins.sh api.project-nexus.ie 443
 ```
 
-Update `android-network-security-config.xml` with the verified leaf pin and an
-independent backup/intermediate pin. Keep at least two SHA-256 pins and move the
-`pin-set` expiration far enough ahead for the release gate's 90-day minimum.
-Never add a TrustKit element: Android Network Security Configuration does not
-support it.
+Then check the declared pins against what the server actually serves:
+
+```bash
+npm run check:cert-pins
+```
+
+🔴 **Pin the INTERMEDIATE and the ROOT, not the leaf** (changed 2026-08-20). This
+reverses the previous instruction, and the reason is measured rather than
+theoretical.
+
+The leaf certificate has a **90-day lifetime** and rotates automatically
+(measured: notBefore 2026-08-10, notAfter 2026-11-08). Pinning it therefore
+guarantees the pin goes stale roughly four times a year — and it had: the config
+said "Pins last verified: 2026-07-14" while the pinned leaf matched **nothing** in
+the live chain, five weeks out of date, with every gate green.
+
+The app kept working only because Android trusts a chain when ANY certificate in it
+matches ANY pin, so the intermediate backup carried it alone. That left it **one
+pin deep with no spare**, which is the state that bricks an app the moment a CA
+rotates.
+
+The leaf pin was also buying nothing. With the intermediate pinned, the effective
+constraint is already "a certificate issued by GTS WE1"; the leaf narrows nothing
+while guaranteeing quarterly staleness and inviting false confidence in a
+"last verified" date.
+
+So: keep at least two SHA-256 pins **at different chain depths** — the GTS WE1
+intermediate (notAfter 2029-02-20) and the GTS Root R4 — and move the `pin-set`
+expiration far enough ahead for the release gate's 90-day minimum. Never add a
+TrustKit element: Android Network Security Configuration does not support it.
+
+**What each check does and does not cover**, since the gap between them is how the
+stale pin survived:
+
+| Check | Covers | Does NOT cover |
+| --- | --- | --- |
+| `verify:network-security` | pinning exists, cleartext refused | whether the pins are correct |
+| `verify:release` | pin-set expiry >90 days, ≥2 pins | whether the pins match anything |
+| `check:cert-pins` | pins match the LIVE chain, at ≥2 depths | anything offline |
+| `lib/security/certificatePinning.test.ts` | the retired leaf is not re-added; source and generated agree | the live chain |
+
+`check:cert-pins` is deliberately **not** in the blocking CI path: it makes a real
+TLS connection, so a network blip would redden a release gate and teach everyone to
+ignore it. Run it by hand after a certificate change, and from the nightly sweep.
+It exits **2** for "could not check" — never 0 — so an unreachable host can never
+read as a pass.
 
 **Step 3 - Run the source-level release gate:**
 
@@ -126,8 +167,13 @@ iOS enforces HTTPS by default via ATS. To add certificate pinning on iOS you nee
 
 **Important — pin rotation:**
 
-- Always include at least two pins (primary + backup)
-- Set an `expiration` date and rotate while more than 90 days remain
+- Always include at least two pins, **at different chain depths** (intermediate + root).
+  Two pins on the same certificate are one pin.
+- **Do not pin a short-lived leaf.** It rotates every ~90 days and adds no constraint
+  that the intermediate pin does not already impose.
+- Set an `expiration` date and rotate while more than 90 days remain. Note it is a
+  FAIL-OPEN valve: past that date Android stops enforcing pinning altogether, so the
+  app keeps working but silently loses the protection.
 - Ship a new native Android binary after changing pins; an OTA JavaScript update cannot replace the packaged network security XML
 - A failed pin with no backup = the app cannot connect to the API
 
