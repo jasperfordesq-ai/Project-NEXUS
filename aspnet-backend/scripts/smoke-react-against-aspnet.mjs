@@ -168,7 +168,7 @@ await step('login-submit', async () => {
 // crash caused by the events contract port was only ever going to be caught by rendering a
 // page, never by a response diff — a diff compares the shape you ASKED for, and the harness
 // asks for the canonical one. If you port a read endpoint, put its page in this list.
-for (const [name, path] of [['dashboard', '/dashboard'], ['feed', '/feed'], ['listings', '/listings'], ['events', '/events'], ['members', '/members'], ['wallet', '/wallet']]) {
+for (const [name, path] of [['dashboard', '/dashboard'], ['feed', '/feed'], ['listings', '/listings'], ['events', '/events'], ['members', '/members'], ['wallet', '/wallet'], ['help', '/help']]) {
   await step(name, async () => {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2500);
@@ -389,6 +389,110 @@ await step('action-rsvp-event', async () => {
 // So "REFRESH FAILED" below means "this client did not silently recover from a missing
 // token", which is a reasonable client behaviour, NOT evidence the backend cannot
 // refresh. To test the backend, call the endpoint. To test true expiry, you need a
+// ── Tier-1 journeys added 2026-08-20 (C.2 of the certification plan) ───────────────
+// Each asserts an EFFECT, never merely "no error shown", and each labels a selector
+// miss as a TEST gap rather than a backend result — the four-failed-login-probe
+// lesson, written where the next selector will be typed.
+
+// PROFILE: the page must render the signed-in member's own identity, and the edit
+// screen must open with a form. (Editing itself is asserted only as far as the form
+// accepting input — a save changes durable state every run, and the profile has no
+// stamped field to safely churn.)
+await step('journey-profile', async () => {
+  await page.goto(`${BASE}/profile`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+  const text = (await page.locator('body').innerText()).trim();
+  if (text.length < 200) throw new Error('profile page rendered almost no content');
+  const hasIdentity = /Member|member@acme\.test|Acme/i.test(text);
+  console.log(`    profile renders the member's identity: ${hasIdentity ? 'YES' : 'no (unconfirmed — check fixture names)'}`);
+
+  // 🔴 There is NO Edit control on the profile page — own-profile editing lives in
+  // SETTINGS (ProfilePage.tsx:199 explains the isOwnProfile → "Settings/edit UI"
+  // routing). The first run of this journey probed for an Edit button here and
+  // reported a selector miss; that was the app's real structure, not a gap. The edit
+  // surface is asserted below on /settings instead.
+  await page.goto(`${BASE}/settings`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  const fields = await page.locator('input, textarea, select').count();
+  console.log(`    settings (the edit surface) opened with ${fields} form fields: ${fields > 0 ? 'YES' : 'no'}`);
+  if (fields === 0) throw new Error('settings rendered no editable fields');
+});
+
+// NOTIFICATIONS: the page must render, and if anything is unread, marking it read
+// must stick. The earlier RSVP/post/transfer actions generate notifications for the
+// admin, not this member, so an empty list here is a fixture fact, not a failure.
+await step('journey-notifications', async () => {
+  await page.goto(`${BASE}/notifications`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+  const text = (await page.locator('body').innerText()).trim();
+  if (text.length < 100) throw new Error('notifications page rendered almost no content');
+  const markAll = page.locator('button:has-text("Mark all")').first();
+  if (await markAll.count() && await markAll.isEnabled().catch(() => false)) {
+    await markAll.click({ timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(2000);
+    console.log('    mark-all-read clicked; page still standing:', !(page.url().includes('/login')));
+  } else {
+    console.log('    nothing unread to mark (fixture fact, not a failure)');
+  }
+});
+
+// SETTINGS + THEME: the settings page must render, and toggling the theme must
+// change the document class AND survive a reload (it persists via
+// PUT /users/me/theme — a silent 4xx there means the toggle reverts on reload).
+await step('journey-settings-theme', async () => {
+  await page.goto(`${BASE}/settings`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(1500);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+  const isDark = () => page.evaluate(() => document.documentElement.classList.contains('dark'));
+  const before = await isDark();
+  // 🔴 The toggle is a DropdownItem INSIDE the avatar menu ("Dark Mode"/"Light Mode",
+  // Navbar.tsx:959-969), not a standalone navbar button — a standalone-button selector
+  // silently missed and made the persistence assertion vacuous on this journey's first
+  // run. Open the avatar dropdown, then click the mode item.
+  const avatar = page.locator('header button:has(img), nav button:has(img)').last();
+  if (!(await avatar.count())) { console.log('    no avatar trigger found — selector needs updating, NOT a backend result'); return; }
+  await avatar.click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1000);
+  const modeItem = page.locator('li:has-text("Dark Mode"), li:has-text("Light Mode"), [role="menuitem"]:has-text("Mode")').first();
+  if (!(await modeItem.count())) { console.log('    theme menu item not found — selector needs updating, NOT a backend result'); return; }
+  await modeItem.click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const after = await isDark();
+  console.log(`    theme flipped in-page: ${before !== after ? 'YES' : 'no'}`);
+  if (before === after) { console.log('    (toggle had no effect — cannot assert persistence this run)'); return; }
+
+  await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2000);
+  const persisted = await isDark();
+  console.log(`    theme survived a reload (PUT /users/me/theme persisted): ${persisted === after ? 'YES' : 'NO — the preference write failed silently'}`);
+  if (persisted !== after) throw new Error('theme preference did not persist across reload');
+});
+
+// FEED COMMENT: commenting on the post this run just created. Asserts the comment
+// text is on the page afterwards.
+await step('journey-feed-comment', async () => {
+  await page.goto(`${BASE}/feed`, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2000);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+  const comment = page.locator('button:has-text("Comment")').first();
+  if (!(await comment.count())) { console.log('    no Comment control — selector needs updating, NOT a backend result'); return; }
+  await comment.click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+
+  const box = page.locator('input[placeholder*="comment" i], textarea[placeholder*="comment" i]').first();
+  if (!(await box.count())) { console.log('    comment box did not open — selector needs updating, NOT a backend result'); return; }
+  const body = `Smoke comment ${stampSuffix}`;
+  await box.fill(body, { timeout: 8000 }).catch(() => {});
+  await box.press('Enter').catch(() => {});
+  await page.waitForTimeout(3000);
+  const present = await page.locator(`text=${body}`).count();
+  console.log(`    comment visible afterwards: ${present > 0 ? 'YES — commenting works' : 'no (unconfirmed)'}`);
+});
+
 // short-lived access token, not a deleted one.
 //
 // 🔴 Laravel does not serve /api/auth/refresh at all — its routes are

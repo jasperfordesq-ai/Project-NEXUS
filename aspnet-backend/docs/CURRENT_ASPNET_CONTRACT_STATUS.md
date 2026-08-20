@@ -140,7 +140,6 @@ error envelopes, redirects, authorization boundaries, tenant behavior,
 provider effects, persistence, and upgrade behavior. Frontend adapters or
 ASP.NET-specific page branches do not satisfy the goal.
 
-
 ## Open Certification Gates
 
 The open deductions are Baseline 3's **347 points**. They are independent
@@ -173,25 +172,56 @@ and is never a test fixture. Production operation remains a separate owner
 decision per ADR-0002 regardless of score; the live ASP.NET database backup
 gap (none since 2026-03-08) is a named production hard-stop.
 
-
 ## Finite Ordered Backend Queue
 
 The live plan (owner-approved 2026-08-20) supersedes the old eight-package
 queue, which was written against Baseline 1's numbers; that queue is preserved
 in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
 
-1. **A — Documentation restructure** (this commit) and **B — Baseline 3
-   rescore** on the regenerated evidence pack; CI on push `1c483377c` is the
-   last precondition.
-2. **C — Frontend runtime certification, tiered** (the 125-point category):
-   C.1 journey harness (React's exists — extend it; **web-uk's must be
-   BUILT** — no committed web-uk-vs-ASP.NET instrument exists); C.2 the
-   twelve core member journeys, fixing what breaks; C.3 feature modules, then
-   admin, then web-uk. First known breaks: `/api/v2/events` ignores
-   `per_page`/`when`/`group_id`/`mine` (the dashboard shows finished events
-   under "Upcoming"); `/api/v2/feed/sidebar` serialises a raw EF entity; feed
-   `subtype`; four route gaps (messages voice/attachment media, attendance
-   code, credential download); token refresh across real expiry.
+1. ✅ **A — Documentation restructure** and ✅ **B — Baseline 3 banked at
+   653/1000** (both landed 2026-08-20; CI on push `1c483377c` all green).
+2. **C — Frontend runtime certification, tiered** (the 125-point category).
+   Progress 2026-08-20, published pending its banking transaction:
+   - ✅ **C.1 (web-uk half): the instrument now EXISTS as committed code** —
+     `scripts/smoke-webuk-against-aspnet.mjs` self-provisions BOTH web-uk
+     instances (wiring guaranteed by construction), compares signed-out page
+     pairs against the Laravel control, writes a JSON artifact, and carries a
+     shrink-only known-differences list. First runs: 10/12 → **11/12 + 1
+     diagnosed fixture asymmetry** (the master-tenant exclusion in
+     `TenantBootstrapController::list` — both backends implement the same
+     rule; the fixtures differ in non-master tenant count).
+   - ✅ `/api/v2/events` discovery filters FIXED: `when` (upcoming default,
+     past/all, 422 on junk in Laravel's exact error shape), `per_page`,
+     `group_id` (422 on non-positive-integer), `q`, opaque paging cursor
+     emitted only while more rows exist. The dashboard's "Upcoming" no longer
+     shows finished events and gets 3 when it asks for 3. `mine` is
+     deliberately NOT implemented — Laravel ignores it too.
+     `EventsListDiscoveryFilterTests` (9) pins all of it.
+   - ✅ `/api/v2/help/faqs` reshaped GROUPED (`{category, faqs[]}`), the shape
+     BOTH frontends read — the flat rows meant every FAQ silently vanished
+     from both help pages. Found by the new web-uk instrument on its first
+     run. `HelpFaqsGroupedContractTests` pins the shape, the `q` filter, and
+     the category_id-matches-the-VARCHAR quirk.
+   - ✅ **C.2 journeys, first tranche: the React smoke is now 21 steps**, all
+     passing with EFFECT assertions: profile identity renders + the settings
+     edit surface opens (14 fields; there is no Edit control on the profile
+     page — editing lives in Settings, `ProfilePage.tsx:199`), notifications
+     mark-all-read works, **theme toggles AND persists across a reload**
+     (proving `PUT /users/me/theme` end-to-end; the toggle is a DropdownItem
+     inside the avatar menu, and the first selector missed it — recorded in
+     the script), and a feed comment posts and is visible afterwards. 0
+     uncaught page errors; every console error is a pre-known item
+     (TopEndorsedWidget key warning ×N, `api/cookie-consent` CORS miss,
+     `/me/fadp/consent` 401, the RSVP page's known-missing routes).
+   - Still open in C: the rest of C.2's twelve journeys (sign-up incl. legal
+     gate, messages send/receive, members connect, wallet history, feed
+     infinite scroll + reactions through the UI), `/api/v2/feed/sidebar`
+     raw-EF-entity projection, feed `subtype`, four route gaps (messages
+     voice/attachment media, attendance code, credential download), token
+     refresh across REAL expiry (the forced-401 probe shows the client sends
+     the user to /login rather than silently recovering — client behaviour,
+     not a backend verdict), the `api/cookie-consent` CORS/route miss, and
+     the web-uk signed-in tier.
 3. **D — stubs and semantic tail, interleaved with C**: implement the
    client-called stubs journeys hit, delete the 63 uncalled (owner sees the
    list first), validator-first semantic order, security items R-4 / R-18 /
@@ -205,7 +235,6 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
 
 Banking cadence: a scoring transaction at every tier/phase completion —
 never estimated, never silent.
-
 
 ## Required Status-Report Format
 

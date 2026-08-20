@@ -4,7 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:5080';
-const DEFAULT_TENANT = 'hour-timebank';
+// 🔴 `acme`, not `hour-timebank` (fixed 2026-08-20): hour-timebank is the LARAVEL test
+// tenant and does not exist in the ASP.NET Development seed, so every audit run with the
+// old default measured a nonexistent tenant. The ASP.NET seed's tenant is `acme`
+// (aspnet-backend/CLAUDE.md, "Test credentials").
+const DEFAULT_TENANT = 'acme';
 
 function stripTrailingSlash(value) {
   return String(value || '').trim().replace(/\/+$/, '');

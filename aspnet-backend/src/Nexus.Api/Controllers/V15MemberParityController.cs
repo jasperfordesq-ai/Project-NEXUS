@@ -101,17 +101,104 @@ public class V15MemberParityController : ControllerBase
     /// this list carries two extra fields Laravel does not send is recorded as an open
     /// item, not fixed here on the strength of this measurement.
     /// </summary>
+    /// <remarks>
+    /// 🔴 THE FILTERS ARE THE FIX (2026-08-20). This action accepted only
+    /// `page`/`limit`/`search`, so every parameter the React clients actually send was
+    /// silently ignored — measured, not assumed: the dashboard asks
+    /// `when=upcoming&amp;per_page=3` (`DashboardPage.tsx:286`) and got 5 events
+    /// INCLUDING A FINISHED ONE (proven with a temporary past-event row); the group page
+    /// asks `group_id=…&amp;when=all&amp;per_page&amp;cursor` (`groupDetail.ts:375-380`)
+    /// and got every group's events with no way to paginate.
+    ///
+    /// The Laravel contract, read from `EventsController::index` + `EventService::getAll`
+    /// and probed live on the disposable Laravel:
+    /// - `per_page` 1-100 default 20 (`limit` kept as this backend's legacy alias);
+    /// - `when` ∈ upcoming|past|all, DEFAULT `upcoming` — an unrecognised value is a
+    ///   422 `VALIDATION_ERROR` on field `when`, not a silent fallback;
+    /// - upcoming = `start_time >= now` ordered start ASC then id ASC; past = `< now`
+    ///   ordered DESC/DESC; `all` unfiltered, DESC/DESC;
+    /// - `group_id` must be a positive integer — anything else is a 422 on `group_id`
+    ///   ("must be an integer", the message Laravel emits even for a negative);
+    /// - `q` is Laravel's search parameter (`search` kept as the legacy alias);
+    /// - `meta.cursor` is emitted only when more rows exist, and the client pages by
+    ///   echoing it back — the same load-bearing-cursor lesson as the feed. Offset
+    ///   cursor, deliberately (see the feed's helper for why keyset cannot express a
+    ///   pinned-first ordering; here it simply matches the paging the action already does).
+    /// - 🔴 `mine` (sent by `VereinFederationPanel.tsx:152`) is NOT a Laravel parameter —
+    ///   Laravel ignores it, so ignoring it here IS the contract. Do not "fix" that.
+    /// </remarks>
     [HttpGet("api/v2/events")]
-    public async Task<IActionResult> V2Events([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? search = null)
+    public async Task<IActionResult> V2Events(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        [FromQuery(Name = "per_page")] int? perPage = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? q = null,
+        [FromQuery] string? when = null,
+        [FromQuery(Name = "group_id")] string? groupId = null,
+        [FromQuery] string? cursor = null)
     {
-        var query = _db.Events.AsNoTracking().Where(e => !e.IsCancelled);
-        if (!string.IsNullOrWhiteSpace(search))
+        var errors = new List<object>();
+
+        var whenValue = string.IsNullOrWhiteSpace(when) ? "upcoming" : when.Trim();
+        if (whenValue is not ("upcoming" or "past" or "all"))
         {
-            var term = search.Trim().ToLowerInvariant();
+            errors.Add(new { code = "VALIDATION_ERROR", message = "The selected when is invalid.", field = "when" });
+        }
+
+        int? groupIdValue = null;
+        if (!string.IsNullOrWhiteSpace(groupId))
+        {
+            if (int.TryParse(groupId.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedGroupId)
+                && parsedGroupId > 0)
+            {
+                groupIdValue = parsedGroupId;
+            }
+            else
+            {
+                errors.Add(new { code = "VALIDATION_ERROR", message = "The group_id field must be an integer.", field = "group_id" });
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            return UnprocessableEntity(new { errors });
+        }
+
+        var effectiveLimit = Math.Clamp(perPage ?? limit, 1, 100);
+        var snapshotAt = DateTime.UtcNow;
+
+        var query = _db.Events.AsNoTracking().Where(e => !e.IsCancelled);
+
+        query = whenValue switch
+        {
+            "upcoming" => query.Where(e => e.StartsAt >= snapshotAt),
+            "past" => query.Where(e => e.StartsAt < snapshotAt),
+            _ => query,
+        };
+
+        if (groupIdValue is int gid)
+        {
+            query = query.Where(e => e.GroupId == gid);
+        }
+
+        var searchTerm = !string.IsNullOrWhiteSpace(q) ? q : search;
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLowerInvariant();
             query = query.Where(e => e.Title.ToLower().Contains(term) || (e.Description != null && e.Description.ToLower().Contains(term)));
         }
 
+        // Upcoming reads soonest-first; past and all read newest-first, exactly as
+        // Laravel orders them ('start_asc_id_asc' vs 'start_desc_id_desc').
+        var ordered = whenValue == "upcoming"
+            ? query.OrderBy(e => e.StartsAt).ThenBy(e => e.Id)
+            : query.OrderByDescending(e => e.StartsAt).ThenByDescending(e => e.Id);
+
         var total = await query.CountAsync();
+        // The cursor, when the client echoes one back, wins over `page` — the group
+        // page's infinite scroll tracks only the cursor and leaves `page` at its default.
+        var offset = DecodeOffsetCursor(cursor) ?? (long)(Math.Max(page, 1) - 1) * effectiveLimit;
 
         // 🔴 Projected through EventContractMapper (contract_version 2), NOT a hand-rolled
         // anonymous object. The flat shape this used to emit made the React client's own
@@ -121,10 +208,9 @@ public class V15MemberParityController : ControllerBase
         // wrongly-typed key discards the whole response.
         //
         // Counts come from the RSVP rows so metrics/capacity are real rather than zeroed.
-        var rows = await query
-            .OrderBy(e => e.StartsAt)
-            .Skip(Skip(page, limit))
-            .Take(Limit(limit))
+        var rows = await ordered
+            .Skip((int)Math.Min(offset, int.MaxValue))
+            .Take(effectiveLimit)
             .Select(e => new
             {
                 Event = e,
@@ -148,7 +234,56 @@ public class V15MemberParityController : ControllerBase
             CanEdit = viewerId is not null && r.Event.CreatedById == viewerId,
         })).Select(ApplyEventContractNegotiation).ToList();
 
-        return Ok(Paged(events, page, limit, total));
+        var consumed = offset + events.Count;
+        var hasMore = consumed < total;
+        var meta = new Dictionary<string, object?>
+        {
+            ["per_page"] = effectiveLimit,
+            ["has_more"] = hasMore,
+        };
+        // Laravel emits `cursor` only when it is non-null (respondWithCollection:208-210);
+        // for a paged list that means only while more rows exist. Emitting it always would
+        // be a shape difference; emitting it never breaks the group page's pagination.
+        if (hasMore)
+        {
+            meta["cursor"] = EncodeOffsetCursor(consumed);
+        }
+
+        return Ok(new { data = events, meta });
+    }
+
+    /// <summary>Opaque offset cursor for this controller's paged lists — same format and
+    /// fallback contract as the feed's (see V15SocialCompatibilityController): anything
+    /// unrecognised, including a Laravel-issued cursor held across a backend switch,
+    /// reads as null and the caller falls back to `page`.</summary>
+    private static string EncodeOffsetCursor(long offset) =>
+        Convert.ToBase64String(Encoding.UTF8.GetBytes(
+            string.Create(CultureInfo.InvariantCulture, $"offset:{offset}")));
+
+    private static long? DecodeOffsetCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor))
+        {
+            return null;
+        }
+
+        try
+        {
+            var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+            if (!decoded.StartsWith("offset:", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return long.TryParse(decoded.AsSpan(7), NumberStyles.Integer, CultureInfo.InvariantCulture, out var offset)
+                && offset >= 0
+                ? offset
+                : null;
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 
     [HttpGet("api/v2/events/nearby")]

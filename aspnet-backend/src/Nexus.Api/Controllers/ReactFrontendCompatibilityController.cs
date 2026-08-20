@@ -1162,26 +1162,64 @@ public class ReactFrontendCompatibilityController : ControllerBase
         return Ok(new { data = Array.Empty<object>(), mentors = Array.Empty<object>() });
     }
 
+    /// <remarks>
+    /// 🔴 GROUPED, not flat — found by the committed web-uk page-pair instrument on its
+    /// first run (2026-08-20). Laravel's `HelpService::getFaqs` returns
+    /// `[{category, faqs: [{id, question, answer}]}]`, and BOTH frontends consume exactly
+    /// that: web-uk reads `row.faqs` and filters out groups with none
+    /// (`web-uk/src/routes/support.js:44-57`), and the React help centre types the
+    /// response as `FaqGroup[] = {category, faqs}[]` (`HelpCenterPage.tsx:44-47,75`).
+    /// The flat rows this used to emit had no `faqs` key, so EVERY faq silently
+    /// disappeared from the help page on both frontends — a 200 with well-formed rows
+    /// that no one could see, the same illusion class as the feed's cursor.
+    ///
+    /// Laravel also accepts `q` (LIKE on question and answer) and `category_id` —
+    /// which, despite its name, is matched against the CATEGORY VARCHAR
+    /// (`HelpService.php:30-33`, "help_faqs has no category_id column"). Reproduced
+    /// as-is; renaming it would be a divergence, not a tidy-up. Ordering is
+    /// category → sort order → id, and a null category reads as 'General'.
+    /// </remarks>
     [HttpGet("api/help/faqs")]
     [AllowAnonymous]
-    public async Task<IActionResult> HelpFaqs()
+    public async Task<IActionResult> HelpFaqs(
+        [FromQuery] string? q = null,
+        [FromQuery(Name = "category_id")] string? categoryId = null)
     {
-        var faqs = await _db.Faqs
-            .Where(f => f.IsPublished)
+        var query = _db.Faqs.AsNoTracking().Where(f => f.IsPublished);
+
+        if (!string.IsNullOrWhiteSpace(categoryId))
+        {
+            var category = categoryId.Trim();
+            query = query.Where(f => f.Category == category);
+        }
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim().ToLowerInvariant();
+            query = query.Where(f =>
+                f.Question.ToLower().Contains(term)
+                || (f.Answer != null && f.Answer.ToLower().Contains(term)));
+        }
+
+        var rows = await query
             .OrderBy(f => f.Category)
             .ThenBy(f => f.SortOrder)
-            .Select(f => new
-            {
-                id = f.Id,
-                category = f.Category,
-                question = f.Question,
-                answer = f.Answer
-            })
+            .ThenBy(f => f.Id)
+            .Select(f => new { f.Id, f.Category, f.Question, f.Answer })
             .ToListAsync();
+
+        var grouped = rows
+            .GroupBy(f => string.IsNullOrWhiteSpace(f.Category) ? "General" : f.Category)
+            .Select(g => new
+            {
+                category = g.Key,
+                faqs = g.Select(f => new { id = f.Id, question = f.Question, answer = f.Answer }).ToList(),
+            })
+            .ToList();
 
         return Ok(new
         {
-            data = faqs,
+            data = grouped,
             meta = new { base_url = $"{Request.Scheme}://{Request.Host}" }
         });
     }
