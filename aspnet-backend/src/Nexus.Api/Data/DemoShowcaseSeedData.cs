@@ -1615,7 +1615,27 @@ public static class DemoShowcaseSeedData
 
         await EnsureAsync(db, d => d.TenantId == tenantId && d.Slug == "terms-of-service" && d.Version == "2.0-demo", () => new LegalDocument { TenantId = tenantId, Title = "Terms of Service", Slug = "terms-of-service", Content = "Demo terms for local development. AGPL attribution and source availability remain mandatory.", Version = "2.0-demo", IsActive = true, RequiresAcceptance = true, CreatedAt = now.AddDays(-30) });
         var legal = await db.LegalDocuments.FirstAsync(d => d.TenantId == tenantId && d.Slug == "terms-of-service" && d.Version == "2.0-demo");
-        await EnsureAsync(db, a => a.TenantId == tenantId && a.UserId == memberId && a.LegalDocumentId == legal.Id, () => new LegalDocumentAcceptance { TenantId = tenantId, UserId = memberId, LegalDocumentId = legal.Id, AcceptedAt = now.AddDays(-12), IpAddress = "127.0.0.1", UserAgent = "Demo browser" });
+        // 🔴 EVERY seeded demo account must have accepted this, not just the member.
+        // The document above is RequiresAcceptance, so /v2/legal/acceptance/status
+        // returns blocking_pending = true for anyone without an acceptance row, and the
+        // unchanged React client then renders navigation and footer but NO page content
+        // on every protected route (ProtectedRoute.tsx, legal gate). It is the SECOND
+        // fixture gap of exactly this shape found on 2026-08-21, after the onboarding
+        // one in SeedOnboardingGoalsPollsAndIdeasAsync: a seeded second actor who can
+        // sign in and then cannot use the product.
+        //
+        // Measured: coordinator@acme.test reached /listings/create with 0 inputs and
+        // 0 selects, no failing API call and no console error - while
+        // member@acme.test on the identical path got 13 inputs and 3 selects. Nothing
+        // in the response bodies distinguishes the two; only rendering the page does.
+        //
+        // The sign-up journey's own legal gate is unaffected: a member registered
+        // through the form is not one of these three ids.
+        foreach (var acceptingUserId in new[] { memberId, coordinatorId, adminId })
+        {
+            var acceptorId = acceptingUserId;
+            await EnsureAsync(db, a => a.TenantId == tenantId && a.UserId == acceptorId && a.LegalDocumentId == legal.Id, () => new LegalDocumentAcceptance { TenantId = tenantId, UserId = acceptorId, LegalDocumentId = legal.Id, AcceptedAt = now.AddDays(-12), IpAddress = "127.0.0.1", UserAgent = "Demo browser" });
+        }
 
         await EnsureAsync(db, t => t.TenantId == tenantId && t.Key == "demo.showcase.title" && t.Locale == "en", () => new Translation { TenantId = tenantId, Locale = "en", Key = "demo.showcase.title", Value = "Project NEXUS .NET Edition Showcase", Namespace = "demo", IsApproved = true, ApprovedById = adminId, CreatedAt = now.AddDays(-1) });
         await EnsureAsync(db, l => l.TenantId == tenantId && l.UserId == memberId, () => new UserLanguagePreference { TenantId = tenantId, UserId = memberId, PreferredLocale = "en", FallbackLocale = "ga", CreatedAt = now.AddDays(-20) });
@@ -1699,7 +1719,28 @@ public static class DemoShowcaseSeedData
     private static async Task SeedOnboardingGoalsPollsAndIdeasAsync(NexusDbContext db, int tenantId, int adminId, int memberId, int coordinatorId, int groupId, DateTime now)
     {
         var step = await EnsureAsync(db, s => s.TenantId == tenantId && s.Key == "explore_v2_showcase", () => new OnboardingStep { TenantId = tenantId, Key = "explore_v2_showcase", Title = "Explore the V2 showcase", Description = "Visit listings, wallet, groups, events, AI and admin workflows.", SortOrder = 1, IsRequired = true, XpReward = 100, CreatedAt = now.AddDays(-30) });
-        await EnsureAsync(db, p => p.UserId == memberId && p.StepId == step.Id, () => new OnboardingProgress { TenantId = tenantId, UserId = memberId, StepId = step.Id, IsCompleted = true, CompletedAt = now.AddDays(-10), CreatedAt = now.AddDays(-12) });
+        // 🔴 EVERY seeded demo account must be past this step, not just the member.
+        // The step above is IsRequired, and UsersController derives
+        // `onboarding_completed` for /api/v2/users/me by counting completed progress
+        // rows against required steps (UsersController.cs:410-420). Until 2026-08-21
+        // only `memberId` had a progress row, so every OTHER demo account reported
+        // onboarding_completed = false — and the unchanged React client redirects any
+        // such member to /onboarding and holds them there
+        // (react-frontend/src/components/routing/ProtectedRoute.tsx:95-98).
+        //
+        // Measured cost: the exchange journey (ledger row 1.21) needs a SECOND member
+        // as the provider. coordinator@acme.test signed in correctly, was pinned on
+        // /onboarding, and /listings/create resolved to /onboarding with zero form
+        // fields — which the smoke reported as "selector gap". It was a fixture gap,
+        // and it silently blocks EVERY two-actor journey, not only this one.
+        //
+        // Deliberately explicit ids rather than "every user in the tenant": a member
+        // created by the sign-up journey must still meet the real onboarding gate.
+        foreach (var seededUserId in new[] { memberId, coordinatorId, adminId })
+        {
+            var progressUserId = seededUserId;
+            await EnsureAsync(db, p => p.UserId == progressUserId && p.StepId == step.Id, () => new OnboardingProgress { TenantId = tenantId, UserId = progressUserId, StepId = step.Id, IsCompleted = true, CompletedAt = now.AddDays(-10), CreatedAt = now.AddDays(-12) });
+        }
 
         var goal = await EnsureAsync(db, g => g.TenantId == tenantId && g.UserId == memberId && g.Title == "Give 10 hours through the repair cafe", () => new Goal { TenantId = tenantId, UserId = memberId, Title = "Give 10 hours through the repair cafe", Description = "A demo goal showing milestones and progress.", GoalType = "hours", TargetValue = 10, CurrentValue = 4, Category = "Repair", Status = "active", TargetDate = now.AddDays(45), CreatedAt = now.AddDays(-20) });
         await EnsureAsync(db, m => m.TenantId == tenantId && m.GoalId == goal.Id && m.Title == "Complete first repair shift", () => new GoalMilestone { TenantId = tenantId, GoalId = goal.Id, Title = "Complete first repair shift", IsCompleted = true, CompletedAt = now.AddDays(-5), SortOrder = 1, CreatedAt = now.AddDays(-20) });

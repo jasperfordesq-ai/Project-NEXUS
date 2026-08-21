@@ -788,8 +788,39 @@ async function runArm(arm) {
       await provider.goto(`${BASE}/listings/create`, { waitUntil: 'networkidle', timeout: 60000 });
       await provider.waitForTimeout(1500);
       await dismissConsent(provider);
+
+      // 🔴 LESSON 6, earned 2026-08-21: THIS SKIP USED TO SAY "selector gap", AND IT
+      // WAS NOT ONE. The provider signed in perfectly - tokens in localStorage,
+      // POST /api/auth/login 200 - and every navigation still landed on /onboarding,
+      // because the unchanged client pins any member whose /users/me reports
+      // `onboarding_completed: false` there and will not let them off it
+      // (ProtectedRoute.tsx:95-98). /listings/create therefore rendered the onboarding
+      // page: zero inputs, zero selects, no field called "title". Reported as a
+      // selector gap, that sends the next reader hunting through the listing form for
+      // an attribute change that never happened. The real cause was the ASP.NET demo
+      // seed marking its ONE required onboarding step complete for the member only
+      // (DemoShowcaseSeedData.cs, now fixed for all three seeded actors).
+      //
+      // So: name the state the provider is actually IN before blaming a selector. A
+      // gate the member cannot pass, a lost session and a renamed field are three
+      // different findings and must never share one message.
+      const providerLanding = provider.url().replace(BASE, '');
+      if (/\/onboarding(?:\/|$)/.test(providerLanding)) {
+        skip('provider is held on /onboarding - the unchanged client refuses every other page until a '
+          + 'required onboarding step is complete (ProtectedRoute.tsx:95-98), so /listings/create never '
+          + 'rendered. FIXTURE gap in the seeded second actor, NOT a backend verdict and NOT a selector gap');
+      }
+      if (providerLanding.includes('/login')) {
+        skip('provider was bounced to /login on the way to the listing form - the second actor session '
+          + 'did not survive; fixture/auth issue, NOT a selector gap');
+      }
       const title = provider.getByLabel(/title/i).first();
-      if (!(await title.count())) skip('provider could not reach the listing form - selector gap, NOT a backend result');
+      if (!(await title.count())) {
+        const seen = (await provider.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ');
+        skip(`provider reached ${providerLanding} but it carries no field labelled "title" `
+          + `(${await provider.locator('input').count()} inputs, ${await provider.locator('select').count()} selects, `
+          + `text="${seen.slice(0, 160)}") - selector or page-content gap, NOT a backend result`);
+      }
       await title.fill(listingTitle, { timeout: 10000 });
       const desc = provider.getByLabel(/description/i).first();
       if (await desc.count()) await desc.fill('Published by the runtime smoke so the exchange journey has a listing it does not own.');
@@ -921,11 +952,31 @@ async function runArm(arm) {
       }
 
       // -- both parties confirm the hours; this is what settles credits ---------
+      // 🔴 LESSON 7, and it is the most expensive kind: THIS READER DROPPED THE
+      // MINUS SIGN, AND THE STEP THEN REPORTED A CORRECT SETTLEMENT AS A LEDGER BUG.
+      // Measured 2026-08-21 on ASP.NET. The provider's real balance went
+      // -2.00 -> -1.00, which is +1.00 credited exactly as intended. The wallet page
+      // renders it as a newline-separated "-1" then "Hours". The old pattern was
+      //   /([\d,]+(?:\.\d+)?)\s*(?:hours|credits)/i
+      // whose capture group cannot include a sign, so it read 2 then 1 and the step
+      // failed with "credits moved by the WRONG amount: requester -1, provider -1".
+      // The database said otherwise: transactions row 10, Sender 3 -> Receiver 4,
+      // 1.00, type `exchange`, Completed - one row, both legs, correct direction.
+      //
+      // A demo member CAN hold a negative balance (this one did, from a seeded
+      // payment), so this is not an exotic case, and the same reader is used for both
+      // arms - it would have mis-scored Laravel identically. Capture the sign, accept
+      // the Unicode minus and en dash a formatter may emit, and never assume a
+      // balance is positive.
       const balanceOf = async (p) => {
         await p.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
         await p.waitForTimeout(2500);
-        const m = (await p.locator('body').innerText()).match(/([\d,]+(?:\.\d+)?)\s*(?:hours|credits)/i);
-        return m ? Number(m[1].replace(/,/g, '')) : null;
+        const text = await p.locator('body').innerText();
+        const m = text.match(/(-|−|–)?\s*([\d,]+(?:\.\d+)?)\s*(?:hours|credits)/i);
+        if (!m) return null;
+        const magnitude = Number(m[2].replace(/,/g, ''));
+        if (Number.isNaN(magnitude)) return null;
+        return m[1] ? -magnitude : magnitude;
       };
       const requesterBefore = await balanceOf(page);
       const providerBefore = await balanceOf(provider);
@@ -1090,6 +1141,19 @@ async function runArm(arm) {
   await step('journey-sign-up', async () => {
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
+    // 🔴 CAPTURE THE REGISTER CALL ITSELF. Added 2026-08-21 after this step failed
+    // on BOTH arms with only "registration did not reach the success screen" — which
+    // does not say whether the POST was refused, or was never made because the form
+    // never submitted. Those are a backend finding and an instrument finding and they
+    // had one message between them. This context has its own page, so the outer
+    // response listener does not cover it.
+    const registerCalls = [];
+    page2.on('response', async (r) => {
+      if (!/\/auth\/register(?:$|\?)/.test(r.url())) return;
+      let body = '';
+      try { body = (await r.text()).slice(0, 400); } catch { body = '<unreadable>'; }
+      registerCalls.push({ status: r.status(), url: r.url(), body });
+    });
     try {
       await page2.goto(`${BASE}/register`, { waitUntil: 'networkidle', timeout: 60000 });
       await page2.waitForTimeout(2000);
@@ -1098,7 +1162,27 @@ async function runArm(arm) {
         if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page2.waitForTimeout(400); }
       }
 
-      const email = `smoke.signup.${stamp}@example.test`;
+      // 🔴 THE DOMAIN IS LOAD-BEARING, AND @example.test DOES NOT WORK.
+      // Measured 2026-08-21 on the Laravel arm, from the API's own response:
+      //   422 EMAIL_DOMAIN_INVALID "the domain has no mail servers"
+      // Laravel runs an MX-record check on the address before creating anything
+      // (app/Services/RegistrationService.php, MxValidator::isResolvable, cached 24h,
+      // fails OPEN on a DNS error). example.test and example.com both have NO MX
+      // records, so every registration this step attempted was refused - for two
+      // months, reported only as "registration did not reach the success screen".
+      //
+      // 🔴 It is NOT a reserved-TLD rule, which is what the standing note said. The
+      // reserved-TLD lists in this repository live in a PURGE command
+      // (app/Console/Commands/PurgeUndeliverableUsers.php) and example.test is not in
+      // resources/security/disposable-email-domains.txt. The mechanism matters: any
+      // other unroutable domain fails the same way, and a routable reserved-looking
+      // one would pass.
+      //
+      // The default is the platform's OWN domain, which has real MX records, so a
+      // verification mail bounces to us and never to a stranger's mailbox. Override
+      // with SMOKE_SIGNUP_DOMAIN if a batch needs somewhere else.
+      const signupDomain = process.env.SMOKE_SIGNUP_DOMAIN || 'project-nexus.ie';
+      const email = `smoke.signup.${stamp}@${signupDomain}`;
       const fillAll = async (selector, value) => {
         const fields = page2.locator(selector);
         for (let i = 0; i < await fields.count(); i++) {
@@ -1126,6 +1210,28 @@ async function runArm(arm) {
         if (!(await b.isChecked().catch(() => true))) await b.check({ force: true }).catch(() => {});
       }
 
+      // 🔴 Submit helper, factored out so the 429 retry below can reuse it. The two
+      // quirks it encodes were both earned: Create Account stays disabled while the
+      // breach check runs, and a clean Playwright click on the enabled button
+      // dispatches but React ignores it - pressing Enter from a field fires the real
+      // submit.
+      const submitRegistration = async () => {
+        const btn = page2.locator('button:has-text("Create Account")').first();
+        if (!(await btn.count())) return false;
+        for (let w = 0; w < 30; w++) {
+          if (await btn.isEnabled().catch(() => false)) break;
+          await page2.waitForTimeout(1000);
+        }
+        if (!(await btn.isEnabled().catch(() => false))) return false;
+        await btn.click({ timeout: 8000 }).catch(() => {});
+        await page2.waitForTimeout(2500);
+        if (page2.url().includes('/register') && !/Registration Successful/i.test(await page2.locator('body').innerText())) {
+          await page2.locator('input[autocomplete="email"]').first().press('Enter').catch(() => {});
+          await page2.waitForTimeout(5000);
+        }
+        return true;
+      };
+
       const create = page2.locator('button:has-text("Create Account")').first();
       if (!(await create.count())) skip('Create Account not found — selector gap, NOT a backend result');
       for (let w = 0; w < 30; w++) {
@@ -1143,10 +1249,56 @@ async function runArm(arm) {
       }
 
       const bodyText = (await page2.locator('body').innerText()).trim();
-      const success = /Registration Successful/i.test(bodyText);
+      let success = /Registration Successful/i.test(bodyText);
       const verify = /verification link|verify your email/i.test(bodyText);
       console.log(`    registration successful screen: ${success} | verification-email flow: ${verify}`);
-      if (!success) throw new Error('registration did not reach the success screen');
+      for (const c of registerCalls) console.log(`    POST register -> ${c.status} ${c.body.replace(/\s+/g, ' ')}`);
+
+      // 🔴 A 429 IS THE DEV RATE LIMIT, NOT A PRODUCT VERDICT - and it was being
+      // reported as "registration did not reach the success screen", i.e. as a broken
+      // sign-up. Measured 2026-08-21 on the ASP.NET arm: POST /auth/register came back
+      // 429 with retry_after_seconds 60, because `RateLimiting__Auth__PermitLimit` is
+      // 10 per 60s (aspnet-backend/compose.yml) and one pass of this script signs in
+      // more than once before it ever reaches sign-up - the member, then the exchange
+      // journey's provider - and each sign-in spends several calls in the auth
+      // partition (login, webauthn challenge, oauth providers, sso providers).
+      //
+      // 🔴 The brief carried into this batch said this step failed because it registers
+      // at @example.test, "which Laravel deliberately refuses as a reserved TLD". That
+      // was NOT the cause. Laravel's registration validates `required|email|max:255`
+      // (app/Services/RegistrationService.php), example.test is not in
+      // resources/security/disposable-email-domains.txt, and the reserved-TLD lists in
+      // this repository live only in a PURGE command. Do not change the domain on that
+      // theory; the evidence above is what the API actually said.
+      let refusedByRateLimit = registerCalls.length > 0 && registerCalls[registerCalls.length - 1].status === 429;
+      if (!success && refusedByRateLimit) {
+        const waitMs = 65000;
+        console.log(`    rate-limited; waiting ${waitMs / 1000}s for the auth window and submitting once more`);
+        await page2.waitForTimeout(waitMs);
+        registerCalls.length = 0;
+        await submitRegistration();
+        for (const c of registerCalls) console.log(`    POST register (retry) -> ${c.status} ${c.body.replace(/\s+/g, ' ')}`);
+        success = /Registration Successful/i.test((await page2.locator('body').innerText()).trim());
+        refusedByRateLimit = registerCalls.length > 0 && registerCalls[registerCalls.length - 1].status === 429;
+        if (!success && refusedByRateLimit) {
+          skip('sign-up could not be measured: POST /auth/register was rate-limited (429) twice, once after a full '
+            + 'window wait. That is the dev auth rate limit, NOT the backend refusing a registration. Raise '
+            + 'RateLimiting__Auth__PermitLimit for the batch, or run this step on its own');
+        }
+      }
+
+      if (!success) {
+        // Name WHICH of the two failures this is. No call at all is the form never
+        // submitting (instrument / frontend chrome); a call with a non-2xx is the
+        // backend refusing, and its body says why.
+        if (registerCalls.length === 0) {
+          throw new Error('registration never reached the API - no POST to /auth/register was made at all, '
+            + `so the form did not submit (page still shows: "${bodyText.replace(/\s+/g, ' ').slice(0, 200)}"). `
+            + 'INSTRUMENT/form-flow finding, not a backend verdict');
+        }
+        const worst = registerCalls[registerCalls.length - 1];
+        throw new Error(`registration was REFUSED by the API: ${worst.status} ${worst.body.replace(/\s+/g, ' ')}`);
+      }
 
       // ── THE LEGAL GATE, behind email verification ────────────────────────────────
       // The real flow verifies via the emailed code, but /verify-email is [Authorize]

@@ -4,7 +4,7 @@ Last verified: 2026-08-21 (rubric replaced; Baseline 4 banked at `869a2a030`)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=270/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=274/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=270 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 270/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-21)
+## Banked score - Fixed Rubric Baseline 5, 274/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-21)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -81,7 +81,7 @@ working tree is banked** - see Block 3.
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 50 | 170 |
+| Core member journeys certified - React | 54 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 21 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -91,7 +91,7 @@ working tree is banked** - see Block 3.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **270** | **1000** |
+| **Total** | **274** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -180,6 +180,18 @@ scope decision on the extended modules cannot change the denominator.
   this SHA, real-Postgres concurrency tests that fire five simultaneous transfers
   and assert no overdraft. Operational readiness scores 2 of 16: no scheduled
   backup, no deploy or rollback path, no observability, no load comparison.
+
+🔴 **THE +4 IN BLOCK 2 IS MECHANICALLY DERIVED AND NOT YET CI-VERIFIED (2026-08-21,
+later).** Ledger row **1.21** (the exchange transaction) moved BROKEN → CERTIFIED on
+measured evidence: one control run, both arms, credits moved on each
+(`artifacts/smoke/react-smoke-2026-08-21T19-16-28-440Z.json` - 36 MATCH, 2
+NOT_COMPARABLE, 0 ASPNET_ONLY_FAIL). Because the five journey categories are computed
+from the ledger's rows, Tier 1 credit rose 0.293 → 0.317 and this table had to follow
+or `scripts/check-doc-scores.mjs` fails. **It is therefore a score movement WITHOUT a
+completed banking transaction: the tree that measured it was not committed and CI has
+not run at a pushed SHA.** `ASPNET_BANKED_FLOOR` was deliberately LEFT at 270 rather
+than raised to 274, so the ratchet is not advanced on unverified evidence; raise it in
+the commit that lands CI green. Treat 274 as provisional until then.
 
 **Block 3 - Published but unscored.** Today's working-tree changes are real and
 verified locally but are **not banked**, because banking requires CI green at the
