@@ -60,22 +60,22 @@
     "test:load": "node scripts/load-test.mjs"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
-    "@playwright/test": "^1.59.1",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
     "dotenv": "^17.4.2",
-    "govuk-frontend": "^6.1.0",
+    "govuk-frontend": "^6.4.0",
     "pa11y": "^9.1.1",
     "picocolors": "^1.1.1",
-    "prisma": "^5.22.0",
-    "sass": "^1.99.0",
-    "sharp": "^0.34.5",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.6"
+    "prisma": "^7.9.1",
+    "sass": "^1.102.0",
+    "sharp": "^0.35.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
   },
   "dependencies": {
-    "@capacitor/cli": "^8.3.2",
-    "@capacitor/core": "^8.3.2",
-    "@prisma/client": "^5.22.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@prisma/client": "^7.9.1",
     "accessible-autocomplete": "^3.0.1"
   },
   "overrides": {
