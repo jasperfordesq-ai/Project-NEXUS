@@ -145,8 +145,18 @@ export default function HomeScreen() {
     }
   }, []);
 
+  /**
+   * 🔴 `style={{ flex: 1 }}` on the SafeAreaView is REQUIRED; the className is inert.
+   * uniwind does not patch className onto react-native-safe-area-context's SafeAreaView
+   * — see components/safeAreaFlex.test.ts — so `flex-1` here does nothing. The feed
+   * itself survived that, which is why home was left out of the earlier sweep. The
+   * COMMENT SHEET did not: tapping Comment fetched the comments (confirmed in the API
+   * log: `GET /api/v2/comments?target_type=listing&target_id=515`) and nothing ever
+   * appeared on screen, because a gorhom bottom sheet inside a zero-height parent has
+   * nowhere to draw.
+   */
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <TenantBanner />
       <OfflineBanner />
 
