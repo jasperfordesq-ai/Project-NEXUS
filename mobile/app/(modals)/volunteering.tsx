@@ -61,6 +61,7 @@ import {
   type VolunteeringResponse,
 } from '@/lib/api/volunteering';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { canPostAnyOpportunity } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -1182,7 +1183,13 @@ function ExpensesPanel({
                   placeholder={t('expenses.amountPlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   keyboardType="decimal-pad"
-                  className="flex-1 text-base"
+                  // 🔴 Width goes on containerClassName. `className` reaches the INNER
+                  // HeroInput; the outer TextField is what sizes inside a flex-row, and it
+                  // only ever receives `containerClassName`. With `flex-1` on className the
+                  // amount box rendered about 40dp wide — too narrow to show "12.50" —
+                  // while the class looked correct. See components/ui/Input.tsx.
+                  containerClassName="mb-3 flex-1"
+                  className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.amountPlaceholder')}
                 />
@@ -1192,7 +1199,8 @@ function ExpensesPanel({
                   placeholder={t('expenses.currencyPlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   autoCapitalize="characters"
-                  className="w-24 text-base"
+                  containerClassName="mb-3 w-24"
+                  className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.currencyPlaceholder')}
                 />
@@ -1368,7 +1376,9 @@ function DonationsPanel({
               placeholder={t('donations.amountPlaceholder')}
               placeholderTextColor={theme.textMuted}
               keyboardType="decimal-pad"
-              className="flex-1 text-base"
+              // 🔴 See the expenses amount above: width belongs on containerClassName.
+              containerClassName="mb-3 flex-1"
+              className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('donations.amountPlaceholder')}
             />
@@ -1378,7 +1388,8 @@ function DonationsPanel({
               placeholder={t('expenses.currencyPlaceholder')}
               placeholderTextColor={theme.textMuted}
               autoCapitalize="characters"
-              className="w-24 text-base"
+              containerClassName="mb-3 w-24"
+              className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('expenses.currencyPlaceholder')}
             />
@@ -1476,9 +1487,16 @@ function HoursPanel({
       setDescription('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (error) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('hoursLogError'), variant: 'danger' });
+      // 🔴 Show the server's reason. It answers this one precisely — "You have already
+      // logged hours for this organization and date" — and the generic fallback told a
+      // member nothing, so they would simply try again. See lib/api/describeApiError.ts.
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, t('hoursLogError')),
+        variant: 'danger',
+      });
     } finally {
       setLogging(false);
     }
@@ -1607,10 +1625,36 @@ function VolunteeringScreenInner() {
    * Validated against TAB_KEYS rather than cast, so an unknown value still falls back to
    * Opportunities instead of leaving the screen on a tab that does not exist.
    */
-  const initialTab: TabKey = TAB_KEYS.includes(params.tab as TabKey)
+  const requestedTab: TabKey | null = TAB_KEYS.includes(params.tab as TabKey)
     ? (params.tab as TabKey)
-    : 'opportunities';
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+    : null;
+  const [activeTab, setActiveTab] = useState<TabKey>(requestedTab ?? 'opportunities');
+
+  /**
+   * 🔴 The requested tab has to be applied in an EFFECT, not just as the initial state.
+   *
+   * `useState(requestedTab)` reads only the FIRST render, and for a deep-linked screen
+   * expo-router mounts before the parameters are populated — so `params.tab` is undefined
+   * at that moment and the initial value is always the default. Fixing the nine-tabs
+   * comparison alone therefore changed nothing on the device, which is exactly what
+   * happened: `nexus://volunteering?tab=hours` still opened Opportunities after the first
+   * fix, and the intent mapper was proven correct (it returns
+   * `/(modals)/volunteering?tab=hours`).
+   *
+   * This is why the organisation-dashboard deep link worked once its parameter was named
+   * correctly and this one did not: that screen reads `params.id` straight into a
+   * `useApi` dependency, so a late arrival is picked up. A `useState` initialiser cannot
+   * be.
+   *
+   * `hasHonouredLink` makes it happen once, so a member who then taps another tab is not
+   * dragged back by a re-render.
+   */
+  const hasHonouredLink = useRef(false);
+  useEffect(() => {
+    if (hasHonouredLink.current || !requestedTab) return;
+    hasHonouredLink.current = true;
+    setActiveTab(requestedTab);
+  }, [requestedTab]);
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const [applyingId, setApplyingId] = useState<number | null>(null);

@@ -310,8 +310,8 @@
     "wallet": {
       "balance": "Iarmhéid an sparáin",
       "autoPayToggle": "Scoránaigh uathíocaíocht",
-      "autoPayOn": "Tá uathíocaíocht ar siúl d'uaireanta ceadaithe.",
-      "autoPayOff": "Tá uathíocaíocht múchta. Beidh íocaíocht de láimh ag teastáil d'uaireanta ceadaithe.",
+      "autoPayOn": "Tá uathíocaíocht ar siúl. Cuirtear uaireanta ceadaithe chun sochair do shaorálaithe agus gearrtar ar an sparán seo.",
+      "autoPayOff": "Cuirtear uaireanta ceadaithe chun sochair do shaorálaithe i gcónaí agus gearrtar ar an sparán seo. Ní chuireann an lasc seo an íocaíocht ar athló.",
       "amountPlaceholder": "Méid",
       "notePlaceholder": "Nóta roghnach",
       "deposit": "Cuir creidmheasanna i dtaisce",

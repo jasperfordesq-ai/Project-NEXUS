@@ -310,8 +310,8 @@
     "wallet": {
       "balance": "Wallet balance",
       "autoPayToggle": "Toggle auto-pay",
-      "autoPayOn": "Auto-pay is on for approved hours.",
-      "autoPayOff": "Auto-pay is off. Approved hours will need manual payment.",
+      "autoPayOn": "Auto-pay is on. Approved hours are credited to volunteers and charged to this wallet.",
+      "autoPayOff": "Approved hours are still credited to volunteers and charged to this wallet. This switch does not hold payment back.",
       "amountPlaceholder": "Amount",
       "notePlaceholder": "Optional note",
       "deposit": "Deposit credits",

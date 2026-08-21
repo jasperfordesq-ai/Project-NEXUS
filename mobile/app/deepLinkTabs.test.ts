@@ -54,4 +54,16 @@ describe('the volunteering hub honours every tab a link can name', () => {
     expect(source).not.toMatch(/params\.tab === '[a-z]+' \? '[a-z]+' : 'opportunities'/);
     expect(source).toMatch(/TAB_KEYS\.includes\(params\.tab as TabKey\)/);
   });
+
+  it('applies the requested tab in an effect, not only as initial state', () => {
+    /**
+     * 🔴 Validating the tab was NOT enough, and the device proved it. A `useState`
+     * initialiser reads the first render only, and a deep-linked screen mounts before
+     * expo-router populates its parameters — so the link was still ignored after the
+     * first fix. Anything that reduces this back to a `useState` initialiser reinstates
+     * a bug that looks fixed in the source.
+     */
+    expect(source).toMatch(/hasHonouredLink/);
+    expect(source).toMatch(/setActiveTab\(requestedTab\)/);
+  });
 });
