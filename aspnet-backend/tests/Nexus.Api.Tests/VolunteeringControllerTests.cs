@@ -277,10 +277,16 @@ public class VolunteeringControllerTests : IntegrationTestBase
         meta.GetProperty("per_page").GetInt32().Should().BeGreaterThan(0);
         meta.TryGetProperty("has_more", out _).Should().BeTrue();
 
-        // All returned opportunities should be published
+        // All returned opportunities should be the published ones — but this
+        // LISTING reports them as Laravel does. 🔴 Laravel's public statuses on
+        // the browse listing are open|active, so VolunteeringController maps the
+        // Published state to "open" here (see the mapping beside ["status"] in
+        // ListOpportunities). The DETAIL endpoint is unmapped and still answers
+        // "published", which is why the sibling test below asserts that instead —
+        // do not "tidy" the two into agreeing.
         foreach (var opp in content.GetProperty("data").EnumerateArray())
         {
-            opp.GetProperty("status").GetString().Should().Be("published");
+            opp.GetProperty("status").GetString().Should().Be("open");
         }
     }
 
