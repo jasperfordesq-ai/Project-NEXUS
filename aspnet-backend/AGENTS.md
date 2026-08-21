@@ -23,8 +23,16 @@ The repository-wide [`../AGENTS.md`](../AGENTS.md) instructions apply.
 - Do not deploy ASP.NET or touch Laravel production containers from this
   directory.
 - Do not use the ordinary local Laravel database as a test fixture.
-- Read `docs/CURRENT_ASPNET_CONTRACT_STATUS.md`,
-  `docs/CURRENT_SCHEMA_READINESS.md`, and
-  `docs/decisions/ADR-0001-contract-identical-backends.md` and
-  `docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md`
-  before resuming backend contract work.
+- Before resuming backend contract work, read **in this order**:
+  1. `docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md` (why it exists)
+  2. `docs/decisions/ADR-0004-journey-equivalence-is-the-target.md` (🔴 how it is
+     measured and what is OUT of scope — read before any parity work)
+  3. `docs/JOURNEY_CERTIFICATION_LEDGER.md` (the work list)
+  4. `docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (score, evidence, queue)
+  5. `docs/decisions/ADR-0001-contract-identical-backends.md` (the standard)
+  6. `docs/CURRENT_SCHEMA_READINESS.md` (schema boundary)
+
+  🔴 Until 2026-08-21 this list named ADR-0001 and ADR-0002 only and omitted
+  ADR-0003, ADR-0004 and the ledger — the one list phrased as a precondition
+  pointed at the superseded ADR. ADR-0002 is superseded in part; quote its
+  scaling reasoning only.

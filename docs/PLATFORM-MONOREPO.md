@@ -5,8 +5,8 @@ Last reviewed: 2026-08-09
 ## Purpose
 
 This repository contains the production Laravel platform, its canonical React
-client, the production Web UK accessible client, and an experimental ASP.NET
-backend. Co-location allows one commit and one CI run to compare both backend
+client, the production Web UK accessible client, and the committed ASP.NET
+second edition. Co-location allows one commit and one CI run to compare both backend
 implementations and both frontend consumers against the same contract evidence.
 
 ## Ownership and authority
@@ -15,18 +15,23 @@ implementations and both frontend consumers against the same contract evidence.
 | --- | --- | --- |
 | repository root (`app/`, `routes/`, `database/`) | Laravel production backend and contract source of truth | Laravel blue/green |
 | `react-frontend/` | Canonical React client | Laravel blue/green |
-| `aspnet-backend/` | Experimental second backend | None from this repository — see below |
+| `aspnet-backend/` | Committed second edition, not yet certified | None from this repository — see below |
 | `web-uk/` | Production accessible frontend | Laravel blue/green via `scripts/deploy.sh --with-webuk` |
 
-ASP.NET is co-located to preserve a possible contract-identical .NET edition,
-not because Laravel has a planned retirement date or scale threshold. Laravel
-remains the canonical production backend. Any production role for ASP.NET needs
-the evidence and separate owner decision defined by
-[`ADR-0002`](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+ASP.NET is co-located so one commit and one CI run can compare both editions
+against the same contract evidence. It is a **committed deliverable** — a segment
+of public-sector buyers require a .NET stack as a condition of procurement —
+and not because Laravel has a planned retirement date or a scale threshold.
+Laravel remains the canonical production backend until the ASP.NET edition is
+certified. Any production role needs the go-live gate in
+[`ADR-0003`](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md);
+[`ADR-0002`](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md)
+is superseded in part and retains its scaling reasoning only.
 
 The paired ASP.NET/Web UK deployment history below is retained as a dated
 record. Their current roles have diverged: Web UK is now production, while the
-ASP.NET service remains stopped and development-only.
+former standalone ASP.NET *service* remains stopped (its code is actively
+developed here, and the container must not be restarted).
 
 ### ✅ RETIRED 2026-08-10 — both tracks are now STOPPED
 
@@ -307,9 +312,11 @@ The imported Playwright suite (`tests/api/*`, `tests/admin-ui/*`, its own
 does track its packages, so it is being updated but never run.
 
 Deferred deliberately: wiring it needs a live ASP.NET API plus a PostgreSQL
-service container, which is a substantial job for a development-only track that
-has been **paused since 2026-07-15**. Revisit when ASP.NET development actually
-resumes — that is the trigger, not a date.
+service container. 🔴 The old reason given here — "a development-only track
+paused since 2026-07-15… revisit when ASP.NET development actually resumes" —
+expired on 2026-08-14 when the pause lifted. **The trigger has fired**; this is
+now a real backlog item, scheduled with the journey-certification phases in
+`aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md`.
 
 ### Sibling Markdown is link-checked but not structure-linted
 
@@ -329,12 +336,16 @@ Confirmed by the owner 2026-08-10. What is in production and what carries the
 bulk of ongoing work is, in order:
 
 1. **Laravel** backend/API
-2. **Blade accessible frontend** (`accessible-frontend/`)
+2. ~~**Blade accessible frontend** (`accessible-frontend/`)~~ 🔴 **DELETED
+   2026-08-14** — replaced by `web-uk/`, which now holds this slot
 3. **React frontend** (`react-frontend/`)
 
-`aspnet-backend/` is **secondary and development-only**. It lives here for
-contract comparison; it must never slow, gate, or complicate the three tracks
-above. The isolation that guarantees this is verified below.
+`aspnet-backend/` is **the second edition**: committed, actively developed, and
+**not in the Laravel deployment scope**. (This read "secondary and
+development-only" until 2026-08-21.) It must never slow, gate, or complicate the
+tracks above — that release isolation is the reason for the fence, and it is
+verified below. Isolation from Laravel's release path is not a statement that the
+edition is speculative.
 
 🔴 **`web-uk/` is no longer merely a comparison target, and it is no longer
 undeployed.** On 2026-08-11 the owner decided it **replaces** the Blade accessible

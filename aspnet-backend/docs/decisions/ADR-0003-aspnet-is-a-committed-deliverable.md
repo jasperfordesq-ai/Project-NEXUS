@@ -93,11 +93,29 @@ checklist to complete, not a bar designed to be hard to reach:
    not rely on unsafe dual writes or a shared database; and
 6. an explicit owner decision authorising the deployment scope.
 
-Item 4 currently contains a **named hard stop**: the live ASP.NET database has
-had no successful backup since 2026-03-08 (156 consecutive failures) while the
-application runs `MigrateAsync()` on every start. This is infrastructure work in
-the owner's hands. No score, and no volume of contract evidence, substitutes for
-it.
+🔴 **The backup position, stated accurately (corrected 2026-08-21).** Documents
+in this repository — including this one until today — repeated "no successful
+backup since 2026-03-08 (156 consecutive failures) with nothing to restore
+from". That is true of the **scheduled off-server backup job** and materially
+incomplete about the data.
+[`DATABASE_BACKUP_DECISION.md`](../DATABASE_BACKUP_DECISION.md) established on
+2026-08-16, by read-only inspection of the production host, that a
+**restore-tested off-server copy exists** — restored into a throwaway
+`postgres:16.4-bookworm` on 2026-08-10 giving 265/265 tables, 53/53 EF
+migrations and 49,958 rows — and that the database container has been
+`Exited (0)` since 2026-08-10 16:36:10Z, so that recovery point is **current**.
+The genuine remaining gaps are narrower: the scheduled job is still broken so
+nothing new is taken; the final 16:35 dump has only one copy and is
+checksum-verified but not restore-tested, leaving a ~2.5-hour single-copy tail;
+and migrate-on-start is dormant rather than gone, so the container still must
+not be restarted. Fixing the scheduled backup and copying that final dump are
+owner infrastructure items and remain part of the go-live gate — but "there is
+no backup" is not the accurate statement, and must not be repeated.
+
+Item 4 therefore contains a **real but bounded infrastructure gap**, in the
+owner's hands: restore the scheduled backup, copy the final dump, and establish
+a deploy/rollback path. No score and no volume of contract evidence substitutes
+for it.
 
 A deployment need not be all-or-nothing. A first ASP.NET production role may be
 a single new customer tenant on a .NET-required contract, which needs the
@@ -114,8 +132,9 @@ journeys that customer uses certified — not every journey in the platform.
   must still never be added to the Laravel blue/green Compose file or production
   deploy scripts without explicit authorisation; ASP.NET CI jobs must still
   never gate a Laravel release; the live ASP.NET containers must still not be
-  restarted or redeployed. Those rules protect a live Laravel platform and an
-  unbacked-up database. Commitment to the deliverable is not authorisation to
+  restarted or redeployed. Those rules protect a live Laravel platform, and a
+  database whose scheduled backup is broken and whose migrate-on-start behaviour
+  is dormant rather than removed. Commitment to the deliverable is not authorisation to
   deploy it.
 - Scope decisions are now legitimate and expected. An agent may propose cutting
   work that no client consumes, and should — see ADR-0004.

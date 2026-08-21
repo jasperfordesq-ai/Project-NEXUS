@@ -25,7 +25,8 @@ wording, and before doing any parity work.
 | Document | Purpose |
 | --- | --- |
 | [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md) | **The one "start here".** Canonical current: banked score, published-but-unscored movement, evidence pointers, open gates, the live queue, and the reporting rules. |
-| [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md) | **The work list.** Canonical current: 130 enumerated journeys with a status each — the finite denominator the score is derived from. Pick work up here. |
+| [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md) | **The work list.** Canonical current: every enumerated journey with a status each — the finite, frozen denominator the score is derived from. Pick work up here. |
+| [HANDOFF_PROMPT.md](HANDOFF_PROMPT.md) | The standing session brief — roles, reading order, invariants, definition of done, forbidden actions, concurrency rules. Paste it into any fresh session. |
 | [ROADMAP.md](ROADMAP.md) | Canonical current, owner-facing: what works, what doesn't, what's next, and time frames — in plain English, no points. |
 
 ## Maintained references
@@ -71,8 +72,8 @@ wording, and before doing any parity work.
 
 | Document | What it was |
 | --- | --- |
-| [HISTORY/STATUS_ARCHIVE_2026-07.md](HISTORY/STATUS_ARCHIVE_2026-07.md) | Baseline 1 era: the 712/1000 scored position, banked-evidence log, repository state. |
-| [HISTORY/STATUS_ARCHIVE_2026-08.md](HISTORY/STATUS_ARCHIVE_2026-08.md) | Baseline 2 (598/1000) with full evidence, the August audits, and the dated 08-19/08-20 work entries. |
+| [HISTORY/STATUS_ARCHIVE_2026-07.md](HISTORY/STATUS_ARCHIVE_2026-07.md) | Baseline 1 era: its scored position, banked-evidence log, repository state. Numbers deliberately not repeated here - an index that quotes a score goes stale. |
+| [HISTORY/STATUS_ARCHIVE_2026-08.md](HISTORY/STATUS_ARCHIVE_2026-08.md) | Baselines 2, 3 and 4 with full evidence, the August audits, and the dated work entries. |
 | [PROJECT_PAUSE_HANDOFF_2026-07-15.md](PROJECT_PAUSE_HANDOFF_2026-07-15.md) | The 15 July pause boundary and cold-start order. The pause was **lifted 2026-08-14**. |
 | [RESTART_INCIDENT_2026-07-15.md](RESTART_INCIDENT_2026-07-15.md) | The Windows Update restart incident record. |
 | [CURRENT_LARAVEL_PARITY_HANDOFF.md](CURRENT_LARAVEL_PARITY_HANDOFF.md) | Chronological backend implementation history; its "latest" checkpoints are dated evidence only. |

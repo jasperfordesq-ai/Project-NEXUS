@@ -19,7 +19,7 @@ banked schema category remains 129/150 pending a scoring transaction)
 Status: **Canonical current - schema pause and restart source; no standalone product score**
 
 <!-- doc-consistency: SCHEMA_CURRENT_PRODUCT_SHA=c767050a3eabd064bdf647695b9699b98186342b -->
-<!-- doc-consistency: SCHEMA_CURRENT_RUNTIME_MIGRATIONS=183 -->
+<!-- doc-consistency: SCHEMA_CURRENT_RUNTIME_MIGRATIONS=184 -->
 
 Use this page for the one-page schema answer at the 2026-07-15 development
 pause. Use [`SCHEMA_PARITY.md`](SCHEMA_PARITY.md) for detailed per-migration
@@ -72,7 +72,7 @@ Therefore the honest state is:
 | Laravel tables with no ASP.NET counterpart | **215** |
 | ASP.NET tables with no Laravel counterpart | 203 |
 | Laravel migrations | 410 |
-| ASP.NET migration classes | 183 |
+| ASP.NET migration classes | 184 |
 
 This is a **name comparison only** and proves nothing about column-level or
 behavioural equivalence. It replaces the 2026-08-15 figures (219 missing / 199
@@ -83,15 +83,15 @@ structural rather than a backlog being worked down.
 | Schema implementation boundary | `c767050a3eabd064bdf647695b9699b98186342b` | Adds migration 163 and other contract corrections; published but unscored. |
 | Required-CI workflow boundary | `b3f946b3fd3de51fa444008a7daee80d3de1bcd2` | Four deterministic whole-class shards, with coverage intentionally outside the required push gate. |
 | Exact test/evidence boundary | `dbafc5c329c55a15b4329ff90804d725dbf8b089` | Required GitHub Actions run 29451087913 is terminal green; no schema implementation changed after `c767050a`. |
-| EF migration classes | 183 | Source classes in the current tree, counted 2026-08-18 (excludes Designer and snapshot files). Latest: `20260817121949_AddSkillCategories`. |
-| Runtime-discovered migration IDs | 183 | Applicable chain from `InitialCreate` through `AddSkillCategories`. 🔴 Was 163 on 2026-08-14; twenty migrations landed between 2026-08-14 and 2026-08-17 (partner venues, support actions, account relationships, supporter message-view audits, authority attestations, platform capability overrides, revoked tokens, volunteer donation/project fields, skill categories). |
+| EF migration classes | 184 | Source classes in the current tree, recounted 2026-08-21 (excludes Designer and snapshot files). Latest: `20260821064259_AddVolunteerOpportunityRemoteAndCoordinates`. 🔴 This read 183 with a 2026-08-17 tail until 2026-08-21; `check-doc-scores.mjs` now counts the tree and fails on any drift, so the number cannot go stale silently again. |
+| Runtime-discovered migration IDs | 184 | Applicable chain from `InitialCreate` through `AddVolunteerOpportunityRemoteAndCoordinates`. 🔴 Was 163 on 2026-08-14; twenty migrations landed between 2026-08-14 and 2026-08-17 (partner venues, support actions, account relationships, supporter message-view audits, authority attestations, platform capability overrides, revoked tokens, volunteer donation/project fields, skill categories). |
 | Intentionally quarantined classes | 2 | `FederationCoreExpansion` is superseded by later DDL; `AddTenantUpdatedAt` would duplicate the initial column. |
 | Laravel source table names | 458 | 🔴 **STALE (July).** Live 2026-08-18: **472**. Static source union, not a database dump or completion denominator. |
 | ASP.NET represented table names | 440 | 🔴 **STALE (July).** Live 2026-08-18: **460**. Static source union. |
 | Exact names | 242/458 (52.8%) | 🔴 **STALE (July).** Live 2026-08-18: **257/472**, with **215** Laravel tables absent. Regenerate with `scripts/compare-laravel-schema-parity.ps1` before quoting. Diagnostic exact-name coverage only. |
 | Laravel-only exact names | 216 | 24 classified aliases, 20 compatibility-storage gaps, and 172 unclassified names. |
 | ASP.NET-only exact names | 198 | Requires classification; not automatically wrong or useful. |
-| Banked backend schema category | 118/150 | 🔴 **Rescored 2026-08-18 under Fixed Rubric Baseline 2** (`ASPNET-CONTRACT-R2`). Baseline 1's 129/150 is audit trail. Deduction 32: −20 for 215 Laravel tables with no ASP.NET counterpart, −12 for no populated-history upgrade proof. See [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md). |
+| Banked backend schema category | see canonical status | 🔴 **Do not quote a score from this file.** The rubric was replaced on 2026-08-21 (`ASPNET-CONTRACT-R5`) with a different denominator, so any figure here would be stale on arrival. The deduction reasons are unchanged: 215 Laravel tables with no ASP.NET counterpart (a gap only where a journey needs one, per ADR-0004), and no populated-history upgrade proof. Current figure: [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md). |
 
 Exact-name coverage does not equal contract identity. A differently named
 internal table can be acceptable only when the unchanged clients observe the
@@ -119,7 +119,7 @@ migration IDs**, 2 quarantined classes, the 458/440/242/216/198 static name
 inventory, and the banked schema category of **129/150**.
 
 🔴 **That paragraph is the 2026-08-09 position and none of those figures is
-current.** As of 2026-08-18 the tree has **183** EF migration classes, the static
+current.** As of 2026-08-21 the tree has **184** EF migration classes, the static
 name inventory is **472/460/257/215/203**, and the schema category banks
 **118/150** under Fixed Rubric Baseline 2. See the live comparison table above.
 

@@ -129,3 +129,13 @@ The pause on ASP.NET production work should still hold, but for its real
 reasons: no deployment path, a 2 1/2-hour tail with only one copy, and no owner
 decision on whether that backend has a future at all. "No backup" is not one
 of them.
+
+🔴 **Update 2026-08-21: that last item is now settled.** The owner confirmed the
+ASP.NET edition is a **committed deliverable** with a commercial driver
+(public-sector buyers requiring a .NET stack) —
+[`decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md).
+The backend has a future, so the two owner actions recommended above (repair the
+scheduled backup job; copy and restore-test the final dump) are scheduled work on
+the go-live gate rather than open questions. Migration counts quoted above are
+as-at 2026-08-16 and have since moved — the current figure lives in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md).

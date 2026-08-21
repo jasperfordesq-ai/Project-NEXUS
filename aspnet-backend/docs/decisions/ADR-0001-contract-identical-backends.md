@@ -29,8 +29,10 @@ Project NEXUS has two frontend consumers:
 - the shared accessible Web UK frontend at `apps/web-uk`.
 
 Laravel remains the production behavior and contract source of truth. Web UK
-is being completed and certified Laravel-first. ASP.NET is the experimental
-second backend.
+is being completed and certified Laravel-first. ASP.NET is the second backend.
+(This read "the experimental second backend"; per
+[ADR-0003](ADR-0003-aspnet-is-a-committed-deliverable.md) it is a committed
+deliverable, and "experimental" is retired as a product description.)
 
 ## Decision
 

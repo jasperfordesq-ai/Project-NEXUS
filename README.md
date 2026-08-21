@@ -162,7 +162,7 @@ is not what we ship.
 
 | Layer | Technology | State |
 |-------|-----------|-------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 279 controllers, 184 migrations, 447 test files / ~3,774 tests. **355/1000** on the `ASPNET-CONTRACT-R4` rubric as at **2026-08-21**. Development active (pause lifted 2026-08-14); the former standalone service was stopped 2026-08-10, domain retained |
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 279 controllers, 184 migrations, 447 test files / ~3,774 tests. Score and rubric: [`CURRENT_ASPNET_CONTRACT_STATUS.md`](aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md) — deliberately not repeated here, because a number copied into a README is a number that goes stale. Development active (pause lifted 2026-08-14); the former standalone service was stopped 2026-08-10, domain retained |
 | **Shared event contracts** | JSON Schema event contracts both backends must satisfy (`contracts/events/v2/`) | Maintained |
 
 This is not a sketch or a spike. It is a **complete stack of its own** — its own
@@ -174,14 +174,16 @@ stack as a condition of procurement. The ASP.NET edition is therefore a
 committed deliverable, not a research exercise
 ([`ADR-0003`](aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)).
 
-Progress is measured against a fixed 1,000-point rubric. 🔴 **The rubric changed
-on 2026-08-21 and the totals are not comparable.** `R1`–`R3` asked how much of
-Laravel's API surface had a counterpart that looked right (653 at its last
-banking). `R4` asks how much of the product has been *proved to work* on
-ASP.NET, scored from a finite 130-row journey ledger, and stands at **355**.
-Nothing regressed; the question changed to the one that can actually be
-finished. See
-[`ADR-0004`](aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md).
+Progress is measured against a fixed 1,000-point rubric scored from a finite
+ledger of enumerated user journeys, not from endpoint counts. 🔴 **The rubric was
+replaced on 2026-08-21; totals from earlier rubrics are not comparable and must
+never be subtracted or averaged.** Earlier rubrics asked how much of Laravel's
+API surface had a counterpart that looked right; the current one asks how much
+of the product has been *proved to work* on ASP.NET. The current total lives in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md)
+and the work list in
+[`JOURNEY_CERTIFICATION_LEDGER.md`](aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md).
+See [`ADR-0004`](aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md).
 
 Two things are true at once and both matter: the stack is substantial and much
 of the API surface exists, **and** it is not certified, not the production
@@ -317,7 +319,7 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 | `react-frontend/` | **PRIMARY.** React 19 + TypeScript UI for members and admin workflows. Backend-switchable by configuration; Laravel is the production default. |
 | `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **The sole accessible frontend** since the Laravel Blade one was deleted on 2026-08-14 — it serves `accessible.project-nexus.ie` (since 2026-08-12), both community accessible domains, and `/{tenantSlug}/accessible/...` for every community. Deployed from this repository; **every deploy must pass `--with-webuk`** or the accessible addresses go down. |
 | `mobile/` | **PRIMARY.** The native mobile app — Expo 54 + React Native 0.81 + React 19, its own codebase (v1.2.0, 257 screens, 217 test files) on the same Laravel API, with its own translation tree covering 7 locales. Android release path complete; iOS configured but not published. |
-| `aspnet-backend/` | **SECOND BACKEND.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 254 controllers, 165 migrations, 3,386 tests — which the clients can be switched to by configuration once it is certified contract-identical to Laravel. **712/1000** on the `ASPNET-CONTRACT-R1` rubric as at the **2026-07-15** pause. Service stopped 2026-08-10, domain retained, code alive and maintained here. Not deployable from this repository. |
+| `aspnet-backend/` | **SECOND EDITION.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 279 controllers, 184 migrations, ~3,774 tests — which the clients can be switched to by configuration once certified. A **committed deliverable** driven by public-sector procurement requiring a .NET stack ([ADR-0003](aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)). 🔴 For the current score and rubric read [`CURRENT_ASPNET_CONTRACT_STATUS.md`](aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md) — never a number quoted in this file. Development active (pause lifted 2026-08-14); the former standalone service is stopped, domain retained. Not deployable from this repository. |
 | `contracts/events/v2/` | JSON Schema event contracts that both backends must satisfy — the machine-readable half of the contract-comparison work. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
@@ -404,7 +406,7 @@ This is **version 1.6.1 — generally available**, in active production use. Per
 - The **accessible site** (`web-uk/`, Node 22 + Express + Nunjucks + GOV.UK Frontend) is an approved HTML-first UI track and is the sole accessible frontend. It serves `accessible.project-nexus.ie`, both community accessible domains, and `/{tenantSlug}/accessible/...` for every community. The Laravel Blade implementation it replaced was deleted on 2026-08-14.
 - The **mobile app** (`mobile/`) is a separate Expo / React Native client on the same API — Android release path complete, iOS configured but not yet published to either store
 - The **Laravel 12 backend** provides the API — all services are native Laravel implementations (zero stubs)
-- The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built and maintained here — 712/1000 against the contract-identity rubric at the 2026-07-15 pause, intended as a configuration-switchable alternative to Laravel; its service is stopped, so it is not certified and not the production default
+- The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built, actively developed, and a committed deliverable — a configuration-switchable alternative to Laravel required by public-sector buyers who mandate .NET. It is not yet certified and not the production default; the current score lives only in [`CURRENT_ASPNET_CONTRACT_STATUS.md`](aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md)
 - The **legacy PHP admin** (`/admin-legacy/`, `/super-admin/`) has been decommissioned — all admin workflows live in the React admin
 - **Zero-downtime blue/green deployments** — production switches between blue and green container stacks with no maintenance window
 - **Tests** are in `tests/`, `react-frontend/src/**/*.test.*`, and `e2e/`; CI also runs static analysis, build, migration, i18n, SPDX, smoke, accessibility, and security gates
@@ -517,10 +519,10 @@ React frontend contract:
 | Edition | Stack | Repository |
 | ------- | ----- | --------- |
 | **Laravel Edition** (production/default) | Laravel 12 + PHP 8.2+ / React 19 / MariaDB | Repository root |
-| **.NET Edition** (experimental) | ASP.NET Core 10 / PostgreSQL | [`aspnet-backend/`](aspnet-backend/README.md) |
+| **.NET Edition** (committed, not yet certified) | ASP.NET Core 10 / PostgreSQL | [`aspnet-backend/`](aspnet-backend/README.md) |
 | **Shared Web UK frontend** (production) | Express / Nunjucks / GOV.UK Frontend | [`web-uk/`](web-uk/README.md) |
 
-The **Laravel Edition** at the repository root is the canonical, in-production platform and the foundation of all Project NEXUS communities. It runs on Laravel 12 + PHP 8.2+ with the production React 19 frontend. The **.NET Edition** is an experimental, development-only backend in `aspnet-backend/` that must conform to Laravel's external contracts before either unchanged frontend can safely target it. The portability roadmap and safety rules are documented in [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) and [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
+The **Laravel Edition** at the repository root is the canonical, in-production platform and the foundation of all Project NEXUS communities. It runs on Laravel 12 + PHP 8.2+ with the production React 19 frontend. The **.NET Edition** in `aspnet-backend/` is a committed second edition — required by public-sector buyers who mandate a .NET stack — which must reproduce the behaviour Laravel's clients consume before an unchanged frontend can target it in production. Reproducing Laravel's internal database columns is explicitly **not** part of that goal; see [ADR-0004](aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md). The portability roadmap and safety rules are in [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) and [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 
 ## Source Code
 

@@ -22,11 +22,12 @@ regenerated before it is described as current.
 The eleven backend commits published from `60715dfd` through `9ad163c9` after
 the restart scorecard remain a single unscored delta. Some change real semantic
 behavior and others correct the test harness or expectations. The canonical
-status lists them. 🔴 **The bank is no longer 712/1000: it was rescored to
-598/1000 on 2026-08-18 under Fixed Rubric Baseline 2 (`ASPNET-CONTRACT-R2`).**
-The paragraph below is the Baseline 1 position and is history; it kept the bank at
-712/1000 pending a complete scoring and
-semantic-audit transaction. A later post-pause exact-SHA CI aggregate is green
+status lists them. 🔴 **Do not read a score out of this file.** It has been
+rescored four times since the paragraph below was written, most recently to rubric
+`ASPNET-CONTRACT-R5` on 2026-08-21 against a different, larger denominator - the
+totals are not comparable. The only current score lives in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md). The
+paragraph below is the Baseline 1 position and is history. A later post-pause exact-SHA CI aggregate is green
 at `dbafc5c3`, but it does not regenerate or accept this detailed map; this map
 does not estimate their value.
 

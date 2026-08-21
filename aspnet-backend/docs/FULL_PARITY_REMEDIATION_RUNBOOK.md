@@ -4,6 +4,9 @@ Last reviewed: 2026-07-15
 
 Status: **Maintained reference — fixed rubric and cross-workstream completion gate**
 
+Last reviewed: 2026-08-21 (Baseline 5 named; this line read 2026-07-15 while the
+file already carried an August rubric section)
+
 This is the maintained execution map for completing both contract-identity
 workstreams. The filename is retained for link stability:
 
@@ -184,7 +187,7 @@ R4's fixed 1000-point denominator:
 | Background processing, providers, and integrations | 50 |
 | Build/test/CI evidence and operational readiness | 50 |
 
-Eight scored categories totalling 1000. Community and extended module journeys
+Nine scored categories totalling 1000. Community and extended module journeys
 share one 150-point category so that a scope decision on the extended modules
 (owner decision 4 in the ledger) cannot silently change the denominator.
 
@@ -199,6 +202,77 @@ Baseline 4 is banked at monorepo `869a2a030` with a banked score of
 journeys, 1 staff journey, 90 consumed-contract correctness, 58 schema, 58
 security/localization, 10 background/providers, 27 CI/operational. Exact
 deductions are respectively 128, 139, 122, 99, 60, 17, 17, 40 and 23.
+
+The full derivation, evidence pointers and five-block record live in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md), which
+remains the canonical current score. This runbook records the baseline's
+existence and denominator only.
+
+### Fixed Rubric Baseline 5 — named 2026-08-21 (`ASPNET-CONTRACT-R5`)
+
+🔴 **THIS IS THE FINAL DENOMINATOR. It does not change again.** Baselines
+1-4 above are frozen and unrewritten, and R5's total is **not comparable to any
+of them**. R1-R3 asked how much of Laravel's API surface had a counterpart that
+looked right; R4 and R5 ask how much of the product is proved to work, and R5
+asks it of the complete scope.
+
+R5 exists for one reason: on 2026-08-21 the owner set the scope to **everything,
+including the mobile app** (331 endpoints, ~138K lines, previously in no plan at
+all) and confirmed the edition is a committed deliverable driven by public-sector
+procurement. That decision added a whole client and expanded the staff surface,
+so the denominator had to be re-cut once. R4's 353 becomes R5's **270/1000** — no
+regression, a larger and complete measuring frame.
+
+The re-cut also carried three corrections found by audit on the same day, all in
+R4's own published figures: Tier 1's summary claimed 20 PROVEN / 2 PARTIAL where
+its rows held 19 / 3; one row carried a status (`PARTIAL`-to-`OPEN`) outside the
+vocabulary; and three documents said "eight categories" above a nine-row table.
+
+R5's fixed 1000-point denominator — **ten** categories:
+
+| Category | Weight |
+| --- | ---: |
+| Core member journeys certified — React | 170 |
+| Community and extended module journeys certified — React | 130 |
+| Member journeys certified — Web UK accessible | 120 |
+| Staff journeys certified — admin, super-admin, broker | 150 |
+| Mobile app journeys certified — Expo / React Native | 120 |
+| Consumed-contract correctness and stub elimination | 110 |
+| Data integrity, schema, and upgrade safety | 60 |
+| Auth, tenant isolation, security, and localization | 60 |
+| Background processing, providers, and integrations | 40 |
+| Build/test/CI evidence and operational readiness | 40 |
+
+Staff rises from 100 to 150 because that tier grew from 25 to 72 rows and because
+public-sector buyers evaluate the admin panel. Community and extended modules
+share one category so that an owner scope decision on the extended modules cannot
+change the denominator.
+
+**Three mechanisms make the denominator permanent and the headline monotone.**
+They are enforced by `scripts/check-doc-scores.mjs`, not promised in prose:
+
+1. **Reserve rows.** Every tier in
+   [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) carries
+   named `RESERVE` rows, counted in the denominator at zero credit from day one.
+   A journey discovered later FILLS a reserve. Reserves exhausted in a tier is an
+   owner escalation, never a silent re-cut.
+2. **A ratchet.** `ASPNET_BANKED_FLOOR` is asserted every run: the published
+   total may never fall below it, and each banking transaction raises it. A
+   demotion is recorded in the ledger immediately; the headline publishes at the
+   next net-non-negative transaction. The ledger stays honest in real time.
+3. **Mechanical derivation.** The five journey categories are recomputed from the
+   ledger's own row statuses on every run — the checker re-counts each tier's
+   rows, rejects any status outside the vocabulary, and fails if a published
+   category score disagrees with the recomputed credit. R4's arithmetic error
+   could not survive this check.
+
+Baseline 5 is banked at monorepo `1a2f2a30f` (pushed; all eight workflows green)
+with a banked score of **270/1000**: 50 core React journeys, 5 module React
+journeys, 21 Web UK journeys, 1 staff journey, 0 mobile journeys, 68
+consumed-contract correctness, 46 schema, 46 security/localization, 11
+background/providers, 22 CI/operational. Exact deductions are respectively 120,
+125, 99, 149, 120, 42, 14, 14, 29 and 18. Denominator source: the ledger at
+**250 rows** across six tiers.
 
 The full derivation, evidence pointers and five-block record live in
 [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md), which

@@ -570,7 +570,7 @@ CI check refuses a score marker that does not.
 |---|---|---|---|---|
 | `web-uk` production readiness | `WEBUK-W2-PROD-R1` | 873/1000 | Is `web-uk` safe to serve, and can Blade retire? | **Current** — read it from `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, never from here |
 | `web-uk` Laravel-first parity | `WEBUK-W1-FIXED-R1` | 663/1000 | How closely does the candidate clone Blade? | Retired 2026-08-11 |
-| ASP.NET contract identity | `ASPNET-CONTRACT-R1` | 712/1000 | Is ASP.NET externally contract-identical to Laravel? | Paused since 2026-07-15 |
+| ASP.NET journey equivalence | see its own status doc | see its own status doc | Does the product work on the ASP.NET edition? | **Active** — read it from `aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md`, never from here. Development resumed 2026-08-14; the rubric was replaced 2026-08-21 and older totals are not comparable |
 | Documentation health | `DOCS-HEALTH-D3-R1` | 1000/1000 index | Documentation and handoff quality | Not a product score |
 
 🔴 **The current 873 exceeds the retired 663, and the two are still not comparable.** The

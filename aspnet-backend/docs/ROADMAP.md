@@ -6,186 +6,179 @@ list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
 
 Last updated: 2026-08-21
 
+## Where we are, in three lines
+
+Every status report from here uses exactly this format. Both numbers can only ever
+go up, and the build enforces it.
+
+- **Score: 270/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
+- **Journeys certified: 0 of 250**
+- **Movement since last report: baseline set**
+
+Zero certified is not a typo, and it is the most useful fact on this page — see
+"Why nothing is certified yet".
+
 ## What this is, and why we are building it
 
-Project NEXUS will ship as **two editions of the same product**. One runs on
-Laravel (PHP). One runs on ASP.NET (.NET). Both run the same two websites — the
-main app and the accessible site — and you switch between them with a setting,
-not a rewrite.
+Project NEXUS ships as **two editions of the same product**. One runs on Laravel
+(PHP). One runs on ASP.NET (.NET). Both run the same four clients — the main app,
+the admin panel, the accessible site and the mobile app — and you switch between
+them with a setting, not a rewrite.
 
-The reason is commercial, and until 2026-08-21 it was written down nowhere: **some
-public-sector buyers require a .NET application stack as a condition of
-procurement.** Many will accept the Laravel platform. Some will not, and for
-those the ASP.NET edition is the difference between winning the contract and not
-being allowed to bid.
+The reason is commercial: **some public-sector buyers require a .NET application
+stack as a condition of procurement.** Many will accept the Laravel platform. Some
+will not, and for those the ASP.NET edition is the difference between winning the
+contract and not being allowed to bid. That is now a formal decision
+([ADR-0003](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)) so no future
+session treats this as a side experiment again.
 
-That reason is now recorded as a formal decision
-([ADR-0003](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)) so no
-future agent treats this work as a side experiment again.
+## The number moved again today. This is the last time, and here is the mechanism
 
-## What was wrong with how this was written down
+The score has now been re-cut four times: 712, 598, 653, 353, and today 270. You
+were right to be angry about that and right to demand it be checked.
 
-You asked for this to be put right. Here is what was actually wrong, plainly.
+| | What changed | Was the software worse? |
+|---|---|---|
+| 712 → 598 | We built the first tool that could actually compare the two backends' answers. It found far less agreement than counting addresses had implied. | No |
+| 598 → 653 | Five days of real work finally got formally banked. | No — better |
+| 653 → 353 | The question changed: from "do the addresses look right" to "is the product proved to work". | No |
+| 353 → 270 | **Your scope decision today**: the mobile app joined the plan (331 addresses, ~138,000 lines, previously in no plan at all) and the admin surface grew from 25 tracked journeys to 72. | No |
 
-**1. Every guide told agents this work was optional.** A decision record written
-on 15 August called ASP.NET "an optional future alternative" and said "do not
-promise that ASP.NET will be deployed." That wording spread into the main agent
-guide, the frontend guide, and the documentation policy. Agents reading their
-mandatory first-read instructions learned this was speculative. Two things
-followed: nobody was allowed to shrink the goal, because shrinking a goal is a
-delivery decision and this was not framed as a delivery; and the workstream got
-treated as background work.
+Today's is the only one caused by a decision rather than a measurement
+correction, and you made it knowing the cost. **Three mechanisms now make another
+one impossible**, each checked by the build rather than promised on a page:
 
-**2. The finish line was the biggest possible one.** The goal was measured by
-comparing whole API responses between the two engines. Laravel often returns raw
-database rows, so a single listing carries about 76 fields — including internal
-columns no screen ever reads, and at least one that should never have been sent
-at all. Under that comparison, copying those columns counted as required work.
-That is what I meant by "byte-for-byte", and it was never what you asked for.
+1. **Spare slots.** Every section of the work list carries pre-counted spare
+   slots. A journey discovered next month fills a slot instead of making the list
+   longer. If a section runs out of spares, that comes to you as a decision — it
+   can never quietly change the total.
+2. **A floor.** The published score cannot go below its recorded floor; the build
+   fails if anyone tries. If we discover something we thought worked doesn't, the
+   work list records that immediately and honestly, and the headline waits until
+   the net is positive again.
+3. **The score is calculated, not typed.** The build recomputes it from the work
+   list every run and fails if the two disagree. Not theoretical: yesterday's 353
+   was arithmetically wrong — the summary said 20 items where the list held 19 —
+   and this check catches exactly that. It was deliberately broken twelve
+   different ways to confirm it fails before being trusted.
 
-**3. The score punished looking closely.** Points were deducted simply because
-some part of the system had not been measured yet. So the more thoroughly we
-audited, the lower the score went, while the software was improving. That is why
-it fell from 712 to 598 in August. It was an honest audit and a useless progress
-signal.
+## Why nothing is certified yet — and today's good news
 
-**4. I asked you the deciding question on 19 August and got no answer.** I asked
-whether copying those raw fields was actually the goal, recommended that it was
-not, and carried on under the strict reading because nothing on record permitted
-the looser one. That was my error to escalate more clearly, and it cost weeks.
+"Certified" has a strict meaning here: a real member action, driven through the
+app's own screens against .NET, **and** the identical run passing against Laravel
+side by side, so a difference in test data can never be mistaken for a broken
+backend.
 
-**All four are now fixed in the documents themselves**, not just described here.
-The goal is [journey equivalence](decisions/ADR-0004-journey-equivalence-is-the-target.md):
-for everything a real person does, both editions must behave the same — same
-result, same data, same errors, same permissions. A field no screen reads is
-explicitly **not** part of the job.
+Until today the main app's test never ran that comparison. It does now — **and the
+first full run found zero failures unique to ASP.NET.** 31 of 37 steps matched on
+both engines; ASP.NET passed 35 of 37 with nothing failing. The six non-matches
+are all on the *Laravel* side: its throwaway test database holds only one
+community, so its sign-in screen has nothing to choose and the sign-up step can't
+finish.
 
-## The new score, and why it is lower
+That is a test-data gap, not a product fault — and without the comparison arm we
+would have read it as a product fault. Fixing that fixture is the next job, and it
+is what converts journeys to certified in bulk.
 
-**355 out of 1,000.** The old score was 653.
+## What works today, proved by using it
 
-Nothing got worse. The question changed. The old score answered *"how much of
-Laravel's API has a .NET counterpart that looks about right?"* — and the answer
-is genuinely most of it. The new score answers *"how much of the product has
-been proved to work on .NET?"* — and that is the part that has barely started.
+A member can sign up, verify their email, accept the legal agreement, sign in, use
+the dashboard, browse and scroll the feed, filter it, post, comment, browse and
+create listings, browse events, RSVP, send a message, transfer credits, see their
+wallet history, browse members, view their profile, change theme and have it
+stick, and clear notifications — all through the app's own screens against the
+.NET engine.
 
-The new score is the one worth having, for three reasons:
-
-- It can only go up by making the product work. It cannot go down because we
-  looked harder.
-- It is built from a **finite list of 130 real journeys** — sign up, post to the
-  feed, transfer credits, run an admin report — not from 2,650 API endpoints. A
-  list of journeys can be scheduled, split up, and finished. An endpoint count
-  cannot.
-- A procurement auditor would recognise it. "We have certified these 130
-  journeys on both engines" is an answer. "Our response bodies are 96% similar"
-  is not.
-
-## Where we actually are
-
-**Working now, proved by using it:** a member can sign up, verify, accept the
-legal agreement, sign in, use the dashboard, browse and scroll the feed, filter
-it, post, comment, browse and create listings, browse events, RSVP, send a
-message, transfer credits, see their wallet history, browse members, view their
-profile, change theme and have it stick, and clear notifications — all through
-the app's own screens against the .NET engine. An automated browser test walks 37
-steps of that on every run.
+That test can now **fail**. Until today it caught every error and exited
+successfully anyway, so a green run proved nothing at all. It was fixed and then
+proved red: pointed at a dead address, it correctly reported 36 of 37 steps broken.
 
 The accessible site signs in against .NET and 20 of its pages render the same as
 against Laravel, checked side by side in the same run.
 
-**The honest gaps:**
+## The honest gaps
 
-- **Nothing is fully "certified" yet**, because the main app's test does not run
-  the same steps against Laravel in the same pass. So we cannot yet prove the two
-  engines agree — only that .NET works. Fixing that is a half-day job on the test
-  itself and it is now first in the queue.
-- **The core transaction is unproven**: request an exchange, accept it, complete
+- **The core transaction is unproven.** Request an exchange, accept it, complete
   it, credits move. That is the heart of a timebank and it has never been driven
-  end to end on .NET.
-- **The admin panel is untouched** — 243 admin screens' worth of endpoints never
-  compared. Public-sector buyers evaluate the admin panel, so this is not
-  optional.
-- **319 endpoints still answer "success" while doing nothing.** None of them sits
-  on a screen we have proved, which is exactly why our tests pass. Most are in
-  the admin area.
-- **Two known broken things**: posts with several photos show one photo (no
-  database table for the rest), and event check-in by code needs a signed-token
-  subsystem that .NET does not have at all.
-- **Behind the scenes**: 26 of 69 scheduled tasks exist; search indexing, push
-  notifications and payment webhooks are not connected; language handling has no
-  per-request locale at all and only 7 of 11 languages seeded. A Welsh- or
-  Irish-language buyer would fail us on that today.
-- **The hard stop, unchanged**: the live .NET database has had no successful
-  backup since 8 March, while the app rewrites its own schema every start. That
-  is infrastructure and it is yours. No score substitutes for it, and nothing goes
-  near production until it is fixed.
+  end to end on .NET. It is first in the queue after the fixture fix.
+- **The admin panel is barely touched** — 514 admin addresses never compared, and
+  it holds almost all the do-nothing endpoints. Buyers evaluate the admin panel,
+  which is why it now carries 150 of the 1,000 points.
+- **The mobile app has not started** — 34 journeys, nothing attempted. Much of it
+  reuses member functions certified elsewhere, so a measurement pass will tell us
+  how much is real work instead of guessing.
+- **317 endpoints still answer "success" while doing nothing.** Two were worse
+  than that: a member's legal request to erase their data, and their request for a
+  copy of it, both replied "queued" and did nothing. **Both fixed today** — they
+  refuse honestly now. A third of the same kind is recorded and queued.
+- **`/explore` has no .NET version at all**, against 2,257 lines of Laravel.
+- **Push notifications cannot work.** The code uses a Google delivery address and
+  login method both switched off in July 2024.
+- **Languages: 7 of 11 seeded, and no per-request language handling at all.**
+  Arabic is missing, so there is no right-to-left language. A Welsh- or
+  Irish-language buyer would fail us on this today.
+- **Background tasks: 26 of about 117.** Previously published as 26 of 69, which
+  flattered us — one Laravel task fans out into 49 more.
 
-## Time frames — for you and a large fleet of agents
+## Two things I got wrong, corrected
 
-These are working days, not calendar days: days on which you actually run
-sessions. They assume heavy parallel agent use and a rule that every batch ends
-green in CI before the next starts.
+**The backup emergency was overstated.** I told you the .NET database had "no
+successful backup since 8 March, nothing to restore from". The *scheduled* job has
+been broken since then — but a **restore-tested copy from 10 August exists off the
+server** (all 265 tables, 49,958 rows, verified by actually restoring it), and the
+database has been switched off since, so that copy is current. This was written
+down on 16 August and I repeated the older claim in six places without reading it.
+What genuinely remains: repair the scheduled job, copy the last few hours' dump,
+and don't restart that container. Real work, yours to schedule — not the emergency
+I described.
 
-| Phase | Work | Days |
-| ---: | --- | ---: |
-| 1 | Add the Laravel side-by-side arm to the main app's test | 0.5 |
-| 2 | Teach the response comparison to ignore fields no screen reads | 0.5–1 |
-| 3 | The 13 remaining core member journeys, incl. the exchange transaction | 3–5 |
-| 4 | Measure all 243 admin endpoints in one pass, before building anything | 1–2 |
-| 5 | Accessible site: make its test submit forms, then certify its journeys | 3–4 |
-| 6 | Community modules — groups, volunteering, goals, polls, skills, reviews | 5–7 |
-| 7 | Admin, super-admin and broker journeys | 6–9 |
-| 8 | Scheduled tasks 26→69, search, push, payments, languages, database tail | 4–6 |
-| 9 | Operations: deploy path, monitoring, load comparison (backups are yours) | 2–4 |
-| | **Total** | **26–39** |
+**Two problems were overstated the other way too.** Search indexing has a working
+administrator rebuild (only the automatic updating is missing, so the index goes
+stale until someone rebuilds it), and Stripe payment webhooks *are* properly
+handled on two paths with correct signature checking — only one unused alias
+isn't, and it refuses honestly.
 
-**Milestones:**
+## Time frames
 
-- **Procurement demo grade (~600 points): 13–19 working days.** Phases 1–5 plus
-  part of 6. You can put the product in front of a buyer running on .NET and
-  answer questions about coverage with evidence.
-- **First-customer grade (~800 points): 26–39 working days.** Phases 1–8. One
-  .NET-required customer tenant could be operated — *provided* the backup and
-  deployment work is done.
-- **Full equivalence (~950): add 8–12 days** for the extended modules
-  (marketplace, jobs, courses, podcasts, clubs and so on), and only if you decide
-  they must be in the .NET edition. That is an open decision.
+Working days means days you actually run sessions. You said near-daily, so the
+calendar column assumes 5–7 sessions a week.
 
-At roughly four substantive sessions a week, procurement grade lands in about
-**four to six weeks**, first-customer grade in about **seven to ten weeks**.
+| Milestone | Working days | Calendar |
+|---|---:|---|
+| Fixture fixed, first journeys certified | 2–4 | this week |
+| **Procurement demo grade (~550)** — enough to put it in front of a buyer with evidence | 20–30 | **4–6 weeks** |
+| **First-customer grade (~780)** — one .NET-required customer could be operated | 50–75 | **9–14 weeks** |
+| Everything, including mobile (~950) | 85–120 | **15–22 weeks** |
 
-### Why more agents will not make this much faster
+Milestone levels are lower than the equivalents quoted yesterday because the
+denominator grew: 550 now covers more certified product than 600 did then.
 
-Worth understanding, because it sets the realistic ceiling. Agents make the
-*finding and fixing* nearly free. Four things do not parallelise:
+**Was 11 weeks unreasonable?** Partly. The platform is about 2.13 million lines of
+product code across four clients and two backends — Laravel's business logic alone
+is 521,000 lines. It is genuinely large. But your instinct that something was off
+is right: **the porting is already done.** 2,655 of 2,667 addresses exist, and the
+only gaps the main app cares about are five, all one social-login feature. What is
+left is proving behaviour, one journey at a time.
 
-1. **Verification.** The full test suite takes about 40 minutes and CI another
-   20–35. Every batch must end green. That caps useful batches per day at
-   roughly six to ten regardless of how many agents ran.
-2. **Database migrations.** The .NET migration chain is linear and a test pins
-   its end. Two agents adding migrations at once conflict. Schema work has to go
-   through one agent at a time.
-3. **One test environment.** There is a single disposable Laravel and a single
-   Postgres for side-by-side comparison. Journeys that write data contend.
-4. **Your decisions.** Six specific rows are blocked on you, listed at the bottom
-   of the journey ledger. The one worth doing now is a tiny frontend change (a
-   test hook on the feed card) that unblocks two feed journeys.
+**Why more agents will not compress this much.** The test suite takes 40 minutes
+and the build another 20–35, and every batch must end green. That caps useful
+batches at roughly 6–10 a day however many agents ran. Database migrations go one
+at a time. There is one comparison environment. Agents make finding and fixing
+nearly free; they do not make verification free.
 
-### What could make these estimates wrong
+**These estimates get replaced by measured ones.** After the accessible-site phase
+there is a mandatory checkpoint that cannot pass without six real measurements —
+including how many defects each admin journey actually turns up, the number the
+whole back half depends on. That is the last time these figures are a guess.
 
-I have been wrong on this project before, so here is what I am watching:
+## What needs you
 
-- **Every journey certified so far has uncovered one to three real defects
-  behind it.** If that rate holds in the admin area — where the do-nothing
-  endpoints are concentrated — phase 7 is the one that could double.
-- **215 Laravel database tables have no .NET counterpart.** We only build the
-  ones journeys need, but we do not yet know which journeys need which, and
-  schema work serialises.
-- **Live payment, push and identity providers cannot be simulated.** Those need
-  real credentials against real services and are gated on you.
-
-## The plan in one line
-
-Certify journeys, in order, from the finite list; bank the score at every phase;
-fix the backups. Nothing else is on the critical path.
+1. **A test hook on the feed card** — a one-line frontend change that unblocks two
+   feed journeys currently impossible to verify. The only frontend edit I'd ask
+   for.
+2. **The uncalled do-nothing endpoints** — 63 are called by nothing at all. Delete
+   in both editions, or implement? You see the list first.
+3. **Repair the scheduled backup** and copy the final dump. Infrastructure, and it
+   gates any production use.
+4. **Live provider credentials** (Stripe, push, identity checks) when we reach
+   them — those cannot be simulated.

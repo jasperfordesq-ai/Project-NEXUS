@@ -93,10 +93,12 @@ same D3 denominator and closed explicit deductions:
 
 ## Product Boundaries Preserved
 
-- [ASP.NET](CURRENT_ASPNET_CONTRACT_STATUS.md) was **rescored to 598/1000 on
-  2026-08-18** under Fixed Rubric Baseline 2 (`ASPNET-CONTRACT-R2`). Baseline 1's
-  **712/1000** is retained there as audit trail and is no longer the current score.
-  🔴 The fall is a measurement correction, not a regression: semantic parity had
+- [ASP.NET](CURRENT_ASPNET_CONTRACT_STATUS.md) has been rescored several times
+  since this report was written, most recently to rubric `ASPNET-CONTRACT-R5` on
+  2026-08-21 against a larger frozen denominator. Earlier baselines are retained
+  as audit trail in `HISTORY/` and are not comparable to the current total; read
+  the score only from the canonical status document.
+  🔴 Each fall was a measurement correction, not a regression: semantic parity had
   been banked before any instrument could compare a response.
 - The [schema category](CURRENT_SCHEMA_READINESS.md) is now **118/150** under
   Baseline 2 (was 129/150). The

@@ -37,10 +37,14 @@ and the finite work list at
 [`JOURNEY_CERTIFICATION_LEDGER.md`](../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md).
 
 An ASP.NET production role still requires the go-live gate in ADR-0003:
-journey evidence at the scope proposed, load evidence, **working verified
-backups**, a deploy and rollback path, observability, a migration and
-reconciliation plan, and an explicit owner decision. The live ASP.NET database
-has had no successful backup since 2026-03-08; that is the standing hard stop.
+journey evidence at the scope proposed, load evidence, a **repaired scheduled
+backup**, a deploy and rollback path, observability, a migration and
+reconciliation plan, and an explicit owner decision. On backups: the *scheduled*
+off-server job has been failing since 2026-03-08, but a restore-tested copy from
+2026-08-10 exists and the database has been stopped since, so the recovery point
+is current — read
+[`DATABASE_BACKUP_DECISION.md`](../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md)
+before repeating "there is no backup".
 
 Current status:
 
@@ -202,7 +206,9 @@ refresh handling, tenant identity, CSRF handling, and session expiry events.
 Safe rule:
 
 ```text
-Laravel auth behaviour must remain byte-for-byte compatible from the page
+Laravel auth behaviour must remain equivalent for every value a page component actually reads (see
+[`ADR-0004`](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md)
+— "byte-for-byte" was never the standard and is retired wording) from the page
 components' point of view.
 ```
 

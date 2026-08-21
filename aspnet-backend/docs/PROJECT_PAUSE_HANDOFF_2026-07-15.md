@@ -1,5 +1,12 @@
 # Project Pause And Cold-Start Handoff — 2026-07-15
 
+> 🔴 **Historical checkpoint (labelled 2026-08-21).** Superseded and retained for audit only.
+> Do not resume from this document, and do not treat any score, queue or status
+> in it as current. Canonical current sources: [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md)
+> (score and queue) and [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md)
+> (the work list). Both ASP.NET and web-uk development pauses have been lifted
+> (2026-08-14 and 2026-08-11); this file predates both.
+
 > **Pre-consolidation paths.** Written before the 2026-08-09 move into the
 > platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
 > `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read

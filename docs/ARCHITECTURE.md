@@ -9,7 +9,7 @@ This document is the maintained architecture map for Project NEXUS. It is intent
 
 Project NEXUS is a multi-tenant community platform for timebanking and adjacent community-exchange workflows. The production system is a Laravel 12 API/backend, a React 19 primary frontend, the Web UK HTML-first accessible frontend, MariaDB, Redis, Meilisearch, Pusher, Firebase Cloud Messaging, and supporting deployment/observability tooling.
 
-The repository also contains an ASP.NET Core 10 alternative backend with its own PostgreSQL database and RabbitMQ broker. It is a development-only contract-comparison track, not a planned Laravel replacement. Its production eligibility depends on contract identity, representative Project NEXUS evidence, operational and migration readiness, and a separate owner decision; traffic growth alone is not a promotion trigger.
+The repository also contains an ASP.NET Core 10 second edition with its own PostgreSQL database and RabbitMQ broker. It is a **committed deliverable**, driven by public-sector buyers who require a .NET application stack as a condition of procurement ([ADR-0003](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)) — not a research track. It is not yet certified and has no deploy path from this repository. Its production eligibility depends on journey equivalence at consumed boundaries ([ADR-0004](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md)), operational readiness including working backups, and an explicit owner decision; traffic growth alone is never a promotion trigger.
 
 ```mermaid
 flowchart TD
@@ -36,7 +36,7 @@ flowchart TD
     end
     BG -.atomic Apache route swap.-> API
 
-    subgraph SEC ["SECONDARY - development only, no deploy path from this repo"]
+    subgraph SEC ["SECOND EDITION - committed, not yet certified, no deploy path from this repo"]
         ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
         PG[(PostgreSQL 16<br/>separate database)]
         MQ[RabbitMQ 3.13]
@@ -99,7 +99,7 @@ Anything new in this area should reuse `ReportExportService` and, critically, se
 
 The React frontend is the primary UI. It uses React 19, TypeScript, HeroUI v3, Tailwind CSS 4, Lucide icons, translation namespaces, CSS tokens, and the local motion shim. New user-facing UI belongs here unless it is specifically part of the accessible frontend.
 
-The production React frontend lives under `react-frontend/`, the production accessible client lives under `web-uk/`, and both speak the Laravel API contract by default. The experimental ASP.NET implementation lives under `aspnet-backend/`. ASP.NET compatibility work must make ASP.NET conform to Laravel's externally observable contract, not weaken either frontend or introduce backend-specific branches. See [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) and [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md).
+The production React frontend lives under `react-frontend/`, the production accessible client lives under `web-uk/`, and both speak the Laravel API contract by default. The ASP.NET second edition lives under `aspnet-backend/`. Its work must make ASP.NET reproduce the behaviour Laravel's clients consume — never weaken a frontend, never introduce backend-specific branches, and never return a success-shaped response over missing work. See [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) and [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md).
 
 The accessible frontend is a maintained second surface, not legacy PHP. It uses GOV.UK Frontend markup/classes/Sass/JS with Project NEXUS branding and attribution. Its controller and translation paths must stay isolated from the React app while preserving the same tenant, module, auth, and AGPL attribution rules.
 

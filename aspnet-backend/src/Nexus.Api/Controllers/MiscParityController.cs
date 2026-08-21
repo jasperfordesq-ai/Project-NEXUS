@@ -758,13 +758,50 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult GdprConsent([FromBody] JsonElement body) => Ok(new { data = new { consent = true } });
 
+    /// <summary>
+    /// Refuse a GDPR request this backend cannot yet process, loudly.
+    ///
+    /// 🔴 These two endpoints previously faked success while doing nothing at
+    /// all: <c>POST /api/gdpr/delete-account</c> answered <c>200 {queued:true}</c>
+    /// without queuing anything — a member's Article 17 erasure request was
+    /// silently discarded — and <c>POST /api/gdpr/request</c> answered
+    /// <c>200 {status:"pending"}</c> without writing a row, so the subject-access
+    /// request never existed anywhere. That is a statutory exposure, not a
+    /// cosmetic gap: the member believes a legal request has been lodged and the
+    /// statutory clock is running, while the platform holds no record of it.
+    ///
+    /// 501 keeps the client honest: the member sees a real failure and can use
+    /// the working channel instead, and no legal request is ever swallowed. The
+    /// real implementation lands with the staff-journey phase (see
+    /// docs/JOURNEY_CERTIFICATION_LEDGER.md, Tier 5 — GDPR/DSAR handling is
+    /// staff-processed work in that tier). Until then this must not pretend to
+    /// succeed. Same pattern as <see cref="WebhookNotProcessed"/>.
+    /// </summary>
+    private IActionResult GdprNotProcessed(string operation, string route)
+    {
+        _logger.LogError(
+            "GDPR {Operation} request at {Route} was REFUSED: no processing is implemented on this "
+            + "backend. Returning 501 so the member's statutory request is not silently discarded. "
+            + "See docs/JOURNEY_CERTIFICATION_LEDGER.md (Tier 5, staff journeys).",
+            operation,
+            route);
+
+        return StatusCode(StatusCodes.Status501NotImplemented, new
+        {
+            success = false,
+            error = "GDPR request processing is not implemented on this backend",
+            code = "GDPR_NOT_IMPLEMENTED",
+            operation,
+        });
+    }
+
     [HttpPost("gdpr/delete-account")]
     [Authorize]
-    public IActionResult GdprDeleteAccount() => Ok(new { data = new { queued = true } });
+    public IActionResult GdprDeleteAccount() => GdprNotProcessed("account-erasure", "/api/gdpr/delete-account");
 
     [HttpPost("gdpr/request")]
     [Authorize]
-    public IActionResult GdprRequest([FromBody] JsonElement body) => Ok(new { data = new { id = StableId(body), status = "pending" } });
+    public IActionResult GdprRequest([FromBody] JsonElement body) => GdprNotProcessed("data-request", "/api/gdpr/request");
 
     [HttpGet("gamification/badges/{id:int}")]
     [Authorize]

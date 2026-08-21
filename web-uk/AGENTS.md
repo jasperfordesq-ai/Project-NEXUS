@@ -36,7 +36,18 @@ The repository-wide instructions in [`../AGENTS.md`](../AGENTS.md) apply here.
 > presentation; `react-frontend/` for what a member can do; the Laravel API for
 > the contract. Blade is historic and gone, and is not the specification.
 >
-> What has NOT changed: the ASP.NET backend stays paused with its database
+> 🔴 **Corrected 2026-08-21: ASP.NET is NOT paused** — development resumed
+> 2026-08-14 and the edition is a committed deliverable driven by public-sector
+> procurement; Web UK owns 30 journey rows of its certification. Read
+> `../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`,
+> `ADR-0004-journey-equivalence-is-the-target.md` and
+> `../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md` before declining ASP.NET
+> work here. What still applies: the live ASP.NET database container must not be
+> restarted (scheduled backups have failed since 2026-03-08; a restore-tested
+> 2026-08-10 off-server copy does exist), nothing deploys without explicit
+> authorisation, and stateful certification uses the disposable Laravel on `:8091`.
+>
+> The superseded sentence read: "the ASP.NET backend stays paused with its database
 > boundary closed; the shared local `nexus` database is production-derived and
 > must never be written to; the GOV.UK branding prohibitions are binding.
 
@@ -117,8 +128,10 @@ Maintained docs that future agents must keep current:
 - `docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` (🔴 **RETIRED 2026-08-11** — the W1
   audit trail; its `663/1000` is not current)
 - `../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (a **different**
-  rubric for the paused ASP.NET backend; never added to a `web-uk` score)
-- `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` (original pause
+  rubric for the ASP.NET edition; never added to a `web-uk` score)
+- `../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md` (the ASP.NET work list)
+- 🔴 HISTORICAL, both halves lifted:
+  `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` (original pause
   record; the `web-uk` half is lifted, the ASP.NET half is not)
 - `docs/LARAVEL_ACCESSIBLE_ROUTE_MATRIX.md`
 - `docs/BLADE_COMPONENT_PORT_AUDIT.md`

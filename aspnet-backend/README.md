@@ -12,8 +12,11 @@ ASP.NET edition is a **committed product deliverable** with a commercial driver:
 a segment of public-sector buyers require a .NET application stack as a
 condition of procurement. It is still not an automatic scaling tier or a
 user-count-triggered migration, and commitment is not authorization to deploy: a
-production role requires journey evidence, load evidence, **working backups**, a
-deploy and rollback path, observability, and an explicit owner decision. See
+production role requires journey evidence, load evidence, a **repaired scheduled
+backup** (a restore-tested off-server copy from 2026-08-10 exists — read
+[`docs/DATABASE_BACKUP_DECISION.md`](docs/DATABASE_BACKUP_DECISION.md) before
+repeating "there is no backup"), a deploy and rollback path, observability, and an
+explicit owner decision. See
 [`ADR-0003`](docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) for
 the commitment and the go-live gate,
 [`ADR-0004`](docs/decisions/ADR-0004-journey-equivalence-is-the-target.md) for

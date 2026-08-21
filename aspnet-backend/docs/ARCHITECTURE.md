@@ -34,8 +34,7 @@ flowchart TD
     react["Canonical React frontend\nLaravel repository"]
     webuk["Shared accessible Web UK frontend\nweb-uk"]
     laravel["Laravel backend\nproduction contract source"]
-    aspnet["ASP.NET Core 8 backend\nexperimental contract-identical target"]
-    laravelBlade["Laravel Blade accessible UI\nvisual and workflow source"]
+    aspnet["ASP.NET Core 10 backend\ncommitted second edition"]
     services["ASP.NET domain services"]
     database["ASP.NET PostgreSQL via EF Core"]
     integrations["Messaging and external providers"]
@@ -46,7 +45,6 @@ flowchart TD
     webuk -->|"Laravel-first certification"| laravel
     react -. "target: configuration-only switch" .-> aspnet
     webuk -. "target: configuration-only switch" .-> aspnet
-    laravelBlade -. "browser experience contract" .-> webuk
     aspnet --> services
     services --> database
     services --> integrations

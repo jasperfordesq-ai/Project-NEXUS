@@ -20,9 +20,25 @@
 ## Backend Target Guardrail
 
 This frontend is in production against the Laravel backend. Laravel remains the
-default and canonical API contract. ASP.NET support is development-only and must
-be opt-in through environment/config until the ASP.NET backend passes the
-Laravel React API contract.
+default and canonical API contract, and ASP.NET is selected only by
+environment/config — never by a code branch.
+
+🔴 **Corrected 2026-08-21: ASP.NET is not "development-only".** It is a
+**committed second edition** driven by public-sector buyers who require a .NET
+stack to procure at all, and **this frontend is its primary client** — 300 of the
+1,000 points of its certification score are journeys driven through these very
+pages. When a journey behaves differently on ASP.NET, **the fix goes in ASP.NET,
+never here**: no adapter, no `if (backend === 'aspnet')` branch, no weakening of a
+production page. Requests to change a file in this directory for ASP.NET's benefit
+need explicit owner approval for that specific change.
+
+Read before doing dual-backend work:
+[`ADR-0003`](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)
+(why it is committed),
+[`ADR-0004`](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md)
+(what equivalence does and does not require — a response field no component reads
+is explicitly out of scope), and the work list
+[`JOURNEY_CERTIFICATION_LEDGER.md`](../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md).
 
 Safe local commands:
 

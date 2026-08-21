@@ -306,9 +306,11 @@ This project is **publicly released** under AGPL-3.0-or-later at <https://github
 
   🔴 **The target is journey equivalence at consumed boundaries, NOT field-for-field response matching.** "Contract-identical" was implemented as a whole-response-body diff, which made Laravel's raw-Eloquent internal columns (down to `category.reset_token`) count as required work. A field is in scope only if a client reads it, acts on it, or its difference changes an outcome. Read [ADR-0004](aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md) before any parity work, and [ADR-0003](aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) for the commitment and go-live gate. The finite work list is [JOURNEY_CERTIFICATION_LEDGER.md](aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md). See also [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md); [ADR-0002](aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md) is superseded in part and retains its scaling reasoning only.
 - **Repository co-location does not change deployment scope.** `aspnet-backend/`
-  is development-only and may not be added to the Laravel blue/green Compose
-  file or production deployment scripts without separate, explicit
-  authorization. `web-uk/` is the production accessible frontend and deploys
+  is **not in the deployment scope** and may not be added to the Laravel
+  blue/green Compose file or production deployment scripts without separate,
+  explicit authorization. (This said "is development-only" until 2026-08-21 —
+  the *rule* is unchanged and binding, but the reason is release isolation
+  between two editions, not that the edition is speculative.) `web-uk/` is the production accessible frontend and deploys
   only through `bash scripts/deploy.sh --with-webuk`; see
   [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
 

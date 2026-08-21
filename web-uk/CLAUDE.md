@@ -21,9 +21,33 @@
 >    frozen snapshot (`scripts/blade-route-inventory.frozen.json`, 707 routes) so it
 >    still catches a `web-uk` route regression.
 >
-> What has NOT changed: the ASP.NET backend stays paused with its database boundary
-> closed; the shared local `nexus` database is production-derived and must never be
-> written to or screenshotted; the GOV.UK branding prohibitions are binding.
+> What has NOT changed: the shared local `nexus` database is production-derived and
+> must never be written to or screenshotted; the GOV.UK branding prohibitions are
+> binding. (The old "ASP.NET stays paused" clause that stood here is corrected
+> below.)
+
+> 🔴 **ASP.NET (corrected 2026-08-21).** Earlier wording here said the ASP.NET
+> backend "stays paused" and was "a future second backend only". **Both are wrong
+> and have been since 2026-08-14.** ASP.NET development is ACTIVE and the edition is
+> a **committed deliverable** — public-sector buyers who require a .NET stack cannot
+> otherwise be bid for. `web-uk` is a first-class client of it: **30 journey rows /
+> 120 points of the ASP.NET score are Web UK's**, and certifying them is a scheduled
+> phase of that work, not a someday. Read
+> [`../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md),
+> [`../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md`](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md)
+> and the work list
+> [`../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md`](../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md)
+> before declining ASP.NET work in this directory.
+>
+> What genuinely still applies: **nothing is deployed without explicit
+> authorisation**; the live ASP.NET database's *scheduled* backup has been failing
+> since 2026-03-08 and its container must not be restarted (a restore-tested
+> off-server copy from 2026-08-10 does exist — see
+> [`../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md`](../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md)
+> before repeating "there is no backup"); and the shared local `nexus` database is
+> production-derived and read-only — stateful ASP.NET certification uses the
+> disposable Laravel on `:8091`.
+
 >
 > Status is stated in ONE place:
 > [`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
@@ -39,14 +63,21 @@
 > **What the lift covers:** implementation, tests, documentation and deployment
 > *preparation* inside `web-uk/**`.
 >
-> **What remains fenced, unchanged:**
-> - **The ASP.NET backend stays paused**, and its **database boundary stays
->   closed.** Its live database has had no successful backup since 2026-03-08
->   while the application runs migrations on every start, so restarting that
->   service can irreversibly change live data with nothing to restore from.
+> **What remains fenced:**
+> - 🔴 **The ASP.NET *pause* clause that stood here is RETIRED** — ASP.NET
+>   development resumed 2026-08-14 and the edition is a committed deliverable (see
+>   the correction at the top of this file). What stays is narrower and real: the
+>   **live ASP.NET database container must not be restarted or redeployed** — its
+>   scheduled backup has failed since 2026-03-08 and the app migrates on every
+>   start. A restore-tested off-server copy from 2026-08-10 exists
+>   (`../aspnet-backend/docs/DATABASE_BACKUP_DECISION.md`), so the accurate risk is
+>   the unscheduled-backup gap and the last hours before shutdown — not "nothing to
+>   restore from".
 > - **Nothing is deployed without explicit authorisation.** Building the
 >   deployment path is not permission to use it.
-> - The read-only Laravel data boundary below still applies.
+> - The read-only Laravel data boundary below still applies. Stateful ASP.NET
+>   certification uses the disposable Laravel on `:8091`, never the shared
+>   `nexus` database.
 >
 > The original pause record is
 > [`../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md),
@@ -125,8 +156,10 @@ repository. Before the 2026-08-09 move it was a separate checkout at
 This app keeps Express/Nunjucks/GOV.UK Frontend because that is the chosen Web
 UK implementation stack, not because ASP.NET defines its behaviour. Every page
 must reproduce the Laravel Blade observable behaviour and communicate through
-Laravel-identical backend contracts. ASP.NET is a future second backend only;
-it must conform to those contracts and must not cause frontend forks. See
+Laravel-identical backend contracts. ASP.NET is the committed **second edition**
+this app must also run against, switched by configuration only (30 journey rows
+of its score are Web UK's); it must conform to those contracts and must never
+cause a frontend fork or an ASP.NET-specific page branch. See
 `docs/ACCESSIBLE_SHARED_FRONTEND.md` and the root
 `../../docs/ACCESSIBLE_SHARED_FRONTEND.md`.
 
@@ -186,11 +219,13 @@ Route and backend preparation docs live beside this app:
 - `docs/MANUAL_ACCESSIBILITY_EVIDENCE.md` (an entry is evidence for exactly the
   page, browser, input method and viewport it names — never a conformance claim)
 - `../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (a **different**
-  rubric for the paused ASP.NET backend; never a `web-uk` score source, and never
-  added to one)
-- `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` (the original pause
-  record, kept for its cold-start detail; the `web-uk` half is lifted, the ASP.NET
-  half is not)
+  rubric for the ASP.NET edition; never a `web-uk` score source, and never added
+  to one)
+- `../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md` (the ASP.NET work
+  list — Web UK owns a tier of it)
+- 🔴 `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` is
+  **HISTORICAL for both halves.** The `web-uk` pause lifted 2026-08-11 and the
+  ASP.NET pause lifted 2026-08-14. Do not resume from it.
 
 Start with the takeover page, then the W2 score, then
 `docs/BLADE_COMPONENT_PORT_AUDIT.md` for detailed evidence. Treat
@@ -390,7 +425,7 @@ Open prerequisites and their current state are listed in
   `docs/DEPLOYMENT.md` at the repository root.
 - It described a **root `compose.prod.yml`** overriding `web-uk`'s backend to the
   ASP.NET service. **There is no root `compose.prod.yml`** — the only file of that
-  name is `aspnet-backend/compose.prod.yml`, which belongs to the paused ASP.NET
+  name is `aspnet-backend/compose.prod.yml`, which belongs to the ASP.NET
   workstream and is not a `web-uk` deployment path. The substantive warning still
   stands: nothing here is evidence that `web-uk` can run against ASP.NET.
 

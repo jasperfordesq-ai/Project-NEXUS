@@ -2,9 +2,25 @@
 
 Status: **Maintained reference - parity working plan**
 
-**Goal (owner, 2026-08-16):** both frontends must talk to either backend and get
-carbon-copy answers. Production deployment, backups and live payment keys are
-explicitly **out of scope** — this backend runs locally and in development only.
+🔴 **Goal restated 2026-08-21 — the line below was wrong and is retired.** It
+read: *"both frontends must talk to either backend and get **carbon-copy
+answers**… this backend runs locally and in development only."* Carbon-copy
+answers is the whole-response-body reading that made Laravel's internal database
+columns count as required work, and it was attributed to the owner as the goal
+when it never was.
+
+**The goal is journey equivalence at consumed boundaries**
+([`ADR-0004`](decisions/ADR-0004-journey-equivalence-is-the-target.md)): for
+everything a real user does, both editions produce the same outcome, data,
+errors, permissions and side effects. A response field is in scope only if a
+client reads it, acts on it, or its difference changes an outcome. A field with
+no reader is **out of scope** — record the decision, do not implement it.
+
+The edition is a **committed deliverable**
+([`ADR-0003`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)), not a
+development-only exercise. Production deployment, scheduled backups and live
+payment keys remain out of scope **of this plan** — they are owner-gated phases
+of the delivery, not permanent exclusions.
 
 This is the working plan. It is organised by *aspect of the contract*, because
 that is what has been missing: everything so far has been organised by route,

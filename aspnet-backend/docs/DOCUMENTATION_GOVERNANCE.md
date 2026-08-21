@@ -87,11 +87,23 @@ Until a complete new audit defines the corrected rubric, report a finite gate
 or package count and say that no percentage has been assigned.
 
 🔴 **Rubrics with different categories are not comparable, and a report that
-compares them is a defect.** The ASP.NET workstream changed rubric on
-2026-08-21: `ASPNET-CONTRACT-R1/R2/R3` measured how much of Laravel's API
-surface had a counterpart that looked right; `ASPNET-CONTRACT-R4` measures how
-much of the product is proved to work. Never subtract, average, or describe R4's
-total as a rise or fall from 653. State the rubric id with every score.
+compares them is a defect.** The ASP.NET workstream's earlier rubrics measured
+how much of Laravel's API surface had a counterpart that looked right; the
+current one measures how much of the product is proved to work, against a frozen
+journey denominator. Never subtract, average, or describe the current total as a
+rise or fall from a superseded one. State the rubric id with every score, and
+read both the id and the total only from the canonical status document — this
+policy deliberately names neither, because a governance file that quotes a score
+becomes another place for one to go stale.
+
+🔴 **The current ASP.NET denominator is FINAL, and two mechanisms enforce
+it** rather than relying on anyone's restraint. New scope fills pre-counted
+`RESERVE` rows in the journey ledger instead of enlarging the denominator; and a
+banked-score floor is asserted on every run, so a published total can never fall.
+A row demotion is recorded in the ledger immediately and the headline republishes
+at the next net-non-negative banking transaction. Both are checked by
+`scripts/check-doc-scores.mjs`, which also recomputes every journey category from
+the ledger's own rows and rejects any status outside the ledger's vocabulary.
 
 Implementation is not certification. Static route representation, generated
 matrices, a successful focused test, or a clean build cannot independently

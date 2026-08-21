@@ -20,9 +20,19 @@ Last reviewed: 2026-08-21
 >    not current.
 > 2. **The pause is now split.** `web-uk` is lifted; **ASP.NET is not.** Everything
 >    this file says about ASP.NET, its migrations, its containers and its database
->    boundary stands unchanged — including that its live database has had no
->    successful backup since 2026-03-08 while the application migrates on every
->    start.
+>    boundary stands unchanged.
+>
+> 🔴 **BOTH CLAIMS IN ITEM 2 ARE NOW OUT OF DATE (corrected 2026-08-21).**
+> (a) **The ASP.NET pause lifted on 2026-08-14** — see the banner immediately
+> below; development is active. (b) The "no successful backup since 2026-03-08"
+> line is true of the *scheduled off-server job* but incomplete: a
+> **restore-tested off-server copy from 2026-08-10** exists (265/265 tables,
+> 53/53 migrations, 49,958 rows) and the database container has been stopped
+> since then, so the recovery point is current. Read
+> [`docs/DATABASE_BACKUP_DECISION.md`](docs/DATABASE_BACKUP_DECISION.md) before
+> repeating "there is no backup". The real remaining risks: no *scheduled*
+> backup, a ~2.5-hour single-copy tail, migrate-on-start dormant-not-gone, and
+> no deploy path. The container still must not be restarted.
 
 > **DEVELOPMENT PAUSE LIFTED 2026-08-14.** Development was paused on 15 July
 > 2026; on 14 August 2026 the owner explicitly instructed resumption of the
@@ -185,9 +195,12 @@ See `docs/REACT_FRONTEND_RETIREMENT.md` for the maintained policy.
 Do not copy fast-changing counts into this first-read guide. Read and refresh the
 workstream-specific status source instead:
 
-- `docs/JOURNEY_CERTIFICATION_LEDGER.md` is **the work list** — 130 enumerated
-  journeys with a status each, and the denominator the score is derived from.
-  Start here when picking up work.
+- `docs/JOURNEY_CERTIFICATION_LEDGER.md` is **the work list** — every enumerated
+  journey with a status each, and the frozen denominator the score is derived
+  from. Start here when picking up work.
+- `docs/HANDOFF_PROMPT.md` is the standing session brief (roles, reading order,
+  invariants, definition of done, forbidden actions, concurrency rules). Paste
+  it into a fresh session before doing anything else.
 - `docs/CURRENT_ASPNET_CONTRACT_STATUS.md` is the current ASP.NET fixed-rubric
   score, evidence boundary, published-but-unscored work, and next queue.
 - `docs/ROADMAP.md` is the plain-English owner-facing summary and time frames.
