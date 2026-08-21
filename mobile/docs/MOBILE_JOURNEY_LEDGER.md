@@ -69,15 +69,15 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 3 | 0 | 12 | 0 | 19 | 0 | 0.176 |
 | 6 — Money and wallet | 12 | 0 | 3 | 2 | 1 | 5 | 1 | 0.236 |
-| 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 3 | 9 | 0 | 0.361 |
+| 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **14** | **24** | **26** | **4** | **70** | **2** | — |
+| **Total** | **140** | **14** | **24** | **26** | **5** | **69** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(14 × 1.0) + (24 × 0.6) + (26 × 0.25) + (4 × 0.30) = 36.10`, over `140 − 2 excluded = 138`
-rows → **0.262**.
+`(14 × 1.0) + (24 × 0.6) + (26 × 0.25) + (5 × 0.30) = 36.40`, over `140 − 2 excluded = 138`
+rows → **0.264**.
 
 ### Credit recomputation
 
@@ -89,7 +89,7 @@ rows → **0.262**.
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (3 × 1.0) + (12 × 0.25) = 6.00 | ÷ 34 | **0.176** |
 | 6 | (3 × 0.6) + (2 × 0.25) + (1 × 0.30) = 2.60 | ÷ 11 † | **0.236** |
-| 7 | (5 × 1.0) + (1 × 0.6) + (3 × 0.30) = 6.50 | ÷ 18 | **0.361** |
+| 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
@@ -268,7 +268,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.11 | Right-to-left (Arabic) | OPEN | No RTL support exists; `ar` is blocked |
 | 7.12 | Every string translated in the 7 shipped locales | OPEN | ≥3,232 multi-word phrases still English across six locales (~11% each) |
 | 7.13 | Offline check-in queue survives a dropped connection | OPEN | Covered by unit tests; never walked on a device |
-| 7.14 | Push notification arrives and opens the right screen | OPEN | Never walked |
+| 7.14 | Push notification arrives and opens the right screen | PARTIAL | 🔴 A real defect was found and fixed 2026-08-21 (`edcee0ba9`): every push from a **queued** listener was dropped — `afterResponse()` does not throw outside HTTP, so the documented inline fallback never ran, and the send also did not run in the tenant it logged. Mutation-verified. **Blocked from PROVEN**: sending a real message locally produced neither a bell nor a queued listener run, so the owner's end-to-end symptom was not reproduced. Arrival on a device is unverified |
 | 7.15 | In-app notification counts are correct | OPEN | Never verified |
 | 7.16 | Start-up time / bundle size within a budget | OPEN | No budget exists |
 | 7.17 | Pixel regression gate covers the main screens | PARTIAL | Three screens gated of ~137 |

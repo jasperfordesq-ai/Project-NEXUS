@@ -44,7 +44,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 79 | 300 | Ledger overall credit **0.262** × 300. 14 CERTIFIED, 24 PROVEN, 26 RENDERS of 138 scoring rows |
+| Journey certification | 300 | 79 | 300 | Ledger overall credit **0.264** × 300 = 79.2. 14 CERTIFIED, 24 PROVEN, 26 RENDERS, 5 PARTIAL of 138 scoring rows |
 | Capability parity with the website | 120 | 60 | 120 | 10 capabilities compared by hand: 8 matched, 1 absent (feed post), 1 an owner decision. The remaining surface is uncompared, and the route-based gate cannot see it |
 | Interaction integrity | 100 | 25 | 100 | Bottom sheets dead across 16 screens; 3 deep links were handing screens the wrong parameter; `?tab=` honoured only on a fresh open |
 | Layout across device sizes | 80 | 45 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and all guarded. Only one width ever tested before 2026-08-20 |
@@ -56,7 +56,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
 | **Total** | **1000** | **408** | **1000** | — |
 
-**Provenance.** Evidence SHAs `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
+**Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
 Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Laravel API and —
 for the release build — the live API.
