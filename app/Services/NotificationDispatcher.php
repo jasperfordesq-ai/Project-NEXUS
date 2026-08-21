@@ -442,7 +442,7 @@ class NotificationDispatcher
         // runs after the response (when the request's tenant context is gone).
         $tid = TenantContext::currentId();
 
-        $send = function () use ($uid, $pushTitle, $pushContent, $pushLink, $pushType, $tid) {
+        $deliver = function () use ($uid, $pushTitle, $pushContent, $pushLink, $pushType, $tid) {
             // Web push (browser) and mobile push (FCM via Capacitor) fan out in
             // parallel — a user on multiple devices is notified everywhere they
             // are subscribed. Failure-isolated so one provider being down does
@@ -480,12 +480,71 @@ class NotificationDispatcher
             \App\Models\PushLog::record($tid, $uid, $pushType, $pushTitle, $webOk, $fcmSent, $fcmFailed, $errors);
         };
 
+        /**
+         * 🔴 The send must run INSIDE the captured tenant, not merely log it.
+         *
+         * `FCMPushService::sendToUser()` finds tokens with
+         * `->where('tenant_id', TenantContext::getId())`. This closure runs after the
+         * caller has moved on: `NotifyMessageReceived` sets the tenant, calls
+         * `fanOutPush`, and restores the previous tenant when `handle()` returns. By the
+         * time the send ran, `getId()` no longer matched the recipient, the token query
+         * returned nothing, and `sendToUser` reported `sent 0, failed 0, errors []`.
+         * `PushLog::record()` treats that as "no targets" and writes no row — which is
+         * exactly what production shows: a `new_message` bell with no push_log line
+         * beside it. It reads as "the send never happened" when it was "the send found no
+         * devices".
+         *
+         * 🔴 The tenant was already captured above FOR THE LOG, with a comment noting the
+         * request's context would be gone. The same reasoning was never applied to the
+         * send. Fixing the log and not the thing being logged is how this survived — the
+         * observability was accurate about a delivery that never occurred.
+         */
+        $send = function () use ($deliver, $tid) {
+            if ($tid === null) {
+                $deliver();
+                return;
+            }
+
+            TenantContext::runForTenant($tid, $deliver);
+        };
+
+        /**
+         * 🔴 Decide the context EXPLICITLY. Do not rely on an exception to detect it.
+         *
+         * This was `try { dispatch($send)->afterResponse(); } catch { $send(); }` with the
+         * comment "No container / running in CLI / queue misconfigured — run inline". That
+         * fallback never ran: `afterResponse()` does not throw outside an HTTP request. It
+         * registers the closure against a response that, in a queue worker or an artisan
+         * command, is never sent — so the closure was queued against nothing.
+         *
+         * `NotifyMessageReceived` is `ShouldQueue`, so this is the path every "someone
+         * messaged you" push took. Running inline here also means the send happens while
+         * the listener's tenant context is still set, which is the belt to the braces
+         * above.
+         *
+         * `runningInConsole()` is true for `queue:work`, `schedule:run` and every other
+         * non-HTTP entry point — exactly the set that must send inline.
+         */
+        $inConsole = true;
+        try {
+            $inConsole = app()->runningInConsole();
+        } catch (\Throwable) {
+            // No container at all (early boot, isolated unit test) — inline is safe.
+            $inConsole = true;
+        }
+
+        if ($inConsole) {
+            $send();
+            return;
+        }
+
         try {
             // Laravel's afterResponse() closure dispatch: flushes the response,
             // then runs the closure. Non-blocking for the HTTP request.
             dispatch($send)->afterResponse();
         } catch (\Throwable $e) {
-            // No container / running in CLI / queue misconfigured — run inline.
+            // Genuine last resort: a container present but the dispatcher unusable.
+            // No longer the only route to an inline send.
             $send();
         }
     }
