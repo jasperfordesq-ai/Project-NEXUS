@@ -178,4 +178,83 @@ INSERT INTO volunteer_training_completions
 VALUES
   (950061, 1, 3, 950060, NOW() - INTERVAL '60 days', 92);
 
+-- ---------------------------------------------------------------------------
+-- Event COORDINATES — fixture symmetry, added 2026-08-21.
+--
+-- 🔴 Why this exists. With the events discovery filters fixed, the read-parity
+-- harness could finally compare event ROWS instead of two empty lists — and
+-- immediately reported `data[].coordinates.lat` / `.lng` "missing in ASP.NET".
+-- Diagnosed to fixture data, NOT contract: both backends emit a `coordinates`
+-- key from the canonical v2 mapper, but Laravel's fixture events carry real
+-- latitude/longitude (53.3498, -6.2603) so it serialises an OBJECT, while the
+-- ASP.NET seed left them NULL so it serialises `null` — and a differ cannot see
+-- nested keys inside a null. Seeding the same coordinates makes the comparison
+-- real rather than making a fixture gap look like a fault.
+--
+-- Deliberately UPDATE, not INSERT: the dev seed owns these event rows; this
+-- fixture only fills the coordinate columns it left empty, and only where they
+-- are still NULL so a re-run is idempotent and never overwrites real data.
+-- ---------------------------------------------------------------------------
+UPDATE events
+   SET "Latitude" = 53.3498, "Longitude" = -6.2603
+ WHERE "TenantId" = 1
+   AND "Latitude" IS NULL
+   AND "Longitude" IS NULL;
+
+-- ---------------------------------------------------------------------------
+-- Event COORDINATES — fixture symmetry, added 2026-08-21.
+--
+-- 🔴 Why this exists. With the events discovery filters fixed, the read-parity
+-- harness could finally compare event ROWS instead of two empty lists — and
+-- immediately reported `data[].coordinates.lat` / `.lng` "missing in ASP.NET".
+-- Diagnosed to fixture data, NOT contract: both backends emit a `coordinates`
+-- key from the canonical v2 mapper, but Laravel's fixture events carry real
+-- latitude/longitude (53.3498, -6.2603) so it serialises an OBJECT, while the
+-- ASP.NET seed left them NULL so it serialises `null` — and a differ cannot see
+-- nested keys inside a null. Seeding the same coordinates makes the comparison
+-- real rather than making a fixture gap look like a fault.
+--
+-- Deliberately UPDATE, not INSERT: the dev seed owns these event rows; this
+-- fixture only fills the coordinate columns it left empty, and only where they
+-- are still NULL so a re-run is idempotent and never overwrites real data.
+-- ---------------------------------------------------------------------------
+UPDATE events
+   SET "Latitude" = 53.3498, "Longitude" = -6.2603
+ WHERE "TenantId" = 1
+   AND "Latitude" IS NULL
+   AND "Longitude" IS NULL;
+
+-- ---------------------------------------------------------------------------
+-- Volunteering: attach the dev seed's opportunities to the approved
+-- organisation this fixture already creates.
+--
+-- 🔴 Why this exists. Laravel's browse listing only returns an opportunity whose
+-- organisation is approved or active, so its payload ALWAYS carries an
+-- organization object — and the React volunteering card depends on that,
+-- dereferencing `opportunity.organization.id` with no null branch. The ASP.NET
+-- dev seed left `organization_id` NULL on every opportunity, which is why the
+-- browser smoke found `/volunteering` rendering an error state rather than a
+-- page. The backend now enforces the same visibility rule; without this row
+-- link the listing would be correct but permanently empty, so the journey would
+-- prove nothing.
+--
+-- UPDATE, not INSERT: the dev seed owns the opportunity rows, and only rows
+-- still unattached are touched, so a re-run is idempotent.
+-- ---------------------------------------------------------------------------
+UPDATE volunteer_opportunities
+   SET organization_id = (
+           SELECT id FROM vol_organizations
+            WHERE tenant_id = 1 AND status IN ('approved', 'active')
+            ORDER BY id
+            LIMIT 1
+       ),
+       "Latitude"  = COALESCE("Latitude", 53.3498),
+       "Longitude" = COALESCE("Longitude", -6.2603)
+ WHERE "TenantId" = 1
+   AND organization_id IS NULL
+   AND EXISTS (
+           SELECT 1 FROM vol_organizations
+            WHERE tenant_id = 1 AND status IN ('approved', 'active')
+       );
+
 COMMIT;

@@ -42,16 +42,28 @@ public class VolunteeringController : ControllerBase
     public async Task<IActionResult> ListOpportunities(
         [FromQuery] int page = 1,
         [FromQuery] int limit = 20,
+        [FromQuery] int? per_page = null,
+        [FromQuery] string? cursor = null,
         [FromQuery] string? status = null,
         [FromQuery] int? category_id = null,
+        [FromQuery] int? organization_id = null,
         [FromQuery] int? group_id = null,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] string? is_remote = null,
+        [FromQuery] double? near_lat = null,
+        [FromQuery] double? near_lng = null,
+        [FromQuery] double? radius_km = null)
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
         if (page < 1) page = 1;
-        limit = Math.Clamp(limit, 1, 100);
+        // Laravel reads `per_page` (1-50, default 20) on this route and never
+        // reads `limit`; the React volunteering page only ever sends `per_page`
+        // plus `cursor`. `limit` is kept as an accepted alias for existing
+        // internal callers, but `per_page` wins when both are present —
+        // otherwise the page silently gets 20 rows whatever it asks for.
+        limit = per_page.HasValue ? Math.Clamp(per_page.Value, 1, 50) : Math.Clamp(limit, 1, 100);
 
         var query = _db.VolunteerOpportunities.AsQueryable();
 
@@ -67,63 +79,286 @@ public class VolunteeringController : ControllerBase
         else
         {
             query = query.Where(o => o.Status == OpportunityStatus.Published);
+
+            // Laravel's browse listing requires an organisation in an approved or
+            // active state (VolunteerService::PUBLIC_ORGANIZATION_STATUSES), so a
+            // publicly listed opportunity ALWAYS carries an organisation object.
+            // The React volunteering card relies on that: it dereferences
+            // `opportunity.organization.id` with no null branch, so listing an
+            // unattached opportunity crashes the page rather than degrading it.
+            // Draft/own-status views deliberately keep their unattached rows —
+            // that is the organiser's own working set, rendered elsewhere.
+            query = query.Where(o => o.VolunteerOrganisation != null
+                && (o.VolunteerOrganisation.Status == "approved" || o.VolunteerOrganisation.Status == "active"));
         }
 
         if (category_id.HasValue)
             query = query.Where(o => o.CategoryId == category_id.Value);
 
+        if (organization_id.HasValue)
+            query = query.Where(o => o.VolunteerOrganisationId == organization_id.Value);
+
         if (group_id.HasValue)
             query = query.Where(o => o.GroupId == group_id.Value);
 
+        // Laravel treats any truthy `is_remote` as an inclusive filter and
+        // ignores a falsy one (it never filters FOR non-remote rows).
+        if (IsTruthyFlag(is_remote))
+            query = query.Where(o => o.IsRemote);
+
         if (!string.IsNullOrWhiteSpace(search))
         {
+            // Laravel searches title, description, location, skills_needed, the
+            // organisation name and the category name. Matching all six keeps
+            // "Riverside" (an organisation) finding its opportunities.
             var searchLower = search.ToLower();
             query = query.Where(o => o.Title.ToLower().Contains(searchLower)
-                || (o.Description != null && o.Description.ToLower().Contains(searchLower)));
+                || (o.Description != null && o.Description.ToLower().Contains(searchLower))
+                || (o.Location != null && o.Location.ToLower().Contains(searchLower))
+                || (o.SkillsRequired != null && o.SkillsRequired.ToLower().Contains(searchLower))
+                || (o.VolunteerOrganisation != null && o.VolunteerOrganisation.Name.ToLower().Contains(searchLower))
+                || (o.Category != null && o.Category.Name.ToLower().Contains(searchLower)));
         }
 
-        var total = await query.CountAsync();
+        // Laravel's browse listing is keyset-paginated, newest id first, with an
+        // opaque base64 cursor; the React page sends `cursor` and never `page`.
+        // Offset paging stays available for callers that send `page`.
+        var proximity = near_lat.HasValue && near_lng.HasValue && radius_km.HasValue
+            && near_lat.Value >= -90 && near_lat.Value <= 90
+            && near_lng.Value >= -180 && near_lng.Value <= 180;
 
-        var opportunities = await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * limit)
-            .Take(limit)
+        var withRelations = query
             .Include(o => o.Organizer)
             .Include(o => o.Category)
             .Include(o => o.Group)
-            .Include(o => o.Applications)
-            .Include(o => o.Shifts)
-            .Select(o => new
+            .Include(o => o.VolunteerOrganisation);
+
+        List<VolunteerOpportunity> rows;
+        bool hasMore;
+        string? nextCursor = null;
+
+        if (proximity)
+        {
+            // Distance ordering needs a (distance, id) keyset, so the radius has
+            // to be applied BEFORE the page is cut — filtering a page after it
+            // is taken silently returns a short page. Rows without coordinates
+            // cannot satisfy a radius and are excluded, rather than being
+            // returned as if the filter had not been asked for.
+            var radius = Math.Clamp(radius_km!.Value, 0.1, 500);
+            var candidates = await withRelations
+                .Where(o => o.Latitude != null && o.Longitude != null)
+                .ToListAsync();
+
+            var ranked = candidates
+                .Select(o => new { Row = o, Km = HaversineKm(near_lat!.Value, near_lng!.Value, o.Latitude!.Value, o.Longitude!.Value) })
+                .Where(x => x.Km <= radius)
+                .OrderBy(x => x.Km).ThenBy(x => x.Row.Id)
+                .ToList();
+
+            var (lastDistance, lastId) = DecodeDistanceCursor(cursor);
+            if (lastDistance.HasValue)
             {
-                id = o.Id,
-                title = o.Title,
-                description = o.Description,
-                organizer = o.Organizer != null ? new { id = o.Organizer.Id, first_name = o.Organizer.FirstName, last_name = o.Organizer.LastName } : null,
-                group = o.Group != null ? new { id = o.Group.Id, name = o.Group.Name } : null,
-                category = o.Category != null ? new { id = o.Category.Id, name = o.Category.Name } : null,
-                location = o.Location,
-                status = o.Status.ToString().ToLowerInvariant(),
-                required_volunteers = o.RequiredVolunteers,
-                approved_count = o.Applications.Count(a => a.Status == ApplicationStatus.Approved),
-                shift_count = o.Shifts.Count,
-                is_recurring = o.IsRecurring,
-                starts_at = o.StartsAt,
-                ends_at = o.EndsAt,
-                application_deadline = o.ApplicationDeadline,
-                skills_required = o.SkillsRequired,
-                credit_reward = o.CreditReward,
-                created_at = o.CreatedAt
-            })
-            .ToListAsync();
+                ranked = ranked
+                    .Where(x => x.Km > lastDistance.Value || (x.Km == lastDistance.Value && x.Row.Id > lastId))
+                    .ToList();
+            }
+
+            hasMore = ranked.Count > limit;
+            var pageRanked = ranked.Take(limit).ToList();
+            rows = pageRanked.Select(x => x.Row).ToList();
+            if (hasMore && pageRanked.Count > 0)
+                nextCursor = EncodeDistanceCursor(pageRanked[^1].Km, pageRanked[^1].Row.Id);
+        }
+        else
+        {
+            var cursorId = DecodeIdCursor(cursor);
+            IQueryable<VolunteerOpportunity> pageQuery = withRelations.OrderByDescending(o => o.Id);
+            if (cursorId.HasValue)
+                pageQuery = withRelations.Where(o => o.Id < cursorId.Value).OrderByDescending(o => o.Id);
+            else if (page > 1)
+                pageQuery = pageQuery.Skip((page - 1) * limit);
+
+            // Fetch one extra row: `has_more` is a real look-ahead, as in
+            // Laravel, not a count comparison a filter could make disagree with
+            // the page it describes.
+            rows = await pageQuery.Take(limit + 1).ToListAsync();
+            hasMore = rows.Count > limit;
+            if (hasMore) rows.RemoveAt(rows.Count - 1);
+            if (hasMore && rows.Count > 0)
+                nextCursor = EncodeIdCursor(rows[^1].Id);
+        }
+
+        var appliedIds = rows.Count == 0
+            ? new List<int>()
+            : await _db.VolunteerApplications
+                .Where(a => a.UserId == userId.Value
+                    && (a.Status == ApplicationStatus.Pending || a.Status == ApplicationStatus.Approved)
+                    && rows.Select(r => r.Id).Contains(a.OpportunityId))
+                .Select(a => a.OpportunityId)
+                .Distinct()
+                .ToListAsync();
+
+        var opportunities = rows.Select(o => new Dictionary<string, object?>
+        {
+            ["id"] = o.Id,
+            ["tenant_id"] = o.TenantId,
+            ["organization_id"] = o.VolunteerOrganisationId,
+            ["title"] = o.Title,
+            ["description"] = o.Description,
+            ["location"] = o.Location,
+            ["is_remote"] = o.IsRemote,
+            // Laravel's column is `skills_needed`; the React volunteering card
+            // reads that name and nothing else.
+            ["skills_needed"] = o.SkillsRequired,
+            ["start_date"] = LaravelDate(o.StartsAt),
+            ["end_date"] = LaravelDate(o.EndsAt),
+            // Laravel carries a separate is_active flag; here the publish state
+            // is the enum, so a published row is the active row.
+            ["is_active"] = o.Status == OpportunityStatus.Published,
+            ["created_at"] = LaravelDate(o.CreatedAt),
+            ["updated_at"] = LaravelDate(o.UpdatedAt),
+            // Volunteering has no federation import path in this backend, so
+            // these are structurally constant rather than assumed: a federated
+            // opportunity cannot exist here.
+            ["is_federated"] = 0,
+            ["federated_visibility"] = "none",
+            ["external_partner_id"] = null,
+            ["external_id"] = null,
+            ["source_tenant_id"] = null,
+            ["category_id"] = o.CategoryId,
+            // Laravel's public statuses are open|active; this backend's
+            // published state is the same externally observable state.
+            ["status"] = o.Status == OpportunityStatus.Published ? "open" : o.Status.ToString().ToLowerInvariant(),
+            ["credits_offered"] = o.CreditReward,
+            ["created_by"] = o.OrganizerId,
+            ["latitude"] = o.Latitude,
+            ["longitude"] = o.Longitude,
+            // Laravel strips the creator's internal id from this public listing.
+            ["creator"] = o.Organizer == null ? null : new
+            {
+                first_name = o.Organizer.FirstName,
+                last_name = o.Organizer.LastName,
+                avatar_url = o.Organizer.AvatarUrl,
+            },
+            ["organization"] = o.VolunteerOrganisation == null ? null : new
+            {
+                id = o.VolunteerOrganisation.Id,
+                name = o.VolunteerOrganisation.Name,
+                logo_url = o.VolunteerOrganisation.LogoUrl,
+            },
+            // Null when unset, as an absent Eloquent relation serialises —
+            // NOT an object with empty fields, which the card would render.
+            ["category"] = o.Category == null ? null : new { id = o.Category.Id, name = o.Category.Name },
+            ["has_applied"] = appliedIds.Contains(o.Id),
+        }).ToList();
+
+        // Laravel adds `distance_km` only on a proximity query, rounded to 2dp.
+        if (proximity)
+        {
+            foreach (var item in opportunities)
+            {
+                var lat = (double?)item["latitude"];
+                var lng = (double?)item["longitude"];
+                if (lat.HasValue && lng.HasValue)
+                    item["distance_km"] = HaversineKm(near_lat!.Value, near_lng!.Value, lat.Value, lng.Value);
+            }
+        }
+
+        var meta = new Dictionary<string, object?>
+        {
+            ["per_page"] = limit,
+            ["has_more"] = hasMore,
+        };
+        // Laravel emits `cursor` only when another page exists — an always-present
+        // cursor makes an infinite scroll re-serve the same page for ever.
+        if (nextCursor is not null)
+            meta["cursor"] = nextCursor;
 
         return Ok(new
         {
             data = opportunities,
-            // Laravel's v2 collection meta: per_page + has_more, under `meta`.
-            // Verified live against the disposable Laravel for this path.
             // base_url is filled in by LaravelDataEnvelopeFilter.
-            meta = new { per_page = limit, has_more = (long)Math.Max(page, 1) * limit < total }
+            meta,
         });
+    }
+
+    /// <summary>
+    /// Laravel's <c>queryBool</c> semantics: 1/true/on/yes are true, everything
+    /// else (including absence) is false.
+    /// </summary>
+    private static bool IsTruthyFlag(string? value)
+        => value is not null
+            && (value.Equals("1", StringComparison.Ordinal)
+                || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("on", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("yes", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Laravel serialises model dates with six fractional digits and a Z suffix.
+    /// </summary>
+    private static string? LaravelDate(DateTime? value)
+        => value?.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.ffffffZ", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string EncodeIdCursor(int id)
+        => Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+    private static int? DecodeIdCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor)) return null;
+        try
+        {
+            var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+            return int.TryParse(decoded, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var id) && id > 0
+                ? id
+                : null;
+        }
+        catch (FormatException)
+        {
+            // An unreadable cursor means "first page", exactly as Laravel's
+            // base64_decode(strict) failure does. Not an error to the caller.
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Laravel's proximity cursor is <c>base64("D:" + distance + "|" + id)</c>,
+    /// with the distance rounded to the same precision the boundary comparison
+    /// uses, so a page edge neither skips nor repeats a row.
+    /// </summary>
+    private static string EncodeDistanceCursor(double km, int id)
+        => Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(
+            "D:" + Math.Round(km, 6).ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+    private static (double? Distance, int Id) DecodeDistanceCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor)) return (null, 0);
+        string decoded;
+        try
+        {
+            decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+        }
+        catch (FormatException)
+        {
+            return (null, 0);
+        }
+
+        if (!decoded.StartsWith("D:", StringComparison.Ordinal)) return (null, 0);
+        var parts = decoded[2..].Split('|', 2);
+        if (parts.Length != 2) return (null, 0);
+        if (!double.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var km)) return (null, 0);
+        if (!int.TryParse(parts[1], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var id)) return (null, 0);
+        return (Math.Round(km, 6), id);
+    }
+
+    private static double HaversineKm(double lat1, double lng1, double lat2, double lng2)
+    {
+        const double earthRadiusKm = 6371.0;
+        var dLat = (lat2 - lat1) * Math.PI / 180.0;
+        var dLng = (lng2 - lng1) * Math.PI / 180.0;
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+            + Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2 * Math.PI / 180.0)
+            * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
+        return Math.Round(earthRadiusKm * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a)), 2);
     }
 
     /// <summary>

@@ -95,6 +95,23 @@ public class VolunteerOpportunity : ITenantEntity
     /// </summary>
     public decimal? CreditReward { get; set; }
 
+    /// <summary>
+    /// Whether the opportunity is carried out remotely. Laravel's
+    /// <c>vol_opportunities.is_remote</c>; the React volunteering page's
+    /// "Remote" filter sends <c>is_remote=1</c> and without a stored column the
+    /// filter would silently return every row.
+    /// </summary>
+    public bool IsRemote { get; set; } = false;
+
+    /// <summary>
+    /// Optional coordinates, mirroring Laravel's <c>latitude</c>/<c>longitude</c>
+    /// columns. Used by the proximity filter and emitted on the browse contract.
+    /// </summary>
+    public double? Latitude { get; set; }
+
+    /// <inheritdoc cref="Latitude" />
+    public double? Longitude { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
