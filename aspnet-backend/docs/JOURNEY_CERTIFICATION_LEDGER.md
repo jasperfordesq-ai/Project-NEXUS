@@ -120,10 +120,10 @@ mismatch. Reserve rows are included in every count.
 | 1 — Core member journeys (React) | 42 | 1 | 19 | 0 | 3 | 19 | 0.317 |
 | 2 — Community module journeys (React) | 28 | 0 | 1 | 7 | 0 | 20 | 0.084 |
 | 3 — Extended module journeys (React) | 42 | 0 | 0 | 2 | 0 | 40 | 0.012 |
-| 4 — Member journeys (Web UK accessible) | 32 | 0 | 1 | 20 | 0 | 11 | 0.175 |
+| 4 — Member journeys (Web UK accessible) | 32 | 0 | 8 | 20 | 0 | 4 | 0.306 |
 | 5 — Staff journeys (admin / super-admin / broker) | 72 | 0 | 0 | 1 | 0 | 71 | 0.003 |
 | 6 — Mobile app journeys (Expo / React Native) | 34 | 0 | 0 | 0 | 0 | 34 | 0.000 |
-| **Total** | **250** | **1** | **21** | **30** | **3** | **195** | — |
+| **Total** | **250** | **1** | **28** | **30** | **3** | **188** | — |
 
 **Total row count: 250.** This is the frozen denominator.
 
@@ -138,7 +138,7 @@ tier row count, to three decimals.
 | 1 | (1 × 1.0) + (19 × 0.6) + (3 × 0.3) = 13.30 | ÷ 42 | **0.317** |
 | 2 | (1 × 0.6) + (7 × 0.25) = 2.35 | ÷ 28 | **0.084** |
 | 3 | (2 × 0.25) = 0.50 | ÷ 42 | **0.012** |
-| 4 | (1 × 0.6) + (20 × 0.25) = 5.60 | ÷ 32 | **0.175** |
+| 4 | (8 × 0.6) + (20 × 0.25) = 9.80 | ÷ 32 | **0.306** |
 | 5 | (1 × 0.25) = 0.25 | ÷ 72 | **0.003** |
 | 6 | 0 | ÷ 34 | **0.000** |
 
@@ -345,21 +345,49 @@ unchanged at 30**; only the hiding place is gone.
 | 4.19 | Signed-in `/volunteering` renders vs control | RENDERS | signed-in tier |
 | 4.20 | Signed-in `/explore` renders vs control | RENDERS | signed-in tier |
 | 4.21 | Signed-in `/kb` renders vs control | RENDERS | signed-in tier |
-| 4.22 | Web UK: post to the feed | OPEN | the instrument compares page *pairs*; it submits nothing |
-| 4.23 | Web UK: create a listing | OPEN | no form submission in the instrument |
-| 4.24 | Web UK: RSVP to an event | OPEN | no form submission in the instrument |
-| 4.25 | Web UK: send a message | OPEN | no form submission in the instrument |
-| 4.26 | Web UK: transfer credits | OPEN | no form submission in the instrument |
-| 4.27 | Web UK: apply for a volunteering opportunity | OPEN | no form submission in the instrument |
-| 4.28 | Web UK: join a group | OPEN | no form submission in the instrument |
-| 4.29 | Web UK: leave a review | OPEN | no form submission in the instrument |
-| 4.30 | Web UK: change a setting and have it persist | OPEN | no form submission in the instrument. 🔴 Do not "fix" a session problem here by assigning `req.session.touch` — `web-uk/src/public/js/timeout-warning.js` **is** the inactivity sign-out, and shadowing `touch` breaks it |
+| 4.22 | Web UK: post to the feed | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED: the post body appears on a fresh `GET /feed` on both arms. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
+| 4.23 | Web UK: create a listing | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED: web-uk redirects to `/listings/{id}` and that page renders the new title (ASP.NET listing 73, Laravel 950135 on the recorded run). 🔴 The id is the load-bearing part — web-uk itself flashes "the listing was saved, but Laravel did not return its ID" when a backend answers success without one (`listings.js:1368-1373`), so a success-shaped response with no id would not pass here. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
+| 4.24 | Web UK: RSVP to an event | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED: after a reload the event page renders the member as going — the `status-going` radio comes back `checked` and/or the attendee check-in block appears (`events/detail.njk:85-90`, `:365`). The Laravel control member is seeded as already going to the fixture's only event, so the instrument withdraws that RSVP first and then RSVPs for real. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
+| 4.25 | Web UK: send a message | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED: the message body appears in the thread on a fresh `GET /messages/{peer}`. 🔴 **This row FAILED on ASP.NET when first measured and was FIXED in the same batch.** A direct thread was resolved by `(TenantId, Participant1Id, Participant2Id)` with **no `IsGroup` filter**, and the conversations table reuses those columns for GROUP rows — the unique index is partial (`... WHERE IsGroup = false`). Measured on the dev database: pair (3,4) had four rows, one direct plus three groups, so `SendMessage` persisted a private message onto a **group** conversation while the thread read returned a different, empty group row and the member's own message vanished. Fixed at five call sites: `MessagesController.cs` (v2 thread read, `FindDirectConversationIdAsync`, `SendMessage` write + insert, mark-read) and `MemberParityController.cs` (voice-message write + insert). 186 focused tests pass; re-measured green on both arms. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
+| 4.26 | Web UK: transfer credits | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED on the MONEY, twice over: the sender's balance falls by exactly the amount sent (0.25 credits; ASP.NET 14.00 → 13.75, Laravel 93.50 → 93.25 on the recorded run) **and** the transfer note appears in the transaction history. The recipient is found through the page's own recipient search ("coordinator" — the member `parity-fixture.sql` added for this purpose). 🔴 The balance reader handles a MINUS SIGN in all four forms Intl.NumberFormat can emit; the React instrument's reader could not, and reported correct credits as wrong on 2026-08-21. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
+| 4.27 | Web UK: apply for a volunteering opportunity | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED on ASP.NET: a pending application for that opportunity appears on the member's applications tab, and the instrument first withdraws any earlier one and proves the pending count fell — so it asserts the effect in both directions and stays repeatable. 🔴 **The Laravel control CANNOT run this journey, so CERTIFIED is impossible until the fixture changes** (condition 3): `POST /api/v2/volunteering/opportunities/950021/apply` answers 422 "You cannot apply to your own opportunity" because `parity-fixture.sql` makes the control member the `created_by` of the fixture's only opportunity. Measured at the API, because web-uk maps every 4xx to the same `apply-failed` redirect. FIXTURE work, not backend work. |
+| 4.28 | Web UK: join a group | BROKEN | ASP.NET defect, named cause: **`GET /api/v2/groups/{id}` answers an unwrapped body.** It returns `{"group":{…},"my_membership":{…}}`; Laravel returns `{"data":{…group fields FLAT…, owner_id, my_role, my_status, viewer_membership},"meta":{…}}` (measured side by side, ASP.NET group 10 vs Laravel group 950032, in the same run). web-uk resolves the group as `dataFrom(result)?.group` falling back to `dataFrom(result)` (`web-uk/src/routes/groups.js:1059`), so with no `data` envelope it unwraps into the nested `group` and `my_membership` — a **sibling** of it — is discarded. `isActiveGroupMember` (`groups.js:529-538`) then sees no membership: the page offers **Join** to a member who is already the **owner**, and the join answers 400 "You are already a member of this group". A member who does join cannot see that they joined, so this is broken for every group, not only an owned one. Fix in `GroupsController.cs:293-306`. 🔴 Separately, the Laravel control also cannot run this journey: the fixture has one group and the control member owns it, and an owner cannot leave — so certifying this row needs the backend fix **and** a second fixture group. |
+| 4.29 | Web UK: leave a review | BROKEN | ASP.NET defect, **two faults on one path**, and the Laravel control passes this journey in the same run (receiver 950010, transaction 950110, comment visible in "given"). (1) **`POST /api/reviews` is a do-nothing stub** — `MiscParityController.cs:1678-1680` returns `{data:{id,created:true}}` and writes nothing, which is ADR-0004 condition 5 failing outright. (2) **`GET /api/reviews/pending` omits a field the client reads**: it returns the counterparty as `other_user{id,first_name,last_name}` while web-uk reads `receiver_id` / `receiverId` / `receiver.id` (in that fallback order) (`web-uk/src/routes/reviews.js:183`) and Laravel emits `receiver_id`/`receiver_name`/`receiver_avatar`/`exchange_title`/`transaction_id` (`app/Services/ReviewService.php:293-300`), so the rendered form carries `receiver_id=""` and would post 0. ASP.NET also derives pending reviews from **Exchanges** where Laravel derives them from completed **transactions** (`ReviewTrustController.cs:37-95`) — a semantic difference to settle when implementing, not just a rename. |
+| 4.30 | Web UK: change a setting and have it persist | PROVEN | smoke `smoke-webuk-against-aspnet.mjs` write-journey tier, run 2026-08-21, artifact `aspnet-backend/docs/generated/webuk-journey-smoke.json`; both arms in the same execution. EFFECT ASSERTED: the appearance theme is changed to a different rendered option and comes back `checked` on a fresh GET, which reads it back through `GET /api/v2/settings` rather than from the session (`settings.js:506-536`); the instrument then restores the previous value so a repeat run measures the same thing. 🔴 Unchanged caution: do not "fix" a session problem here by assigning `req.session.touch` — `web-uk/src/public/js/timeout-warning.js` **is** the inactivity sign-out, and shadowing `touch` breaks it. 🔴 **PROVEN, not CERTIFIED, and the reason is condition 1, not the evidence.** The journey is driven by POSTing the form the page itself rendered (fields read back out of the HTML: hidden inputs, checked radios, selected options), over HTTP rather than through a browser — the same limitation already recorded for row 4.1, applied consistently. Whether that counts as "the unchanged client driving it through its own UI" is an OWNER/scoring decision; if it does, this row and five others become CERTIFIED. Conditions 2, 3 and 4 are met. |
 | 4.RESERVE-A | *(reserve — unassigned)* | OPEN | Held for a Tier 4 journey discovered after 2026-08-21. Scope origin: 2026-08-21 R5 expansion |
 | 4.RESERVE-B | *(reserve — unassigned)* | OPEN | Held for a Tier 4 journey discovered after 2026-08-21. Scope origin: 2026-08-21 R5 expansion |
 
 Rows 4.2–4.21 assert **renders**, not byte-identity, deliberately: the two
 fixtures hold different data volumes, so structural equality would report
 fixture asymmetry as a fault on every run.
+
+🔴 **Rows 4.22–4.30 were all OPEN for one reason until 2026-08-21: the instrument
+submitted nothing.** It now does. The mechanism matters, so it is recorded here
+as well as in the script: web-uk is HTML-first with progressive enhancement, so
+every write is a real POST of a real `<form>` guarded by `csrf-csrf` double
+submit. The instrument reads the form back out of the rendered page — hidden
+inputs including `_csrf`, checked radios, checked checkboxes, prefilled text
+inputs, the selected `<option>` — and submits exactly what a browser would,
+overriding only the fields the journey is testing. Hand-writing payloads instead
+would have proved that endpoints accept bodies no page can produce: `/listings/new`
+alone needs `type`, `service_type` and a `category_id` whose valid values are
+tenant-configured and differ between the two fixtures (17 on ASP.NET, 642 on the
+control). Two traps worth keeping: the CSRF token is **not** session-bound
+(`getSessionIdentifier` defaults to `() => ""`) and `generateToken` reuses a
+still-valid cookie, so one token scraped from any page keeps working for every
+later POST on the same jar; and `NODE_ENV=development` makes `createLimiter`
+skip every rate limiter (`web-uk/src/lib/rateLimiter.js:25`), which is why a
+run of ~30 POSTs is not throttled — a production-mode run would be.
+
+🔴 **Six of the seven promoted rows stop at PROVEN for the SAME reason row 4.1
+does, and it is worth an owner decision.** Their effects are asserted and the
+Laravel control passes in the same run, so conditions 2, 3 and 4 are met. What is
+not met, on the strict reading already applied to 4.1, is condition 1: the form
+is submitted over HTTP rather than clicked in a browser. If the owner decides
+that POSTing the client's own rendered form counts as "the unchanged client
+driving it through its own UI", rows 4.1, 4.22–4.26 and 4.30 become CERTIFIED and
+Tier 4's credit rises from 0.306 to 0.394 ((7 x 1.0) + (1 x 0.6, row 4.27) + (20 x 0.25)) / 32. That decision is deliberately NOT
+taken here.
 
 🔴 A caution the instrument records about itself, worth reading before trusting
 this tier: "10/10 pages identical" has already once coexisted with a backend

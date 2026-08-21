@@ -1,0 +1,441 @@
+{
+  "generated_at": "2026-08-21T20:40:11.034Z",
+  "instrument": "smoke-webuk-against-aspnet",
+  "aspnet": "http://127.0.0.1:5080",
+  "laravel_control": "http://127.0.0.1:8091",
+  "tenant": "acme",
+  "pages": [
+    {
+      "page": "/",
+      "verdict": "CONTENT_DIFFERS",
+      "status": 200,
+      "aspnet": {
+        "bytes": 10716,
+        "links": 14,
+        "forms": 2,
+        "headings": 8,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 9985,
+        "links": 12,
+        "forms": 2,
+        "headings": 6,
+        "errorMarker": null
+      },
+      "sizeRatio": 0.932,
+      "known": true,
+      "reason": "FIXTURE ASYMMETRY, diagnosed 2026-08-20: the \"Choose a community\" list comes from GET /api/v2/tenants, and BOTH backends implement the same Laravel rule — the master tenant (id 1) is excluded unless include_master=1 (TenantBootstrapController::list, :205-207). The disposable Laravel fixture has ONLY the master tenant, so it lists 0; the ASP.NET dev seed has 4 non-master tenants. Remove this entry when the fixtures seed the same non-master tenants."
+    },
+    {
+      "page": "/login",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        12910,
+        12910
+      ]
+    },
+    {
+      "page": "/register",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        21132,
+        21132
+      ]
+    },
+    {
+      "page": "/blog",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        10815,
+        10492
+      ]
+    },
+    {
+      "page": "/help",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        10728,
+        10728
+      ]
+    },
+    {
+      "page": "/listings",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        14064,
+        13945
+      ]
+    },
+    {
+      "page": "/events",
+      "verdict": "MATCH",
+      "status": 302,
+      "redirect": "/login?status=auth-required"
+    },
+    {
+      "page": "/explore",
+      "verdict": "MATCH",
+      "status": 302,
+      "redirect": "/login?status=auth-required"
+    },
+    {
+      "page": "/kb",
+      "verdict": "MATCH",
+      "status": 302,
+      "redirect": "/login?status=auth-required"
+    },
+    {
+      "page": "/feed",
+      "verdict": "MATCH",
+      "status": 200,
+      "bytes": [
+        13667,
+        13667
+      ]
+    },
+    {
+      "page": "/groups",
+      "verdict": "MATCH",
+      "status": 302,
+      "redirect": "/login?status=auth-required"
+    },
+    {
+      "page": "/volunteering",
+      "verdict": "MATCH",
+      "status": 302,
+      "redirect": "/login?status=auth-required"
+    },
+    {
+      "page": "signed-in /dashboard",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 22881,
+        "links": 35,
+        "forms": 3,
+        "headings": 22,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 20743,
+        "links": 33,
+        "forms": 3,
+        "headings": 22,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /listings",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 36087,
+        "links": 33,
+        "forms": 4,
+        "headings": 26,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 29756,
+        "links": 26,
+        "forms": 4,
+        "headings": 18,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /events",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 23103,
+        "links": 21,
+        "forms": 4,
+        "headings": 11,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 16678,
+        "links": 17,
+        "forms": 4,
+        "headings": 7,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /feed",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 189153,
+        "links": 22,
+        "forms": 186,
+        "headings": 16,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 75886,
+        "links": 24,
+        "forms": 42,
+        "headings": 16,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /groups",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 18091,
+        "links": 22,
+        "forms": 4,
+        "headings": 13,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 13004,
+        "links": 14,
+        "forms": 4,
+        "headings": 5,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /volunteering",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 17938,
+        "links": 29,
+        "forms": 4,
+        "headings": 11,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 17708,
+        "links": 30,
+        "forms": 4,
+        "headings": 11,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /explore",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 18045,
+        "links": 37,
+        "forms": 3,
+        "headings": 19,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 16695,
+        "links": 32,
+        "forms": 3,
+        "headings": 18,
+        "errorMarker": null
+      }
+    },
+    {
+      "page": "signed-in /kb",
+      "verdict": "MATCH",
+      "status": 200,
+      "note": "renders on both; structural counts differ with fixture data volume",
+      "aspnet": {
+        "bytes": 12157,
+        "links": 13,
+        "forms": 4,
+        "headings": 6,
+        "errorMarker": null
+      },
+      "laravel": {
+        "bytes": 11982,
+        "links": 13,
+        "forms": 4,
+        "headings": 6,
+        "errorMarker": null
+      }
+    }
+  ],
+  "matches": 19,
+  "total": 20,
+  "journeys": [
+    {
+      "page": "journey 4.22 post to the feed",
+      "row": "4.22",
+      "verdict": "BOTH_OK",
+      "effect": "the post body appears in the feed on a fresh GET /feed",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the post body appears in the feed on a fresh GET /feed",
+        "detail": "redirect 302 -> /feed?status=post-created; marker in feed: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the post body appears in the feed on a fresh GET /feed",
+        "detail": "redirect 302 -> /feed?status=post-created; marker in feed: true"
+      }
+    },
+    {
+      "page": "journey 4.23 create a listing",
+      "row": "4.23",
+      "verdict": "BOTH_OK",
+      "effect": "the created listing renders its own title on GET /listings/{id}",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the created listing renders its own title on GET /listings/{id}",
+        "detail": "listing 75; detail page 200; title present: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the created listing renders its own title on GET /listings/{id}",
+        "detail": "listing 950137; detail page 200; title present: true"
+      }
+    },
+    {
+      "page": "journey 4.24 RSVP to an event",
+      "row": "4.24",
+      "verdict": "BOTH_OK",
+      "effect": "the event page renders the member as going after a reload",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the event page renders the member as going after a reload",
+        "detail": "event 5; redirect 302 -> /events/5?status=rsvp-updated; radio checked: true; attendee block: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the event page renders the member as going after a reload",
+        "detail": "event 950040 (existing RSVP withdrawn first); redirect 302 -> /events/950040?status=rsvp-updated; radio checked: false; attendee block: true"
+      }
+    },
+    {
+      "page": "journey 4.25 send a message",
+      "row": "4.25",
+      "verdict": "BOTH_OK",
+      "effect": "the message body appears in the thread on a fresh GET",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the message body appears in the thread on a fresh GET",
+        "detail": "peer 4; redirect 302 -> /messages/4?status=message-sent; marker in thread: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the message body appears in the thread on a fresh GET",
+        "detail": "peer 950010; redirect 302 -> /messages/950010?status=message-sent; marker in thread: true"
+      }
+    },
+    {
+      "page": "journey 4.26 transfer credits",
+      "row": "4.26",
+      "verdict": "BOTH_OK",
+      "effect": "the sender balance falls by exactly the amount sent AND the transfer is in the history",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the sender balance falls by exactly the amount sent AND the transfer is in the history",
+        "detail": "recipient 4; redirect 302 -> /wallet?status=transfer-sent#transactions; balance 13.5 -> 13.25 (expected 13.25); note in history: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the sender balance falls by exactly the amount sent AND the transfer is in the history",
+        "detail": "recipient 950010; redirect 302 -> /wallet?status=transfer-sent#transactions; balance 93 -> 92.75 (expected 92.75); note in history: true"
+      }
+    },
+    {
+      "page": "journey 4.27 apply for a volunteering opportunity",
+      "row": "4.27",
+      "verdict": "CONTROL_FIXTURE_GAP",
+      "effect": "a pending application for that opportunity appears on the applications tab (after clearing any earlier one)",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "a pending application for that opportunity appears on the applications tab (after clearing any earlier one)",
+        "detail": "opportunity 1; withdrew 1 pre-existing; redirect 302 -> /volunteering/opportunities/1?status=apply-created; pending after: 1; links the opportunity: true"
+      },
+      "laravel": {
+        "verdict": "FIXTURE_GAP",
+        "effect": "a pending application for that opportunity appears on the applications tab (after clearing any earlier one)",
+        "detail": "opportunity 950021; withdrew 0 pre-existing; redirect 302 -> /volunteering/opportunities/950021?status=apply-failed; pending after: 0; links the opportunity: false"
+      },
+      "fixture_gaps": [
+        {
+          "row": "4.27",
+          "arm": "laravel",
+          "reason": "LARAVEL CONTROL FIXTURE GAP, measured 2026-08-21 at the API, not inferred: POST /api/v2/volunteering/opportunities/950021/apply answers 422 {\"code\":\"VALIDATION_ERROR\",\"message\":\"You cannot apply to your own opportunity\"}. parity-fixture.sql gives vol_opportunities 950021 created_by = the same member the control arm signs in as, and it is the ONLY opportunity in the fixture, so the control can never apply to anything. Fix in the fixture (an opportunity owned by another member), not in either backend. web-uk maps every 4xx to the same \"apply-failed\" redirect, which is why this had to be measured at the API."
+        }
+      ]
+    },
+    {
+      "page": "journey 4.28 join a group",
+      "row": "4.28",
+      "verdict": "ASPNET_FAILS_CONTROL_BLOCKED",
+      "effect": "the group page offers Leave instead of Join after a reload",
+      "aspnet": {
+        "verdict": "NO_EFFECT",
+        "effect": "the group page offers Leave instead of Join after a reload",
+        "detail": "group 10; redirect 302 -> /groups/10?status=group-failed; leave form: false; join form still there: true"
+      },
+      "laravel": {
+        "verdict": "FIXTURE_GAP",
+        "detail": "no group offers Join (checked 950032)"
+      },
+      "known": true,
+      "reason": "ASP.NET defect, diagnosed 2026-08-21 with the Laravel control run for comparison. GET /api/v2/groups/{id} answers an UNWRAPPED body — {\"group\":{...},\"my_membership\":{...}} — where Laravel answers {\"data\":{...group fields FLAT..., owner_id, my_role, my_status, viewer_membership},\"meta\":{...}} (measured: ASP.NET group 10 vs Laravel group 950032). web-uk resolves the group as dataFrom(result)?.group || dataFrom(result) (web-uk/src/routes/groups.js:1059), so with no data envelope it unwraps into the nested \"group\" object and my_membership — a SIBLING of it — is left behind. isActiveGroupMember (groups.js:529-538) then reads no membership at all, the page offers JOIN to a member who is already the OWNER, and the join answers 400 \"You are already a member of this group\". A member who does join cannot see that they joined, so the journey is broken for every group, not just an owned one. Fix in GroupsController.cs:293-306: wrap in data, flatten the group, and carry owner_id / my_role / my_status / viewer_membership.",
+      "fixture_gaps": [
+        {
+          "row": "4.28",
+          "arm": "laravel",
+          "reason": "LARAVEL CONTROL FIXTURE GAP, measured 2026-08-21: the fixture has exactly one group (950032) and the control member is its OWNER (owner_id 900014), so there is nothing to join; POST /api/v2/groups/950032/join answers 200 with action \"already_member\" even after a Leave, because an owner cannot leave their own group. Fix in the fixture (a second group the member does not belong to)."
+        }
+      ]
+    },
+    {
+      "page": "journey 4.29 leave a review",
+      "row": "4.29",
+      "verdict": "ASPNET_FAILS",
+      "effect": "the review comment appears in the member’s given reviews",
+      "aspnet": {
+        "verdict": "NO_FORM",
+        "detail": "the rendered pending-review form has an EMPTY receiver_id — the backend omitted receiver_id/receiverId/receiver.id"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the review comment appears in the member’s given reviews",
+        "detail": "receiver 950010, transaction 950112; redirect 302 -> /reviews?status=review-submitted; comment present: true"
+      },
+      "known": true,
+      "reason": "ASP.NET defect, diagnosed 2026-08-21, TWO faults on one path. (1) POST /api/reviews is a do-nothing stub that returns {data:{id,created:true}} and writes nothing: MiscParityController.cs:1678-1680. (2) GET /api/reviews/pending returns the counterparty as other_user{id,first_name,last_name} with NO receiver_id, while web-uk reads receiver_id || receiverId || receiver.id (web-uk/src/routes/reviews.js:183) and Laravel emits receiver_id/receiver_name/exchange_title/transaction_id (app/Services/ReviewService.php:293-300). So the rendered form posts receiver_id=0. ASP.NET also derives pending reviews from Exchanges where Laravel derives them from completed transactions: ReviewTrustController.cs:37-95."
+    },
+    {
+      "page": "journey 4.30 change a setting and have it persist",
+      "row": "4.30",
+      "verdict": "BOTH_OK",
+      "effect": "the chosen theme comes back selected on a fresh GET (read through the backend, not the session)",
+      "aspnet": {
+        "verdict": "OK",
+        "effect": "the chosen theme comes back selected on a fresh GET (read through the backend, not the session)",
+        "detail": "dark -> light; redirect 302 -> /settings/appearance?status=appearance-saved; persisted: true"
+      },
+      "laravel": {
+        "verdict": "OK",
+        "effect": "the chosen theme comes back selected on a fresh GET (read through the backend, not the session)",
+        "detail": "dark -> light; redirect 302 -> /settings/appearance?status=appearance-saved; persisted: true"
+      }
+    }
+  ],
+  "journeys_both_ok": 6,
+  "journeys_total": 9
+}

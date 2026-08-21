@@ -1441,8 +1441,12 @@ public class MemberParityController : ControllerBase
             if (!lockedDecision.IsAllowed)
                 return await AbortAsync(VoiceSafeguardingError(lockedDecision));
 
+            // Direct only — the conversations table reuses the participant columns
+            // for GROUP rows, so the pair is unique only WHERE IsGroup = false. See
+            // MessagesController.GetLaravelReactConversationAsync for the measurement.
             conversation = await _db.Conversations.IgnoreQueryFilters().FirstOrDefaultAsync(row =>
                 row.TenantId == tenantId
+                && !row.IsGroup
                 && row.Participant1Id == participant1Id
                 && row.Participant2Id == participant2Id, ct);
             var now = DateTime.UtcNow;
@@ -1451,6 +1455,7 @@ public class MemberParityController : ControllerBase
                 conversation = new Conversation
                 {
                     TenantId = tenantId,
+                    IsGroup = false,
                     Participant1Id = participant1Id,
                     Participant2Id = participant2Id,
                     CreatedAt = now,

@@ -1,6 +1,37 @@
 # Admin (Staff Tier) Endpoint Corpus (generated)
 
-Generated: 2026-08-21 (repository SHA `6d42d6ac2dc9d5966f91c6558a491c91aeb9d6a3`)
+Generated: 2026-08-21 (repository SHA `95cd4913bfdf7a13f4ded7636822e6632d622c8e`)
+
+> 🔴 **Regenerated later the same day, 2026-08-21, after the stub scanner was
+> rewritten.** This document's central finding — that there are three ways an
+> endpoint does no work and the ratchet saw one — was acted on:
+> `check-noop-stubs.ps1` now counts all three, counts ROUTES rather than methods,
+> and carries a per-category shrink-only baseline (`noop-stubs-baseline.json`,
+> now **562 routes / 326 methods**, was `316` methods).
+>
+> Three things moved here as a result, all corrections in the same direction:
+>
+> - The inventory this document consumes now holds **564 do-nothing routes across
+>   326 methods** rather than 375 routes attributed to 316 methods. The extra
+>   routes come from bare `[HttpGet]` attributes (no template), `~/absolute`
+>   templates that the old path-joiner mangled into `/api/auth/~/api/v2/...`, and
+>   `[Route("[controller]")]`, all of which previously resolved to paths no client
+>   could call — so a condition-5 check against them always answered "clean".
+> - The scanner's work-detection tokens were unanchored, so `_repo` matched the
+>   response literal `auto_hide_report_threshold` and `_token` matched
+>   `csrf_token`. **Three genuinely do-nothing methods were being excused by
+>   their own response field names.** One of them is an admin endpoint and is
+>   reclassified below.
+> - **One row changed class: `GET /api/v2/admin/moderation/settings`,
+>   `identical-candidate` → `stub`.** `ReactFrontendCompatibilityController.AdminModerationSettings`
+>   returns three hardcoded moderation settings and reads no tenant configuration.
+>   It had been attributed to `AdminExplicitParityController.Get`, which does have
+>   an explicit branch for the `/api/v2` spelling — this is limitation 3 below
+>   (the `/api/v2` → `/api` collapse) producing a real misclassification, not a
+>   hypothetical one.
+>
+> Everything else is unchanged: 1,119 endpoints, 1,008 client-called, the 138
+> dispatcher fall-throughs, and every family total except V.
 
 - Generator: `aspnet-backend/scripts/build-admin-corpus.mjs`
 - Scope authority: [ADR-0004](../../decisions/ADR-0004-journey-equivalence-is-the-target.md)
@@ -24,7 +55,7 @@ exists so that tier can be scheduled from evidence.
 | Mobile | `mobile/` | **0** admin-path calls |
 | Published contract | `openapi.json` | 335 admin paths / 430 admin operations |
 | ASP.NET route/operation matrix | `aspnet-backend/artifacts/parity/api/api-parity.json` | 4,638 ASP.NET operations |
-| ASP.NET no-op inventory | `aspnet-backend/artifacts/parity/stubs/stub-routes.json` | 316 methods, expanded here to 375 routes |
+| ASP.NET no-op inventory | `aspnet-backend/artifacts/parity/stubs/stub-routes.json` | 564 do-nothing routes across 326 methods, four categories |
 
 Earlier prose said **514 admin GET routes** and **260 admin route paths**. Both
 were re-derived rather than inherited: the admin route declarations are exactly
@@ -55,14 +86,14 @@ misses 29 staff-flavoured routes whose path omits the word `admin` (11 under
 
 | Class | Count | Meaning |
 | --- | ---: | --- |
-| `identical-candidate` | 751 | A counterpart exists and appears to do real work. **Not certified.** |
-| `stub` | 252 | A counterpart exists and performs none of the endpoint's work. |
+| `identical-candidate` | 750 | A counterpart exists and appears to do real work. **Not certified.** |
+| `stub` | 253 | A counterpart exists and performs none of the endpoint's work. |
 | `uncalled` | 111 | No client reads it and no published contract names it — a **deletion candidate in both engines**, not work (ADR-0004). |
 | `absent` | 5 | A client calls it and ASP.NET has no counterpart. |
 
 ### The number the schedule turns on
 
-**Of the 1,008 admin endpoints a client actually calls, 257 (25.5%) are stub or
+**Of the 1,008 admin endpoints a client actually calls, 258 (25.6%) are stub or
 absent.**
 
 That is a **static upper bound on health** and a **static lower bound on work**.
@@ -71,21 +102,27 @@ shape mismatches static analysis cannot see — on the member read corpus, 64 of
 80 differing endpoints turned out to be real work, so the live number will be
 higher, not lower.
 
-### Three ways an endpoint does no work — and only one is on the ratchet
+### Three ways an endpoint does no work — all three now on the ratchet
+
+Until the 2026-08-21 rewrite only the first kind was counted, which is what
+made 316 look like the whole of the problem.
 
 | Sub-kind | Count | Visible to `check-noop-stubs.ps1`? |
 | --- | ---: | --- |
-| no-op method (no database, no service call) | 108 | yes |
-| dispatcher fall-through to a generic echo store | 138 | **no** |
-| hardcoded payload behind real auth work | 6 | **no** |
+| no-op method (no database, no service call) | 109 | yes |
+| dispatcher fall-through to a generic echo store | 138 | **now yes** |
+| hardcoded payload behind real auth work | 6 | **now yes (hand-read list)** |
 
-**1. no-op method.** `build-stub-route-inventory.mjs` resolves 316 do-nothing
-methods but records **one route per method**, and a method can carry many:
-`ReactFrontendCompatibilityController.AdminEmptyData` carries six `[Http*]`
-attributes and the inventory lists one. That false negative is documented in the
-source at that method — it once reported two exchange endpoints clean. This
-generator re-reads every stub method's full attribute block: **375 routes from
-those 316 methods**, 59 of which the inventory cannot see.
+**1. no-op method.** `build-stub-route-inventory.mjs` used to resolve 316
+do-nothing methods while recording **one route per method**, and a method can
+carry many: `ReactFrontendCompatibilityController.AdminEmptyData` carries six
+`[Http*]` attributes and the inventory listed one. That false negative is
+documented in the source at that method — it once reported two exchange
+endpoints clean. **Fixed 2026-08-21**: the scanner emits one finding per route,
+so the inventory now holds 564 routes across 326 methods, and this generator
+reads them as given rather than re-expanding them (re-expanding an
+already-expanded artifact would multiply every route by its method's attribute
+count).
 
 **2. dispatcher fall-through — the largest single finding, and new.**
 `AdminExplicitParityController` holds five catch-all actions that switch on
@@ -104,9 +141,16 @@ The default arm is `PersistCompatibilityWrite` / `GetPersistedCompatibilityRead`
 (`AdminExplicitParityController.cs:5840` and `:5904`) — a **generic echo store**.
 A write records the request body in `CompatibilityAuditEntries` and answers
 `202` with `side_effect = "recorded_only"`; the matching read replays whatever
-was recorded for that path. It touches the database, so the no-op scanner cannot
-flag it, and it returns a plausible success shape — but nothing is moderated,
-sent, applied, or deleted.
+was recorded for that path. It touches the database, which is why the old
+"does this body do work?" heuristic passed it, and it returns a plausible
+success shape — but nothing is moderated, sent, applied, or deleted.
+
+🔴 **The scanner now detects this directly** (`check-noop-stubs.ps1`, category
+`echo_store`, 177 routes with its own shrink-only baseline). Its implementation
+is a faithful port of `dispatcherFallThrough()` below and the two were verified
+to produce the identical route set — 321 declared, 144 with an explicit branch,
+177 falling through. They are kept as independent replicates on purpose: if they
+ever disagree, one of them is wrong and the disagreement is the finding.
 
 All 177 fall-through routes are in this admin corpus. **138 are called by a
 client** and are classified `stub` here; the remaining 39 sit on endpoints no
@@ -164,7 +208,7 @@ Family names are the ledger's own Tier 5 families (rows 5.1–5.70).
 | S — Gamification administration | 3 | 17 | 17 | 14 | 3 | 0 | 0 | 5.7 |
 | T — Platform provisioning and identity | 3 | 99 | 90 | 60 | 30 | 0 | 9 | 33.0 |
 | U — Taxonomy | 2 | 8 | 8 | 8 | 0 | 0 | 0 | 4.0 |
-| V — Operations | 4 | 181 | 169 | 104 | 65 | 0 | 12 | 45.3 |
+| V — Operations | 4 | 181 | 169 | 103 | 66 | 0 | 12 | 45.3 |
 
 ### Worst subtrees, by share of client-called endpoints that do nothing
 
@@ -211,8 +255,8 @@ targeted follow-ups.
   rejected as real work.
 
 **So roughly 1 in 15 endpoints still classed `identical-candidate` here is
-expected to be doing nothing.** Applied to 751, that is on the order of 50 more
-defects this pass has not individually identified — which is why 25.5% is a
+expected to be doing nothing.** Applied to 750, that is on the order of 50 more
+defects this pass has not individually identified — which is why 25.6% is a
 lower bound on work.
 
 ## What this cannot see

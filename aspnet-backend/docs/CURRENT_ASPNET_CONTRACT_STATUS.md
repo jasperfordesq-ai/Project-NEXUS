@@ -4,10 +4,10 @@ Last verified: 2026-08-21 (rubric replaced; Baseline 4 banked at `869a2a030`)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=274/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=290/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
-<!-- doc-consistency: ASPNET_BANKED_FLOOR=270 -->
+<!-- doc-consistency: ASPNET_BANKED_FLOOR=274 -->
 
 🔴 **READ THIS BEFORE THE NUMBER. The denominator is now FROZEN and the score is
 RATCHETED - it can never be published lower again.** Today the owner decided the
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 274/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-21)
+## Banked score - Fixed Rubric Baseline 5, 290/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-21)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -83,7 +83,7 @@ working tree is banked** - see Block 3.
 | --- | ---: | ---: |
 | Core member journeys certified - React | 54 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
-| Member journeys certified - Web UK accessible | 21 | 120 |
+| Member journeys certified - Web UK accessible | 37 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
 | Mobile app journeys certified - Expo / React Native | 0 | 120 |
 | Consumed-contract correctness and stub elimination | 68 | 110 |
@@ -91,7 +91,7 @@ working tree is banked** - see Block 3.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **274** | **1000** |
+| **Total** | **290** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -101,20 +101,38 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 | --- | --- | ---: | ---: | ---: | ---: |
 | Core React | 1 | 42 | 0.2929 | 170 | 50 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
-| Web UK | 4 | 32 | 0.1750 | 120 | 21 |
+| Web UK | 4 | 32 | 0.3062 | 120 | 37 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
 | Mobile | 6 | 34 | 0.0000 | 120 | 0 |
 
 Community and extended modules deliberately share one category so that an owner
 scope decision on the extended modules cannot change the denominator.
 
-- **Journeys: 77 of 690 (-613).** 🔴 **Zero of 250 rows are CERTIFIED.** 21
-  are PROVEN - they run against ASP.NET with an asserted effect - but ADR-0004
-  condition 3 (the same run passing against a Laravel control) is unmet on every
-  React row, because the React smoke had no control arm. Building one is queue
-  item 1. Two rows are BROKEN with named causes: multi-photo posts have no table
-  for the extra photos, and event attendance-by-code needs the signed `nqx2_`
-  offline-checkin credential subsystem that ASP.NET lacks entirely.
+🔴 **Web UK moved 21 → 37 on 2026-08-21 (+16), Tier 4 only.** The web-uk
+instrument learned to submit forms, so seven of its nine write journeys
+(4.22–4.27, 4.30) moved OPEN → PROVEN and two moved OPEN → BROKEN with named
+causes (4.28 group-detail response envelope, 4.29 review-create stub plus a
+missing `receiver_id`). One ASP.NET defect was fixed and re-measured in the same
+batch: direct-message threads were resolved without an `IsGroup` filter. No other
+tier changed and `ASPNET_BANKED_FLOOR` is deliberately left at 274 — raising it
+is a separate Banking transaction that needs CI green at a named SHA.
+
+- **Journeys: 97 of 690 (-593).** 🔴 **Zero of 250 rows are CERTIFIED.** 28
+  are PROVEN - they run against ASP.NET with an asserted effect. On the React
+  rows ADR-0004 condition 3 (the same run passing against a Laravel control) is
+  unmet, because the React smoke had no control arm; building one is queue item
+  1. On the seven Web UK write rows promoted on 2026-08-21 the control DOES pass
+  in the same run - what is unmet there is condition 1, because the form is
+  POSTed rather than clicked in a browser, and whether that counts is an owner
+  decision (see the note above Tier 4 in the ledger). Four rows are BROKEN with
+  named causes: multi-photo posts have no table for the extra photos; event
+  attendance-by-code needs the signed `nqx2_` offline-checkin credential
+  subsystem that ASP.NET lacks entirely; Web UK group-join cannot see membership
+  because `GET /api/v2/groups/{id}` omits the `data` envelope; and Web UK
+  review-create sits on a do-nothing `POST /api/reviews` stub.
+  🔴 This bullet read "77 of 690" and "21 are PROVEN" before 2026-08-21. The 77
+  was already inconsistent with its own table (54+5+21+1+0 = 81) when found; it
+  is now recomputed from the category table rather than carried forward.
 - **Mobile 0 of 120.** New tier, 34 rows, nothing attempted. Most of its 331
   endpoints overlap member APIs certified in other tiers, so this tier is
   expected to be more verification than implementation - the Phase 9 measurement
@@ -187,15 +205,47 @@ measured evidence: one control run, both arms, credits moved on each
 (`artifacts/smoke/react-smoke-2026-08-21T19-16-28-440Z.json` - 36 MATCH, 2
 NOT_COMPARABLE, 0 ASPNET_ONLY_FAIL). Because the five journey categories are computed
 from the ledger's rows, Tier 1 credit rose 0.293 → 0.317 and this table had to follow
-or `scripts/check-doc-scores.mjs` fails. **It is therefore a score movement WITHOUT a
-completed banking transaction: the tree that measured it was not committed and CI has
-not run at a pushed SHA.** `ASPNET_BANKED_FLOOR` was deliberately LEFT at 270 rather
-than raised to 274, so the ratchet is not advanced on unverified evidence; raise it in
-the commit that lands CI green. Treat 274 as provisional until then.
+or `scripts/check-doc-scores.mjs` fails.
+
+🔴 **BANKING TRANSACTION COMPLETED 2026-08-21.** This paragraph previously
+said 274 was provisional and that `ASPNET_BANKED_FLOOR` was deliberately held at
+270 so the ratchet could not advance on evidence CI had not seen. That condition
+is now met: the measuring tree was committed in `205d83e4b`, and `main` is green
+at `87b9ba69c` — the two failures on `205d83e4b` were a PHP test that inherited a
+tenant it never created and a newly published `tar` advisory, both unrelated to
+this row and both fixed. **The floor is raised to 274.** That also completes
+ADR-0004 condition 4 for row 1.21, which requires the guarding smoke step to be
+COMMITTED and was previously met in substance only while the instrument fix sat
+in the working tree. 274 is banked, not provisional.
+
+The score can no longer be published below 274. A future demotion of this row is
+recorded in the ledger immediately and republished at the next net-non-negative
+transaction; the headline does not fall.
 
 **Block 3 - Published but unscored.** Today's working-tree changes are real and
 verified locally but are **not banked**, because banking requires CI green at the
 evidence SHA:
+
+- 🔴 **The no-op stub count was too small, and is now 562 routes / 326 methods
+  (was 316 methods).** `check-noop-stubs.ps1` counted one of three kinds of
+  do-nothing endpoint and counted methods rather than the routes a client calls.
+  It now reports four categories, each with its own shrink-only baseline:
+  `noop_method` 377 routes / 315 methods, `echo_store` 177 / 5,
+  `hardcoded_payload` 10 / 6, and `defensible` 4 / 4 (deliberate, reported, not a
+  defect). `echo_store` is the important one: 177 routes fall through an
+  `AdminExplicitParityController` catch-all to a generic echo store that records
+  the request body and answers `side_effect = "recorded_only"`, so it touches the
+  database and passed the old heuristic while moderating, sending and deleting
+  nothing. The route-per-method undercount is fixed too - a method carrying six
+  `[Http*]` attributes now reports six - and the work-detection tokens are
+  anchored, which revealed three do-nothing methods excused by their own response
+  field names (`_repo` was matching `auto_hide_report_threshold`).
+  🔴 **This is an instrument change, not a regression: no endpoint got worse.**
+  It affects a sub-score and the score has NOT been moved here - that is a
+  deliberate banking transaction, not a side effect. Every detection was proved
+  able to go red and proved not to fire on a working endpoint; the proofs are in
+  the commit message. Prose elsewhere in this document still quotes 317/319 as a
+  historical figure; those two numbers are not comparable to 562.
 
 - Two GDPR endpoints that faked success now return honest 501s
   (`MiscParityController.cs:800,804`) - a member's statutory erasure and
@@ -257,8 +307,9 @@ evidence SHA:
   CERTIFIED requires three things this run does not yet supply: the fixture fixed
   so the control arm passes rather than fails; a row-by-row mapping from smoke
   step to ledger row; and ADR-0004 condition 5 checked (no do-nothing endpoint on
-  each path) - which the audit noted has never been verified against the 317
-  no-op methods. Estimating the conversion upward without those is exactly the
+  each path) - which the audit noted has never been verified against the (then)
+  317 no-op methods, and which is now checkable per path: see the widened stub
+  count in Block 3 and `build-stub-route-inventory.mjs --check`. Estimating the conversion upward without those is exactly the
   practice that produced R4's wrong arithmetic. Queue item 1.
 - Two further honesty notes recorded in the instrument itself: the exit-0 path is
   **inferred, not observed** (only exit 1 and exit 2 have been demonstrated), and

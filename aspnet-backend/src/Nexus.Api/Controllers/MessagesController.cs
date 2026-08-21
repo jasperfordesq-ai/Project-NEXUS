@@ -353,9 +353,20 @@ public class MessagesController : ControllerBase
 
         var participant1Id = Math.Min(currentUserId, otherUserId);
         var participant2Id = Math.Max(currentUserId, otherUserId);
+        // 🔴 A DIRECT thread is (tenant, the two people, NOT a group). This lookup had
+        // no IsGroup filter, and the conversations table reuses Participant1Id /
+        // Participant2Id for GROUP rows, so the pair is NOT unique on its own: the
+        // partial unique index is
+        // IX_conversations_TenantId_Participant1Id_Participant2Id ... WHERE IsGroup =
+        // false. Measured on the dev database 2026-08-21: pair (3,4) had four rows —
+        // one direct thread plus three groups — so SendMessage attached a private
+        // message to a GROUP conversation while this read returned a different, empty
+        // group row, and the member's own sent message vanished from their thread.
+        // Every direct-conversation resolution below carries the same filter.
         var conversation = await _db.Conversations
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.TenantId == tenantId
+                && !c.IsGroup
                 && c.Participant1Id == participant1Id
                 && c.Participant2Id == participant2Id);
 
@@ -734,7 +745,10 @@ public class MessagesController : ControllerBase
         return await _db.Conversations
             .IgnoreQueryFilters()
             .AsNoTracking()
+            // Direct only — a group row shares the participant columns. See the
+            // note in GetLaravelReactConversationAsync.
             .Where(conversation => conversation.TenantId == tenantId
+                && !conversation.IsGroup
                 && conversation.Participant1Id == participant1Id
                 && conversation.Participant2Id == participant2Id)
             .Select(conversation => (int?)conversation.Id)
@@ -1216,9 +1230,13 @@ public class MessagesController : ControllerBase
             // tenant. Read the normalized pair only after acquiring it so a
             // waiter observes the first writer's committed conversation rather
             // than attempting a duplicate insert against the unique index.
+            // Direct only, and this is the half that matters most: without the
+            // filter a private one-to-one message could be persisted onto a GROUP
+            // conversation. See the note in GetLaravelReactConversationAsync.
             conversation = await _db.Conversations
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(row => row.TenantId == tenantId
+                    && !row.IsGroup
                     && row.Participant1Id == participant1Id
                     && row.Participant2Id == participant2Id, ct);
 
@@ -1228,6 +1246,7 @@ public class MessagesController : ControllerBase
                 conversation = new Conversation
                 {
                     TenantId = tenantId,
+                    IsGroup = false,
                     Participant1Id = participant1Id,
                     Participant2Id = participant2Id,
                     CreatedAt = now,
@@ -1503,8 +1522,10 @@ public class MessagesController : ControllerBase
         var tenantId = _tenantContext.GetTenantIdOrThrow();
         var participant1Id = Math.Min(currentUserId, otherUserId);
         var participant2Id = Math.Max(currentUserId, otherUserId);
+        // Direct only. See the note in GetLaravelReactConversationAsync.
         var conversation = await _db.Conversations
             .FirstOrDefaultAsync(c => c.TenantId == tenantId
+                && !c.IsGroup
                 && c.Participant1Id == participant1Id
                 && c.Participant2Id == participant2Id);
 

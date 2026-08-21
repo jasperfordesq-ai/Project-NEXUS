@@ -222,53 +222,35 @@ const WEBUK_ADMIN_CALLS = [
 // mobile/: scanned, ZERO admin-path calls. The Expo client has no admin surface.
 
 // ---------------------------------------------------------------------------
-// 3. Stub inventory, expanded to every route per do-nothing method
+// 3. Stub inventory — one entry per ROUTE, taken straight from the artifact
+//
+// 🔴 CHANGED 2026-08-21. This function used to re-read every stub method's
+// attribute block itself, because the inventory recorded only ONE route per
+// method and a method can carry many (AdminEmptyData carries six). The scanner
+// now emits one finding per route with the path already resolved — including
+// the `~/absolute` and `[controller]` forms this function got wrong — so
+// re-expanding here would multiply each route by its method's attribute count.
+// Read the artifact as given. If it ever regresses to one-route-per-method,
+// the guard below fails rather than silently under-counting again.
 // ---------------------------------------------------------------------------
 function expandStubRoutes() {
   const inv = rj(R('aspnet-backend/artifacts/parity/stubs/stub-routes.json'));
-  const files = new Map();
-  (function walk(d) {
-    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-      const p = path.join(d, e.name);
-      if (e.isDirectory()) { if (!/^(bin|obj)$/.test(e.name)) walk(p); continue; }
-      if (e.name.endsWith('.cs')) files.set(e.name, p);
-    }
-  })(R('aspnet-backend/src/Nexus.Api'));
-  const out = [];
-  for (const s of inv.routes) {
-    const fp = files.get(s.file);
-    if (!fp) { out.push({ ...s, expanded: false }); continue; }
-    const lines = fs.readFileSync(fp, 'utf8').split(/\r?\n/);
-    let ctrlPrefix = '';
-    for (let i = 0; i < lines.length; i++) {
-      if (/^\s*public\s+(sealed\s+|abstract\s+|partial\s+)*class\s+\w+Controller/.test(lines[i])) {
-        for (let j = i - 1; j >= 0 && j > i - 15; j--) {
-          const rm = lines[j].match(/^\s*\[Route\("([^"]+)"\)\]/);
-          if (rm) { ctrlPrefix = rm[1]; break; }
-        }
-        break;
-      }
-    }
-    const attrs = [];
-    for (let j = s.line - 2; j >= 0; j--) {
-      const l = lines[j].trim();
-      if (l === '' || l.startsWith('//') || l.startsWith('/*') || l.startsWith('*')) continue;
-      if (l.startsWith('[')) { attrs.push(l); continue; }
-      break;
-    }
-    const verbAttrs = attrs.filter(a => /^\[Http(Get|Post|Put|Patch|Delete|Options)\b/.test(a));
-    if (!verbAttrs.length) { out.push({ ...s, expanded: false }); continue; }
-    for (const a of verbAttrs) {
-      const m = a.match(/^\[Http(Get|Post|Put|Patch|Delete|Options)\("?([^")]*)"?\)?\]?/);
-      if (!m) continue;
-      const tpl = (m[2] || '').replace(/"/g, '');
-      const full = /^\/?api\//.test(tpl)
-        ? '/' + tpl.replace(/^\//, '')
-        : '/' + (ctrlPrefix ? ctrlPrefix.replace(/^\/|\/$/g, '') + (tpl ? '/' + tpl : '') : tpl.replace(/^\//, ''));
-      out.push({ file: s.file, line: s.line, method: s.method, verb: m[1].toUpperCase(), path: full, expanded: true });
-    }
+  const routes = Array.isArray(inv.routes) ? inv.routes : [];
+  if (!routes.length) {
+    console.error('🔴 stub-routes.json holds no routes. Regenerate it:');
+    console.error('   MSYS_NO_PATHCONV=1 node aspnet-backend/scripts/build-stub-route-inventory.mjs');
+    process.exit(2);
   }
-  return out;
+  if (!routes.some(r => r.category)) {
+    console.error('🔴 stub-routes.json carries no per-route `category`, so it predates the');
+    console.error('   2026-08-21 counting model and records one route per method. Regenerate it');
+    console.error('   before trusting any stub count derived from it.');
+    process.exit(2);
+  }
+  return routes.map(r => ({
+    file: r.file, line: r.line, method: r.method,
+    verb: r.verb, path: r.path, category: r.category, expanded: true
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -465,6 +447,14 @@ for (const m of parity.matrix) {
   const prev = pmap.get(k);
   if (!prev || (prev.status !== 'matched' && m.status === 'matched')) pmap.set(k, m);
 }
+// Sub-kind labels, keyed by the scanner's category. Kept here so the CSV column
+// stays stable if the scanner ever renames a category: an unknown category shows
+// up as 'unlabelled category: x' rather than silently becoming a no-op method.
+const STUB_KIND_LABEL = {
+  noop_method: 'no-op method',
+  echo_store: 'dispatcher fall-through (echo store)',
+  hardcoded_payload: 'hardcoded payload'
+};
 const stubKeys = new Map();
 for (const s of stubRoutes) {
   const ps = [s.path];
@@ -492,7 +482,17 @@ for (const r of corpus) {
 
   let classification, stub_kind = '', stub_evidence = '';
   if (!readerList.length) classification = 'uncalled';
-  else if (stub) { classification = 'stub'; stub_kind = 'no-op method'; stub_evidence = stub.file + '::' + stub.method; }
+  else if (stub) {
+    // 🔴 The sub-kind comes from the scanner's own `category`, not from which
+    // branch of this `if` matched. Before 2026-08-21 the inventory only held
+    // plain no-op methods, so hardcoding 'no-op method' here was correct; it now
+    // holds all three kinds, and hardcoding would collapse the three-way
+    // breakdown this document's schedule is built on into one label.
+    classification = 'stub';
+    stub_kind = STUB_KIND_LABEL[stub.category] ?? ('unlabelled category: ' + stub.category);
+    stub_evidence = stub.file + '::' + stub.method
+      + (stub.category === 'echo_store' ? ' default arm (records the body, side_effect=recorded_only)' : '');
+  }
   else if (echo) { classification = 'stub'; stub_kind = 'dispatcher fall-through (echo store)'; stub_evidence = 'AdminExplicitParityController.' + echo.dispatcher + ' default arm'; }
   else if (isHardcoded) { classification = 'stub'; stub_kind = 'hardcoded payload'; stub_evidence = actName + ' — ' + hardcodedReason.get(actName); }
   else if (!asp || asp.status !== 'matched') classification = 'absent';
@@ -548,7 +548,7 @@ const summary = {
     mobile: 'mobile/ — scanned, zero admin-path calls',
     openapi: 'openapi.json (' + Object.keys(oapi.paths || {}).length + ' paths)',
     aspnet_parity: 'aspnet-backend/artifacts/parity/api/api-parity.json (' + parity.summary.aspnet_operations + ' ASP.NET operations)',
-    aspnet_stub_inventory: 'aspnet-backend/artifacts/parity/stubs/stub-routes.json (' + stubRoutes.length + ' routes expanded from 316 no-op methods)',
+    aspnet_stub_inventory: 'aspnet-backend/artifacts/parity/stubs/stub-routes.json (' + stubRoutes.length + ' do-nothing routes across ' + new Set(stubRoutes.map(r => r.file + '::' + r.method)).size + ' methods, four categories)',
   },
   admin_corpus_size: rows.length,
   admin_by_method: rows.reduce((a, r) => (a[r.method] = (a[r.method] || 0) + 1, a), {}),

@@ -22,7 +22,7 @@ Every figure in this section was regenerated or probed on 2026-08-18 at monorepo
 | Webhooks discarding events (was P0) | All three now return **501** with `success:false` and log an error, so Stripe / identity / SendGrid events stay in the sender's retry queue. `MiscParityController.cs:1818-1835`, helper at `:90`. |
 | No tenant hierarchy | `Entities/Tenant.cs` carries `ParentId`, `Path`, `Depth`, `AllowsSubtenants`, `MaxDepth`. |
 | No subtree confinement | `Support/Authorization/SuperPanelAccess.cs` models `master` / `regional` with a materialised-path check. |
-| No-op handlers | **349 → 319** (`scripts/check-noop-stubs.ps1`, matches the shrink-only baseline). |
+| No-op handlers | **349 → 319 methods** under the old one-category, one-route-per-method counting; **562 routes / 326 methods** under the widened counting of 2026-08-21 (`scripts/check-noop-stubs.ps1`, matches its per-category shrink-only baseline). The two numbers are not comparable — see R-1. |
 | Scheduled coverage | **26** job classes, **all 26 registered** as hosted services (was 20 defined / 17 genuine). |
 | Full test suite | CI at `450535aab`: build, all six API shards, Messaging and image builds **all success**, on ASP.NET code byte-identical to HEAD. Local `dotnet test Nexus.sln -c Release`: **3,644 + 38 passed, 0 failed, 0 skipped**. |
 
@@ -770,10 +770,13 @@ migrations actually create.
 
 ## 🔴 The one thing to understand before touching this backend
 
-**Route existence proves nothing here.** 319 action methods (349 when this was
-written; see the 2026-08-18 re-verification at the top) return
-success-shaped JSON while performing no work at all — no database access, no
-service call. The generated inventories report *2,659 routes matched and 0 static
+**Route existence proves nothing here.** **562 routes across 326 action methods**
+(319 methods under the narrower counting used until 2026-08-21; 349 when this was
+first written) return
+success-shaped JSON while performing none of the endpoint's work. 385 of them touch no
+database and call no service; 177 write the request body to an audit table and answer
+`side_effect = "recorded_only"`, which is why a "does it touch the database?"
+test passed them for months. The generated inventories report *2,659 routes matched and 0 static
 React contract gaps* precisely because those stubs answer with plausible 200s.
 
 Consequences for how you work:
@@ -791,7 +794,33 @@ Consequences for how you work:
 
 ## P0 — blocks production
 
-### R-1 `MEASURED + RATCHETED, triage OPEN` — 319 no-op action methods that report success
+### R-1 `MEASURED + RATCHETED, triage OPEN` — 562 do-nothing routes that report success
+
+> 🔴 **THE COUNT WAS WIDENED ON 2026-08-21 AND THE OLD NUMBER WAS TOO SMALL.**
+> The heading said 319 (and 351 before that). Both were counts of ONE of three
+> kinds of do-nothing endpoint, expressed in METHODS rather than the routes a
+> client actually calls. `check-noop-stubs.ps1` now reports four categories with
+> a shrink-only baseline each, in routes:
+>
+> | Category | Routes | Methods | Counted before? |
+> | --- | ---: | ---: | --- |
+> | `noop_method` — no data access, no delegation | 377 | 315 | yes, as 316 methods |
+> | `echo_store` — falls through an `AdminExplicitParityController` catch-all to the generic echo store | 177 | 5 | **no** |
+> | `hardcoded_payload` — real auth work, fabricated answer (hand-read floor) | 10 | 6 | **no** |
+> | `defensible` — shaped like a no-op on purpose; `[Authorize]` is the work | 4 | 4 | reported, **not** a defect |
+> | **Total (distinct verb+path, 2 overlaps deduped)** | **562** | **326** | |
+>
+> **Do not read 316 → 562 as a regression.** No endpoint got worse; the
+> instrument stopped missing things. Three separate blind spots were closed: the
+> echo-store fall-throughs (177 routes that touch the database and so passed the
+> old "does it do work?" test while moderating, sending and deleting nothing),
+> the route-per-method undercount (one method can carry six `[Http*]`
+> attributes), and unanchored work tokens — `_repo` matched the response
+> literal `auto_hide_report_threshold` and `_token` matched `csrf_token`, so
+> three do-nothing methods were excused by their own field names.
+>
+> The old figures in the body below are the historical record of how the ratchet
+> was established. Do not quote them as current.
 
 > 🔴 **This heading said 351 until 2026-08-19, and the per-file table below is the
 > pre-August split.** Live at HEAD, verified by running the checker:
@@ -821,7 +850,8 @@ Confirmed destructive examples — these silently do nothing:
 | group member promote / demote / remove | `AdminCompatibility2Controller.cs:681,686,691` |
 | `GET /v2/users/me/sub-accounts/{childId}/activity` | `UsersParityController.cs:510` |
 
-**The count is now measured and ratcheted.**
+**The count is now measured and ratcheted.** (Historical: how the ratchet was
+first established. The current counting model is in the note under the heading.)
 `scripts/check-noop-stubs.ps1` is committed, with the baseline in
 `scripts/noop-stubs-baseline.json` (**351** — slightly above the 349 first
 reported, because the committed detector also counts `NoContent()` responses and
@@ -841,11 +871,20 @@ lowered in the same commit. Verified by adding a throwaway stub (count went
 351 → 352, the check failed with a clear message) and removing it again.
 
 ```bash
-# what is left, grouped by file
+# what is left, one line per ROUTE, grouped by file, with its category
 pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -Detail
 # after genuinely removing some, lock the gain in (same commit)
 pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -WriteBaseline
+# resolve them to full request paths, and ask whether a journey touches one
+MSYS_NO_PATHCONV=1 node aspnet-backend/scripts/build-stub-route-inventory.mjs \
+  --check /api/v2/admin/agents /api/v2/wallet/balance
 ```
+
+🔴 **Raising a count now needs saying so out loud.** `-WriteBaseline` refuses
+when any metric would go up unless `-AcceptWidenedDefinition "<reason>"` is also
+passed, and it records the reason and the moved metrics in the baseline file
+under `_raised`. Widening the definition legitimately raises the number; making
+a failing tool pass must never be the quiet way to do it.
 
 **Plan for the remaining 350.** Triage into three buckets: (a) endpoints a client
 actually calls — implement for real; (b) endpoints nothing calls — delete the

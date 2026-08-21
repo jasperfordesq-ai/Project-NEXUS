@@ -1,9 +1,9 @@
 {
  "summary": {
   "schema_version": 1,
-  "generated_at": "2026-08-21T18:12:37.521Z",
-  "repository_sha": "6d42d6ac2dc9d5966f91c6558a491c91aeb9d6a3",
-  "working_tree_modified_paths": 30,
+  "generated_at": "2026-08-21T20:12:17.333Z",
+  "repository_sha": "95cd4913bfdf7a13f4ded7636822e6632d622c8e",
+  "working_tree_modified_paths": 31,
   "generator": "aspnet-backend/scripts/build-admin-corpus.mjs",
   "scope_authority": "aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md",
   "method": "static — no backend contacted, no browser driven, no live differ run",
@@ -14,7 +14,7 @@
    "mobile": "mobile/ — scanned, zero admin-path calls",
    "openapi": "openapi.json (862 paths)",
    "aspnet_parity": "aspnet-backend/artifacts/parity/api/api-parity.json (4638 ASP.NET operations)",
-   "aspnet_stub_inventory": "aspnet-backend/artifacts/parity/stubs/stub-routes.json (375 routes expanded from 316 no-op methods)"
+   "aspnet_stub_inventory": "aspnet-backend/artifacts/parity/stubs/stub-routes.json (564 do-nothing routes across 326 methods, four categories)"
   },
   "admin_corpus_size": 1119,
   "admin_by_method": {
@@ -25,19 +25,19 @@
    "PUT": 148
   },
   "classification": {
-   "identical-candidate": 751,
-   "stub": 252,
+   "identical-candidate": 750,
+   "stub": 253,
    "uncalled": 111,
    "absent": 5
   },
   "stub_kinds": {
    "dispatcher fall-through (echo store)": 138,
-   "no-op method": 108,
+   "no-op method": 109,
    "hardcoded payload": 6
   },
   "client_called": 1008,
-  "client_called_stub_or_absent": 257,
-  "client_called_defect_rate_pct": 25.5,
+  "client_called_stub_or_absent": 258,
+  "client_called_defect_rate_pct": 25.6,
   "dispatcher_fall_through": [
    {
     "dispatcher": "Delete",
@@ -98,8 +98,8 @@
    "V — Operations": {
     "total": 181,
     "client_called": 169,
-    "identical_candidate": 104,
-    "stub": 65,
+    "identical_candidate": 103,
+    "stub": 66,
     "absent": 0,
     "uncalled": 12
    },
@@ -339,7 +339,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PATCH",
@@ -360,7 +360,7 @@
    "aspnet_body_lines": 7,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Patch default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Patch default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -381,7 +381,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -402,7 +402,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -423,7 +423,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -444,7 +444,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -465,7 +465,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -486,7 +486,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -507,7 +507,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -1185,7 +1185,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -3234,7 +3234,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -3347,7 +3347,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -3385,7 +3385,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -3406,7 +3406,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -3427,7 +3427,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -3465,7 +3465,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -3587,7 +3587,7 @@
    "aspnet_body_lines": 53,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminPerformanceSummaryController.Summary — auth is real; slowest_requests/slowest_queries/memory_spikes are Array.Empty and request_volume an empty dictionary, always. The performance dashboard can never show data."
+   "stub_evidence": "AdminPerformanceSummaryController.cs::Summary"
   },
   {
    "method": "GET",
@@ -3878,7 +3878,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -3899,7 +3899,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -4213,7 +4213,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -4236,7 +4236,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -4259,7 +4259,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -7979,7 +7979,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -8086,7 +8086,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -8107,7 +8107,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -8128,7 +8128,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -8170,7 +8170,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -8208,7 +8208,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -8696,7 +8696,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -8717,7 +8717,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -8738,7 +8738,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -9305,7 +9305,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -9462,7 +9462,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -9483,7 +9483,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -9504,7 +9504,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -9525,7 +9525,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -9546,7 +9546,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -9567,7 +9567,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -9588,7 +9588,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10334,7 +10334,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10460,7 +10460,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -10481,7 +10481,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -10502,7 +10502,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10544,7 +10544,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -10565,7 +10565,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -10586,7 +10586,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10664,7 +10664,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -10685,7 +10685,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10706,7 +10706,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10725,7 +10725,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -10746,7 +10746,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -10788,7 +10788,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13102,7 +13102,7 @@
    "aspnet_body_lines": 13,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminCompatibility2Controller.SelectAbWinner — unconditional 409 \"No persisted A/B test variants exist\", supported=false."
+   "stub_evidence": "AdminCompatibility2Controller.cs::SelectAbWinner"
   },
   {
    "method": "PUT",
@@ -13314,7 +13314,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -13381,7 +13381,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13402,7 +13402,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13421,7 +13421,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13442,7 +13442,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13463,7 +13463,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13484,7 +13484,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13541,7 +13541,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13562,7 +13562,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13583,7 +13583,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13688,7 +13688,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13812,7 +13812,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13850,7 +13850,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13871,7 +13871,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13892,7 +13892,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13913,7 +13913,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -13934,7 +13934,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -13955,7 +13955,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -13976,7 +13976,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -13997,7 +13997,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14018,7 +14018,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -14039,7 +14039,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14077,7 +14077,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14098,7 +14098,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -14119,7 +14119,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -14140,7 +14140,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -14161,7 +14161,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -14182,7 +14182,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14203,7 +14203,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14224,7 +14224,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -14245,7 +14245,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -14266,7 +14266,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14304,7 +14304,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -14346,7 +14346,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -14899,7 +14899,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -15004,7 +15004,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -16103,7 +16103,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -16166,7 +16166,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -16187,7 +16187,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16208,7 +16208,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16229,7 +16229,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16466,7 +16466,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16510,7 +16510,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16531,7 +16531,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -16552,7 +16552,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -16573,7 +16573,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16594,7 +16594,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16651,7 +16651,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -16672,7 +16672,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -16693,7 +16693,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -16903,7 +16903,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -17218,7 +17218,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -17239,7 +17239,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -17260,7 +17260,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -17741,7 +17741,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -18028,7 +18028,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -18269,7 +18269,7 @@
    "aspnet_body_lines": 20,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminPrerenderCompatibilityController.Coverage — reads tenants, then reports rendered=0 and every expected route missing, always."
+   "stub_evidence": "AdminPrerenderCompatibilityController.cs::Coverage"
   },
   {
    "method": "GET",
@@ -18290,7 +18290,7 @@
    "aspnet_body_lines": 43,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminPrerenderCompatibilityController.TenantSafety — snapshots=0, stale=0, missing=all, always."
+   "stub_evidence": "AdminPrerenderCompatibilityController.cs::TenantSafety"
   },
   {
    "method": "GET",
@@ -18435,7 +18435,7 @@
    "aspnet_body_lines": 18,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminPrerenderCompatibilityController.Purge — validates and writes an audit row, then returns deleted_count=0 and deleted=[]. Nothing is purged."
+   "stub_evidence": "AdminPrerenderCompatibilityController.cs::Purge"
   },
   {
    "method": "POST",
@@ -18456,7 +18456,7 @@
    "aspnet_body_lines": 6,
    "classification": "stub",
    "stub_kind": "hardcoded payload",
-   "stub_evidence": "AdminPrerenderCompatibilityController.PurgeUnexpected — returns deleted_total=0 unconditionally."
+   "stub_evidence": "AdminPrerenderCompatibilityController.cs::PurgeUnexpected"
   },
   {
    "method": "POST",
@@ -20373,7 +20373,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -20464,7 +20464,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -20483,7 +20483,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -20504,7 +20504,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -21809,7 +21809,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -21853,9 +21853,9 @@
    "aspnet_action": "AdminExplicitParityController.Get",
    "aspnet_action_file": "aspnet-backend/src/Nexus.Api/Controllers/AdminExplicitParityController.cs:405",
    "aspnet_body_lines": 88,
-   "classification": "identical-candidate",
-   "stub_kind": "",
-   "stub_evidence": ""
+   "classification": "stub",
+   "stub_kind": "no-op method",
+   "stub_evidence": "ReactFrontendCompatibilityController.cs::AdminModerationSettings"
   },
   {
    "method": "PUT",
@@ -22016,7 +22016,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22039,7 +22039,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22062,7 +22062,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22085,7 +22085,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22106,7 +22106,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -22127,7 +22127,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22148,7 +22148,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22169,7 +22169,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "DELETE",
@@ -22190,7 +22190,7 @@
    "aspnet_body_lines": 15,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Delete default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Delete default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22285,7 +22285,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22306,7 +22306,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22714,7 +22714,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "PUT",
@@ -22735,7 +22735,7 @@
    "aspnet_body_lines": 38,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Put default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Put default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22756,7 +22756,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22777,7 +22777,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22798,7 +22798,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22817,7 +22817,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22838,7 +22838,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22859,7 +22859,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -22880,7 +22880,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -22901,7 +22901,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -23215,7 +23215,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -23236,7 +23236,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -23255,7 +23255,7 @@
    "aspnet_body_lines": 88,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Get default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Get default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
@@ -23293,7 +23293,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "POST",
@@ -23331,7 +23331,7 @@
    "aspnet_body_lines": 42,
    "classification": "stub",
    "stub_kind": "dispatcher fall-through (echo store)",
-   "stub_evidence": "AdminExplicitParityController.Post default arm"
+   "stub_evidence": "AdminExplicitParityController.cs::Post default arm (records the body, side_effect=recorded_only)"
   },
   {
    "method": "GET",
