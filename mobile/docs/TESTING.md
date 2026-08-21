@@ -333,7 +333,7 @@ this is the live members' database.
 options are a Mac, or an EAS cloud build (`eas.json` has iOS resource classes
 defined, though `submit.production.ios.ascAppId` is still a placeholder). Until
 one of those happens, no iOS claim is verified by anything — see
-[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) §10.
+[CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md) §10.
 
 ---
 
@@ -519,7 +519,7 @@ Being explicit, so nobody assumes coverage that isn't there:
 
 | Guide | Purpose |
 | --- | --- |
-| [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) | The readiness rubric and current score |
+| [CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md) | The readiness rubric and current score |
 | [HEROUI_NATIVE_PARITY_AUDIT.md](HEROUI_NATIVE_PARITY_AUDIT.md) | Product-area parity judgement |
 | [generated/mobile-parity-matrix.md](generated/mobile-parity-matrix.md) | Route-level parity, machine-generated |
 | [generated/mobile-api-consumer-ledger.md](generated/mobile-api-consumer-ledger.md) | Endpoints consumed, machine-verified |

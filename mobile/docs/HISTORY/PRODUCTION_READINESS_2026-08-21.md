@@ -5,6 +5,38 @@ Author: Jasper Ford
 See NOTICE file for attribution and acknowledgements.
 -->
 
+# HISTORICAL — Mobile Production Readiness (third edition), archived 2026-08-21
+
+Last reviewed: 2026-08-21
+
+Status: **HISTORICAL. Do not read this as current state.**
+
+🔴 **This document is superseded.** The current mobile status, score and work list are:
+
+- [`../CURRENT_MOBILE_PRODUCTION_STATUS.md`](../CURRENT_MOBILE_PRODUCTION_STATUS.md) — the only current score
+- [`../MOBILE_JOURNEY_LEDGER.md`](../MOBILE_JOURNEY_LEDGER.md) — the work list and denominator
+- [`../MOBILE_ROADMAP.md`](../MOBILE_ROADMAP.md) — the plan
+- [`../MOBILE_TEST_HARNESS.md`](../MOBILE_TEST_HARNESS.md) — how to walk a journey
+
+**Why it was archived.** It scored the code thoroughly and the product hardly at all, and
+it grew by appending dated sections (9.1 … 9.10) until the top of the file described a
+different app from the bottom. Its scorecard could report "Strong" on a dimension while a
+member could not open a comment sheet. Every finding below is preserved because the
+*evidence* is valuable — the measurements, the causes, the rejected alternatives — but the
+scores and the "current" language are not.
+
+The findings themselves were carried forward into the ledger rows and the status document's
+blockers. Where this file and a current document disagree, the current document wins.
+
+---
+
+<!--
+Copyright © 2024–2026 Jasper Ford
+SPDX-License-Identifier: AGPL-3.0-or-later
+Author: Jasper Ford
+See NOTICE file for attribution and acknowledgements.
+-->
+
 # Mobile Production Readiness Rubric
 
 Last reviewed: 2026-08-19
@@ -290,7 +322,7 @@ Contrast is gated (`lib/hooks/useTheme.contrast.test.ts`). Three screens are
 pixel-gated, at the sensitivity corrected on 2026-08-19 — `threshold: 0.02,
 includeAA: true`, after the previous `0.1` reported 40px for a real 9,168px
 light-grey-on-white change. 93 images over 31 screens have been photographed;
-roughly 106 screens never have. See [VISUAL_AUDIT.md](VISUAL_AUDIT.md).
+roughly 106 screens never have. See [VISUAL_AUDIT.md](../VISUAL_AUDIT.md).
 
 ### 9.1 ✅ FIXED — and the cause was systemic, not one screen
 

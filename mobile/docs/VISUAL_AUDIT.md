@@ -403,5 +403,5 @@ in the default NEXUS blue until the owner supplies one.
 
 🔴 One finding from a later pass is still open and is not in this sweep's numbering: the
 rewards/leaderboard screen paints a blank body despite having its data and no error. It is
-recorded as row 9.1 of [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md), with the
+recorded as row 9.1 of [CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md), with the
 evidence and what has been ruled out.

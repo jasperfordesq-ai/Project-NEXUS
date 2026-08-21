@@ -182,6 +182,38 @@ const KNOWN_MARKERS = {
     doc: 'mobile/docs/MOBILE_JOURNEY_LEDGER.md'
   },
 
+  // Mobile app — rubric M1, introduced 2026-08-21.
+  //
+  // 🔴 Registered on the day the mobile documentation was restructured, and registered
+  // WITH a floor and a ledger rather than as `opaque`. The mobile app had carried a
+  // 17-row scorecard in a document that grew by appending dated sections until its top
+  // described a different app from its bottom — and nothing anywhere could disagree with
+  // a number in it. An unenforced score is how the ASP.NET workstream lost time; the
+  // mobile score is enforced from its first day for that reason.
+  //
+  // M1 measures how much of the PRODUCT is proved to work. Earlier mobile scorecards
+  // measured code quality. Those are different questions: never subtract them, and never
+  // describe M1 as a rise or fall from one of them.
+  MOBILE_M1_CURRENT_SCORE: {
+    kind: 'score',
+    doc: 'mobile/docs/CURRENT_MOBILE_PRODUCTION_STATUS.md',
+    rubricMarker: 'MOBILE_M1_RUBRIC',
+    tableHeading: '## Banked score',
+    categoryCountMarker: 'MOBILE_RUBRIC_CATEGORY_COUNT',
+    floorMarker: 'MOBILE_BANKED_FLOOR'
+  },
+  MOBILE_M1_RUBRIC: { kind: 'rubric' },
+  MOBILE_RUBRIC_CATEGORY_COUNT: { kind: 'opaque' },
+  MOBILE_BANKED_FLOOR: { kind: 'opaque' },
+  // The finite mobile journey denominator. `ledger` and not `opaque`, so the tier tables
+  // are recounted row by row and a status outside the vocabulary is rejected — the exact
+  // check whose absence let an ASP.NET row carry an invented status while four category
+  // scores were computed from it.
+  MOBILE_JOURNEY_ROWS: {
+    kind: 'ledger',
+    doc: 'mobile/docs/MOBILE_JOURNEY_LEDGER.md'
+  },
+
   // Documentation health — an INDEX, not a product score. Renamed 2026-08-11.
   DOCUMENTATION_HEALTH_INDEX: { kind: 'opaque', requiresRubric: 'DOCUMENTATION_HEALTH_RUBRIC' },
   DOCUMENTATION_HEALTH_RUBRIC: { kind: 'rubric' },
@@ -236,6 +268,8 @@ const RETIRED_MARKERS = {
 // completely invisible — the exact orphaned-marker problem this checker exists to
 // solve, reproduced inside the checker. The scan below makes the claim true.
 const MARKER_DOCUMENTS = [
+  'mobile/docs/CURRENT_MOBILE_PRODUCTION_STATUS.md',
+  'mobile/docs/MOBILE_JOURNEY_LEDGER.md',
   'web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md',
   'web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md',
   'aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md',

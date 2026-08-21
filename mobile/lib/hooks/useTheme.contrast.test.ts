@@ -23,7 +23,7 @@
  *
  * Scope, honestly: this proves the palette is legible. It does not prove any
  * screen USES the palette — 1,506 hardcoded hex literals across 95 files sit
- * outside it (see docs/PRODUCTION_READINESS.md §9), and it says nothing about
+ * outside it (see docs/CURRENT_MOBILE_PRODUCTION_STATUS.md §9), and it says nothing about
  * layout, truncation or touch targets. It is one layer, not the visual testing
  * the app still lacks.
  */

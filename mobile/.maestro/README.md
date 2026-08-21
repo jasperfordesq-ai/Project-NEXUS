@@ -84,7 +84,7 @@ Maestro is currently an operator-run device test, not a GitHub Actions gate. The
 
 🔴 So nothing automated proves the app launches on a device. That is the largest
 hole in mobile verification after visual testing — see
-[`../docs/PRODUCTION_READINESS.md`](../docs/PRODUCTION_READINESS.md) §8. EAS build and submission commands remain deliberate operator actions documented in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
+[`../docs/CURRENT_MOBILE_PRODUCTION_STATUS.md`](../docs/CURRENT_MOBILE_PRODUCTION_STATUS.md) §8. EAS build and submission commands remain deliberate operator actions documented in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
 
 If a device-farm gate is added later, start from a preview APK and pass credentials only through repository secrets. For example:
 

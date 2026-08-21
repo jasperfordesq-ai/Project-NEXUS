@@ -19,7 +19,7 @@
  * light grey surfaces on white cards — about 14/255 per channel apart. At 0.1 that
  * whole class of difference sits inside the tolerance, so a tile could move, a radius
  * could change, or a surface could be swapped for a similar tone and the gate would
- * report "0 px" and pass. `docs/PRODUCTION_READINESS.md` read that as "3 screens
+ * report "0 px" and pass. `docs/CURRENT_MOBILE_PRODUCTION_STATUS.md` read that as "3 screens
  * pixel-gated at 0px repeatability", which overstated the protection considerably.
  *
  * This is the same failure shape as the two other bugs found this week — an undefined

@@ -180,7 +180,11 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 
 | Guide | Purpose |
 | --- | --- |
-| [PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) | Readiness rubric and the current measured score per dimension. |
+| [CURRENT_MOBILE_PRODUCTION_STATUS.md](docs/CURRENT_MOBILE_PRODUCTION_STATUS.md) | 🔴 **Start here.** The only document that states the current score (rubric M1). |
+| [MOBILE_JOURNEY_LEDGER.md](docs/MOBILE_JOURNEY_LEDGER.md) | The work list and the fixed 140-row denominator. Pick work up here. |
+| [MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md) | The phased plan to production, with exit criteria per phase. |
+| [MOBILE_TEST_HARNESS.md](docs/MOBILE_TEST_HARNESS.md) | How to walk a journey: two emulators, two accounts, and every trap that cost time. |
+| [HISTORY/PRODUCTION_READINESS_2026-08-21.md](docs/HISTORY/PRODUCTION_READINESS_2026-08-21.md) | HISTORICAL. The superseded readiness document, kept for its measurements. Not current state. |
 | [TESTING.md](docs/TESTING.md) | How to verify a change, what each check proves, and what cannot be tested here. |
 | [DISTRIBUTION.md](docs/DISTRIBUTION.md) | Package identity, release channels, stores, and distribution policy. |
 | [SECURITY.md](docs/SECURITY.md) | Token handling, Android certificate pins, OTA policy, and native hardening. |

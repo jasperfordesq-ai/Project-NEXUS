@@ -22,7 +22,7 @@ by `npm run parity:matrix` from declarations in `mobile/parity-map.json`, and
 decision. Use both: this file for why, that file for whether. As of 2026-08-18 it
 reports 125 native, 65 out-of-scope, 33 gaps and 31 awaiting review across 254
 React member routes. Readiness scoring lives in
-[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md).
+[CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md).
 
 ## UI foundation
 
