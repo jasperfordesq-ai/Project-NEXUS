@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **408 / 1000 on rubric M1** — see
+Current position: **447 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -21,10 +21,10 @@ Current position: **408 / 1000 on rubric M1** — see
 The phases are ordered by **what unblocks the most measurement**, not by what looks most
 finished. Two rules produced the order:
 
-1. **A blocker that makes journeys unwalkable comes before the journeys.** Bottom sheets are
-   dead across sixteen screens; comments, card menus and reactor lists cannot be walked at
-   all until that is fixed. Certifying anything behind a sheet is impossible today, so it is
-   Phase 1 and everything social waits for it.
+1. **A blocker that makes journeys unwalkable comes before the journeys.** This is what put
+   bottom sheets — dead across sixteen screens — in Phase 1 ahead of everything social. That
+   phase is now DONE (2026-08-21) and the rule stands: the next blocker, the unwalked
+   timebanking exchange, is Phase 3.
 2. **Automating what is already proven is cheaper than proving something new, and it stops
    the score sliding backwards.** Fifteen volunteering rows are PROVEN with no test. That is
    a day's harness work for 15 rows of durable credit, and every later journey inherits the
@@ -38,52 +38,46 @@ carefully and the product hardly at all, so the app could reach 302 green test f
 three controls on the first screen a member sees were unreachable. Every phase below
 therefore ends in a **ledger status change**, not in a description of effort.
 
-## Phase 0 — Settle the sheet question (one message, not a session)
+## Phase 0 — Settle the sheet question — **DONE 2026-08-21**
 
-Before anyone spends a day on Blocker 1: **the owner has the app on a phone.** Tap
-"Comment" under any feed post.
+Kept for the record. The question was to be settled by the owner tapping "Comment" on their
+own phone before anyone spent a day on it. It was instead settled on the emulator by
+burst-capturing frames immediately after the tap, which showed the sheet sliding INTO view
+and then closing itself — an outcome neither row of the original table anticipated, because
+both assumed a screenshot a second later told the truth.
 
-| Outcome | What it means | Where the plan goes |
-| --- | --- | --- |
-| A panel slides up | The failure is confined to the dev build or the emulators | Phase 1 becomes a half-day investigation of the dev path, and Phase 2 starts immediately |
-| Nothing happens | Confirmed on real hardware, 16 screens affected | Phase 1 as written below |
+It still has not been confirmed on the owner's phone, and the fix is not in any installed
+build. That is now a Phase 7 (distribution) item, not a diagnosis step.
 
-This is in the plan as a phase because it is the highest-information, lowest-cost step
-available, and doing it out of order would waste a day.
+## Phase 1 — Make bottom sheets work — **DONE 2026-08-21**
 
-## Phase 1 — Make bottom sheets work (blocks Tiers 2, 3, 5)
+**Cause.** `useDeferredBottomSheetState` bounced the sheet closed→open 220 ms after opening
+it. That bounce made the library close the sheet for real. Full account, including the two
+wrong turns, in [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md)
+§Blocker 1.
 
-**Problem.** Sheets mount and fetch but never animate into view. Everything ruled out is
-listed in the status document; do not re-litigate that list.
+**None of the three planned approaches was used, and that is worth noting.** The plan
+proposed replacing the animated sheet with a plain `Modal` for menu-like uses, driving gorhom
+directly for the composer, or changing the library version. All three assumed the library was
+at fault. The fix was to delete a workaround of our own — 40 lines removed, no dependency
+touched, no component rewritten. A plan that assumes the third-party code is wrong will
+usually cost more than one that measures first.
 
-**Approach, in order of preference:**
+**Exit criteria, against what was actually achieved:**
 
-1. **Replace the animated sheet for menu-like uses with a plain React Native `Modal`.** The
-   card overflow menu, the reactor list and the confirm dialogs do not need a
-   spring-animated draggable sheet; they need a modal. This removes the dependency for most
-   of the sixteen files and is the durable fix.
-2. Keep `@gorhom/bottom-sheet` only where dragging genuinely matters (the comment composer),
-   and drive it directly rather than through `useDeferredBottomSheetState`, whose two-stage
-   open plus re-assert is a workaround for a race it evidently no longer wins.
-3. Only if both fail: pin or upgrade `heroui-native` deliberately, with the version change
-   recorded here.
+| Planned | Result |
+| --- | --- |
+| Comment sheet, card menu and reactor list each open on a device | Comment sheet ✅ (with a comment written and found in the database), card menu ✅, a form sheet inside an Android modal screen ✅. **Reactor list not walked** — it needs a post with reactions; ledger 2.8 is OPEN, not PROVEN |
+| A guard test that fails if a sheet stops opening, asserting non-zero height | Guard exists and is mutation-verified, but it is a **source** check, not a height assertion. The behavioural version cannot fail: jest's fake timers collapse the bounce, so it reports the fix and the defect identically |
+| Ledger rows 2.5–2.8 move from BROKEN to at least PROVEN | 2.5 CERTIFIED, 2.7 PROVEN, 2.6 RENDERS, 2.8 OPEN. Three of four |
+| The 16 dependent files use the new path or are recorded as unchanged | All 16 are unchanged **by design** — the fix is inside the shared hook, so every sheet in the app was repaired at once |
 
-**Exit criteria — all four, or the phase is not done:**
-
-- Comment sheet, card overflow menu and reactor list each open on a device, screenshot in
-  the phase note.
-- A guard test that fails if a sheet stops opening. A render test that asserts the sheet's
-  content is *present and non-zero height*, not merely mounted — mounting is what it does
-  today while showing nothing.
-- Ledger rows 2.5, 2.6, 2.7, 2.8 move from BROKEN to at least PROVEN.
-- The 16 dependent files listed in the status document either use the new path or are
-  recorded here as deliberately unchanged.
-
-**Ledger movement:** Tier 2 credit 0.336 → ≥ 0.55. Interaction integrity 25 → ≥ 60.
+**Ledger movement achieved:** Tier 2 credit 0.336 → **0.468** (planned ≥ 0.55; the shortfall
+is 2.6 and 2.8, both now walkable). Interaction integrity 25 → **60**, as planned.
 
 ## Phase 2 — Automate what is already proven (PROVEN → CERTIFIED)
 
-**Problem.** 24 rows are PROVEN: walked by hand, verified in the database, guarded by
+**Problem.** 25 rows are PROVEN: walked by hand, verified in the database, guarded by
 nothing. They can regress silently, and re-walking them by hand every time is the slowest
 possible way to keep them.
 
@@ -100,7 +94,7 @@ volunteering walk did. Start with volunteering because it is fully mapped alread
   existing nightly device workflow with its result recorded.
 - Ledger rows 4.1–4.15 move PROVEN → CERTIFIED.
 
-**Ledger movement:** Tier 4 credit 0.536 → 0.93. Journey certification 79 → ≥ 105.
+**Ledger movement:** Tier 4 credit 0.536 → 0.93. Journey certification 83 → ≥ 109.
 
 ## Phase 3 — Walk and certify the core exchange (Tier 3)
 
@@ -212,5 +206,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-408 today. The gap is mostly Tiers 3 and 5, and most of it is walking journeys rather than
+447 today. The gap is mostly Tiers 3 and 5, and most of it is walking journeys rather than
 writing features.

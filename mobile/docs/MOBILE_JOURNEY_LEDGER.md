@@ -20,8 +20,8 @@ up here. Never publish a competing journey count or a competing total.
 
 The previous mobile readiness document scored **code** — tests, types, lint, gates — and
 scored the **product** hardly at all. That is how the app reached 302 green test files and
-2,027 passing tests while a member could not open a comment sheet, write a post, or read
-the names of the communities they were choosing between.
+2,027 passing tests while — until 2026-08-21 — a member could not open a comment sheet,
+write a post, or read the names of the communities they were choosing between.
 
 So this ledger asks one question per row: **can a member complete this, on a device, with
 the effect verified?** A green test suite is not an answer to that question. Neither is a
@@ -64,27 +64,27 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
-| 2 — Feed and social | 14 | 3 | 2 | 2 | 0 | 7 | 0 | 0.336 |
+| 2 — Feed and social | 14 | 4 | 3 | 3 | 0 | 4 | 0 | 0.468 |
 | 3 — Timebanking core | 20 | 1 | 1 | 5 | 0 | 12 | 1 | 0.150 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 3 | 0 | 12 | 0 | 19 | 0 | 0.176 |
 | 6 — Money and wallet | 12 | 0 | 3 | 2 | 1 | 5 | 1 | 0.236 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **14** | **24** | **26** | **5** | **69** | **2** | — |
+| **Total** | **140** | **15** | **25** | **27** | **5** | **66** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(14 × 1.0) + (24 × 0.6) + (26 × 0.25) + (5 × 0.30) = 36.40`, over `140 − 2 excluded = 138`
-rows → **0.264**.
+`(15 × 1.0) + (25 × 0.6) + (27 × 0.25) + (5 × 0.30) = 38.25`, over `140 − 2 excluded = 138`
+rows → **0.277**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
-| 2 | (3 × 1.0) + (2 × 0.6) + (2 × 0.25) = 4.70 | ÷ 14 | **0.336** |
+| 2 | (4 × 1.0) + (3 × 0.6) + (3 × 0.25) = 6.55 | ÷ 14 | **0.468** |
 | 3 | (1 × 1.0) + (1 × 0.6) + (5 × 0.25) = 2.85 | ÷ 19 † | **0.150** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (3 × 1.0) + (12 × 0.25) = 6.00 | ÷ 34 | **0.176** |
@@ -128,10 +128,10 @@ uninterpretable.
 | 2.2 | React to a post and have it persist | CERTIFIED | Verified saving, surviving a restart, and in the API (`{"counts":{"celebrate":1}}`); guarded by `components/FeedItem.test.tsx` |
 | 2.3 | Reach all eight reactions | CERTIFIED | Two of eight were off-screen at 360dp until `294586010`; guarded by `components/narrowScreenReach.test.ts` |
 | 2.4 | Milestone cards offer no action that cannot work | CERTIFIED | Server refuses `badge_earned`/`level_up` likes (400); cards now Share-only; guarded |
-| 2.5 | Comment on a post | BROKEN | Bottom sheets never open. The comment fetch fires (`GET /api/v2/comments?...`) and nothing renders. See `CURRENT_MOBILE_PRODUCTION_STATUS.md` §Blocker 1 |
-| 2.6 | Reply to a comment | BROKEN | Same cause as 2.5 |
-| 2.7 | Open the card overflow menu ("…") | BROKEN | Same cause as 2.5 |
-| 2.8 | See who reacted to something | BROKEN | Same cause as 2.5 (`ReactorsSheet`) |
+| 2.5 | Comment on a post | CERTIFIED | 2026-08-21: sheet opened, comment typed and sent on the emulator; `comments` row 168 written (`target_type=post`, `target_id=183`) and the comment rendered back in the sheet. Guarded by `components/ui/bottomSheetOpenFlip.test.ts` (opening) and `components/comments/CommentSheet.test.tsx` (submit/edit/delete/like) |
+| 2.6 | Reply to a comment | RENDERS | The Reply control is now reachable and visible on a real comment; the reply itself has not been walked on a device (the submit path has component tests) |
+| 2.7 | Open the card overflow menu ("…") | PROVEN | 2026-08-21: opened from a feed card on the emulator, sheet rendered with its action list. No action selected, so no effect asserted beyond the menu itself |
+| 2.8 | See who reacted to something | OPEN | No longer blocked — the sheet mechanism is fixed and verified on three other sheets. `ReactorsSheet` itself has never been walked; it needs a post with reactions |
 | 2.9 | Write a post to the community feed | BROKEN | **No capability exists**: no `createPost` in the client, no composer screen, no Create entry. The server has `POST /v2/feed/posts` and the website has a composer |
 | 2.10 | Share a post out of the app | PROVEN | Android share sheet opened from a card, 2026-08-20 |
 | 2.11 | Save / bookmark a post | PROVEN | Bookmark control present and reachable after `294586010`; toggle observed |

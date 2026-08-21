@@ -151,6 +151,10 @@ missing. If a sweep reports fewer screens than it declares, find out which.
 | 🔴 Reading a screenshot 8 seconds after a tap | Toasts have already gone. "No error appeared" was wrong twice | Capture at ~1–2s **and** later |
 | 🔴 A stale session on a device | Sat on a bare spinner in a re-fetch loop | `adb shell pm clear ie.project.nexus` and sign in again |
 | 🔴 Piping a long build through `\| tail` | Buffers everything; the log looks empty while it works | Redirect to a file and read it |
+| 🔴 Launching via the dev-client URL, then wondering why the app sits on a spinner | `Linking.getInitialURL()` returns `nexus://expo-development-client/?url=…`, the auth redirect treats it as a pending deep link, and navigation goes nowhere. Cost 20 minutes and looked like a broken session | Launch the dev client ONCE to attach Metro, then restart with `adb shell monkey -p ie.project.nexus -c android.intent.category.LAUNCHER 1` |
+| 🔴 `https://app.project-nexus.ie/...` deep links on a debug build | Open **Chrome**, not the app — app-link verification is not in place on the emulator | Use the custom scheme: `nexus://goals` |
+| 🔴 `adb shell input text "..."` into a React Native field | Only the FIRST character commits. The rest sits in the keyboard's suggestion strip and never reaches the controlled input — visible as "heetWorksNow" offered as a suggestion while the field holds "S" | Type one short string, verify with a screenshot, and design the check so one character is enough |
+| 🔴 Screenshotting 2–3 s after a tap to see whether a sheet opened | A sheet that opens and closes itself is invisible at that distance. This is exactly how a working-then-closing sheet was recorded as "nothing renders" for six days | Burst-capture immediately: `for i in 1 2 3 4; do adb exec-out screencap -p > f-$i.png; done` and scan the frames |
 
 ## Instruments that lie
 
@@ -173,7 +177,8 @@ Recorded because each one produced a confident wrong answer:
 
 | Area | Why |
 | --- | --- |
-| `components/ui/BottomSheet` + `useDeferredBottomSheetState` | Four prior repair attempts; currently not opening at all. See status Blocker 1 |
+| `components/ui/BottomSheet` + `useDeferredBottomSheetState` | Five repair attempts; working since 2026-08-21. 🔴 **Never add a second open flip** — the bounce that was meant to help is what closed every sheet. Guarded by `bottomSheetOpenFlip.test.ts` |
+| `pointerEvents` as a View **prop** | Not applied in this React Native version. An `absoluteFill` overlay with the prop alone swallowed every tap in the app. Put it in `style` |
 | `components/ui/Input` | Width classes must go on `containerClassName`; `className` reaches the inner field and cannot size it |
 | `SafeAreaView` from `react-native-safe-area-context` | `className` is inert — uniwind does not patch it. 90 screens still rely on a class that does nothing; 93 carry the `style={{ flex: 1 }}` fix |
 | `+native-intent.ts` | Parameter **names** must match what each screen reads. Guarded by `app/deepLinkParams.test.ts` |
