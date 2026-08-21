@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **447 / 1000 on rubric M1** — see
+Current position: **455 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -67,13 +67,13 @@ usually cost more than one that measures first.
 
 | Planned | Result |
 | --- | --- |
-| Comment sheet, card menu and reactor list each open on a device | Comment sheet ✅ (with a comment written and found in the database), card menu ✅, a form sheet inside an Android modal screen ✅. **Reactor list not walked** — it needs a post with reactions; ledger 2.8 is OPEN, not PROVEN |
+| Comment sheet, card menu and reactor list each open on a device | All three ✅, plus a form sheet inside an Android modal screen and swipe-to-dismiss. A comment AND a threaded reply were written from the app and found in the database (`comments` 168, and 169 with `parent_id = 168`) |
 | A guard test that fails if a sheet stops opening, asserting non-zero height | Guard exists and is mutation-verified, but it is a **source** check, not a height assertion. The behavioural version cannot fail: jest's fake timers collapse the bounce, so it reports the fix and the defect identically |
-| Ledger rows 2.5–2.8 move from BROKEN to at least PROVEN | 2.5 CERTIFIED, 2.7 PROVEN, 2.6 RENDERS, 2.8 OPEN. Three of four |
+| Ledger rows 2.5–2.8 move from BROKEN to at least PROVEN | All four ✅ — 2.5 and 2.6 CERTIFIED, 2.7 and 2.8 PROVEN |
 | The 16 dependent files use the new path or are recorded as unchanged | All 16 are unchanged **by design** — the fix is inside the shared hook, so every sheet in the app was repaired at once |
 
-**Ledger movement achieved:** Tier 2 credit 0.336 → **0.468** (planned ≥ 0.55; the shortfall
-is 2.6 and 2.8, both now walkable). Interaction integrity 25 → **60**, as planned.
+**Ledger movement achieved:** Tier 2 credit 0.336 → **0.564** (planned ≥ 0.55).
+Interaction integrity 25 → **65** (planned ≥ 60).
 
 ## Phase 2 — Automate what is already proven (PROVEN → CERTIFIED)
 
@@ -94,7 +94,7 @@ volunteering walk did. Start with volunteering because it is fully mapped alread
   existing nightly device workflow with its result recorded.
 - Ledger rows 4.1–4.15 move PROVEN → CERTIFIED.
 
-**Ledger movement:** Tier 4 credit 0.536 → 0.93. Journey certification 83 → ≥ 109.
+**Ledger movement:** Tier 4 credit 0.536 → 0.93. Journey certification 86 → ≥ 112.
 
 ## Phase 3 — Walk and certify the core exchange (Tier 3)
 
@@ -206,5 +206,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-447 today. The gap is mostly Tiers 3 and 5, and most of it is walking journeys rather than
+455 today. The gap is mostly Tiers 3 and 5, and most of it is walking journeys rather than
 writing features.

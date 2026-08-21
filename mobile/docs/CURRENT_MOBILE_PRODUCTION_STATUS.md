@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=447/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=447 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=455/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=455 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,12 +22,13 @@ competing score anywhere.
 
 ## The headline
 
-**447 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**455 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
-on 2026-08-21, with a comment written from the app and found in the database — which returns
-comments, card menus and every other sheet across sixteen screens to service. Against that: a
+on 2026-08-21, with a comment and a threaded reply written from the app and found in the
+database — which returns comments, card menus, the reactor list and every other sheet across
+sixteen screens to service. Against that: a
 member still cannot write a post to the community feed because no such capability exists; the
 core timebanking exchange — request, accept, complete, credit — **has never been walked on a
 device**; and a member's own wallet statement does not reconcile with their balance.
@@ -45,9 +46,9 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 83 | 300 | Ledger overall credit **0.277** × 300 = 83.2. 15 CERTIFIED, 25 PROVEN, 27 RENDERS, 5 PARTIAL of 138 scoring rows |
+| Journey certification | 300 | 86 | 300 | Ledger overall credit **0.287** × 300 = 86.1. 16 CERTIFIED, 26 PROVEN, 26 RENDERS, 5 PARTIAL of 138 scoring rows |
 | Capability parity with the website | 120 | 60 | 120 | 10 capabilities compared by hand: 8 matched, 1 absent (feed post), 1 an owner decision. The remaining surface is uncompared, and the route-based gate cannot see it |
-| Interaction integrity | 100 | 60 | 100 | Sheets open and stay open — verified on three families (card menu, comments, a form sheet inside a modal screen) and guarded. Deep-link parameters and `?tab=` fixed. Still unmeasured: the reactor-list sheet, 186 error-message sites, and touch-target sizes |
+| Interaction integrity | 100 | 65 | 100 | Sheets open and stay open — walked on four families (card menu, comments incl. reply, the reactor list, and a form sheet inside a modal screen), plus swipe-to-dismiss, and guarded. Deep-link parameters and `?tab=` fixed. Still unmeasured: 186 error-message sites and touch-target sizes |
 | Layout across device sizes | 80 | 45 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and all guarded. Only one width ever tested before 2026-08-20 |
 | Accessibility | 60 | 20 | 60 | Contrast gated; 2 of 44 controls unlabelled; no screen-reader pass, no touch-target audit, no RTL |
 | Internationalisation | 70 | 25 | 70 | 7 of the platform's 11 locales; ≥3,232 multi-word phrases still English across six; `ar` blocked for want of RTL |
@@ -55,7 +56,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **447** | **1000** | — |
+| **Total** | **1000** | **455** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -63,7 +64,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 447 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 455 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
@@ -106,8 +107,12 @@ the style form that is applied.
   bounce restored it is closed at +3 s in 3 of 3 rounds.
 - Comment sheet: opens, a comment was typed and sent, `comments` row 168 written and the
   comment rendered back in the sheet.
+- Threaded reply: "Replying to E2E UserA" pill, sent, `comments` row 169 written with
+  `parent_id = 168`. The card's own count went 1 → 2 comments without a refresh.
+- Reactor list: reacted to the post, tapped the reaction summary, `ReactorsSheet` opened and
+  listed the right member (`GET /api/v2/reactions/post/183/users/like`).
 - A form sheet inside an Android `presentation: 'modal'` screen (Goals → "Add goal"): opens
-  with its keyboard and focused field.
+  with its keyboard and focused field, and swipe-down dismisses it.
 - Guard: `components/ui/bottomSheetOpenFlip.test.ts`, red with the bounce restored.
 
 🔴 The guard is a **source** check, and says so in its own comment. The behavioural version
