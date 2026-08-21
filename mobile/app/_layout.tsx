@@ -484,6 +484,19 @@ function RootNavigator() {
         name="(modals)/group-exchanges"
         options={{ ...modalOptions, headerShown: false, title: t('exchanges:groupExchanges.title') }}
       />
+      {/*
+        The one-to-one exchange workflow. Separate screens from `exchange-detail`, which
+        despite its name is the LISTING detail screen — the two use different id spaces, and
+        conflating them is what sent an exchange notification to "Listing not found".
+      */}
+      <Stack.Screen
+        name="(modals)/exchange-requests"
+        options={{ ...modalOptions, headerShown: false, title: t('exchanges:requests.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/exchange-request-detail"
+        options={{ ...modalOptions, headerShown: false, title: t('exchanges:requests.detailTitle') }}
+      />
       <Stack.Screen
         name="(modals)/new-group-exchange"
         options={{ ...modalOptions, headerShown: false, title: t('exchanges:groupExchanges.create.title') }}

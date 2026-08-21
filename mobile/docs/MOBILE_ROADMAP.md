@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **455 / 1000 on rubric M1** — see
+Current position: **468 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -96,23 +96,40 @@ volunteering walk did. Start with volunteering because it is fully mapped alread
 
 **Ledger movement:** Tier 4 credit 0.536 → 0.93. Journey certification 86 → ≥ 112.
 
-## Phase 3 — Walk and certify the core exchange (Tier 3)
+## Phase 3 — Walk and certify the core exchange — **MOSTLY DONE 2026-08-21**
 
-**Problem.** Request → accept → complete → credits move → both parties see it has **never
-been walked on a device**. Twelve Tier 3 rows are OPEN. This is the reason the platform
-exists.
+**The plan was wrong about the problem.** It said the journey had "never been walked on a
+device", which assumes the app could do it. It could not: `lib/api/exchanges.ts` called three
+of the server's twelve exchange endpoints, so there was no accept, decline, start, complete or
+confirm anywhere in the app, and no screen that listed your exchanges. The phase therefore
+became a build, then a walk.
 
-**Approach.** Two accounts, exactly as volunteering was done. Verify at each step in
-`listings`, the request/acceptance tables, `transactions`, and both members' balances. Where
-a step is blocked by a sheet, it waits on Phase 1 — which is why this is Phase 3.
+**Built:** `lib/api/exchangeRequests.ts` (the whole workflow plus a pure
+`exchangeRequestActions` that mirrors the server's guards), `(modals)/exchange-requests.tsx`,
+`(modals)/exchange-request-detail.tsx`, the `/exchanges/:id` vs `/listings/:id` link split in
+both deep-link paths, and 62 translation keys in each of the seven mobile locales.
 
-**Exit criteria:**
+**Walked across two emulators, verified in the database at every step:** request (row 61) →
+accept → start → mark done → provider confirms 1.00 h → requester confirms 1.00 h → status
+`completed`, `transactions` row 269, UserA 85.00 → 86.00, UserB 27.00 → 26.00, and the
+requester's own wallet on the device showing "Exchange #61 … −1h".
 
-- Rows 3.6–3.12 at PROVEN or better, each with a named database effect.
-- Credits demonstrably move between two members on a device, with both ledgers checked.
-- Any dead end found is fixed or recorded as BROKEN with a cause.
+**Exit criteria, against what was achieved:**
 
-**Ledger movement:** Tier 3 credit 0.150 → ≥ 0.60. Journey certification ≥ 130.
+| Planned | Result |
+| --- | --- |
+| Rows 3.6–3.12 at PROVEN or better | 3.6 PROVEN, 3.7 CERTIFIED, 3.10 CERTIFIED, 3.11 PROVEN, 3.12 PROVEN. **3.8 (decline) and 3.9 (message about an exchange) are still OPEN** — the decline path exists and is unit-tested but has never been walked |
+| Credits demonstrably move, both ledgers checked | ✅ balances, `transactions`, `exchange_requests.transaction_id`, both members' wallet views |
+| Any dead end found is fixed or recorded | ✅ the notification link dead end ("Listing not found") is fixed; two findings recorded in the status document — the workflow being off by default, and stale two-party screens |
+
+**Ledger movement achieved:** Tier 3 credit 0.150 → **0.350** (planned ≥ 0.60; the gap is
+3.8, 3.9 and the six rows that were never in this phase — search, editing, withdrawing,
+group exchanges, skills matching, reporting). Journey certification 86 → **94** (planned
+≥ 130, which assumed all of Tier 3).
+
+**What is left here, and it is small:** walk decline and cancel, walk messaging about an
+exchange, and add a `broker_approval_required` pass so `pending_broker` is exercised at least
+once.
 
 ## Phase 4 — The remaining two-party journeys (Tier 5)
 
@@ -206,5 +223,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-455 today. The gap is mostly Tiers 3 and 5, and most of it is walking journeys rather than
+468 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
 writing features.

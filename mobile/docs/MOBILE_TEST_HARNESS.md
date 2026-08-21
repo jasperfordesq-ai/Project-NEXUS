@@ -109,6 +109,35 @@ Then confirm the effect in the database. Column names differ from the obvious gu
 | `vol_certificates` | has `generated_at`, **not** `created_at` |
 | `vol_expenses` | the category column is `expense_type`, not `category` |
 
+## 🔴 The exchange workflow is OFF by default — switch it on to walk Tier 3
+
+A fresh community has no broker configuration, so `exchange_workflow_enabled` is **false**.
+With it off the app is behaving correctly and confusingly: the listing's main button reads
+"Request this service" and opens a **message thread**. Nothing is broken; there is simply no
+exchange workflow to enter. Turn it on for the local fixture:
+
+```bash
+docker exec nexus-php-db mysql -unexus -pnexus_secret nexus -e "
+INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, created_at, updated_at)
+VALUES (2, 'broker_config', '{\"exchange_workflow_enabled\":true}', NOW(), NOW())
+ON DUPLICATE KEY UPDATE setting_value = '{\"exchange_workflow_enabled\":true}';"
+
+# Confirm, and restart the app — the flag is read once per launch:
+curl -s http://127.0.0.1:8090/api/v2/exchanges/config -H "X-Tenant-Slug: hour-timebank"   -H "Authorization: Bearer $TOKEN"
+```
+
+The button then reads "Request exchange" — that label change is the cheapest proof the app
+picked the setting up. **Local database only. Never on production**: whether a community runs
+the formal workflow is that community's decision.
+
+Useful column names for checking the result:
+
+| Table | Note |
+| --- | --- |
+| `exchange_requests` | 🔴 The live table. There is **no** `exchanges` table. No `message` column either — the requester's note is `requester_notes` |
+| `exchange_history` | one row per step; `action` is one of `request_created`, `status_changed`, `provider_confirmed`, `requester_confirmed` |
+| `transactions` | 🔴 `giver_id` is **NULL** on an exchange transaction. Reading the table alone suggests the debit was never recorded against the payer; the API derives it from the exchange, and the member's own statement is correct. Check the API before filing a money defect |
+
 ## Testing screen width
 
 ```bash

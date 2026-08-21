@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
 | 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
-| 3 — Timebanking core | 20 | 1 | 1 | 5 | 0 | 12 | 1 | 0.150 |
+| 3 — Timebanking core | 20 | 3 | 4 | 5 | 0 | 7 | 1 | 0.350 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 3 | 0 | 12 | 0 | 19 | 0 | 0.176 |
 | 6 — Money and wallet | 12 | 0 | 3 | 2 | 1 | 5 | 1 | 0.236 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **16** | **26** | **26** | **5** | **65** | **2** | — |
+| **Total** | **140** | **18** | **29** | **26** | **5** | **60** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(16 × 1.0) + (26 × 0.6) + (26 × 0.25) + (5 × 0.30) = 39.60`, over `140 − 2 excluded = 138`
-rows → **0.287**.
+`(18 × 1.0) + (29 × 0.6) + (26 × 0.25) + (5 × 0.30) = 43.40`, over `140 − 2 excluded = 138`
+rows → **0.314**.
 
 ### Credit recomputation
 
@@ -85,7 +85,7 @@ rows → **0.287**.
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
 | 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
-| 3 | (1 × 1.0) + (1 × 0.6) + (5 × 0.25) = 2.85 | ÷ 19 † | **0.150** |
+| 3 | (3 × 1.0) + (4 × 0.6) + (5 × 0.25) = 6.65 | ÷ 19 † | **0.350** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (3 × 1.0) + (12 × 0.25) = 6.00 | ÷ 34 | **0.176** |
 | 6 | (3 × 0.6) + (2 × 0.25) + (1 × 0.30) = 2.60 | ÷ 11 † | **0.236** |
@@ -141,7 +141,15 @@ uninterpretable.
 
 ## Tier 3 — Timebanking core (20 rows)
 
-The reason the platform exists. **This tier is the least proven, and it should be first.**
+The reason the platform exists. It was the least proven tier until 2026-08-21, when the core
+chain — request → accept → start → complete → both confirm → credits move → both see it —
+was walked across two emulators and verified in the database.
+
+🔴 **Half of that chain did not exist in the app and had to be built.** `lib/api/exchanges.ts`
+called three of the server's twelve exchange endpoints (`config`, `check`, `store`), so a
+member could send a request and then nothing: no accept, no decline, no start, no complete,
+no confirm, no list of your exchanges, no detail screen. What remains open here is now
+genuinely unwalked rather than unbuilt.
 
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
@@ -150,13 +158,13 @@ The reason the platform exists. **This tier is the least proven, and it should b
 | 3.3 | Browse listings | RENDERS | Listings tab photographed with real content |
 | 3.4 | Search / filter listings | OPEN | Never exercised |
 | 3.5 | Open a listing detail | RENDERS | Photographed, scrolled |
-| 3.6 | Request someone's offer | OPEN | The core two-party step. Never walked |
-| 3.7 | Owner accepts a request | OPEN | Never walked |
-| 3.8 | Owner declines a request | OPEN | Never walked |
+| 3.6 | Request someone's offer | PROVEN | 2026-08-21: requested listing 513 from the second emulator as UserB — `exchange_requests` row 61 written (`pending_provider`, 1.00 proposed hours). 🔴 The button reads "Request this service" and opens a MESSAGE thread until the community switches the exchange workflow on; see the harness note |
+| 3.7 | Owner accepts a request | CERTIFIED | 2026-08-21: accepted on the provider's device, status → `accepted`. Required BUILDING the screen — no client function for accept existed. Guarded by `app/(modals)/exchange-request-detail.test.tsx` (including that a requester is never offered Accept, which the server 403s) |
+| 3.8 | Owner declines a request | OPEN | The Decline button now exists and its rules are unit-tested, but declining has never been walked on a device |
 | 3.9 | Message the other party about an exchange | OPEN | Never walked |
-| 3.10 | Agree hours and complete an exchange | OPEN | Never walked |
-| 3.11 | Credits move from receiver to giver | OPEN | Never walked on mobile. Proven only for volunteering (Tier 4) |
-| 3.12 | Both parties see the transaction in their history | OPEN | Never walked |
+| 3.10 | Agree hours and complete an exchange | CERTIFIED | 2026-08-21: start → mark as done → both parties confirmed 1.00 hour from their own emulators; `exchange_history` records the whole chain and the status reached `completed`. Guarded by the detail-screen tests (confirm sheet pre-fill, comma decimals, zero-hours refusal) |
+| 3.11 | Credits move from receiver to giver | PROVEN | 2026-08-21: UserA 85.00 → **86.00**, UserB 27.00 → **26.00**, `transactions` row 269 (1.00, "Exchange #61 for listing…"), `exchange_requests.transaction_id = 269`. No automated guard on the credit movement itself |
+| 3.12 | Both parties see the transaction in their history | PROVEN | 2026-08-21: the requester's own wallet on the device shows "Exchange #61 … −1h" with SPENT −1h; the provider's side verified through `/v2/wallet/transactions` (credit, sender UserB) and their balance. 🔴 `transactions.giver_id` is NULL for this row — reading the table alone suggests the debit is unrecorded; the API derives it from the exchange, so the member's statement is correct |
 | 3.13 | Leave a review after an exchange | N/A | Recorded parity decision: no native review composer, reviews are read-only on mobile (`docs/generated/mobile-parity-matrix.md`) |
 | 3.14 | Read reviews on a member | RENDERS | Reviews screen exists; behind a bottom sheet for actions |
 | 3.15 | Edit an existing listing | RENDERS | `edit-exchange` screen exists |

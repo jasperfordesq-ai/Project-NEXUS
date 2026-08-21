@@ -134,7 +134,19 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
   const [id, detail] = segments;
 
   switch (section) {
+    // 🔴 `exchanges` and `listings` are DIFFERENT id spaces and used to share this case.
+    // On the website `/exchanges/:id` is an exchange REQUEST between two members and
+    // `/listings/:id` is a listing; the mobile app calls listings "exchanges" internally,
+    // which is how they came to be treated as one. The consequence was measured on
+    // 2026-08-21: the provider's "Exchange request received" notification (link
+    // `/exchanges/61`) opened the listing screen, asked the API for listing 61, got a 404
+    // and showed "Listing not found" — the provider's only route into the request.
     case 'exchanges':
+      if (isCreateAlias(id)) return appendParams('/(modals)/new-exchange', params);
+      return id
+        ? appendParams('/(modals)/exchange-request-detail', { ...params, id })
+        : appendParams('/(modals)/exchange-requests', params);
+
     case 'listings':
       if (isCreateAlias(id)) return appendParams('/(modals)/new-exchange', params);
       return id ? appendParams('/(modals)/exchange-detail', { ...params, id }) : '/(tabs)/exchanges';

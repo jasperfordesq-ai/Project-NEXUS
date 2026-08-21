@@ -67,7 +67,13 @@ export function navigateToLink(link: string | null): void {
   const { section, segments, params } = parsed;
   const [id] = segments;
   switch (section) {
+    // See the note in `app/+native-intent.ts`: an exchange request and a listing are
+    // different records with different ids, and sharing this case sent every exchange
+    // notification to the listing screen, which answered "Listing not found".
     case 'exchanges':
+      if (id) router.push({ pathname: '/(modals)/exchange-request-detail', params: { id } });
+      else router.push('/(modals)/exchange-requests');
+      break;
     case 'listings':
       if (id) router.push({ pathname: '/(modals)/exchange-detail', params: { id } });
       else router.replace('/(tabs)/exchanges');

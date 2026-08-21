@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=455/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=455 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=468/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=468 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,18 +22,23 @@ competing score anywhere.
 
 ## The headline
 
-**455 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**468 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
 on 2026-08-21, with a comment and a threaded reply written from the app and found in the
 database — which returns comments, card menus, the reactor list and every other sheet across
-sixteen screens to service. Against that: a
-member still cannot write a post to the community feed because no such capability exists; the
-core timebanking exchange — request, accept, complete, credit — **has never been walked on a
-device**; and a member's own wallet statement does not reconcile with their balance.
+sixteen screens to service. **The core timebanking exchange now works end to end** — request,
+accept, start, complete, both confirm, credits move — walked across two phones on 2026-08-21,
+with the balances and the transaction row checked in the database. Half of it had to be built
+first: the app could send a request and could do nothing else with it.
 
-🔴 **Why the score is not higher, given 303 green test files and 2,031 passing tests.**
+Against that: a member still cannot write a post to the community feed, because no such
+capability exists; a member's own wallet statement does not reconcile with their balance when
+they fund an organisation; and of the 140 journeys in the ledger, 60 have still never been
+attempted.
+
+🔴 **Why the score is not higher, given 306 green test files and 2,057 passing tests.**
 Those tests run in Node against mocks. They have never demonstrated that a member can
 complete anything. Rubric M1 exists because the previous readiness document scored code
 thoroughly and the product barely at all, and the app reached that state of green while
@@ -46,17 +51,17 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 86 | 300 | Ledger overall credit **0.287** × 300 = 86.1. 16 CERTIFIED, 26 PROVEN, 26 RENDERS, 5 PARTIAL of 138 scoring rows |
-| Capability parity with the website | 120 | 60 | 120 | 10 capabilities compared by hand: 8 matched, 1 absent (feed post), 1 an owner decision. The remaining surface is uncompared, and the route-based gate cannot see it |
-| Interaction integrity | 100 | 65 | 100 | Sheets open and stay open — walked on four families (card menu, comments incl. reply, the reactor list, and a form sheet inside a modal screen), plus swipe-to-dismiss, and guarded. Deep-link parameters and `?tab=` fixed. Still unmeasured: 186 error-message sites and touch-target sizes |
+| Journey certification | 300 | 94 | 300 | Ledger overall credit **0.314** × 300 = 94.3. 18 CERTIFIED, 29 PROVEN, 26 RENDERS, 5 PARTIAL of 138 scoring rows |
+| Capability parity with the website | 120 | 60 | 120 | 10 capabilities compared by hand: 8 matched, 1 absent (feed post), 1 an owner decision. 🔴 Unchanged deliberately, because that comparison of ten turned out to be incomplete: the exchange workflow — accept, decline, start, complete, confirm, and any list of your own exchanges — was missing from the app entirely and was not among the ten. It has now been built, but the parity figure stays until the comparison is redone properly rather than being credited for scope the audit had missed |
+| Interaction integrity | 100 | 70 | 100 | Sheets open and stay open — walked on four families plus swipe-to-dismiss, and guarded. Deep links fixed twice over: parameter names, `?tab=`, and now `/exchanges/:id`, which sent every exchange notification to the listing screen and answered "Listing not found". Still unmeasured: 186 error-message sites and touch-target sizes |
 | Layout across device sizes | 80 | 45 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and all guarded. Only one width ever tested before 2026-08-20 |
 | Accessibility | 60 | 20 | 60 | Contrast gated; 2 of 44 controls unlabelled; no screen-reader pass, no touch-target audit, no RTL |
 | Internationalisation | 70 | 25 | 70 | 7 of the platform's 11 locales; ≥3,232 multi-word phrases still English across six; `ar` blocked for want of RTL |
-| Automated test depth | 100 | 70 | 100 | 303 suites / 2,031 tests, 0 skipped, 0 quarantined, 28 coverage floors, 12 source-scanning guards — and **zero automated device journeys**. Unchanged from 70: the sheet guard is real, but a suite that stayed green through the sheet outage has not earned more credit |
+| Automated test depth | 100 | 70 | 100 | 306 suites / 2,057 tests, 0 skipped, 0 quarantined, 28 coverage floors, 12 source-scanning guards — and **zero automated device journeys**. Unchanged from 70: the new tests are real, but a suite that stayed green through the sheet outage AND through a missing half of the core exchange has not earned more credit |
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **455** | **1000** | — |
+| **Total** | **1000** | **468** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -64,7 +69,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 455 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 468 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
@@ -123,11 +128,41 @@ than no test.
 **Still not confirmed on the owner's own phone**, and the fix is not in any installed build —
 it needs a new APK.
 
-### Blocker 2 — The core timebanking exchange has never been walked
+### Blocker 2 — The core timebanking exchange has never been walked — **CLEARED 2026-08-21**
 
-Request → accept → complete → credits move → both parties see it. Twelve rows of Tier 3 are
-OPEN. This is the reason the platform exists and it is the least proven tier in the ledger.
-The volunteering tier proves the *pattern* works; it does not prove this journey does.
+Walked end to end across two emulators: UserB requested UserA's listing, UserA accepted,
+started and marked it done, both confirmed 1.00 hour, and the credits moved — UserA
+85.00 → **86.00**, UserB 27.00 → **26.00**, `transactions` row 269, and the requester's own
+wallet on the device shows "Exchange #61 … −1h".
+
+🔴 **Half of the journey did not exist and had to be built.** This blocker was recorded as
+"never walked", which implied the app could do it and nobody had tried. It could not.
+`lib/api/exchanges.ts` called three of the server's twelve exchange endpoints — `config`,
+`check` and `store` — so a member could send a request and then nothing at all: no accept, no
+decline, no start, no complete, no confirm, no list of their own exchanges, no detail screen.
+The provider's only route in was a notification whose link opened the LISTING screen with the
+exchange's id and answered "Listing not found", because `/exchanges/:id` and `/listings/:id`
+are different records and the app treated them as one.
+
+Built: `lib/api/exchangeRequests.ts`, `(modals)/exchange-requests.tsx`,
+`(modals)/exchange-request-detail.tsx`, the link split in `+native-intent.ts` and
+`navigateToLink.ts`, and 62 translation keys in each of the seven mobile locales.
+
+🔴 **Two things found while walking it, both worth keeping:**
+
+1. **The exchange workflow is OFF by default.** With it off — the state of a fresh community —
+   "Request exchange" reads "Request this service" and opens a message thread instead. That is
+   the app correctly following `exchanges/config`, not a defect, but it means this journey
+   cannot be walked on a default tenant. The local fixture switch is in the harness document.
+2. **A two-party screen needs to re-read when it regains focus.** After the requester
+   confirmed on the second emulator, the provider's already-open screen still said "Awaiting
+   confirmation" and "Not confirmed yet" while the API said completed — deep-linking to the
+   same id does not remount, so nothing refetched. The two new screens now refetch on focus.
+   **No other screen in the app does**: there was no `useFocusEffect` anywhere before these
+   two, so every screen showing shared state has the same property. Not swept.
+
+Still open in Tier 3: declining and cancelling have never been walked, nor messaging the
+other party about an exchange, nor skills-driven matching. Seven of twenty rows.
 
 ### Blocker 3 — A member's wallet statement does not reconcile
 
