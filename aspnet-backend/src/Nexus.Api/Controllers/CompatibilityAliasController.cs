@@ -49,6 +49,7 @@ public class CompatibilityAliasController : ControllerBase
     private readonly ILogger<CompatibilityAliasController> _logger;
     private readonly DirectMessageTypingService _messageTyping;
     private readonly EventLifecycleService _eventLifecycle;
+    private readonly ExchangeService _exchangeService;
 
     public CompatibilityAliasController(
         NexusDbContext db,
@@ -61,6 +62,7 @@ public class CompatibilityAliasController : ControllerBase
         AdminVolunteerApprovalService volunteerApprovals,
         DirectMessageTypingService messageTyping,
         EventLifecycleService eventLifecycle,
+        ExchangeService exchangeService,
         ILogger<CompatibilityAliasController> logger)
     {
         _db = db;
@@ -73,6 +75,7 @@ public class CompatibilityAliasController : ControllerBase
         _volunteerApprovals = volunteerApprovals;
         _messageTyping = messageTyping;
         _eventLifecycle = eventLifecycle;
+        _exchangeService = exchangeService;
         _logger = logger;
     }
 
@@ -886,68 +889,35 @@ public class CompatibilityAliasController : ControllerBase
     }
 
     // ──────────────────────────────────────────────
-    // Exchange confirm/start/decline/delete aliases
+    // Exchange delete alias
     // ──────────────────────────────────────────────
+    //
+    // 🔴 REMOVED 2026-08-21: the POST confirm / decline / start aliases that used to
+    // live here. All three wrote `exchange.Status` directly with NO authorization
+    // check beyond "is signed in" and NO state-machine check at all — and these are
+    // the exact paths the React client calls, because the client sends POST while the
+    // real ExchangesController declared only PUT.
+    //
+    // Demonstrated live before removal, signed in as an ordinary member:
+    //   POST /api/v2/exchanges/1/confirm -> 200 {"status":"confirmed"} and the row
+    //   went from Completed (with a settled TransactionId attached) back to Accepted.
+    //   A terminal, settled exchange was reopened by an endpoint whose name suggests
+    //   it only confirms. `confirm` also set the WRONG status: Accepted, not anything
+    //   resembling confirmation.
+    //
+    // The fix is not to add guards here. It is to let the one real owner —
+    // ExchangesController, which already has the participant checks and the
+    // transition table — answer POST as well as PUT. One controller owns one verb;
+    // a second declaration of these paths throws AmbiguousMatchException, which
+    // surfaces to the browser as a CORS error.
+    //
+    // DELETE stays here because ExchangesController has no DELETE owner, but it now
+    // goes through the service rather than writing Status itself: the client's
+    // "Cancel Exchange" button is a DELETE, and it must respect the same transition
+    // rules as every other cancel (a completed exchange is not cancellable).
 
     /// <summary>
-    /// POST /api/exchanges/{id}/confirm — Confirm an exchange.
-    /// </summary>
-    [HttpPost("api/exchanges/{id:int}/confirm")]
-    public async Task<IActionResult> ConfirmExchange(int id)
-    {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
-
-        var exchange = await _db.Exchanges.FirstOrDefaultAsync(e => e.Id == id);
-        if (exchange == null) return NotFound(new { error = "Exchange not found" });
-
-        exchange.Status = ExchangeStatus.Accepted;
-        exchange.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { success = true, status = "confirmed" });
-    }
-
-    /// <summary>
-    /// POST /api/exchanges/{id}/decline — Decline an exchange.
-    /// </summary>
-    [HttpPost("api/exchanges/{id:int}/decline")]
-    public async Task<IActionResult> DeclineExchange(int id)
-    {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
-
-        var exchange = await _db.Exchanges.FirstOrDefaultAsync(e => e.Id == id);
-        if (exchange == null) return NotFound(new { error = "Exchange not found" });
-
-        exchange.Status = ExchangeStatus.Cancelled;
-        exchange.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { success = true, status = "declined" });
-    }
-
-    /// <summary>
-    /// POST /api/exchanges/{id}/start — Start an exchange.
-    /// </summary>
-    [HttpPost("api/exchanges/{id:int}/start")]
-    public async Task<IActionResult> StartExchange(int id)
-    {
-        var userId = User.GetUserId();
-        if (userId == null) return Unauthorized(new { error = "Invalid token" });
-
-        var exchange = await _db.Exchanges.FirstOrDefaultAsync(e => e.Id == id);
-        if (exchange == null) return NotFound(new { error = "Exchange not found" });
-
-        exchange.Status = ExchangeStatus.InProgress;
-        exchange.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { success = true, status = "in_progress" });
-    }
-
-    /// <summary>
-    /// DELETE /api/exchanges/{id} — Cancel/delete an exchange.
+    /// DELETE /api/exchanges/{id} — cancel an exchange (the client's Cancel button).
     /// </summary>
     [HttpDelete("api/exchanges/{id:int}")]
     public async Task<IActionResult> DeleteExchange(int id)
@@ -955,15 +925,14 @@ public class CompatibilityAliasController : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var exchange = await _db.Exchanges.FirstOrDefaultAsync(e => e.Id == id);
+        var exchange = await _db.Exchanges.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
         if (exchange == null) return NotFound(new { error = "Exchange not found" });
 
         if (exchange.InitiatorId != userId.Value && exchange.ListingOwnerId != userId.Value)
             return StatusCode(403, new { error = "Not a participant in this exchange" });
 
-        exchange.Status = ExchangeStatus.Cancelled;
-        exchange.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
+        var (_, error) = await _exchangeService.CancelExchangeAsync(id, userId.Value, null);
+        if (error != null) return BadRequest(new { error });
 
         return NoContent();
     }

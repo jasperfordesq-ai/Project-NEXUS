@@ -34,17 +34,20 @@ public class ReactFrontendCompatibilityController : ControllerBase
     private readonly TenantContext _tenantContext;
     private readonly ProviderConfigEncryption _encryption;
     private readonly VolunteerOrganisationService _volunteerOrganisations;
+    private readonly ExchangeWorkflowConfigService _exchangeWorkflowConfig;
 
     public ReactFrontendCompatibilityController(
         NexusDbContext db,
         TenantContext tenantContext,
         ProviderConfigEncryption encryption,
-        VolunteerOrganisationService volunteerOrganisations)
+        VolunteerOrganisationService volunteerOrganisations,
+        ExchangeWorkflowConfigService exchangeWorkflowConfig)
     {
         _db = db;
         _tenantContext = tenantContext;
         _encryption = encryption;
         _volunteerOrganisations = volunteerOrganisations;
+        _exchangeWorkflowConfig = exchangeWorkflowConfig;
     }
 
     private static int DailyRewardMilestoneBonus(int streakDay) => streakDay switch
@@ -218,18 +221,42 @@ public class ReactFrontendCompatibilityController : ControllerBase
         return await PlatformStats();
     }
 
+    /// <summary>
+    /// GET /api/exchanges/config — the tenant's exchange-workflow settings.
+    ///
+    /// 🔴 This was a do-nothing stub until 2026-08-21, and it was the single reason
+    /// the whole exchange journey (ledger row 1.21) could not be driven through the
+    /// React UI. It returned min_amount / max_amount / statuses / listing_types —
+    /// hardcoded values that NO client reads — and omitted all four fields that
+    /// every exchange page does read (react-frontend/src/types/api.ts:1710-1715).
+    ///
+    /// The failure was invisible to every instrument we had. A missing boolean reads
+    /// as `false`, so the client concluded the feature was switched off and rendered
+    /// its own "workflow not enabled" empty state: HTTP 200, no console error, no
+    /// failed request, and a response diff that reports "some fields differ". The
+    /// only thing that finds this is opening the page and noticing the member cannot
+    /// get to the form.
+    ///
+    /// Keep the four field NAMES exactly as they are. `exchange_workflow_enabled`,
+    /// `direct_messaging_enabled`, `require_broker_approval` and
+    /// `confirmation_deadline_hours` are load-bearing; renaming one silently
+    /// disables a page. The extra two are what Laravel also sends.
+    /// </summary>
     [HttpGet("api/exchanges/config")]
     [Authorize]
-    public IActionResult ExchangeConfig()
+    public async Task<IActionResult> ExchangeConfig(CancellationToken ct)
     {
+        var config = await _exchangeWorkflowConfig.GetAsync(ct);
         return Ok(new
         {
             data = new
             {
-                min_amount = 0.25m,
-                max_amount = 24m,
-                statuses = Enum.GetNames<TransactionStatus>().Select(s => s.ToLowerInvariant()),
-                listing_types = Enum.GetNames<ListingType>().Select(s => s.ToLowerInvariant())
+                exchange_workflow_enabled = config.ExchangeWorkflowEnabled,
+                direct_messaging_enabled = config.DirectMessagingEnabled,
+                require_broker_approval = config.RequireBrokerApproval,
+                confirmation_deadline_hours = config.ConfirmationDeadlineHours,
+                allow_hour_adjustment = config.AllowHourAdjustment,
+                max_hour_variance_percent = config.MaxHourVariancePercent
             }
         });
     }
@@ -3733,15 +3760,73 @@ public class ReactFrontendCompatibilityController : ControllerBase
         return Ok(new { data = attendees, attendees });
     }
 
+    /// <summary>
+    /// GET /api/exchanges/{id}/ratings — ratings left on ONE exchange.
+    ///
+    /// 🔴 This read the wrong table until 2026-08-21. It queried
+    /// `Reviews.Where(r => r.TargetListingId == id)` — using the EXCHANGE id as a
+    /// LISTING id — so it answered with whatever reviews happened to sit on the
+    /// listing whose id collided with the exchange's. Small seeds make that look
+    /// plausible: exchange 1 returned a real, well-formed review for listing 1. A
+    /// wrong-table read is far harder to spot than an empty one, because the shape
+    /// is right and the data is real; only the row is someone else's.
+    ///
+    /// Ratings live in `ExchangeRatings`, keyed by ExchangeId (Entities/ExchangeRating.cs).
+    /// Participant-scoped, matching Laravel's exchange reads, which 404 a non-party
+    /// rather than 403 it (ExchangesController.php:127).
+    /// </summary>
     [HttpGet("api/exchanges/{id:int}/ratings")]
     [Authorize]
     public async Task<IActionResult> ExchangeRatings(int id)
     {
-        var reviews = await _db.Reviews
-            .Where(r => r.TargetListingId == id)
-            .Select(r => new { id = r.Id, rating = r.Rating, comment = r.Comment, created_at = r.CreatedAt })
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        var exchange = await _db.Exchanges.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id);
+        if (exchange == null
+            || (exchange.InitiatorId != userId.Value && exchange.ListingOwnerId != userId.Value))
+        {
+            return NotFound(new { error = "Exchange not found" });
+        }
+
+        var ratings = await _db.ExchangeRatings.AsNoTracking()
+            .Where(r => r.ExchangeId == id)
+            .OrderBy(r => r.CreatedAt)
+            .Select(r => new
+            {
+                id = r.Id,
+                rating = r.Rating,
+                comment = r.Comment,
+                rater_id = r.RaterId,
+                rated_user_id = r.RatedUserId,
+                would_work_again = r.WouldWorkAgain,
+                created_at = r.CreatedAt
+            })
             .ToListAsync();
-        return Ok(new { data = reviews, ratings = reviews });
+
+        // 🔴 `data` MUST BE AN OBJECT HERE, not the array. The client does
+        // `response.data.ratings` and `response.data.has_rated`
+        // (ExchangeDetailPage.tsx:209-212), and its api helper has already unwrapped
+        // the envelope's `data` key. Returning `data = ratings` therefore hands the
+        // client an ARRAY whose `.ratings` and `.has_rated` are undefined, so the
+        // list renders empty and the "Rate This Exchange" button always shows -
+        // at HTTP 200, with the right rows in the payload, one level too shallow.
+        // Laravel's shape is `data: { ratings, has_rated }`
+        // (WalletFeaturesController.php:303-306); match it exactly.
+        //
+        // The duplicated top-level `ratings` is kept only because other ASP.NET
+        // compatibility responses in this file carry both spellings; it is harmless
+        // and is not what the client reads.
+        return Ok(new
+        {
+            data = new
+            {
+                ratings,
+                has_rated = ratings.Any(r => r.rater_id == userId.Value)
+            },
+            ratings
+        });
     }
 
     [HttpGet("api/feed/hashtags/{id:int}")]
@@ -3836,9 +3921,18 @@ public class ReactFrontendCompatibilityController : ControllerBase
             : Ok(new { success = true, data });
     }
 
+    // 🔴 REMOVED 2026-08-21: [HttpPost("api/exchanges/{id:int}/accept")] and
+    // [HttpPost("api/exchanges/{id:int}/complete")] used to be stacked here, so the
+    // React client's accept and complete — which it sends as POST — were answered by
+    // this AdminOnly empty-array method. A member got 403 "Admin access required" on
+    // the one action the exchange journey turns on, while the real, working
+    // ExchangesController.AcceptExchange sat unreachable behind PUT.
+    //
+    // 🔴 And the stub scanner could not see it. check-noop-stubs.ps1 did not flag
+    // this method, so build-stub-route-inventory.mjs reported both paths CLEAN — a
+    // false negative on ADR-0004 condition 5. A method carrying EIGHT unrelated
+    // routes is a stub the inventory is blind to; do not add routes here.
     [HttpGet("api/admin/crm/export/{id:int}")]
-    [HttpPost("api/exchanges/{id:int}/accept")]
-    [HttpPost("api/exchanges/{id:int}/complete")]
     [HttpPost("api/listings/{id:int}/renew")]
     [HttpPut("api/groups/{groupId:int}/announcements/{announcementId:int}")]
     [HttpDelete("api/polls/{id:int}")]

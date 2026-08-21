@@ -2068,8 +2068,24 @@ public class V15MemberParityController : ControllerBase
     [HttpPost("api/v2/metrics")]
     public IActionResult V2MetricsIngest() => Accepted(new { success = true });
 
-    [HttpPost("api/v2/exchanges/{id:int}/rate")]
-    [HttpGet("api/v2/exchanges/{id:int}/ratings")]
+    // 🔴 REMOVED 2026-08-21: [HttpPost("api/v2/exchanges/{id:int}/rate")] and
+    // [HttpGet("api/v2/exchanges/{id:int}/ratings")] were stacked here.
+    //
+    // Both had a real owner already, and declaring them here did two different kinds
+    // of damage — measured live, not reasoned about:
+    //   POST /api/v2/exchanges/1/rate  -> HTTP 500 AmbiguousMatchException, because
+    //       the v2 alias convention ALSO generates that path for the real
+    //       ExchangesController.RateExchange. This is the failure the handoff brief
+    //       warns about: a 500 loses its CORS headers, so the browser reports it as a
+    //       CORS error and the search goes looking in the wrong place entirely.
+    //   GET  /api/v2/exchanges/1/ratings -> HTTP 200 with an empty array, while the
+    //       unversioned /api/exchanges/1/ratings returned the real rows. The React
+    //       client only ever calls the v2 spelling, so exchange ratings were always
+    //       empty against ASP.NET and nothing anywhere reported a fault.
+    //
+    // Do not re-add an exchange route to a shared lightweight method. `api/exchanges`
+    // is in AdminV2RouteAliasConvention's v2-alias prefix list, so any v2 exchange
+    // path you declare by hand collides with a generated one.
     [HttpGet("api/v2/users/{id:int}/rating")]
     [HttpGet("api/me/reports/{id:int}/download")]
     public IActionResult V2SmallClusterLightweight(int id) => Ok(new { success = true, data = Array.Empty<object>(), id });

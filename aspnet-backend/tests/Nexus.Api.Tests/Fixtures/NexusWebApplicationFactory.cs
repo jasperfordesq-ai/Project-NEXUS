@@ -133,6 +133,16 @@ public class NexusWebApplicationFactory : WebApplicationFactory<Program>, IAsync
                 // to pass (it already does when no secret is configured).
                 ["Hibp:Enabled"] = "false",
                 ["Turnstile:SecretKey"] = "",
+                // Email deliverability (MX / A lookup) is off by default in the
+                // test host for the same reason: it is a live DNS call, so
+                // leaving it on would make every Register_* test depend on the
+                // runner's resolver. The guard's own behaviour is proved
+                // deterministically in RegistrationEmailGuardTests, which
+                // re-enables this key and injects a scripted resolver.
+                // Note the disposable-domain blocklist is deliberately left ON
+                // — it needs no network and no test registers a throwaway
+                // address, so it stays exercised by the normal suite.
+                ["EmailDeliverability:Enabled"] = "false",
                 // Encrypted-at-rest fields (provider configs, authority
                 // attestation summaries) must be provably ciphertext in tests.
                 ["Registration:EncryptionKey"] = "nexus-test-encryption-key"

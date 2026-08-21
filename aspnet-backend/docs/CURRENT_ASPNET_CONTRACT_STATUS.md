@@ -388,7 +388,23 @@ already names mobile a reader, so this front-loads the Tier 6 measurement free.
 
 **Phase 2 - core member tier and missing controllers (5-8 days).** Row 1.21
 (exchange request-accept-complete-credits) first: it is the product's core
-transaction and has never been driven end to end. Then the remaining Tier 1 opens
+transaction and has never been driven end to end.
+
+🔴 **Row 1.21 was attempted on 2026-08-21 and is now BROKEN with a named cause,
+not OPEN.** Read the ledger row before picking it up; the summary is that everything
+up to settlement was fixed and settlement itself is blocked on schema. Fixed: the
+config endpoint (a stub that hid the whole feature behind the app's own
+"workflow not enabled" state), the client's POST verbs landing on an AdminOnly
+empty-array stub instead of the real controller, three guard-free status mutators
+(one measured reopening a settled exchange), and a routing collision that returned
+HTTP 500 on rate. **What remains is one migration and the settlement on top of it:**
+`exchanges` needs `requester_confirmed_at/hours`, `provider_confirmed_at/hours` and
+`final_hours`, after which two-party settlement should reuse
+`PersonalWalletLedgerService` exactly as `GroupExchangeService.CompleteAsync`
+already does. That migration serialises through the Schema agent, so schedule it as
+a Schema-agent item followed by an Implementer item - not as one task.
+
+Then the remaining Tier 1 opens
 in parallel (disjoint controllers), the two BROKEN packages (multi-photo table;
 the `nqx2_` signed offline-checkin subsystem), the missing controllers - `/explore`
 has **no ASP.NET counterpart at all** against a 2,257-line Laravel service - and

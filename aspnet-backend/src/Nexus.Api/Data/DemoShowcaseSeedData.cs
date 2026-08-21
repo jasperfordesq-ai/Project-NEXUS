@@ -10,6 +10,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Nexus.Api.Entities;
+using Nexus.Api.Services;
 
 namespace Nexus.Api.Data;
 
@@ -1672,6 +1673,27 @@ public static class DemoShowcaseSeedData
         await EnsureAsync(db, s => s.TenantId == tenantId && s.UserId == orgOwnerId && s.PlanId == plan.Id, () => new UserSubscription { TenantId = tenantId, UserId = orgOwnerId, PlanId = plan.Id, Status = SubscriptionStatus.Active, StartedAt = now.AddDays(-30), NextBillingDate = now.AddDays(365), Notes = "Local demo entitlement.", CreatedAt = now.AddDays(-30) });
 
         await EnsureAsync(db, e => e.TenantId == tenantId && e.Key == "sso.enabled", () => new EnterpriseConfig { TenantId = tenantId, Key = "sso.enabled", Value = "false", Category = "identity", Description = "Demo enterprise config row.", UpdatedAt = now });
+
+        // 🔴 The demo tenant opts INTO the exchange workflow, because without it the
+        // exchange journey is unreachable in the UI and therefore untestable: the
+        // config endpoint reports the tenant's real setting, and Laravel's default is
+        // off, so the React pages render "workflow not enabled" and the "Request
+        // Exchange" button never appears (ExchangesPage.tsx:238,
+        // RequestExchangePage.tsx:176, ListingDetailPage.tsx:806).
+        //
+        // This is a SEED opting a demo tenant in — an admin decision expressed as
+        // fixture data. It is not the config endpoint defaulting to true, which would
+        // be inventing a capability for every tenant. Keep those two things separate:
+        // ExchangeWorkflowConfigService.Defaults must stay false.
+        await EnsureAsync(db, e => e.TenantId == tenantId && e.Key == ExchangeWorkflowConfigService.ConfigKey, () => new EnterpriseConfig
+        {
+            TenantId = tenantId,
+            Key = ExchangeWorkflowConfigService.ConfigKey,
+            Value = "{\"exchange_workflow_enabled\":true,\"direct_messaging_enabled\":true,\"require_broker_approval\":false,\"confirmation_deadline_hours\":72,\"allow_hour_adjustment\":true,\"max_hour_variance_percent\":25}",
+            Category = "broker",
+            Description = "Demo tenant has opted into the exchange workflow so the core exchange journey is drivable.",
+            UpdatedAt = now
+        });
     }
 
     private static async Task SeedOnboardingGoalsPollsAndIdeasAsync(NexusDbContext db, int tenantId, int adminId, int memberId, int coordinatorId, int groupId, DateTime now)

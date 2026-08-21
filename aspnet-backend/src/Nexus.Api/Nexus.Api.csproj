@@ -90,4 +90,15 @@
     <ProjectReference Include="..\Nexus.Messaging\Nexus.Messaging.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Disposable-email blocklist read at runtime by DisposableEmailService.
+         Must land next to the assembly in every publish layout, including the
+         container image, or the guard loads an empty list and silently accepts
+         every throwaway address. -->
+    <Content Include="Resources\Security\disposable-email-domains.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

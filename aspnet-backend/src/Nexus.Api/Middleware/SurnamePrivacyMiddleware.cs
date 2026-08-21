@@ -111,6 +111,44 @@ public sealed class SurnamePrivacyMiddleware
         "member_count", "memberCount", "MemberCount"
     };
 
+    // 🔴 Paths where the surname MUST survive, because Laravel — the contract —
+    // does not hide it there, and a client reads it to identify a person before
+    // an irreversible action.
+    //
+    // Laravel does NOT apply surname privacy globally. It applies it at exactly
+    // four hand-written projections, all of them member DISCOVERY surfaces:
+    //   1. app/Services/UserService.php:147-155        GET /api/v2/users/{id}
+    //   2. app/Http/Controllers/Api/UsersController.php:188-202
+    //                                                  GET /api/v2/users/search
+    //   3. app/Http/Controllers/Api/UsersController.php:1583-1592, 1740-1749
+    //                                                  GET /api/v2/users
+    //   4. app/Support/Events/PublicEventProjection.php:112-126  (public events)
+    // Every other Laravel endpoint ships the full surname. This middleware is a
+    // global body rewriter, so it over-applies that rule to every /api response
+    // — the asymmetry, not the rule, is what diverges from the contract.
+    //
+    // The wallet recipient search is the case where over-applying does member-
+    // facing harm on the money path. Laravel's
+    // WalletService::searchUsers (app/Services/WalletService.php:868-907)
+    // deliberately selects and returns first_name, last_name AND a composed
+    // name, with no viewer check at all — because a member about to hand over
+    // time credits must be able to tell two people with the same first name
+    // apart. The React transfer flow composes the recipient label CLIENT-side
+    // from first_name + last_name (react-frontend/src/components/wallet/
+    // TransferModal.tsx:330, 336, 414, 419 and the confirm step at 518), so a
+    // blanked surname renders an unidentifiable counterparty on the
+    // confirm-before-you-send card. DonateModal and SupportPrepareModal read the
+    // same endpoint, and the mobile client reads the composed `name`.
+    //
+    // This is an exemption, not a weakening: the control never covered this
+    // endpoint in the contract. Member discovery (profile, member search,
+    // directory) is still scrubbed, which is where Laravel's rule actually lives.
+    private static readonly string[] SurnamePrivacyExemptPaths =
+    {
+        "/api/v2/wallet/user-search",
+        "/api/wallet/user-search"
+    };
+
     private readonly RequestDelegate _next;
     private readonly ILogger<SurnamePrivacyMiddleware> _logger;
 
@@ -131,6 +169,13 @@ public sealed class SurnamePrivacyMiddleware
 
         // Only scrub /api/* JSON.
         if (!context.Request.Path.StartsWithSegments("/api"))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Endpoints Laravel deliberately exempts (see SurnamePrivacyExemptPaths).
+        if (IsExemptPath(context.Request.Path))
         {
             await _next(context);
             return;
@@ -191,6 +236,23 @@ public sealed class SurnamePrivacyMiddleware
         {
             context.Response.Body = originalBody;
         }
+    }
+
+    private static bool IsExemptPath(PathString path)
+    {
+        var value = path.Value;
+        if (string.IsNullOrEmpty(value)) return false;
+
+        // Tolerate a trailing slash, then match the whole path exactly — so
+        // /api/v2/wallet/user-search-history (if one is ever added) does not
+        // silently inherit the exemption.
+        var trimmed = value.Length > 1 && value[^1] == '/' ? value[..^1] : value;
+
+        foreach (var exempt in SurnamePrivacyExemptPaths)
+        {
+            if (string.Equals(trimmed, exempt, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
     }
 
     private static void Scrub(JsonNode? node, int? currentUserId)

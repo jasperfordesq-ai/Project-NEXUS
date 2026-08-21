@@ -606,3 +606,61 @@ INSERT INTO user_legal_acceptances
     (user_id, document_id, version_id, version_number, accepted_at, acceptance_method)
 SELECT id, 950001, 950001, '1.0', NOW(), 'registration' FROM users WHERE tenant_id = @T
 ON DUPLICATE KEY UPDATE accepted_at = NOW();
+
+-- ---------------------------------------------------------------------------
+-- Exchange workflow: OPT THE FIXTURE TENANT IN (added 2026-08-21, ledger row 1.21).
+--
+-- 🔴 Without this row the exchange journey cannot be driven on the CONTROL arm,
+-- and it fails in a way that looks like nothing at all. Laravel defaults
+-- `exchange_workflow.enabled` to FALSE (BrokerControlConfigService.php:41), so
+-- GET /v2/exchanges/config answers `exchange_workflow_enabled: false`, and then:
+--   * GET /v2/exchanges           -> 400 FEATURE_DISABLED
+--   * /exchanges                  -> "workflow not enabled" empty state
+--   * a listing page              -> no "Request Exchange" button at all
+-- Every one of those is a correct, deliberate response. There is no error, no
+-- 500 and nothing for a response diff to flag — the journey is simply absent.
+-- Measured on the disposable Laravel before this row existed.
+--
+-- The matching opt-in on the ASP.NET side is in its own seed
+-- (DemoShowcaseSeedData.cs, EnterpriseConfig key `broker.configuration`), so both
+-- arms start from the same tenant DECISION. Enabling it on one side only would
+-- produce an ASPNET_ONLY_FAIL or LARAVEL_ONLY_FAIL that is pure fixture asymmetry.
+--
+-- The three numeric/boolean values below are Laravel's own defaults, restated so
+-- the two fixtures cannot drift apart silently: 72h confirmation deadline,
+-- adjustment allowed, 25% variance. `require_broker_approval` stays OFF — with it
+-- on, an accepted request goes to `pending_broker` and waits for a broker, which
+-- is a different journey (a Tier 5 staff row), not this one.
+-- ---------------------------------------------------------------------------
+INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, setting_type, category, description)
+VALUES (@T, 'broker_config',
+        JSON_OBJECT(
+            'exchange_workflow_enabled', TRUE,
+            'direct_messaging_enabled', TRUE,
+            'require_broker_approval', FALSE,
+            'confirmation_deadline_hours', 72,
+            'allow_hour_adjustment', TRUE,
+            'max_hour_variance_percent', 25
+        ),
+        'json', 'broker',
+        'Fixture tenant has opted into the exchange workflow so ledger row 1.21 is drivable.')
+ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), setting_type = 'json';
+
+-- A listing owned by the OTHER fixture member, so the signing-in member can request
+-- an exchange against it. `type = 'offer'` matters: on an offer the requester pays
+-- the provider (ExchangeWorkflowService.php:1187-1194), which is the ordinary
+-- direction and the one the journey asserts.
+-- 🔴 The column is `hours_estimate`, not `hours` — mysql-schema.sql:12901. There is
+-- no `hours` column on `listings`; guessing it makes the whole fixture abort with
+-- "Unknown column", and a fixture that aborted looks exactly like a backend that
+-- has no data.
+INSERT INTO listings (id, tenant_id, user_id, title, description, type, category_id, hours_estimate, status, created_at, updated_at)
+SELECT 950120, @T, @UB, 'Bicycle repair, one hour', 'A fixture listing the exchange journey requests against.',
+       'offer', (SELECT id FROM categories WHERE tenant_id = @T AND type = 'listing' ORDER BY id LIMIT 1),
+       1.00, 'active', NOW(), NOW()
+ON DUPLICATE KEY UPDATE status = 'active', title = VALUES(title);
+
+-- Both parties need a balance, because Laravel refuses settlement when the payer
+-- cannot cover the hours (INSUFFICIENT_BALANCE, ExchangeWorkflowService.php:1216)
+-- and a journey that fails on an empty wallet measures the wallet, not the exchange.
+UPDATE users SET balance = GREATEST(balance, 20.00) WHERE id IN (@UA, @UB);

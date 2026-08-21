@@ -83,6 +83,72 @@ public sealed class SurnamePrivacyMiddlewareTests : IntegrationTestBase
             "vetoing the user-shape heuristic must not switch surname privacy off");
     }
 
+    /// <summary>
+    /// 🔴 The money-path defect. The wallet recipient search returned
+    /// last_name:"" and name:"Maya", so the credit-transfer confirmation card
+    /// could not identify who was about to receive the credits.
+    ///
+    /// Laravel does not hide the surname here. WalletService::searchUsers
+    /// (app/Services/WalletService.php:868-907) selects and returns first_name,
+    /// last_name and a composed name with no viewer check, because Laravel
+    /// applies surname privacy at four member-DISCOVERY projections only — the
+    /// public profile, the member search and the member directory (plus public
+    /// events) — and deliberately not to the transfer recipient picker.
+    ///
+    /// The React transfer flow composes the label client-side from
+    /// first_name + last_name (TransferModal.tsx:330, 336, 414, 419 and the
+    /// confirm step at 518), so a blanked surname is visible to the member.
+    /// </summary>
+    [Fact]
+    public async Task WalletRecipientSearch_KeepsTheSurname_SoTheRecipientCanBeIdentified()
+    {
+        // Distinctive strings so no assertion can match unrelated JSON.
+        await SeedMembersAsync(1, "Maya", _ => "Quibblesworth");
+        await AuthenticateAsMemberAsync();
+
+        var response = await Client.GetAsync("/api/v2/wallet/user-search?q=Maya");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+
+        body.Should().Contain("Maya",
+            "if the search returned nobody, every assertion below would pass "
+            + "without testing anything");
+        body.Should().Contain("Quibblesworth",
+            "Laravel returns the real surname on this endpoint — a member about "
+            + "to send time credits must be able to tell two people with the "
+            + "same first name apart");
+        body.Should().NotContain("\"last_name\":\"\"",
+            "the surname middleware blanked last_name on the money path");
+        body.Should().Contain("Maya Quibblesworth",
+            "the composed `name` is what the mobile client renders, and it was "
+            + "being cut down to the first name");
+    }
+
+    /// <summary>
+    /// The control for the exemption above. Exempting the wallet picker must not
+    /// switch surname privacy off, and must not leak to endpoints that only look
+    /// similar. The member directory is one of the projections Laravel really
+    /// does scrub (UsersController.php:1583-1592 and 1740-1749), so it must
+    /// still scrub here.
+    /// </summary>
+    [Fact]
+    public async Task MemberDirectory_StillHidesTheSurname_AfterTheWalletExemption()
+    {
+        await SeedMembersAsync(1, "Thessaly", _ => "Wintergreen");
+        await AuthenticateAsMemberAsync();
+
+        var response = await Client.GetAsync("/api/v2/users?limit=100");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+
+        body.Should().Contain("Thessaly",
+            "if the directory did not list the seeded member, the privacy "
+            + "assertion below would pass vacuously");
+        body.Should().NotContain("Wintergreen",
+            "the wallet exemption must be exact — the member directory is a "
+            + "discovery surface Laravel does scrub, so it must stay scrubbed");
+    }
+
     private async Task<int[]> SeedMembersAsync(int count, string firstName, Func<int, string> lastName)
     {
         using var scope = Factory.Services.CreateScope();

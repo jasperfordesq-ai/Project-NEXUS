@@ -36,6 +36,20 @@
  * cannot see conventional routing, dynamically registered endpoints, or an alias
  * generated at runtime. A path this script calls clean is "not a known stub",
  * never "proven to do work" — for that, open the method body.
+ *
+ * 🔴 A MEASURED FALSE NEGATIVE, 2026-08-21. Certifying ledger row 1.21 asked this
+ * script about `/api/v2/exchanges/{id}/accept` and `/complete`. It answered CLEAN for
+ * both. Both were in fact served by `ReactFrontendCompatibilityController`'s
+ * `AdminEmptyData` — `return Ok(new { data = Array.Empty<object>(), items = ... })`,
+ * no DbContext, no service, not even async — which is a textbook do-nothing stub.
+ *
+ * The cause is upstream, in `check-noop-stubs.ps1`: that scanner did not flag the
+ * method, so it never reached this inventory, so condition 5 passed on an endpoint
+ * that does nothing. The distinguishing feature was that ONE method carried EIGHT
+ * unrelated `[Http*]` routes. Until the scanner handles that shape, treat a clean
+ * answer on a path whose handler is shared by several unrelated routes as UNVERIFIED
+ * and open the method body — the same rule the project already applies to "the route
+ * exists".
  */
 
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';

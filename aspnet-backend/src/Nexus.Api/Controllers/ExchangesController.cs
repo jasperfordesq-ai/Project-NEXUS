@@ -150,7 +150,15 @@ public class ExchangesController : ControllerBase
     /// <summary>
     /// Accept an exchange request.
     /// </summary>
+    // 🔴 POST as well as PUT, and the POST is the one that matters. The React
+    // client sends POST for every lifecycle action (ExchangeDetailPage.tsx:238, 258,
+    // 279, 299, 330). Until 2026-08-21 this method answered PUT only, so the client's
+    // accept landed on an AdminOnly empty-array stub in
+    // ReactFrontendCompatibilityController and a member was told "Admin access
+    // required". Route existence proved nothing: the route existed, the controller
+    // was correct, and the journey was still dead.
     [HttpPut("{id:int}/accept")]
+    [HttpPost("{id:int}/accept")]
     public async Task<IActionResult> AcceptExchange(int id, [FromBody] AcceptExchangeRequest? request = null)
     {
         var userId = User.GetUserId();
@@ -168,6 +176,7 @@ public class ExchangesController : ControllerBase
     /// Decline an exchange request.
     /// </summary>
     [HttpPut("{id:int}/decline")]
+    [HttpPost("{id:int}/decline")]
     public async Task<IActionResult> DeclineExchange(int id, [FromBody] DeclineExchangeRequest? request = null)
     {
         var userId = User.GetUserId();
@@ -185,6 +194,7 @@ public class ExchangesController : ControllerBase
     /// Start an exchange (move to in-progress).
     /// </summary>
     [HttpPut("{id:int}/start")]
+    [HttpPost("{id:int}/start")]
     public async Task<IActionResult> StartExchange(int id)
     {
         var userId = User.GetUserId();
@@ -202,6 +212,7 @@ public class ExchangesController : ControllerBase
     /// Complete an exchange and transfer credits.
     /// </summary>
     [HttpPut("{id:int}/complete")]
+    [HttpPost("{id:int}/complete")]
     public async Task<IActionResult> CompleteExchange(int id, [FromBody] CompleteExchangeRequest? request = null)
     {
         var userId = User.GetUserId();
@@ -219,6 +230,80 @@ public class ExchangesController : ControllerBase
             actual_hours = exchange.ActualHours,
             completed_at = exchange.CompletedAt,
             transaction_id = exchange.TransactionId
+        });
+    }
+
+    /// <summary>
+    /// Confirm the hours on an exchange — the step Laravel settles credits on.
+    ///
+    /// 🔴 THIS REFUSES, DELIBERATELY, AND THE REFUSAL IS THE POINT. It replaced a
+    /// guard-free alias (CompatibilityAliasController, removed 2026-08-21) that
+    /// answered 200 {"status":"confirmed"} and set Status = Accepted — with no
+    /// participant check and no transition check. Measured live as an ordinary
+    /// member, it reopened a COMPLETED exchange that already had a settled
+    /// TransactionId. A lying 200 that corrupts state is strictly worse than an
+    /// error, so this is an error until the capability exists.
+    ///
+    /// What is missing is MODEL, not logic. Laravel's contract
+    /// (ExchangeWorkflowService.php:445-526) records each party's confirmation
+    /// separately — `requester_confirmed_at` / `requester_confirmed_hours` and
+    /// `provider_confirmed_at` / `provider_confirmed_hours` — and moves credits only
+    /// once BOTH are present and agree within 0.25h. The React client reads those
+    /// four columns directly (types/api.ts:1663-1666) to decide whether to show the
+    /// "Confirm Hours" button (ExchangeDetailPage.tsx:401-404).
+    ///
+    /// The `exchanges` table here has none of them, so two-party confirmation cannot
+    /// be represented at all, let alone settled exactly once. Adding the columns is
+    /// an EF migration — see docs/JOURNEY_CERTIFICATION_LEDGER.md row 1.21. Do NOT
+    /// approximate it: storing one party's confirmation in Notes, or settling on the
+    /// first confirmation, both silently move real credits on one person's word.
+    /// </summary>
+    [HttpPut("{id:int}/confirm")]
+    [HttpPost("{id:int}/confirm")]
+    public async Task<IActionResult> ConfirmExchangeHours(int id, [FromBody] ConfirmExchangeHoursRequest? request = null)
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        var exchange = await _db.Exchanges.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+        // Non-participants are 404'd, not 403'd — Laravel's exchange reads do the
+        // same (ExchangesController.php:127) so an outsider cannot probe for ids.
+        if (exchange == null
+            || (exchange.InitiatorId != userId.Value && exchange.ListingOwnerId != userId.Value))
+        {
+            return NotFound(new { error = "Exchange not found" });
+        }
+
+        // Laravel validates this before anything else: 400 VALIDATION_REQUIRED_FIELD
+        // on a missing or non-positive `hours` (ExchangesController.php:318-321).
+        // Keep that check ahead of the unavailability answer, so a client that is
+        // sending the wrong body learns so rather than blaming the missing feature.
+        if (request?.Hours is null or <= 0)
+        {
+            return BadRequest(new
+            {
+                errors = new[]
+                {
+                    new { code = "VALIDATION_REQUIRED_FIELD", message = "Missing required field: hours", field = "hours" }
+                }
+            });
+        }
+
+        _logger.LogWarning(
+            "Blocked hours confirmation for exchange {ExchangeId} by user {UserId}: two-party confirmation state is not represented in this model",
+            id,
+            userId.Value);
+
+        return StatusCode(StatusCodes.Status501NotImplemented, new
+        {
+            errors = new[]
+            {
+                new
+                {
+                    code = "EXCHANGE_CONFIRMATION_UNAVAILABLE",
+                    message = "Confirming exchange hours requires per-party confirmation records, which this backend does not yet store. No credits were moved and nothing was changed."
+                }
+            }
         });
     }
 
@@ -406,6 +491,17 @@ public class CompleteExchangeRequest
 {
     [JsonPropertyName("actual_hours")]
     public decimal? ActualHours { get; set; }
+}
+
+public class ConfirmExchangeHoursRequest
+{
+    /// <summary>
+    /// The client always sends this, and sends it as `hours`
+    /// (ExchangeDetailPage.tsx:330). Nullable so a missing body produces Laravel's
+    /// VALIDATION_REQUIRED_FIELD rather than a model-binding 400 with a different shape.
+    /// </summary>
+    [JsonPropertyName("hours")]
+    public decimal? Hours { get; set; }
 }
 
 public class CancelExchangeRequest

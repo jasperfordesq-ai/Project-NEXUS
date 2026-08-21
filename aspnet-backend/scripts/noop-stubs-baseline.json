@@ -1,7 +1,7 @@
 ﻿{
     "_comment":  "Shrink-only. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower this in the SAME commit that removes stubs; never raise it.",
     "generated_at":  "2026-08-21",
-    "total":  317,
+    "total":  316,
     "by_file":  [
                     {
                         "file":  "MiscParityController.cs",
@@ -17,7 +17,7 @@
                     },
                     {
                         "file":  "ReactFrontendCompatibilityController.cs",
-                        "count":  30
+                        "count":  29
                     },
                     {
                         "file":  "FrontendApiParityController.cs",

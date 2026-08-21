@@ -658,11 +658,16 @@ public class ReactIdentityProviderCompatibilityUnitTests
         var volunteerOrganisations = new VolunteerOrganisationService(
             db,
             NullLogger<VolunteerOrganisationService>.Instance);
+        var exchangeWorkflowConfig = new ExchangeWorkflowConfigService(
+            db,
+            tenantContext,
+            NullLogger<ExchangeWorkflowConfigService>.Instance);
         return new ReactFrontendCompatibilityController(
             db,
             tenantContext,
             encryption,
-            volunteerOrganisations);
+            volunteerOrganisations,
+            exchangeWorkflowConfig);
     }
 
     private static TenantContext CreateTenantContext(int tenantId)

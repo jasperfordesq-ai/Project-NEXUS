@@ -52,6 +52,8 @@ public class AuthController : ControllerBase
     private readonly TwoFactorChallengeManager _twoFactorChallenges;
     private readonly ITurnstileVerifier _turnstile;
     private readonly IPwnedPasswordChecker _pwnedPassword;
+    private readonly IDisposableEmailService _disposableEmail;
+    private readonly IEmailDeliverabilityValidator _emailDeliverability;
     private readonly TenantContext _tenant;
     private readonly LoginThrottleService _loginThrottle;
 
@@ -89,6 +91,8 @@ public class AuthController : ControllerBase
         TwoFactorChallengeManager twoFactorChallenges,
         ITurnstileVerifier turnstile,
         IPwnedPasswordChecker pwnedPassword,
+        IDisposableEmailService disposableEmail,
+        IEmailDeliverabilityValidator emailDeliverability,
         TenantContext tenant,
         LoginThrottleService loginThrottle)
     {
@@ -102,8 +106,31 @@ public class AuthController : ControllerBase
         _twoFactorChallenges = twoFactorChallenges;
         _turnstile = turnstile;
         _pwnedPassword = pwnedPassword;
+        _disposableEmail = disposableEmail;
+        _emailDeliverability = emailDeliverability;
         _tenant = tenant;
         _loginThrottle = loginThrottle;
+    }
+
+    /// <summary>
+    /// A registration refusal in the v2 error envelope V1 emits from
+    /// BaseApiController::respondWithError — <c>{"errors":[{"code","message"}]}</c>
+    /// at HTTP 422. Both clients read errors[0].code, so the status and the
+    /// code together are the contract, not the message text.
+    /// </summary>
+    private ObjectResult RegistrationRefusal(string code, string message)
+        => StatusCode(StatusCodes.Status422UnprocessableEntity, new { errors = new[] { new { code, message } } });
+
+    /// <summary>
+    /// Domain half of an address, for logs only. Never log the local part — it
+    /// is member PII and the domain is what tells an operator whether they are
+    /// looking at a spam wave.
+    /// </summary>
+    private static string EmailDomainForLog(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return string.Empty;
+        var at = email.LastIndexOf('@');
+        return at < 0 || at == email.Length - 1 ? string.Empty : email[(at + 1)..].ToLowerInvariant();
     }
 
     /// <summary>Admin-shaped account, matching Laravel's $isAdminAccount.</summary>
@@ -763,11 +790,11 @@ public class AuthController : ControllerBase
             if (request.Password.Length < 12)
                 errors.Add("Password must be at least 12 characters. A memorable passphrase is stronger than a short complex one.");
 
-            // HIBP k-anonymity check — gates submission against known breach
-            // corpora. Only checked when length is OK (no point hitting the
-            // API for a password we're about to reject).
-            if (errors.Count == 0 && await _pwnedPassword.IsPwnedAsync(request.Password))
-                errors.Add("This password appears in a known data breach. Please choose a different password.");
+            // The HIBP breach check used to live here, folded into this
+            // validation list. It now runs in the email/password guard block
+            // below, because V1 runs its whole validator FIRST and only then
+            // reaches the breach check — so a submission missing a surname
+            // must report the missing surname, never the breached password.
         }
 
         if (string.IsNullOrWhiteSpace(request.FirstName))
@@ -793,6 +820,51 @@ public class AuthController : ControllerBase
         if (tenant == null || !tenant.IsActive)
         {
             return BadRequest(new { error = "Invalid or inactive tenant" });
+        }
+
+        // ── Email-quality and password-breach guards ────────────────────────
+        // V1 parity block. Order is load-bearing: RegistrationService.php runs
+        // disposable → deliverability → breached, so when several apply the
+        // member sees the same one from either backend. All three answer 422
+        // with the v2 envelope {"errors":[{"code","message"}]}, because that is
+        // what the clients read — web-uk maps each code to the specific form
+        // field it should highlight (src/routes/auth.js), and the React client
+        // surfaces response.code from errors[0].
+        //
+        // These sit BEFORE the duplicate-email check, as they do in V1: a
+        // throwaway address that happens to be registered already is refused
+        // as throwaway, not reported as a duplicate.
+
+        // 1. Throwaway / temp-email providers. Deterministic, no network.
+        if (_disposableEmail.IsDisposable(request.Email))
+        {
+            _logger.LogInformation(
+                "registration.disposable_email_blocked tenant={TenantId} ip={Ip} email_domain={Domain}",
+                tenant.Id, GetClientIp(), EmailDomainForLog(request.Email));
+            return RegistrationRefusal(
+                "EMAIL_DISPOSABLE",
+                "Throwaway / temporary email addresses are not accepted. Use a permanent email address from a real provider.");
+        }
+
+        // 2. Deliverability: reserved documentation/testing names, then MX and
+        //    A/AAAA. Allows through on an incomplete DNS lookup and logs it —
+        //    see the fail-open policy on EmailDeliverabilityValidator.
+        if (!await _emailDeliverability.IsResolvableAsync(request.Email))
+        {
+            _logger.LogInformation(
+                "registration.invalid_email_domain tenant={TenantId} ip={Ip} email_domain={Domain}",
+                tenant.Id, GetClientIp(), EmailDomainForLog(request.Email));
+            return RegistrationRefusal(
+                "EMAIL_DOMAIN_INVALID",
+                "The email address is not deliverable — the domain has no mail servers. Check for typos and try again.");
+        }
+
+        // 3. Have I Been Pwned k-anonymity breach check.
+        if (await _pwnedPassword.IsPwnedAsync(request.Password))
+        {
+            return RegistrationRefusal(
+                "PASSWORD_PWNED",
+                "This password appears in a known data breach and cannot be used. Please choose a different password.");
         }
 
         // Check if email already exists in this tenant

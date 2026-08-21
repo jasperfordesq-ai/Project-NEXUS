@@ -38,6 +38,7 @@ public static class ServiceExtensions
         services.AddScoped<GamificationService>();
         services.AddScoped<PersonalWalletTransferEffectsService>();
         services.AddScoped<ExchangeService>();
+        services.AddScoped<ExchangeWorkflowConfigService>();
         services.AddScoped<MatchingService>();
         services.AddScoped<VolunteerGuardianConsentService>();
         services.AddScoped<VolunteerOrganisationService>();
@@ -372,6 +373,15 @@ public static class ServiceExtensions
         {
             c.Timeout = TimeSpan.FromSeconds(3);
         });
+
+        // Registration email-quality guards (V1 parity: DisposableEmailService
+        // + MxRecordValidator). Singletons: the blocklist is an immutable file
+        // read once, and the deliverability validator keeps only cache and
+        // config state. Config: EmailDeliverability:Enabled,
+        // EmailDeliverability:DnsServers, EmailDeliverability:DnsTimeoutMs.
+        services.AddSingleton<IDisposableEmailService, DisposableEmailService>();
+        services.AddSingleton<IEmailDomainResolver, DnsEmailDomainResolver>();
+        services.AddSingleton<IEmailDeliverabilityValidator, EmailDeliverabilityValidator>();
 
         // Background services
         services.AddHostedService<SavedSearchAlertService>();

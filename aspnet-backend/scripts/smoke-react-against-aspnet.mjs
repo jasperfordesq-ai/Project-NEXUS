@@ -120,6 +120,18 @@
  * mode runs the arms sequentially against DIFFERENT backends, so each stays within its
  * own window — but two control runs back to back do not.)
  *
+ * 🔴 AND LEAVE LONGER THAN A MINUTE BETWEEN TWO **CONTROL** RUNS, on Windows
+ * especially. Measured 2026-08-21: the second of two control runs started shortly after
+ * the first produced `net::ERR_NO_BUFFER_SPACE` on a page load, and then EIGHT
+ * consecutive steps failed with "Navigation to X is interrupted by another navigation to
+ * Y" — each step inheriting the previous step's unsettled goto. The tally read
+ * 9 LARAVEL_ONLY_FAIL, which looks like the control arm falling apart. It is not a
+ * control defect and it is not a product fault: it is the HOST running out of ephemeral
+ * sockets, because a control run is four processes (two Vite servers, two Chromium
+ * instances) and ~400 API calls. The tell is the CASCADE — real failures do not name
+ * the previous step's URL. If you see it, wait a few minutes and re-run; do not chase
+ * it in the product, and do not report the affected steps as measured.
+ *
  * 🔴 It asserts CONTENT, not just navigation. A redirect back to /login and a page whose
  * only content is an error both count as failures — "the page loaded" is not evidence.
  */
@@ -310,6 +322,33 @@ async function runArm(arm) {
     console.log(`    auth keys in localStorage: ${JSON.stringify(token)}`);
     if (!token.length) throw new Error(`no auth keys stored after submit (landed on ${urlAfter}) — login did not complete`);
   });
+
+  // 🔴 A REUSABLE sign-in, added 2026-08-21 for the exchange journey, which is the
+  // first journey needing TWO members in one run (a requester and a provider).
+  // It repeats the three login gates deliberately rather than importing them: the
+  // consent overlays re-render in every fresh browser context, the field is
+  // name="username", and Sign In stays disabled until a community is chosen. A
+  // second-actor login that skips any one of them times out on a disabled button
+  // and reads exactly like a backend refusing the second member.
+  async function signInAs(p, email, password, communityLabel) {
+    await p.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
+    await p.waitForTimeout(1200);
+    await dismissConsent(p);
+    const opts = (await p.locator('select option').allTextContents()).map((o) => o.trim()).filter(Boolean);
+    if (!opts.length) return { ok: false, reason: 'login select offered NO communities (fixture gap, not a backend verdict)' };
+    await p.selectOption('select', { label: communityLabel && opts.includes(communityLabel) ? communityLabel : opts[0] });
+    await p.waitForTimeout(500);
+    await p.fill('input[name="username"]', email);
+    await p.fill('input[name="password"]', password);
+    const submit = p.locator('button[type="submit"]:has-text("Sign In")').first();
+    await submit.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    for (let i = 0; i < 20 && !(await submit.isEnabled().catch(() => false)); i++) await p.waitForTimeout(250);
+    await submit.click({ timeout: 15000 }).catch(() => {});
+    await p.waitForTimeout(5000);
+    const keys = await p.evaluate(() => Object.keys(localStorage).filter((k) => /token|auth/i.test(k)));
+    if (!keys.length) return { ok: false, reason: `second actor ${email} could not sign in (landed on ${p.url().replace(BASE, '')})` };
+    return { ok: true };
+  }
 
   // 🔴 `/feed` was missing from this list until 2026-08-20, which is why a feed rewrite had
   // no browser-level evidence at all. `/events` is here for the same reason: the dashboard
@@ -674,6 +713,283 @@ async function runArm(arm) {
     const hasHistory = /Transaction|History|Sent|Received/i.test(text);
     console.log(`    wallet shows a transactions region: ${hasHistory ? 'YES' : 'no (unconfirmed)'}`);
     if (!hasHistory) throw new Error('no transactions region visible on the wallet');
+  });
+
+  // -- THE EXCHANGE TRANSACTION - ledger row 1.21 -------------------------------
+  // request -> accept -> start -> complete -> confirm -> CREDITS MOVE.
+  //
+  // This is the product's core transaction and the first journey in this script that
+  // needs TWO members in one run: the requester and the provider are different people
+  // and the state machine enforces which of them may do what (ExchangeDetailPage.tsx:
+  // 397-407). It therefore drives two browser contexts.
+  //
+  // 🔴 FIVE THINGS LEARNED BUILDING THIS. Each cost a run.
+  //
+  // 1. THE JOURNEY IS INVISIBLE WHEN THE TENANT HAS NOT OPTED IN, and "invisible" is
+  //    not "broken". GET /v2/exchanges/config carries `exchange_workflow_enabled`, and
+  //    Laravel defaults it FALSE. With it false the app renders its own polite
+  //    "workflow not enabled" empty state, the "Request Exchange" button is absent
+  //    from every listing, and /v2/exchanges answers 400 FEATURE_DISABLED - all
+  //    correct behaviour. HTTP 200 everywhere, no console error, nothing for a
+  //    response diff to flag. Both fixtures now opt the tenant in
+  //    (parity-fixture.sql tail; DemoShowcaseSeedData.cs EnterpriseConfig
+  //    `broker.configuration`). If this step reports the gate closed, fix the FIXTURE
+  //    or the config endpoint - do not read it as the backend refusing the journey.
+  //
+  // 2. THE STEP CREATES ITS OWN LISTING, as the provider, first. Picking an existing
+  //    listing off /listings and hoping the configured provider owns it is a coin
+  //    flip, and when it loses the provider simply cannot see the request - which
+  //    reads as "accept is broken". Owning the listing by construction removes a whole
+  //    class of false negative. (RequestExchangePage.tsx:192 also refuses your own
+  //    listing outright, so the requester must not be the owner.)
+  //
+  // 3. THE REQUEST FORM LIVES AT /listings/:id/request-exchange, NOT /exchanges/new
+  //    or /exchanges/create (AppRoutes.tsx:1170). `useParams().id` there is the
+  //    LISTING id. Guessing an /exchanges/... path gets you the `exchanges/:id`
+  //    route, a fetch of a nonexistent exchange, and a "not found" page that reads
+  //    like a backend gap.
+  //
+  // 4. THERE ARE NO data-testid ATTRIBUTES ANYWHERE IN THE EXCHANGE UI. Every control
+  //    must be found by its visible English label, and the six that matter are
+  //    "Request Exchange", "Send Request", "Accept Request", "Start Exchange",
+  //    "Mark Complete", "Confirm Hours". Status CHIPS are also plain English and are
+  //    NOT translated - they come from a hardcoded map (lib/exchange-status.ts:26-75),
+  //    which makes them stable to assert on but is a real i18n gap.
+  //
+  // 5. CREDITS ARE THE ASSERTION. Not the status chip, not the absence of an error.
+  //    Laravel moves them only when BOTH parties have confirmed and their hours agree
+  //    within 0.25 (ExchangeWorkflowService.php:520-522, 919-1007), then writes one
+  //    `transactions` row of type 'exchange' and adjusts both balances. Measured on
+  //    the disposable Laravel: requester 100.00 -> 99.00, provider 25.00 -> 26.00.
+  //    A step that stopped at "status says completed" would have passed on a backend
+  //    that never moved a credit.
+  await step('journey-exchange-request-accept-complete', async () => {
+    const hours = 1;
+    const listingTitle = `Smoke exchange listing ${stamp}`;
+
+    // -- the gate ---------------------------------------------------------------
+    await page.goto(`${BASE}/exchanges`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2500);
+    if (page.url().includes('/login')) throw new Error('redirected to login - session lost');
+    const gateText = (await page.locator('body').innerText()).trim();
+    if (/not enabled|not available|coming soon/i.test(gateText)) {
+      skip('exchange workflow reported DISABLED for this tenant - GET /v2/exchanges/config '
+        + 'did not return exchange_workflow_enabled:true. Fixture or config-endpoint gap, '
+        + 'NOT proof the backend cannot run an exchange');
+    }
+
+    // -- the provider signs in and publishes a listing to be requested against --
+    const providerCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const provider = await providerCtx.newPage();
+    try {
+      const signedIn = await signInAs(provider, arm.providerEmail, arm.providerPassword, arm.communityLabel);
+      if (!signedIn.ok) skip(`provider actor unavailable: ${signedIn.reason}`);
+
+      await provider.goto(`${BASE}/listings/create`, { waitUntil: 'networkidle', timeout: 60000 });
+      await provider.waitForTimeout(1500);
+      await dismissConsent(provider);
+      const title = provider.getByLabel(/title/i).first();
+      if (!(await title.count())) skip('provider could not reach the listing form - selector gap, NOT a backend result');
+      await title.fill(listingTitle, { timeout: 10000 });
+      const desc = provider.getByLabel(/description/i).first();
+      if (await desc.count()) await desc.fill('Published by the runtime smoke so the exchange journey has a listing it does not own.');
+      // A category is required or the submit stays disabled - same shape as the
+      // login form's community selector (see action-create-listing).
+      const selects = provider.locator('select');
+      for (let i = 0; i < await selects.count(); i += 1) {
+        if (await selects.nth(i).locator('option').count() > 1) {
+          await selects.nth(i).selectOption({ index: 1 }).catch(() => {});
+        }
+      }
+      await provider.waitForTimeout(800);
+      const createBtn = provider.locator('button[type="submit"]:has-text("Create Listing")').first();
+      if (!(await createBtn.count()) || !(await createBtn.isEnabled())) {
+        skip('provider listing form did not become submittable - a required field is unsatisfied; NOT a backend verdict');
+      }
+      await createBtn.click({ timeout: 15000 }).catch(() => {});
+      await provider.waitForTimeout(5000);
+      if (provider.url().includes('/listings/create')) throw new Error('provider could not publish a listing - the exchange journey has nothing to request against');
+
+      // -- the requester finds it and sends a request ---------------------------
+      await page.goto(`${BASE}/listings`, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForTimeout(2500);
+      let card = page.locator(`a:has-text("${listingTitle}")`).first();
+      if (!(await card.count())) {
+        // Newest-first is not guaranteed on every ranking; try the search filter too.
+        await page.goto(`${BASE}/listings?q=${encodeURIComponent(String(stamp))}`, { waitUntil: 'networkidle', timeout: 60000 });
+        await page.waitForTimeout(2500);
+        card = page.locator(`a:has-text("${listingTitle}")`).first();
+      }
+      if (!(await card.count())) {
+        skip(`the provider's fresh listing "${listingTitle}" is not visible to the requester - `
+          + 'listings visibility/ordering, not the exchange workflow');
+      }
+      await card.click({ timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(3000);
+      await dismissConsent();
+
+      // Label from react-frontend/public/locales/en/listings.json (detail_request_exchange).
+      const requestBtn = page.locator('a:has-text("Request Exchange"), button:has-text("Request Exchange")').first();
+      if (!(await requestBtn.count())) {
+        skip('no "Request Exchange" control on the listing page - either the config gate is '
+          + 'closed (ListingDetailPage.tsx:806) or the requester owns this listing; NOT a proven backend failure');
+      }
+      await requestBtn.click({ timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(3000);
+      if (!page.url().includes('request-exchange')) {
+        throw new Error(`"Request Exchange" did not open the request form (landed on ${page.url().replace(BASE, '')})`);
+      }
+
+      const hoursField = page.getByLabel(/proposed hours/i).first();
+      if (!(await hoursField.count())) skip('no Proposed Hours field - selector gap, NOT a backend result');
+      await hoursField.fill(String(hours), { timeout: 8000 }).catch(() => {});
+      const msg = page.locator('textarea:visible').first();
+      if (await msg.count()) await msg.fill(`Smoke exchange ${stamp}`, { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(600);
+      const send = page.locator('button[type="submit"]:has-text("Send Request")').first();
+      if (!(await send.count()) || !(await send.isEnabled())) {
+        skip('Send Request missing or disabled - a required field is unsatisfied; NOT a backend verdict');
+      }
+      await send.click({ timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(5000);
+
+      // 🔴 EFFECT, not render: a successful create NAVIGATES to /exchanges/<id>
+      // (RequestExchangePage.tsx:154). Still on the form means the POST failed, and
+      // the page shows the server's own message rather than throwing.
+      const afterCreate = page.url().replace(BASE, '');
+      const idMatch = afterCreate.match(/\/exchanges\/(\d+)/);
+      if (!idMatch) {
+        const shown = (await page.locator('body').innerText()).replace(/\s+/g, ' ').slice(0, 240);
+        throw new Error(`exchange request did NOT create a row - still on ${afterCreate}. Page said: ${shown}`);
+      }
+      const exchangeId = idMatch[1];
+      console.log(`    exchange ${exchangeId} created by the requester`);
+
+      // -- the provider accepts, starts and marks complete ----------------------
+      await provider.goto(`${BASE}/exchanges/${exchangeId}`, { waitUntil: 'networkidle', timeout: 60000 });
+      await provider.waitForTimeout(2500);
+      const providerSees = (await provider.locator('body').innerText()).trim();
+      if (/not found/i.test(providerSees)) {
+        throw new Error(`the provider cannot see exchange ${exchangeId} - the request was not addressed to the listing owner`);
+      }
+
+      // Each control appears only in its own state, so a missing one is a state
+      // verdict, not a selector fault - report which state the page is actually in.
+      //
+      // 🔴 THE ASSERTION BELOW WAS WRONG ONCE AND IT LOOKED EXACTLY LIKE A BACKEND
+      // FAULT. First run against the Laravel control, this step reported
+      // '"Accept Request" did not move the exchange on. Page state: ' - with the page
+      // state EMPTY. The database said otherwise: the exchange was `accepted`. The
+      // click had worked; a single `reload({waitUntil:'networkidle'})` followed by one
+      // read of body.innerText had come back with nothing, because the read landed
+      // while the SPA was still mounting. One shot at reading a React page after a
+      // navigation is a coin flip, and the losing side of that coin reads as a
+      // product defect. RETRY the read until the expected label appears, and if it
+      // never does, print the URL and the text LENGTH - an empty page is a different
+      // finding from a page showing the wrong status, and the two must not be
+      // reported with the same words.
+      const stateText = async (p) => (await p.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ');
+      const waitForState = async (p, expected) => {
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+          const now = await stateText(p);
+          if (expected.test(now)) return { ok: true, text: now };
+          // Re-read a few times before spending a reload; the page usually settles.
+          if (attempt === 3 || attempt === 7) {
+            await p.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+          }
+          await p.waitForTimeout(1500);
+        }
+        return { ok: false, text: await stateText(p) };
+      };
+      for (const [label, expected] of [
+        ['Accept Request', /accepted/i],
+        ['Start Exchange', /in progress/i],
+        ['Mark Complete', /confirm/i],
+      ]) {
+        const btn = provider.locator(`button:has-text("${label}")`).first();
+        if (!(await btn.count())) {
+          throw new Error(`"${label}" is not offered to the provider. Page state: ${(await stateText(provider)).slice(0, 200)}`);
+        }
+        await btn.click({ timeout: 12000 }).catch(() => {});
+        await provider.waitForTimeout(3000);
+        const settledState = await waitForState(provider, expected);
+        console.log(`    "${label}" -> state matches ${expected}: ${settledState.ok ? 'YES' : 'no'}`);
+        if (!settledState.ok) {
+          throw new Error(`"${label}" did not move the exchange on within 18s. url=${provider.url().replace(BASE, '')} `
+            + `textLength=${settledState.text.length} state="${settledState.text.slice(0, 200)}"`);
+        }
+      }
+
+      // -- both parties confirm the hours; this is what settles credits ---------
+      const balanceOf = async (p) => {
+        await p.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
+        await p.waitForTimeout(2500);
+        const m = (await p.locator('body').innerText()).match(/([\d,]+(?:\.\d+)?)\s*(?:hours|credits)/i);
+        return m ? Number(m[1].replace(/,/g, '')) : null;
+      };
+      const requesterBefore = await balanceOf(page);
+      const providerBefore = await balanceOf(provider);
+      console.log(`    balances before settlement - requester: ${requesterBefore}, provider: ${providerBefore}`);
+
+      const confirmAs = async (p, who) => {
+        await p.goto(`${BASE}/exchanges/${exchangeId}`, { waitUntil: 'networkidle', timeout: 60000 });
+        await p.waitForTimeout(2500);
+        const open = p.locator('button:has-text("Confirm Hours")').first();
+        if (!(await open.count())) return `no "Confirm Hours" control for the ${who}`;
+        await open.click({ timeout: 10000 }).catch(() => {});
+        await p.waitForTimeout(1500);
+        // The modal carries its own hours input and its own "Confirm Hours" submit;
+        // take the LAST match or the click lands back on the page's own trigger.
+        const field = p.locator('input:visible').last();
+        if (await field.count()) await field.fill(String(hours), { timeout: 8000 }).catch(() => {});
+        await p.waitForTimeout(400);
+        await p.locator('button:has-text("Confirm Hours")').last().click({ timeout: 12000 }).catch(() => {});
+        await p.waitForTimeout(4500);
+        return null;
+      };
+      const providerConfirm = await confirmAs(provider, 'provider');
+      if (providerConfirm) throw new Error(providerConfirm);
+      const requesterConfirm = await confirmAs(page, 'requester');
+      if (requesterConfirm) throw new Error(requesterConfirm);
+
+      await page.goto(`${BASE}/exchanges/${exchangeId}`, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForTimeout(3000);
+      const finalState = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
+      const settled = /completed/i.test(finalState);
+      console.log(`    exchange reports completed after both confirmations: ${settled ? 'YES' : 'no'}`);
+
+      const requesterAfter = await balanceOf(page);
+      const providerAfter = await balanceOf(provider);
+      console.log(`    balances after settlement  - requester: ${requesterAfter}, provider: ${providerAfter}`);
+
+      if (requesterBefore == null || providerBefore == null || requesterAfter == null || providerAfter == null) {
+        skip('the wallet page did not expose a readable balance on both sides '
+          + `(${requesterBefore}/${providerBefore} -> ${requesterAfter}/${providerAfter}) - `
+          + 'the credit assertion could not be made; NOT a proven failure');
+      }
+
+      // 🔴 THE ASSERTION. On an 'offer' listing the requester pays the provider
+      // (ExchangeWorkflowService.php:1187-1194). Both legs must move, by the hours.
+      const requesterDelta = requesterAfter - requesterBefore;
+      const providerDelta = providerAfter - providerBefore;
+      console.log(`    credit movement - requester ${requesterDelta}, provider ${providerDelta} (expected ${-hours} / +${hours})`);
+      if (requesterDelta === 0 && providerDelta === 0) {
+        throw new Error(`NO CREDITS MOVED. The exchange reported ${settled ? 'completed' : 'not completed'} `
+          + `and both balances are unchanged (${requesterAfter}/${providerAfter}). The state machine ran `
+          + 'and the ledger did not - which is the exact failure this journey exists to catch.');
+      }
+      if (Math.abs(requesterDelta + hours) > 0.001 || Math.abs(providerDelta - hours) > 0.001) {
+        throw new Error(`credits moved by the WRONG amount: requester ${requesterDelta}, provider ${providerDelta}, expected ${-hours}/+${hours}`);
+      }
+      if (!settled) throw new Error('credits moved but the exchange does not report completed - the ledger and the state machine disagree');
+
+      // The member must be able to see it back: a settled exchange belongs in the
+      // wallet history, not only in the exchange's own page.
+      const history = await page.locator('body').innerText();
+      console.log(`    the settlement appears in the requester's wallet history: ${/exchange/i.test(history) ? 'YES' : 'no (unconfirmed)'}`);
+    } finally {
+      await providerCtx.close();
+    }
   });
 
   // FEED INFINITE SCROLL: the cursor fix's browser-level proof. Scroll to the bottom
@@ -1127,6 +1443,12 @@ async function waitReady(port, label, tries = 60) {
 
 // ── main ────────────────────────────────────────────────────────────────────────────
 
+// 🔴 `providerEmail`/`providerPassword` were added 2026-08-21 for the exchange
+// journey, the first row needing a SECOND member in the same run. The exchange state
+// machine gates every action on which party you are, so a one-actor arm can create a
+// request and then measure nothing: `Accept Request` is only ever offered to the
+// listing owner. The second actor must be a DIFFERENT member of the SAME community —
+// a member of another tenant is 404'd, which reads as "accept is broken".
 const ASPNET_ARM = {
   key: 'aspnet',
   label: 'ASP.NET',
@@ -1134,6 +1456,11 @@ const ASPNET_ARM = {
   email: process.env.SMOKE_EMAIL_ASPNET || 'member@acme.test',
   password: process.env.SMOKE_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
   communityLabel: process.env.SMOKE_COMMUNITY_ASPNET || 'ACME Community Timebank',
+  // Maya Coordinator, id 4 in the dev seed (DemoShowcaseSeedData.cs:130) — an
+  // ordinary member, deliberately not the admin, so the journey is member-to-member
+  // exactly as it is on the Laravel control.
+  providerEmail: process.env.SMOKE_PROVIDER_EMAIL_ASPNET || 'coordinator@acme.test',
+  providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
 };
 
 // Each side signs in with its OWN fixture's member — the fixtures hold different users
@@ -1145,6 +1472,10 @@ const LARAVEL_ARM = {
   email: process.env.SMOKE_EMAIL_LARAVEL || 'e2e.user.a@project-nexus.local',
   password: process.env.SMOKE_PASSWORD_LARAVEL || 'TestPassword123!',
   communityLabel: process.env.SMOKE_COMMUNITY_LARAVEL || null, // null = first offered option
+  // e2e.user.b shares the fixture password by construction (parity-fixture.sql copies
+  // the hash from user A rather than writing one out), so these cannot drift apart.
+  providerEmail: process.env.SMOKE_PROVIDER_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
+  providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_LARAVEL || 'TestPassword123!',
 };
 
 async function main() {
