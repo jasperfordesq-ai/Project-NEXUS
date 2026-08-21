@@ -286,14 +286,23 @@ in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
      Enter from a field fires the real submit. Also proven: **messaging**
      (a text sent into the member↔admin thread renders), **wallet history**
      region renders, **members directory** renders with connect controls.
-   - 🔴 Honest residue in C.2, labelled in the smoke output itself: the
-     LEGAL GATE sits behind email verification, out of the smoke's reach
-     without a verification bypass (fixture work); **feed reaction
-     persistence is UNCONFIRMED — an instrument limitation** (the own-post
-     card cannot yet be anchored across a reload; `role="article"` is the
-     card root, and ranked feed ordering moves it); infinite scroll shows
-     content growth only via a text-length heuristic (the card selector needs
-     a testid); token refresh across REAL expiry still untested (the
+   - ✅ **The LEGAL GATE is now PROVEN through the UI (2026-08-20, later).**
+     The sign-up journey completes verification directly in the dev database
+     (`/verify-email` is [Authorize] and login refuses unverified users — the
+     code only reaches a member through email, so the DEV instrument flips
+     the flag; docker-guarded, plainly skipped when unavailable) and then
+     signs the brand-new member in: the legal-acceptance gate SURFACES on
+     first sign-in, is ACCEPTED through the UI, and the member lands
+     in-app (/onboarding). Windows note recorded in the script: cmd mangles
+     nested quotes — the SQL is piped on stdin.
+   - 🔴 Honest residue in C.2, labelled in the smoke output itself: **feed
+     reaction persistence is UNCONFIRMED — an instrument limitation, now
+     precisely characterised**: the fresh post's text renders OUTSIDE any
+     `[role="article"]` container (diagnostic: text present, cards matching
+     it = 0), so the probe cannot anchor the same card across a reload. The
+     proper fix is a `data-testid` on FeedCard — a FRONTEND change that
+     needs owner approval, parked; infinite scroll shows
+     content growth only via a text-length heuristic (same testid need); token refresh across REAL expiry still untested (the
      forced-401 probe shows the client routes to /login — client behaviour,
      not a backend verdict).
    - ✅ **The web-uk SIGNED-IN tier is now measured (2026-08-20, later).** The

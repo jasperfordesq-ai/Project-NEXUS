@@ -267,7 +267,8 @@ await step('action-create-feed-post', async () => {
   await page.waitForTimeout(4000);
   // 🔴 Assert the EFFECT: the post must be on the page, not merely "no error shown".
   const present = await page.locator(`text=${body}`).count();
-  console.log(`    post visible on the feed afterwards: ${present > 0 ? 'YES — posting works' : 'no (unconfirmed)'}`);
+  const inCard = await page.locator(`[role="article"]:has-text("${body}")`).count();
+  console.log(`    post visible on the feed afterwards: ${present > 0 ? 'YES — posting works' : 'no (unconfirmed)'} (as a card: ${inCard})`);
 });
 
 // 🔴 TRANSFERRING credits — the highest-risk member action, because it moves value.
@@ -581,42 +582,54 @@ await step('journey-feed-infinite-scroll', async () => {
   console.log(`    feed items before=${before} after-scroll=${after}: ${after > before ? 'YES — infinite scroll advances' : 'no growth (page may be fully loaded — check total)'}`);
 });
 
-// FEED REACTION THROUGH THE UI: like the post this run created; the state must
-// SURVIVE A RELOAD (an optimistic flip that reverts is the classic failure here).
+// FEED REACTION THROUGH THE UI: the step creates ITS OWN post and reacts to it in
+// the same view, so the pre/post-reload comparison is guaranteed to look at the same
+// card. Earlier versions hunted for a post created several steps before — by then
+// ranked ordering had moved it off page 1 and the probe silently compared two
+// different cards (true -> true against a working backend).
 await step('journey-feed-reaction', async () => {
   await page.goto(`${BASE}/feed`, { waitUntil: 'networkidle', timeout: 60000 });
   await page.waitForTimeout(2000);
-  // 🔴 The liked state is CSS, not ARIA: FeedCard's Like button flips to
-  // `text-rose-500` with a filled Heart when item.is_liked (FeedCard.tsx:1627-1637);
-  // its LABEL stays "Like" and there is no aria-pressed. The first version of this
-  // probe read aria-pressed and reported "unconfirmed" against a working backend.
-  // Anchor to THIS RUN'S OWN post: 'first Like button on the page' compared two
-  // DIFFERENT cards across the reload (feed order shifts as smoke posts accumulate),
-  // which produced a true->true reading against a working backend.
-  // FeedCard renders role="article" on a GlassCard div (FeedCard.tsx:587), not an
-  // <article> element — the tag selector missed and the probe silently fell back to
-  // the whole page, comparing two different cards across the reload.
-  const ownCard = page.locator(`[role="article"]:has-text("Smoke feed post ${stampSuffix}")`).first();
-  const anchored = (await ownCard.count()) > 0;
-  if (!anchored) console.log('    (own post card not found — falling back to first card, weaker evidence)');
-  const scope = anchored ? ownCard : page;
-  const likedState = async () => {
-    const b = scope.locator('button:has-text("Like")').first();
-    if (!(await b.count())) return null;
-    const cls = (await b.getAttribute('class').catch(() => '')) || '';
-    return cls.includes('text-rose-500');
-  };
-  const like = scope.locator('button:has-text("Like")').first();
-  if (!(await like.count())) { console.log('    no Like control — selector needs updating, NOT a backend result'); return; }
-  const before = await likedState();
-  await like.click({ timeout: 8000 }).catch(() => {});
-  await page.waitForTimeout(2500);
+  if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+  const reactBody = `Smoke reaction target ${stampSuffix}`;
+  const create = page.locator('button:has-text("Create")').first();
+  if (!(await create.count())) { console.log('    no Create control — selector gap, NOT a backend result'); return; }
+  await create.click({ timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const composer = page.locator('textarea, [contenteditable="true"]').first();
+  if (!(await composer.count())) { console.log('    composer did not open — selector gap, NOT a backend result'); return; }
+  await composer.fill(reactBody, { timeout: 8000 }).catch(() => {});
+  const submit = page.locator('button:has-text("Post"), button[type="submit"]').last();
+  await submit.click({ timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(3500);
+  // The text visible right after posting can be the composer's own echo, not a feed
+  // card — reload so the post renders as a real card (newest-first keeps it on page 1).
   await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
   await page.waitForTimeout(2500);
+
+  // FeedCard renders role="article" (FeedCard.tsx:587). Anchor to the fresh post.
+  const card = () => page.locator(`[role="article"]:has-text("${reactBody}")`).first();
+  if (!(await card().count())) { console.log('    fresh post card not found on the page — selector gap, NOT a backend result'); return; }
+  const likedState = async () => {
+    const b = card().locator('button:has-text("Like")').first();
+    if (!(await b.count())) return null;
+    return ((await b.getAttribute('class').catch(() => '')) || '').includes('text-rose-500');
+  };
+  const before = await likedState();
+  await card().locator('button:has-text("Like")').first().click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+  const optimistic = await likedState();
+  await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+  await page.waitForTimeout(2500);
+  // The fresh post is newest, so it stays on page 1 across one reload.
+  if (!(await card().count())) { console.log(`    card not on page 1 after reload — cannot compare (in-page flip was ${before} -> ${optimistic})`); return; }
   const after = await likedState();
-  const survived = after !== null && after !== before;
-  console.log(`    reaction state flipped AND survived a reload: ${survived ? `YES (${before} -> ${after}) — the write persisted` : `no (${before} -> ${after}) — unconfirmed`}`);
-  if (after === null) console.log('    (Like control vanished after reload — selector gap)');
+  const survived = before === false && optimistic === true && after === true;
+  console.log(`    reaction: ${before} -> ${optimistic} (click) -> ${after} (reload): ${survived ? 'YES — the write persisted' : 'unconfirmed'}`);
+  if (before === false && optimistic === true && after === false) {
+    throw new Error('reaction reverted on reload — the write did not persist (the classic optimistic-flip failure)');
+  }
 });
 
 // SIGN-UP: a brand-new member registers through the app's own form. PROVEN
@@ -695,6 +708,51 @@ await step('journey-sign-up', async () => {
     const verify = /verification link|verify your email/i.test(bodyText);
     console.log(`    registration successful screen: ${success} | verification-email flow: ${verify}`);
     if (!success) throw new Error('registration did not reach the success screen');
+
+    // ── THE LEGAL GATE, behind email verification ────────────────────────────────
+    // The real flow verifies via the emailed code, but /verify-email is [Authorize]
+    // and login refuses unverified users — the code only reaches a member through
+    // email. This DEV instrument completes verification directly in the dev database
+    // (docker-guarded: skipped with a plain statement when docker is unreachable),
+    // then signs in as the brand-new member. The ASP.NET dev seed carries a terms
+    // document, so a FIRST sign-in must surface the legal-acceptance gate.
+    let verified = false;
+    try {
+      const { execSync } = await import('node:child_process');
+      // 🔴 Windows cmd mangles nested double-quotes — pipe the SQL on stdin instead of
+      // embedding it in the argument (the quoted-argument version silently failed here).
+      const sql = `UPDATE users SET "EmailVerified"=true, "EmailVerifiedAt"=now(), "IsActive"=true WHERE "Email"='${email}';`;
+      execSync('docker exec -i nexus-aspnet-dev-db psql -U postgres -d nexus_dev', { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
+      verified = true;
+    } catch {
+      console.log('    (docker not reachable — verification completion skipped; legal gate NOT measured this run)');
+    }
+    if (verified) {
+      await page2.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
+      await page2.waitForTimeout(1500);
+      for (const label of ['Use basic features only', 'Essential only']) {
+        const b = page2.locator(`button:has-text("${label}")`).first();
+        if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page2.waitForTimeout(400); }
+      }
+      await page2.selectOption('select', { label: 'ACME Community Timebank' }).catch(() => {});
+      await page2.fill('input[name="username"]', email).catch(() => {});
+      await page2.fill('input[name="password"]', 'SmokeSignup!2026x').catch(() => {});
+      await page2.locator('button:has-text("Sign In"), button[type="submit"]').first().click({ timeout: 10000 }).catch(() => {});
+      await page2.waitForTimeout(5000);
+      const afterLogin = (await page2.locator('body').innerText()).trim();
+      const gate = /accept|agree/i.test(afterLogin) && /terms|legal|document/i.test(afterLogin);
+      const inApp = /\/dashboard|\/onboarding|\/feed/.test(page2.url());
+      console.log(`    first sign-in of the NEW member -> ${page2.url().replace(BASE, '')} | legal gate visible: ${gate} | in-app: ${inApp}`);
+      if (!gate && !inApp) throw new Error('new member could neither pass the legal gate nor reach the app');
+      if (gate) {
+        const acceptButton = page2.locator('button:has-text("Accept")').first();
+        if (await acceptButton.count()) {
+          await acceptButton.click({ timeout: 8000 }).catch(() => {});
+          await page2.waitForTimeout(3000);
+          console.log(`    after accepting -> ${page2.url().replace(BASE, '')}`);
+        }
+      }
+    }
   } finally {
     await context2.close();
   }
