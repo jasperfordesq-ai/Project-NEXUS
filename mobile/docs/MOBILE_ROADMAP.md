@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **468 / 1000 on rubric M1** — see
+Current position: **475 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -131,13 +131,22 @@ group exchanges, skills matching, reporting). Journey certification 86 → **94*
 exchange, and add a `broker_approval_required` pass so `pending_broker` is exercised at least
 once.
 
-## Phase 4 — The remaining two-party journeys (Tier 5)
+## Phase 4 — The remaining two-party journeys (Tier 5) — **STARTED 2026-08-21**
 
-Messages first — row 5.12 is a core journey that has never been walked. Then connections,
-event RSVP, group join and post, poll voting.
+**Messaging is done and CERTIFIED.** Walked across the two emulators: UserB sent "Hi"
+(`messages` 545), the recipient's device showed **1 unread**, opening the thread flipped
+`is_read` to 1, and the reply came back as row 546. Rows 5.12, 5.13 and 5.14 are CERTIFIED —
+the send path is guarded by `app/(modals)/thread.test.tsx` and the badge by
+`app/(tabs)/messages.test.tsx`.
 
-**Exit criteria:** rows 5.12, 5.13, 5.14, 5.18, 5.19, 5.3, 5.8, 5.9, 5.21 at PROVEN or
-better. Tier 5 credit 0.176 → ≥ 0.45.
+🔴 Note for whoever picks this up: `(modals)/chat.tsx` is the **AI assistant**, not member
+messaging. Member threads are `(modals)/thread.tsx`, and the `messages` table's body column is
+`body`, not `content`.
+
+**Still to do here:** connection request and acceptance (5.18, 5.19), event RSVP (5.3), group
+join and post (5.8, 5.9), poll voting (5.21).
+
+**Exit criteria:** those six rows at PROVEN or better. Tier 5 credit 0.265 → ≥ 0.45.
 
 ## Phase 5 — Money integrity
 
@@ -223,5 +232,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-468 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
+475 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
 writing features.

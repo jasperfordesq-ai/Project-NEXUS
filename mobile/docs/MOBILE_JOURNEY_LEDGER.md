@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
 | 3 — Timebanking core | 20 | 3 | 4 | 5 | 0 | 7 | 1 | 0.350 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 3 | 0 | 12 | 0 | 19 | 0 | 0.176 |
+| 5 — Community modules | 34 | 6 | 0 | 12 | 0 | 16 | 0 | 0.265 |
 | 6 — Money and wallet | 12 | 0 | 3 | 2 | 1 | 5 | 1 | 0.236 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **18** | **29** | **26** | **5** | **60** | **2** | — |
+| **Total** | **140** | **21** | **29** | **26** | **5** | **57** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(18 × 1.0) + (29 × 0.6) + (26 × 0.25) + (5 × 0.30) = 43.40`, over `140 − 2 excluded = 138`
-rows → **0.314**.
+`(21 × 1.0) + (29 × 0.6) + (26 × 0.25) + (5 × 0.30) = 46.40`, over `140 − 2 excluded = 138`
+rows → **0.336**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.314**.
 | 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
 | 3 | (3 × 1.0) + (4 × 0.6) + (5 × 0.25) = 6.65 | ÷ 19 † | **0.350** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (3 × 1.0) + (12 × 0.25) = 6.00 | ÷ 34 | **0.176** |
+| 5 | (6 × 1.0) + (12 × 0.25) = 9.00 | ÷ 34 | **0.265** |
 | 6 | (3 × 0.6) + (2 × 0.25) + (1 × 0.30) = 2.60 | ÷ 11 † | **0.236** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -218,9 +218,9 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.9 | Post in a group | OPEN | Never walked |
 | 5.10 | Group tabs (discussion, wiki, tasks, analytics) | RENDERS | Tab strip scrolls correctly |
 | 5.11 | Messages list | RENDERS | Photographed |
-| 5.12 | Send a message to another member | OPEN | **Never walked, and it is a two-party core journey** |
-| 5.13 | Receive a message and see the unread badge | OPEN | Never walked |
-| 5.14 | Reply in a thread | OPEN | Never walked |
+| 5.12 | Send a message to another member | CERTIFIED | 2026-08-21: sent from the second emulator as UserB — `messages` row 545 (675 → 674, unread). Guarded by `app/(modals)/thread.test.tsx` ("sends replies to the other user from conversation metadata") |
+| 5.13 | Receive a message and see the unread badge | CERTIFIED | 2026-08-21: the recipient's device showed **1 unread**, and opening the thread flipped `messages.is_read` to 1 — the read receipt was verified as well as the badge. Guarded by `app/(tabs)/messages.test.tsx` ("shows unread badge on conversation with unread messages") |
+| 5.14 | Reply in a thread | CERTIFIED | 2026-08-21: replied from the recipient's device — `messages` row 546 (674 → 675). Guarded by the same thread-screen send test |
 | 5.15 | Voice message | OPEN | Never walked |
 | 5.16 | Members directory | RENDERS | Photographed, clean at 360dp |
 | 5.17 | View a member profile | RENDERS | Screen exists |
