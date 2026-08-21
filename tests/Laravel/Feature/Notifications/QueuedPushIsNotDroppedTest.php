@@ -55,6 +55,28 @@ class QueuedPushIsNotDroppedTest extends TestCase
      */
     private function seedRecipient(): int
     {
+        // 🔴 The tenant MUST be created here, not assumed. Without this the insert
+        // below fails on `users_ibfk_1` (tenant_id -> tenants.id) and the whole
+        // class errors. It passed locally only because tenant 997 happened to
+        // already exist in the developer's test database, left behind by a
+        // sibling suite that DOES create it
+        // (ResendStuckVerificationEmailsTest::seedPendingUser). In CI's fresh
+        // database, and in any sharded subset that does not happen to include
+        // that suite, tenant 997 does not exist — which is exactly the
+        // order-dependent isolation debt the quarantine list already tracks.
+        // `insertOrIgnore` keeps it safe when both suites run in the same shard.
+        DB::table('tenants')->insertOrIgnore([
+            'id' => $this->pushTenantId,
+            'name' => 'Queued Push Test Tenant ' . $this->pushTenantId,
+            'slug' => 'queued-push-test-' . $this->pushTenantId,
+            'domain' => null,
+            'is_active' => true,
+            'depth' => 0,
+            'allows_subtenants' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $userId = (int) DB::table('users')->insertGetId([
             'tenant_id' => $this->pushTenantId,
             'email' => 'queued-push-' . uniqid('', false) . '@project-nexus.local',
