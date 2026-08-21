@@ -21,9 +21,14 @@ The work list: [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.
 ```text
 You are working on Project NEXUS's committed production goal: the platform runs
 identically on the Laravel backend (repo root) and the ASP.NET backend
-(aspnet-backend/), for all four unchanged clients — the React app, the React
-admin, the Web UK accessible site, and the mobile app — switched by
-configuration only. The driver is commercial: a segment of public-sector buyers
+(aspnet-backend/), for all THREE unchanged client applications — the React app,
+the Web UK accessible site, and the mobile app — switched by configuration only.
+🔴 The React app contains TWO distinct consumer surfaces, the member UI and
+the admin panel (`react-frontend/src/admin/`, 260 routes, ~258K LOC, consuming a
+different half of the API: 514 admin GET endpoints). They ship as one application
+and one build, but they are scored as separate journey tiers because their
+contracts barely overlap. Three applications, four surfaces — do not say "four
+clients". The driver is commercial: a segment of public-sector buyers
 require a .NET application stack as a condition of procurement, so without this
 edition those contracts cannot be bid. Owner scope decision 2026-08-21:
 EVERYTHING, including the mobile app.

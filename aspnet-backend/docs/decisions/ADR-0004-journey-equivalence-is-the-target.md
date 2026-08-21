@@ -22,6 +22,18 @@ columns that no client reads and some that should never have been serialised at
 all, such as `category.reset_token`. Under a whole-body diff, reproducing those
 counts as required work, and *not* reproducing them counts as a contract gap.
 
+🔴 **Measured qualification, 2026-08-21 — this example is real but it is
+not where the volume is.** Consumed-field mode has since been built and run. On
+the **member read** corpus it cleared only 16 of 80 differing endpoints, and all
+16 cleared because ASP.NET returned a *superset*, not because Laravel leaked an
+unread column: 64 of 80 are real work. The field noise this section describes
+concentrates in **write** responses and raw-Eloquent **admin** surfaces, neither
+of which that corpus covers, and the member read corpus is generated from the
+React client's own call list — so by construction almost everything on it has a
+reader. The scope rule below is unchanged and correct; the expected *size* of its
+effect on reads was overstated. Do not quote this paragraph as evidence that a
+large fraction of measured differences are noise.
+
 The measurable damage:
 
 - The semantic-parity category was scored from "how many of N sampled responses
@@ -115,12 +127,19 @@ Three rules follow, each learned the expensive way here:
 ## Consequences
 
 - The response-comparison harness needs a **consumed-field mode**: filter to
-  fields with a known client reader before reporting a difference. Until it has
-  one, differ counts are an upper bound and must be reported as such, never as a
-  defect count.
-- Scoring is journey-weighted. Rubric `ASPNET-CONTRACT-R4` implements this; see
+  fields with a known client reader before reporting a difference.
+  🔴 **BUILT 2026-08-21** (`scripts/build-consumed-field-manifest.mjs`, 40,643 field names across
+  react-frontend, web-uk, mobile and `openapi.json`; `--consumed-fields` on the
+  harness). It over-includes deliberately: an unclassifiable field is treated as
+  IN scope, because a false "out of scope" hides a real defect while a false "in
+  scope" costs only wasted triage. Where no manifest covers a corpus – the 243
+  admin reads and the 392-endpoint write ledger – differ counts remain an upper
+  bound and must be reported as such, never as a defect count.
+- Scoring is journey-weighted. Rubric `ASPNET-CONTRACT-R5` implements this; see
   [`../FULL_PARITY_REMEDIATION_RUNBOOK.md`](../FULL_PARITY_REMEDIATION_RUNBOOK.md).
-  R4's total is **not comparable** to R1–R3, which measured a different question.
+  R4 and R5 totals are **not comparable** to R1–R3, which measured a
+  different question, nor to each other: R5 re-cut the denominator once, finally,
+  to absorb the mobile client and the expanded admin surface.
 - No deduction may be taken for surface merely being unmeasured. Unmeasured
   surface is recorded as an **open journey row**, which is work with a name,
   rather than as a penalty with no owner.

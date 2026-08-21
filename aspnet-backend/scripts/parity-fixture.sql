@@ -29,18 +29,52 @@
 -- seeds nothing, which is indistinguishable from not having run. The filter each
 -- row exists to satisfy is named in a comment above it.
 --
+-- 🔴 WHAT THIS FIXTURE CANNOT FIX — do not add rows chasing these.
+-- After the 2026-08-21 fixture work (non-master tenants, a conversation, a
+-- searchable coordinator, 24 extra timeline posts) the React control run stood
+-- at 34 MATCH / 2 NOT_COMPARABLE / 1 LARAVEL_ONLY_FAIL. All three remaining
+-- rows are outside this file's reach and no amount of seed data closes them:
+--   * journey-sign-up  — the smoke registers as `…@example.test`
+--     (smoke-react-against-aspnet.mjs:785). `.test` is a RESERVED TLD that
+--     Laravel deliberately refuses (MxRecordValidator.php:91-92 →
+--     RegistrationService.php:319, EMAIL_DOMAIN_INVALID), and the check only
+--     fails open on a DNS exception, never on "no records". Verified from
+--     inside the container: example.test and *.local resolve to nothing;
+--     project-nexus.ie has MX. The instrument needs a resolvable domain.
+--   * action-transfer-credits — the amount field is looked up by the label
+--     "Amount in hours" but the Input's accessible name comes from its visible
+--     label "Amount (hours)" (TransferModal.tsx:450-451), and the recipient
+--     results are deliberately NOT role="option" (TransferModal.tsx:395-402).
+--     Selector work, not data.
+--   * journey-feed-reaction — `[role="article"]` matches nothing in the
+--     rendered feed on EITHER backend, so no card is ever found.
+-- Each is a step-definition change for the smoke owner. Recorded here because
+-- the obvious next move from this seat is to add more rows, and it would not
+-- move any of them.
+--
 -- IDs are fixed in the 950000+ range so this is re-runnable: every table is
 -- cleared of its own 950000+ rows first. Inserts are deliberately NOT
 -- `INSERT IGNORE` — a swallowed error would seed nothing quietly and the next
 -- measurement would be noise.
 
-SET @T := 1;         -- fixture tenant
+SET @T := 1;         -- fixture tenant (the master tenant — TenantSeeder's id 1)
+SET @T2 := 950001;   -- second community — mirrors the ASP.NET seed's 'globex'
+SET @T3 := 950002;   -- third community — see the NON-MASTER TENANTS note below
 SET @UA := 900014;   -- e2e.user.a@project-nexus.local — the account the harness signs in as
 SET @UB := 900015;   -- e2e.user.b@project-nexus.local
 
 -- ---------------------------------------------------------------------------
 -- Clear previous fixture rows (children before parents).
 -- ---------------------------------------------------------------------------
+-- Rows hanging off the fixture USERS added below. They are cleared first
+-- because `users` carries 300 inbound foreign keys and a delete that trips one
+-- of them aborts the whole file, which reads exactly like "the fixture did not
+-- run".
+DELETE FROM user_legal_acceptances WHERE user_id >= 950000;
+DELETE FROM federation_user_settings WHERE user_id >= 950000;
+DELETE FROM messages WHERE id >= 950000 OR sender_id >= 950000 OR receiver_id >= 950000;
+DELETE FROM conversation_participants WHERE conversation_id >= 950000 OR user_id >= 950000;
+DELETE FROM conversations WHERE id >= 950000;
 DELETE FROM challenge_tag_links WHERE challenge_id >= 950000 OR tag_id >= 950000;
 DELETE FROM poll_votes WHERE poll_id >= 950000;
 DELETE FROM poll_options WHERE id >= 950000;
@@ -84,6 +118,104 @@ DELETE FROM resource_categories WHERE id >= 950000;
 DELETE FROM vol_organizations WHERE id >= 950000;
 DELETE FROM skills WHERE id >= 950000;
 DELETE FROM categories WHERE id >= 950000;
+DELETE FROM users WHERE id >= 950000;
+DELETE FROM tenants WHERE id >= 950000;
+
+-- ---------------------------------------------------------------------------
+-- 🔴 NON-MASTER TENANTS — the sign-in community picker needs more than one.
+--
+-- Measured 2026-08-21, first control-arm run of smoke-react-against-aspnet.mjs:
+-- the `select-community` step was the only LARAVEL_ONLY_FAIL that was a fixture
+-- fact — "login select offered NO communities". The fixture held exactly ONE
+-- tenant (the master), and the React login page renders the <select> ONLY when
+-- it has more than one community to offer:
+--
+--   LoginPage.tsx:441  showTenantDropdown = ... && tenants.length > 1
+--   LoginPage.tsx:442  showTenantCard     = ... && tenants.length === 1
+--
+-- 🔴 That corrects a diagnosis that was written into two smoke scripts and the
+-- task brief: the cause is NOT `TenantBootstrapController::list` excluding the
+-- master tenant. The login page asks with `include_master=1`
+-- (LoginPage.tsx:254), so master IS returned; with one tenant the page
+-- auto-selects it and shows a CARD instead of a select. Proof it was never a
+-- login blocker: in that same run `login-submit` PASSED on Laravel while
+-- `select-community` failed. The exclusion at
+-- TenantBootstrapController.php:220 (`where id > 1` unless include_master) is
+-- real, and it IS what empties the REGISTER page's list — RegisterPage.tsx:195
+-- asks WITHOUT include_master.
+--
+-- Why TWO extra communities and not one:
+--   * login  (include_master=1) then offers 3, ordered by id asc, so the FIRST
+--     option stays "Master Tenant" — the community @UA actually belongs to. The
+--     smoke selects the first offered option when no community is configured
+--     for the arm, so login must not be re-pointed at a community with no users.
+--   * register (no include_master) then offers 2, so RegisterPage keeps
+--     `tenants.length > 1`, leaves nothing pre-selected, and falls back to the
+--     TenantContext tenant (RegisterPage.tsx:417) — exactly what happens on the
+--     ASP.NET side, which offers 4 non-master tenants. A single extra community
+--     would instead be auto-selected (RegisterPage.tsx:213) and silently move
+--     sign-up into a different community than ASP.NET uses.
+--
+-- Shape mirrors DemoShowcaseSeedData.cs:66-83: root-level (path '/id/', depth
+-- 0), active, named, with a tagline. Feature flags are copied from the master
+-- tenant so a member of these communities is not answered 403 FEATURE_DISABLED
+-- on the ~27 endpoints whose features default OFF — start-disposable-laravel.sh
+-- switches them on for tenant 1 only, and it runs BEFORE this file.
+-- ---------------------------------------------------------------------------
+SET @MASTER_FEATURES := (SELECT features FROM tenants WHERE id = @T);
+
+INSERT INTO tenants
+    (id, name, slug, tagline, domain, tenant_category, is_active,
+     parent_id, path, depth, features, created_at, updated_at)
+VALUES
+  (@T2, 'Globex Neighbourhood Network', 'globex', 'Federation partner tenant',
+   'globex.localhost', 'community', 1, NULL, CONCAT('/', @T2, '/'), 0,
+   @MASTER_FEATURES, NOW(), NOW()),
+  (@T3, 'Riverside Timebank', 'riverside', 'Second fixture community for the picker',
+   NULL, 'community', 1, NULL, CONCAT('/', @T3, '/'), 0,
+   @MASTER_FEATURES, NOW(), NOW());
+
+-- ---------------------------------------------------------------------------
+-- Fixture MEMBERS.
+--
+-- The password hash is copied from @UA rather than written out, so these
+-- accounts share the fixture password ('TestPassword123!') and cannot drift
+-- from it. Nothing here is a credential: it is a synthetic account in a
+-- throwaway database that holds no real member data.
+--
+-- 950010 'Maya Coordinator' exists because `action-transfer-credits` types the
+-- literal string "coordinator" into the recipient search
+-- (smoke-react-against-aspnet.mjs:454) and skipped on BOTH arms in the
+-- 2026-08-21 run. The ASP.NET seed has coordinator@acme.test / "Maya
+-- Coordinator" (DemoShowcaseSeedData.cs:130); the Laravel fixture had nobody
+-- whose name contained the word, so its side could never have matched. Adding
+-- the member removes the Laravel-side reason; whether the ASP.NET side's skip
+-- was the same reason is a separate measurement, not an assumption.
+--
+-- privacy_search / privacy_profile are set deliberately: the members directory
+-- and member search hide OPT-OUTS, so a member with these unset is invisible
+-- and seeds nothing.
+-- ---------------------------------------------------------------------------
+SET @PW := (SELECT password_hash FROM users WHERE id = @UA);
+
+INSERT INTO users
+    (id, tenant_id, first_name, last_name, name, email, password_hash, role,
+     profile_type, status, is_active, is_verified, email_verified_at,
+     onboarding_completed, privacy_profile, privacy_search, balance, bio,
+     preferred_language, created_at, updated_at)
+VALUES
+  (950010, @T,  'Maya', 'Coordinator', 'Maya Coordinator',
+   'maya.coordinator@project-nexus.local', @PW, 'member', 'individual',
+   'active', 1, 1, NOW(), 1, 'public', 1, 40.00,
+   'Community coordinator for events, volunteering and onboarding.', 'en', NOW(), NOW()),
+  (950011, @T2, 'Bob', 'Boss', 'Bob Boss',
+   'bob.boss@project-nexus.local', @PW, 'admin', 'individual',
+   'active', 1, 1, NOW(), 1, 'public', 1, 0.00,
+   'Second-community admin, mirroring the ASP.NET partner tenant admin.', 'en', NOW(), NOW()),
+  (950012, @T2, 'Nina', 'Neighbour', 'Nina Neighbour',
+   'nina.neighbour@project-nexus.local', @PW, 'member', 'individual',
+   'active', 1, 1, NOW(), 1, 'public', 1, 25.00,
+   'Second-community member, so the extra community is not an empty shell.', 'en', NOW(), NOW());
 
 -- ---------------------------------------------------------------------------
 -- categories — ONE TABLE, THREE CONTRACTS, keyed by `type`.
@@ -179,6 +311,41 @@ INSERT INTO feed_posts (id, tenant_id, user_id, group_id, content, likes_count, 
 INSERT INTO feed_activity (id, tenant_id, user_id, source_type, source_id, group_id, title, content, is_visible, is_hidden) VALUES
   (950051, @T, @UA, 'post', 950050, NULL, NULL,
    'Two spare bike inner tubes going free if anyone needs them. #repaircafe', 1, 0);
+
+-- ---------------------------------------------------------------------------
+-- 🔴 ENOUGH FEED ITEMS TO PAGE. One post is a feed; it is not a SECOND PAGE.
+--
+-- Measured 2026-08-21: `journey-feed-infinite-scroll` SKIPPED on the Laravel arm
+-- ("no growth — scroll unconfirmed") and passed on ASP.NET, whose demo seed
+-- carries far more activity. GET /api/v2/feed?per_page=50 returned 2 items
+-- against this fixture, so there was no second page for the scroll to fetch and
+-- the step could not tell "cursor broken" from "already showing everything".
+-- That is exactly the class of gap the cursor bug hid before: the feed loaded
+-- fine and infinite scroll re-served page one for ever.
+--
+-- 24 pairs takes the fixture past the 20-item default page size, so page 2 has
+-- real rows in it. A pair is REQUIRED: the timeline reads feed_activity joined
+-- to users, so a post with no activity row does not appear (see the note above).
+--
+-- Generated with a recursive CTE rather than 48 literal rows — MariaDB 10.11
+-- supports WITH inside INSERT ... SELECT, and 48 hand-written rows would rot.
+-- ---------------------------------------------------------------------------
+INSERT INTO feed_posts (id, tenant_id, user_id, content, likes_count, visibility, publish_status, type, is_hidden, created_at)
+WITH RECURSIVE seq AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM seq WHERE n < 24)
+SELECT 950100 + n, @T, IF(n % 2 = 0, @UB, @UA),
+       CONCAT('Fixture timeline post ', n,
+              ' — a neighbour offering a hand this week so the feed has more than one page to turn.'),
+       n % 5, 'public', 'published', 'post', 0,
+       DATE_SUB(NOW(), INTERVAL n MINUTE)
+FROM seq;
+
+INSERT INTO feed_activity (id, tenant_id, user_id, source_type, source_id, group_id, title, content, is_visible, is_hidden, created_at)
+WITH RECURSIVE seq AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM seq WHERE n < 24)
+SELECT 950200 + n, @T, IF(n % 2 = 0, @UB, @UA), 'post', 950100 + n, NULL, NULL,
+       CONCAT('Fixture timeline post ', n,
+              ' — a neighbour offering a hand this week so the feed has more than one page to turn.'),
+       1, 0, DATE_SUB(NOW(), INTERVAL n MINUTE)
+FROM seq;
 
 -- Trending hashtags require post_count > 0 AND last_used_at within the last 7
 -- days. A tag with a zero count, or an old one, is filtered out.
@@ -285,6 +452,31 @@ INSERT INTO job_saved_profiles (id, tenant_id, user_id, cv_path, cv_filename, cv
 INSERT INTO transactions (id, tenant_id, sender_id, receiver_id, giver_id, amount, description, status, transaction_type) VALUES
   (950100, @T, @UA, @UB, @UB, 2.00, 'Two hours of bike repair', 'completed', 'transfer'),
   (950101, @T, @UB, @UA, @UA, 1.50, 'Help moving a wardrobe', 'completed', 'transfer');
+
+-- ---------------------------------------------------------------------------
+-- 🔴 AN EXISTING CONVERSATION, so messaging can be measured at all.
+--
+-- Measured 2026-08-21: `journey-message-send` PASSED on ASP.NET and SKIPPED on
+-- Laravel — "no conversation in the list". The step opens the FIRST conversation
+-- and replies in it (smoke-react-against-aspnet.mjs:619-639); it never starts a
+-- new one, so with an empty inbox the whole of messaging measured nothing on the
+-- Laravel side and the pair scored NOT_COMPARABLE.
+--
+-- 🔴 A 1:1 conversation on this backend is NOT a `conversations` row. GET
+-- /api/v2/messages is MessageService::getConversations (MessageService.php:118),
+-- which unions `messages` by sender_id/receiver_id and groups by partner — so
+-- the list is derived from the messages themselves. The filters it applies, and
+-- which each row below satisfies: tenant_id, is_federated = 0, and
+-- archived_by_sender / archived_by_receiver IS NULL. `conversation_id` is left
+-- NULL exactly as the send path leaves it for a direct message; a row inserted
+-- into `conversations` instead would be invisible here.
+--
+-- Two messages, in both directions, so the thread has a partner to reply to and
+-- the unread count is non-zero on the signing-in member's side.
+-- ---------------------------------------------------------------------------
+INSERT INTO messages (id, tenant_id, conversation_id, sender_id, receiver_id, body, is_read, is_federated, created_at) VALUES
+  (950110, @T, NULL, @UA, @UB, 'Are you around on Saturday for the repair cafe?', 1, 0, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
+  (950111, @T, NULL, @UB, @UA, 'Yes — I can bring the tool box. See you at the hall.', 0, 0, DATE_SUB(NOW(), INTERVAL 1 HOUR));
 
 -- ---------------------------------------------------------------------------
 -- Member-owned records. Each of these endpoints filters on user_id, so a row

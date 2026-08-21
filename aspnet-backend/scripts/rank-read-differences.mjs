@@ -6,6 +6,18 @@
 /**
  * Rank the response differences by whether the frontend ACTUALLY READS the missing field.
  *
+ * 🔴 SUPERSEDED 2026-08-21 by `compare-live-responses.mjs --consumed-fields`, which
+ * implements the same idea as the ADR-0004 scope rule rather than as a ranking, and
+ * fixes three limits this script has. It covers ALL FOUR clients plus the published
+ * OpenAPI contract, not one client at a time. It matches `id` (this script's
+ * `{2,}` quantifier requires three characters, so the most-read field in the whole
+ * API was silently excluded from every ranking it ever produced). And it reports
+ * three buckets with the undecidable cases labelled, instead of a two-way
+ * read/unread split that quietly rounds "cannot tell" towards "unread".
+ *
+ * This script is kept because it needs no manifest and is useful for a quick
+ * single-client sanity check. Do not build a work queue from it.
+ *
  * 🔴 Why this exists. `compare-live-responses.mjs` reports 63 differing endpoints and 868
  * missing field paths, and treats them all alike. Most do not matter: Laravel hands back
  * whole database rows, so a "difference" is often a column no client has ever read. A few

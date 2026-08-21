@@ -53,6 +53,7 @@ wording, and before doing any parity work.
 | [database-migrations.md](database-migrations.md) | EF Core migration workflow and drift prevention. |
 | [REGISTRATION_POLICY_ENGINE.md](REGISTRATION_POLICY_ENGINE.md) | Registration and identity-verification architecture. |
 | [generated/canonical-react-contracts/README.md](generated/canonical-react-contracts/README.md) | Exact-SHA React call-site matrix; static evidence only, never a parity score. |
+| [generated/consumed-fields/README.md](generated/consumed-fields/README.md) | The consumed-field manifest behind the response harness's ADR-0004 filter: which response field names each of the four clients reads, and where. Static evidence, over-inclusive by design; never a parity score. |
 | [DOCUMENTATION_HEALTH_REPORT.md](DOCUMENTATION_HEALTH_REPORT.md) | The documentation-health audit record; separate from product completion. |
 
 ## Audience guides

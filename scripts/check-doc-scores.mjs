@@ -158,6 +158,30 @@ const KNOWN_MARKERS = {
     doc: 'aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md'
   },
 
+  // The mobile workstream's own journey denominator, registered 2026-08-21.
+  //
+  // 🔴 Registered as a FULL `ledger` marker, not `opaque`. The unregistered-
+  // marker guard caught this document the moment it appeared, which is the guard
+  // doing its job — but registering it as an unchecked value would have swapped a
+  // loud failure for a silent one, which is the exact defect this file was
+  // hardened to remove. Its tier tables use the same structure and the same
+  // status vocabulary as the ASP.NET ledger, so the strict recount applies
+  // unchanged: summary counts must equal the counted rows, tiers must sum to the
+  // marker, and no status outside its own vocabulary is allowed.
+  //
+  // 🔴 SCOPE OVERLAP TO RESOLVE, flagged not silently reconciled: the
+  // ASP.NET ledger also carries a mobile tier (34 rows, Tier 6) because the owner
+  // put the mobile app in ASP.NET scope on 2026-08-21. Two documents therefore
+  // enumerate mobile journeys against different denominators and for different
+  // questions — this one asks "does the mobile app work", the ASP.NET tier asks
+  // "does the mobile app work against the ASP.NET backend". Both are legitimate
+  // and they are NOT the same question, but they must never be added, averaged,
+  // or read as one number. An owner decision on how they relate is outstanding.
+  MOBILE_JOURNEY_ROWS: {
+    kind: 'ledger',
+    doc: 'mobile/docs/MOBILE_JOURNEY_LEDGER.md'
+  },
+
   // Documentation health — an INDEX, not a product score. Renamed 2026-08-11.
   DOCUMENTATION_HEALTH_INDEX: { kind: 'opaque', requiresRubric: 'DOCUMENTATION_HEALTH_RUBRIC' },
   DOCUMENTATION_HEALTH_RUBRIC: { kind: 'rubric' },
@@ -218,6 +242,7 @@ const MARKER_DOCUMENTS = [
   'aspnet-backend/docs/DOCUMENTATION_HEALTH_REPORT.md',
   'aspnet-backend/docs/CURRENT_SCHEMA_READINESS.md',
   'aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md',
+  'mobile/docs/MOBILE_JOURNEY_LEDGER.md',
   'aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md'
 ];
 

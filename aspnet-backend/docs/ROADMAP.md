@@ -21,9 +21,15 @@ Zero certified is not a typo, and it is the most useful fact on this page — se
 ## What this is, and why we are building it
 
 Project NEXUS ships as **two editions of the same product**. One runs on Laravel
-(PHP). One runs on ASP.NET (.NET). Both run the same four clients — the main app,
-the admin panel, the accessible site and the mobile app — and you switch between
-them with a setting, not a rewrite.
+(PHP). One runs on ASP.NET (.NET). Both run the same **three applications** — the
+main app, the accessible site and the mobile app — and you switch between them
+with a setting, not a rewrite.
+
+The main app contains two quite separate things: what a member sees, and the
+admin panel. They are one application and one build, but they use different
+halves of the server (the admin side alone has 514 addresses), so they are
+tracked and scored separately. When you see four things listed, that is three
+applications and four surfaces — not four apps.
 
 The reason is commercial: **some public-sector buyers require a .NET application
 stack as a condition of procurement.** Many will accept the Laravel platform. Some
@@ -154,7 +160,7 @@ Milestone levels are lower than the equivalents quoted yesterday because the
 denominator grew: 550 now covers more certified product than 600 did then.
 
 **Was 11 weeks unreasonable?** Partly. The platform is about 2.13 million lines of
-product code across four clients and two backends — Laravel's business logic alone
+product code across three client applications and two backends — Laravel's business logic alone
 is 521,000 lines. It is genuinely large. But your instinct that something was off
 is right: **the porting is already done.** 2,655 of 2,667 addresses exist, and the
 only gaps the main app cares about are five, all one social-login feature. What is

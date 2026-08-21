@@ -31,10 +31,19 @@
  * works. Report it as "ASP.NET is N/M contract-identical on the endpoints X
  * calls", never as "X is N/M".
  *
+ * 🔴 CONSUMED-FIELD MODE (`--consumed-fields`) is OPT-IN, and deliberately so.
+ * The whole-body diff remains the default because it is the raw measurement and
+ * every archived number was produced by it; changing what an existing invocation
+ * prints would make those numbers incomparable. See the block above
+ * `loadConsumedManifest` for what the mode does and why.
+ *
  * Usage:
  *   node aspnet-backend/scripts/compare-live-responses.mjs
  *   node aspnet-backend/scripts/compare-live-responses.mjs --paths paths.txt
  *   node aspnet-backend/scripts/compare-live-responses.mjs --json out.json
+ *   node aspnet-backend/scripts/compare-live-responses.mjs --consumed-fields
+ *   node aspnet-backend/scripts/compare-live-responses.mjs --consumed-fields \
+ *     --consumed-manifest <path/to/consumed-field-manifest.json>
  */
 
 import fs from 'node:fs';
@@ -46,6 +55,7 @@ const flag = (name, fallback = null) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
 };
+const has = (name) => args.includes(`--${name}`);
 
 const LARAVEL = flag('laravel', 'http://127.0.0.1:8090');
 const ASPNET = flag('aspnet', 'http://127.0.0.1:5080');
@@ -150,6 +160,50 @@ const SEED_PATHS = [
 import {
   skeleton, fieldPaths, compareSkeleton, classify, describeShapeDiff,
 } from './lib/response-shape.mjs';
+
+import { loadManifest, bucketEndpoint } from './lib/consumed-fields.mjs';
+
+/**
+ * CONSUMED-FIELD MODE — the ADR-0004 filter.
+ *
+ * 🔴 What it changes. The default run reports an endpoint as SHAPE_DIFFERS the
+ * moment any field name differs anywhere in the body. Laravel returns raw
+ * Eloquent models, so a listing carries ~76 fields and an event ~80, including
+ * internal database columns no client has ever read and at least one
+ * (`category.reset_token`) that should never be serialised at all. Under that
+ * measurement, reproducing an internal column counts as required work and not
+ * reproducing it counts as a contract gap. This mode filters each differing
+ * field through the consumed-field manifest first, so the reported number is
+ * about product behaviour rather than field noise.
+ *
+ * 🔴 What it does NOT do: drop anything silently. Every differing field lands in
+ * one of three buckets and all three are counted and stored —
+ *   IN-SCOPE DIFFERENCE      a client reads it; this is the work queue
+ *   OUT-OF-SCOPE DIFFERENCE  no known reader; recorded, then moved past
+ *   UNKNOWN                  the scan could not decide; treated AS IN SCOPE
+ * A run that reported a smaller number without showing what it set aside would
+ * be worse than the upper bound it replaces.
+ *
+ * 🔴 It is opt-in and the default path is untouched, on purpose. Every archived
+ * corpus run (`.local-docs-archive/parity-corpus/read-*.json`) was produced by
+ * the whole-body diff; if this mode changed the default output, the "80 of 195"
+ * figure and its successors would stop being comparable to anything.
+ */
+const CONSUMED_MODE = has('consumed-fields') || process.env.NEXUS_CONSUMED_FIELDS === '1';
+const CONSUMED_MANIFEST = flag('consumed-manifest', path.join(
+  import.meta.dirname, '..', 'docs', 'generated', 'consumed-fields', 'consumed-field-manifest.json'));
+
+function loadConsumedManifest() {
+  if (!CONSUMED_MODE) return null;
+  if (!fs.existsSync(CONSUMED_MANIFEST)) {
+    console.error(`🔴 consumed-field mode requested but the manifest is missing:`);
+    console.error(`   ${CONSUMED_MANIFEST}`);
+    console.error('   Build it first:');
+    console.error('     node aspnet-backend/scripts/build-consumed-field-manifest.mjs');
+    process.exit(2);
+  }
+  return loadManifest(CONSUMED_MANIFEST);
+}
 
 
 /**
@@ -303,6 +357,7 @@ async function assertFeaturesEnabled(token) {
 }
 
 async function main() {
+  const manifest = loadConsumedManifest();
   const pathsFile = flag('paths', null);
   const specs = pathsFile
     ? fs.readFileSync(pathsFile, 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
@@ -325,6 +380,30 @@ async function main() {
       ? 'Mode    : SIGNED IN on both — payloads behind the login are compared'
       : 'Mode    : SIGNED OUT — most endpoints will answer 401 on both sides,'
         + ' which proves only that the door is locked the same way');
+  if (manifest) {
+    console.log(
+      `Scope   : CONSUMED-FIELD MODE (ADR-0004) — manifest ${manifest.meta.unique_names} field `
+      + `names from ${manifest.meta.clients.join(', ')}, built ${manifest.meta.generated_at}`);
+    // 🔴 A stale manifest fails in the dangerous direction: a field a client
+    // started reading yesterday looks unread today, so a real defect is filed as
+    // out of scope. Cheap SHA comparison, warn rather than refuse — refusing
+    // would block a run every time the working tree moved.
+    let headSha = null;
+    try {
+      headSha = (await import('node:child_process'))
+        .execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    } catch { /* not a git checkout, or no git — say nothing rather than guess */ }
+    if (headSha && manifest.meta.repo_sha && headSha !== manifest.meta.repo_sha) {
+      console.log(
+        `          ⚠️  manifest was built at ${manifest.meta.repo_sha.slice(0, 12)}, HEAD is `
+        + `${headSha.slice(0, 12)}. A stale manifest makes a newly-read field look UNREAD,`);
+      console.log('              which files a real defect as out of scope. Rebuild it:'
+        + ' node aspnet-backend/scripts/build-consumed-field-manifest.mjs');
+    }
+    console.log(
+      '          A differing field is a DEFECT only if a client reads it. Fields with no'
+      + ' known reader are counted separately, never dropped.');
+  }
   console.log(`Comparing ${specs.length} read-only endpoints. Shape only — values are expected to differ.\n`);
 
   const results = [];
@@ -347,13 +426,53 @@ async function main() {
       aspnet_status: aspnet.status,
     };
     if (verdict === 'SHAPE_DIFFERS') Object.assign(row, describeShapeDiff(laravel, aspnet));
+
+    // Consumed-field mode annotates the row; it never rewrites `verdict`, so a
+    // JSON file from this mode stays directly comparable to an archived one.
+    if (manifest) {
+      if (verdict === 'SHAPE_DIFFERS') {
+        const scoped = bucketEndpoint(row, { laravel: laravel.body, aspnet: aspnet.body }, manifest);
+        row.consumed = scoped.counts;
+        row.consumed_fields = scoped.buckets;
+        row.consumed_verdict = scoped.is_defect_candidate ? 'IN_SCOPE_DIFFERS' : 'OUT_OF_SCOPE_ONLY';
+      } else if (['STATUS_DIFFERS', 'NOT_JSON', 'UNREACHABLE'].includes(verdict)) {
+        // 🔴 Always in scope. ADR-0004 clause 3: a difference that changes an
+        // outcome is in scope regardless of which fields are involved, and a
+        // status code, an unparseable body and an unreachable endpoint are all
+        // outcomes a client acts on. No manifest lookup can excuse these.
+        row.consumed_verdict = 'IN_SCOPE_DIFFERS';
+        row.consumed = { in_scope: 1, out_of_scope: 0, unknown: 0 };
+        row.consumed_reason = 'status code / parseability is itself an outcome a client acts on';
+      } else {
+        row.consumed_verdict = verdict === 'MATCH' ? 'MATCH' : 'NOT_PROVEN';
+      }
+    }
+
     results.push(row);
 
     const mark = verdict === 'MATCH' ? '✓' : verdict === 'MATCH_BUT_LIST_EMPTY' ? '~' : '✗';
-    console.log(`${mark} ${verdict.padEnd(14)} ${String(laravel.status).padEnd(4)}→${String(aspnet.status).padEnd(4)} ${method} ${urlPath}`);
-    if (verdict === 'SHAPE_DIFFERS') {
+    const shown = manifest && row.consumed_verdict === 'OUT_OF_SCOPE_ONLY' ? 'OUT_OF_SCOPE  ' : verdict.padEnd(14);
+    console.log(`${manifest && row.consumed_verdict === 'OUT_OF_SCOPE_ONLY' ? '·' : mark} ${shown} ${String(laravel.status).padEnd(4)}→${String(aspnet.status).padEnd(4)} ${method} ${urlPath}`);
+
+    if (verdict === 'SHAPE_DIFFERS' && !manifest) {
       if (row.missing_count) console.log(`      missing in ASP.NET (${row.missing_count}): ${sample(row.missing_in_aspnet, row.missing_count)}`);
       if (row.extra_count) console.log(`      extra in ASP.NET   (${row.extra_count}): ${sample(row.extra_in_aspnet, row.extra_count)}`);
+    }
+
+    if (verdict === 'SHAPE_DIFFERS' && manifest) {
+      const c = row.consumed;
+      console.log(
+        `      missing in ASP.NET: ${c.in_scope} in scope, ${c.unknown} unknown (counted as in scope), `
+        + `${c.out_of_scope} out of scope`
+        + `  |  extra in ASP.NET: ${c.extra_in_aspnet} (a superset is not a gap)`);
+      // Only the missing-side in-scope fields are work. An ASP.NET superset is
+      // explicitly not a gap under ADR-0004.
+      const work = row.consumed_fields.IN_SCOPE.filter((f) => f.direction === 'missing_in_aspnet');
+      for (const f of work.slice(0, 6)) {
+        console.log(`        MISSING ${f.path}`);
+        console.log(`                read by ${f.evidence.join(' | ') || f.readers.join(', ')}`);
+      }
+      if (work.length > 6) console.log(`        … and ${work.length - 6} more in-scope missing field(s)`);
     }
   }
 
@@ -371,9 +490,67 @@ async function main() {
       + `compared, because one backend had no rows. Those are NOT proven identical.`);
   }
 
+  if (manifest) {
+    const differing = results.filter((r) => r.verdict === 'SHAPE_DIFFERS');
+    const inScope = results.filter((r) => r.consumed_verdict === 'IN_SCOPE_DIFFERS');
+    const outOnly = differing.filter((r) => r.consumed_verdict === 'OUT_OF_SCOPE_ONLY');
+    const sum = (rows, key) => rows.reduce((s, r) => s + (r.consumed?.[key] ?? 0), 0);
+
+    console.log('\n─── consumed-field mode (ADR-0004) ───');
+    console.log(`Whole-body differing endpoints (the upper bound) : ${differing.length}`);
+    console.log(`Endpoints differing on a field a client READS    : ${differing.filter((r) => r.consumed_verdict === 'IN_SCOPE_DIFFERS').length}`);
+    // 🔴 This label used to read "differing ONLY on unread fields", which was
+    // wrong in a way that mattered. Measured on the 195-path read corpus, all 18
+    // of these endpoints have ZERO unread missing fields — every one of them is
+    // an ASP.NET SUPERSET. Two different mechanisms clear an endpoint, and the
+    // label must not credit the reduction to the wrong one.
+    console.log(`Endpoints with no in-scope field MISSING         : ${outOnly.length}`);
+    console.log(`  (${sum(outOnly, 'out_of_scope')} unread missing field path(s)`
+      + ` + ${sum(outOnly, 'extra_in_aspnet')} extra ASP.NET field(s). Neither is a gap under`
+      + ' ADR-0004; a superset of what a client reads is allowed.)');
+    console.log('');
+    console.log(`Fields MISSING in ASP.NET, all differing endpoints: `
+      + `${sum(differing, 'in_scope')} IN SCOPE, `
+      + `${sum(differing, 'unknown')} UNKNOWN (counted as in scope), `
+      + `${sum(differing, 'out_of_scope')} OUT OF SCOPE`);
+    console.log(`Fields EXTRA in ASP.NET: ${sum(differing, 'extra_in_aspnet')} `
+      + `(not gaps — a superset of what a client reads is allowed)`);
+    console.log('');
+    console.log('🔴 Reading this honestly:');
+    console.log('   IN SCOPE     = a client reads the field. This is the work queue.');
+    console.log('   UNKNOWN      = the scan could not decide. Treated as in scope, by design:');
+    console.log('                  a false "nothing reads it" hides a defect, a false "in scope"');
+    console.log('                  only wastes an investigation.');
+    console.log('   OUT OF SCOPE = no reader in react, web-uk, mobile or the published contract.');
+    console.log('                  Laravel serialising it is a LARAVEL defect, not ASP.NET work.');
+    console.log(`   Status-code and non-JSON differences are ALWAYS in scope (${inScope.length - differing.filter((r) => r.consumed_verdict === 'IN_SCOPE_DIFFERS').length} here).`);
+
+    const queue = differing
+      .filter((r) => r.consumed_verdict === 'IN_SCOPE_DIFFERS')
+      .map((r) => ({ r, work: r.consumed_fields.IN_SCOPE.filter((f) => f.direction === 'missing_in_aspnet') }))
+      .sort((a, b) => b.work.length - a.work.length);
+
+    if (queue.length) {
+      console.log('\n─── in-scope work queue, worst first ───');
+      for (const { r, work } of queue.slice(0, 15)) {
+        console.log(`${String(work.length).padStart(3)} read-field(s) missing  ${r.method} ${r.path}`);
+        for (const f of work.slice(0, 4)) {
+          console.log(`      ${f.path}  ←  ${f.evidence.join(' | ') || f.readers.join(', ')}`);
+        }
+      }
+      if (queue.length > 15) console.log(`… and ${queue.length - 15} more endpoint(s)`);
+    }
+  }
+
   if (JSON_OUT) {
     fs.mkdirSync(path.dirname(JSON_OUT), { recursive: true });
-    fs.writeFileSync(JSON_OUT, JSON.stringify({ generated_at: new Date().toISOString(), laravel: LARAVEL, aspnet: ASPNET, results }, null, 2));
+    fs.writeFileSync(JSON_OUT, JSON.stringify({
+      generated_at: new Date().toISOString(),
+      laravel: LARAVEL,
+      aspnet: ASPNET,
+      ...(manifest ? { consumed_field_mode: manifest.meta } : {}),
+      results,
+    }, null, 2));
     console.log(`\nWrote ${JSON_OUT}`);
   }
 

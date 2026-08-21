@@ -126,12 +126,31 @@ scope decision on the extended modules cannot change the denominator.
   buyers evaluate the admin panel, which is why this tier carries 150 points.
 - **Consumed-contract 68 of 110 (-42).** Sub-weighted: routes 28/28 (2,655 of
   2,667 matched); reads 18/30 (115 of 195 identical on the generated corpus);
-  writes 12/22 (10 of 18 identical); stub elimination 10/30. 🔴 The 80
-  differing reads are an **upper bound, not a defect count** - the harness diffs
-  whole response bodies and has no consumed-field mode, so it counts fields no
-  client reads. Building that mode is queue item 2. The client-consumed route gap
-  is **5 operations, all one feature (OAuth social login)**, named in the Open
-  Gates section.
+  writes 12/22 (10 of 18 identical); stub elimination 10/30.
+  🔴 **CORRECTION 2026-08-21: consumed-field mode now EXISTS, and it
+  largely REFUTES the "upper bound inflated by unread fields" reasoning this row
+  carried.** Measured: 80 differing endpoints falls to **64**, not to something
+  far smaller. And all 16 cleared endpoints cleared because ASP.NET returns a
+  **superset** (allowed under ADR-0004), not because Laravel leaked an unread
+  column - between them they carry zero unread missing fields. The 49 genuinely
+  unread fields all sit on endpoints that ALSO differ on a field a client reads,
+  so they reduce the endpoint count by nothing. **64 of 80 are real work.** Field
+  paths split 590 in scope / 116 unknown (treated as in scope) / 49 out of scope.
+  Reads would therefore move from 115/195 to ~131/195 acceptable at the next
+  banking transaction - an improvement, recorded in Block 3 rather than taken
+  here.
+  🔴 **CORRECTION 2026-08-21: the "5 client-consumed route gaps (OAuth)"
+  claim was wrong in BOTH directions.** The routes are NOT missing - all five are
+  declared in `AuthParityController.cs:220-268` with explicit `~/api/v2/...`
+  override attributes, which is why `api-parity`'s path matching did not see
+  them. But they are hollow, and one is worse than hollow: `OAuthRedirect`
+  (`:229`) mints a random `state` with `RandomNumberGenerator` and **never stores
+  it**, returning a plausible `redirect_url` carrying a value nothing can later
+  validate - a fabricated security-critical token rather than an honest refusal.
+  `OAuthIdentities` (`:256`) returns `identities = Array.Empty<object>()`
+  unconditionally, so a member's linked accounts always read as none.
+  `EnabledProviders` (`:223`) answers from a hardcoded list. Route presence hid
+  all of it - the ADR-0004 lesson restated: open the method body.
 - **Schema 46 of 60 (-14).** 257 tables matched, 215 absent, 184 EF migrations.
   Under ADR-0004 an absent table is a gap only where a journey needs it, so the
   bulk is deferred rather than deducted; the standing deduction is the missing
@@ -180,8 +199,38 @@ evidence SHA:
   failed and exited 1, where previously every run exited 0 regardless. A Laravel
   control arm with four comparison verdicts is added. Neither smoke is CI-wired,
   so this cannot affect the build.
-- **The first full control run completed, and its headline is the best evidence
-  this workstream has produced: ZERO ASP.NET-only failures.** Both arms ran the
+🔴 **SECOND control run, after the fixture fix: 34 MATCH / 1 LARAVEL_ONLY_FAIL
+  / 2 NOT_COMPARABLE / 0 ASPNET_ONLY_FAIL** (was 31/2/4/0). The disposable
+  Laravel's fixture gained two non-master tenants, three members, a conversation
+  and 24 timeline posts (`scripts/parity-fixture.sql`, +170 lines, disposable
+  path only). Three rows converted: `select-community`, `journey-message-send`,
+  `journey-feed-infinite-scroll`.
+  🔴 **My own diagnosis of the blocker was half wrong, and the fix needed
+  two tenants rather than one.** I attributed the empty login select to
+  `TenantBootstrapController`'s master-tenant exclusion. The login page asks
+  *with* `include_master=1` (`LoginPage.tsx:254`), so master WAS returned; the
+  real cause is that with exactly one community the page renders a card instead
+  of a `<select>` (`LoginPage.tsx:441`). Proof the exclusion was never the login
+  blocker: `login-submit` PASSED on Laravel in the same run where
+  `select-community` failed. The register page is the surface that exclusion
+  actually empties.
+  Remaining non-matches: `journey-sign-up` is an INSTRUMENT gap - the smoke
+  registers at `@example.test` and Laravel deliberately refuses reserved TLDs
+  (`MxRecordValidator.php:91`); a resolvable domain is a one-line fix for the
+  smoke owner. Behind it sits a real ASP.NET gap - **none of Laravel's three
+  registration guards exist** (no disposable-domain blocklist, no deliverability
+  check, no breached-password check; `EMAIL_DOMAIN_INVALID`, `EMAIL_DISPOSABLE`
+  and `PASSWORD_PWNED` return nothing across `src/`).
+  `action-transfer-credits` exposed a real contract difference:
+  `/api/v2/wallet/user-search` returns `last_name: ""` on ASP.NET where Laravel
+  returns the surname, making the recipient card unidentifiable.
+  `journey-feed-reaction` is blocked on `role="article"` not reaching the DOM
+  through `GlassCard` - unproven, cheap to check.
+  Two ASP.NET-only 404s the tally hid, from the arm's own failed-request list:
+  `GET /api/v2/events/{id}/calendar-actions` and
+  `GET /api/v2/stories/highlights/{id}`. `offline-checkin/credentials/me` 404s on
+  BOTH arms, so it is not an ASP.NET-only gap.
+- **The first control run, for the record: ZERO ASP.NET-only failures.** Both arms ran the
   same 37 steps in one execution. ASP.NET: 35 ok / 0 failed / 2 skipped. Laravel
   control: 31 ok / 2 failed / 4 skipped. Tally: **31 MATCH, 0 ASPNET_ONLY_FAIL, 2
   LARAVEL_ONLY_FAIL, 4 NOT_COMPARABLE**; exit 2 (unclean, not failed).
@@ -223,7 +272,11 @@ configuration only. The ASP.NET edition exists because a segment of public-secto
 buyers require a .NET stack as a condition of procurement
 ([`ADR-0003`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)).
 
-| Unchanged client | Laravel edition | ASP.NET edition |
+Three client applications, four consumer surfaces (the React app carries both the
+member UI and the admin panel in one build, but they consume different halves of
+the API and are scored separately):
+
+| Unchanged surface | Laravel edition | ASP.NET edition |
 | --- | --- | --- |
 | Canonical React member app at `react-frontend/` | Production behaviour source of truth | Same journeys, same outcomes, same data, same errors, same permissions |
 | React admin at `react-frontend/src/admin/` | Production | The same admin surface - and the tier where every remaining do-nothing endpoint lives |
@@ -262,16 +315,18 @@ under R5 covers more certified product than 600 did under R4.
   control arm **and** on the disposable Laravel's login fixture offering no
   communities.
   Largest single blocks: staff 149, mobile 120, module React 125, core React 120.
-- **Consumed-contract correctness (42 open)** - the 5 OAuth operations
-  (`GET /api/v2/auth/oauth/enabled-providers`,
-  `GET /api/v2/auth/oauth/{provider}/redirect`,
-  `GET /api/v2/auth/oauth/me/identities`,
-  `POST /api/v2/auth/oauth/{provider}/link`,
-  `DELETE /api/v2/auth/oauth/{provider}/unlink` - read by
-  `OAuthButtons.tsx:52,80` and `ConnectedAccountsTab.tsx:61,82,103`); the
-  read-differ tail once a consumed-field mode exists; 8 differing writes; and
-  317 stubs, 63 of them uncalled and candidates for deletion in both editions
-  (owner sees the list first).
+- **Consumed-contract correctness (42 open)** - the OAuth social-login feature
+  (read by `OAuthButtons.tsx:52,80` and `ConnectedAccountsTab.tsx:61,82,103`):
+  its five operations EXIST but are hollow, and `OAuthRedirect` fabricates an
+  unstorable `state`, so this is a **behaviour** item, not a routing one. Then:
+  the read-differ tail once a consumed-field mode exists; 8 differing writes; and
+  317 stubs - **201 on member-reachable paths, 116 on admin paths**
+  (`artifacts/parity/stubs/stub-routes.json`) - of which 63 are uncalled and are
+  candidates for deletion in both editions (owner sees the list first).
+  🔴 ~10 of the 317 are DEFENSIBLE false positives where `[Authorize]`
+  does the work in the filter pipeline and an empty body is correct
+  (`AuthParityController` `check-session`, `refresh-session`, `validate-token`).
+  Triage before implementing.
 - **Schema/upgrade (14 open)** - populated-history upgrade proof,
   preflight-failure proof, and the absent tables that specific journeys need.
 - **Security/localization (14 open)** - R-4, R-18, R-20, R-8; request-locale and

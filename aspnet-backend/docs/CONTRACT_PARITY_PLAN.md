@@ -278,6 +278,106 @@ report pagination as `pagination` where Laravel uses `meta`, are per-endpoint
 work. Use `map-paths-to-actions.mjs` to find the method, then read the live
 Laravel response for that path before editing.
 
+### 🔴 Consumed-field mode — the ADR-0004 filter (built 2026-08-21)
+
+The whole-body diff above is an **upper bound**, and the status doc has always
+labelled it as one. Laravel returns raw Eloquent models, so a listing carries
+~76 fields and an event ~80, including internal database columns nothing reads
+and at least one (`category.reset_token`) that should never be serialised.
+[ADR-0004](decisions/ADR-0004-journey-equivalence-is-the-target.md) makes the
+rule explicit: a field is in scope only if a client reads it, acts on it, or its
+difference changes an outcome.
+
+`--consumed-fields` applies that rule. It is **opt-in**; the default run is
+unchanged, deliberately, so every archived corpus number stays comparable.
+
+```bash
+node aspnet-backend/scripts/build-consumed-field-manifest.mjs
+node aspnet-backend/scripts/compare-live-responses.mjs --consumed-fields \
+  --laravel http://127.0.0.1:8091 --laravel-tenant 1 \
+  --laravel-auth "e2e.user.a@project-nexus.local:TestPassword123!" \
+  --aspnet-auth "member@acme.test:NexusV2!Demo#2026:acme" \
+  --paths .local-docs-archive/parity-corpus/react-get-member.txt --json out.json
+```
+
+The reader index is
+[`generated/consumed-fields/README.md`](generated/consumed-fields/README.md),
+built by static analysis of `react-frontend/src`, `web-uk/src`, `mobile/` and
+the published `openapi.json`. Three buckets, and the third is not optional:
+
+| Bucket | Meaning | What to do |
+| --- | --- | --- |
+| IN SCOPE | a client reads the field | the work queue |
+| UNKNOWN | the scan could not decide | treat as in scope; it is labelled, not hidden |
+| OUT OF SCOPE | no reader in any client or the published contract | record the count and move past; Laravel serialising it is a **Laravel** defect |
+
+🔴 **The bias is towards over-inclusion and must never be inverted.** A false
+"in scope" costs an investigation. A false "out of scope" hides a defect — that
+is the `starts_at` / `start_date` class of bug that rendered an error state
+behind a wall of HTTP 200s.
+
+🔴 **The reduction on the read corpus is real but modest, and the REASON is the
+finding.** Measured 2026-08-21, signed in on both sides, 195 React member GET
+paths:
+
+| Measure | Whole-body (default) | Consumed-field mode |
+| --- | ---: | ---: |
+| Differing endpoints | 80 | **64** |
+| Endpoints cleared | — | 16 |
+| Missing field paths | 754 | 590 in scope / 116 unknown / 49 out of scope (+1 whole-response type difference) |
+| Extra ASP.NET field paths | 417 | 417, none of them a gap |
+
+🔴 **These counts move by one to three between runs, and the endpoint total does
+not.** Three consecutive runs on the same corpus and the same two backends gave
+80 differing endpoints every time, but 62, 63 and 64 in scope. The cause is the
+fixtures, not the instrument: whether a given list comes back empty decides
+whether its row's fields get enumerated at all. Quote the whole-body total as
+exact and the field-level splits as approximate, and re-measure rather than
+comparing two runs a field at a time.
+
+Two things to read carefully before quoting this.
+
+**First, all 16 cleared endpoints were cleared because ASP.NET returns a
+SUPERSET, not because Laravel leaked an unread column.** They carry zero unread
+missing fields between them. ADR-0004 is explicit that a superset is not a gap,
+so clearing them is correct — but the mechanism is not the one ADR-0004's
+narrative describes, and the printed label was corrected to stop crediting the
+reduction to the wrong cause. The 49 genuinely-unread missing fields all sit on
+endpoints that *also* differ on a field a client reads, so they reduce the
+endpoint count by nothing.
+
+🔴 **One false clean was found and fixed while measuring this, and it is the
+failure mode to watch for.** `describeShapeDiff` compares field *presence*, so an
+endpoint whose skeletons differ only by a field's TYPE produces zero missing and
+zero extra paths. The first version of consumed-field mode cleared such an
+endpoint as "no in-scope field missing" — measured on
+`/api/v2/groups/form-capabilities`. It is now bucketed UNKNOWN, so it counts as
+in scope. Naming the offending field needs per-path type diffing, which does not
+exist yet; until it does, that endpoint reads as undecided rather than clean.
+
+**Second, leaf-name matching alone put 91% of differing fields "in scope"**, and
+that is not a defect in the manifest. `react-get-member.txt` is generated from
+the React client's own call list, so by construction almost every field on it has
+a reader. The field-noise problem ADR-0004 describes — the ~76-field listing,
+`category.reset_token` — lives mostly in **write** responses
+(`compare-live-writes.mjs`) and raw-Eloquent **admin** surfaces, neither of which
+is in this corpus. That is where this mode should pay off next.
+
+🔴 **Do not tune the manifest until the number looks better.** Narrowing the scan
+to shrink the count is the same error as the whole-body diff, pointed the other
+way, and it would hide defects rather than surface field noise.
+
+🔴 **Empty lists inflate the raw missing-field count and the mode says so.**
+`fieldPaths()` walks the first element of an array, so when Laravel returns three
+badges and ASP.NET returns `[]`, every field of the rows it did not contain is
+reported "missing".
+Consumed-field mode buckets those as UNKNOWN with the reason
+`child of a list that was EMPTY on one side`, because what is missing is a
+fixture row, not a field. On `/api/v2/gamification/profile` that was 28 of its 64
+reported "missing" fields; across the whole corpus it is 58 of the 116 UNKNOWN.
+A further 19 are dynamic map keys (`data.rewards.top10`, numeric ids) that no
+static scan can attribute to a reader either way.
+
 ---
 
 ## 1. Authorisation boundaries — 🔴 START HERE
