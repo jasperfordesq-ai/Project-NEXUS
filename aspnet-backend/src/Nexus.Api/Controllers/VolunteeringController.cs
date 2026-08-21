@@ -234,11 +234,16 @@ public class VolunteeringController : ControllerBase
             ["latitude"] = o.Latitude,
             ["longitude"] = o.Longitude,
             // Laravel strips the creator's internal id from this public listing.
-            ["creator"] = o.Organizer == null ? null : new
+            ["creator"] = o.Organizer == null ? null : new Dictionary<string, object?>
             {
-                first_name = o.Organizer.FirstName,
-                last_name = o.Organizer.LastName,
-                avatar_url = o.Organizer.AvatarUrl,
+                ["first_name"] = o.Organizer.FirstName,
+                ["last_name"] = o.Organizer.LastName,
+                ["avatar_url"] = o.Organizer.AvatarUrl,
+                // Laravel's User model appends `avatar` and `tagline` to every
+                // serialised user, so they are part of this contract even though
+                // the browse listing never names them.
+                ["avatar"] = o.Organizer.AvatarUrl,
+                ["tagline"] = TaglineFallback(o.Organizer.Bio),
             },
             ["organization"] = o.VolunteerOrganisation == null ? null : new
             {
@@ -248,7 +253,17 @@ public class VolunteeringController : ControllerBase
             },
             // Null when unset, as an absent Eloquent relation serialises —
             // NOT an object with empty fields, which the card would render.
-            ["category"] = o.Category == null ? null : new { id = o.Category.Id, name = o.Category.Name },
+            ["category"] = o.Category == null ? null : new Dictionary<string, object?>
+            {
+                ["id"] = o.Category.Id,
+                ["name"] = o.Category.Name,
+                // 🔴 Laravel eager-loads `category:id,name,color` here and this
+                // backend's Category entity has no colour column, so the key
+                // exists with an honest null rather than a value invented from a
+                // palette — the same treatment as ListingContractMapper.cs:62-67.
+                // The React volunteering page never reads it.
+                ["color"] = null,
+            },
             ["has_applied"] = appliedIds.Contains(o.Id),
         }).ToList();
 
@@ -292,6 +307,32 @@ public class VolunteeringController : ControllerBase
                 || value.Equals("true", StringComparison.OrdinalIgnoreCase)
                 || value.Equals("on", StringComparison.OrdinalIgnoreCase)
                 || value.Equals("yes", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Laravel's <c>tagline</c> accessor returns the tagline column when set and
+    /// otherwise the first 120 characters of the bio. This backend has no tagline
+    /// column, so the fallback branch is always the correct one — the value is
+    /// derived, not invented.
+    /// </summary>
+    private static string? TaglineFallback(string? bio)
+    {
+        if (string.IsNullOrWhiteSpace(bio)) return null;
+        // Count text elements, not UTF-16 units, so a 120-character cut never
+        // splits an emoji or a combining sequence.
+        var enumerator = System.Globalization.StringInfo.GetTextElementEnumerator(bio);
+        var taken = 0;
+        var end = bio.Length;
+        while (enumerator.MoveNext())
+        {
+            if (taken == 120)
+            {
+                end = enumerator.ElementIndex;
+                break;
+            }
+            taken++;
+        }
+        return end >= bio.Length ? bio : bio[..end];
+    }
 
     /// <summary>
     /// Laravel serialises model dates with six fractional digits and a Z suffix.

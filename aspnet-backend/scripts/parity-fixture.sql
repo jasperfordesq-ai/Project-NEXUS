@@ -115,8 +115,15 @@ INSERT INTO vol_organizations (id, tenant_id, user_id, name, slug, description, 
    'hello@riverside.example', 'approved', 'organisation');
 
 -- is_active = 1 AND status IN ('open','active') AND the organisation gate above.
-INSERT INTO vol_opportunities (id, tenant_id, organization_id, title, description, location, is_remote, skills_needed, start_date, is_active, status, credits_offered, created_by) VALUES
-  (950021, @T, 950020, 'Repair cafe helper', 'Help visitors mend small appliances and bicycles at the Saturday repair cafe.',
+--
+-- 🔴 category_id is set deliberately. With it NULL, Laravel serialised
+-- `category: null` and the response differ could not see inside the object at
+-- all — so the nested keys (`id`, `name`, `color`) read as "extra in ASP.NET"
+-- rather than being compared. A fixture gap that hides a contract question is
+-- worse than a contract gap, because it looks like agreement.
+SET @VOLCAT = (SELECT id FROM categories WHERE tenant_id = @T ORDER BY id LIMIT 1);
+INSERT INTO vol_opportunities (id, tenant_id, organization_id, category_id, title, description, location, is_remote, skills_needed, start_date, is_active, status, credits_offered, created_by) VALUES
+  (950021, @T, 950020, @VOLCAT, 'Repair cafe helper', 'Help visitors mend small appliances and bicycles at the Saturday repair cafe.',
    'Riverside Hall', 0, 'Basic tools, patience', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, 'open', 2, @UA);
 
 -- Belongs to the signing-in member: the endpoint filters on user_id.

@@ -253,6 +253,48 @@ public sealed class VolunteeringOpportunitiesContractTests : IntegrationTestBase
             "the browse listing does not expose the creator's internal user id");
         creator.TryGetProperty("first_name", out _).Should().BeTrue();
         creator.TryGetProperty("avatar_url", out _).Should().BeTrue();
+        // Laravel's User model appends these to EVERY serialised user, so they
+        // belong to this contract even though the listing never names them.
+        creator.TryGetProperty("avatar", out _).Should().BeTrue();
+        creator.TryGetProperty("tagline", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task The_category_object_carries_Laravels_keys_including_the_absent_colour()
+    {
+        await AuthenticateAsMemberAsync();
+        await SeedAsync();
+
+        int? categoryId;
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            categoryId = db.Categories.Where(c => c.TenantId == TestData.Tenant1.Id)
+                .Select(c => (int?)c.Id).FirstOrDefault();
+            if (categoryId is int cid)
+            {
+                var opportunity = db.VolunteerOpportunities.First(o => o.Id == OnsiteOpportunityId);
+                opportunity.CategoryId = cid;
+                await db.SaveChangesAsync();
+            }
+        }
+
+        if (categoryId is null) return; // no seeded category to attach; nothing to assert
+
+        using var document = await GetAsync("per_page=50");
+        var category = Row(document, OnsiteOpportunityId).GetProperty("category");
+
+        category.ValueKind.Should().Be(JsonValueKind.Object);
+        category.GetProperty("id").GetInt32().Should().Be(categoryId!.Value);
+        category.GetProperty("name").GetString().Should().NotBeNullOrWhiteSpace();
+        // Laravel eager-loads `category:id,name,color`. This backend's categories
+        // table has no colour column, so the key is present with an honest null
+        // rather than a value invented from a palette — and the assertion is here
+        // so a future colour column is a deliberate change, not a silent one.
+        category.TryGetProperty("color", out var color).Should().BeTrue(
+            "Laravel emits `color` on this object and a missing key is a shape difference");
+        color.ValueKind.Should().Be(JsonValueKind.Null,
+            "no colour is stored here; a non-null would be fabricated");
     }
 
     [Fact]
