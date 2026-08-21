@@ -666,6 +666,84 @@ so the remaining fault is in how an already-mounted route sees new parameters.
 **Still not walked**: shifts and shift sign-up, swaps, donations, and the org dashboard's
 volunteers and settings tabs.
 
+### 9.10 Walking the journeys in navigation order — stopped at the second one
+
+The app's own order is Home → Listings → Create → Messages → More, so that is the order.
+This pass covered **Home/feed** and started **Listings**, then stopped. Two findings, one
+of them large enough to stop for.
+
+🔴 **BOTTOM SHEETS DO NOT OPEN. This is the headline.** Tapping "Comment" on a feed card
+fetches the comments — confirmed in the API log,
+`GET /api/v2/comments?target_type=listing&target_id=515` — and **nothing ever appears on
+screen.** The "…" card menu behaves the same way. Three consecutive taps, no sheet; the
+only pixels that changed between captures were the status-bar clock.
+
+What that costs: **16 files** import `components/ui/BottomSheet` — comment sheets, the card
+overflow menu, the reactor list, chat, exchange detail, goals, group detail, job detail,
+reviews and five marketplace screens. Everything behind a sheet is currently unreachable.
+
+Ruled out, each by measurement rather than reasoning:
+
+| Suspicion | Result |
+| --- | --- |
+| Animations disabled by an earlier pixel run | `window/transition/animator` scales all 1 on both devices |
+| Missing root provider | `GestureHandlerRootView` (flex 1) → `HeroUINativeProvider` → `SafeAreaProvider`, correct order |
+| Silent library upgrade | `heroui-native` installed 1.0.4, lockfile pins 1.0.4; `@gorhom/bottom-sheet` 5.2.14 |
+| My own changes this session | Failed identically before them |
+| The known "tap 2–3 times" flakiness | Three taps, no sheet |
+| The inert-className SafeAreaView on home | Fixed (commit `38a0c65a8`); sheet still does not open |
+
+The sheet clearly MOUNTS — it runs its fetch — and never animates into view, which is
+exactly the failure `components/ui/useDeferredBottomSheetState.tsx` was written to work
+around. Its own comments describe "the dead comment sheet bug" where "sheets never
+appeared" in release builds, and carry a two-stage open plus a re-assert to defeat it.
+That workaround is not covering this case. `git log` on the component shows four previous
+repair attempts ("repair bottom-sheet open/close lifecycle", "sheets needed multiple
+taps", …), so this is a fragile third-party integration with a history, not a one-line
+slip.
+
+🔴 **Not attempted here, deliberately.** A real fix probably means not depending on the
+library's animated sheet for these — a plain React Native `Modal` is what a card menu
+actually needs — and that is a rewrite of a shared component behind 16 screens, needing a
+visual pass over all of them. Doing that at the tail of a long walking session would be
+reckless. **NOT yet confirmed on a real device**: the owner has the app on a phone and can
+settle it in seconds by tapping "Comment" on any feed card.
+
+🔴 **You cannot write a post to the community feed from the phone.** There is no
+`createPost` in the API client, no composer screen, and no entry in the Create sheet — its
+eight entries are listing, marketplace listing, message, event, poll, challenge, group and
+goals. The server has `POST /v2/feed/posts` and the website has a whole composer
+(`react-frontend/src/components/compose/tabs/PostTab.tsx`). The website's compose hub
+offers Post, Event, Goal, Listing and Poll; the app covers all of those **except Post**.
+
+That gap is invisible to `npm run drift:check`, and the reason is worth keeping: **the
+parity gate compares ROUTES, and the website's composer is a component, not a route.** A
+capability that never gets its own URL cannot be seen by it. This is a feature to
+schedule, not a repair, so nothing was built.
+
+**Confirmed working in this pass**: the feed renders and reflects real activity from other
+modules (the volunteering hours and badge cards appear correctly, and the milestone cards
+correctly offer only Share — §9.4's fix holding); reactions persist with their count and
+the chevron affordance; the Create sheet's eight entries all resolve to real screens; the
+New Listing form is well laid out and its footer fits; and "Post offer" validates properly
+("Please enter a description") rather than failing silently.
+
+🔴 **Two of my own errors, recorded so the next walk is faster.** A back-press to leave a
+screen walked the app out to the Android launcher — the exact trap
+`.maestro/screens/sweep-screens.yaml` warns about in its own header. And editing a source
+file mid-walk triggered a Metro reload that wiped a half-filled form. Do neither while
+walking.
+
+**A loose end worth reproducing.** On a device with an existing session, after the
+emulators and Metro were restarted, the app sat on a bare spinner and re-fetched in a loop
+— `tenant/bootstrap` 7 times, `users/me` 8, `notifications/counts` 16 and the volunteering
+endpoints 9–10 times each within 40 seconds. Clearing app data fixed it. A member could
+plausibly hit this after an app restart, but I did not reproduce it deliberately, so it is
+an observation and not yet a finding.
+
+**Not walked**: the rest of Listings (request → accept → complete → credit → review),
+Messages, and every module behind More.
+
 ## 10. iOS — Unmeasured
 
 Never built, never run, locally or in CI. The App Store Connect ID is a placeholder.
