@@ -19,7 +19,7 @@ banked schema category remains 129/150 pending a scoring transaction)
 Status: **Canonical current - schema pause and restart source; no standalone product score**
 
 <!-- doc-consistency: SCHEMA_CURRENT_PRODUCT_SHA=c767050a3eabd064bdf647695b9699b98186342b -->
-<!-- doc-consistency: SCHEMA_CURRENT_RUNTIME_MIGRATIONS=184 -->
+<!-- doc-consistency: SCHEMA_CURRENT_RUNTIME_MIGRATIONS=185 -->
 
 Use this page for the one-page schema answer at the 2026-07-15 development
 pause. Use [`SCHEMA_PARITY.md`](SCHEMA_PARITY.md) for detailed per-migration
@@ -72,7 +72,7 @@ Therefore the honest state is:
 | Laravel tables with no ASP.NET counterpart | **215** |
 | ASP.NET tables with no Laravel counterpart | 203 |
 | Laravel migrations | 410 |
-| ASP.NET migration classes | 184 |
+| ASP.NET migration classes | 185 |
 
 This is a **name comparison only** and proves nothing about column-level or
 behavioural equivalence. It replaces the 2026-08-15 figures (219 missing / 199
@@ -83,8 +83,8 @@ structural rather than a backlog being worked down.
 | Schema implementation boundary | `c767050a3eabd064bdf647695b9699b98186342b` | Adds migration 163 and other contract corrections; published but unscored. |
 | Required-CI workflow boundary | `b3f946b3fd3de51fa444008a7daee80d3de1bcd2` | Four deterministic whole-class shards, with coverage intentionally outside the required push gate. |
 | Exact test/evidence boundary | `dbafc5c329c55a15b4329ff90804d725dbf8b089` | Required GitHub Actions run 29451087913 is terminal green; no schema implementation changed after `c767050a`. |
-| EF migration classes | 184 | Source classes in the current tree, recounted 2026-08-21 (excludes Designer and snapshot files). Latest: `20260821064259_AddVolunteerOpportunityRemoteAndCoordinates`. 🔴 This read 183 with a 2026-08-17 tail until 2026-08-21; `check-doc-scores.mjs` now counts the tree and fails on any drift, so the number cannot go stale silently again. |
-| Runtime-discovered migration IDs | 184 | Applicable chain from `InitialCreate` through `AddVolunteerOpportunityRemoteAndCoordinates`. 🔴 Was 163 on 2026-08-14; twenty migrations landed between 2026-08-14 and 2026-08-17 (partner venues, support actions, account relationships, supporter message-view audits, authority attestations, platform capability overrides, revoked tokens, volunteer donation/project fields, skill categories). |
+| EF migration classes | 185 | Source classes in the current tree, recounted 2026-08-21 (excludes Designer and snapshot files). Latest: `20260821164404_AddExchangeTwoPartyConfirmation` — the exchange two-party confirmation columns, added the same day for ledger row 1.21; the previous tail was `20260821064259_AddVolunteerOpportunityRemoteAndCoordinates`. 🔴 This read 183 with a 2026-08-17 tail until 2026-08-21; `check-doc-scores.mjs` now counts the tree and fails on any drift, so the number cannot go stale silently again. |
+| Runtime-discovered migration IDs | 183 | Applicable chain from `InitialCreate` through `AddExchangeTwoPartyConfirmation`. **Measured 2026-08-21** with `dotnet ef migrations list` and a full `dotnet ef database update` against a disposable PostgreSQL 16.4 container on port 15433 (never the local Laravel database, which is a production-derived snapshot): 183 discovered, 183 rows in `__EFMigrationsHistory`, `max(MigrationId) = 20260821164404_AddExchangeTwoPartyConfirmation`, and `has-pending-model-changes` reported "No changes have been made to the model since the last migration." 🔴 This row read **184** until 2026-08-21 — the same number as the class count — which cannot be right when 2 classes are deliberately quarantined. The relationship is `classes − quarantined = runtime IDs` (185 − 2 = 183). The `SCHEMA_CURRENT_RUNTIME_MIGRATIONS` marker above is 185 because `check-doc-scores.mjs` counts FILES ON DISK despite its name; do not "reconcile" the two by editing either to match the other. 🔴 Was 163 on 2026-08-14; twenty-one migrations landed between 2026-08-14 and 2026-08-21 (partner venues, support actions, account relationships, supporter message-view audits, authority attestations, platform capability overrides, revoked tokens, volunteer donation/project fields, skill categories, volunteer opportunity remote/coordinates, exchange two-party confirmation). |
 | Intentionally quarantined classes | 2 | `FederationCoreExpansion` is superseded by later DDL; `AddTenantUpdatedAt` would duplicate the initial column. |
 | Laravel source table names | 458 | 🔴 **STALE (July).** Live 2026-08-18: **472**. Static source union, not a database dump or completion denominator. |
 | ASP.NET represented table names | 440 | 🔴 **STALE (July).** Live 2026-08-18: **460**. Static source union. |
@@ -119,7 +119,7 @@ migration IDs**, 2 quarantined classes, the 458/440/242/216/198 static name
 inventory, and the banked schema category of **129/150**.
 
 🔴 **That paragraph is the 2026-08-09 position and none of those figures is
-current.** As of 2026-08-21 the tree has **184** EF migration classes, the static
+current.** As of 2026-08-21 the tree has **185** EF migration classes, the static
 name inventory is **472/460/257/215/203**, and the schema category banks
 **118/150** under Fixed Rubric Baseline 2. See the live comparison table above.
 

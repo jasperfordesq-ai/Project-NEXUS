@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -69,6 +69,42 @@ public sealed class SurnamePrivacyMiddleware
         "assigned_to_name", "assignedToName",
         "counterparty", "Counterparty", "counterparty_name"
     };
+
+    // 🔴 An organisation's name is NOT a person's name, and must never be cut
+    // down to its first word. "Bristol Community Trust" is not "Bristol".
+    //
+    // Laravel expresses this exemption in exactly one way, at every projection
+    // where it hides a surname: it unsets the surname UNCONDITIONALLY, and then
+    // rewrites the composite `name` to the first name ONLY when the profile is
+    // not an organisation.
+    //
+    //   app/Services/UserService.php:147-155
+    //       unset($profile['last_name']);
+    //       if (($user->profile_type ?? 'individual') !== 'organisation') {
+    //           $profile['name'] = $user->first_name ?? '';
+    //       }
+    //   app/Http/Controllers/Api/UsersController.php:1583-1592 and :1740-1749
+    //       the same two lines, applied to each member-directory row.
+    //   app/Http/Controllers/Api/UsersController.php:188-202
+    //       member search — unsets the surname only, never touches `name`.
+    //   app/Support/Events/PublicEventProjection.php:112-126
+    //       organiserDisplayName() returns organization_name when
+    //       profile_type === 'organisation', else the first name.
+    //
+    // Two consequences this middleware must reproduce:
+    //   1. the exemption covers the COMPOSITE NAME REWRITE ONLY. Laravel still
+    //      unsets last_name on an organisation profile, so we still blank it.
+    //   2. an ABSENT profile_type is treated as a PERSON. That is Laravel's own
+    //      default (`?? 'individual'`), and it is the privacy-preserving choice:
+    //      guessing "organisation" would publish a real member's surname through
+    //      a composed `name`, whereas guessing "individual" costs at worst a
+    //      cosmetically shortened organisation name.
+    private static readonly string[] ProfileTypeKeys =
+    {
+        "profile_type", "profileType", "ProfileType"
+    };
+
+    private const string OrganisationProfileType = "organisation";
 
     private static readonly string[] FirstNameKeys =
     {
@@ -319,6 +355,14 @@ public sealed class SurnamePrivacyMiddleware
             }
         }
 
+        // 🔴 An organisation stops here. Laravel unsets the surname on an
+        // organisation profile too (done above), but never replaces its
+        // composite `name` with a first name — see ProfileTypeKeys.
+        if (IsOrganisationProfile(obj))
+        {
+            return;
+        }
+
         // Determine the first name to use for rewriting composite fields.
         // Prefer an explicit first_name sibling; otherwise derive from the
         // composite by splitting on the first run of whitespace.
@@ -365,6 +409,27 @@ public sealed class SurnamePrivacyMiddleware
 
             obj[k] = JsonValue.Create(replacement);
         }
+    }
+
+    /// <summary>
+    /// True when the object declares itself an organisation profile. Mirrors
+    /// Laravel's <c>($u['profile_type'] ?? 'individual') !== 'organisation'</c>
+    /// exactly: the comparison is case-sensitive against the single value the
+    /// API validates (<c>individual</c> | <c>organisation</c>), and an absent or
+    /// non-string profile_type means "person", so the surname rules still apply.
+    /// </summary>
+    private static bool IsOrganisationProfile(JsonObject obj)
+    {
+        foreach (var key in ProfileTypeKeys)
+        {
+            if (!obj.TryGetPropertyValue(key, out var v) || v is not JsonValue jv) continue;
+            if (jv.GetValueKind() != System.Text.Json.JsonValueKind.String) continue;
+            if (string.Equals(jv.GetValue<string>(), OrganisationProfileType, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static bool IsPublicSellerProfile(JsonObject obj)

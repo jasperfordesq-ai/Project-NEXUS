@@ -74,9 +74,11 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260821064259_AddVolunteerOpportunityRemoteAndCoordinates",
-            "the chain currently ends with the volunteer opportunity remote/coordinate columns, "
-            + "added because a listed opportunity carried neither and the volunteering page crashed on it. "
+        migrations.Last().Should().Be("20260821164404_AddExchangeTwoPartyConfirmation",
+            "the chain currently ends with the exchange two-party confirmation columns "
+            + "(requester/provider confirmed_at + confirmed_hours, final_hours), without which this "
+            + "backend could not settle an exchange at all — ledger row 1.21. "
+            + "The previous tail was 20260821064259_AddVolunteerOpportunityRemoteAndCoordinates. "
             + "Adding a migration is fine but must be deliberate — update this pin in the same commit; "
             + "the previous tail (20260817121949_AddSkillCategories) went in without updating it and left main red. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "

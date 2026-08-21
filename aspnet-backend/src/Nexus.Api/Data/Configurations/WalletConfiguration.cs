@@ -96,6 +96,18 @@ public class WalletConfiguration : TenantScopedConfiguration
             entity.Property(e => e.AgreedHours).HasPrecision(10, 2);
             entity.Property(e => e.ActualHours).HasPrecision(10, 2);
 
+            // 🔴 (5,2), not this file's usual (10,2). These five columns mirror
+            // Laravel's committed dump exactly — `exchange_requests`
+            // `requester_confirmed_hours` / `provider_confirmed_hours` / `final_hours`
+            // are all `decimal(5,2) DEFAULT NULL`
+            // (database/schema/mysql-schema.sql:8910, 8914, 8917). The settlement
+            // amount and the confirmed amounts must not be able to hold a value the
+            // canonical engine would reject, so the narrower precision is the
+            // deliberate choice; exchange hours are clamped to 24 anyway.
+            entity.Property(e => e.RequesterConfirmedHours).HasPrecision(5, 2);
+            entity.Property(e => e.ProviderConfirmedHours).HasPrecision(5, 2);
+            entity.Property(e => e.FinalHours).HasPrecision(5, 2);
+
             entity.Property(e => e.Status)
                 .HasConversion<string>()
                 .HasMaxLength(20);

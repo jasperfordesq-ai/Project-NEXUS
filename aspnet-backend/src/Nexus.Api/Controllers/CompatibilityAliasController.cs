@@ -934,7 +934,13 @@ public class CompatibilityAliasController : ControllerBase
         var (_, error) = await _exchangeService.CancelExchangeAsync(id, userId.Value, null);
         if (error != null) return BadRequest(new { error });
 
-        return NoContent();
+        // 🔴 200 with Laravel's envelope, not 204. Laravel's cancel replies
+        // <c>{data: {message}}</c> (ExchangesController.php:377), and the React client's
+        // helper turns a 204 into `{success: true, data: undefined}` — which happens to
+        // work here, but only by luck: any caller that reads a field off `data` gets
+        // undefined instead of a value. Match the contract rather than relying on the
+        // client tolerating a different one.
+        return Ok(new { data = new { message = "Exchange cancelled" } });
     }
 
     // ──────────────────────────────────────────────

@@ -156,7 +156,7 @@ public class ExchangeJourneyContractTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("accepted");
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("accepted");
 
         // Assert the EFFECT, not the 200: the row moved.
         using var scope = Factory.Services.CreateScope();
@@ -220,47 +220,48 @@ public class ExchangeJourneyContractTests : IntegrationTestBase
             .Status.Should().Be(ExchangeStatus.Requested);
     }
 
-    // ── the wall: settlement ────────────────────────────────────────────────────
+    // ── confirmation and hand-over ───────────────────────────────────────
+    // These guard the ROUTE contract on the settlement path. The money itself —
+    // ledger legs, balances, tolerance, idempotency, concurrency — is proved in
+    // ExchangeSettlementTests, which reads the ledger back rather than trusting a 200.
 
     [Fact]
-    public async Task ConfirmHours_RefusesHonestly_AndChangesNothing()
+    public async Task ConfirmHours_ByOneParty_IsRecordedAndSettlesNothing()
     {
         var exchangeId = await CreateExchangeAsMemberAsync();
         await AuthenticateAsAdminAsync();
         await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new { });
         await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/start", new { });
 
-        ExchangeStatus before;
-        using (var scope = Factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
-            before = (await db.Exchanges.AsNoTracking().FirstAsync(e => e.Id == exchangeId)).Status;
-        }
-
+        // The requester confirms. 🔴 This used to answer 501, because the table had
+        // nowhere to record two separate confirmations; migration
+        // 20260821164404_AddExchangeTwoPartyConfirmation added the five columns.
+        // Before that it was an alias answering 200 {"status":"confirmed"} while
+        // setting Status = Accepted, measured live reopening a COMPLETED exchange that
+        // already carried a settled TransactionId. What must never come back is EITHER
+        // of those: a lying 200, or a settlement on one party's word.
+        await AuthenticateAsMemberAsync();
         var response = await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/confirm", new { hours = 2.0 });
 
-        // 🔴 501, not 200. The removed alias answered 200 {"status":"confirmed"} and
-        // set Status = Accepted — measured live reopening a COMPLETED exchange that
-        // already carried a settled TransactionId. An honest refusal beats a fake
-        // success that corrupts state.
-        response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
-        var body = await response.Content.ReadAsStringAsync();
-        body.Should().Contain("EXCHANGE_CONFIRMATION_UNAVAILABLE");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        using var after = Factory.Services.CreateScope();
-        var afterDb = after.ServiceProvider.GetRequiredService<NexusDbContext>();
-        var exchange = await afterDb.Exchanges.AsNoTracking().FirstAsync(e => e.Id == exchangeId);
-        exchange.Status.Should().Be(before, "a refused confirmation must not move the state machine");
-        exchange.TransactionId.Should().BeNull("no settlement may occur on a refused confirmation");
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        var exchange = await db.Exchanges.AsNoTracking().FirstAsync(e => e.Id == exchangeId);
+        exchange.RequesterConfirmedAt.Should().NotBeNull();
+        exchange.ProviderConfirmedAt.Should().BeNull();
+        exchange.Status.Should().Be(ExchangeStatus.PendingConfirmation);
+        exchange.TransactionId.Should().BeNull("one confirmation may never settle an exchange");
+        exchange.FinalHours.Should().BeNull();
     }
 
     [Fact]
-    public async Task ConfirmHours_MissingHours_ValidatesBeforeReportingUnavailability()
+    public async Task ConfirmHours_MissingHours_ValidatesBeforeAnythingElse()
     {
         var exchangeId = await CreateExchangeAsMemberAsync();
 
         // Laravel checks `hours` first (ExchangesController.php:318-321), so a client
-        // sending the wrong body learns that rather than blaming the missing feature.
+        // sending the wrong body learns that rather than blaming the workflow state.
         var response = await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/confirm", new { });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -281,25 +282,51 @@ public class ExchangeJourneyContractTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CompleteExchange_OverPost_StillFailsClosedWithoutMovingCredits()
+    public async Task CompleteExchange_OverPost_HandsOverToConfirmationWithoutMovingCredits()
     {
         var exchangeId = await CreateExchangeAsMemberAsync();
         await AuthenticateAsAdminAsync();
         await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new { });
         await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/start", new { });
 
+        // The admin owns Listing1, so the admin is the provider — the only party
+        // Laravel lets mark work done (ExchangeWorkflowService.php:401-404).
         var response = await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/complete", new { });
 
-        // Reaching the real fail-closed service IS the improvement: previously this
-        // was a 403 from an AdminOnly stub, which told the caller nothing true.
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
         var exchange = await db.Exchanges.AsNoTracking().FirstAsync(e => e.Id == exchangeId);
-        exchange.Status.Should().Be(ExchangeStatus.InProgress);
+        // 🔴 "complete" is Laravel's name for handing over to two-party
+        // confirmation. It must not settle: settlement lives in /confirm, behind two
+        // agreeing confirmations. Full ledger and balance proof is in
+        // ExchangeSettlementTests.
+        exchange.Status.Should().Be(ExchangeStatus.PendingConfirmation);
         exchange.TransactionId.Should().BeNull();
         exchange.CompletedAt.Should().BeNull();
+        exchange.FinalHours.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CompleteExchange_ByTheReceiver_IsStillRefused()
+    {
+        var exchangeId = await CreateExchangeAsMemberAsync();
+        await AuthenticateAsAdminAsync();
+        await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new { });
+        await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/start", new { });
+
+        // The member receives the service. Letting the receiver declare the work done
+        // is the direct-call IDOR Laravel's provider-only rule closes.
+        await AuthenticateAsMemberAsync();
+        var response = await Client.PostAsJsonAsync($"/api/exchanges/{exchangeId}/complete", new { });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        (await db.Exchanges.AsNoTracking().FirstAsync(e => e.Id == exchangeId))
+            .Status.Should().Be(ExchangeStatus.InProgress);
     }
 
     // ── ratings read the ratings table ──────────────────────────────────────────
@@ -377,6 +404,7 @@ public class ExchangeJourneyContractTests : IntegrationTestBase
             message = "row 1.21 journey guard"
         });
         create.StatusCode.Should().Be(HttpStatusCode.Created);
-        return (await create.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32();
+        return (await create.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data").GetProperty("id").GetInt32();
     }
 }

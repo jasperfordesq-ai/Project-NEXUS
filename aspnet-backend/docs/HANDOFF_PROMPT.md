@@ -116,6 +116,14 @@ CONCURRENCY — these collisions have all happened here
   them.
 - One disposable Laravel and one Postgres. Write journeys contend; the Measurer
   owns the environment calendar.
+- LINE ENDINGS ARE MIXED IN THIS TREE. `PersonalWalletLedgerService.cs` is CRLF
+  while `ExchangeSettlementTests.cs` beside it is LF, and `cat -A` in Git Bash
+  does not show the CRLF. A patch that assumes the wrong ending fails SILENTLY,
+  and this repo already has a history of phantom whole-file modifications from
+  exactly that. Match a file's existing endings; check before you edit.
+- A test project that did not BUILD plus `--no-build` runs a STALE binary, which
+  reads exactly like a code fault. When a sibling is editing concurrently and a
+  test fails oddly, confirm the build succeeded before believing the failure.
 
 ENVIRONMENT
   ASP.NET            http://127.0.0.1:5080

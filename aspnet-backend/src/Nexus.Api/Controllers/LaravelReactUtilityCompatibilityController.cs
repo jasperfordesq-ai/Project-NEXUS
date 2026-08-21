@@ -17,6 +17,7 @@ using Nexus.Api.Entities;
 using Nexus.Api.Extensions;
 using Nexus.Api.Middleware;
 using Nexus.Api.Services;
+using Nexus.Api.Support.Exchanges;
 
 namespace Nexus.Api.Controllers;
 
@@ -497,13 +498,27 @@ public sealed class LaravelReactUtilityCompatibilityController : ControllerBase
             .Include(e => e.Listing)
             .Where(e => e.TenantId == tenantId &&
                         (e.InitiatorId == userId.Value || e.ListingOwnerId == userId.Value || e.ProviderId == userId.Value || e.ReceiverId == userId.Value) &&
-                        (e.Status == ExchangeStatus.Requested || e.Status == ExchangeStatus.Accepted || e.Status == ExchangeStatus.Completed))
+                        // 🔴 PendingConfirmation added 2026-08-21. Without it the
+                        // `confirm` branch of the action switch below was unreachable
+                        // dead code: the one action the card exists to surface — "both
+                        // parties must confirm the hours" — could never appear, so a
+                        // member's turn to confirm was invisible on the dashboard.
+                        // Laravel's set is pending_provider / pending_confirmation /
+                        // completed (ExchangeService.php:91-99); it deliberately
+                        // EXCLUDES accepted, which this still includes. Removing
+                        // `accepted` is subtractive and needs its own evidence.
+                        (e.Status == ExchangeStatus.Requested
+                            || e.Status == ExchangeStatus.Accepted
+                            || e.Status == ExchangeStatus.PendingConfirmation
+                            || e.Status == ExchangeStatus.Completed))
             .OrderByDescending(e => e.UpdatedAt ?? e.CreatedAt)
             .Take(5)
             .Select(e => new
             {
                 id = e.Id,
-                status = e.Status.ToString().ToLowerInvariant(),
+                // Projected raw; mapped to Laravel's wire vocabulary in memory below,
+                // because ExchangeContractMapper.WireStatus cannot be translated to SQL.
+                raw_status = e.Status,
                 listing_id = e.ListingId,
                 listing_title = e.Listing != null ? e.Listing.Title : null,
                 created_at = e.CreatedAt,
@@ -524,13 +539,17 @@ public sealed class LaravelReactUtilityCompatibilityController : ControllerBase
         var items = rows.Select(r => new
         {
             r.id,
-            r.status,
-            action = r.status switch
+            // 🔴 Laravel's spelling, via the one mapper that knows it. This used to be
+            // Status.ToString().ToLowerInvariant(), which put `requested` and
+            // `pendingconfirmation` on the wire — words no client speaks. The card
+            // itself only reads `action`, but a status in a private vocabulary is how
+            // the switch below came to test for `pendingconfirmation`.
+            status = ExchangeContractMapper.WireStatus(r.raw_status),
+            action = r.raw_status switch
             {
-                "requested" when r.is_provider => "accept",
-                "pendingconfirmation" => "confirm",
-                "pending_confirmation" => "confirm",
-                "completed" => "review",
+                ExchangeStatus.Requested when r.is_provider => "accept",
+                ExchangeStatus.PendingConfirmation => "confirm",
+                ExchangeStatus.Completed => "review",
                 _ => "active",
             },
             r.listing_id,

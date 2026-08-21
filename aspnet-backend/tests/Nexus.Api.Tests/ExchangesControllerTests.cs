@@ -23,8 +23,13 @@ namespace Nexus.Api.Tests;
 [Collection("Integration")]
 public class ExchangesControllerTests : IntegrationTestBase
 {
-    private const string CompletionUnavailable =
-        "Exchange completion requires matching confirmation from both participants and is not available on this endpoint.";
+    // 🔴 `POST/PUT .../complete` is Laravel's name for handing the exchange to
+    // two-party confirmation, not for settling it (ExchangesController.php:279-301 ->
+    // markReadyForConfirmation). Only the PROVIDER may call it. Credits move in
+    // /confirm, and only when both parties agree - proved with ledger legs and
+    // balances in ExchangeSettlementTests.
+    private const string ReceiverCannotComplete =
+        "Only the provider can mark this exchange as complete";
 
     public ExchangesControllerTests(NexusWebApplicationFactory factory) : base(factory) { }
 
@@ -48,9 +53,16 @@ public class ExchangesControllerTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("id").GetInt32().Should().BeGreaterThan(0);
-        content.GetProperty("status").GetString().Should().Be("requested");
-        content.GetProperty("agreed_hours").GetDecimal().Should().Be(2.0m);
+        // 🔴 The envelope and the vocabulary are both the contract now. Laravel
+        // replies {data: …} and spells this status `pending_provider`; this file used
+        // to assert a bare object and `requested`, i.e. it pinned the shape that made
+        // the React exchange page unrenderable. Testing what the server preferred
+        // rather than what the client reads is how the journey stayed green while dead.
+        var created = content.GetProperty("data");
+        created.GetProperty("id").GetInt32().Should().BeGreaterThan(0);
+        created.GetProperty("status").GetString().Should().Be("pending_provider");
+        created.GetProperty("proposed_hours").GetDecimal().Should().Be(2.0m);
+        created.GetProperty("agreed_hours").GetDecimal().Should().Be(2.0m);
     }
 
     [Fact]
@@ -128,7 +140,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 2.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         // Act - Accept as admin (listing owner)
         await AuthenticateAsAdminAsync();
@@ -137,7 +149,7 @@ public class ExchangesControllerTests : IntegrationTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("accepted");
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("accepted");
     }
 
     [Fact]
@@ -151,7 +163,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         // Act - Member tries to accept their own request (not the listing owner)
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new { });
@@ -172,7 +184,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 2.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         await AuthenticateAsAdminAsync();
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new
@@ -182,7 +194,8 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("agreed_hours").GetDecimal().Should().Be(3.0m);
+        content.GetProperty("data").GetProperty("agreed_hours").GetDecimal().Should().Be(3.0m);
+        content.GetProperty("data").GetProperty("proposed_hours").GetDecimal().Should().Be(3.0m);
     }
 
     [Fact]
@@ -195,7 +208,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         await AuthenticateAsAdminAsync();
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/decline", new
@@ -205,7 +218,11 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("declined");
+        // 🔴 `cancelled`, not `declined`. Laravel has no `declined` status
+        // (ExchangeWorkflowService.php:249) and the React client would index
+        // EXCHANGE_STATUS_CONFIG['declined'], get undefined and throw on .color. The
+        // STORED enum member is still Declined — only the wire spelling maps.
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("cancelled");
     }
 
     #endregion
@@ -222,7 +239,7 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("inprogress");
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("in_progress");
     }
 
     [Fact]
@@ -236,7 +253,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         // Act - Try to start without accepting
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/start", new { });
@@ -248,7 +265,7 @@ public class ExchangesControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CompleteExchange_WithoutTwoPartyConfirmation_FailsClosedWithoutMutation()
+    public async Task CompleteExchange_ByTheReceiver_IsRefusedWithoutMutation()
     {
         var exchangeId = await CreateAcceptAndStartExchangeAsync();
         var memberBalanceBefore = await GetBalanceAsync(TestData.MemberUser.Id);
@@ -261,6 +278,9 @@ public class ExchangesControllerTests : IntegrationTestBase
             transactionCountBefore = await db.Transactions.IgnoreQueryFilters().CountAsync();
         }
 
+        // The member receives the service on Listing1; the admin provides it. Laravel
+        // restricts this step to the provider to close a direct-call IDOR where the
+        // receiver signs off their own delivery (ExchangeWorkflowService.php:401-404).
         await AuthenticateAsMemberAsync();
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/complete", new
         {
@@ -269,7 +289,7 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("error").GetString().Should().Be(CompletionUnavailable);
+        content.GetProperty("error").GetString().Should().Be(ReceiverCannotComplete);
 
         using (var scope = Factory.Services.CreateScope())
         {
@@ -288,12 +308,51 @@ public class ExchangesControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CompleteExchange_WithInsufficientBalance_StillReturnsConfirmationUnavailableWithoutMutation()
+    public async Task CompleteExchange_ByTheProvider_MovesToPendingConfirmationWithoutSettling()
+    {
+        var exchangeId = await CreateAcceptAndStartExchangeAsync();
+        var memberBalanceBefore = await GetBalanceAsync(TestData.MemberUser.Id);
+        var adminBalanceBefore = await GetBalanceAsync(TestData.AdminUser.Id);
+        int transactionCountBefore;
+        using (var scope = Factory.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(TestData.Tenant1.Id);
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            transactionCountBefore = await db.Transactions.IgnoreQueryFilters().CountAsync();
+        }
+
+        await AuthenticateAsAdminAsync();
+        var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/complete", new { });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(TestData.Tenant1.Id);
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            var exchange = await db.Exchanges.IgnoreQueryFilters().SingleAsync(row => row.Id == exchangeId);
+            exchange.Status.Should().Be(ExchangeStatus.PendingConfirmation);
+            // 🔴 No credits, no transaction, no completion timestamp. This endpoint
+            // is a hand-over; anything financial here would be paying out on one
+            // party's word.
+            exchange.TransactionId.Should().BeNull();
+            exchange.FinalHours.Should().BeNull();
+            exchange.CompletedAt.Should().BeNull();
+            (await db.Transactions.IgnoreQueryFilters().CountAsync()).Should().Be(transactionCountBefore);
+        }
+
+        (await GetBalanceAsync(TestData.MemberUser.Id)).Should().Be(memberBalanceBefore);
+        (await GetBalanceAsync(TestData.AdminUser.Id)).Should().Be(adminBalanceBefore);
+    }
+
+    [Fact]
+    public async Task CompleteExchange_WithInsufficientBalance_StillHandsOverWithoutSettling()
     {
         var exchangeId = await CreateAcceptAndStartExchangeAsync();
 
-        // Raise the settlement amount only after a valid lifecycle setup so
-        // the request reaches the deliberately unavailable completion path.
+        // A settlement amount nobody can cover. The hand-over must still succeed:
+        // affordability is decided at the confirmation boundary, where a shortfall
+        // returns Laravel's typed 422 - not here.
         using (var scope = Factory.Services.CreateScope())
         {
             scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(TestData.Tenant1.Id);
@@ -313,21 +372,18 @@ public class ExchangesControllerTests : IntegrationTestBase
                 .Transactions.IgnoreQueryFilters().CountAsync();
         }
 
-        // The confirmation boundary is checked before any balance/settlement work.
+        await AuthenticateAsAdminAsync();
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/complete", new { });
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("error").GetString().Should().Be(CompletionUnavailable);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using (var scope = Factory.Services.CreateScope())
         {
             scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(TestData.Tenant1.Id);
             var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
             var exchange = await db.Exchanges.IgnoreQueryFilters().SingleAsync(row => row.Id == exchangeId);
-            exchange.Status.Should().Be(ExchangeStatus.InProgress);
+            exchange.Status.Should().Be(ExchangeStatus.PendingConfirmation);
             exchange.AgreedHours.Should().Be(9999m);
-            exchange.ActualHours.Should().BeNull();
             exchange.CompletedAt.Should().BeNull();
             exchange.TransactionId.Should().BeNull();
             (await db.Transactions.IgnoreQueryFilters().CountAsync()).Should().Be(transactionCountBefore);
@@ -351,7 +407,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/cancel", new
         {
@@ -360,7 +416,7 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("cancelled");
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("cancelled");
     }
 
     [Fact]
@@ -376,7 +432,7 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("status").GetString().Should().Be("disputed");
+        content.GetProperty("data").GetProperty("status").GetString().Should().Be("disputed");
     }
 
     [Fact]
@@ -389,7 +445,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         var response = await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/dispute", new
         {
@@ -418,8 +474,12 @@ public class ExchangesControllerTests : IntegrationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("rating").GetInt32().Should().Be(5);
-        content.GetProperty("would_work_again").GetBoolean().Should().BeTrue();
+        // Laravel replies with the exchange's whole rating list, not the one row
+        // written (WalletFeaturesController.php:290-292).
+        var rows = content.GetProperty("data").EnumerateArray().ToList();
+        rows.Should().HaveCount(1);
+        rows[0].GetProperty("rating").GetInt32().Should().Be(5);
+        rows[0].GetProperty("would_work_again").GetBoolean().Should().BeTrue();
     }
 
     [Fact]
@@ -493,14 +553,17 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         var response = await Client.GetAsync($"/api/exchanges/{exchangeId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("id").GetInt32().Should().Be(exchangeId);
-        content.GetProperty("role").GetString().Should().Be("initiator");
+        var detail = content.GetProperty("data");
+        detail.GetProperty("id").GetInt32().Should().Be(exchangeId);
+        // Laravel's role vocabulary is requester|provider (ExchangesController.php:62),
+        // not this backend's older initiator|owner.
+        detail.GetProperty("role").GetString().Should().Be("requester");
     }
 
     [Fact]
@@ -513,7 +576,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 1.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         // Try to access from another tenant
         await AuthenticateAsOtherTenantUserAsync();
@@ -552,7 +615,7 @@ public class ExchangesControllerTests : IntegrationTestBase
             agreed_hours = 2.0
         });
         var exchangeId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
-            .GetProperty("id").GetInt32();
+            .GetProperty("data").GetProperty("id").GetInt32();
 
         await AuthenticateAsAdminAsync();
         await Client.PutAsJsonAsync($"/api/exchanges/{exchangeId}/accept", new { });
@@ -574,9 +637,10 @@ public class ExchangesControllerTests : IntegrationTestBase
     {
         var exchangeId = await CreateAcceptAndStartExchangeAsync();
 
-        // Completion itself is intentionally unavailable. Tests for dispute
-        // and rating seed their required completed-state fixture directly so
-        // they do not imply that the one-party completion endpoint is usable.
+        // Dispute and rating tests need a settled exchange but not a settlement.
+        // Seeding the terminal state directly keeps them independent of the
+        // two-party confirmation path, which has its own suite
+        // (ExchangeSettlementTests) that proves the real thing with ledger legs.
         using var scope = Factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(TestData.Tenant1.Id);
         var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();

@@ -17,6 +17,7 @@ using Nexus.Api.Extensions;
 using Nexus.Api.Middleware;
 using Nexus.Api.Services;
 using Nexus.Api.Services.Registration;
+using Nexus.Api.Support.Exchanges;
 
 namespace Nexus.Api.Controllers;
 
@@ -261,6 +262,30 @@ public class ReactFrontendCompatibilityController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// GET /api/exchanges/check?listing_id={id} — "does this member already have a
+    /// live exchange on this listing?"
+    ///
+    /// 🔴 THIS ANSWERED A DIFFERENT QUESTION, AND IT BROKE THE ENTRY POINT TO THE
+    /// WHOLE EXCHANGE JOURNEY. It returned a bare <c>{can_exchange, reason}</c>. The
+    /// client's api helper finds no `data` key and so hands the page the WHOLE body,
+    /// which is a truthy object — and ListingDetailPage.tsx:807 treats any truthy
+    /// value as "you already have an exchange here". Consequences on every listing in
+    /// the community, signed in as an ordinary member:
+    ///   • the "Request Exchange" button is replaced by a "View Exchange" link, so a
+    ///     member can never start an exchange at all;
+    ///   • that link points at <c>/exchanges/undefined</c>; and
+    ///   • the chip calls <c>activeExchange.status.replace(...)</c>
+    ///     (ListingDetailPage.tsx:824) on an undefined status, which throws and takes
+    ///     the listing page down with it.
+    /// HTTP 200, correct-looking JSON, and the journey cannot begin.
+    ///
+    /// Laravel's contract is <c>{data: {id, status, proposed_hours, role, created_at}}</c>
+    /// or <c>{data: null}</c> when there is no live exchange
+    /// (ExchangesController.php:47-66), where "live" excludes the terminal statuses
+    /// completed / cancelled / expired (ExchangeWorkflowService.php:637-650). `null`
+    /// is the answer that lets the member request one.
+    /// </summary>
     [HttpGet("api/exchanges/check")]
     [Authorize]
     public async Task<IActionResult> CheckExchange([FromQuery] int? listing_id, [FromQuery] int? listingId)
@@ -281,8 +306,43 @@ public class ReactFrontendCompatibilityController : ControllerBase
         var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == id.Value && l.Status == ListingStatus.Active);
         var canExchange = listing != null && (!userId.HasValue || listing.UserId != userId.Value);
 
+        // The live exchange, if any. Laravel's terminal set is completed / cancelled /
+        // expired; Declined and Resolved report as cancelled and completed on the wire
+        // (see ExchangeContractMapper), so they are terminal here for the same reason.
+        Dictionary<string, object?>? active = null;
+        if (userId.HasValue)
+        {
+            var exchange = await _db.Exchanges.AsNoTracking()
+                .Where(e => e.ListingId == id.Value
+                    && (e.InitiatorId == userId.Value || e.ListingOwnerId == userId.Value)
+                    && e.Status != ExchangeStatus.Completed
+                    && e.Status != ExchangeStatus.Cancelled
+                    && e.Status != ExchangeStatus.Declined
+                    && e.Status != ExchangeStatus.Resolved
+                    && e.Status != ExchangeStatus.Expired)
+                .OrderByDescending(e => e.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (exchange != null)
+            {
+                active = new Dictionary<string, object?>
+                {
+                    ["id"] = exchange.Id,
+                    ["status"] = ExchangeContractMapper.WireStatus(exchange.Status),
+                    ["proposed_hours"] = exchange.AgreedHours,
+                    ["role"] = exchange.InitiatorId == userId.Value ? "requester" : "provider",
+                    ["created_at"] = exchange.CreatedAt,
+                };
+            }
+        }
+
         return Ok(new
         {
+            // 🔴 `data` is the key the clients read, and null here is a real answer,
+            // not a missing one. The two fields below are this endpoint's older
+            // ASP.NET-only reply, kept as siblings for any other reader; they are
+            // about a different question (may I start one?) and no client reads them.
+            data = active,
             can_exchange = canExchange,
             reason = listing == null ? "Listing is unavailable" : canExchange ? null : "You cannot request an exchange with your own listing"
         });
@@ -3796,11 +3856,36 @@ public class ReactFrontendCompatibilityController : ControllerBase
             .Select(r => new
             {
                 id = r.Id,
+                exchange_id = r.ExchangeId,
                 rating = r.Rating,
                 comment = r.Comment,
                 rater_id = r.RaterId,
+                // Laravel's column is `rated_id` (ExchangeRatingService.php:136); this
+                // backend's own spelling is kept alongside it.
+                rated_id = r.RatedUserId,
                 rated_user_id = r.RatedUserId,
                 would_work_again = r.WouldWorkAgain,
+                // 🔴 The React list renders `r.rater.name` (ExchangeDetailPage.tsx:589)
+                // — a NESTED object. Without it that line throws and the whole
+                // completed-exchange page goes down, which is worse than an empty list.
+                //
+                // 🔴 And Laravel does NOT send it: `getRatingsForExchange` returns flat
+                // `rater_first_name` / `rater_last_name` / `rater_username` columns
+                // (app/Services/ExchangeRatingService.php:135-145), so a completed
+                // exchange carrying ratings crashes this page against LARAVEL too.
+                // That is a Laravel-side defect to raise, not something to fix in the
+                // frontend from here. Both shapes are sent: Laravel's flat columns
+                // because they are the contract, and the nested object because it is
+                // what the client reads. A superset is not a gap (ADR-0004).
+                rater_first_name = r.Rater == null ? null : r.Rater.FirstName,
+                rater_last_name = r.Rater == null ? null : r.Rater.LastName,
+                rater_username = r.Rater == null ? null : r.Rater.Username,
+                rater = r.Rater == null ? null : new
+                {
+                    id = r.RaterId,
+                    name = (r.Rater.FirstName + " " + r.Rater.LastName).Trim(),
+                    avatar_url = r.Rater.AvatarUrl
+                },
                 created_at = r.CreatedAt
             })
             .ToListAsync();
