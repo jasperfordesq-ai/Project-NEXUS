@@ -758,6 +758,40 @@ await step('journey-sign-up', async () => {
   }
 });
 
+// ── TIER 2: the feature modules, as PAGES with content assertions ─────────────────
+// Each module's fixture data was confirmed present before adding it here (groups 9,
+// polls 14, goals 7, skills 2, volunteering 1, blog 1, resources 1), so an empty
+// render is a real finding rather than an empty fixture. Leaderboard/achievements
+// live under /api/v2/gamification/* — probing /api/v2/leaderboard first returned 404
+// and looked like a gap; it was the wrong path, and the pages are what matter here.
+for (const [name, path] of [
+  ['module-groups', '/groups'],
+  ['module-volunteering', '/volunteering'],
+  ['module-goals', '/goals'],
+  ['module-polls', '/polls'],
+  ['module-blog', '/blog'],
+  ['module-resources', '/resources'],
+  ['module-skills', '/skills'],
+  ['module-leaderboard', '/leaderboard'],
+  ['module-achievements', '/achievements'],
+  ['module-search', '/search'],
+]) {
+  await step(name, async () => {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2500);
+    const url = page.url().replace(BASE, '');
+    if (url.startsWith('/login')) throw new Error('redirected to login — session lost');
+    const text = (await page.locator('body').innerText()).trim();
+    // 🔴 A feature-gated module legitimately renders a "not available" notice; that is
+    // a TENANT SETTING, not a backend fault, and is reported rather than failed.
+    const gated = /not available|feature is disabled|isn't enabled/i.test(text);
+    const errored = /something went wrong|unexpected error/i.test(text);
+    console.log(`    ${path} -> ${url}  text=${text.length}${gated ? '  (feature gated for this tenant)' : ''}`);
+    if (errored) throw new Error(`${path} rendered an error state`);
+    if (!gated && text.length < 400) throw new Error(`${path} rendered almost no content (${text.length} chars)`);
+  });
+}
+
 // short-lived access token, not a deleted one.
 //
 // 🔴 Laravel does not serve /api/auth/refresh at all — its routes are
