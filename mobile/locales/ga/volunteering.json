@@ -320,7 +320,8 @@
       "autoPayError": "Níorbh fhéidir uathíocaíocht a nuashonrú.",
       "transactions": "Idirbhearta",
       "empty": "Níl aon idirbheart sparáin ann fós.",
-      "transactionFallback": "Idirbheart sparáin"
+      "transactionFallback": "Idirbheart sparáin",
+      "autoPayAlways": "Cuirtear uaireanta ceadaithe chun sochair do shaorálaithe i gcónaí agus gearrtar ar an sparán seo."
     },
     "settings": {
       "heading": "Socruithe na heagraíochta",

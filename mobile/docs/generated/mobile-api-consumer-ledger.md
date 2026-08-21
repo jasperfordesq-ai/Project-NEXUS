@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-08-20
+Last reviewed: 2026-08-21
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -21,24 +21,14 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 46 |
-| Call sites | 492 |
-| Distinct method + endpoint pairs | 403 |
+| API modules read | 47 |
+| Call sites | 491 |
+| Distinct method + endpoint pairs | 402 |
 | Verified against openapi.json | 402 |
-| **Missing from Laravel routes** | **1** |
+| **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
 | Inline `fetch()` bypassing the client | 0 |
-
-## Missing from Laravel routes
-
-Mobile calls these; Laravel registers no matching route. Each one is a screen
-that fails on a real phone while CI stays green, because the Jest suite mocks the
-HTTP client. Fix the client or restore the route before release.
-
-| Method | Endpoint | Call sites |
-| --- | --- | --- |
-| PUT | `/api/v2/volunteering/organisations/{param}/wallet/auto-pay` | volunteering.ts:542 |
 
 ## Not verifiable (endpoint assembled at runtime)
 
@@ -489,39 +479,39 @@ and the places a contract test earns the most.
 | GET | `/api/v2/volunteering/applications` | volunteering.ts:456 |
 | DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:487 |
 | PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:479 |
-| GET | `/api/v2/volunteering/certificates` | volunteering.ts:559 |
-| POST | `/api/v2/volunteering/certificates` | volunteering.ts:563 |
-| GET | `/api/v2/volunteering/donations` | volunteering.ts:579 |
-| POST | `/api/v2/volunteering/donations` | volunteering.ts:597 |
-| GET | `/api/v2/volunteering/expenses` | volunteering.ts:567 |
-| POST | `/api/v2/volunteering/expenses` | volunteering.ts:571 |
-| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:575 |
-| POST | `/api/v2/volunteering/hours` | volunteering.ts:614 |
+| GET | `/api/v2/volunteering/certificates` | volunteering.ts:555 |
+| POST | `/api/v2/volunteering/certificates` | volunteering.ts:559 |
+| GET | `/api/v2/volunteering/donations` | volunteering.ts:575 |
+| POST | `/api/v2/volunteering/donations` | volunteering.ts:593 |
+| GET | `/api/v2/volunteering/expenses` | volunteering.ts:563 |
+| POST | `/api/v2/volunteering/expenses` | volunteering.ts:567 |
+| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:571 |
+| POST | `/api/v2/volunteering/hours` | volunteering.ts:610 |
 | PUT | `/api/v2/volunteering/hours/{param}/verify` | volunteering.ts:483 |
 | GET | `/api/v2/volunteering/hours/summary` | volunteering.ts:491 |
 | GET | `/api/v2/volunteering/my-organisations` | volunteering.ts:495 |
 | GET | `/api/v2/volunteering/opportunities` | volunteering.ts:439 |
-| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:601 |
+| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:597 |
 | GET | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:449 |
-| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:605 |
+| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:601 |
 | GET | `/api/v2/volunteering/opportunities/{param}/applications` | volunteering.ts:466 |
-| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:618 |
+| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:614 |
 | GET | `/api/v2/volunteering/organisations` | organisations.ts:52 |
 | POST | `/api/v2/volunteering/organisations` | organisations.ts:69 |
 | GET | `/api/v2/volunteering/organisations/{param}` | organisations.ts:62, volunteering.ts:499 |
-| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:551 |
+| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:547 |
 | GET | `/api/v2/volunteering/organisations/{param}/applications` | volunteering.ts:510 |
 | GET | `/api/v2/volunteering/organisations/{param}/hours/pending` | volunteering.ts:517 |
 | GET | `/api/v2/volunteering/organisations/{param}/stats` | volunteering.ts:503 |
 | GET | `/api/v2/volunteering/organisations/{param}/volunteers` | volunteering.ts:523 |
 | POST | `/api/v2/volunteering/organisations/{param}/wallet/deposit` | volunteering.ts:535 |
 | GET | `/api/v2/volunteering/organisations/{param}/wallet/transactions` | volunteering.ts:529 |
-| GET | `/api/v2/volunteering/shifts` | volunteering.ts:555 |
-| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:626 |
-| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:622 |
-| GET | `/api/v2/volunteering/swaps` | volunteering.ts:583 |
-| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:593 |
-| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:589 |
+| GET | `/api/v2/volunteering/shifts` | volunteering.ts:551 |
+| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:622 |
+| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:618 |
+| GET | `/api/v2/volunteering/swaps` | volunteering.ts:579 |
+| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:589 |
+| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:585 |
 | GET | `/api/v2/wallet/balance` | wallet.ts:125 |
 | GET | `/api/v2/wallet/community-fund` | wallet.ts:156 |
 | POST | `/api/v2/wallet/donate` | wallet.ts:183 |

@@ -538,10 +538,6 @@ export function depositOrganisationWallet(id: number, amount: number, note?: str
   });
 }
 
-export function setOrganisationAutoPay(id: number, enabled: boolean): Promise<{ data: { auto_pay_enabled: boolean } }> {
-  return api.put<{ data: { auto_pay_enabled: boolean } }>(`${API_V2}/volunteering/organisations/${id}/wallet/auto-pay`, { enabled });
-}
-
 export function updateOrganisation(id: number, payload: {
   name?: string;
   description?: string | null;

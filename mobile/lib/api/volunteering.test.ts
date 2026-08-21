@@ -43,7 +43,6 @@ import {
   submitVolunteerDonation,
   respondToShiftSwap,
   depositOrganisationWallet,
-  setOrganisationAutoPay,
   updateOrganisation,
   verifyVolunteerHours,
 } from './volunteering';
@@ -302,13 +301,16 @@ describe('organisation dashboard helpers', () => {
     (api.post as jest.Mock).mockResolvedValue({ data: { new_balance: 8 } });
 
     await verifyVolunteerHours(4, 'approve');
-    await setOrganisationAutoPay(9, true);
+    // 🔴 `setOrganisationAutoPay` was removed on 2026-08-21. It called an endpoint
+    // Laravel never registered (measured: HTTP 404) and governed nothing — approval
+    // always mints credits. React had already removed the same control. This test used
+    // to assert the broken call as the SECOND api.put, which is why the numbering below
+    // shifts down by one.
     await updateOrganisation(9, { name: 'Garden Team' });
     await depositOrganisationWallet(9, 3, 'Top-up');
 
     expect(api.put).toHaveBeenNthCalledWith(1, '/api/v2/volunteering/hours/4/verify', { action: 'approve' });
-    expect(api.put).toHaveBeenNthCalledWith(2, '/api/v2/volunteering/organisations/9/wallet/auto-pay', { enabled: true });
-    expect(api.put).toHaveBeenNthCalledWith(3, '/api/v2/volunteering/organisations/9', { name: 'Garden Team' });
+    expect(api.put).toHaveBeenNthCalledWith(2, '/api/v2/volunteering/organisations/9', { name: 'Garden Team' });
     expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/organisations/9/wallet/deposit', { amount: 3, note: 'Top-up' });
   });
 });

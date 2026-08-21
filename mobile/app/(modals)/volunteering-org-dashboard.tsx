@@ -20,7 +20,6 @@ import {
   getOrganisationVolunteers,
   getOrganisationWalletTransactions,
   handleVolunteerApplication,
-  setOrganisationAutoPay,
   updateOrganisation,
   verifyVolunteerHours,
   type OrganisationPendingHour,
@@ -42,7 +41,6 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 
@@ -378,11 +376,6 @@ function WalletPanel({
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
-  const [autoPay, setAutoPay] = useState(Boolean(stats?.auto_pay_enabled));
-
-  useEffect(() => {
-    setAutoPay(Boolean(stats?.auto_pay_enabled));
-  }, [stats?.auto_pay_enabled]);
 
   async function deposit() {
     const parsed = Number(amount);
@@ -405,18 +398,6 @@ function WalletPanel({
     }
   }
 
-  async function toggle(next: boolean) {
-    setAutoPay(next);
-    try {
-      await setOrganisationAutoPay(orgId, next);
-      onRefresh();
-      void Haptics.selectionAsync();
-    } catch {
-      setAutoPay(!next);
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.wallet.autoPayError'), variant: 'danger' });
-    }
-  }
-
   return (
     <View className="gap-4">
       <HeroCard className="rounded-panel p-0">
@@ -430,10 +411,24 @@ function WalletPanel({
                 {t('hoursValue', { count: stats?.wallet_balance ?? 0 })}
               </Text>
             </View>
-            <Toggle value={autoPay} onValueChange={(value) => void toggle(value)} accessibilityLabel={t('org.wallet.autoPayToggle')} />
           </View>
+          {/*
+            🔴 The auto-pay toggle was REMOVED here on 2026-08-21, mirroring React.
+            It called `PUT /v2/volunteering/organisations/{id}/wallet/auto-pay`, which
+            Laravel does not register — measured as **HTTP 404**, so tapping it could only
+            ever fail. It also had nothing to govern: `VolunteerService` always mints
+            credits on approval (deliberately — gating it on the flag once meant approved
+            logs "were committed 'approved' but never minted", losing credits for good),
+            and nothing outside seed data reads `auto_pay_enabled` any more.
+
+            React removed the control for exactly this reason, with a test
+            (react-frontend/src/pages/volunteering/OrgWalletTab.test.tsx). This was the
+            single accepted drift in `npm run api:check`, recorded as needing a choice
+            between "mirror React and remove the toggle" or "add the endpoint" — this is
+            that choice, taken the same way React took it.
+          */}
           <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-            {autoPay ? t('org.wallet.autoPayOn') : t('org.wallet.autoPayOff')}
+            {t('org.wallet.autoPayAlways')}
           </Text>
           <Input
             keyboardType="decimal-pad"

@@ -60,7 +60,7 @@ dimension's own section; none is inherited from an earlier edition.
 | --- | --- | --- | --- |
 | 1 | Automated test suite | **Strong** | 290 suites / 1,907 tests, 0 skipped, 0 quarantined, blocking in CI (was 274 / 1,779) |
 | 2 | Code coverage | **Adequate** | 74.09% lines / 71.06% statements / 63.91% branches, over 284 files, against 28 shrink-only area floors + a global floor |
-| 3 | API contract drift | **Adequate** | 403 endpoints over 492 call sites; 402 verified against Laravel's real routes, 1 known drift awaiting a product decision |
+| 3 | API contract drift | **Strong (was Adequate)** | 402 endpoints over 491 call sites; **402 verified, 0 missing**. The one known drift — a dead auto-pay toggle — was resolved on 2026-08-21 by mirroring React and removing it |
 | 4 | Route parity drift | **Adequate** | 254 React routes vs 137 mobile; 125 native, 65 out-of-scope, 33 gaps, 31 needs-review — and the review budget is at 31/31, i.e. full |
 | 5 | Type safety | **Strong** | `tsc --noEmit` strict, clean, blocking in CI |
 | 6 | Release & native policy | **Strong** | `verify:release` + `verify:network-security`, both blocking, both passing |
@@ -109,13 +109,20 @@ against a 78.72% floor, which should be raised.
 cd mobile && npm run api:check
 ```
 
-→ `403 distinct endpoints across 46 modules (492 call sites)`
-→ `verified 402, missing 1, method mismatch 0, dynamic 74, inline fetch 0`
+→ `402 distinct endpoints across 47 modules (491 call sites)`
+→ `verified 402, missing 0, method mismatch 0, dynamic 74, inline fetch 0`
 
-The single known drift is `PUT /api/v2/volunteering/organisations/{id}/wallet/auto-pay`:
-React deliberately removed the toggle (under auto-mint, approving hours always pays),
-mobile kept it, and Laravel never had the route. It needs a product decision, so it is
-recorded rather than silently patched.
+**Resolved 2026-08-21.** The single drift was `PUT /api/v2/volunteering/organisations/{id}/wallet/auto-pay`
+— Laravel never registered it (measured: **HTTP 404**), so the mobile organisation
+wallet's auto-pay toggle could only ever fail. It also governed nothing: approval always
+mints credits, deliberately, because gating it on the flag once meant approved logs "were
+committed 'approved' but never minted", losing credits permanently.
+
+React had already removed the control, with a test. The ledger recorded the choice as
+"mirror React and remove the toggle, or add the endpoint"; mobile now mirrors React, the
+baseline entry is deleted (the gate is shrink-only in both directions and said so), and
+the honest wording — approved hours are always credited and charged to this wallet — is
+in all seven languages. Found by tapping the toggle during the two-account walk.
 
 ## 4. Route parity drift — Adequate
 
@@ -591,6 +598,73 @@ working; the screens are untested.
 **Local fixture state created by this walk** (development database only): marketplace
 feature enabled for tenant 2, category `garden-tools`, organisation 109 "Riverside Community
 Garden" owned by user 674, opportunity 128, application 239, hours log 586.
+
+### 9.9 The volunteering loop, walked to the ledger
+
+Continuation of 9.8, same two-emulator harness. **The core loop completes and the money
+reconciles** — confirmed in the database at every step, not just on screen:
+
+| Step | Result |
+| --- | --- |
+| B logs 2h through the UI | `vol_logs` row, status `pending` |
+| A approves in Hours review | status `approved` |
+| Credit to the volunteer | B 25.00 → **27.00**; `transactions` row, type `volunteer` |
+| Charge to the organisation | org 0.00 → **-2.00**; `vol_org_transactions` with `balance_after` |
+| B generates a certificate | verification code, 2.00h, organisation breakdown |
+| B submits a €12.50 expense | `vol_expenses` row, `pending` |
+| Admin approves the expense | `approved`, reviewer recorded; B's app shows €12.50 claimed/approved |
+| A deposits 10 credits | org -2.00 → **8.00**, ledger row "Opening float" |
+
+Expense review is an **admin** action (`/v2/admin/volunteering/expenses/{id}`), not an
+organiser one — the org dashboard has six tabs and no expenses tab by design, so a
+volunteer submits on the phone and a community admin reviews in the admin panel. That is
+a split, not a dead end, and it was verified working.
+
+🔴 **Open, and the most serious thing found: a member's own statement does not
+reconcile.** Measured on the deposit path — A 90.00 → 85.00, organisation +5.00, and
+`transactions` stayed at **one row**. A's wallet reports `transaction_count: 1` and shows
+only the 2-hour volunteer payment, so **15 of the credits that left A's account have
+nothing in the member-visible history to explain them.** The money is not minted (the
+organiser is correctly debited) and the organisation side records it, so it is traceable
+by an admin — but an organiser funding their own organisation sees their balance fall with
+no entry against it. **Not fixed here**: writing a member-ledger row is a change to a
+money path and needs care over idempotency and the balance maths, which already looks
+approximate (`total_earned: 0` while a credit had been paid). This is the top outstanding
+item.
+
+🔴 **Errors that discard the reason: 186 sites across 57 files.** `catch {` with no
+binding cannot see the error, so the server's precise sentence ("You have already logged
+hours for this organization and date") became "Could not log these hours." Helper added
+(`lib/api/describeApiError.ts`) and applied on the walked path only; the sweep is
+deliberately left as a decision, since each site needs a judgement about whether the
+server's wording is fit to show a member.
+
+🔴 **`flex-1` does nothing here, for a THIRD distinct reason.** On `components/ui/Input`,
+a caller's `className` lands on the inner HeroInput while the outer TextField does the
+sizing — so the expenses amount box rendered ~40dp, too narrow for "12.50", with
+plausible-looking source. After the inert SafeAreaView (§9.5 lineage) and the
+HeroButton-wrapped card (§9.8), the pattern is established: **the class is on a different
+element from the one that decides the size.** Guarded by `components/ui/inputSizing.test.ts`.
+
+🔴 **Money copy that stated the opposite of the behaviour.** The wallet said "Auto-pay is
+off. Approved hours will need manual payment."; with the flag off, approval credited and
+debited immediately. That is deliberate server behaviour with a recorded reason, and
+nothing outside seed data reads the flag any more — so the toggle governs nothing it
+appears to govern. Copy corrected in all seven languages to match the wording web-uk
+already used. **The toggle itself is left in place and is a decision for the owner**: a
+control on a money screen that has no effect is a hazard, but removing it is a product
+change.
+
+**`?tab=` — partially fixed, and the rest is open.** Applying the requested tab in an
+effect (rather than a `useState` initialiser, which reads only the first render while a
+deep-linked screen mounts before its parameters populate) made it work **when the screen
+is opened fresh by the link** — verified for `hours`, `certificates` and `expenses`. With
+the screen already open, or after a force-stop, the tab is still ignored. The intent
+mapper is proven correct (`nexus://volunteering?tab=hours` → `/(modals)/volunteering?tab=hours`),
+so the remaining fault is in how an already-mounted route sees new parameters.
+
+**Still not walked**: shifts and shift sign-up, swaps, donations, and the org dashboard's
+volunteers and settings tabs.
 
 ## 10. iOS — Unmeasured
 

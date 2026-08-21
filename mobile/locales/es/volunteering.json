@@ -320,7 +320,8 @@
       "autoPayError": "Could not update auto-pay.",
       "transactions": "Transactions",
       "empty": "No wallet transactions yet.",
-      "transactionFallback": "Wallet transaction"
+      "transactionFallback": "Wallet transaction",
+      "autoPayAlways": "Approved hours are always credited to volunteers and charged to this wallet."
     },
     "settings": {
       "heading": "Organisation settings",

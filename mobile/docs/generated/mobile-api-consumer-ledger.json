@@ -4,25 +4,17 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 46,
-    "call_sites": 492,
-    "distinct_endpoints": 403,
+    "api_modules": 47,
+    "call_sites": 491,
+    "distinct_endpoints": 402,
     "verified": 402,
     "unverified": 0,
-    "missing_from_routes": 1,
+    "missing_from_routes": 0,
     "method_mismatch": 0,
     "dynamic_unverifiable": 74,
     "inline_fetch_offenders": 0
   },
-  "missing_from_routes": [
-    {
-      "http": "PUT",
-      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/auto-pay",
-      "sites": [
-        "volunteering.ts:542"
-      ]
-    }
-  ],
+  "missing_from_routes": [],
   "method_mismatch": [],
   "dynamic_unverifiable": [
     {
@@ -3685,7 +3677,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:559"
+        "volunteering.ts:555"
       ]
     },
     {
@@ -3694,48 +3686,12 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:563"
+        "volunteering.ts:559"
       ]
     },
     {
       "http": "GET",
       "endpoint": "/api/v2/volunteering/donations",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "volunteering.ts:579"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/volunteering/donations",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "volunteering.ts:597"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/volunteering/expenses",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "volunteering.ts:567"
-      ]
-    },
-    {
-      "http": "POST",
-      "endpoint": "/api/v2/volunteering/expenses",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "volunteering.ts:571"
-      ]
-    },
-    {
-      "http": "GET",
-      "endpoint": "/api/v2/volunteering/giving-days",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
@@ -3744,11 +3700,47 @@
     },
     {
       "http": "POST",
+      "endpoint": "/api/v2/volunteering/donations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:593"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/expenses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:563"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/expenses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:567"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/giving-days",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:571"
+      ]
+    },
+    {
+      "http": "POST",
       "endpoint": "/api/v2/volunteering/hours",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:614"
+        "volunteering.ts:610"
       ]
     },
     {
@@ -3793,7 +3785,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:601"
+        "volunteering.ts:597"
       ]
     },
     {
@@ -3811,7 +3803,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:605"
+        "volunteering.ts:601"
       ]
     },
     {
@@ -3829,7 +3821,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:618"
+        "volunteering.ts:614"
       ]
     },
     {
@@ -3866,7 +3858,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:551"
+        "volunteering.ts:547"
       ]
     },
     {
@@ -3929,20 +3921,11 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:555"
+        "volunteering.ts:551"
       ]
     },
     {
       "http": "DELETE",
-      "endpoint": "/api/v2/volunteering/shifts/{param}/signup",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "volunteering.ts:626"
-      ]
-    },
-    {
-      "http": "POST",
       "endpoint": "/api/v2/volunteering/shifts/{param}/signup",
       "status": "verified",
       "matched_via": "exact",
@@ -3951,12 +3934,21 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/signup",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:618"
+      ]
+    },
+    {
       "http": "GET",
       "endpoint": "/api/v2/volunteering/swaps",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:583"
+        "volunteering.ts:579"
       ]
     },
     {
@@ -3965,7 +3957,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:593"
+        "volunteering.ts:589"
       ]
     },
     {
@@ -3974,7 +3966,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:589"
+        "volunteering.ts:585"
       ]
     },
     {

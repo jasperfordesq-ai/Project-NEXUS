@@ -17,15 +17,5 @@
     "Do NOT add an entry to make a red check green. Every addition is a member-facing",
     "action that fails on a real phone."
   ],
-  "accepted": [
-    {
-      "method": "PUT",
-      "endpoint": "/api/v2/volunteering/organisations/{param}/wallet/auto-pay",
-      "call_site": "lib/api/volunteering.ts:542",
-      "surfaced_at": "app/(modals)/volunteering-org-dashboard.tsx:410",
-      "found": "2026-08-18",
-      "reason": "Laravel registers no auto-pay route. React DELIBERATELY removed this toggle — under auto-mint, approving hours always pays, so the control was meaningless (react-frontend/src/pages/volunteering/OrgWalletTab.test.tsx). Mobile kept it. Needs a product decision: mirror React and remove the toggle, or add the endpoint. Not a mechanical fix, so it is not being made silently.",
-      "member_impact": "An organisation owner toggling auto-pay on the mobile org dashboard gets a failure. lib/api/volunteering.test.ts:305 asserts the call against a mock, so CI stays green."
-    }
-  ]
+  "accepted": []
 }
