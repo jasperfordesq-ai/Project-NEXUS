@@ -150,7 +150,7 @@ missing. If a sweep reports fewer screens than it declares, find out which.
 | 🔴 `uiautomator dump` | Returns **zero nodes** on this app. It once nearly produced a false critical defect | Screenshots only |
 | 🔴 Reading a screenshot 8 seconds after a tap | Toasts have already gone. "No error appeared" was wrong twice | Capture at ~1–2s **and** later |
 | 🔴 A stale session on a device | Sat on a bare spinner in a re-fetch loop | `adb shell pm clear ie.project.nexus` and sign in again |
-| 🔴 Piping a long build through `| tail` | Buffers everything; the log looks empty while it works | Redirect to a file and read it |
+| 🔴 Piping a long build through `\| tail` | Buffers everything; the log looks empty while it works | Redirect to a file and read it |
 
 ## Instruments that lie
 
