@@ -6,7 +6,7 @@
 > monorepo layout: Laravel now lives at this repository's root rather than a
 > separate checkout, and `web-uk/` is a sibling of `aspnet-backend/`.
 
-Last reviewed: 2026-08-11
+Last reviewed: 2026-08-21
 
 > 🔴 **Two 2026-08-11 changes that affect what you read here.**
 >
@@ -51,9 +51,26 @@ Last reviewed: 2026-08-11
 
 ## What This Project Is
 
-This repository is the experimental ASP.NET Core 10 / PostgreSQL backend for
-Project NEXUS. It is a clean .NET implementation of the canonical Laravel
-Project NEXUS platform, not a PHP migration dump.
+This directory is the **ASP.NET Core 10 / PostgreSQL edition** of Project NEXUS:
+a clean .NET implementation of the canonical Laravel platform, not a PHP
+migration dump.
+
+🔴 **It is a committed product deliverable, not an experiment.** Corrected
+2026-08-21. This guide called it "experimental" and "development-only" and told
+you ASP.NET was "an optional future alternative, not Laravel's planned
+successor". That framing was wrong about intent and it cost this workstream
+weeks: an optional project does not get a scoped delivery plan, so the goal
+stayed at its maximal reading and no agent was authorised to narrow it. The real
+driver is commercial — **a segment of public-sector buyers require a .NET stack
+as a condition of procurement**, and without this edition those contracts cannot
+be bid. Read
+[`docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`](docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md).
+
+🔴 **The deployment prohibitions are UNCHANGED.** Committed does not mean
+deployable. Do not add this to the Laravel blue/green Compose file or production
+deploy scripts, do not restart or redeploy the live ASP.NET containers, and do
+not let ASP.NET CI gate a Laravel release. The live ASP.NET database has had no
+successful backup since 2026-03-08 while the app migrates on every start.
 
 The Laravel Edition, now at the root of this same monorepo, is the current
 source of truth for externally observable contracts. Treat it as read-only reference
@@ -66,16 +83,29 @@ and super-admin surfaces, accessible frontend behavior, background jobs,
 integrations, tenant settings, localization, tests, and documentation. Earlier
 "out of scope" exclusions are retired and are tracked as contract-identity gaps.
 
-The binding decisions are
-[`docs/decisions/ADR-0001-contract-identical-backends.md`](docs/decisions/ADR-0001-contract-identical-backends.md)
-and
-[`docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md`](docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
-Historical "parity," "compatible," and "contract-correct" wording is shorthand
-for externally observable contract identity, not route-count similarity or
-"close enough" behavior. The end state is two unchanged frontends by two
-backends: canonical React and shared accessible Web UK must each run against
-Laravel and ASP.NET by configuration only. Laravel remains the behavior
-baseline; ASP.NET reproduces its consumed contracts and workflows.
+The binding decisions, in reading order:
+
+| ADR | What it settles |
+| --- | --- |
+| [ADR-0001](docs/decisions/ADR-0001-contract-identical-backends.md) | The standard: externally contract-identical at every consumed boundary. |
+| [ADR-0004](docs/decisions/ADR-0004-journey-equivalence-is-the-target.md) | 🔴 **How that is measured**, and what is deliberately OUT of scope. |
+| [ADR-0003](docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) | Why this is committed, and the go-live gate. |
+| [ADR-0002](docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md) | Superseded in part. Its scaling reasoning is retained only. |
+
+🔴 **Read ADR-0004 before doing any parity work.** "Contract-identical" was
+implemented as a whole-response-body diff, which made Laravel's raw-Eloquent
+internal columns count as required work — a listing carries ~76 fields including
+`category.reset_token`. ADR-0004 fixes the measurement: a field is in scope only
+if a client reads it, acts on it, or its difference changes an outcome.
+Reproducing an internal column no screen reads is **not work**; Laravel
+serialising it is a Laravel defect. Historical "parity," "compatible," and
+"contract-correct" wording is shorthand for the ADR-0001 standard as measured by
+ADR-0004, not route-count similarity or "close enough" behavior.
+
+The end state is two unchanged frontends by two backends: canonical React and
+shared accessible Web UK must each run against Laravel and ASP.NET by
+configuration only. Laravel remains the behavior baseline; ASP.NET reproduces
+the contracts and workflows those clients consume.
 
 ## React Frontend Retirement And Contract Policy
 
@@ -92,15 +122,16 @@ react-frontend/          (at the monorepo root, i.e. ../react-frontend from here
 ```
 
 That frontend is production software. The Laravel backend is production and is
-the source of truth for the frontend API contract. The ASP.NET backend is
-development-only and must become contract-identical at the externally
-observable boundary used by the Laravel React
-frontend.
+the source of truth for the frontend API contract. The ASP.NET backend must
+become equivalent at the boundary that frontend actually consumes.
 
-ASP.NET is an optional future alternative, not Laravel's planned successor or
-an automatic response to traffic growth. Its development preserves portability
-and provides something concrete to measure. Any production role requires the
-evidence, migration safety, and separate owner decision defined by ADR-0002.
+ASP.NET is a **committed second edition**, scheduled and resourced, because
+buyers will require it (ADR-0003). It is not an automatic response to traffic
+growth: there is still no user, tenant or traffic threshold that promotes it or
+retires Laravel. Laravel remains the production default **until the ASP.NET
+edition is certified** — a sequencing statement, not a statement about which
+edition matters. Any production role requires the go-live gate in ADR-0003,
+including working backups and an explicit owner decision.
 
 Default rule for agents: do not modify frontend files in this repo unless the
 user explicitly approves that specific frontend change. Backend contract-identity work
@@ -154,11 +185,16 @@ See `docs/REACT_FRONTEND_RETIREMENT.md` for the maintained policy.
 Do not copy fast-changing counts into this first-read guide. Read and refresh the
 workstream-specific status source instead:
 
-- `docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` is the cold-start entry point while
-  development remains paused. It owns the read order, exact pause boundary,
-  restart prompts, and repository-freeze record.
+- `docs/JOURNEY_CERTIFICATION_LEDGER.md` is **the work list** — 130 enumerated
+  journeys with a status each, and the denominator the score is derived from.
+  Start here when picking up work.
 - `docs/CURRENT_ASPNET_CONTRACT_STATUS.md` is the current ASP.NET fixed-rubric
   score, evidence boundary, published-but-unscored work, and next queue.
+- `docs/ROADMAP.md` is the plain-English owner-facing summary and time frames.
+- 🔴 `docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` is **HISTORICAL**. This guide
+  called it "the cold-start entry point while development remains paused" until
+  2026-08-21; the ASP.NET pause was lifted on 2026-08-14 and the banner at the
+  top of this file already said so. Do not resume there.
 - `docs/CURRENT_SCHEMA_READINESS.md` is the current one-page schema verdict,
   migration-chain boundary, exact-SHA CI result, and recommission sequence. It
   does not publish a separate product score.
@@ -244,18 +280,27 @@ being made switchable between the Laravel and ASP.NET backends.
 - `apps/react-frontend/` was deleted on 2026-08-09. Do not recreate it. If an
   old .NET adapter detail is needed, read it from git history rather than
   restoring the directory.
-- `../web-uk/` is the explicitly approved implementation target for the
-  future shared accessible frontend. Laravel Blade defines its browser routes,
-  links, layout, content hierarchy, forms, redirects, tenant behaviour and
-  workflows; the Laravel backend defines its HTTP/auth/module/upload/download/
-  side-effect contract. Its location in this repository does not make ASP.NET
-  authoritative.
+- 🔴 **`../web-uk/` IS the accessible frontend, in production, serving three
+  live hostnames.** It is not a "future" target. This bullet said Laravel Blade
+  defined its routes, layout, forms and workflows — **the Blade accessible
+  frontend was DELETED on 2026-08-14.** `accessible-frontend/`,
+  `app/Http/Controllers/GovukAlpha/` and `routes/govuk-alpha.php` do not exist;
+  do not go looking for them and do not treat their absence as damage. Behaviour
+  is now defined by the GOV.UK Design System plus WCAG 2.2 for presentation,
+  `react-frontend/` for what a member can do, and the Laravel API for the
+  contract. The final Blade route inventory is frozen at
+  `../web-uk/scripts/blade-route-inventory.frozen.json` (707 routes) and is what
+  `npm run route:matrix` still compares against. Its location in this repository
+  does not make ASP.NET authoritative.
 - If resuming the accessible frontend work after an interrupted session, start
   with `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`.
-- The Laravel Blade accessible frontend remains the current visual/workflow
-  source of truth. Port its shell, information architecture, footer, card-list,
-  and Explore patterns into `../web-uk` while keeping the Express/Nunjucks/GOV.UK
-  Frontend stack.
+- 🔴 This bullet said "the Laravel Blade accessible frontend remains the
+  current visual/workflow source of truth" and told you to port its patterns
+  into `../web-uk`. **Blade was deleted on 2026-08-14; there is nothing to port
+  from.** `../web-uk` keeps its Express/Nunjucks/GOV.UK Frontend stack and is
+  itself the accessible frontend. `lang/*/govuk_alpha*.php` at the monorepo root
+  is ALIVE and must not be deleted — it is the source its eleven translation
+  catalogues are generated from.
 - Web UK work must not modify ASP.NET backend source, tests, migrations, schema,
   fixtures or runtime data. It must not edit Laravel source, run Laravel
   migrations, alter/query/clean its ordinary local database, or touch

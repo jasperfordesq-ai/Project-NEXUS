@@ -105,7 +105,7 @@ The accessible frontend is a maintained second surface, not legacy PHP. It uses 
 
 ## Backend Organization
 
-Laravel is the sole production API and the canonical behavior source of truth. Controllers should stay thin and delegate business rules to services. Services should follow existing static/service patterns, tenant scoping, and database conventions already used under `app/Services/`. ASP.NET is an optional future alternative, not an assumed successor; it remains development-only unless it passes unchanged-client contract and runtime certification plus the evidence and decision gate in [ADR-0002](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+Laravel is the sole production API and the canonical behavior source of truth. Controllers should stay thin and delegate business rules to services. Services should follow existing static/service patterns, tenant scoping, and database conventions already used under `app/Services/`. ASP.NET is a **committed second edition** with a commercial driver (public-sector buyers who require a .NET stack), not an assumed successor to Laravel; it is not production-deployable until it passes journey certification plus the go-live gate in [ADR-0003](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md). What equivalence does and does not require is defined in [ADR-0004](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md): a response field is in scope only if a client reads it.
 
 New schema changes should use Laravel migrations in `database/migrations/`. The root `migrations/` directory is historical; do not add new legacy SQL migrations.
 

@@ -84,10 +84,18 @@ const KNOWN_MARKERS = {
   WEBUK_W2_RUBRIC: { kind: 'rubric' },
   WEBUK_W2_ARTEFACT_TREE: { kind: 'opaque' },
 
-  // ASP.NET — separate rubric, paused. Deliberately NOT cross-checked against a
-  // table: it is a backend-owned document this workstream must not rescore.
+  // ASP.NET — separate rubric. Deliberately NOT cross-checked against a table: it
+  // is a backend-owned document this workstream must not rescore.
+  // 🔴 The comment here said "paused" until 2026-08-21. The ASP.NET pause was
+  // lifted on 2026-08-14 (see PROJECT_PAUSE_STATE_ASPNET below, which was already
+  // correct) — a stale word in a checker's comment is how an agent concludes a
+  // live workstream is frozen.
   ASPNET_CURRENT_BANKED_SCORE: { kind: 'opaque', requiresRubric: 'ASPNET_CURRENT_RUBRIC' },
   ASPNET_CURRENT_RUBRIC: { kind: 'rubric' },
+  // The finite journey denominator introduced 2026-08-21 with rubric R4. Opaque
+  // by design: the ledger's own tier table is the authority for the breakdown,
+  // and this marker only pins the row TOTAL so it cannot drift silently.
+  ASPNET_JOURNEY_ROWS: { kind: 'opaque' },
 
   // Documentation health — an INDEX, not a product score. Renamed 2026-08-11.
   DOCUMENTATION_HEALTH_INDEX: { kind: 'opaque', requiresRubric: 'DOCUMENTATION_HEALTH_RUBRIC' },
@@ -148,6 +156,7 @@ const MARKER_DOCUMENTS = [
   'aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md',
   'aspnet-backend/docs/DOCUMENTATION_HEALTH_REPORT.md',
   'aspnet-backend/docs/CURRENT_SCHEMA_READINESS.md',
+  'aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md',
   'aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md'
 ];
 

@@ -1,6 +1,6 @@
 # React Dual-Backend Portability
 
-Last reviewed: 2026-08-15
+Last reviewed: 2026-08-21
 
 This document defines the guardrails for making the React frontend able to run
 against either the Laravel API or the ASP.NET API while keeping Laravel as the
@@ -8,33 +8,47 @@ protected default.
 
 ## Current Decision
 
-The Laravel backend remains the source of truth. The React frontend must keep
-working against Laravel first, and ASP.NET support must be introduced as an
-optional backend target only after each API contract is proven compatible.
-The ASP.NET backend is not assumed to be ready; current frontend preparation is
-limited to guardrails, documentation, and local inventory tooling.
+🔴 **Corrected 2026-08-21.** This section described the work as "a portability
+strategy, not a planned migration", called ASP.NET "an optional alternative",
+and said Laravel would be canonical "for the indefinite future". That was wrong
+about product intent and it demoted the workstream in every agent's first read.
+Project NEXUS ships **two editions of one product**, and the ASP.NET edition is
+a committed deliverable because **a segment of public-sector buyers require a
+.NET stack as a condition of procurement**. See
+[`ADR-0003`](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md).
 
-This is a portability strategy, not a planned migration. Laravel remains the
-canonical production backend for the indefinite future. ASP.NET is being built
-as an optional alternative that may be useful for particular operators or
-measured workloads after certification. Growth in users, tenants, or traffic is
-not by itself a reason to switch backends: Project NEXUS should first identify
-and address the actual constraint in queries, indexes, caches, queues, media,
-connections, or infrastructure.
+The Laravel backend remains the **production default and the behaviour source of
+truth until the ASP.NET edition is certified**. That is sequencing, not
+priority. The React frontend must keep working against Laravel by default, and
+ASP.NET is selected by configuration.
 
-Any future ASP.NET production proposal requires representative comparative
-evidence, an operational and total-cost case, a safe migration and rollback
-plan, and a separate explicit owner decision. The complete decision gate is
-recorded in
-[`ADR-0002`](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+Growth in users, tenants, or traffic is still not by itself a reason to switch
+backends — that reasoning from ADR-0002 is retained. Address the actual
+constraint in queries, indexes, caches, queues, media, connections, or
+infrastructure, in whichever edition is serving.
 
-Current production status:
+🔴 **The target is journey equivalence at consumed boundaries.** For everything
+a real user does, both editions must produce the same outcome, data, errors,
+permissions and side effects. A response field that no client reads is
+explicitly **out of scope** — reproducing Laravel's raw-Eloquent internal
+columns is not required work. See
+[`ADR-0004`](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md),
+and the finite work list at
+[`JOURNEY_CERTIFICATION_LEDGER.md`](../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md).
+
+An ASP.NET production role still requires the go-live gate in ADR-0003:
+journey evidence at the scope proposed, load evidence, **working verified
+backups**, a deploy and rollback path, observability, a migration and
+reconciliation plan, and an explicit owner decision. The live ASP.NET database
+has had no successful backup since 2026-03-08; that is the standing hard stop.
+
+Current status:
 
 | Surface | Status | Rule |
 | --- | --- | --- |
-| Laravel backend | Production | Canonical API contract. |
+| Laravel backend | Production | Canonical API contract; production default until ASP.NET is certified. |
 | Laravel React frontend | Production | Must remain Laravel-compatible by default. |
-| ASP.NET backend | Development only | Must conform to the Laravel React API contract before any shared-frontend claim. |
+| ASP.NET backend | Committed edition, not yet certified | Must reproduce the journeys the unchanged clients perform. Not deployable until the ADR-0003 gate is met. |
 
 The target architecture is:
 

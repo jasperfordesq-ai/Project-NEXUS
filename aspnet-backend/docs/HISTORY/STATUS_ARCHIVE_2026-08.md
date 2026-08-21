@@ -2505,3 +2505,116 @@ The wider lesson for this workstream is that a frontend's own validator is an ex
 instrument but is not automatically a statement of Laravel's contract — this one had
 drifted from it. Run the control before treating a schema as the spec.
 
+---
+
+## Baseline 3 Derivation (historical — banked 653/1000 under rubric `ASPNET-CONTRACT-R3`, 2026-08-20; superseded by Baseline 4)
+
+🔴 **Historical checkpoint. Do NOT use this score, its categories or its
+queue as current.** Canonical replacement:
+[../CURRENT_ASPNET_CONTRACT_STATUS.md](../CURRENT_ASPNET_CONTRACT_STATUS.md),
+which carries Baseline 4 under rubric `ASPNET-CONTRACT-R4`.
+
+Moved here verbatim on 2026-08-21 when the rubric was replaced. R4 asks a
+different question — how much of the product is proved to work, rather than how
+much of Laravel's API surface has a counterpart that looks right — so **R3's 653
+and R4's total are not comparable and must never be subtracted, averaged, or
+described as a rise or fall.** Why the rubric changed:
+[ADR-0004](../decisions/ADR-0004-journey-equivalence-is-the-target.md).
+
+The R3 evidence itself remains valid as evidence; only its weighting is retired.
+
+## Banked score — Fixed Rubric Baseline 3, 653/1000 (`ASPNET-CONTRACT-R3`, banked 2026-08-20)
+
+**Block 1 — Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R3` (same seven
+fixed-weight categories as R1/R2; no denominator change). Evidence boundary:
+monorepo `1c483377c` (pushed 2026-08-20 with owner approval;
+`aspnet-backend/src` and `tests` byte-identical to it at scoring time — the
+one later commit, `27350fed4`, is documentation-only). Laravel contract source:
+the same monorepo tree, exercised through the disposable Laravel on `:8091`
+with both parity fixtures re-applied immediately before measurement. CI
+evidence: platform-contracts run **32375659126** at `1c483377c` — **all
+ASP.NET jobs green** (build, image builds, Messaging, API shards 1–6; shard
+5's failure on the previous run did not reproduce). Scoring-record SHA: the
+commit carrying this section.
+
+**Block 2 — Banked score.**
+
+| Category | Banked | Maximum | Movement vs B2 |
+| --- | ---: | ---: | ---: |
+| Active Laravel API route representation | 98 | 100 | +2 |
+| Semantic workflow and canonical-consumer contract parity | 210 | 350 | +25 |
+| Schema, migrations, data integrity, and upgrade safety | 118 | 150 | 0 |
+| Auth, tenant isolation, security, and localization | 82 | 100 | +8 |
+| Full build/test/CI evidence | 85 | 100 | 0 |
+| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 30 | 125 | +20 |
+| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 | 0 |
+| **Total** | **653** | **1000** | **+55** |
+
+Every deduction re-derives Baseline 2's own deduction structure against the
+2026-08-20 evidence pack (`../../.local-docs-archive/baseline3/` and
+`../artifacts/parity/`, regenerated the same day). Where a B2 deduction's
+measured basis improved, the deduction moved by the measurement; where the
+basis is unchanged, the deduction is unchanged.
+
+- **Routes 98 (−2).** B2's −4 covered 9 method-level client-consumed gaps.
+  Now 4 real (messages voice, attachments GET-405, events attendance code,
+  volunteering credential download), 1 struck as a false positive, 4 closed;
+  regenerated artifact 2,652 matched / 15 missing (was 2,648/19).
+- **Semantic 210 (−140).** −50 reads: 80 of 195 differ (41.0%) on the honest
+  generated corpus vs B2's 82 of 170 (48.2%) — B2's −60 scaled by the
+  measured differ rate — with events (incl. v1/v2 negotiation), listings and
+  feed now field-complete except `feed.media`. −55 stubs: 319 verified live,
+  unchanged. −35 writes: the 18-endpoint corpus is now MEASURED at 10/18
+  (B2's −50 was "entirely unmeasured"): −15 for the 8 differing, −20 because
+  uploads, realtime, side-effect verification and the wider 392-write ledger
+  remain unmeasured.
+- **Schema 118 (−32).** Unchanged evidence: 215 tables absent (257 matched,
+  183 EF migrations — zero schema change since 2026-08-17; the recent ports
+  were mapper-only), no populated-history upgrade proof (−20 / −12 as at B2).
+- **Auth/tenant/security/localization 82 (−18).** B2's −18 localization
+  deduction is **retired as mismeasured** — its instrument labels the SHARED
+  React catalogs as the 'dotnet' side and contains zero ASP.NET code (the
+  script now carries a score-integrity warning at the offending lines) — and
+  is **replaced by an honest −10** from the real ledger
+  (`BACKEND_LOCALIZATION_CONTRACT.md`): no request-locale negotiation at all,
+  no recipient-locale resolution, 7 of 11 locales seeded. −5 residual
+  security unchanged (R-4 subtree confinement, R-18 legal gate, R-20 passkey
+  rp_id, R-8 carer cluster, FCM legacy endpoint). −3 tenant isolation for the
+  absent tables, unchanged.
+- **Build/test/CI 85 (−15).** Same evidence class as B2, now at this SHA:
+  fresh CI green on every ASP.NET job (run 32375659126) plus the local host
+  suite 3,740/0 + 38/38 (`baseline3/full-suite.log`). The −15 (coverage/test-
+  quality gate −8, static contract −7) is unchanged.
+- **Frontend runtime proof 30 (−95).** B2's 10 was static readiness only —
+  neither frontend had ever run. +20 banks the canonical React side: a
+  COMMITTED, repeatable browser smoke (`scripts/smoke-react-against-aspnet.mjs`)
+  that signs in, renders 6 member pages, performs 4 member actions (create
+  listing, feed post, credit transfer, RSVP) and exercises token refresh
+  against ASP.NET in committed direct mode — 16/16 steps, 473 API calls ok,
+  zero uncaught page errors (`baseline3/react-smoke.log`). **web-uk banks
+  nothing new**: its page-pair result was manual, wrote no artifact, and no
+  committed web-uk-vs-ASP.NET instrument exists — building one is C.1 in the
+  queue below.
+- **Providers/jobs/ops 30 (−45).** Unchanged: jobs 26 of 69 (denominator
+  corrected from the previously written 70 — live count of
+  `bootstrap/app.php` registrations), −20; Meilisearch zero callers + FCM on
+  the retired endpoint, −12; no live-provider/operational proof, −13.
+
+**Block 3 — Published but unscored:** none. Everything through `04c1a8fac` is
+banked above; `27350fed4` is documentation-only.
+
+**Block 4 — Dirty/in-flight work:** 25 `web-uk/src/routes/*.js` files carry
+known CRLF phantom modifications from a concurrent workstream plus the nightly
+`sentry-triage-ledger.json`; none is ASP.NET's and none contributes points.
+Zero dirty `aspnet-backend` files at scoring time.
+
+**Block 5 — Certification gaps:** the 347 open points are itemised in "Open
+Certification Gates" below, restated against this baseline.
+
+**History:** Baseline 2 (598, `ASPNET-CONTRACT-R2`, 2026-08-18) with full
+per-category evidence: `HISTORY/STATUS_ARCHIVE_2026-08.md`. Baseline 1 (712
+under the pre-drift denominator, initially banked 620, 2026-07-14):
+`HISTORY/STATUS_ARCHIVE_2026-07.md`. R2's fall from R1 measured instrument
+improvement, not regression; R3's rise over R2 banks five days of measured
+work that had sat unbanked — the owner-directed cadence from here is a
+banking transaction at every certification tier, never a deferred bulk score.

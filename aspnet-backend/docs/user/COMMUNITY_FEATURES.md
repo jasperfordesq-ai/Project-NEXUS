@@ -5,8 +5,8 @@ Last reviewed: 2026-07-15
 Status: **Maintained user reference - module availability is tenant-specific**
 
 Project NEXUS combines timebanking and community participation features. Not
-every tenant enables every module, and the experimental ASP.NET/Web UK edition
-does not yet certify every workflow described below.
+every tenant enables every module, and the ASP.NET edition does not yet certify
+every workflow described below.
 
 | Area | Typical member tasks | Important boundary |
 | --- | --- | --- |

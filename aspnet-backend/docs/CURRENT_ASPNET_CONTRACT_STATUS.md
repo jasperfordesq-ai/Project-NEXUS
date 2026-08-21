@@ -1,358 +1,251 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-20 (restructured; evidence regenerated the same day —
-see the Baseline table and the artifact links under it)
+Last verified: 2026-08-21 (rubric replaced; Baseline 4 banked at `869a2a030`)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=653/1000 -->
-<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R3 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=355/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R4 -->
+
+🔴 **The rubric changed on 2026-08-21. The number went from 653 to 355 and
+nothing regressed.** R1–R3 measured how much of Laravel's API surface had an
+ASP.NET counterpart that looked right. R4 measures how much of the product is
+**proved to work** on ASP.NET. The second number is lower because proving
+journeys is the part that has barely started — and it is the only number that
+can tell you when the edition is finished. **Never subtract, average, or
+describe one as a rise or fall from the other.** Reasons:
+[ADR-0004](decisions/ADR-0004-journey-equivalence-is-the-target.md). Baseline 3's
+full derivation is preserved verbatim in
+[`HISTORY/STATUS_ARCHIVE_2026-08.md`](HISTORY/STATUS_ARCHIVE_2026-08.md).
 
 🔴 **This score is unrelated to Web UK's.** Two 1000-point denominators exist in
-this repository and they measure different things: this one measures whether
-ASP.NET is externally contract-identical to Laravel; Web UK's `WEBUK-W2-PROD-R1`
-measures whether the accessible frontend is safe to serve in production
+this repository and they measure different things: this one measures whether the
+ASP.NET edition runs the product; Web UK's `WEBUK-W2-PROD-R1` measures whether
+the accessible frontend is safe to serve in production
 (`../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`). Never blend them.
 
-🔴 **How this file works now (restructured 2026-08-20, owner-directed).** This
-file holds ONLY what is current: the banked score, the evidence pointers, the
-open gates, the next queue, and the reporting rules. Every dated narrative
-entry lives in `HISTORY/STATUS_ARCHIVE_2026-07.md` and
-`HISTORY/STATUS_ARCHIVE_2026-08.md`, moved verbatim. The plain-English view
-for the owner is `ROADMAP.md`. Scoring rules: the rubric and baseline rules
-live in `FULL_PARITY_REMEDIATION_RUNBOOK.md`; the update-transaction and
-state-label rules in `DOCUMENTATION_GOVERNANCE.md`; the report format at the
-bottom of this file.
+🔴 **How this file works.** It holds ONLY what is current: the banked score, the
+evidence pointers, the open gates, the next queue, and the reporting rules.
+Dated narrative lives in `HISTORY/STATUS_ARCHIVE_2026-0{7,8}.md`. The finite work
+list is [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md). The
+plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric and baseline rules:
+[`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md).
+Update-transaction and state-label rules:
+[`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score — Fixed Rubric Baseline 3, 653/1000 (`ASPNET-CONTRACT-R3`, banked 2026-08-20)
+## Banked score — Fixed Rubric Baseline 4, 355/1000 (`ASPNET-CONTRACT-R4`, banked 2026-08-21)
 
-**Block 1 — Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R3` (same seven
-fixed-weight categories as R1/R2; no denominator change). Evidence boundary:
-monorepo `1c483377c` (pushed 2026-08-20 with owner approval;
-`aspnet-backend/src` and `tests` byte-identical to it at scoring time — the
-one later commit, `27350fed4`, is documentation-only). Laravel contract source:
-the same monorepo tree, exercised through the disposable Laravel on `:8091`
-with both parity fixtures re-applied immediately before measurement. CI
-evidence: platform-contracts run **32375659126** at `1c483377c` — **all
-ASP.NET jobs green** (build, image builds, Messaging, API shards 1–6; shard
-5's failure on the previous run did not reproduce). Scoring-record SHA: the
-commit carrying this section.
+**Block 1 — Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R4`, newly named
+2026-08-21; eight fixed-weight categories, new denominator, **not comparable to
+R1–R3**. Evidence boundary: monorepo `869a2a030` (pushed; `aspnet-backend/src`
+and `tests` at that commit). Laravel contract source: the same monorepo tree,
+exercised through the disposable Laravel on `:8091` with both parity fixtures
+applied. CI evidence: `platform-contracts` green at `869a2a030`. Generated
+artifact evidence: `artifacts/parity/api/api-parity.*` regenerated
+2026-08-21T07:14; `artifacts/parity/{schema,localization}` at 2026-08-20;
+`.local-docs-archive/baseline3/` for the suite and smoke logs, plus the five
+2026-08-21 implementation commits below. Scoring-record SHA: the commit carrying
+this section.
 
 **Block 2 — Banked score.**
 
-| Category | Banked | Maximum | Movement vs B2 |
-| --- | ---: | ---: | ---: |
-| Active Laravel API route representation | 98 | 100 | +2 |
-| Semantic workflow and canonical-consumer contract parity | 210 | 350 | +25 |
-| Schema, migrations, data integrity, and upgrade safety | 118 | 150 | 0 |
-| Auth, tenant isolation, security, and localization | 82 | 100 | +8 |
-| Full build/test/CI evidence | 85 | 100 | 0 |
-| Unchanged canonical React plus unchanged Web UK dual-backend runtime proof | 30 | 125 | +20 |
-| Providers, jobs, integrations, operational proof, and reproducible docs | 30 | 75 | 0 |
-| **Total** | **653** | **1000** | **+55** |
+| Category | Banked | Maximum |
+| --- | ---: | ---: |
+| Core member journeys certified — React | 72 | 200 |
+| Community and extended module member journeys certified — React | 11 | 150 |
+| Member journeys certified — Web UK accessible | 28 | 150 |
+| Staff journeys certified — admin, super-admin, broker | 1 | 100 |
+| Consumed-contract correctness and stub elimination | 90 | 150 |
+| Data integrity, schema, and upgrade safety | 58 | 75 |
+| Auth, tenant isolation, security, and localization | 58 | 75 |
+| Background processing, providers, and integrations | 10 | 50 |
+| Build/test/CI evidence and operational readiness | 27 | 50 |
+| **Total** | **355** | **1000** |
 
-Every deduction re-derives Baseline 2's own deduction structure against the
-2026-08-20 evidence pack (`../../.local-docs-archive/baseline3/` and
-`../artifacts/parity/`, regenerated the same day). Where a B2 deduction's
-measured basis improved, the deduction moved by the measurement; where the
-basis is unchanged, the deduction is unchanged.
+Derivation. The four journey categories are computed mechanically from
+[`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) using its
+published credit weights (CERTIFIED 100%, PROVEN 60%, RENDERS 25%, PARTIAL 30%,
+OPEN/BROKEN 0%), so the score moves when and only when a ledger row moves.
 
-- **Routes 98 (−2).** B2's −4 covered 9 method-level client-consumed gaps.
-  Now 4 real (messages voice, attachments GET-405, events attendance code,
-  volunteering credential download), 1 struck as a false positive, 4 closed;
-  regenerated artifact 2,652 matched / 15 missing (was 2,648/19).
-- **Semantic 210 (−140).** −50 reads: 80 of 195 differ (41.0%) on the honest
-  generated corpus vs B2's 82 of 170 (48.2%) — B2's −60 scaled by the
-  measured differ rate — with events (incl. v1/v2 negotiation), listings and
-  feed now field-complete except `feed.media`. −55 stubs: 319 verified live,
-  unchanged. −35 writes: the 18-endpoint corpus is now MEASURED at 10/18
-  (B2's −50 was "entirely unmeasured"): −15 for the 8 differing, −20 because
-  uploads, realtime, side-effect verification and the wider 392-write ledger
-  remain unmeasured.
-- **Schema 118 (−32).** Unchanged evidence: 215 tables absent (257 matched,
-  183 EF migrations — zero schema change since 2026-08-17; the recent ports
-  were mapper-only), no populated-history upgrade proof (−20 / −12 as at B2).
-- **Auth/tenant/security/localization 82 (−18).** B2's −18 localization
-  deduction is **retired as mismeasured** — its instrument labels the SHARED
-  React catalogs as the 'dotnet' side and contains zero ASP.NET code (the
-  script now carries a score-integrity warning at the offending lines) — and
-  is **replaced by an honest −10** from the real ledger
-  (`BACKEND_LOCALIZATION_CONTRACT.md`): no request-locale negotiation at all,
-  no recipient-locale resolution, 7 of 11 locales seeded. −5 residual
-  security unchanged (R-4 subtree confinement, R-18 legal gate, R-20 passkey
-  rp_id, R-8 carer cluster, FCM legacy endpoint). −3 tenant isolation for the
-  absent tables, unchanged.
-- **Build/test/CI 85 (−15).** Same evidence class as B2, now at this SHA:
-  fresh CI green on every ASP.NET job (run 32375659126) plus the local host
-  suite 3,740/0 + 38/38 (`baseline3/full-suite.log`). The −15 (coverage/test-
-  quality gate −8, static contract −7) is unchanged.
-- **Frontend runtime proof 30 (−95).** B2's 10 was static readiness only —
-  neither frontend had ever run. +20 banks the canonical React side: a
-  COMMITTED, repeatable browser smoke (`scripts/smoke-react-against-aspnet.mjs`)
-  that signs in, renders 6 member pages, performs 4 member actions (create
-  listing, feed post, credit transfer, RSVP) and exercises token refresh
-  against ASP.NET in committed direct mode — 16/16 steps, 473 API calls ok,
-  zero uncaught page errors (`baseline3/react-smoke.log`). **web-uk banks
-  nothing new**: its page-pair result was manual, wrote no artifact, and no
-  committed web-uk-vs-ASP.NET instrument exists — building one is C.1 in the
-  queue below.
-- **Providers/jobs/ops 30 (−45).** Unchanged: jobs 26 of 69 (denominator
-  corrected from the previously written 70 — live count of
-  `bootstrap/app.php` registrations), −20; Meilisearch zero callers + FCM on
-  the retired endpoint, −12; no live-provider/operational proof, −13.
+- **Core React journeys 72/200 (−128).** 35 rows: 0 CERTIFIED, 20 PROVEN, 2
+  PARTIAL, 13 OPEN or BROKEN. Credit (20×0.6 + 2×0.3) ÷ 35 = 0.36. 🔴 **Nothing
+  in this tier is CERTIFIED, and the reason is one missing test arm**: the React
+  smoke drives 37 steps against ASP.NET with effect assertions, but does not run
+  the same steps against Laravel in the same execution, so ADR-0004 condition 3
+  is unmet on every row. Two rows are BROKEN with named causes (multi-photo
+  posts have no table for extra photos; event attendance-by-code needs the signed
+  `nqx2_` offline-checkin credential subsystem ASP.NET lacks entirely).
+- **Module React journeys 11/150 (−139).** 40 rows: 1 PROVEN (volunteering
+  browse, three faults fixed 2026-08-21), 9 RENDERS, 30 OPEN. Credit
+  (1×0.6 + 9×0.25) ÷ 40 = 0.071. Rendering a module page is not a journey; no
+  community or extended module action has ever been driven.
+- **Web UK journeys 28/150 (−122).** 30 rows: sign-in PROVEN, 20 RENDERS against
+  a **Laravel control in the same run** — the stronger instrument — 9 OPEN.
+  Credit (1×0.6 + 20×0.25) ÷ 30 = 0.187. The instrument compares page pairs and
+  submits no forms, so no Web UK *journey* exists beyond sign-in.
+- **Staff journeys 1/100 (−99).** 25 rows, 1 RENDERS at unverified depth, credit
+  0.010. Route representation for this tier is scored under consumed-contract
+  correctness, not here — nothing in this tier has journey evidence. The
+  243 admin GET endpoints have never been compared. This is the largest
+  untouched surface and where the do-nothing endpoints concentrate.
+- **Consumed-contract correctness 90/150 (−60).** Sub-weighted: routes 39/40
+  (2,655 of 2,667 matched, 12 missing of which 4 are client-consumed — regenerated
+  2026-08-21); reads 24/40 (115 of 195 identical on the generated corpus); writes
+  17/30 (10 of 18 identical on the measured corpus); stub elimination 10/40 (319
+  verified live, down from 349, and **concentrated in the admin tier** — none sits
+  on a currently PROVEN path, which is why the smoke passes). 🔴 The 80 differing
+  reads are an **upper bound, not a defect count**: the harness diffs whole
+  response bodies and has no consumed-field mode, so it counts fields no client
+  reads. Building that mode is queue item 2.
+- **Schema 58/75 (−17).** 257 tables matched, 215 absent, 184 EF migrations.
+  Under ADR-0004 an absent table is a gap only where a journey needs it, so the
+  bulk of the 215 is deferred rather than deducted; the standing deduction is the
+  missing populated-history upgrade proof and preflight-failure proof, which
+  procurement will ask for.
+- **Auth/tenant/security/localization 58/75 (−17).** Residual security items
+  unchanged: R-4 subtree confinement, R-18 legal gate, R-20 passkey rp_id, R-8
+  carer cluster. Localization is the larger part: no request-locale negotiation
+  at all, no recipient-locale resolution, 7 of 11 locales seeded
+  (`BACKEND_LOCALIZATION_CONTRACT.md`). A Welsh- or Irish-language public-sector
+  buyer would fail this today.
+- **Background processing, providers, integrations 10/50 (−40).** Jobs 26 of 69
+  live-counted; Meilisearch indexing with zero callers; FCM on the retired
+  endpoint; no processing at Laravel's `/api/v2/webhooks/stripe`.
+- **Build/test/CI and operational readiness 27/50 (−23).** CI is genuinely
+  strong — 3,774 local tests, ~3,191 test methods, every ASP.NET job green at
+  this SHA — and scores 25 of its 30 sub-weight. **Operational readiness scores 2
+  of 20**: no working backup, no deployment or rollback path, no observability,
+  no load comparison. This is the category the go-live gate actually turns on.
 
-**Block 3 — Published but unscored:** none. Everything through `04c1a8fac` is
-banked above; `27350fed4` is documentation-only.
+**Block 3 — Published but unscored:** none. The five 2026-08-21 commits
+(`b4138bb34`, `ffe68df8a`, `c57952890`, `12c29f1c5`, `4306f1827`) are included in
+the ledger rows above and therefore in this baseline.
 
-**Block 4 — Dirty/in-flight work:** 25 `web-uk/src/routes/*.js` files carry
-known CRLF phantom modifications from a concurrent workstream plus the nightly
-`sentry-triage-ledger.json`; none is ASP.NET's and none contributes points.
-Zero dirty `aspnet-backend` files at scoring time.
+**Block 4 — Dirty/in-flight work:** 25 `web-uk/src/routes/*.js` files carry known
+CRLF phantom modifications from a concurrent workstream, plus the nightly
+`sentry-triage-ledger.json`. None is ASP.NET's and none contributes points. Zero
+dirty `aspnet-backend` source files at scoring time. Commit by explicit path.
 
-**Block 5 — Certification gaps:** the 347 open points are itemised in "Open
-Certification Gates" below, restated against this baseline.
+**Block 5 — Certification gaps:** the 645 open points are the OPEN, BROKEN,
+PARTIAL and RENDERS rows of the ledger plus the five non-journey deductions
+above. See "Open Certification Gates".
 
-**History:** Baseline 2 (598, `ASPNET-CONTRACT-R2`, 2026-08-18) with full
-per-category evidence: `HISTORY/STATUS_ARCHIVE_2026-08.md`. Baseline 1 (712
-under the pre-drift denominator, initially banked 620, 2026-07-14):
-`HISTORY/STATUS_ARCHIVE_2026-07.md`. R2's fall from R1 measured instrument
-improvement, not regression; R3's rise over R2 banks five days of measured
-work that had sat unbanked — the owner-directed cadence from here is a
-banking transaction at every certification tier, never a deferred bulk score.
+**History:** Baseline 3 (653, `ASPNET-CONTRACT-R3`, 2026-08-20) and Baseline 2
+(598, `ASPNET-CONTRACT-R2`, 2026-08-18):
+[`HISTORY/STATUS_ARCHIVE_2026-08.md`](HISTORY/STATUS_ARCHIVE_2026-08.md).
+Baseline 1 (712 under the pre-drift denominator, 2026-07-14):
+[`HISTORY/STATUS_ARCHIVE_2026-07.md`](HISTORY/STATUS_ARCHIVE_2026-07.md).
 
 ## Required End State
 
-The product goal is a **two-frontends-by-two-backends** contract-identity model in
-which neither frontend changes behavior when its backend changes:
+Project NEXUS ships as **two editions of one product**: a Laravel edition and an
+ASP.NET edition, each running both unchanged frontends, switched by
+configuration only. The ASP.NET edition exists because a segment of public-sector
+buyers require a .NET stack as a condition of procurement
+([`ADR-0003`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)).
 
-[`ADR-0001`](decisions/ADR-0001-contract-identical-backends.md) is binding:
-"compatibility" in this filename or rubric means externally contract-identical
-behavior for every consumed boundary, not an approximately similar API.
-
-| Unchanged client | Laravel backend | ASP.NET backend |
+| Unchanged client | Laravel edition | ASP.NET edition |
 | --- | --- | --- |
-| Canonical React at `C:\platforms\htdocs\staging\react-frontend` | Production source-of-truth behavior | Same methods, paths, payloads, responses, statuses, auth, tenancy, uploads, side effects, and workflows |
-| Accessible Web UK at `web-uk/` (repo root) | Laravel-first certification target | The same Web UK code and page flows, switched by configuration only |
+| Canonical React at `react-frontend/` | Production behaviour source of truth | Same journeys, same outcomes, same data, same errors, same permissions |
+| Accessible Web UK at `web-uk/` | Production, three live hostnames | The same Web UK code and page flows, switched by configuration only |
 
-Route presence alone is not contract correctness. ASP.NET must reproduce the
-Laravel contracts consumed by both unchanged clients, including validation and
-error envelopes, redirects, authorization boundaries, tenant behavior,
-provider effects, persistence, and upgrade behavior. Frontend adapters or
-ASP.NET-specific page branches do not satisfy the goal.
+[`ADR-0001`](decisions/ADR-0001-contract-identical-backends.md) sets the standard;
+[`ADR-0004`](decisions/ADR-0004-journey-equivalence-is-the-target.md) sets how it
+is measured. Route presence is not correctness. A frontend adapter or an
+ASP.NET-specific page branch never satisfies the goal. Equally, a response field
+that no client reads is **not** part of the goal — reproducing Laravel's internal
+database columns is explicitly out of scope.
+
+### What each score level means commercially
+
+Milestones, not promises. Each requires its own banking transaction.
+
+| Level | What it supports |
+| ---: | --- |
+| ~355 (now) | An honest internal demo of the core member experience. |
+| ~600 | **Procurement demo grade**: core and community member journeys certified on React, Web UK core journeys certified, admin core journeys certified. Enough to show a buyer the product running on .NET. |
+| ~800 | **First-customer grade**: one .NET-required customer tenant could be operated, given the go-live gate — which includes working backups. |
+| ~950 | Full platform equivalence, both editions interchangeable for every tenant. |
 
 ## Open Certification Gates
 
-The open deductions are Baseline 3's **347 points**. They are independent
-proof gates, not one implementation queue:
+645 open points, as independent proof gates rather than one queue:
 
-- **Semantic (140 open):** the SHAPE_DIFFERS tail of the member read corpus
-  (80 of 195), the 8 differing writes, and everything unmeasured — 243 admin
-  GETs, 392 writes, 1,172 dynamic paths (coverage ledgers exist; runnable
-  corpora do not).
-- **Frontend runtime proof (95 open):** React journey certification beyond
-  the current 16-step smoke; a web-uk-vs-ASP.NET instrument that does not yet
-  exist as committed code (the recorded page-pair results were manual).
-- **Schema/upgrade (32 open):** 215 absent tables (create what journeys need,
-  via EF migrations); populated-history upgrade proof; preflight-failure proof.
-- **Security/localization (18 open):** R-4 subtree confinement, R-18 legal
-  gate, R-20 passkey rp_id, R-8 carer cluster; request/recipient-locale
-  negotiation per `BACKEND_LOCALIZATION_CONTRACT.md`.
-- **CI evidence (15 open):** the coverage/test-quality gate (−8) and static
-  contract evidence (−7); the green aggregate at the scoring SHA exists (run
-  32375659126).
-- **Providers/ops (45 open):** jobs 26 of 69; Meilisearch indexing with zero
-  callers; FCM on the retired endpoint; no processing at Laravel's
-  `/api/v2/webhooks/stripe`. Live-provider certification is owner-gated.
-- **Routes (2 points / 4 endpoints open):** messages voice + attachment media, events attendance
-  code, volunteering credential download.
+- **Journeys (488 open across four categories)** — the 76 OPEN/BROKEN, 2 PARTIAL
+  and 30 RENDERS rows in
+  [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md), plus the
+  PROVEN→CERTIFIED conversion of 22 rows that a Laravel control arm unlocks.
+- **Consumed-contract correctness (60 open)** — 4 client-consumed route gaps, the
+  read-differ tail once a consumed-field mode exists, 8 differing writes, and
+  319 stubs (63 of them uncalled and candidates for deletion — owner sees the
+  list first).
+- **Schema/upgrade (17 open)** — populated-history upgrade proof,
+  preflight-failure proof, and the absent tables that specific journeys need.
+- **Security/localization (17 open)** — R-4, R-18, R-20, R-8; request-locale and
+  recipient-locale negotiation; 4 unseeded locales.
+- **Background/providers (40 open)** — jobs 26→69 (compliance jobs first),
+  Meilisearch round-trip, FCM HTTP v1, Stripe webhook processing.
+- **CI and operations (23 open)** — coverage/test-quality gate, static contract
+  evidence, and the operational readiness block: **backups, deploy/rollback
+  path, observability, load comparison**.
 
-Stateful certification uses the disposable Laravel (`:8091`) only. The
-ordinary local Laravel database is a confidential production-derived snapshot
-and is never a test fixture. Production operation remains a separate owner
-decision per ADR-0002 regardless of score; the live ASP.NET database backup
-gap (none since 2026-03-08) is a named production hard-stop.
+Stateful certification uses the disposable Laravel (`:8091`) only. The ordinary
+local Laravel database is a confidential production-derived snapshot and is never
+a test fixture.
 
-## Finite Ordered Backend Queue
+🔴 **The named production hard stop is unchanged and is not a code problem.** The
+live ASP.NET database has had no successful backup since 2026-03-08 (156
+consecutive failures) while the application runs `MigrateAsync()` on every start.
+No score substitutes for fixing it. It is owner infrastructure work and it gates
+every production role.
 
-The live plan (owner-approved 2026-08-20) supersedes the old eight-package
-queue, which was written against Baseline 1's numbers; that queue is preserved
-in `HISTORY/STATUS_ARCHIVE_2026-07.md` context. Phases, in order:
+## Finite Ordered Queue
 
-1. ✅ **A — Documentation restructure** and ✅ **B — Baseline 3 banked at
-   653/1000** (both landed 2026-08-20; CI on push `1c483377c` all green).
-2. **C — Frontend runtime certification, tiered** (the 125-point category).
-   Progress 2026-08-20, published pending its banking transaction:
-   - ✅ **C.1 (web-uk half): the instrument now EXISTS as committed code** —
-     `scripts/smoke-webuk-against-aspnet.mjs` self-provisions BOTH web-uk
-     instances (wiring guaranteed by construction), compares signed-out page
-     pairs against the Laravel control, writes a JSON artifact, and carries a
-     shrink-only known-differences list. First runs: 10/12 → **11/12 + 1
-     diagnosed fixture asymmetry** (the master-tenant exclusion in
-     `TenantBootstrapController::list` — both backends implement the same
-     rule; the fixtures differ in non-master tenant count).
-   - ✅ `/api/v2/events` discovery filters FIXED: `when` (upcoming default,
-     past/all, 422 on junk in Laravel's exact error shape), `per_page`,
-     `group_id` (422 on non-positive-integer), `q`, opaque paging cursor
-     emitted only while more rows exist. The dashboard's "Upcoming" no longer
-     shows finished events and gets 3 when it asks for 3. `mine` is
-     deliberately NOT implemented — Laravel ignores it too.
-     `EventsListDiscoveryFilterTests` (9) pins all of it.
-   - ✅ `/api/v2/help/faqs` reshaped GROUPED (`{category, faqs[]}`), the shape
-     BOTH frontends read — the flat rows meant every FAQ silently vanished
-     from both help pages. Found by the new web-uk instrument on its first
-     run. `HelpFaqsGroupedContractTests` pins the shape, the `q` filter, and
-     the category_id-matches-the-VARCHAR quirk.
-   - ✅ **C.2 journeys, first tranche: the React smoke is now 21 steps**, all
-     passing with EFFECT assertions: profile identity renders + the settings
-     edit surface opens (14 fields; there is no Edit control on the profile
-     page — editing lives in Settings, `ProfilePage.tsx:199`), notifications
-     mark-all-read works, **theme toggles AND persists across a reload**
-     (proving `PUT /users/me/theme` end-to-end; the toggle is a DropdownItem
-     inside the avatar menu, and the first selector missed it — recorded in
-     the script), and a feed comment posts and is visible afterwards. 0
-     uncaught page errors; every console error is a pre-known item
-     (TopEndorsedWidget key warning ×N, `api/cookie-consent` CORS miss,
-     `/me/fadp/consent` 401, the RSVP page's known-missing routes).
-   - ✅ **Sidebar, subtype and the poll feed (second tranche, 2026-08-20).**
-     The sidebar's `trending_hashtags` (a RAW EF entity — camelCase keys plus
-     `Tenant`/`Usages` navigation properties, one `.Include()` from
-     serialising a tenant row) and `suggested_groups` are REMOVED with the
-     subtractive rule's evidence: Laravel never emits either key from this
-     endpoint and neither frontend reads them from it. `suggested_members`
-     (which Laravel does emit) is deliberately NOT added — no live consumer
-     exists (React's PeopleYouMayKnowWidget is rendered by nothing), and the
-     frontend-proven depth rule puts unread fields out of scope. Feed
-     `?subtype=` now filters `metadata.listing_type` via jsonb containment
-     (Npgsql 10.0.3 has no JsonExtractPathText — checked in the provider DLL;
-     containment is the same predicate for string values), proven to
-     translate on real Postgres by its integration test. And a REAL missing
-     side effect found by the diff: **poll creation never published to the
-     feed** (12 dev polls, zero feed rows), so `poll_data` could never
-     appear; the feed activity is now recorded exactly as Laravel's
-     PollsController does (failure swallowed with a warning), and
-     `poll_data` is batch-loaded with Laravel's open-poll visibility rule
-     (non-creators see no counts until the poll closes). Proven end to end:
-     create a poll through the API → it appears in the feed with the exact
-     `PollData` keys React declares. `FeedSidebarAndSubtypeContractTests`
-     (3) pins all of it.
-   - ✅ **Route gaps: 3 of 4 CLOSED (third tranche, 2026-08-20).**
-     `GET /api/v2/messages/{m}/voice` and `.../attachments/{a}` now serve
-     private message media with Laravel's exact header set (private no-store,
-     nosniff, sandboxing CSP, same-site CORP — verified byte-identical live),
-     participant-only (sender or conversation participant; 403 non-participant,
-     404 unknown/invisible; cross-tenant callers 404 via the query filter).
-     Voice messages were uploadable but never fetchable — a received voice
-     message could not be played. Proven end to end: upload a real Ogg through
-     the app's own endpoint, fetch it back through both route spellings. (The
-     server's magic-byte sniffing rightly rejected a fake blob first — the
-     upload path's defence works.) `GET /api/v2/volunteering/credentials/{id}/download`
-     serves the owner's credential as a named attachment, re-checking Laravel's
-     TYPE ALLOWLIST on download (a type outside it must not download even for
-     its owner), 404-never-403 for other callers.
-     `MessageMediaDeliveryTests` (7) pins the whole matrix.
-   - 🔴 **The 4th gap is NOT a route patch and is re-classified:**
-     `POST /api/v2/events/{id}/attendance/code` verifies SIGNED `nqx2_`
-     check-in credentials (`EventCheckinCredentialService`), enforces
-     attendance versioning + idempotency, and deliberately answers
-     unreadable-credential and invisible-subject identically so it cannot be
-     used to probe who is registered. ASP.NET has none of the offline-checkin
-     credential subsystem (its `offline-checkin/*` routes 404 in the smoke).
-     A shallow accept-any-credential implementation would be the invents-data
-     fault class. Blocked on: the offline-checkin credential subsystem as its
-     own work package (Phase D/E).
-   - ✅ **The "cookie-consent CORS miss" was never CORS (fourth tranche,
-     2026-08-20).** TWO controllers owned POST /api/cookie-consent, so every
-     consent save threw AmbiguousMatchException — a 500 whose error response
-     carries no CORS headers, which every browser reports as "blocked by CORS
-     policy". The duplicate alias is deleted (one owner per template); both
-     verbs now emit Laravel's live-captured shapes (POST returns
-     data.{id, consent:{…}}; GET the caller's newest row snake_case — the old
-     GET serialized the raw EF entity camelCase, AND the old POST read a
-     `preferences` key the client never sends, silently storing
-     functional=false regardless of the member's choice). meta.base_url is
-     emitted by the actions — this route is not under /api/v2, so the envelope
-     filter deliberately leaves it alone. `CookieConsentContractTests` (3)
-     pins it; the smoke's console now shows ZERO cookie-consent failures.
-   - ✅ **C.2 second tranche (2026-08-20, later): the smoke is 27 steps.** New
-     journeys, each asserting an effect: **sign-up PROVEN end to end** — the
-     register form completes, `POST /api/v2/auth/register` fires, and the
-     "Registration Successful! Verify your email" screen renders. Four
-     automation lessons are written into the script where they were earned:
-     it is ONE form (not a wizard); the location field is a
-     PlaceAutocompleteInput that eats simulated keystrokes (native value
-     setter + one input event is what React listens for); Create Account
-     stays disabled during the "known data breaches" check (wait, don't
-     verdict); and a clean Playwright click dispatches but React ignores it —
-     Enter from a field fires the real submit. Also proven: **messaging**
-     (a text sent into the member↔admin thread renders), **wallet history**
-     region renders, **members directory** renders with connect controls.
-   - ✅ **The LEGAL GATE is now PROVEN through the UI (2026-08-20, later).**
-     The sign-up journey completes verification directly in the dev database
-     (`/verify-email` is [Authorize] and login refuses unverified users — the
-     code only reaches a member through email, so the DEV instrument flips
-     the flag; docker-guarded, plainly skipped when unavailable) and then
-     signs the brand-new member in: the legal-acceptance gate SURFACES on
-     first sign-in, is ACCEPTED through the UI, and the member lands
-     in-app (/onboarding). Windows note recorded in the script: cmd mangles
-     nested quotes — the SQL is piped on stdin.
-   - 🔴 Honest residue in C.2, labelled in the smoke output itself: **feed
-     reaction persistence is UNCONFIRMED — an instrument limitation, now
-     precisely characterised**: the fresh post's text renders OUTSIDE any
-     `[role="article"]` container (diagnostic: text present, cards matching
-     it = 0), so the probe cannot anchor the same card across a reload. The
-     proper fix is a `data-testid` on FeedCard — a FRONTEND change that
-     needs owner approval, parked; infinite scroll shows
-     content growth only via a text-length heuristic (same testid need); token refresh across REAL expiry still untested (the
-     forced-401 probe shows the client routes to /login — client behaviour,
-     not a backend verdict).
-   - ✅ **The web-uk SIGNED-IN tier is now measured (2026-08-20, later).** The
-     instrument scripts the real double-CSRF login at the HTTP layer (the
-     four-submit-button page defeated browser probes; a form POST has no
-     buttons to choose). Recipe earned the hard way and recorded in the
-     script: the login GET sets `nexus.csrf` TWICE and the page token pairs
-     with the LAST cookie; and `tenant_slug` is a REQUIRED form field —
-     `tenantSlugForRequest` (auth.js:187) reads the routed tenant or the form,
-     NOT the env, and omitting it re-renders 200 with "Enter your email,
-     password and tenant", which reads like a credential failure and is not.
-     Result: both logins succeed (each side with its own fixture's member),
-     and all 8 signed-in member pages (/dashboard /listings /events /feed
-     /groups /volunteering /explore /kb) RENDER against ASP.NET as against
-     the Laravel control — same statuses, no error pages. **19/20 page pairs
-     + 1 diagnosed fixture asymmetry.** Signed-in rows deliberately assert
-     RENDERS rather than byte-identity: the fixtures hold different data
-     volumes, and exact structural equality would flag fixture asymmetry as
-     fault on every run. Form submissions through web-uk remain the journey
-     tier.
-3. **D — stubs and semantic tail, interleaved with C**: implement the
-   client-called stubs journeys hit, delete the 63 uncalled (owner sees the
-   list first), validator-first semantic order, security items R-4 / R-18 /
-   R-20 / R-8. Owner decision to surface: the undeclared `api/sub-accounts`
-   credit-moving API — delete or declare.
-4. **E — schema/ops as journeys demand**: needed tables via EF migrations,
-   jobs 26 → 69 (compliance first), Meilisearch round-trip, FCM HTTP v1,
-   Stripe webhook path, request/recipient-locale localization. The
-   production hard-stop no code fixes: the live ASP.NET database's backups
-   (none since 2026-03-08) — owner infrastructure item.
+Phases A and B (documentation restructure, Baseline 3) completed 2026-08-20.
+Phase C onward is re-ordered here against R4, highest score-movement-per-effort
+first.
 
-Banking cadence: a scoring transaction at every tier/phase completion —
-never estimated, never silent.
+1. **Laravel control arm on the React smoke.** Test-harness only, no product
+   risk. Converts up to 21 rows PROVEN→CERTIFIED (+~50 points) and every
+   subsequent journey inherits it. **Do this first.**
+2. **Consumed-field mode on the response differ.** Filters to fields with a known
+   client reader before reporting a difference. Turns the read-differ upper bound
+   into a real defect list, and stops agents implementing junk columns.
+3. **Core member journeys, remaining 13 rows.** Exchange request→accept→complete
+   (row 1.21) is the product's core transaction and the single most valuable
+   open row. Then event create/manage, connections, messages-new, listing
+   edit/delete, password reset, sign-out, onboarding, search results.
+4. **Admin measurement pass.** Generate the admin GET corpus and run it against
+   both backends *before* implementing anything in the staff tier. 243 endpoints
+   is one measurement task, not 243 tasks.
+5. **Web UK journey tier.** Extend the instrument to submit forms; the backend
+   fixes largely land from phases 3–4 and are re-verified through a second
+   client.
+6. **Community module journeys**, then a scope decision on the extended modules.
+7. **Staff journeys**, implementing against the phase-4 measurements; stubs die
+   as the journeys that call them are certified.
+8. **Background jobs 26→69, providers, localization negotiation, schema tail.**
+9. **Operational readiness**: backups (owner), deploy/rollback path,
+   observability, load comparison.
+
+Banking cadence: a scoring transaction at every phase completion — never
+estimated, never silent.
 
 ## Required Status-Report Format
 
 Every ASP.NET status report must present these five blocks in this order:
 
-1. **Named baseline and SHA** - rubric version, Laravel SHA, last banked ASP.NET
-   implementation SHA, scoring-record SHA, and currently inspected HEAD.
-2. **Banked score** - one fixed-denominator total plus the seven category rows.
-3. **Published but unscored** - exact commits and why points are not banked yet;
-   write `none` when there are none.
-4. **Dirty/in-flight work** - scoped files or workstream, verification achieved,
-   and explicit confirmation that it contributes zero banked points.
-5. **Certification gaps** - exact remaining deductions and the evidence needed
-   to bank them.
+1. **Named baseline and SHA** — rubric version, Laravel source, ASP.NET evidence
+   SHA, scoring-record SHA, and inspected HEAD.
+2. **Banked score** — one fixed-denominator total plus the eight category rows.
+3. **Published but unscored** — exact commits and why not banked; `none` when
+   there are none.
+4. **Dirty/in-flight work** — scoped files, verification achieved, and explicit
+   confirmation of zero banked points.
+5. **Certification gaps** — exact remaining deductions and the evidence needed.
 
-Never report a blended ASP.NET/Web UK percentage, silently rescore history,
-convert route counts into a completion percentage, or describe uncommitted work
-as complete. Follow
+Never report a blended ASP.NET/Web UK percentage, compare an R4 total with an
+R1–R3 total, silently rescore history, convert route counts into a completion
+percentage, or describe uncommitted work as complete. Follow
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md) when updating this
 status.

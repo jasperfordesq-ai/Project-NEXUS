@@ -35,10 +35,11 @@ C:\platforms\htdocs\staging\react-frontend
 ```
 
 The Laravel backend and Laravel React frontend are production systems. The
-ASP.NET backend is development-only. ASP.NET must become externally
-contract-identical for the
-Laravel React frontend contract; the production Laravel React frontend must not
-be weakened to accommodate ASP.NET gaps.
+ASP.NET backend is a committed second edition that is not yet certified
+(corrected 2026-08-21; this said "development-only"). ASP.NET must become
+equivalent at the boundary the Laravel React frontend consumes; the production
+Laravel React frontend must not be weakened to accommodate ASP.NET gaps, and no
+ASP.NET-specific branch may be added to it.
 
 ## Working Rule
 

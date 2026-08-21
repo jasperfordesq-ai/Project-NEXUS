@@ -1,6 +1,6 @@
 # Documentation Governance
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-08-21
 
 Status: **Maintained reference - documentation authority and scoring policy**
 
@@ -14,9 +14,12 @@ agent instructions.
 | Decision or status | Canonical document | What other documents may do |
 | --- | --- | --- |
 | Agent scope and non-negotiable guardrails | [`AGENTS.md`](../AGENTS.md), then [`CLAUDE.md`](../../CLAUDE.md) | Link or summarize without weakening a rule |
-| Paused-development boundary, cold-start order, and repository freeze | [`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](PROJECT_PAUSE_HANDOFF_2026-07-15.md) | Link to it while paused; do not treat a historical handoff or runbook loop as standing authorization |
+| Paused-development boundary, cold-start order, and repository freeze | [`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](PROJECT_PAUSE_HANDOFF_2026-07-15.md) | 🔴 **HISTORICAL for ASP.NET — the pause was lifted 2026-08-14.** Do not treat it as a resume point or as standing authorization |
+| ASP.NET work list and completion denominator | [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) | Link to it; pick work up there; never publish a competing journey count or a competing total |
 | Backend product objective and meaning of contract identity | [`ADR-0001`](decisions/ADR-0001-contract-identical-backends.md) | Historical "parity" or "compatibility" wording is shorthand only; never permit observable divergence or frontend forks |
-| Laravel production authority, ASP.NET strategic role, and any future promotion decision gate | [`ADR-0002`](decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md) | ASP.NET is optional rather than an assumed successor; traffic growth alone never authorizes production use |
+| How contract identity is **measured**, and what is out of scope | [`ADR-0004`](decisions/ADR-0004-journey-equivalence-is-the-target.md) | Journey equivalence at consumed boundaries. A field no client reads is out of scope; unmeasured surface is an open journey row, never a deduction |
+| Why the ASP.NET edition exists, its commitment level, and the go-live gate | [`ADR-0003`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) | ASP.NET is a **committed deliverable** with a commercial driver. Describe it as an edition, not an experiment. Commitment is never authorization to deploy |
+| Laravel production authority and scaling-trigger reasoning | [`ADR-0002`](decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md) | 🔴 **Superseded in part by ADR-0003.** Quote its scaling reasoning only — traffic growth alone never authorizes production use. Never quote its "optional alternative" framing as current product intent |
 | ASP.NET banked score, score provenance, and certification gaps | [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md) | Link to it; do not publish a competing current overall score |
 | ASP.NET schema pause/restart verdict and current migration-chain boundary | [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) | Link to it; keep the schema category score in the ASP.NET status and detailed dated evidence in `SCHEMA_PARITY.md` |
 | Accessible Web UK banked score, ownership, blockers, and queue | [`CURRENT_WEBUK_PRODUCTION_STATUS.md`](../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md) | Link to it; do not treat the old handoff log as current |
@@ -82,6 +85,13 @@ When a goal's scope changes, preserve the old score under its named baseline.
 Do not reuse it as the new goal's percentage or silently change its denominator.
 Until a complete new audit defines the corrected rubric, report a finite gate
 or package count and say that no percentage has been assigned.
+
+🔴 **Rubrics with different categories are not comparable, and a report that
+compares them is a defect.** The ASP.NET workstream changed rubric on
+2026-08-21: `ASPNET-CONTRACT-R1/R2/R3` measured how much of Laravel's API
+surface had a counterpart that looked right; `ASPNET-CONTRACT-R4` measures how
+much of the product is proved to work. Never subtract, average, or describe R4's
+total as a rise or fall from 653. State the rubric id with every score.
 
 Implementation is not certification. Static route representation, generated
 matrices, a successful focused test, or a clean build cannot independently

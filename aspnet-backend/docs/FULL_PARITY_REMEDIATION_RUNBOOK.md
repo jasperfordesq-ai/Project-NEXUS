@@ -144,6 +144,67 @@ certification tier, never a deferred bulk score. The full derivation lives in
 [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md);
 this runbook records the baseline's existence and denominator only.
 
+### Fixed Rubric Baseline 4 — named 2026-08-21 (`ASPNET-CONTRACT-R4`)
+
+🔴 **R4 CHANGES THE CATEGORIES AND THE QUESTION. Its total is NOT comparable
+to R1, R2 or R3.** Baselines 1–3 are frozen and unrewritten above. Do not
+subtract one from the other, do not describe R4 as a fall from 653, and do not
+average them.
+
+R1–R3 answered: *how much of Laravel's API surface has an ASP.NET counterpart
+that looks right?* R4 answers: *how much of the actual product has been proved
+to work on ASP.NET?* Those are different questions and the second is the one
+[`ADR-0003`](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) commits the
+project to. The rubric changed because the old one could not be finished:
+
+- **It scored unmeasured surface as a penalty.** −20 of R3's 350 semantic points
+  existed only because a 392-endpoint write ledger had not been run. Looking
+  harder lowered the score; shipping working journeys did not necessarily raise
+  it. R4 forbids this: unmeasured surface becomes an **open journey row**, which
+  is work with a name and an owner, never a deduction with neither.
+- **It measured field noise.** Semantic parity moved with whole-response-body
+  diff counts, so Laravel's raw-Eloquent internal columns — down to
+  `category.reset_token` — counted as required work. See
+  [`ADR-0004`](decisions/ADR-0004-journey-equivalence-is-the-target.md).
+- **Its denominator was ~2,650 endpoints**, which cannot be scheduled or
+  parallelised. R4's denominator is the 130-row
+  [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md).
+
+R4's fixed 1000-point denominator:
+
+| Category | Weight |
+| --- | ---: |
+| Core member journeys certified — React | 200 |
+| Community and extended module member journeys certified — React | 150 |
+| Member journeys certified — Web UK accessible | 150 |
+| Staff journeys certified — admin, super-admin, broker | 100 |
+| Consumed-contract correctness and stub elimination | 150 |
+| Data integrity, schema, and upgrade safety | 75 |
+| Auth, tenant isolation, security, and localization | 75 |
+| Background processing, providers, and integrations | 50 |
+| Build/test/CI evidence and operational readiness | 50 |
+
+Eight scored categories totalling 1000. Community and extended module journeys
+share one 150-point category so that a scope decision on the extended modules
+(owner decision 4 in the ledger) cannot silently change the denominator.
+
+Journey categories are scored from the ledger's own status vocabulary —
+CERTIFIED 100%, PROVEN 60%, RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0% — applied
+to that tier's row count. That makes every journey category mechanically
+derivable from the ledger rather than a judgement call, and it means the score
+moves when, and only when, a row moves.
+
+Baseline 4 is banked at monorepo `869a2a030` with a banked score of
+**355/1000**: 72 core React journeys, 11 module React journeys, 28 Web UK
+journeys, 1 staff journey, 90 consumed-contract correctness, 58 schema, 58
+security/localization, 10 background/providers, 27 CI/operational. Exact
+deductions are respectively 128, 139, 122, 99, 60, 17, 17, 40 and 23.
+
+The full derivation, evidence pointers and five-block record live in
+[`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md), which
+remains the canonical current score. This runbook records the baseline's
+existence and denominator only.
+
 ## Historical Published Evidence
 
 The two dated checkpoints below explain how Fixed Rubric Baseline 1 was first

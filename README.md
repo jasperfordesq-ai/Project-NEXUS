@@ -162,30 +162,37 @@ is not what we ship.
 
 | Layer | Technology | State |
 |-------|-----------|-------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 254 controllers, 165 migrations, 393 test files / 3,386 tests. **712/1000** on the `ASPNET-CONTRACT-R1` rubric as at the **2026-07-15** pause. Service stopped 2026-08-10, domain retained |
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 279 controllers, 184 migrations, 447 test files / ~3,774 tests. **355/1000** on the `ASPNET-CONTRACT-R4` rubric as at **2026-08-21**. Development active (pause lifted 2026-08-14); the former standalone service was stopped 2026-08-10, domain retained |
 | **Shared event contracts** | JSON Schema event contracts both backends must satisfy (`contracts/events/v2/`) | Maintained |
 
 This is not a sketch or a spike. It is a **complete stack of its own** — its own
 database, message broker, migrations, messaging layer and test suite, sharing
 nothing with Laravel — built so that either backend can serve the same clients.
-Progress is measured against a fixed 1,000-point rubric that asks a single
-question: is it *externally contract-identical* to Laravel? It stood at 712 when
-development paused on 2026-07-15, and the remaining work is a finite, ordered
-queue rather than an open-ended research problem. That figure is a snapshot of a
-paused workstream, not a live counter — when work resumes, read the canonical
-status document rather than this page.
 
-Two things are true at once and both matter: the code is solid and close to
-finished, **and** it is not certified, not the production default, and not
-deployable from here. Laravel decides the contract; ASP.NET must reproduce it.
+**Why it exists:** a segment of public-sector buyers require a .NET application
+stack as a condition of procurement. The ASP.NET edition is therefore a
+committed deliverable, not a research exercise
+([`ADR-0003`](aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)).
 
-It is also not an assumed successor to Laravel. Laravel remains the canonical
-production backend with no automatic user-count or traffic threshold for a
-cutover. ASP.NET preserves a future option for operators or measured workloads
-that genuinely benefit from .NET; any production proposal needs comparative
-Project NEXUS evidence, operational and migration readiness, and a separate
-owner decision. See
-[`ADR-0002`](aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+Progress is measured against a fixed 1,000-point rubric. 🔴 **The rubric changed
+on 2026-08-21 and the totals are not comparable.** `R1`–`R3` asked how much of
+Laravel's API surface had a counterpart that looked right (653 at its last
+banking). `R4` asks how much of the product has been *proved to work* on
+ASP.NET, scored from a finite 130-row journey ledger, and stands at **355**.
+Nothing regressed; the question changed to the one that can actually be
+finished. See
+[`ADR-0004`](aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md).
+
+Two things are true at once and both matter: the stack is substantial and much
+of the API surface exists, **and** it is not certified, not the production
+default, and not deployable from here. Laravel decides the contract; ASP.NET
+must reproduce the behaviour its clients consume — not Laravel's internal
+database columns, which are explicitly out of scope.
+
+Laravel remains the canonical production backend until the ASP.NET edition is
+certified, with no automatic user-count or traffic threshold for a cutover. Any
+production role needs journey evidence, load evidence, working backups, a deploy
+and rollback path, and a separate owner decision.
 
 🔴 Its presence changes nothing about what deploys today. Current score, evidence
 boundary and resume queue: `aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md`

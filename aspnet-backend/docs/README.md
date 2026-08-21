@@ -1,6 +1,6 @@
 # Project NEXUS .NET Documentation
 
-Last reviewed: 2026-08-20
+Last reviewed: 2026-08-21
 
 Status: **Maintained reference - documentation index**
 
@@ -11,12 +11,22 @@ The product target is two unchanged frontends by two backends: canonical React
 and shared accessible Web UK must each run against Laravel and ASP.NET by
 configuration only, with Laravel defining the contract ASP.NET must satisfy.
 
+🔴 **Retargeted 2026-08-21.** The ASP.NET edition is a **committed product
+deliverable** with a commercial driver (public-sector buyers who require a .NET
+stack), and the goal is **journey equivalence at consumed boundaries** — not
+field-for-field reproduction of Laravel's internal database columns. Read
+[decisions/ADR-0003](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md) and
+[decisions/ADR-0004](decisions/ADR-0004-journey-equivalence-is-the-target.md)
+before acting on any older "optional", "experimental" or "development-only"
+wording, and before doing any parity work.
+
 ## Read first
 
 | Document | Purpose |
 | --- | --- |
 | [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md) | **The one "start here".** Canonical current: banked score, published-but-unscored movement, evidence pointers, open gates, the live queue, and the reporting rules. |
-| [ROADMAP.md](ROADMAP.md) | Canonical current, owner-facing: what works, what doesn't, what's next — in plain English, no points. |
+| [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md) | **The work list.** Canonical current: 130 enumerated journeys with a status each — the finite denominator the score is derived from. Pick work up here. |
+| [ROADMAP.md](ROADMAP.md) | Canonical current, owner-facing: what works, what doesn't, what's next, and time frames — in plain English, no points. |
 
 ## Maintained references
 
@@ -29,7 +39,7 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
 | [CURRENT_SCHEMA_READINESS.md](CURRENT_SCHEMA_READINESS.md) | One-page schema verdict: 183-migration runtime boundary, proved vs unproved migration evidence, remaining gates. |
 | [BACKEND_LOCALIZATION_CONTRACT.md](BACKEND_LOCALIZATION_CONTRACT.md) | The real backend localization ledger: request/recipient locale behavior, committed evidence, certification gaps. |
 | [DOCUMENTATION_GOVERNANCE.md](DOCUMENTATION_GOVERNANCE.md) | Canonical document hierarchy, scoring/reporting rules, history labels, the update transaction. |
-| [decisions/README.md](decisions/README.md) | Accepted ADRs. ADR-0001 defines contract identity; ADR-0002 keeps Laravel authoritative and gates any ASP.NET production role. |
+| [decisions/README.md](decisions/README.md) | Accepted ADRs. ADR-0001 sets the contract-identity standard; **ADR-0004 sets how it is measured and what is out of scope**; ADR-0003 records the commercial commitment and the go-live gate; ADR-0002 is superseded in part and retains its scaling reasoning only. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime boundaries, application surfaces, invariants. |
 | [MODULES.md](MODULES.md) | Module-by-module Laravel source paths and .NET targets. |
 | [LARAVEL_PARITY_MAP.md](LARAVEL_PARITY_MAP.md) | Parity gap register and backlog. |

@@ -4,6 +4,15 @@ Date accepted: 2026-07-15
 
 Status: **Maintained reference - accepted and not superseded**
 
+🔴 **Measurement rule: read [ADR-0004](ADR-0004-journey-equivalence-is-the-target.md)
+alongside this record.** This ADR's standard is unchanged and still binding.
+ADR-0004 fixes how it is measured, because "every consumed boundary" below was
+in practice implemented as a whole-response-body diff — which made Laravel's
+raw-Eloquent internal columns (down to `category.reset_token`) count as required
+work. ADR-0004 defines the in-scope test for a field, states what is deliberately
+excluded, and makes the finite journey catalogue the denominator. Nothing in
+ADR-0004 permits a frontend fork, an adapter, or an invented success response.
+
 ## Context
 
 Earlier instructions described the ASP.NET objective as "Laravel parity,"

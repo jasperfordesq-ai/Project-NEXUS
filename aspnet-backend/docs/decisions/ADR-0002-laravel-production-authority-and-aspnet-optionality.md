@@ -2,7 +2,23 @@
 
 Date accepted: 2026-08-15
 
-Status: **Maintained reference - accepted and not superseded**
+Status: **Superseded in part by [ADR-0003](ADR-0003-aspnet-is-a-committed-deliverable.md)**
+
+🔴 **Read ADR-0003 first.** This record's *scaling* reasoning is retained and
+still binding: user, tenant, or traffic growth never automatically promotes
+ASP.NET or retires Laravel, and scale constraints are addressed in queries,
+indexes, caches, queues, media, and infrastructure rather than by changing
+framework.
+
+🔴 **This record's characterisation of ASP.NET as strategically optional is
+superseded.** ASP.NET is a committed product deliverable with a commercial
+driver: a segment of public-sector buyers require a .NET stack as a condition
+of procurement. Wording below such as "optional future alternative", "not an
+assumed successor", "Do not promise that ASP.NET will be deployed", and the
+"Promotion Decision Gate" framing must not be quoted as current product
+intent. ADR-0003 carries the current framing and the renamed certification
+gate. The deployment prohibitions this record implies are unchanged and remain
+in force.
 
 ## Context
 
