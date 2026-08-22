@@ -232,6 +232,23 @@ describe('ExchangesScreen', () => {
     }));
   });
 
+  /**
+   * 🔴 Measured on a device 2026-08-22: tapping Offer or Request moved the underline and
+   * recoloured the icon, but the request stayed `GET /v2/listings?personalised=true` with no
+   * `type`, so the list never changed — a "Requesting" card sat under the Offer tab. The API
+   * honours `type` correctly (checked directly), so the fault is here. Journey 3.4.
+   */
+  it('sends the offer/request type when that tab is chosen', async () => {
+    const { getByText } = render(<ExchangesScreen />);
+
+    fireEvent.press(getByText('offer'));
+
+    const latestFetch = mockUsePaginatedApi.mock.calls.at(-1)?.[0] as ((cursor: string | null) => Promise<unknown>) | undefined;
+    await latestFetch?.(null);
+
+    expect(getExchanges).toHaveBeenCalledWith(null, expect.objectContaining({ type: 'offer' }));
+  });
+
   it('sends advanced filter params to the listings API', async () => {
     const { getByText } = render(<ExchangesScreen />);
 

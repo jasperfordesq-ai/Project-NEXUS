@@ -231,6 +231,14 @@ Recorded because each one produced a confident wrong answer:
 - **A "not found" screen** proved nothing about a deep link: the slug belonged to another
   tenant *and* the feature was disabled for the test community, so that screen says "not
   found" regardless. Check tenant and feature flags before believing an empty screen.
+- **A working filter looked broken.** The listings Offer/Request tabs appeared to do nothing:
+  the underline moved and the count stayed at 3 with a "Requesting" card under the Offer tab.
+  They work perfectly. The screenshot was taken before the filtered response arrived, and a
+  preceding tap had missed its target, so the screen was showing the previous state. What
+  settled it in seconds was the API access log — `type=offer` was there all along — and a
+  direct call to the endpoint (3 / 2 / 1 results for none / offer / request). 🔴 Two of the
+  three "defects" I nearly filed in this sweep were screenshot timing. Read the request log
+  before believing a screen.
 - **A number on screen looked like proof the data was wrong.** A poll card read "1 votes"
   next to a correct database row. Nothing was wrong with the vote — the singular
   translation simply did not exist, so i18next fell back to the plural wording. The same

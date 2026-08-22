@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
-| 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
+| 3 — Timebanking core | 20 | 5 | 6 | 5 | 0 | 3 | 1 | 0.518 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 14 | 6 | 11 | 0 | 3 | 0 | 0.599 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **31** | **41** | **25** | **4** | **37** | **2** | — |
+| **Total** | **140** | **33** | **41** | **25** | **4** | **35** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.457**.
+rows → **0.471**.
 
 ### Credit recomputation
 
@@ -85,7 +85,7 @@ rows → **0.457**.
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
-| 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
+| 3 | (5 × 1.0) + (6 × 0.6) + (5 × 0.25) = 9.85 | ÷ 19 † | **0.518** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (14 × 1.0) + (6 × 0.6) + (11 × 0.25) = 20.35 | ÷ 34 | **0.599** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
@@ -156,7 +156,7 @@ genuinely unwalked rather than unbuilt.
 | 3.1 | Create an offer listing | PROVEN | Form walked 2026-08-21; validation refused an empty description ("Please enter a description") — the submit itself was never completed |
 | 3.2 | Create a request listing | PROVEN | 2026-08-22: posted from the device — `listings` row 529, `type = request`, active. The Offer/Request toggle changes the submit button to "Post request", and a missing category was refused inline with "Please choose a category." 🔴 After a successful post the form used to STAY OPEN (no confirmation, duplicate-post trap); fixed in the same session |
 | 3.3 | Browse listings | RENDERS | Listings tab photographed with real content |
-| 3.4 | Search / filter listings | OPEN | Never exercised |
+| 3.4 | Search / filter listings | CERTIFIED | Walked 2026-08-22. Text search narrowed 3 results to 1 ("Shelves"), and the Offer tab narrowed to the 2 offers — verified in the API access log as `GET /v2/listings?personalised=true&type=offer`, and against the endpoint directly (3 / 2 / 1 for none / offer / request). 🔴 I first recorded the type tabs as broken; that was a screenshot taken before the filtered response arrived plus a mis-aimed tap. Guarded by a new case in `app/(tabs)/exchanges.test.tsx` |
 | 3.5 | Open a listing detail | RENDERS | Photographed, scrolled |
 | 3.6 | Request someone's offer | PROVEN | 2026-08-21: requested listing 513 from the second emulator as UserB — `exchange_requests` row 61 written (`pending_provider`, 1.00 proposed hours). 🔴 The button reads "Request this service" and opens a MESSAGE thread until the community switches the exchange workflow on; see the harness note |
 | 3.7 | Owner accepts a request | CERTIFIED | 2026-08-21: accepted on the provider's device, status → `accepted`. Required BUILDING the screen — no client function for accept existed. Guarded by `app/(modals)/exchange-request-detail.test.tsx` (including that a requester is never offered Accept, which the server 403s) |
@@ -168,7 +168,7 @@ genuinely unwalked rather than unbuilt.
 | 3.13 | Leave a review after an exchange | N/A | Recorded parity decision: no native review composer, reviews are read-only on mobile (`docs/generated/mobile-parity-matrix.md`) |
 | 3.14 | Read reviews on a member | RENDERS | Reviews screen exists; behind a bottom sheet for actions |
 | 3.15 | Edit an existing listing | RENDERS | `edit-exchange` screen exists |
-| 3.16 | Withdraw / close a listing | OPEN | Never walked |
+| 3.16 | Withdraw / close a listing | CERTIFIED | Walked 2026-08-22. The app calls it Delete, under "Listing tools" on the owner's own listing, behind a confirmation that says what it does. `listings` row 530 moved `active` -> `deleted`, the app returned to the directory and the count fell from 3 to 2. There is no separate "pause"/"close" state in the app |
 | 3.17 | Exchange dead-end check: draft/publish states | CERTIFIED | Fixed `5373940c8`, guarded — recorded in memory as a prior finding |
 | 3.18 | Group exchanges | RENDERS | Screen photographed at 360dp, filter chips scroll correctly |
 | 3.19 | Skills on a profile drive matching | OPEN | Never walked |

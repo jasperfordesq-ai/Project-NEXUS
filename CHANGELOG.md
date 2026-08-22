@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Searching listings, filtering them by offer or request, and taking a listing down were all walked on a phone and all work.** Searching narrowed three listings to one; the Offer tab narrowed to the two offers; deleting a listing behind its confirmation removed it from the directory and the count fell. No changes were needed to any of them — the value here is that they are now proven rather than assumed, and each is pinned by a test so they cannot quietly break.
+
 - **Notifications on the phone were being cut in half, and the unread number was wrong.** Every notification card was cropped: the heading ("Marketplace order", "Ideation idea submitted"), the little category label and the "1h ago" timestamp were not shown at all, and the message itself was sliced through the middle of a word with no "…". The cause was the whole card sitting inside a button, and a button limits its own height. The header also said "10 unread" when 26 were genuinely unread, because it counted only the notifications it had loaded rather than asking the server — the correct number had been available the whole time and nothing was using it. Both fixed and checked against the database on a phone.
 
 - **Job alerts can now be reached and created.** Tapping a job-alerts link always landed on the Browse tab, because the screen never read the part of the link that names the tab. Worse, once you were on the Alerts tab, the alert you created was drawn **below the bottom of the screen with nothing to scroll** — you could not see it, pause it or delete it. Both fixed, and an alert was created and read back from the database.
