@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 11 | 6 | 11 | 0 | 6 | 0 | 0.510 |
+| 5 — Community modules | 34 | 13 | 6 | 11 | 0 | 4 | 0 | 0.569 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **27** | **41** | **25** | **4** | **41** | **2** | — |
+| **Total** | **140** | **29** | **41** | **25** | **4** | **39** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.428**.
+rows → **0.442**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.428**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (11 × 1.0) + (6 × 0.6) + (11 × 0.25) = 17.35 | ÷ 34 | **0.510** |
+| 5 | (13 × 1.0) + (6 × 0.6) + (11 × 0.25) = 19.35 | ÷ 34 | **0.569** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -237,8 +237,8 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.28 | Job alerts | OPEN | Deep link lands on the wrong tab (`view` parameter unread) |
 | 5.29 | Marketplace browse | RENDERS | Feature disabled for the test community until enabled locally 2026-08-20 |
 | 5.30 | Marketplace category by slug | CERTIFIED | Deep link said "not found" until `673743f16`; guarded by `app/deepLinkParams.test.ts` |
-| 5.31 | Sell an item | OPEN | Never walked |
-| 5.32 | Buy an item / checkout | OPEN | Never walked |
+| 5.31 | Sell an item | CERTIFIED | Walked 2026-08-22: Create tab -> Sell item -> title, tagline, description, price, currency, condition, category -> Publish. marketplace_listings row 100 (tenant 2, user 674, EUR 12.00 fixed, `good`, category 51). 🔴 Found the worst defect of the sweep: marketplace moderation is ON by default, so the new listing was `pending` and BOTH frontends then navigated the seller to a public read that hides it — "Listing not found. This item may have been sold, removed, or moved." about the item they had just created. Fixed in the API (a seller may read their own listing at any moderation status) and the app now shows the server's "waiting for a moderator" notice. |
+| 5.32 | Buy an item / checkout | CERTIFIED | Walked on the second device 2026-08-22. marketplace_orders row 35 (`paid`, 2 time credits, buyer 675 -> seller 674), balances moved 25 -> 23 and 86 -> 88, and the app landed on Purchases showing the order. Two findings: the order row printed the CASH total, so a time-credit purchase read "€0.00" (fixed — it now says "2 time credits"), and the Checkout card renders a heading with nothing under it when there are fewer than two payment methods (recorded, not fixed). Card payments are not configured for this community, which the app reports clearly. |
 | 5.33 | Blog list and article | CERTIFIED | Deep link handed the screen the wrong parameter name until `673743f16`; guarded, and the test that pinned the bug corrected |
 | 5.34 | Knowledge base / resources | RENDERS | Screens exist |
 

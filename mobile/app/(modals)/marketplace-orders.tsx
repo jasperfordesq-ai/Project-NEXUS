@@ -645,7 +645,17 @@ function OrderCard({
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const total = formatOrderTotal(Number(item.total_price), item.currency || tenant?.currency || '');
+  /**
+   * 🔴 An order paid in time credits has a cash total of zero, so printing the cash total
+   * showed the buyer "€0.00" for something they had just paid two credits for. Measured on
+   * a device on 2026-08-22 (marketplace_orders 34 and 35, `time_credits_used` 2.00). Show
+   * what was actually spent.
+   */
+  const timeCreditsUsed = Number(item.time_credits_used ?? 0);
+  const cashTotal = Number(item.total_price ?? 0);
+  const total = timeCreditsUsed > 0 && cashTotal <= 0
+    ? t('orders.totalTimeCredits', { count: timeCreditsUsed })
+    : formatOrderTotal(cashTotal, item.currency || tenant?.currency || '');
   const imageUrl = resolveImageUrl(item.listing?.image?.url);
   const counterparty = mode === 'purchases' ? item.seller : item.buyer;
   const counterpartyLabel = mode === 'purchases' ? t('orders.sellerLabel') : t('orders.buyerLabel');

@@ -85,6 +85,11 @@ jest.mock('react-i18next', () => ({
       if (key === 'orders.number') return `Order ${String(opts?.number ?? '')}`;
       if (key === 'orders.date') return String(opts?.date ?? '');
       if (key === 'orders.deliveryTimeCredits') return `${String(opts?.count ?? '')} time credits`;
+      if (key === 'orders.totalTimeCredits') {
+        return Number(opts?.count) === 1
+          ? `${String(opts?.count ?? '')} time credit`
+          : `${String(opts?.count ?? '')} time credits`;
+      }
       if (key === 'orders.deliveryEstimate') return `${String(opts?.count ?? '')} minutes`;
       return map[key] ?? key;
     },
@@ -248,6 +253,66 @@ describe('MarketplaceOrdersRoute', () => {
 
     expect(getByText('Waiting for shipment')).toBeTruthy();
     expect(getByText('Payment is complete. The seller can now prepare the order.')).toBeTruthy();
+    unmount();
+  });
+
+  /**
+   * 🔴 A time-credit purchase has a cash total of zero. The row printed that cash total, so
+   * the buyer saw "€0.00" for an order they had paid two credits for — measured on a device
+   * on 2026-08-22 against real orders 34 and 35.
+   */
+  it('shows what a time-credit order actually cost, not €0.00', async () => {
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [
+        {
+          id: 43,
+          order_number: 'MKT-000043',
+          quantity: 1,
+          unit_price: 0,
+          total_price: 0,
+          currency: 'EUR',
+          time_credits_used: 2,
+          status: 'paid',
+          created_at: '2026-08-22T10:00:00Z',
+          listing: { id: 100, title: 'Folding wooden drying rack', image: null, delivery_method: 'pickup' },
+          seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+        },
+      ],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { getByText, queryByText, unmount } = render(<MarketplaceOrdersRoute />);
+
+    await waitFor(() => expect(getByText('Folding wooden drying rack')).toBeTruthy());
+    expect(getByText('2 time credits')).toBeTruthy();
+    expect(queryByText('€0.00')).toBeNull();
+    unmount();
+  });
+
+  it('still shows the cash total for an ordinary paid order', async () => {
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [
+        {
+          id: 44,
+          order_number: 'MKT-000044',
+          quantity: 1,
+          unit_price: 18,
+          total_price: 18,
+          currency: 'EUR',
+          time_credits_used: 0,
+          status: 'paid',
+          created_at: '2026-08-22T10:00:00Z',
+          listing: { id: 71, title: 'Cash order lamp', image: null, delivery_method: 'pickup' },
+          seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+        },
+      ],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { getByText, unmount } = render(<MarketplaceOrdersRoute />);
+
+    await waitFor(() => expect(getByText('Cash order lamp')).toBeTruthy());
+    expect(getByText('€18.00')).toBeTruthy();
     unmount();
   });
 

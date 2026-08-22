@@ -225,6 +225,45 @@ describe('NewMarketplaceListingRoute', () => {
     });
   });
 
+  /**
+   * 🔴 Marketplace moderation is ON by default, so a published listing is not live yet.
+   * The server says so in `meta.notice`; this screen used to throw it away and take the
+   * seller to the listing with no hint that nobody else could see it.
+   */
+  it('tells the seller when the listing still needs a moderator', async () => {
+    jest.mocked(createMarketplaceListing).mockResolvedValue({
+      data: { id: 90 },
+      meta: { notice: 'Your listing is waiting for a moderator.' },
+    } as never);
+
+    const { getByPlaceholderText, getByText } = render(<NewMarketplaceListingRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Drying rack');
+    fireEvent.changeText(getByPlaceholderText('Details'), 'Solid beech, folds flat for storage.');
+    fireEvent.changeText(getByPlaceholderText('0.00'), '12');
+    fireEvent.press(getByText('Publish'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        description: 'Your listing is waiting for a moderator.',
+      }));
+    });
+  });
+
+  it('stays quiet when the listing went live immediately', async () => {
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 91 }, meta: null } as never);
+
+    const { getByPlaceholderText, getByText } = render(<NewMarketplaceListingRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Drying rack');
+    fireEvent.changeText(getByPlaceholderText('Details'), 'Solid beech, folds flat for storage.');
+    fireEvent.changeText(getByPlaceholderText('0.00'), '12');
+    fireEvent.press(getByText('Publish'));
+
+    await waitFor(() => expect(createMarketplaceListing).toHaveBeenCalled());
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('uses the tenant payment currency for a new listing by default', async () => {
     mockTenantCurrency = 'JPY';
     jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 89 } } as never);

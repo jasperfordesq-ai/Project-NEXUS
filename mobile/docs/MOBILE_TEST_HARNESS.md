@@ -151,6 +151,10 @@ Useful column names for checking the result:
 | `events` | 🔴 The date is **`start_time`**. `events.start_date` exists and is always NULL — reading it first produced a false "the date was not saved" finding. A new event is a `draft`; publishing is a separate action behind a confirmation |
 | `event_rsvps` | 🔴 Where an RSVP lands. `event_attendance` is a different thing (check-in), and `event_attendees` does not exist |
 | `exchange_requests` | a provider DECLINE sets status `cancelled` — there is no `declined` state in the machine |
+| `marketplace_listings` | 🔴 Moderation is ON by default, so a newly published listing is `moderation_status = 'pending'` and invisible to everyone but its seller. There is no `currency` column (it is `price_currency`), `condition` is a reserved word (backtick it), and a marketplace that forbids combined pricing refuses any listing carrying BOTH a cash price and a `time_credit_price` — at ORDER time, not at create time |
+| `marketplace_orders` | the listing column is **`marketplace_listing_id`**, not `listing_id`. A time-credit purchase has `total_price = 0` and the real cost in `time_credits_used` |
+| `challenge_ideas` / `challenge_idea_votes` | 🔴 **no `tenant_id`** on either — they are scoped through `challenge_id`. `ideation_challenges.ideas_count` is a denormalised column that stays 0; the API counts rows |
+| `users` | the balance column is **`balance`**, not `time_balance` |
 | `polls` / `poll_options` / `poll_votes` | a vote lands in **`poll_votes`**. 🔴 `poll_options.votes` is a denormalised column that is **always 0** — nothing in `app/` reads it and nothing increments it; every tally is a `COUNT(*)` over `poll_votes`. Reading it as evidence produces a false "the vote was not counted" finding. `polls` has no `status` column: use `is_active` |
 
 🔴 **`(modals)/chat.tsx` is the AI assistant, not member messaging.** Member conversations are

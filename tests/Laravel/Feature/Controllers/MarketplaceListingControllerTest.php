@@ -366,6 +366,47 @@ class MarketplaceListingControllerTest extends TestCase
         $this->assertSame('Detail Seller', $contract['seller']['display_name']);
     }
 
+    /**
+     * 🔴 Marketplace moderation is ON by default, so every newly published listing starts
+     * as `pending` and is correctly hidden from the public read. Both frontends navigate
+     * the seller straight to this endpoint after publishing, and so told them "Listing not
+     * found. This item may have been sold, removed, or moved." about the item they had
+     * just created (measured on a device, 2026-08-22). A seller may read their own listing
+     * whatever its moderation status; nobody else may.
+     */
+    public function test_show_lets_a_seller_open_their_own_listing_while_it_awaits_moderation(): void
+    {
+        $this->enableMarketplaceFeature();
+        $seller = $this->authenticatedUser();
+        $categoryId = $this->createMarketplaceCategory('Awaiting Review');
+        $listingId = $this->createMarketplaceListing($seller, $categoryId, [
+            'title' => 'Folding wooden drying rack',
+            'moderation_status' => 'pending',
+        ]);
+
+        $response = $this->apiGet("/v2/marketplace/listings/{$listingId}");
+
+        $response->assertOk();
+        $this->assertSame($listingId, $response->json('data.id'));
+        $this->assertSame('Folding wooden drying rack', $response->json('data.title'));
+    }
+
+    public function test_show_still_hides_a_pending_listing_from_everyone_but_its_seller(): void
+    {
+        $this->enableMarketplaceFeature();
+        $this->authenticatedUser(); // a different member is signed in
+        $seller = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $categoryId = $this->createMarketplaceCategory('Awaiting Review');
+        $listingId = $this->createMarketplaceListing($seller, $categoryId, [
+            'moderation_status' => 'pending',
+        ]);
+
+        $this->apiGet("/v2/marketplace/listings/{$listingId}")->assertStatus(404);
+    }
+
     public function test_categories_public_smoke(): void
     {
         $response = $this->apiGet('/v2/marketplace/categories');

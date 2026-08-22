@@ -303,6 +303,22 @@ export function MarketplaceListingForm() {
         await uploadMarketplaceVideo(response.data.id, videoAsset);
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      /**
+       * 🔴 Say so when the listing is not live yet.
+       *
+       * Marketplace moderation is ON by default, so a newly published listing waits for a
+       * moderator before anyone else can see it. The server says so in `meta.notice`, and
+       * this screen threw that away — the seller was taken to the listing with no hint
+       * that it was not yet public. (Worse, until the API was fixed on 2026-08-22 the
+       * detail screen then said "Listing not found. This item may have been sold, removed,
+       * or moved." about the item they had just created.)
+       */
+      const notice = typeof response.meta?.notice === 'string' ? response.meta.notice : null;
+      if (notice) {
+        showToast({ title: t('marketplace:forms.published'), description: notice, variant: 'default' });
+      }
+
       router.replace({ pathname: '/(modals)/marketplace-detail', params: { id: String(response.data.id) } } as unknown as Href);
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('forms.saveFailed'), variant: 'danger' });

@@ -211,6 +211,20 @@ class MarketplaceListingController extends BaseApiController
         $this->rateLimit('marketplace_show', 60, 60);
 
         $listing = MarketplaceListingService::getById($id, $userId);
+
+        // 🔴 A seller must be able to open their own listing while it waits for a
+        // moderator. Marketplace moderation is ON by default
+        // (MarketplaceConfigurationService::moderationEnabled()), so every newly published
+        // listing starts as `pending` and is correctly hidden from the public read — but
+        // both frontends navigate the seller straight to this endpoint after publishing,
+        // and so told them "Listing not found. This item may have been sold, removed, or
+        // moved." about the item they had just created. Measured on a device 2026-08-22.
+        // getByIdForOwner() already exists for exactly this audience and widens nothing
+        // for anyone else.
+        if (! $listing) {
+            $listing = MarketplaceListingService::getByIdForOwner($id, $userId);
+        }
+
         if (! $listing) {
             $offerId = $this->queryInt('offer_id', 0, 0);
             if ($offerId > 0) {
