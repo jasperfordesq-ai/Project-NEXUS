@@ -157,4 +157,35 @@ describe('navigateToLink', () => {
     expect(mockPush).toHaveBeenNthCalledWith(5, { pathname: '/(modals)/marketplace-tools', params: { tab: 'savedSearches' } });
     expect(mockPush).toHaveBeenNthCalledWith(6, { pathname: '/(modals)/marketplace-detail', params: { id: '44' } });
   });
+
+  // 🔴 `exchanges` and `listings` used to share one case, so every exchange
+  // notification opened the listing screen and it answered "Listing not found".
+  // They are different records with different ids. Keep these two tests
+  // together: the bug was invisible while only one of the two was asserted.
+  it('sends exchange deep links to the exchange request screens', () => {
+    navigateToLink('/exchanges/123');
+    navigateToLink('/exchanges');
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, {
+      pathname: '/(modals)/exchange-request-detail',
+      params: { id: '123' },
+    });
+    expect(mockPush).toHaveBeenNthCalledWith(2, '/(modals)/exchange-requests');
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('keeps listing deep links on the listing screens, distinct from exchanges', () => {
+    navigateToLink('/listings/123');
+    navigateToLink('/listings');
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-detail',
+      params: { id: '123' },
+    });
+    expect(mockPush).not.toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-request-detail',
+      params: { id: '123' },
+    });
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/exchanges');
+  });
 });
