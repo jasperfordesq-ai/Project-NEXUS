@@ -187,7 +187,6 @@ function NewExchangeModalInner() {
     setError(null);
     setSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
-    let shouldGoBack = false;
     try {
       const created = await createExchange({
         title: trimmedTitle,
@@ -218,7 +217,7 @@ function NewExchangeModalInner() {
       if (listingId) {
         successDestination = { pathname: '/(modals)/exchange-detail', params: { id: String(listingId) } };
       } else {
-        shouldGoBack = true;
+        // No id came back, so there is nothing to land on — the else branch below leaves the form.
       }
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -227,13 +226,25 @@ function NewExchangeModalInner() {
       setSubmitting(false);
     }
 
+    // 🔴 `replace`, not `push`, and it is the difference between working and silent.
+    //
+    // Measured on a device on 2026-08-22: posting a listing returned 201, the row was
+    // written — and the member was left sitting on the filled form with no confirmation of
+    // any kind. `router.push` from a screen that was opened as the deep-link ROOT does
+    // nothing, and `router.back()` from a root has nothing to go back to, so both arms of
+    // the old branch could no-op. The next thing a member does is tap the button again,
+    // which posts a duplicate.
+    //
+    // `replace` lands on the created listing whether or not there is a back stack, and it is
+    // also the right history: going "back" to a form whose contents have already been
+    // posted is a duplicate-post trap in itself.
     if (successDestination) {
+      setTimeout(() => router.replace(successDestination), 0);
+    } else {
       setTimeout(() => {
-        if (typeof router.push === 'function') router.push(successDestination);
-        else router.replace(successDestination);
+        if (typeof router.canGoBack === 'function' && router.canGoBack()) router.back();
+        else router.replace('/(tabs)/exchanges');
       }, 0);
-    } else if (shouldGoBack) {
-      setTimeout(() => router.back(), 0);
     }
   }
 

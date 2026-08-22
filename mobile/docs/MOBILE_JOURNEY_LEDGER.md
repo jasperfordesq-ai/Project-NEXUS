@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
 | 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
-| 3 — Timebanking core | 20 | 3 | 5 | 5 | 0 | 6 | 1 | 0.382 |
+| 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 7 | 6 | 12 | 0 | 9 | 0 | 0.400 |
-| 6 — Money and wallet | 12 | 0 | 4 | 2 | 1 | 4 | 1 | 0.291 |
+| 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **22** | **37** | **26** | **5** | **48** | **2** | — |
+| **Total** | **140** | **22** | **41** | **26** | **4** | **45** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(22 × 1.0) + (37 × 0.6) + (26 × 0.25) + (5 × 0.30) = 52.20`, over `140 − 2 excluded = 138`
-rows → **0.378**.
+`(22 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 54.30`, over `140 − 2 excluded = 138`
+rows → **0.394**.
 
 ### Credit recomputation
 
@@ -85,10 +85,10 @@ rows → **0.378**.
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
 | 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
-| 3 | (3 × 1.0) + (5 × 0.6) + (5 × 0.25) = 7.25 | ÷ 19 † | **0.382** |
+| 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (7 × 1.0) + (6 × 0.6) + (12 × 0.25) = 13.60 | ÷ 34 | **0.400** |
-| 6 | (4 × 0.6) + (2 × 0.25) + (1 × 0.30) = 3.20 | ÷ 11 † | **0.291** |
+| 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
@@ -154,7 +154,7 @@ genuinely unwalked rather than unbuilt.
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
 | 3.1 | Create an offer listing | PROVEN | Form walked 2026-08-21; validation refused an empty description ("Please enter a description") — the submit itself was never completed |
-| 3.2 | Create a request listing | OPEN | Toggle present, never exercised |
+| 3.2 | Create a request listing | PROVEN | 2026-08-22: posted from the device — `listings` row 529, `type = request`, active. The Offer/Request toggle changes the submit button to "Post request", and a missing category was refused inline with "Please choose a category." 🔴 After a successful post the form used to STAY OPEN (no confirmation, duplicate-post trap); fixed in the same session |
 | 3.3 | Browse listings | RENDERS | Listings tab photographed with real content |
 | 3.4 | Search / filter listings | OPEN | Never exercised |
 | 3.5 | Open a listing detail | RENDERS | Photographed, scrolled |
@@ -247,17 +247,17 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
 | 6.1 | See your balance | RENDERS | Wallet screen photographed; balance correct |
-| 6.2 | See your transaction history | PARTIAL | 🔴 It does not reconcile. A balance moved 90.00 → 85.00 while the member's own history stayed at one row (`transaction_count: 1`). The organisation side records it; the member's statement does not |
+| 6.2 | See your transaction history | PROVEN | 2026-08-22: walked on the device — rows for the transfer, the exchange and the volunteering auto-payment, each with an earned/spent tag and date, All/Earned/Spent/Pending filters, an Export action and EARNED/SPENT/PENDING aggregates that matched the ledger. 🔴 Each row's meta line is clipped by the bottom of its card. PARTIAL until now |
 | 6.3 | Send credits to another member | PROVEN | 2026-08-22: sent 1 hour from the wallet — UserA 86.00 → 85.00, UserB 26.00 → 27.00, `transactions` row 270 ("Time credit transfer"). 🔴 The recipient search field was a narrow pill, hard to hit and showing almost no text; fixed in `components/ui/Input.tsx` for every field in the app |
 | 6.4 | Receive credits and see them | PROVEN | Volunteering credit landed and showed (Tier 4) |
 | 6.5 | Organisation wallet balance | PROVEN | −2.00 → 8.00 → 13.00 across two deposits, with ledger rows |
 | 6.6 | Deposit credits into an organisation wallet | PROVEN | Device + API; organiser correctly debited |
-| 6.7 | Community fund | OPEN | Never walked |
+| 6.7 | Community fund | PROVEN | 2026-08-22: donated 1 credit from the wallet — member 85.00 → 84.00, `community_fund_accounts` balance 1.00 / total_donated 1.00, `community_fund_transactions` row 8. 🔴 This walk uncovered a platform-wide backend defect: the fund's own endpoints were gated on `hasFeature('wallet')` when `wallet` is a MODULE, so the fund reported `{balance: 0, enabled: false}` for every tenant, always. Fixed and guarded in `WalletFeaturesControllerTest` |
 | 6.8 | Pending in / out | OPEN | Never walked |
-| 6.9 | Wallet limits and refusals | OPEN | Never walked |
+| 6.9 | Wallet limits and refusals | PROVEN | 2026-08-22: tried to send 999 credits on an 85-credit balance — refused before any request with "Check the details / You do not have enough time credits for this amount." Balances untouched, no transaction row |
 | 6.10 | Donations | RENDERS | Tab exists |
 | 6.11 | Auto-pay control on an organisation wallet | N/A | Removed `df0d4085c`: the endpoint returned 404 and the flag governed nothing. React had already removed it |
-| 6.12 | Transaction detail view | OPEN | Never walked |
+| 6.12 | Transaction detail view | OPEN | 🔴 Cannot be walked: there is no such screen. The history rows have no `onPress` and no client calls `GET /v2/wallet/transactions/{id}` — **not the website either**, so this is an unused server endpoint rather than a mobile gap. Owner question: build it or drop the row |
 
 ## Tier 7 — Cross-cutting behaviour (18 rows)
 

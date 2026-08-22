@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=496/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=496 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=503/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=503 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,7 +22,7 @@ competing score anywhere.
 
 ## The headline
 
-**496 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**503 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
@@ -35,7 +35,7 @@ first: the app could send a request and could do nothing else with it.
 
 Against that: a member still cannot write a post to the community feed, because no such
 capability exists; a member's own wallet statement does not reconcile with their balance when
-they fund an organisation; and of the 140 journeys in the ledger, 48 have still never been
+they fund an organisation; and of the 140 journeys in the ledger, 45 have still never been
 attempted. Member-to-member messaging was walked on 2026-08-21 too — sent, received with the
 unread badge, read receipt, and replied to.
 
@@ -52,9 +52,9 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 113 | 300 | Ledger overall credit **0.378** × 300 = 113.5. 22 CERTIFIED, 37 PROVEN, 26 RENDERS, 5 PARTIAL of 138 scoring rows |
+| Journey certification | 300 | 118 | 300 | Ledger overall credit **0.394** × 300 = 118.0. 22 CERTIFIED, 41 PROVEN, 26 RENDERS, 4 PARTIAL of 138 scoring rows |
 | Capability parity with the website | 120 | 60 | 120 | 10 capabilities compared by hand: 8 matched, 1 absent (feed post), 1 an owner decision. 🔴 Unchanged deliberately, because that comparison of ten turned out to be incomplete: the exchange workflow — accept, decline, start, complete, confirm, and any list of your own exchanges — was missing from the app entirely and was not among the ten. It has now been built, but the parity figure stays until the comparison is redone properly rather than being credited for scope the audit had missed |
-| Interaction integrity | 100 | 72 | 100 | Sheets open, stay open, and now close when the screen under them goes away — a sheet renders through a portal, so one was found sitting on top of an unrelated screen after a deep link. Walked on four sheet families plus swipe-to-dismiss. Deep links fixed three times over: parameter names, `?tab=`, and `/exchanges/:id`, which answered "Listing not found". Still unmeasured: 186 error-message sites and touch-target sizes |
+| Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away — a sheet renders through a portal, so one was found sitting on top of an unrelated screen after a deep link. Walked on four sheet families plus swipe-to-dismiss. Deep links fixed three times over: parameter names, `?tab=`, and `/exchanges/:id`, which answered "Listing not found". Still unmeasured: 186 error-message sites and touch-target sizes |
 | Layout across device sizes | 80 | 52 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and guarded on 2026-08-20, and on 2026-08-22 **every text field in the app** was found sized to its own content rather than its container — the wallet's recipient search and the group discussion title shipped as pills. Fixed once in `components/ui/Input.tsx`; guarded. Still only two widths, still no tablet |
 | Accessibility | 60 | 20 | 60 | Contrast gated; 2 of 44 controls unlabelled; no screen-reader pass, no touch-target audit, no RTL |
 | Internationalisation | 70 | 25 | 70 | 7 of the platform's 11 locales; ≥3,232 multi-word phrases still English across six; `ar` blocked for want of RTL |
@@ -62,7 +62,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **496** | **1000** | — |
+| **Total** | **1000** | **503** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -70,7 +70,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 496 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 503 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
