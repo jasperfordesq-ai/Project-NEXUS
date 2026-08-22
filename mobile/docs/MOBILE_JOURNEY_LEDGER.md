@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 14 | 6 | 11 | 0 | 3 | 0 | 0.599 |
+| 5 — Community modules | 34 | 15 | 6 | 11 | 0 | 2 | 0 | 0.628 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **34** | **41** | **25** | **4** | **34** | **2** | — |
+| **Total** | **140** | **35** | **41** | **25** | **4** | **33** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.478**.
+rows → **0.486**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.478**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (14 × 1.0) + (6 × 0.6) + (11 × 0.25) = 20.35 | ÷ 34 | **0.599** |
+| 5 | (15 × 1.0) + (6 × 0.6) + (11 × 0.25) = 21.35 | ÷ 34 | **0.628** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -221,7 +221,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.12 | Send a message to another member | CERTIFIED | 2026-08-21: sent from the second emulator as UserB — `messages` row 545 (675 → 674, unread). Guarded by `app/(modals)/thread.test.tsx` ("sends replies to the other user from conversation metadata") |
 | 5.13 | Receive a message and see the unread badge | CERTIFIED | 2026-08-21: the recipient's device showed **1 unread**, and opening the thread flipped `messages.is_read` to 1 — the read receipt was verified as well as the badge. Guarded by `app/(tabs)/messages.test.tsx` ("shows unread badge on conversation with unread messages") |
 | 5.14 | Reply in a thread | CERTIFIED | 2026-08-21: replied from the recipient's device — `messages` row 546 (674 → 675). Guarded by the same thread-screen send test |
-| 5.15 | Voice message | OPEN | Never walked |
+| 5.15 | Voice message | CERTIFIED | Walked 2026-08-22 — record, stop, review, send, and it plays back in the thread. 🔴 Found a defect that made **every voice message on the platform one second long**: `MessagesController::sendVoice()` passed a literal `0` to `AudioUploader::upload()`, which stores `max(1, duration)`, so a 38-second note arrived as `audio_duration = 1` and rendered as "0:00". The sibling `/messages/voice` route had always read the field; only the route both frontends call did not. Fixed on both sides (the client never sent it either) and verified: `messages` row 551 stores 2 for a 2-second recording. Guarded by `VoiceMessageControllerTest` and `lib/api/messages.test.ts`, both mutation-verified. The website has the same client-side omission and is recorded, not changed |
 | 5.16 | Members directory | RENDERS | Photographed, clean at 360dp |
 | 5.17 | View a member profile | RENDERS | Screen exists |
 | 5.18 | Send a connection request | PROVEN | 2026-08-22: sent from UserB's profile — `connections` row 160 (674 → 675, `pending`) |

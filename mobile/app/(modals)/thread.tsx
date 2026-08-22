@@ -464,13 +464,22 @@ function ThreadScreenInner() {
       is_read: false,
     };
 
+    // Capture the length BEFORE the counter is reset — the server stores max(1, duration),
+    // so a missing duration silently becomes a one-second voice note.
+    const voiceSeconds = recordingSeconds;
+
     setMessages((prev) => [...prev, optimistic]);
     setVoiceUri(null);
     setRecordingSeconds(0);
     setIsSending(true);
 
     try {
-      const response = await sendVoiceMessageApi(resolvedRecipientId, voiceUri, newConversationOptions);
+      const response = await sendVoiceMessageApi(
+        resolvedRecipientId,
+        voiceUri,
+        newConversationOptions,
+        voiceSeconds,
+      );
       setMessages((prev) => prev.map((message) => (message.id === optimistic.id ? { ...response.data, is_own: true } : message)));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
@@ -481,7 +490,7 @@ function ThreadScreenInner() {
     } finally {
       setIsSending(false);
     }
-  }, [isSending, messagingRestriction?.messaging_disabled, newConversationOptions, resolvedRecipientId, showToast, t, voiceUri]);
+  }, [isSending, messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, voiceUri]);
 
   const handleReaction = useCallback(async (messageId: number, emoji: string) => {
     try {

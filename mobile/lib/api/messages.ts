@@ -230,13 +230,28 @@ export async function sendMessageWithAttachments(
   return api.upload<{ data: Message }>(`${API_V2}/messages`, formData);
 }
 
+/**
+ * 🔴 `durationSeconds` is not optional in practice — send it.
+ *
+ * The server stores `max(1, duration)` (`app/Core/AudioUploader.php`) and takes `duration`
+ * straight from the request. Nothing sent it, so EVERY voice message on the platform was
+ * stored as one second long. Measured on a device on 2026-08-22: a recording the sender's own
+ * screen had just labelled 0:38 arrived as `audio_duration = 1`.
+ *
+ * The website has the same gap (`ConversationPage.tsx` appends only `recipient_id` and the
+ * blob), which is recorded rather than changed from here.
+ */
 export async function sendVoiceMessage(
   recipientId: number,
   uri: string,
   options: SendMessageOptions = {},
+  durationSeconds?: number,
 ): Promise<{ data: Message }> {
   const formData = new FormData();
   formData.append('recipient_id', String(recipientId));
+  if (typeof durationSeconds === 'number' && durationSeconds > 0) {
+    formData.append('duration', String(Math.round(durationSeconds)));
+  }
   Object.entries(options).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       formData.append(key, String(value));

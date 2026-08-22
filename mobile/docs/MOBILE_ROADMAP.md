@@ -7,14 +7,19 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Roadmap to Production
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-08-22
 
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **513 / 1000 on rubric M1** — see
+Current position: **537 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
-[`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
+[`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md). Session hand-off, including what this
+plan is missing: [`MOBILE_HANDOFF.md`](MOBILE_HANDOFF.md).
+
+🔴 **This figure is quoted in prose and nothing enforces it here.** It read 513 while the
+status document said 537, because a prose number is not a marker. Update it with the status
+document or delete it.
 
 ## Why this order
 

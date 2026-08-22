@@ -50,6 +50,54 @@ class VoiceMessageControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [400, 422]);
     }
 
+    /**
+     * 🔴 Every voice message on the platform was stored as one second long.
+     *
+     * `MessagesController::sendVoice()` — the route both frontends actually call — passed a
+     * literal 0 to `AudioUploader::upload()`, which stores `max(1, $duration)`. Measured on a
+     * device on 2026-08-22: recordings of 38s, 2s and 4s all arrived as `audio_duration = 1`
+     * and rendered to the recipient as "0:00". The sibling `/messages/voice` route has always
+     * read `duration` from the request; only this one did not, which is why reading the
+     * duration handling a few methods up in the same file made it look correct.
+     *
+     * This is a source assertion rather than an upload round-trip because the uploader writes
+     * to the real filesystem and validates real audio; what regressed was a single argument,
+     * and that is what is pinned here.
+     */
+    public function test_the_mobile_voice_route_passes_the_recorded_duration_not_a_literal_zero(): void
+    {
+        $source = file_get_contents(app_path('Http/Controllers/Api/MessagesController.php'));
+
+        $sendVoice = substr($source, (int) strpos($source, 'public function sendVoice'));
+        $sendVoice = substr($sendVoice, 0, (int) strpos($sendVoice, "
+    public function ", 10) ?: strlen($sendVoice));
+
+        $this->assertStringContainsString(
+            "request()->input('duration'",
+            $sendVoice,
+            'sendVoice() must read the recorded duration from the request.'
+        );
+        $this->assertStringNotContainsString(
+            'AudioUploader::upload($fileArray, 0)',
+            $sendVoice,
+            'sendVoice() must not pass a literal 0 — that stores every voice message as one second.'
+        );
+        $this->assertStringContainsString(
+            'AudioUploader::upload($fileArray, $duration)',
+            $sendVoice
+        );
+    }
+
+    public function test_the_uploader_floors_a_missing_duration_and_refuses_an_implausible_one(): void
+    {
+        $source = file_get_contents(app_path('Core/AudioUploader.php'));
+
+        // The floor is what makes a missing duration look like a real one-second clip, and
+        // the ceiling is what stops a client claiming an arbitrary length.
+        $this->assertStringContainsString("=> max(1, \$duration)", $source);
+        $this->assertStringContainsString('$duration > self::$maxDuration', $source);
+    }
+
     public function test_voice_messages_do_not_send_a_second_direct_email(): void
     {
         $source = file_get_contents(app_path('Http/Controllers/Api/VoiceMessageController.php'));

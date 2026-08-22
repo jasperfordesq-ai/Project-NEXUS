@@ -643,7 +643,27 @@ class MessagesController extends BaseApiController
                 'size'     => $file->getSize(),
             ];
 
-            $audioResult = AudioUploader::upload($fileArray, 0);
+            /**
+             * 🔴 The recorded length has to come from the request. This passed a literal 0,
+             * and `AudioUploader::upload()` stores `max(1, $duration)` — so EVERY voice
+             * message sent through this endpoint was recorded as one second long, whatever
+             * its real length, and rendered to the recipient as "0:00". Measured on a
+             * device on 2026-08-22: three recordings of 38s, 2s and 4s all stored
+             * `audio_duration = 1`.
+             *
+             * The sibling `/messages/voice` route (VoiceMessageController::store) has always
+             * read `duration` from the request; only this one — the route both frontends
+             * actually call — did not. Reading the duration handling a few methods up in
+             * this same file is what made it look correct.
+             *
+             * Only the negative case is normalised here. The uploader REFUSES anything over
+             * its own 300-second ceiling rather than clamping it, which is the behaviour we
+             * want for an implausible claim, and it applies its own `max(1, …)` floor when a
+             * client sends nothing.
+             */
+            $duration = max(0, (int) request()->input('duration', 0));
+
+            $audioResult = AudioUploader::upload($fileArray, $duration);
 
             // Send the message with voice attachment
             $message = $this->messageService->sendVoice(

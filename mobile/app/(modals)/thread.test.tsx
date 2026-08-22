@@ -615,7 +615,16 @@ describe('ThreadScreen', () => {
     fireEvent.press(getByLabelText('Send voice message'));
 
     await waitFor(() => {
-      expect(mockSendVoiceMessage).toHaveBeenCalledWith(42, 'file:///tmp/voice.m4a', undefined);
+      /**
+       * 🔴 The fourth argument is the recorded length in seconds, and it must be sent.
+       * `MessagesController::sendVoice()` used to pass a literal 0 to the uploader, which
+       * stores `max(1, duration)` — so every voice message on the platform was recorded as
+       * one second long and shown to the recipient as "0:00" (measured on a device
+       * 2026-08-22). It is 0 here because this test never lets the recording timer tick;
+       * `lib/api/messages.test.ts` covers the real values, including that 0 means the field
+       * is omitted so the server's own floor applies.
+       */
+      expect(mockSendVoiceMessage).toHaveBeenCalledWith(42, 'file:///tmp/voice.m4a', undefined, 0);
     });
   });
 

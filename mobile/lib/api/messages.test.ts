@@ -250,6 +250,39 @@ describe('sendVoiceMessage', () => {
 
     expect(api.upload).toHaveBeenCalledWith('/api/v2/messages/voice', expect.any(FormData));
   });
+
+  /**
+   * 🔴 The server stores `max(1, duration)` and reads `duration` straight from the request.
+   * Nothing sent it, so every voice message on the platform was stored as one second long —
+   * measured on a device on 2026-08-22, where a recording the sender's own screen labelled
+   * 0:38 arrived as `audio_duration = 1`.
+   */
+  it('sends the recorded length so the message is not stored as one second', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({ data: { ...mockMessage, is_voice: true } });
+
+    await sendVoiceMessage(2, 'file:///tmp/voice.m4a', {}, 38);
+
+    const formData = (api.upload as jest.Mock).mock.calls.at(-1)?.[1] as FormData;
+    expect(formData.get('duration')).toBe('38');
+  });
+
+  it('rounds a fractional length rather than sending a decimal', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({ data: { ...mockMessage, is_voice: true } });
+
+    await sendVoiceMessage(2, 'file:///tmp/voice.m4a', {}, 12.6);
+
+    const formData = (api.upload as jest.Mock).mock.calls.at(-1)?.[1] as FormData;
+    expect(formData.get('duration')).toBe('13');
+  });
+
+  it('omits the field entirely when the length is unknown, so the server default applies', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({ data: { ...mockMessage, is_voice: true } });
+
+    await sendVoiceMessage(2, 'file:///tmp/voice.m4a', {});
+
+    const formData = (api.upload as jest.Mock).mock.calls.at(-1)?.[1] as FormData;
+    expect(formData.get('duration')).toBeNull();
+  });
 });
 
 describe('updateMessage', () => {
