@@ -27,6 +27,7 @@ wording, and before doing any parity work.
 | [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md) | **The one "start here".** Canonical current: banked score, published-but-unscored movement, evidence pointers, open gates, the live queue, and the reporting rules. |
 | [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md) | **The work list.** Canonical current: every enumerated journey with a status each — the finite, frozen denominator the score is derived from. Pick work up here. |
 | [HANDOFF_PROMPT.md](HANDOFF_PROMPT.md) | The standing session brief — roles, reading order, invariants, definition of done, forbidden actions, concurrency rules. Paste it into any fresh session. |
+| [SESSION_HANDOFF_2026-08-22.md](SESSION_HANDOFF_2026-08-22.md) | Dated handoff: exact repo state, the ordered next steps, the two owner decisions blocking points, and the eight instruments that reported wrongly on 2026-08-21. Superseded by the canonical sources whenever they disagree. |
 | [ROADMAP.md](ROADMAP.md) | Canonical current, owner-facing: what works, what doesn't, what's next, and time frames — in plain English, no points. |
 
 ## Maintained references
