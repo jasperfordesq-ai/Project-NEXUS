@@ -7,7 +7,7 @@ Status: **Canonical current - ASP.NET score and certification source**
 <!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=309/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
-<!-- doc-consistency: ASPNET_BANKED_FLOOR=290 -->
+<!-- doc-consistency: ASPNET_BANKED_FLOOR=309 -->
 
 🔴 **READ THIS BEFORE THE NUMBER. The denominator is now FROZEN and the score is
 RATCHETED - it can never be published lower again.** Today the owner decided the
@@ -122,12 +122,15 @@ made 4.27 and 4.28 uncertifiable were closed in the same batch. All nine write
 journeys then passed on BOTH arms in one run, twice, with the instrument's
 known-defect and known-fixture-gap lists EMPTY — nothing excused.
 
-🔴 **The floor moves to 290, not to 309, and the difference matters.** 290 is the
-number CI has actually proved, at pushed SHA `91160bea7`, where every ASP.NET job
-in `platform-contracts` passed. 309 is published because the ledger forces it —
-promoting a row recomputes the category arithmetic mechanically — but it is not
-floored until CI is green on the commit carrying it. Publish the computed number,
-hold the floor, raise it after CI.
+🔴 **The floor is 309, raised on evidence rather than on the publication.** It
+went to 290 first — the number CI had proved at that moment — and to 309 only
+after `3b676457c` came back green with every ASP.NET job actually RUN, not
+skipped: the build, the messaging tests and all six API shards (Web UK and React
+jobs skipped correctly, since neither was touched). That two-step is the rule,
+not ceremony: promoting a row FORCES the category arithmetic, so the published
+number moves the moment the ledger does, and the floor must never follow it until
+something has actually been proved. Publish the computed number, hold the floor,
+raise it after CI.
 
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
