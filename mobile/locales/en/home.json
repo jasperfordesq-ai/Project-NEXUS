@@ -259,5 +259,27 @@
     "reactorsTitle": "Reactions",
     "noReactors": "No reactions yet"
   },
-  "saveFailed": "Could not update your saved items. Please try again."
+  "saveFailed": "Could not update your saved items. Please try again.",
+  "notInterested": "Not interested",
+  "hidePost": "Hide this",
+  "muteAuthor": "Mute {{name}}",
+  "reportPost": "Report",
+  "hiddenToast": "Hidden from your feed",
+  "notInterestedToast": "We will show you less like this",
+  "mutedToast": "You will not see posts from {{name}}",
+  "moderationFailed": "That did not work. Please try again.",
+  "reportTitle": "Report this",
+  "reportIntro": "Tell the moderators what is wrong. They see the post and your reason.",
+  "reportSend": "Send report",
+  "reportSentTitle": "Report sent",
+  "reportSentBody": "The moderators will look at this.",
+  "reportAlreadyTitle": "Already reported",
+  "reportAlreadyBody": "You have already reported this.",
+  "reportReason": {
+    "safety_concern": "Safety concern",
+    "inappropriate": "Inappropriate",
+    "misleading": "Misleading",
+    "spam": "Spam",
+    "other": "Something else"
+  }
 }

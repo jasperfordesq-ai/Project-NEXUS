@@ -259,5 +259,27 @@
     "reactorsTitle": "Reacciones",
     "noReactors": "Aún no hay reacciones"
   },
-  "saveFailed": "No se pudieron actualizar tus elementos guardados. Inténtalo de nuevo."
+  "saveFailed": "No se pudieron actualizar tus elementos guardados. Inténtalo de nuevo.",
+  "notInterested": "No me interesa",
+  "hidePost": "Ocultar esto",
+  "muteAuthor": "Silenciar a {{name}}",
+  "reportPost": "Denunciar",
+  "hiddenToast": "Oculto de tu muro",
+  "notInterestedToast": "Te mostraremos menos contenido así",
+  "mutedToast": "No verás publicaciones de {{name}}",
+  "moderationFailed": "Eso no ha funcionado. Inténtalo de nuevo.",
+  "reportTitle": "Denunciar esto",
+  "reportIntro": "Cuéntale al equipo de moderación qué ocurre. Verá la publicación y tu motivo.",
+  "reportSend": "Enviar denuncia",
+  "reportSentTitle": "Denuncia enviada",
+  "reportSentBody": "El equipo de moderación lo revisará.",
+  "reportAlreadyTitle": "Ya denunciado",
+  "reportAlreadyBody": "Ya has denunciado esto.",
+  "reportReason": {
+    "safety_concern": "Problema de seguridad",
+    "inappropriate": "Inapropiado",
+    "misleading": "Engañoso",
+    "spam": "Spam",
+    "other": "Otra cosa"
+  }
 }

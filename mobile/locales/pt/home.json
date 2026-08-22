@@ -259,5 +259,27 @@
     "reactorsTitle": "Reações",
     "noReactors": "Ainda sem reações"
   },
-  "saveFailed": "Não foi possível atualizar os seus itens guardados. Tente novamente."
+  "saveFailed": "Não foi possível atualizar os seus itens guardados. Tente novamente.",
+  "notInterested": "Não me interessa",
+  "hidePost": "Ocultar isto",
+  "muteAuthor": "Silenciar {{name}}",
+  "reportPost": "Denunciar",
+  "hiddenToast": "Ocultado do seu mural",
+  "notInterestedToast": "Vamos mostrar-lhe menos disto",
+  "mutedToast": "Não verá publicações de {{name}}",
+  "moderationFailed": "Isso não funcionou. Tente novamente.",
+  "reportTitle": "Denunciar isto",
+  "reportIntro": "Diga à moderação o que está errado. Verá a publicação e o seu motivo.",
+  "reportSend": "Enviar denúncia",
+  "reportSentTitle": "Denúncia enviada",
+  "reportSentBody": "A moderação vai analisar isto.",
+  "reportAlreadyTitle": "Já denunciado",
+  "reportAlreadyBody": "Já denunciou isto.",
+  "reportReason": {
+    "safety_concern": "Preocupação de segurança",
+    "inappropriate": "Inadequado",
+    "misleading": "Enganador",
+    "spam": "Spam",
+    "other": "Outra coisa"
+  }
 }

@@ -259,5 +259,27 @@
     "reactorsTitle": "Reaktionen",
     "noReactors": "Noch keine Reaktionen"
   },
-  "saveFailed": "Deine gespeicherten Elemente konnten nicht aktualisiert werden. Bitte erneut versuchen."
+  "saveFailed": "Deine gespeicherten Elemente konnten nicht aktualisiert werden. Bitte erneut versuchen.",
+  "notInterested": "Kein Interesse",
+  "hidePost": "Das ausblenden",
+  "muteAuthor": "{{name}} stummschalten",
+  "reportPost": "Melden",
+  "hiddenToast": "Aus deinem Feed ausgeblendet",
+  "notInterestedToast": "Wir zeigen dir weniger davon",
+  "mutedToast": "Du siehst keine Beiträge von {{name}} mehr",
+  "moderationFailed": "Das hat nicht funktioniert. Bitte versuche es erneut.",
+  "reportTitle": "Das melden",
+  "reportIntro": "Sag der Moderation, was nicht stimmt. Sie sieht den Beitrag und deine Begründung.",
+  "reportSend": "Meldung senden",
+  "reportSentTitle": "Meldung gesendet",
+  "reportSentBody": "Die Moderation schaut sich das an.",
+  "reportAlreadyTitle": "Schon gemeldet",
+  "reportAlreadyBody": "Du hast das schon gemeldet.",
+  "reportReason": {
+    "safety_concern": "Sicherheitsbedenken",
+    "inappropriate": "Unangemessen",
+    "misleading": "Irreführend",
+    "spam": "Spam",
+    "other": "Etwas anderes"
+  }
 }

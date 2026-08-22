@@ -4,13 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import type { FeedItem as FeedItemType } from '@/lib/api/feed';
 import FeedItem from './FeedItem';
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn() },
+  // The card renders a report sheet, and BottomSheet closes itself on screen blur.
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => cb(), [cb]);
+  },
 }));
 
 jest.mock('react-i18next', () => ({
@@ -21,6 +26,13 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
+}));
+
+// The card now offers mute, which is only shown on someone else's content — so it needs to
+// know who is signed in. Mocked rather than wrapped in a provider: these tests render the
+// card in isolation on purpose.
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 999 } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -36,10 +48,28 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/api/feed', () => ({
-  getFeedAuthor: () => ({ id: 1, name: 'Alice Smith', avatar: null }),
+  // 🔴 Derived from the item, like the real helper. A fixed id here made "your own post"
+  // indistinguishable from someone else's, and the mute test failed against working code.
+  getFeedAuthor: (item: { user_id?: number; author_name?: string }) => ({
+    id: item?.user_id ?? 1,
+    name: item?.author_name ?? 'Alice Smith',
+    avatar: null,
+  }),
   toggleBookmark: jest.fn(),
   toggleLike: jest.fn(),
   toggleReaction: jest.fn(),
+}));
+
+const mockHide = jest.fn();
+const mockNotInterested = jest.fn();
+const mockMute = jest.fn();
+const mockReport = jest.fn();
+
+jest.mock('@/lib/api/feedModeration', () => ({
+  hideFeedItem: (...args: unknown[]) => mockHide(...args),
+  markFeedItemNotInterested: (...args: unknown[]) => mockNotInterested(...args),
+  muteFeedAuthor: (...args: unknown[]) => mockMute(...args),
+  reportFeedItem: (...args: unknown[]) => mockReport(...args),
 }));
 
 jest.mock('@/components/ui/AppToast', () => {
@@ -103,7 +133,42 @@ jest.mock('@/components/ui/ImageCarousel', () => {
     );
   };
 });
-jest.mock('@/components/ui/ActionSheet', () => 'View');
+// 🔴 Rendered for real, not stubbed to 'View'. The moderation actions the card offers ARE
+// the capability under test — a stub would let the menu be empty and the tests still pass,
+// which is exactly how a member ended up with no way to hide or report anything.
+// The report sheet is a real BottomSheet, and this file's heroui mock has no BottomSheet of
+// its own. Stubbed to render its children when open — the chips and the submit button are the
+// card's content, which is what these tests assert.
+jest.mock('@/components/ui/BottomSheet', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return function BottomSheet({ visible, children }: { visible: boolean; children: React.ReactNode }) {
+    return visible ? <View>{children}</View> : null;
+  };
+});
+
+jest.mock('@/components/ui/ActionSheet', () => {
+  const React = require('react');
+  const { Text, View } = require('react-native');
+  return function ActionSheet({
+    visible,
+    actions,
+  }: {
+    visible: boolean;
+    actions: { label: string; onPress: () => void }[];
+  }) {
+    if (!visible) return null;
+    return (
+      <View>
+        {actions.map((action) => (
+          <Text key={action.label} onPress={action.onPress}>
+            {action.label}
+          </Text>
+        ))}
+      </View>
+    );
+  };
+});
 jest.mock('@/components/reactions/ReactorsSheet', () => 'View');
 jest.mock('@/components/PollCard', () => 'View');
 jest.mock('@/components/comments/CommentSheet', () => {
@@ -525,5 +590,104 @@ describe('the "View post" link on milestone cards', () => {
     const { queryByText } = render(<FeedItem item={item} />);
 
     expect(queryByText('detail.post')).not.toBeNull();
+  });
+
+  /**
+   * 🔴 A member could not hide, mute or report anything from the phone.
+   *
+   * The card's "…" menu offered Share, Save and View post — nothing about the content
+   * itself — while the website has had hide, not-interested and mute since the V2 feed was
+   * built and the server's report endpoint alerts the moderators. Found by opening the menu
+   * on a device on 2026-08-22. This is a safeguarding capability, so it is tested by what
+   * the member can reach, not by whether the functions exist.
+   */
+  describe('content moderation from the card', () => {
+    beforeEach(() => {
+      mockHide.mockReset().mockResolvedValue({ data: { hidden: true } });
+      mockNotInterested.mockReset().mockResolvedValue({ data: {} });
+      mockMute.mockReset().mockResolvedValue({ data: {} });
+      mockReport.mockReset().mockResolvedValue({ data: { reported: true } });
+    });
+
+    const basePost = {
+      id: 181,
+      type: 'post',
+      title: null,
+      content: 'A post from another member.',
+      image_url: null,
+      user_id: 1,
+      author_name: 'Alice Smith',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-08-22T09:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+    } as unknown as FeedItemType;
+
+    function openMenu(item: FeedItemType = basePost) {
+      const view = render(<FeedItem item={item} />);
+      fireEvent.press(view.getByLabelText('moreOptions'));
+      return view;
+    }
+
+    it('offers not interested, hide, mute and report', () => {
+      const { getByText } = openMenu();
+
+      expect(getByText('notInterested')).toBeTruthy();
+      expect(getByText('hidePost')).toBeTruthy();
+      expect(getByText('muteAuthor')).toBeTruthy();
+      expect(getByText('reportPost')).toBeTruthy();
+    });
+
+    it('hides the card as soon as the server accepts a hide', async () => {
+      const { getByText, queryByText } = openMenu();
+
+      fireEvent.press(getByText('hidePost'));
+
+      await waitFor(() => expect(mockHide).toHaveBeenCalledWith(181, 'post'));
+      // 🔴 The feed is not re-fetched for one action, so without the local dismissal the post
+      // stays exactly where it was and "Hide this" reads as a dead control.
+      await waitFor(() => expect(queryByText(String(basePost.content))).toBeNull());
+    });
+
+    it('goes back instead of emptying the page when hiding from the detail screen', async () => {
+      const { router } = require('expo-router');
+      const view = render(<FeedItem item={basePost} disableDetailNavigation />);
+      fireEvent.press(view.getByLabelText('moreOptions'));
+
+      fireEvent.press(view.getByText('hidePost'));
+
+      // 🔴 On the detail screen the card IS the page: dismissing it in place leaves a header
+      // over an empty screen, which is what a member saw on 2026-08-22.
+      await waitFor(() => expect(router.back).toHaveBeenCalled());
+    });
+
+    it('does not offer to mute your own post', () => {
+      const own = { ...basePost, user_id: 999 };
+      const { queryByText } = openMenu(own);
+
+      expect(queryByText('muteAuthor')).toBeNull();
+    });
+
+    it('sends a report with the chosen reason', async () => {
+      const { getByText } = openMenu();
+
+      fireEvent.press(getByText('reportPost'));
+      fireEvent.press(getByText('reportReason.spam'));
+      // Pressed by its label: this file's heroui mock does not forward testID, and a test
+      // that reaches for one it cannot see fails against working code.
+      fireEvent.press(getByText('reportSend'));
+
+      await waitFor(() =>
+        expect(mockReport).toHaveBeenCalledWith(181, 'spam', 'post'),
+      );
+    });
   });
 });

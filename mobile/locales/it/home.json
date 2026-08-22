@@ -259,5 +259,27 @@
     "reactorsTitle": "Reazioni",
     "noReactors": "Ancora nessuna reazione"
   },
-  "saveFailed": "Impossibile aggiornare gli elementi salvati. Riprova."
+  "saveFailed": "Impossibile aggiornare gli elementi salvati. Riprova.",
+  "notInterested": "Non mi interessa",
+  "hidePost": "Nascondi",
+  "muteAuthor": "Silenzia {{name}}",
+  "reportPost": "Segnala",
+  "hiddenToast": "Nascosto dal tuo feed",
+  "notInterestedToast": "Te ne mostreremo meno così",
+  "mutedToast": "Non vedrai più i post di {{name}}",
+  "moderationFailed": "Non ha funzionato. Riprova.",
+  "reportTitle": "Segnala questo",
+  "reportIntro": "Spiega ai moderatori che cosa non va. Vedranno il post e la tua motivazione.",
+  "reportSend": "Invia la segnalazione",
+  "reportSentTitle": "Segnalazione inviata",
+  "reportSentBody": "I moderatori la esamineranno.",
+  "reportAlreadyTitle": "Già segnalato",
+  "reportAlreadyBody": "Hai già segnalato questo.",
+  "reportReason": {
+    "safety_concern": "Problema di sicurezza",
+    "inappropriate": "Inappropriato",
+    "misleading": "Fuorviante",
+    "spam": "Spam",
+    "other": "Altro"
+  }
 }

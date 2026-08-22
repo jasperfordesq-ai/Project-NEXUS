@@ -49,7 +49,17 @@ export default function ActionSheet({ visible, onClose, title, actions }: Action
             onPress={() => handleAction(action)}
             accessibilityLabel={action.label}
           >
-            <View className="flex-row items-center">
+            {/*
+              🔴 The row height and the text's line height are set in `style`, not left to
+              the classes. Measured on a device on 2026-08-22: every label in this menu was
+              clipped through the middle of its glyphs — "Share", "Save", "Report" all cut in
+              half — because the row took its height from the button's own padding while the
+              text needed more. It looked like a rendering fault in the sheet and was not.
+              An explicit minimum height plus an explicit line height fixes every row at
+              once, and `numberOfLines` keeps a long label (a muted member's full name) on
+              one line instead of pushing the row over.
+            */}
+            <View className="flex-row items-center" style={{ minHeight: 44 }}>
               {action.icon ? (
                 <Ionicons
                   name={action.icon as keyof typeof Ionicons.glyphMap}
@@ -60,6 +70,8 @@ export default function ActionSheet({ visible, onClose, title, actions }: Action
               ) : null}
               <Text
                 className={`text-base font-medium${action.destructive ? ' text-danger' : ' text-foreground'}`}
+                style={{ lineHeight: 22 }}
+                numberOfLines={1}
               >
                 {action.label}
               </Text>

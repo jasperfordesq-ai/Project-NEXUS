@@ -14,7 +14,19 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getFeedAuthor, toggleBookmark, toggleLike, toggleReaction, type FeedItem as FeedItemType, type PollData, type ReactionsSummary, type ReactionType } from '@/lib/api/feed';
+import {
+  hideFeedItem,
+  markFeedItemNotInterested,
+  muteFeedAuthor,
+  reportFeedItem,
+  type FeedTargetType,
+} from '@/lib/api/feedModeration';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
+import BottomSheet from '@/components/ui/BottomSheet';
+import NativePressable from '@/components/ui/NativePressable';
 import type { CommentTargetType } from '@/lib/api/comments';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
@@ -53,6 +65,15 @@ export interface FeedCommentTarget {
 }
 
 type ChipColor = 'accent' | 'default' | 'success' | 'warning' | 'danger';
+
+/**
+ * The report reasons, deliberately the same closed list the listing report flow uses
+ * (`app/(modals)/exchange-detail.tsx`). Chips rather than a text box: the server requires a
+ * non-empty reason, and a member reporting something unpleasant should not have to compose a
+ * sentence for the report to be accepted.
+ */
+const REPORT_REASONS = ['safety_concern', 'inappropriate', 'misleading', 'spam', 'other'] as const;
+type ReportReason = (typeof REPORT_REASONS)[number];
 
 const TYPE_CONFIG: Record<
   FeedItemType['type'],
@@ -288,6 +309,26 @@ function FeedItemInner({
 }: FeedItemProps) {
   const { t } = useTranslation(['home', 'exchanges', 'common']);
   const { show: showToast } = useAppToast();
+  // Muting yourself is meaningless, so the option is hidden on your own content.
+  const currentUserId = useAuth().user?.id ?? null;
+
+  /**
+   * 🔴 Getting content off your own feed, and telling someone about it.
+   *
+   * Until 2026-08-22 the card's "…" menu offered Share, Save and View post — nothing about
+   * the content itself. The website has had hide, not-interested and mute since the V2 feed
+   * was built, and the server's report endpoint alerts the community's moderators. On the
+   * phone there was no way to do any of it, which is a safeguarding gap and not a
+   * convenience one.
+   *
+   * `dismissed` hides the card locally the moment the server accepts a hide or a mute. The
+   * feed is not re-fetched for one action, so without this the member taps "Hide this" and
+   * the post stays exactly where it was, which reads as a dead control.
+   */
+  const [dismissed, setDismissed] = useState(false);
+  const [reportSheetVisible, setReportSheetVisible] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason>('safety_concern');
+  const [isReporting, setIsReporting] = useState(false);
   const primary = usePrimaryColor();
   const theme = useTheme();
 
@@ -606,7 +647,68 @@ function FeedItemInner({
     }
   }, [bookmarked, item.id, item.type, showToast, t]);
 
+  const moderationTargetType = item.type as FeedTargetType;
+
+  const runModeration = useCallback(
+    async (fn: () => Promise<unknown>, successTitle: string, hideCard: boolean) => {
+      try {
+        await fn();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        showToast({ title: successTitle, variant: 'success' });
+        if (hideCard) {
+          // 🔴 On a detail screen there is nothing behind the card, so dismissing it in
+          // place leaves the member staring at an empty page with a header. Measured on a
+          // device on 2026-08-22. `disableDetailNavigation` is only set by the detail
+          // screen, so it is the signal for "this card IS the page".
+          if (disableDetailNavigation && typeof router.back === 'function') router.back();
+          else setDismissed(true);
+        }
+      } catch (err) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        showToast({
+          title: t('common:errors.alertTitle'),
+          description: describeApiError(err, t('moderationFailed')),
+          variant: 'danger',
+        });
+      }
+    },
+    [disableDetailNavigation, showToast, t],
+  );
+
+  const submitReport = useCallback(async () => {
+    if (isReporting) return;
+    setIsReporting(true);
+    try {
+      await reportFeedItem(item.id, reportReason, moderationTargetType);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setReportSheetVisible(false);
+      showToast({ title: t('reportSentTitle'), description: t('reportSentBody'), variant: 'success' });
+    } catch (err) {
+      // 🔴 409 means "you already reported this", which is an ANSWER, not a failure. Showing
+      // it as an error would tell a member their report had not gone through when it had.
+      const already = err instanceof ApiResponseError && err.status === 409;
+      void Haptics.notificationAsync(
+        already ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error,
+      );
+      setReportSheetVisible(false);
+      showToast(
+        already
+          ? { title: t('reportAlreadyTitle'), description: t('reportAlreadyBody') }
+          : {
+              title: t('common:errors.alertTitle'),
+              description: describeApiError(err, t('moderationFailed')),
+              variant: 'danger',
+            },
+      );
+    } finally {
+      setIsReporting(false);
+    }
+  }, [isReporting, item.id, moderationTargetType, reportReason, showToast, t]);
+
   const cardLabel = `${authorName}. ${item.title ?? ''}${item.content ? '. ' + item.content.slice(0, 100) : ''}`;
+
+  // Hidden or muted: the card goes at once. See `dismissed` above for why.
+  if (dismissed) return null;
 
   return (
     <View className="mx-4 my-2" accessible accessibilityLabel={cardLabel} accessibilityRole="summary">
@@ -947,8 +1049,88 @@ function FeedItemInner({
           { label: t('share'), icon: 'share-outline', onPress: () => void handleShare() },
           ...(canBookmark ? [{ label: bookmarked ? t('unsave') : t('save'), icon: bookmarked ? 'bookmark' : 'bookmark-outline', onPress: () => void handleSave() }] : []),
           ...(detailTarget ? [{ label: t(detailTarget.labelKey), icon: 'arrow-forward-outline', onPress: navigateToDetail }] : []),
+          {
+            label: t('notInterested'),
+            icon: 'eye-off-outline',
+            onPress: () => void runModeration(
+              () => markFeedItemNotInterested(item.id, moderationTargetType),
+              t('notInterestedToast'),
+              false,
+            ),
+          },
+          {
+            label: t('hidePost'),
+            icon: 'close-circle-outline',
+            onPress: () => void runModeration(
+              () => hideFeedItem(item.id, moderationTargetType),
+              t('hiddenToast'),
+              true,
+            ),
+          },
+          // Muting is about a PERSON, so it is only offered on someone else's content —
+          // and the label names them, because "Mute" alone does not say whom.
+          ...(author.id && author.id !== currentUserId
+            ? [{
+                label: t('muteAuthor', { name: authorName }),
+                icon: 'volume-mute-outline',
+                onPress: () => void runModeration(
+                  () => muteFeedAuthor(author.id as number),
+                  t('mutedToast', { name: authorName }),
+                  true,
+                ),
+              }]
+            : []),
+          {
+            label: t('reportPost'),
+            icon: 'flag-outline',
+            destructive: true,
+            onPress: () => setReportSheetVisible(true),
+          },
         ]}
       />
+
+      {/*
+        The report sheet lives here, beside the action sheet, and both render from inside a
+        FlatList row. That was impossible before 2026-08-21 — a portal opened from a row never
+        became visible — which is why `CommentSheet` is hoisted to the screen instead. Now
+        that sheets work, keeping this local means the card owns its own reporting.
+      */}
+      <BottomSheet
+        visible={reportSheetVisible}
+        onClose={() => setReportSheetVisible(false)}
+        title={t('reportTitle')}
+      >
+        <View className="gap-3 pt-2">
+          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+            {t('reportIntro')}
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {REPORT_REASONS.map((reason) => {
+              const selected = reportReason === reason;
+              return (
+                <NativePressable
+                  key={reason}
+                  onPress={() => setReportReason(reason)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={t(`reportReason.${reason}`)}
+                >
+                  <Chip size="sm" variant={selected ? 'primary' : 'secondary'}>
+                    <Chip.Label>{t(`reportReason.${reason}`)}</Chip.Label>
+                  </Chip>
+                </NativePressable>
+              );
+            })}
+          </View>
+          <HeroButton
+            isDisabled={isReporting}
+            onPress={() => void submitReport()}
+            testID="feed-report-submit"
+          >
+            <HeroButton.Label>{t('reportSend')}</HeroButton.Label>
+          </HeroButton>
+        </View>
+      </BottomSheet>
       {isCommentable && !onOpenComments ? (
         <CommentSheet
           visible={commentsVisible}

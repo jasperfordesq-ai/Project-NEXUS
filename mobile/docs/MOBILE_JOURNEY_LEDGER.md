@@ -64,27 +64,27 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
-| 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
+| 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 7 | 6 | 12 | 0 | 9 | 0 | 0.400 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **22** | **41** | **26** | **4** | **45** | **2** | — |
+| **Total** | **140** | **23** | **41** | **26** | **4** | **44** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(22 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 54.30`, over `140 − 2 excluded = 138`
-rows → **0.394**.
+`(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
+rows → **0.401**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
-| 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
+| 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (7 × 1.0) + (6 × 0.6) + (12 × 0.25) = 13.60 | ÷ 34 | **0.400** |
@@ -137,7 +137,7 @@ uninterpretable.
 | 2.11 | Save / bookmark a post | PROVEN | Bookmark control present and reachable after `294586010`; toggle observed |
 | 2.12 | Feed filters (All / Following / Saved / Posts / Exchanges) | RENDERS | Chips visible; none exercised |
 | 2.13 | Infinite scroll loads more | OPEN | Fixture too small to page; never exercised on mobile |
-| 2.14 | Hide / report a post | OPEN | Never attempted |
+| 2.14 | Hide / report a post | CERTIFIED | 🔴 **No capability existed.** The card's "…" menu offered Share, Save and View post; the app called none of the server's four moderation endpoints, while the website has had hide, not-interested and mute since the V2 feed. Built 2026-08-22 (`lib/api/feedModeration.ts`) and walked: `reports` row 9 (post 183, `safety_concern`, open) and `feed_hidden` row 10. Guarded by `lib/api/feedModeration.test.ts` and four card-level tests, all mutation-verified
 
 ## Tier 3 — Timebanking core (20 rows)
 

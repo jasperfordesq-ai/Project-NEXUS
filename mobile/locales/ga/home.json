@@ -259,5 +259,27 @@
     "reactorsTitle": "Freagairtí",
     "noReactors": "Níl aon fhreagairtí fós"
   },
-  "saveFailed": "Níorbh fhéidir do mhíreanna sábháilte a nuashonrú. Bain triail eile as."
+  "saveFailed": "Níorbh fhéidir do mhíreanna sábháilte a nuashonrú. Bain triail eile as.",
+  "notInterested": "Gan suim",
+  "hidePost": "Cuir seo i bhfolach",
+  "muteAuthor": "Balbhaigh {{name}}",
+  "reportPost": "Déan tuairisc",
+  "hiddenToast": "I bhfolach ó do fhotha",
+  "notInterestedToast": "Taispeánfaimid níos lú mar seo duit",
+  "mutedToast": "Ní fheicfidh tú postálacha ó {{name}}",
+  "moderationFailed": "Níor éirigh leis sin. Bain triail eile as.",
+  "reportTitle": "Déan tuairisc air seo",
+  "reportIntro": "Inis do na modhnóirí cad atá cearr. Feiceann siad an postáil agus do chúis.",
+  "reportSend": "Seol an tuairisc",
+  "reportSentTitle": "Tuairisc seolta",
+  "reportSentBody": "Breathnóidh na modhnóirí air seo.",
+  "reportAlreadyTitle": "Tuairiscithe cheana",
+  "reportAlreadyBody": "Thug tú tuairisc air seo cheana.",
+  "reportReason": {
+    "safety_concern": "Imní faoi shábháilteacht",
+    "inappropriate": "Míchuí",
+    "misleading": "Míthreorach",
+    "spam": "Turscar",
+    "other": "Rud eile"
+  }
 }

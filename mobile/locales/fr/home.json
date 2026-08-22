@@ -259,5 +259,27 @@
     "reactorsTitle": "Réactions",
     "noReactors": "Pas encore de réactions"
   },
-  "saveFailed": "Impossible de mettre à jour vos éléments enregistrés. Veuillez réessayer."
+  "saveFailed": "Impossible de mettre à jour vos éléments enregistrés. Veuillez réessayer.",
+  "notInterested": "Pas intéressé",
+  "hidePost": "Masquer",
+  "muteAuthor": "Masquer {{name}}",
+  "reportPost": "Signaler",
+  "hiddenToast": "Masqué de votre fil",
+  "notInterestedToast": "Nous vous en montrerons moins",
+  "mutedToast": "Vous ne verrez plus les publications de {{name}}",
+  "moderationFailed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+  "reportTitle": "Signaler ceci",
+  "reportIntro": "Dites à la modération ce qui pose problème. Elle voit la publication et votre motif.",
+  "reportSend": "Envoyer le signalement",
+  "reportSentTitle": "Signalement envoyé",
+  "reportSentBody": "La modération va l'examiner.",
+  "reportAlreadyTitle": "Déjà signalé",
+  "reportAlreadyBody": "Vous avez déjà signalé ceci.",
+  "reportReason": {
+    "safety_concern": "Problème de sécurité",
+    "inappropriate": "Inapproprié",
+    "misleading": "Trompeur",
+    "spam": "Indésirable",
+    "other": "Autre chose"
+  }
 }
