@@ -255,9 +255,50 @@ public class GroupsController : ControllerBase
         return Ok(new { data = groups });
     }
 
+    // Laravel's vocabulary, not ours. GroupService::getById clamps status to one of
+    // active/pending/invited/banned and reports "none" for anything else, and clamps
+    // role to member/admin/owner and null for anything else. Clients switch on these
+    // exact strings (GroupHeader.tsx:136-144), so pass a clamped value, never a raw
+    // stored one.
+    private static string NormaliseMembershipStatus(string? status) =>
+        status is "active" or "pending" or "invited" or "banned" ? status : "none";
+
+    private static string? NormaliseMembershipRole(string? role) =>
+        role is Group.Roles.Member or Group.Roles.Admin or Group.Roles.Owner ? role : null;
+
+    // 🔴 `Visibility` is the real column; `IsPrivate` is an older boolean beside it.
+    // Deriving visibility from the boolean — which this controller used to do — reports
+    // a SECRET group as "public", and secret is precisely the case that must not be
+    // joinable. Read the column; fall back to the boolean only when it holds something
+    // outside the vocabulary.
+    private static string NormaliseGroupVisibility(string? visibility, bool isPrivate) =>
+        visibility is "public" or "private" or "secret"
+            ? visibility
+            : (isPrivate ? "private" : "public");
+
     /// <summary>
     /// GET /api/groups/{id} - Get a single group by ID.
     /// </summary>
+    /// <remarks>
+    /// 🔴 The body is FLAT under "data", and the viewer's membership is a FIELD OF THE
+    /// GROUP — not a sibling of it. Until 2026-08-22 this answered
+    /// {"group":{...},"my_membership":{...}}, and web-uk unwraps
+    /// `dataFrom(result)?.group` (web-uk/src/routes/groups.js:1059), so the sibling was
+    /// silently discarded on every single request. The page therefore believed the
+    /// viewer was in no group at all: it offered "Join" to the group's own owner, and
+    /// that join was then refused as "already a member".
+    ///
+    /// The lesson worth keeping: no field in that response was wrong, and both backends
+    /// answered 200. Only the SHAPE differed, so no response-status check and no
+    /// field-by-field diff of the group object could ever have found it. Rendering the
+    /// page did, on the first run of the instrument that submits forms.
+    ///
+    /// Laravel's contract is GroupService::getById (app/Services/GroupService.php:293-330):
+    /// flat group fields plus owner_id, my_role, my_status and viewer_membership.
+    /// react-frontend reads viewer_membership.capabilities as well
+    /// (react-frontend/src/pages/groups/components/GroupHeader.tsx:136-144), so the
+    /// capabilities block has a real reader and is in scope under ADR-0004.
+    /// </remarks>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetGroup(int id)
     {
@@ -274,16 +315,18 @@ public class GroupsController : ControllerBase
                 g.Description,
                 g.IsPrivate,
                 g.ImageUrl,
-                image_url = g.ImageUrl,
-                cover_image_url = g.ImageUrl,
-                cover_image = g.ImageUrl,
-                visibility = g.IsPrivate ? "private" : "public",
+                g.CoverImageUrl,
+                g.Visibility,
+                g.CreatedById,
+                g.Location,
+                g.TypeId,
+                g.ParentId,
                 g.CreatedAt,
                 g.UpdatedAt,
-                created_by = g.CreatedBy != null
+                Creator = g.CreatedBy != null
                     ? new { g.CreatedBy.Id, g.CreatedBy.FirstName, g.CreatedBy.LastName }
                     : null,
-                member_count = _db.GroupMembers.Count(gm => gm.GroupId == g.Id)
+                MemberCount = _db.GroupMembers.Count(gm => gm.GroupId == g.Id)
             })
             .FirstOrDefaultAsync();
 
@@ -292,17 +335,85 @@ public class GroupsController : ControllerBase
             return NotFound(new { error = "Group not found" });
         }
 
-        // Check if current user is a member
         var membership = await _db.GroupMembers
             .AsNoTracking()
             .Where(gm => gm.GroupId == id && gm.UserId == userId)
-            .Select(gm => new { gm.Role, gm.JoinedAt })
+            .Select(gm => new { gm.Role, gm.Status, gm.JoinedAt })
             .FirstOrDefaultAsync();
+
+        var visibility = NormaliseGroupVisibility(group.Visibility, group.IsPrivate);
+        var status = NormaliseMembershipStatus(membership?.Status);
+        var role = NormaliseMembershipRole(membership?.Role);
+        var isOwner = group.CreatedById == userId.Value || role == Group.Roles.Owner;
+        var canManageMembers = isOwner || role == Group.Roles.Admin;
+        var canViewMemberContent = canManageMembers || status == "active";
+
+        // Real children, not a fabricated empty list. web-uk reads group.sub_groups
+        // (web-uk/src/routes/groups.js:1099-1109); answering [] for a group that has
+        // children would be inventing an absence, which is the one thing a parity
+        // response must never do. A viewer who cannot see member content sees only
+        // the public children, matching Laravel's own visibility filter.
+        var subGroups = await _db.Groups
+            .AsNoTracking()
+            .Where(g => g.ParentId == id && g.Status == "active")
+            .Where(g => g.Visibility == "public" || canViewMemberContent)
+            .OrderBy(g => g.Name)
+            .Select(g => new
+            {
+                g.Id,
+                g.Name,
+                g.Description,
+                image_url = g.ImageUrl,
+                visibility = g.Visibility,
+                member_count = g.CachedMemberCount,
+                type_id = g.TypeId,
+                parent_id = g.ParentId
+            })
+            .ToListAsync();
 
         return Ok(new
         {
-            group,
-            my_membership = membership
+            data = new
+            {
+                group.Id,
+                group.Name,
+                group.Description,
+                group.IsPrivate,
+                group.ImageUrl,
+                image_url = group.ImageUrl,
+                cover_image_url = group.CoverImageUrl ?? group.ImageUrl,
+                cover_image = group.CoverImageUrl ?? group.ImageUrl,
+                visibility,
+                group.Location,
+                type_id = group.TypeId,
+                parent_id = group.ParentId,
+                group.CreatedAt,
+                group.UpdatedAt,
+                created_by = group.Creator,
+                owner_id = group.CreatedById,
+                member_count = group.MemberCount,
+                sub_groups = subGroups,
+                my_role = role,
+                my_status = status,
+                viewer_membership = new
+                {
+                    status,
+                    role,
+                    is_admin = canManageMembers,
+                    capabilities = new
+                    {
+                        // Kept deliberately in step with JoinGroup and LeaveGroup below.
+                        // A capability this backend will not honour is worse than none.
+                        can_join = (status == "none" || status == "invited") && visibility != "secret",
+                        can_leave = status == "active" && !isOwner,
+                        can_cancel_request = status == "pending",
+                        can_invite = canManageMembers,
+                        can_manage_members = canManageMembers,
+                        can_manage_admins = isOwner,
+                        can_delete = isOwner
+                    }
+                }
+            }
         });
     }
 
@@ -544,6 +655,23 @@ public class GroupsController : ControllerBase
     /// <summary>
     /// POST /api/groups/{id}/join - Join a group.
     /// </summary>
+    /// <remarks>
+    /// Mirrors Laravel's GroupService::join (app/Services/GroupService.php:676-721),
+    /// which is a state machine over the EXISTING membership row, not a single
+    /// "are you already in?" check:
+    ///   banned                       -> refused
+    ///   active                       -> 200, already_member (idempotent, not an error)
+    ///   pending                      -> 200, already_requested
+    ///   secret and not invited       -> refused
+    ///   private                      -> a PENDING request is created
+    ///   public                       -> an ACTIVE membership is created
+    /// 🔴 This used to 403 every private group and 400 on any existing row. That
+    /// mattered the moment GetGroup started publishing viewer_membership.capabilities:
+    /// Laravel's can_join is true for a private group, so a client that reads the
+    /// capability would render Join and then be refused. A capability the backend
+    /// will not honour is worse than no capability at all — if you change the rule
+    /// here, change can_join in GetGroup in the same edit.
+    /// </remarks>
     [HttpPost("{id:int}/join")]
     public async Task<IActionResult> JoinGroup(int id)
     {
@@ -556,43 +684,83 @@ public class GroupsController : ControllerBase
             return NotFound(new { error = "Group not found" });
         }
 
-        // Check if already a member
-        var existingMembership = await _db.GroupMembers
+        var visibility = NormaliseGroupVisibility(group.Visibility, group.IsPrivate);
+
+        var existing = await _db.GroupMembers
             .FirstOrDefaultAsync(gm => gm.GroupId == id && gm.UserId == userId);
+        var existingStatus = NormaliseMembershipStatus(existing?.Status);
 
-        if (existingMembership != null)
+        if (existingStatus == "banned")
         {
-            return BadRequest(new { error = "You are already a member of this group" });
+            return StatusCode(403, new { error = "You cannot join this group." });
         }
 
-        // For private groups, could implement invitation/request system
-        // For now, private groups require admin to add members
-        if (group.IsPrivate)
+        if (existingStatus == "active")
         {
-            return StatusCode(403, new { error = "This is a private group. Contact an admin to join." });
+            return Ok(new
+            {
+                success = true,
+                status = "active",
+                action = "already_member",
+                message = "You are already a member of this group",
+                membership = new { group_id = id, role = existing!.Role, status = "active", joined_at = existing.JoinedAt }
+            });
         }
 
-        var membership = new GroupMember
+        if (existingStatus == "pending")
         {
-            GroupId = id,
-            UserId = userId.Value,
-            Role = Group.Roles.Member
-        };
+            return Ok(new
+            {
+                success = true,
+                status = "pending",
+                action = "already_requested",
+                message = "Your request to join is awaiting approval",
+                membership = new { group_id = id, role = existing!.Role, status = "pending", joined_at = existing.JoinedAt }
+            });
+        }
 
-        _db.GroupMembers.Add(membership);
+        if (visibility == "secret" && existingStatus != "invited")
+        {
+            return StatusCode(403, new { error = "This group is invite-only. Contact an admin to join." });
+        }
+
+        var status = visibility == "private" ? "pending" : "active";
+
+        if (existing != null)
+        {
+            // An "invited" row already exists: accept it rather than inserting a
+            // duplicate, which the (group_id, user_id) uniqueness rule would reject.
+            existing.Status = status;
+            existing.Role = Group.Roles.Member;
+            existing.JoinedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            _db.GroupMembers.Add(new GroupMember
+            {
+                GroupId = id,
+                UserId = userId.Value,
+                Role = Group.Roles.Member,
+                Status = status
+            });
+        }
+
         await _db.SaveChangesAsync();
 
-        _logger.LogInformation("User {UserId} joined group {GroupId}", userId, id);
+        _logger.LogInformation("User {UserId} joined group {GroupId} with status {Status}", userId, id, status);
 
         return Ok(new
         {
             success = true,
-            message = "Joined group successfully",
+            status,
+            action = status == "pending" ? "requested" : "joined",
+            message = status == "pending" ? "Your request to join has been sent" : "Joined group successfully",
             membership = new
             {
                 group_id = id,
-                role = membership.Role,
-                joined_at = membership.JoinedAt
+                role = Group.Roles.Member,
+                status,
+                joined_at = DateTime.UtcNow
             }
         });
     }

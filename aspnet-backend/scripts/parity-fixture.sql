@@ -110,6 +110,10 @@ DELETE FROM badges WHERE id >= 950000;
 DELETE FROM tenant_safeguarding_options WHERE id >= 950000;
 DELETE FROM polls WHERE id >= 950000;
 DELETE FROM feed_posts WHERE id >= 950000;
+-- 🔴 event_reminder_schedules holds a FK to events and was NOT cleared, so a second
+-- run of this file died at the events DELETE with a foreign-key error and seeded
+-- nothing after that point. The file advertises itself as re-runnable; it was not.
+DELETE FROM event_reminder_schedules WHERE event_id >= 950000;
 DELETE FROM events WHERE id >= 950000;
 DELETE FROM group_templates WHERE id >= 950000;
 DELETE FROM group_types WHERE id >= 950000;
@@ -258,6 +262,25 @@ INSERT INTO vol_opportunities (id, tenant_id, organization_id, category_id, titl
   (950021, @T, 950020, @VOLCAT, 'Repair cafe helper', 'Help visitors mend small appliances and bicycles at the Saturday repair cafe.',
    'Riverside Hall', 0, 'Basic tools, patience', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, 'open', 2, @UA);
 
+-- 🔴 A SECOND organisation and opportunity, owned by the OTHER member (@UB).
+-- Measured at the API on 2026-08-21, not inferred from a redirect: with 950021 as
+-- the only opportunity, POST /api/v2/volunteering/opportunities/950021/apply
+-- answered 422 "You cannot apply to your own opportunity", because 950021's
+-- created_by is @UA — the very account the harness signs in as. The control arm
+-- could therefore never apply to anything, and ledger row 4.27 could never be
+-- certified however correct both backends were. web-uk maps every 4xx on that path
+-- to the same "apply-failed" redirect, which is exactly why the cause had to be
+-- read at the API rather than off the page.
+-- Keep 950021 as it is: it is the row that proves you cannot apply to your own.
+INSERT INTO vol_organizations (id, tenant_id, user_id, name, slug, description, contact_email, status, org_type) VALUES
+  (950024, @T, @UB, 'Hillside Care Collective', 'hillside-care-collective',
+   'Runs shopping runs and garden help for neighbours who cannot get out.',
+   'hello@hillside.example', 'approved', 'organisation');
+
+INSERT INTO vol_opportunities (id, tenant_id, organization_id, category_id, title, description, location, is_remote, skills_needed, start_date, is_active, status, credits_offered, created_by) VALUES
+  (950025, @T, 950024, @VOLCAT, 'Shopping run companion', 'Walk or drive with a neighbour to the shops and back once a week.',
+   'Hillside', 0, 'Patience, a friendly manner', DATE_ADD(CURDATE(), INTERVAL 10 DAY), 1, 'open', 2, @UB);
+
 -- Belongs to the signing-in member: the endpoint filters on user_id.
 INSERT INTO vol_donations (id, tenant_id, user_id, opportunity_id, fund_code, amount, currency, payment_method, payment_reference, donor_name, message, is_anonymous, status) VALUES
   (950022, @T, @UA, 950021, 'general', 25.00, 'EUR', 'card', 'pi_fixture_950022',
@@ -285,6 +308,23 @@ INSERT INTO `groups` (id, parent_id, type_id, template_id, tenant_id, owner_id, 
 INSERT INTO group_members (id, tenant_id, group_id, user_id, status, role) VALUES
   (950033, @T, 950032, @UA, 'active', 'owner'),
   (950034, @T, 950032, @UB, 'active', 'member');
+
+-- 🔴 A SECOND group, owned by the OTHER member (@UB), which @UA does NOT belong to.
+-- Measured 2026-08-21: with 950032 as the only group and @UA as its owner, there was
+-- nothing for the harness to join. POST /api/v2/groups/950032/join answered 200 with
+-- action "already_member", and leaving first did not help either, because an owner
+-- cannot leave their own group. Ledger row 4.28 was unreachable on the control arm
+-- for that reason alone — not because joining was broken.
+-- Deliberately public and parent-less so it survives the /groups list filter
+-- (status='active' AND (is_featured OR parent_id IS NULL) AND public visibility),
+-- and deliberately NOT featured, so the existing featured-group expectations for
+-- 950032 are unchanged.
+INSERT INTO `groups` (id, parent_id, type_id, template_id, tenant_id, owner_id, name, slug, description, visibility, is_featured, is_active, status, location) VALUES
+  (950035, NULL, 950030, 950031, @T, @UB, 'Hillside Gardeners', 'hillside-gardeners',
+   'Neighbours on the hill swapping seeds, cuttings and an afternoon of weeding.', 'public', 0, 1, 'active', 'Hillside');
+
+INSERT INTO group_members (id, tenant_id, group_id, user_id, status, role) VALUES
+  (950036, @T, 950035, @UB, 'active', 'owner');
 
 -- ---------------------------------------------------------------------------
 -- Events. Visible when status IS NULL OR status='active', and (no group, or a

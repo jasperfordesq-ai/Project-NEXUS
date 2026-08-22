@@ -31,10 +31,20 @@ public class ReviewConfiguration : TenantScopedConfiguration
             entity.HasIndex(e => e.TargetUserId);
             entity.HasIndex(e => e.TargetListingId);
             entity.HasIndex(e => e.CreatedAt);
-            // Prevent duplicate reviews: one review per reviewer per target
-            entity.HasIndex(e => new { e.TenantId, e.ReviewerId, e.TargetUserId })
+            entity.HasIndex(e => e.TransactionId);
+
+            // 🔴 Laravel's duplicate rule is one review per reviewer per TRANSACTION
+            // (ReviewService::create, app/Services/GroupService.php's sibling at
+            // app/Services/ReviewService.php:428-451), NOT one per person. This used to
+            // be a unique index on (TenantId, ReviewerId, TargetUserId), which is
+            // strictly harsher: two members who complete a second exchange together can
+            // legitimately review each other again, and that index rejected it at the
+            // database with no message a client could show. A review with no transaction
+            // is rate-limited in code instead (a 24-hour window on the same receiver),
+            // exactly as Laravel does — a unique index cannot express a time window.
+            entity.HasIndex(e => new { e.TenantId, e.ReviewerId, e.TransactionId })
                 .IsUnique()
-                .HasFilter("\"TargetUserId\" IS NOT NULL");
+                .HasFilter("\"TransactionId\" IS NOT NULL");
             entity.HasIndex(e => new { e.TenantId, e.ReviewerId, e.TargetListingId })
                 .IsUnique()
                 .HasFilter("\"TargetListingId\" IS NOT NULL");
@@ -59,6 +69,14 @@ public class ReviewConfiguration : TenantScopedConfiguration
                 .WithMany()
                 .HasForeignKey(e => e.TargetListingId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // SetNull, not Restrict: a deleted transaction must not make its reviews
+            // undeletable, and the review itself is still a true statement about the
+            // person. Laravel's reviews.transaction_id is nullable for the same reason.
+            entity.HasOne(e => e.Transaction)
+                .WithMany()
+                .HasForeignKey(e => e.TransactionId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Ensure a review targets at least one entity (user or listing)
             entity.ToTable(t => t.HasCheckConstraint(

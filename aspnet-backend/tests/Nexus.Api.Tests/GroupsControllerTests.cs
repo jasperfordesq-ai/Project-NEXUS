@@ -154,7 +154,7 @@ public class GroupsControllerTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        content.GetProperty("group").GetProperty("name").GetString().Should().Be("Detail Test Group");
+        content.GetProperty("data").GetProperty("name").GetString().Should().Be("Detail Test Group");
     }
 
     [Fact]
@@ -168,6 +168,149 @@ public class GroupsControllerTests : IntegrationTestBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // 🔴 The regression this guards is a SHAPE, not a value. GET /api/groups/{id}
+    // used to answer {"group":{...},"my_membership":{...}}, and web-uk unwraps
+    // `dataFrom(result)?.group` (web-uk/src/routes/groups.js:1059), so it kept the
+    // group and threw the membership away — every viewer looked like a stranger, the
+    // owner was offered "Join", and the join was then refused. Both backends answered
+    // 200 throughout, so asserting the status code, or diffing the fields of the group
+    // object, could never have caught it. Assert the ENVELOPE and where membership
+    // lives inside it, not just that the fields exist somewhere.
+    [Fact]
+    public async Task GetGroup_ReturnsFlatDataEnvelopeWithMembershipOnTheGroup()
+    {
+        await AuthenticateAsAdminAsync();
+
+        var createResponse = await Client.PostAsJsonAsync("/api/groups", new
+        {
+            name = "Envelope Shape Group",
+            is_public = true
+        });
+        var groupId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("group").GetProperty("id").GetInt32();
+
+        var response = await Client.GetAsync($"/api/groups/{groupId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.TryGetProperty("group", out _).Should().BeFalse("the group must not be nested under a \"group\" key");
+        body.TryGetProperty("my_membership", out _).Should().BeFalse("membership must not be a sibling of the group");
+
+        var data = body.GetProperty("data");
+        data.GetProperty("name").GetString().Should().Be("Envelope Shape Group");
+        data.GetProperty("owner_id").GetInt32().Should().Be(TestData.AdminUser.Id);
+        data.GetProperty("my_role").GetString().Should().Be("owner");
+        data.GetProperty("my_status").GetString().Should().Be("active");
+
+        var viewer = data.GetProperty("viewer_membership");
+        viewer.GetProperty("status").GetString().Should().Be("active");
+        viewer.GetProperty("role").GetString().Should().Be("owner");
+        viewer.GetProperty("is_admin").GetBoolean().Should().BeTrue();
+
+        var capabilities = viewer.GetProperty("capabilities");
+        capabilities.GetProperty("can_join").GetBoolean().Should().BeFalse("the owner is already in the group");
+        capabilities.GetProperty("can_leave").GetBoolean().Should().BeFalse("an owner cannot leave their own group");
+        capabilities.GetProperty("can_delete").GetBoolean().Should().BeTrue();
+    }
+
+    // The other half of the same journey: a stranger is offered Join, and after
+    // joining is offered Leave instead. web-uk decides which button to render from
+    // exactly these fields, so a capability that disagrees with what JoinGroup and
+    // LeaveGroup will actually do puts a dead button on a production page.
+    [Fact]
+    public async Task GetGroup_NonMemberCanJoin_AndCapabilitiesFlipAfterJoining()
+    {
+        await AuthenticateAsAdminAsync();
+
+        var createResponse = await Client.PostAsJsonAsync("/api/groups", new
+        {
+            name = "Capability Flip Group",
+            is_public = true
+        });
+        var groupId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("group").GetProperty("id").GetInt32();
+
+        await AuthenticateAsMemberAsync();
+
+        var before = (await (await Client.GetAsync($"/api/groups/{groupId}")).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data");
+        before.GetProperty("my_status").GetString().Should().Be("none");
+        before.GetProperty("my_role").ValueKind.Should().Be(JsonValueKind.Null);
+        before.GetProperty("viewer_membership").GetProperty("capabilities")
+            .GetProperty("can_join").GetBoolean().Should().BeTrue();
+
+        var joined = await Client.PostAsync($"/api/groups/{groupId}/join", null);
+        joined.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var after = (await (await Client.GetAsync($"/api/groups/{groupId}")).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data");
+        after.GetProperty("my_status").GetString().Should().Be("active");
+        after.GetProperty("my_role").GetString().Should().Be("member");
+
+        var capabilities = after.GetProperty("viewer_membership").GetProperty("capabilities");
+        capabilities.GetProperty("can_join").GetBoolean().Should().BeFalse();
+        capabilities.GetProperty("can_leave").GetBoolean().Should().BeTrue();
+    }
+
+    // Laravel joins a PRIVATE group as `pending`; only `secret` is refused
+    // (GroupService::join, app/Services/GroupService.php:712-717). This backend used to
+    // refuse every private group with a 403 while GetGroup now advertises can_join for
+    // one, which would render a Join button that cannot work.
+    [Fact]
+    public async Task JoinGroup_PrivateGroup_CreatesPendingRequestRatherThanRefusing()
+    {
+        await AuthenticateAsAdminAsync();
+
+        var createResponse = await Client.PostAsJsonAsync("/api/groups", new
+        {
+            name = "Private Pending Group",
+            is_private = true
+        });
+        var groupId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("group").GetProperty("id").GetInt32();
+
+        await AuthenticateAsMemberAsync();
+
+        var response = await Client.PostAsync($"/api/groups/{groupId}/join", null);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await response.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("status").GetString().Should().Be("pending");
+
+        var after = (await (await Client.GetAsync($"/api/groups/{groupId}")).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("data");
+        after.GetProperty("my_status").GetString().Should().Be("pending");
+
+        var capabilities = after.GetProperty("viewer_membership").GetProperty("capabilities");
+        capabilities.GetProperty("can_cancel_request").GetBoolean().Should().BeTrue();
+        capabilities.GetProperty("can_join").GetBoolean().Should().BeFalse();
+        capabilities.GetProperty("can_leave").GetBoolean().Should().BeFalse("a pending request is not a membership");
+    }
+
+    // Joining twice is idempotent in Laravel, not an error. web-uk's join posts and
+    // then re-renders the page; a 400 on the second post would surface as a form error
+    // on a page the member is already legitimately looking at.
+    [Fact]
+    public async Task JoinGroup_AlreadyAMember_IsIdempotent()
+    {
+        await AuthenticateAsAdminAsync();
+
+        var createResponse = await Client.PostAsJsonAsync("/api/groups", new
+        {
+            name = "Idempotent Join Group",
+            is_public = true
+        });
+        var groupId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("group").GetProperty("id").GetInt32();
+
+        await AuthenticateAsMemberAsync();
+        (await Client.PostAsync($"/api/groups/{groupId}/join", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var second = await Client.PostAsync($"/api/groups/{groupId}/join", null);
+        second.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await second.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("action").GetString().Should().Be("already_member");
     }
 
     #endregion

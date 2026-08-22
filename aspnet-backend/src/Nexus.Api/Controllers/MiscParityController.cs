@@ -1675,9 +1675,12 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult ResourceDownload(int id) => File(Encoding.UTF8.GetBytes($"Resource {id}"), "text/plain", $"resource-{id}.txt");
 
-    [HttpPost("reviews")]
-    [Authorize]
-    public IActionResult CreateReviewCompat([FromBody] JsonElement body) => Ok(new { data = new { id = StableId(body), created = true } });
+    // POST api/reviews moved to ReviewsController.CreateReview on 2026-08-22 and is
+    // deliberately NOT redeclared here. It was a do-nothing stub that answered 200
+    // with an invented id and wrote nothing, so web-uk told the member their review
+    // had been left while the reviews page stayed empty. Two controllers cannot own
+    // one verb: a duplicate throws AmbiguousMatchException, which surfaces as a 500
+    // whose lost CORS headers make every browser report it as a CORS error instead.
 
     [HttpGet("reviews/user/{userId:int}/stats")]
     [Authorize]

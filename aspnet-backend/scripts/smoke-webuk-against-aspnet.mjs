@@ -518,38 +518,32 @@ async function main() {
   // FIXTURE_GAP and does not fail the process; a diagnosed ASP.NET defect yields
   // ASPNET_DEFECT and DOES fail it, because the product is broken and the ledger row
   // is BROKEN. Never move a row here to make the run green.
-  const KNOWN_JOURNEY_DEFECTS = [
-    {
-      row: '4.28',
-      reason:
-        'ASP.NET defect, diagnosed 2026-08-21 with the Laravel control run for comparison. '
-        + 'GET /api/v2/groups/{id} answers an UNWRAPPED body — {"group":{...},"my_membership":{...}} '
-        + '— where Laravel answers {"data":{...group fields FLAT..., owner_id, my_role, my_status, '
-        + 'viewer_membership},"meta":{...}} (measured: ASP.NET group 10 vs Laravel group 950032). '
-        + 'web-uk resolves the group as dataFrom(result)?.group || dataFrom(result) '
-        + '(web-uk/src/routes/groups.js:1059), so with no data envelope it unwraps into the nested '
-        + '"group" object and my_membership — a SIBLING of it — is left behind. '
-        + 'isActiveGroupMember (groups.js:529-538) then reads no membership at all, the page offers '
-        + 'JOIN to a member who is already the OWNER, and the join answers 400 "You are already a '
-        + 'member of this group". A member who does join cannot see that they joined, so the '
-        + 'journey is broken for every group, not just an owned one. Fix in '
-        + 'GroupsController.cs:293-306: wrap in data, flatten the group, and carry owner_id / '
-        + 'my_role / my_status / viewer_membership.',
-    },
-    {
-      row: '4.29',
-      reason:
-        'ASP.NET defect, diagnosed 2026-08-21, TWO faults on one path. (1) POST /api/reviews is a '
-        + 'do-nothing stub that returns {data:{id,created:true}} and writes nothing: '
-        + 'MiscParityController.cs:1678-1680. (2) GET /api/reviews/pending returns the counterparty '
-        + 'as other_user{id,first_name,last_name} with NO receiver_id, while web-uk reads '
-        + 'receiver_id || receiverId || receiver.id (web-uk/src/routes/reviews.js:183) and Laravel '
-        + 'emits receiver_id/receiver_name/exchange_title/transaction_id '
-        + '(app/Services/ReviewService.php:293-300). So the rendered form posts receiver_id=0. '
-        + 'ASP.NET also derives pending reviews from Exchanges where Laravel derives them from '
-        + 'completed transactions: ReviewTrustController.cs:37-95.',
-    },
-  ];
+  //
+  // EMPTIED 2026-08-22. Both entries were fixed and both journeys then passed on both
+  // arms in one run, so they were removed — that is what this list is for. Keeping the
+  // lessons, because the list is the only place they were written down:
+  //
+  //  * 4.28 join a group. GET /api/v2/groups/{id} answered {"group":{…},"my_membership":{…}}
+  //    where Laravel answers a FLAT "data" carrying owner_id / my_role / my_status /
+  //    viewer_membership. web-uk unwraps dataFrom(result)?.group (groups.js:1059), so the
+  //    sibling membership was discarded on every request: the page offered "Join" to a
+  //    group's own owner, and that join was refused. 🔴 The lesson is the shape. Every
+  //    field was individually correct and both backends answered 200, so no status check
+  //    and no field-by-field diff of the group object could have found it — only
+  //    rendering the page did. Fixed in GroupsController.GetGroup, which also stopped
+  //    refusing private-group joins outright: Laravel creates a PENDING request, and a
+  //    can_join capability the backend will not honour is worse than none.
+  //
+  //  * 4.29 leave a review. Two faults. POST /api/reviews was a do-nothing stub
+  //    (MiscParityController) that answered 200 with an invented id and wrote nothing,
+  //    so the member was told the review had been left over a page that stayed empty.
+  //    And GET /api/reviews/pending OMITTED receiver_id, which web-uk puts in a hidden
+  //    field (reviews.js:183), so the form posted receiver_id=0. 🔴 The lesson is the
+  //    absence: a missing field cannot show up in a diff of the fields two responses
+  //    share. Fixed in ReviewsController.CreateReview and ReviewTrustController, the
+  //    latter re-sourced from completed transactions as Laravel does rather than from
+  //    Exchanges.
+  const KNOWN_JOURNEY_DEFECTS = [];
 
   // 🔴 SHRINK-ONLY, and a DIFFERENT kind of entry: these are gaps in the parity
   // FIXTURES, not faults in either engine, each measured at the API rather than
@@ -557,31 +551,25 @@ async function main() {
   // needs the control to pass in the same run) but it does not fail the process,
   // because failing on a fixture gap every run is what trains people to ignore an
   // instrument. Remove an entry when the fixture is fixed — never to silence a red.
-  const KNOWN_FIXTURE_GAPS = [
-    {
-      row: '4.27',
-      arm: 'laravel',
-      reason:
-        'LARAVEL CONTROL FIXTURE GAP, measured 2026-08-21 at the API, not inferred: '
-        + 'POST /api/v2/volunteering/opportunities/950021/apply answers 422 '
-        + '{"code":"VALIDATION_ERROR","message":"You cannot apply to your own opportunity"}. '
-        + 'parity-fixture.sql gives vol_opportunities 950021 created_by = the same member the '
-        + 'control arm signs in as, and it is the ONLY opportunity in the fixture, so the '
-        + 'control can never apply to anything. Fix in the fixture (an opportunity owned by '
-        + 'another member), not in either backend. web-uk maps every 4xx to the same '
-        + '"apply-failed" redirect, which is why this had to be measured at the API.',
-    },
-    {
-      row: '4.28',
-      arm: 'laravel',
-      reason:
-        'LARAVEL CONTROL FIXTURE GAP, measured 2026-08-21: the fixture has exactly one group '
-        + '(950032) and the control member is its OWNER (owner_id 900014), so there is nothing '
-        + 'to join; POST /api/v2/groups/950032/join answers 200 with action "already_member" even '
-        + 'after a Leave, because an owner cannot leave their own group. Fix in the fixture (a '
-        + 'second group the member does not belong to).',
-    },
-  ];
+  //
+  // EMPTIED 2026-08-22, both fixed in parity-fixture.sql and both then measured
+  // passing on the control arm in the same run:
+  //
+  //  * 4.27 the only volunteering opportunity (950021) was created_by the very member
+  //    the control signs in as, so applying always answered 422 "You cannot apply to
+  //    your own opportunity". A second organisation and opportunity owned by the other
+  //    member (950024 / 950025) fixes it; 950021 stays, because it is the row that
+  //    proves you cannot apply to your own.
+  //  * 4.28 the only group (950032) had the control member as its OWNER, and an owner
+  //    cannot leave, so there was never anything to join. A second group owned by the
+  //    other member (950035) fixes it.
+  //
+  // 🔴 Both were invisible from the page: web-uk maps every 4xx on the apply path to
+  // one "apply-failed" redirect. They had to be read at the API. And while fixing them
+  // the fixture turned out not to be re-runnable at all — its cleanup missed
+  // event_reminder_schedules, so a second run died on a foreign key and seeded nothing
+  // after that point, which looks exactly like not having run it.
+  const KNOWN_FIXTURE_GAPS = [];
 
   const JOURNEYS = [
     {

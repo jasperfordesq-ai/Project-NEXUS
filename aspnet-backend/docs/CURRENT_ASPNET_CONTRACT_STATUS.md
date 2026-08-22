@@ -4,10 +4,10 @@ Last verified: 2026-08-21 (rubric replaced; Baseline 4 banked at `869a2a030`)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=290/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=309/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
-<!-- doc-consistency: ASPNET_BANKED_FLOOR=274 -->
+<!-- doc-consistency: ASPNET_BANKED_FLOOR=290 -->
 
 🔴 **READ THIS BEFORE THE NUMBER. The denominator is now FROZEN and the score is
 RATCHETED - it can never be published lower again.** Today the owner decided the
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 290/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-21)
+## Banked score - Fixed Rubric Baseline 5, 309/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-22)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -83,7 +83,7 @@ working tree is banked** - see Block 3.
 | --- | ---: | ---: |
 | Core member journeys certified - React | 54 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
-| Member journeys certified - Web UK accessible | 37 | 120 |
+| Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
 | Mobile app journeys certified - Expo / React Native | 0 | 120 |
 | Consumed-contract correctness and stub elimination | 68 | 110 |
@@ -91,7 +91,7 @@ working tree is banked** - see Block 3.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **290** | **1000** |
+| **Total** | **309** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -101,38 +101,58 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 | --- | --- | ---: | ---: | ---: | ---: |
 | Core React | 1 | 42 | 0.2929 | 170 | 50 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
-| Web UK | 4 | 32 | 0.3062 | 120 | 37 |
+| Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
 | Mobile | 6 | 34 | 0.0000 | 120 | 0 |
 
 Community and extended modules deliberately share one category so that an owner
 scope decision on the extended modules cannot change the denominator.
 
-🔴 **Web UK moved 21 → 37 on 2026-08-21 (+16), Tier 4 only.** The web-uk
-instrument learned to submit forms, so seven of its nine write journeys
-(4.22–4.27, 4.30) moved OPEN → PROVEN and two moved OPEN → BROKEN with named
-causes (4.28 group-detail response envelope, 4.29 review-create stub plus a
-missing `receiver_id`). One ASP.NET defect was fixed and re-measured in the same
-batch: direct-message threads were resolved without an `IsGroup` filter. No other
-tier changed and `ASPNET_BANKED_FLOOR` is deliberately left at 274 — raising it
-is a separate Banking transaction that needs CI green at a named SHA.
+🔴 **Web UK moved 37 → 56 on 2026-08-22 (+19), Tier 4 only, and this tier now
+holds the first ten CERTIFIED rows on the board.** Two things happened together.
+The owner decided that POSTing web-uk's own rendered form satisfies ADR-0004
+condition 1 — web-uk is HTML-first with progressive enhancement and is built to
+work without JavaScript, so a form POST *is* its primary path — which promoted
+rows 4.1 and 4.22–4.26 and 4.30. And the two rows that were BROKEN were fixed and
+re-measured: 4.28 (the group-detail response put membership BESIDE the group
+instead of inside it, and joining a private group was refused outright) and 4.29
+(review-create was a do-nothing stub, and pending reviews omitted the
+`receiver_id` the form is built from). Two Laravel-side FIXTURE gaps that had
+made 4.27 and 4.28 uncertifiable were closed in the same batch. All nine write
+journeys then passed on BOTH arms in one run, twice, with the instrument's
+known-defect and known-fixture-gap lists EMPTY — nothing excused.
 
-- **Journeys: 97 of 690 (-593).** 🔴 **Zero of 250 rows are CERTIFIED.** 28
-  are PROVEN - they run against ASP.NET with an asserted effect. On the React
-  rows ADR-0004 condition 3 (the same run passing against a Laravel control) is
-  unmet, because the React smoke had no control arm; building one is queue item
-  1. On the seven Web UK write rows promoted on 2026-08-21 the control DOES pass
-  in the same run - what is unmet there is condition 1, because the form is
-  POSTed rather than clicked in a browser, and whether that counts is an owner
-  decision (see the note above Tier 4 in the ledger). Four rows are BROKEN with
-  named causes: multi-photo posts have no table for the extra photos; event
-  attendance-by-code needs the signed `nqx2_` offline-checkin credential
-  subsystem that ASP.NET lacks entirely; Web UK group-join cannot see membership
-  because `GET /api/v2/groups/{id}` omits the `data` envelope; and Web UK
-  review-create sits on a do-nothing `POST /api/reviews` stub.
+🔴 **The floor moves to 290, not to 309, and the difference matters.** 290 is the
+number CI has actually proved, at pushed SHA `91160bea7`, where every ASP.NET job
+in `platform-contracts` passed. 309 is published because the ledger forces it —
+promoting a row recomputes the category arithmetic mechanically — but it is not
+floored until CI is green on the commit carrying it. Publish the computed number,
+hold the floor, raise it after CI.
+
+🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
+today were invisible to every automated comparison in this workstream. Row 4.28's
+was a *shape*: every field was individually correct and both backends answered
+200, so no status check and no field-by-field diff of the group object could see
+it. Row 4.29's was an *absence*: a field that was not there cannot appear in a
+diff of the fields two responses share. Both were found only by filling in the
+page's own form and reading the effect. Read that as a warning about the other
+five tiers, which have not been walked this way.
+
+- **Journeys: 116 of 690 (-574).** 🔴 **Eleven of 250 rows are CERTIFIED** — ten
+  of them added today, all in Tier 4 (Web UK), alongside row 1.21 (the exchange
+  transaction) certified on 2026-08-21. 20 more are PROVEN: they run against ASP.NET with an asserted effect, but ADR-0004
+  condition 3 (the same run passing against a Laravel control) is unmet on the
+  React rows, because the React smoke still has no control arm. Building one
+  remains queue item 1 — and it is now the single largest unblocked lever on the
+  score, because Tier 4 has just shown what happens when a tier gets one: seven
+  rows promoted on a decision and two more on fixes, +19 in a day.
+  🔴 Two rows remain BROKEN with named causes, both in Tier 1: multi-photo posts
+  have no table for the extra photos, and event attendance-by-code needs the
+  signed `nqx2_` offline-checkin credential subsystem that ASP.NET lacks
+  entirely. The two Web UK BROKEN rows (4.28, 4.29) were fixed on 2026-08-22.
   🔴 This bullet read "77 of 690" and "21 are PROVEN" before 2026-08-21. The 77
   was already inconsistent with its own table (54+5+21+1+0 = 81) when found; it
-  is now recomputed from the category table rather than carried forward.
+  is recomputed from the category table rather than carried forward.
 - **Mobile 0 of 120.** New tier, 34 rows, nothing attempted. Most of its 331
   endpoints overlap member APIs certified in other tiers, so this tier is
   expected to be more verification than implementation - the Phase 9 measurement

@@ -4,19 +4,20 @@ Status: **Canonical current - owner-facing summary** (technical detail lives in
 [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
 list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
 
-Last updated: 2026-08-21
+Last updated: 2026-08-22
 
 ## Where we are, in three lines
 
 Every status report from here uses exactly this format. Both numbers can only ever
 go up, and the build enforces it.
 
-- **Score: 270/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
-- **Journeys certified: 0 of 250**
-- **Movement since last report: baseline set**
+- **Score: 309/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
+- **Journeys certified: 11 of 250**
+- **Movement since last report: +19**
 
-Zero certified is not a typo, and it is the most useful fact on this page — see
-"Why nothing is certified yet".
+The score the build has *proved* is 290. 309 is published because the work list
+recomputes it, and it becomes the new floor once the checks go green on the commit
+carrying it. The number never goes down either way.
 
 ## What this is, and why we are building it
 
@@ -68,23 +69,44 @@ one impossible**, each checked by the build rather than promised on a page:
    and this check catches exactly that. It was deliberately broken twelve
    different ways to confirm it fails before being trusted.
 
-## Why nothing is certified yet — and today's good news
+## Ten more journeys are certified — and what that cost to find
 
 "Certified" has a strict meaning here: a real member action, driven through the
 app's own screens against .NET, **and** the identical run passing against Laravel
 side by side, so a difference in test data can never be mistaken for a broken
 backend.
 
-Until today the main app's test never ran that comparison. It does now — **and the
-first full run found zero failures unique to ASP.NET.** 31 of 37 steps matched on
-both engines; ASP.NET passed 35 of 37 with nothing failing. The six non-matches
-are all on the *Laravel* side: its throwaway test database holds only one
-community, so its sign-in screen has nothing to choose and the sign-up step can't
-finish.
+Ten journeys on the accessible site now meet that bar (the eleventh, the exchange itself, was certified yesterday): signing in, posting to the
+feed, creating a listing, replying to an event invitation, sending a message,
+transferring credits, applying to volunteer, joining a group, leaving a review,
+and changing a setting that sticks. All ten were run against both engines in the
+same pass, twice, with nothing excused.
 
-That is a test-data gap, not a product fault — and without the comparison arm we
-would have read it as a product fault. Fixing that fixture is the next job, and it
-is what converts journeys to certified in bulk.
+Getting there needed one decision from you and three repairs.
+
+- **Your decision.** The accessible site is built to work without JavaScript, so
+  filling in a form and sending it is that site's normal way of working, not a
+  shortcut around it. You accepted that as genuine use. That alone accounted for
+  seven of the ten.
+- **Joining a group was broken for every group.** The server was sending "are you
+  in this group?" *next to* the group instead of *inside* it, so the page never
+  saw it and offered "Join" even to the group's own owner — whose join was then
+  refused. Every individual piece of that answer was correct and both engines
+  replied "fine", so nothing that compares answers could ever have caught it.
+  Only opening the page did.
+- **Leaving a review could not work.** The address that saves a review did
+  nothing at all while replying "saved", so members were told their review had
+  been left over a page that stayed empty. And the form was being built without
+  the recipient's name, because that field simply was not in the reply — an
+  absence, which a comparison of what two replies have in common cannot see.
+- **Two were never faults at all.** Applying to volunteer and joining a group
+  could not be checked against Laravel because its test data gave the test
+  account the only opportunity and the only group. Recorded as test-data gaps
+  rather than blamed on either engine, and now fixed.
+
+🔴 The warning worth taking from this: two of the three real faults were
+invisible to every automatic comparison we run. The other five sections of the
+work list have not been walked this way yet.
 
 ## What works today, proved by using it
 
@@ -104,9 +126,13 @@ against Laravel, checked side by side in the same run.
 
 ## The honest gaps
 
-- **The core transaction is unproven.** Request an exchange, accept it, complete
-  it, credits move. That is the heart of a timebank and it has never been driven
-  end to end on .NET. It is first in the queue after the fixture fix.
+- **The main app has no side-by-side comparison for most journeys.** Its test now
+  has a comparison arm, but only the accessible site has been walked through its
+  own forms end to end. That is why nine of the eleven certified journeys are on
+  the accessible site and only one — the exchange itself, request through to
+  credits moving — is on the main app. Doing for the main app what was done for
+  the accessible site is the single biggest thing left that needs no new
+  decisions from you.
 - **The admin panel is barely touched** — 514 admin addresses never compared, and
   it holds almost all the do-nothing endpoints. Buyers evaluate the admin panel,
   which is why it now carries 150 of the 1,000 points.

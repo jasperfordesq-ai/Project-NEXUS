@@ -9,6 +9,80 @@ brief, then start.
 
 ---
 
+## 0. WHAT THE 2026-08-22 SESSION ACTUALLY DID — read this before section 2
+
+Section 2's numbers below are the state at the START of 2026-08-22 and are now
+history. They are kept because sections 4–7 are still current and section 5 in
+particular is the most useful page here. What changed:
+
+```
+score         309/1000 published, ASPNET_BANKED_FLOOR = 290
+certified     11 rows  (1.21 the exchange, plus Tier 4 rows 4.1 and 4.22–4.30)
+Tier 4        37/120 -> 56/120  (+19)
+stub count    561 routes / 325 methods  (was 562/326 — POST /api/reviews)
+migrations    186 classes / 184 runtime IDs, tail AddReviewTransactionLink
+```
+
+**Both blocking owner decisions from section 3 step 2 were taken.**
+
+1. **POSTing the client's own rendered form DOES satisfy ADR-0004 condition 1
+   for web-uk.** Reasoning on record: web-uk is HTML-first with progressive
+   enhancement and built to work without JavaScript, so a form POST *is* its
+   primary path, and the instrument submits the page's own form with its own
+   hidden fields and CSRF token. Rows 4.1 and 4.22–4.26 and 4.30 promoted.
+   🔴 This is scoped to web-uk. It is NOT a general ruling that an HTTP POST
+   counts as driving a UI — do not carry it to the React or mobile tiers without
+   asking.
+2. **The Tier 5 escalation: cut three areas, re-point five thin rows.**
+   Federation admin, CRM admin and courses admin become explicit **Laravel-only
+   exclusions**, and the five rows covering 3–6 endpoints each (admin shell,
+   analytics, taxonomy, gamification, credits — against a tier average of 16)
+   are to be re-aimed at the remaining areas. 🔴 **NOT YET IMPLEMENTED IN THE
+   LEDGER.** The decision is made; the row surgery is the next session's first
+   Tier 5 job. Denominator unchanged — this is a re-point, not a re-cut.
+
+**Section 3 steps 1, 3 and 4 are done.** Both diagnosed Web UK defects fixed,
+both fixture gaps closed, and all nine write journeys now pass on BOTH arms in
+one run with `KNOWN_JOURNEY_DEFECTS` and `KNOWN_FIXTURE_GAPS` **both empty** —
+nothing excused. Evidence: `docs/generated/webuk-journey-smoke.json`.
+
+**Three lessons this session earned, none of which section 5 already had:**
+
+- 🔴 **The stub gate is NOT unavailable on this machine.** Section 2 warns that
+  `check-noop-stubs.ps1` needs `pwsh` 7 while only Windows PowerShell 5.1 exists
+  here. It runs fine under 5.1 (`powershell -NoProfile -ExecutionPolicy Bypass
+  -File …`) and passes. Do not report it as UNAVAILABLE without trying.
+- 🔴 **A concurrent `dotnet build` blocks a running `dotnet test --no-build` for
+  as long as the build takes.** A full-suite run launched in the background sat
+  producing nothing for ~45 minutes while short build/test cycles ran beside it,
+  which reads exactly like a wedged run. Check `testhost` CPU before concluding
+  anything: it was working. Do not start the long suite until the fixing is done.
+- 🔴 **`String.replace` in a one-shot patch script replaces the FIRST match
+  only.** A perturbation meant to prove `ReviewsController.CreateReview` could
+  fail actually gutted `CreateUserReview` several hundred lines earlier, the
+  tests passed, and the "guard proved" conclusion would have been false. The
+  perturbation must be verified to land where you intended — print the line
+  number — before its result means anything. This is the eighth instrument fault
+  in two days and the pattern holds: **suspect the measurement first.**
+
+**Two things fixed that nobody had asked for, because they were in the way:**
+
+- `parity-fixture.sql` was **not re-runnable**. Its cleanup missed
+  `event_reminder_schedules`, which holds a foreign key to `events`, so a second
+  run died at the events DELETE and silently seeded nothing after that point —
+  indistinguishable from not having run it. Fixed.
+- `-WriteBaseline` on the stub gate **regenerates the baseline from scratch and
+  drops the `_raised` provenance block**, the only record of why the count went
+  316 → 562 when the counting model widened. Restored by hand, with a `_lowered`
+  entry beside it. If you re-baseline, check that block survived.
+
+**One thing left red that is NOT ours:** the nightly `Mobile Device Tests`
+workflow has failed every night since it was created (four for four,
+`07-profile-explore` and `05-view-events` Maestro assertions). It runs only on a
+schedule, so no push shows it. Mobile workstream's.
+
+---
+
 ## 1. Read these first, in this order
 
 | # | Document | Why |

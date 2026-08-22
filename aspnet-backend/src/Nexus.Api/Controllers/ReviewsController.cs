@@ -128,7 +128,16 @@ public class ReviewsController : ControllerBase
             return NotFound(new { error = "User not found" });
         }
 
-        // Check for existing review
+        // 🔴 This check is now the WHOLE rule, where it used to be belt and braces.
+        // A unique index on (TenantId, ReviewerId, TargetUserId) used to back it up; it
+        // was removed on 2026-08-22 because it was stricter than Laravel and rejected a
+        // legitimate second review after a second exchange with the same member (see
+        // ReviewConfiguration.cs and migration AddReviewTransactionLink). The consequence
+        // to be honest about: two simultaneous submissions on THIS route can now both
+        // pass this check and insert. Laravel has no such index either, so this matches
+        // its real guarantee rather than exceeding it — but if this route ever needs a
+        // hard guarantee, add a filtered unique index scoped to reviews with a NULL
+        // TransactionId. Do not restore the old one.
         var existingReview = await _db.Reviews
             .AnyAsync(r => r.ReviewerId == currentUserId.Value && r.TargetUserId == userId);
         if (existingReview)
@@ -542,6 +551,195 @@ public class ReviewsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// POST /api/reviews - Leave a review about another member, optionally attached to
+    /// the transaction it is about.
+    /// </summary>
+    /// <remarks>
+    /// 🔴 This route used to be a do-nothing stub in MiscParityController:
+    ///   [HttpPost("reviews")] IActionResult CreateReviewCompat(JsonElement body)
+    ///       => Ok(new { data = new { id = StableId(body), created = true } });
+    /// It answered 200 with an invented id and wrote nothing. web-uk posts here
+    /// (web-uk/src/lib/api.js:3602) and then redirects to ?status=review-submitted, so
+    /// the member was told their review had been left and the reviews page stayed
+    /// empty for ever. An ADR-0004 condition 5 failure: a success-shaped response over
+    /// missing work. An honest 501 would have been better than that 200; a real
+    /// implementation is better than either.
+    ///
+    /// Mirrors ReviewService::create (app/Services/ReviewService.php:382-494), whose
+    /// checks are load-bearing rather than decorative:
+    ///  - no self-review;
+    ///  - receiver and transaction must exist IN THIS TENANT (Laravel scopes both
+    ///    exists() rules by tenant_id; without that a member can point a review at a
+    ///    foreign-tenant user);
+    ///  - a review attached to a transaction must be BETWEEN the two parties of that
+    ///    transaction — this is what stops review-bombing by cycling transaction ids;
+    ///  - one review per reviewer per transaction (409);
+    ///  - with no transaction, one review per receiver per 24 hours.
+    /// </remarks>
+    [HttpPost("api/reviews")]
+    public async Task<IActionResult> CreateReview([FromBody] CreateMemberReviewRequest request)
+    {
+        var reviewerId = GetCurrentUserId();
+        if (reviewerId == null)
+        {
+            return Unauthorized(new { error = "Invalid token" });
+        }
+
+        if (!_tenantContext.TenantId.HasValue)
+        {
+            return BadRequest(new { error = "Tenant context not resolved" });
+        }
+
+        var tenantId = _tenantContext.TenantId.Value;
+        var receiverId = request.ReceiverId;
+
+        if (receiverId > 0 && receiverId == reviewerId.Value)
+        {
+            return BadRequest(new { error = "You cannot review yourself" });
+        }
+
+        if (receiverId <= 0)
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[] { new { code = "VALIDATION_ERROR", message = "The receiver id field is required.", field = "receiver_id" } }
+            });
+        }
+
+        if (request.Rating < 1 || request.Rating > 5)
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[] { new { code = "VALIDATION_ERROR", message = "The rating must be between 1 and 5.", field = "rating" } }
+            });
+        }
+
+        if (request.Comment is { Length: > 2000 })
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[] { new { code = "VALIDATION_ERROR", message = "The comment may not be greater than 2000 characters.", field = "comment" } }
+            });
+        }
+
+        var receiverExists = await _db.Users.AnyAsync(u => u.Id == receiverId && u.TenantId == tenantId);
+        if (!receiverExists)
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[] { new { code = "VALIDATION_ERROR", message = "The selected receiver id is invalid.", field = "receiver_id" } }
+            });
+        }
+
+        var transactionId = request.TransactionId is > 0 ? request.TransactionId : null;
+        if (transactionId is not null)
+        {
+            var parties = await _db.Transactions
+                .Where(t => t.Id == transactionId.Value && t.TenantId == tenantId)
+                .Select(t => new { t.SenderId, t.ReceiverId })
+                .FirstOrDefaultAsync();
+
+            if (parties is null)
+            {
+                return UnprocessableEntity(new
+                {
+                    errors = new[] { new { code = "VALIDATION_ERROR", message = "The selected transaction id is invalid.", field = "transaction_id" } }
+                });
+            }
+
+            var isReviewerAParty = parties.SenderId == reviewerId.Value || parties.ReceiverId == reviewerId.Value;
+            var isReceiverAParty = parties.SenderId == receiverId || parties.ReceiverId == receiverId;
+            if (!isReviewerAParty || !isReceiverAParty)
+            {
+                return BadRequest(new { error = "You can only review the other party of a transaction you took part in" });
+            }
+
+            var alreadyReviewed = await _db.Reviews
+                .AnyAsync(r => r.ReviewerId == reviewerId.Value && r.TransactionId == transactionId.Value);
+            if (alreadyReviewed)
+            {
+                return Conflict(new { error = "You have already reviewed this exchange" });
+            }
+        }
+        else
+        {
+            // Laravel's spam guard for reviews with no transaction behind them. A unique
+            // index cannot express a time window, so this check is the whole rule — do
+            // not assume the database will catch it.
+            var since = DateTime.UtcNow.AddDays(-1);
+            var recentExists = await _db.Reviews
+                .AnyAsync(r => r.ReviewerId == reviewerId.Value
+                            && r.TargetUserId == receiverId
+                            && r.TransactionId == null
+                            && r.CreatedAt >= since);
+            if (recentExists)
+            {
+                return Conflict(new { error = "You have already reviewed this member recently" });
+            }
+        }
+
+        var review = new Review
+        {
+            TenantId = tenantId,
+            ReviewerId = reviewerId.Value,
+            TargetUserId = receiverId,
+            TransactionId = transactionId,
+            Rating = request.Rating,
+            Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.Reviews.Add(review);
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            // A concurrent duplicate won the race past the check above; the unique index
+            // is the backstop. Report the same contract as the fast path so the caller
+            // sees one answer, not two.
+            return Conflict(new { error = "You have already reviewed this exchange" });
+        }
+
+        try
+        {
+            await _gamification.AwardXpAsync(reviewerId.Value, XpLog.Amounts.ReviewLeft, XpLog.Sources.ReviewLeft, review.Id, "Left a review");
+            await _gamification.CheckAndAwardBadgesAsync(reviewerId.Value, "review_left");
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogWarning(ex, "Failed to award XP/badges for review {ReviewId}", review.Id);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to award XP/badges for review {ReviewId}", review.Id);
+        }
+
+        _logger.LogInformation(
+            "User {ReviewerId} reviewed user {ReceiverId} (review {ReviewId}, transaction {TransactionId})",
+            reviewerId, receiverId, review.Id, transactionId);
+
+        return Ok(new
+        {
+            data = new
+            {
+                id = review.Id,
+                rating = review.Rating,
+                comment = review.Comment,
+                receiver_id = review.TargetUserId,
+                transaction_id = review.TransactionId,
+                message = "Review submitted successfully"
+            }
+        });
+    }
+
+    private static bool IsUniqueViolation(DbUpdateException ex) =>
+        ex.InnerException is Npgsql.PostgresException { SqlState: "23505" };
+
+
     private int? GetCurrentUserId() => User.GetUserId();
 }
 
@@ -555,6 +753,26 @@ public class CreateReviewRequest
 
     [JsonPropertyName("comment")]
     public string? Comment { get; set; }
+}
+
+/// <summary>
+/// Request model for POST /api/reviews — a review ABOUT a member, optionally attached
+/// to the transaction it concerns. Distinct from <see cref="CreateReviewRequest"/>,
+/// which carries no subject because the subject is in that route's URL.
+/// </summary>
+public class CreateMemberReviewRequest
+{
+    [JsonPropertyName("receiver_id")]
+    public int ReceiverId { get; set; }
+
+    [JsonPropertyName("rating")]
+    public int Rating { get; set; }
+
+    [JsonPropertyName("comment")]
+    public string? Comment { get; set; }
+
+    [JsonPropertyName("transaction_id")]
+    public int? TransactionId { get; set; }
 }
 
 /// <summary>

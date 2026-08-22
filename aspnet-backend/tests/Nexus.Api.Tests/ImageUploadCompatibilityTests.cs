@@ -113,7 +113,7 @@ public class ImageUploadCompatibilityTests : IntegrationTestBase
         var groupResponse = await Client.GetAsync($"/api/groups/{groupId}");
         groupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var groupJson = await groupResponse.Content.ReadFromJsonAsync<JsonElement>();
-        groupJson.GetProperty("group").GetProperty("image_url").GetString().Should().Be(imageUrl);
+        groupJson.GetProperty("data").GetProperty("image_url").GetString().Should().Be(imageUrl);
     }
 
     private static MultipartFormDataContent CreateImageForm(string fieldName)

@@ -27,6 +27,15 @@ public class Review : ITenantEntity
     public int? TargetListingId { get; set; }
     public Listing? TargetListing { get; set; }
 
+    // Laravel attaches a review to the TRANSACTION it is about (reviews.transaction_id),
+    // and its uniqueness rule is one review per reviewer per transaction — not one per
+    // person. Without this column a member could review a counterparty once and never
+    // again however many exchanges they later completed together, and POST /api/reviews
+    // could not enforce "you may only review the other party of a transaction you took
+    // part in" — the check that stops review-bombing by cycling through transaction ids.
+    public int? TransactionId { get; set; }
+    public Transaction? Transaction { get; set; }
+
     // Review content
     [Range(1, 5)]
     public int Rating { get; set; }

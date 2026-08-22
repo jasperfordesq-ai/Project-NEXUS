@@ -74,13 +74,14 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260821164404_AddExchangeTwoPartyConfirmation",
-            "the chain currently ends with the exchange two-party confirmation columns "
-            + "(requester/provider confirmed_at + confirmed_hours, final_hours), without which this "
-            + "backend could not settle an exchange at all — ledger row 1.21. "
-            + "The previous tail was 20260821064259_AddVolunteerOpportunityRemoteAndCoordinates. "
+        migrations.Last().Should().Be("20260822082641_AddReviewTransactionLink",
+            "the chain currently ends with the review/transaction link — reviews.TransactionId, "
+            + "a unique index on (TenantId, ReviewerId, TransactionId), and the removal of the "
+            + "harsher one-review-per-person index that rejected a second, legitimate review "
+            + "after a second exchange with the same member — ledger row 4.29. "
+            + "The previous tail was 20260821164404_AddExchangeTwoPartyConfirmation. "
             + "Adding a migration is fine but must be deliberate — update this pin in the same commit; "
-            + "the previous tail (20260817121949_AddSkillCategories) went in without updating it and left main red. "
+            + "the tail before that (20260817121949_AddSkillCategories) went in without updating it and left main red. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
             + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "
             + "but sorts before it, so check the sorted order rather than assuming the newest file wins");
