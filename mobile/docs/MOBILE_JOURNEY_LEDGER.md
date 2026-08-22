@@ -172,7 +172,7 @@ genuinely unwalked rather than unbuilt.
 | 3.17 | Exchange dead-end check: draft/publish states | CERTIFIED | Fixed `5373940c8`, guarded — recorded in memory as a prior finding |
 | 3.18 | Group exchanges | RENDERS | Screen photographed at 360dp, filter chips scroll correctly |
 | 3.19 | Skills on a profile drive matching | OPEN | Never walked |
-| 3.20 | Report a problem with an exchange | OPEN | Never walked |
+| 3.20 | Report a problem with an exchange | BROKEN | **No capability exists anywhere on the platform**, so this is not a mobile gap. Checked 2026-08-22: the only route that reaches `disputed` is the automatic hours-variance rule, and the only dispute route is `POST /v2/admin/broker/exchanges/{id}/resolve-dispute` — a broker RESOLVING one, with nothing that raises it. `POST /v2/support/reports` takes free-text summary/description/impact and cannot name an exchange, which matches the known finding that four parallel reporting systems exist and none can reference an exchange. Building this means an API route, a structured target, moderation routing and notifications, with safeguarding implications — **owner decision, not started** |
 
 ## Tier 4 — Volunteering (18 rows)
 
