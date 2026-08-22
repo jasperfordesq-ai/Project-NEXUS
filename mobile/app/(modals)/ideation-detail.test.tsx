@@ -164,4 +164,50 @@ describe('IdeationDetailScreen', () => {
     fireEvent.press(getByText('Vote'));
     await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledWith(44));
   });
+
+  /**
+   * 🔴 A refresh must not blank the page. Voting and submitting both call `refresh()`,
+   * which flips `isLoading` back to true; the screen used that flag alone, so one tap on
+   * Vote replaced the whole challenge with a spinner. Measured on a device 2026-08-22.
+   */
+  it('keeps the challenge on screen while a refresh is in flight', () => {
+    mockUseApi.mockReset();
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      if (call % 2 === 1) {
+        return {
+          data: { id: 12, title: 'Improve the park', description: 'Ideas please.', status: 'open', ideas_count: 1 },
+          isLoading: true, // a refresh is running, but we already have the challenge
+          error: null,
+          refresh: jest.fn(),
+        };
+      }
+      return {
+        data: { items: [{ id: 44, title: 'Better lighting', description: 'Lights.', status: 'submitted', votes_count: 4, has_voted: false }] },
+        isLoading: true,
+        error: null,
+        refresh: jest.fn(),
+      };
+    });
+
+    const { getAllByText, getByText } = render(<IdeationDetailScreen />);
+
+    expect(getAllByText('Improve the park').length).toBeGreaterThan(0);
+    expect(getByText('Better lighting')).toBeTruthy();
+  });
+
+  it('still shows a spinner on the very first load, when there is nothing to show yet', () => {
+    mockUseApi.mockReset();
+    mockUseApi.mockImplementation(() => ({
+      data: null,
+      isLoading: true,
+      error: null,
+      refresh: jest.fn(),
+    }));
+
+    const { queryByText } = render(<IdeationDetailScreen />);
+
+    expect(queryByText('Better lighting')).toBeNull();
+  });
 });

@@ -90,7 +90,16 @@ export default function IdeationDetailScreen() {
 
   const challenge = challengeState.data;
   const ideas = ideasState.data?.items ?? [];
-  const loading = challengeState.isLoading || ideasState.isLoading;
+  /**
+   * 🔴 Only the FIRST load gets the full-page spinner.
+   *
+   * Voting on an idea and submitting an idea both call `refresh()`, which flips
+   * `isLoading` again — and this screen used that flag alone, so a single tap on Vote
+   * replaced the whole challenge with a spinner for several seconds and then rebuilt it.
+   * Measured on a device on 2026-08-22. Once there is a challenge to show, keep showing it
+   * while the refetch runs.
+   */
+  const loading = (challengeState.isLoading || ideasState.isLoading) && !challenge;
   const error = challengeState.error ?? ideasState.error;
 
   return (
