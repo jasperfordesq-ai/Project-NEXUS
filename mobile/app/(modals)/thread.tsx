@@ -42,7 +42,7 @@ import OfflineBanner from '@/components/OfflineBanner';
 import TypingIndicator from '@/components/TypingIndicator';
 import VoiceMessageBubble from '@/components/VoiceMessageBubble';
 import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
-import { authenticatedMediaRequest } from '@/lib/api/client';
+import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
 import AccentIcon from '@/components/ui/AccentIcon';
 
@@ -288,12 +288,36 @@ function ThreadScreenInner() {
         return prev.map((message) => (message.id === optimistic.id ? { ...res.data, is_own: true } : message));
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
       setInputText(body);
       setPendingAttachments(pendingAttachments);
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('errors.sendFailed'), description: t('thread.sendFailed'), variant: 'danger' });
+
+      /**
+       * 🔴 A refusal is not a failure, and must not invite a retry.
+       *
+       * The legal-acceptance gate is attached per write route, so sending a message is one of
+       * the actions it refuses. `lib/api/client.ts` already opens the acceptance screen
+       * centrally for `LEGAL_ACCEPTANCE_REQUIRED` — so the member gets the screen that
+       * explains it AND, on top of it, a red "Message failed to send. Tap to retry." Measured
+       * on a device 2026-08-22. Retrying changes nothing until they accept, and two
+       * simultaneous explanations of the same event is worse than one.
+       *
+       * The message body is still restored above, so accepting and pressing send loses
+       * nothing.
+       */
+      const refusedPendingAcceptance =
+        err instanceof ApiResponseError && err.code === 'LEGAL_ACCEPTANCE_REQUIRED';
+
+      void Haptics.notificationAsync(
+        refusedPendingAcceptance
+          ? Haptics.NotificationFeedbackType.Warning
+          : Haptics.NotificationFeedbackType.Error,
+      );
+
+      if (!refusedPendingAcceptance) {
+        showToast({ title: t('errors.sendFailed'), description: t('thread.sendFailed'), variant: 'danger' });
+      }
     } finally {
       setIsSending(false);
     }

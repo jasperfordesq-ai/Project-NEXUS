@@ -271,6 +271,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 // --- Tests ---
 
 import ThreadScreen from './thread';
+import { useAppToast } from '@/components/ui/AppToast';
 import { sendMessage } from '@/lib/api/messages';
 
 const mockMessages = [
@@ -328,6 +329,9 @@ beforeEach(() => {
   mockDeleteMessage.mockResolvedValue({ data: { success: true } });
   mockToggleMessageReaction.mockResolvedValue({ data: { action: 'added', emoji: thumbsUpReaction, message_id: 1 } });
   (sendMessage as jest.Mock).mockClear();
+  // Restored per test: one case below makes it REJECT, and a leaked rejection would fail
+  // every later send silently.
+  (sendMessage as jest.Mock).mockResolvedValue({ data: { id: 99 } });
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
   jest.restoreAllMocks();
 });
@@ -479,6 +483,62 @@ describe('ThreadScreen', () => {
     await waitFor(() => {
       expect(sendMessage).toHaveBeenCalledWith(42, 'Thanks Alice');
     });
+  });
+
+  /**
+   * 🔴 The legal-acceptance gate is attached per WRITE route, so sending a message is one of
+   * the actions it refuses. `lib/api/client.ts` opens the acceptance screen centrally for that
+   * code — so before this, the member got the screen explaining it AND a red "Message failed
+   * to send. Tap to retry." on top. Measured on a device 2026-08-22. Retrying changes nothing
+   * until they accept, and two explanations of one event is worse than one.
+   */
+  it('🔴 does not report a legal-acceptance refusal as a failed send', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    mockUseApi.mockReturnValue({
+      data: {
+        data: mockMessages,
+        meta: { conversation: { other_user: { id: 42, name: 'Alice' } } },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    (sendMessage as jest.Mock).mockRejectedValue(
+      new ApiResponseError(403, 'Acceptance required', undefined, 'LEGAL_ACCEPTANCE_REQUIRED'),
+    );
+
+    const { getByPlaceholderText, getByLabelText } = render(<ThreadScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Type a message...'), 'Legal gate walk');
+    fireEvent.press(getByLabelText('Send'));
+
+    await waitFor(() => expect(sendMessage).toHaveBeenCalled());
+    expect(useAppToast().show).not.toHaveBeenCalled();
+    // The body is restored so accepting and pressing send again loses nothing.
+    expect(getByPlaceholderText('Type a message...').props.value).toBe('Legal gate walk');
+  });
+
+  it('still reports an ordinary send failure', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    mockUseApi.mockReturnValue({
+      data: {
+        data: mockMessages,
+        meta: { conversation: { other_user: { id: 42, name: 'Alice' } } },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    (sendMessage as jest.Mock).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+
+    const { getByPlaceholderText, getByLabelText } = render(<ThreadScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Type a message...'), 'Ordinary failure');
+    fireEvent.press(getByLabelText('Send'));
+
+    await waitFor(() => expect(useAppToast().show).toHaveBeenCalled());
   });
 
   it('sends contextual fields for a new conversation from deep-link params', async () => {

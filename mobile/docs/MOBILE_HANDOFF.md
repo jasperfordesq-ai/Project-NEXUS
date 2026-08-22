@@ -40,7 +40,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 547 or 700 is not the point.
+Nothing in that list is a score. A total of 549 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -80,8 +80,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-22
 
-**547 / 1000 on rubric M1.** Of 140 journeys: 39 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
-2 BROKEN, 28 never attempted, 2 not applicable.
+**549 / 1000 on rubric M1.** Of 140 journeys: 40 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
+2 BROKEN, 27 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
@@ -117,8 +117,15 @@ a look at the database afterwards.
 
 ### Still to walk — 29 rows, grouped by what they need
 
-**Tier 1, getting in (3 rows) — do these first.** The legal-acceptance gate, passkey sign-in,
-and the "update ready — restart" prompt.
+**Tier 1, getting in (2 rows) — do these first.** Passkey sign-in, and the "update ready —
+restart" prompt. Both are blocked on things this environment cannot supply: a platform
+authenticator on the emulator, and a published over-the-air update. Say so rather than
+guessing.
+
+🔴 The legal-acceptance gate is CERTIFIED, and how it is wired is worth knowing before
+walking anything else: it is attached **per write route**, never to a group. So an unaccepted
+member reads the app perfectly and is refused the moment they try to do something. Landing on
+the feed unblocked is correct, not a hole.
 
 🔴 Password reset is CERTIFIED, and the local seam is worth knowing: **the mail leg cannot
 complete here, and that is correct behaviour.** The reset token is stored only AFTER the mailer
