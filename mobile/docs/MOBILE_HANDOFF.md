@@ -38,7 +38,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 543 or 700 is not the point.
+Nothing in that list is a score. A total of 545 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -78,7 +78,7 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-22
 
-**543 / 1000 on rubric M1.** Of 140 journeys: 37 CERTIFIED, 41 PROVEN, 25 RENDERS, 4 PARTIAL,
+**545 / 1000 on rubric M1.** Of 140 journeys: 38 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
 2 BROKEN, 29 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
@@ -115,8 +115,16 @@ a look at the database afterwards.
 
 ### Still to walk — 29 rows, grouped by what they need
 
-**Tier 1, getting in (4 rows) — do these first.** Password reset, the legal-acceptance gate,
-passkey sign-in, the force-update screen and the "update ready — restart" prompt.
+**Tier 1, getting in (4 rows) — do these first.** The legal-acceptance gate, passkey sign-in,
+the force-update screen and the "update ready — restart" prompt.
+
+🔴 Password reset is CERTIFIED, and the local seam is worth knowing: **the mail leg cannot
+complete here, and that is correct behaviour.** The reset token is stored only AFTER the mailer
+accepts the message, deliberately, so a mail outage cannot silently invalidate a link the
+member already has. With no SMTP in the container the send returns false, no token is written,
+and a warning is logged. To walk the reset screen anyway, insert a `password_resets` row whose
+stored token column holds the SHA-256 of a plaintext you keep, then open the reset deep link
+carrying that plaintext.
 
 🔴 Registration is now CERTIFIED and it was the worst offender found all day: **the account
 was created and the app said the request had timed out.** Registration does an MX lookup and a

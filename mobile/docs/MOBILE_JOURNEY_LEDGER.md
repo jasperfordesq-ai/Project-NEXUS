@@ -63,7 +63,7 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Onboarding and access | 14 | 3 | 3 | 4 | 0 | 4 | 0 | 0.414 |
+| 1 — Onboarding and access | 14 | 4 | 3 | 3 | 0 | 4 | 0 | 0.468 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
@@ -71,19 +71,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **37** | **41** | **25** | **4** | **31** | **2** | — |
+| **Total** | **140** | **38** | **41** | **24** | **4** | **31** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.500**.
+rows → **0.505**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (3 × 1.0) + (3 × 0.6) + (4 × 0.25) = 5.80 | ÷ 14 | **0.414** |
+| 1 | (4 × 1.0) + (3 × 0.6) + (3 × 0.25) = 6.55 | ÷ 14 | **0.468** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
@@ -109,7 +109,7 @@ uninterpretable.
 | 1.2 | Sign in with email and password | PROVEN | Walked on two devices repeatedly, 2026-08-20/21; no automated device test |
 | 1.3 | Sign out | PROVEN | Walked 2026-08-20 (reached the login screen afterwards) |
 | 1.4 | Create an account from the app | RENDERS | Register screen photographed, real fields, international phone placeholder; never submitted |
-| 1.5 | Forgot password → email → reset | RENDERS | Screen photographed; the mail leg has never been walked on a device |
+| 1.5 | Forgot password → email → reset | CERTIFIED | Walked 2026-08-22, both halves. Request: the screen validates, the API resolves the member in the right tenant, and the confirmation is deliberately non-committal ("If an account exists…") so it cannot be used to enumerate addresses. Reset: the deep link to the reset screen carried the token through, the new password was accepted, and the token was consumed — the row was gone afterwards, so it is single-use. Verified by API: the new password signs in and the old one is refused. The fixture password was then restored. 🔴 **The mail leg cannot complete locally and that is correct behaviour, not a defect**: the token is stored ONLY after the dispatcher accepts the email, deliberately, so a mail outage leaves any previous valid link usable instead of silently invalidating it. With no SMTP in the container the send returns false, no token is written, and a WARNING is logged (`[PasswordReset] reset email send returned false`) — the log level is `warning` on purpose because production runs at that level. To walk the mail leg for real, point the container at a mail catcher; to walk the reset screen without one, insert a `password_resets` row whose stored token column holds the SHA-256 of a plaintext you keep, then open the reset deep link carrying that plaintext |
 | 1.6 | Passkey / biometric sign-in | OPEN | Never attempted on a device |
 | 1.7 | Session survives an app restart | PROVEN | A reaction persisted across a full restart, 2026-08-20 |
 | 1.8 | Session restore failure shows a way out, not a spinner | CERTIFIED | Reproduced deliberately 2026-08-22 by deleting the member's 377 `refresh_token_sessions` rows and launching: the app lands on the sign-in screen with "Signed out — Your session has expired. Please log in again.", and the request log shows one attempt plus one retry, not the 7-16 request loop recorded in August. 🔴 The BROKEN status predated the session-expiry rewrite; the fix had landed and nobody had checked it. Both refresh outcomes are unit-tested — `rejected` for 401/403 only, `unreachable` for 500/502/503/429, a throw, and a 200 carrying no token — so a bad connection cannot sign a member out or purge the offline check-in queue |
