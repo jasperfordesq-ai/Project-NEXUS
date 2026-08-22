@@ -63,7 +63,7 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Onboarding and access | 14 | 2 | 3 | 4 | 0 | 5 | 0 | 0.343 |
+| 1 — Onboarding and access | 14 | 3 | 3 | 4 | 0 | 4 | 0 | 0.414 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
@@ -71,19 +71,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **36** | **41** | **25** | **4** | **32** | **2** | — |
+| **Total** | **140** | **37** | **41** | **25** | **4** | **31** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.493**.
+rows → **0.500**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (2 × 1.0) + (3 × 0.6) + (4 × 0.25) = 4.80 | ÷ 14 | **0.343** |
+| 1 | (3 × 1.0) + (3 × 0.6) + (4 × 0.25) = 5.80 | ÷ 14 | **0.414** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
@@ -114,7 +114,7 @@ uninterpretable.
 | 1.7 | Session survives an app restart | PROVEN | A reaction persisted across a full restart, 2026-08-20 |
 | 1.8 | Session restore failure shows a way out, not a spinner | CERTIFIED | Reproduced deliberately 2026-08-22 by deleting the member's 377 `refresh_token_sessions` rows and launching: the app lands on the sign-in screen with "Signed out — Your session has expired. Please log in again.", and the request log shows one attempt plus one retry, not the 7-16 request loop recorded in August. 🔴 The BROKEN status predated the session-expiry rewrite; the fix had landed and nobody had checked it. Both refresh outcomes are unit-tested — `rejected` for 401/403 only, `unreachable` for 500/502/503/429, a throw, and a 200 carrying no token — so a bad connection cannot sign a member out or purge the offline check-in queue |
 | 1.9 | Legal acceptance gate | OPEN | Local fixture has zero enforceable documents; never exercised on mobile |
-| 1.10 | Onboarding flow for a brand-new member | OPEN | Never attempted |
+| 1.10 | Onboarding flow for a brand-new member | CERTIFIED | Walked 2026-08-22: registration form filled on a device, `users` row 900019 created in tenant 2 as `pending`, unapproved and unverified — then deleted. Three real defects found, all fixed. 🔴 **The account was created and the app said "Request timed out. Please check your connection."** — registration does an MX lookup and a breach-database check before answering, and the ordinary 15s mutation timeout fired on a request the server completed. Registration now has its own 45s timeout, and a no-answer no longer claims failure: it says the account may already exist and to try signing in. The error banner also renders at the TOP of a form taller than the screen, so a member at the bottom saw nothing at all; it now scrolls into view. Guarded by three tests in `app/(auth)/register.test.tsx` and one in `lib/api/auth.test.ts`, all mutation-verified. 🔴 A `.local` email address cannot register — the MX check refuses it, which is why every fixture account was seeded directly |
 | 1.11 | Switch community while signed in | RENDERS | Picker reached and listed real communities against the live API |
 | 1.12 | Tenant branding applies (logo, accent) | RENDERS | "Hour Timebank / Local development tenant" header correct; only one tenant checked |
 | 1.13 | Force-update screen appears below the minimum version | OPEN | Server lever exists (`EnforceMobileMinimumVersion`, 426); never triggered against a device |

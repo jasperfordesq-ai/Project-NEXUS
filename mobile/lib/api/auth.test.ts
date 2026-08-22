@@ -21,7 +21,9 @@ jest.mock('@/lib/constants', () => ({
     TENANT_SLUG: 'tenant_slug',
     USER_DATA: 'user_data',
   },
-  TIMEOUTS: { API_REQUEST: 15_000 },
+  // API_REGISTER must be present here: registration passes it explicitly, and a mock
+  // that omitted it would let `timeout: undefined` through unnoticed.
+  TIMEOUTS: { API_REQUEST: 15_000, API_REGISTER: 45_000 },
   DEFAULT_TENANT: 'test-tenant',
 }));
 
@@ -137,7 +139,11 @@ describe('register', () => {
 
     await expect(register(payload)).resolves.toBe(response);
 
-    expect(api.post).toHaveBeenCalledWith('/api/v2/auth/register', payload);
+    // 🔴 The explicit timeout is part of the contract, not incidental. Registration does an
+    // MX lookup and a breach-database check before answering; on 2026-08-22 the ordinary
+    // 15s mutation timeout fired on a request the server completed, and the member was told
+    // their account had not been created when it had.
+    expect(api.post).toHaveBeenCalledWith('/api/v2/auth/register', payload, { timeout: 45_000 });
   });
 });
 

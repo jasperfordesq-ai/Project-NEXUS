@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { ScrollView } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
@@ -310,6 +311,46 @@ describe('RegisterScreen', () => {
     pressSubmit(getAllByText);
 
     expect(await findByText('Email already in use')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 The banner renders at the top of a form taller than the screen, so a member who has
+   * just pressed "Create account" at the bottom sees nothing happen. Measured on a device
+   * 2026-08-22: the message was two screens above where they were looking. Registration is
+   * the first thing anyone does, so a silent failure loses them entirely.
+   */
+  it('scrolls the error banner into view so the member actually sees it', async () => {
+    const scrollTo = jest.fn();
+    const scrollSpy = jest
+      .spyOn(ScrollView.prototype, 'scrollTo')
+      .mockImplementation(scrollTo as never);
+
+    mockApiRegister.mockRejectedValue(new ApiResponseError(422, 'Email already in use'));
+    const { getAllByText, getByTestId, getByText, findByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText, { email: 'taken@example.com' });
+    pressSubmit(getAllByText);
+
+    expect(await findByText('Email already in use')).toBeTruthy();
+    await waitFor(() => expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ y: 0 })));
+
+    scrollSpy.mockRestore();
+  });
+
+  /**
+   * 🔴 The account may well exist. Measured on a device 2026-08-22: the server created
+   * `users` row 900019 and the app said "Request timed out. Please check your connection."
+   * A member who believes that and registers again is told the address is taken — on their
+   * first ever interaction. `status === 0` is the client's "never got an answer".
+   */
+  it('does not claim failure when the server never answered', async () => {
+    mockApiRegister.mockRejectedValue(new ApiResponseError(0, 'Request timed out. Please check your connection.'));
+    const { getAllByText, getByTestId, getByText, findByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText);
+    pressSubmit(getAllByText);
+
+    expect(await findByText(/may already have been created/i)).toBeTruthy();
   });
 
   it('shows generic error for non-API failures', async () => {

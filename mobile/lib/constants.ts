@@ -91,6 +91,15 @@ export const TIMEOUTS = {
   /** File upload timeout — large payloads need significantly more time */
   API_UPLOAD: 60_000,
   /**
+   * 🔴 Registration only. It makes TWO external calls before it can answer — an MX lookup
+   * on the email domain and a Have-I-Been-Pwned breach check — so it routinely takes longer
+   * than an ordinary mutation. Measured on a device on 2026-08-22: the account was created
+   * (users row 900019) and the app still told the member "Request timed out. Please check
+   * your connection." A member who then taps Create account again is told the address is
+   * already taken, and concludes the platform is broken — on their very first interaction.
+   */
+  API_REGISTER: 45_000,
+  /**
    * @deprecated Use API_GET, API_MUTATION, or API_UPLOAD instead.
    * Kept for backward compatibility with tests.
    */

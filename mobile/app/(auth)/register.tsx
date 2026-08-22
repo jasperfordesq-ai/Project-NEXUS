@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -110,6 +110,25 @@ export default function RegisterScreen() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  /**
+   * 🔴 An error the member cannot see is an error they did not get.
+   *
+   * This form is taller than the screen, and the failure banner renders at the TOP of it —
+   * so a member who has just pressed "Create account" at the bottom sees absolutely nothing
+   * happen. Measured on a device on 2026-08-22 with a genuinely undeliverable email address:
+   * the server answered 422 with a clear, helpful message, the banner rendered it correctly,
+   * and it was two screens above where the member was looking. Registration is the first
+   * thing anyone does, so a silent failure here loses the member entirely.
+   *
+   * Scrolling to the banner is the whole fix. `accessibilityLiveRegion` already announces it
+   * to a screen reader; this is the sighted equivalent.
+   */
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (globalError) scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, [globalError]);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -156,7 +175,22 @@ export default function RegisterScreen() {
       router.replace('/(tabs)/home');
       void registerForPushNotifications();
     } catch (err) {
-      if (err instanceof ApiResponseError) {
+      /**
+       * 🔴 A timeout on THIS request must not claim the account was not created.
+       *
+       * Measured on a device 2026-08-22: the server created the account (`users` row 900019)
+       * and the app said "Request timed out. Please check your connection." A member who
+       * believes that and taps Create account again is told the address is already taken,
+       * on their first ever interaction with the platform. The timeout itself is now much
+       * longer (TIMEOUTS.API_REGISTER), but a slow network can still trip it, so the message
+       * has to stay honest about what it does and does not know.
+       *
+       * `status === 0` is what the client uses for "never got an answer" (timeout or network),
+       * as opposed to a real HTTP status the server chose.
+       */
+      if (err instanceof ApiResponseError && err.status === 0) {
+        setGlobalError(t('register.noAnswerFromServer'));
+      } else if (err instanceof ApiResponseError) {
         setGlobalError(err.message);
       } else {
         setGlobalError(t('errors.unableToRegister'));
@@ -236,6 +270,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-grow"
         keyboardShouldPersistTaps="handled"

@@ -38,7 +38,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 541 or 700 is not the point.
+Nothing in that list is a score. A total of 543 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -78,8 +78,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-22
 
-**541 / 1000 on rubric M1.** Of 140 journeys: 36 CERTIFIED, 41 PROVEN, 25 RENDERS, 4 PARTIAL,
-2 BROKEN, 30 never attempted, 2 not applicable.
+**543 / 1000 on rubric M1.** Of 140 journeys: 37 CERTIFIED, 41 PROVEN, 25 RENDERS, 4 PARTIAL,
+2 BROKEN, 29 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
@@ -113,11 +113,19 @@ Defects found by walking, all fixed and guarded — the pattern is worth interna
 and most were invisible to reading the code — they needed a device, a real second account, and
 a look at the database afterwards.
 
-### Still to walk — 30 rows, grouped by what they need
+### Still to walk — 29 rows, grouped by what they need
 
-**Tier 1, getting in (5 rows) — do these first.** Register a brand-new member, password
-reset, the legal-acceptance gate, passkey sign-in, the force-update screen, the
-"update ready — restart" prompt.
+**Tier 1, getting in (4 rows) — do these first.** Password reset, the legal-acceptance gate,
+passkey sign-in, the force-update screen and the "update ready — restart" prompt.
+
+🔴 Registration is now CERTIFIED and it was the worst offender found all day: **the account
+was created and the app said the request had timed out.** Registration does an MX lookup and a
+breach-database check before it can answer, so the ordinary 15-second mutation timeout fired on
+a request the server completed. A member who believes that message and tries again is told the
+address is taken. Expect more of this shape wherever the server does slow external work.
+🔴 Also worth knowing before walking any auth journey: **a `.local` email address cannot
+register**, because the MX check correctly refuses it. Every fixture account was seeded
+directly, which is why nobody had hit this.
 
 🔴 Journey 1.8 was the top of this list and is now CERTIFIED — reproduced deliberately by
 deleting the member's refresh sessions, and it behaves correctly: sign-in screen, "your session

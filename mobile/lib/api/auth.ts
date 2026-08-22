@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { API_V2 } from '@/lib/constants';
+import { API_V2, TIMEOUTS } from '@/lib/constants';
 import i18n from 'i18next';
 
 /**
@@ -146,7 +146,12 @@ export function login(payload: LoginPayload): Promise<AuthResponse> {
 
 /** POST /api/v2/auth/register — V2 registration (usually returns verification/approval state) */
 export function register(payload: RegisterPayload): Promise<RegisterResponse> {
-  return api.post<RegisterResponse>(`${API_V2}/auth/register`, payload);
+  // See TIMEOUTS.API_REGISTER: this endpoint does an MX lookup and a breach-database check
+  // before it can answer, and the ordinary 15s mutation timeout was firing on a request the
+  // server went on to complete successfully.
+  return api.post<RegisterResponse>(`${API_V2}/auth/register`, payload, {
+    timeout: TIMEOUTS.API_REGISTER,
+  });
 }
 
 export function getRegistrationResult(response: RegisterResponse): RegisterResult {
