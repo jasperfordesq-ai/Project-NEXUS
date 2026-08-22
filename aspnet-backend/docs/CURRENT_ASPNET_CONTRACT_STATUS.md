@@ -143,12 +143,22 @@ five tiers, which have not been walked this way.
 
 - **Journeys: 116 of 690 (-574).** 🔴 **Eleven of 250 rows are CERTIFIED** — ten
   of them added today, all in Tier 4 (Web UK), alongside row 1.21 (the exchange
-  transaction) certified on 2026-08-21. 20 more are PROVEN: they run against ASP.NET with an asserted effect, but ADR-0004
-  condition 3 (the same run passing against a Laravel control) is unmet on the
-  React rows, because the React smoke still has no control arm. Building one
-  remains queue item 1 — and it is now the single largest unblocked lever on the
-  score, because Tier 4 has just shown what happens when a tier gets one: seven
-  rows promoted on a decision and two more on fixes, +19 in a day.
+  transaction) certified on 2026-08-21. 20 more are PROVEN.
+  🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
+  smoke still has no control arm" and called building one queue item 1. That is
+  FALSE and the ledger already said so** — the arm was built on 2026-08-21 and the
+  correction is recorded at the Status Vocabulary section. The stale sentence was
+  carried forward from the pre-correction text without being checked, which is the
+  precise failure this workstream keeps repeating: prose was trusted over the
+  artefact sitting next to it.
+  What the arm actually produces (`aspnet-backend/artifacts/smoke/`, run
+  2026-08-21T19:16Z): **36 MATCH, 2 NOT_COMPARABLE, 0 ASPNET_ONLY_FAIL** across 38
+  step pairs, and it drives a REAL BROWSER (Playwright chromium — `page.click`,
+  `page.fill`), so unlike web-uk it needed no owner decision on condition 1.
+  So condition 3 is NOT what blocks these rows. What blocks them is that nobody
+  has mapped the arm's per-step verdicts onto the ledger rows and checked each
+  one against all five conditions. That mapping — not new instrument work — is the
+  largest unblocked lever on the score.
   🔴 Two rows remain BROKEN with named causes, both in Tier 1: multi-photo posts
   have no table for the extra photos, and event attendance-by-code needs the
   signed `nqx2_` offline-checkin credential subsystem that ASP.NET lacks
