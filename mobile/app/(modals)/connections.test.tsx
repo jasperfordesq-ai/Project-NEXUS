@@ -30,6 +30,13 @@ jest.mock('react-i18next', () => ({
         'connections.message': 'Message',
         'connections.remove': 'Remove',
         'connections.connectedSince': opts ? `Connected ${String(opts.date ?? '')}` : 'Connected',
+        'connections.requestedOn': opts ? `Requested ${String(opts.date ?? '')}` : 'Requested',
+        'connections.status.pending_received': 'Received',
+        'connections.status.pending_sent': 'Sent',
+        'connections.accept': 'Accept',
+        'connections.decline': 'Decline',
+        'connections.cancel': 'Cancel request',
+        'connections.unknownMember': 'Community member',
       };
       return map[key] ?? key;
     },
@@ -130,5 +137,57 @@ describe('ConnectionsRoute', () => {
       pathname: '/(modals)/thread',
       params: { recipientId: '272', name: 'Katherine' },
     });
+  });
+
+  /**
+   * 🔴 A received request showed the literal text "connections.status.pending".
+   *
+   * The API returns `status: 'pending'` for a request in either direction, and the
+   * translations are keyed `accepted` / `pending_received` / `pending_sent`. The lookup
+   * `connections.status.${connection.status}` therefore missed, and i18next prints the key
+   * when it cannot resolve one. Seen on a device on 2026-08-22 by a member looking at a
+   * request they had just received.
+   *
+   * The tab carries the direction that the status cannot, so the label comes from there.
+   */
+  it('labels a pending request from the tab, never from the raw status', () => {
+    const pending = { ...connection, status: 'pending' as const };
+    mockUseApi.mockReturnValue({
+      data: { data: [pending] },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, queryByText, getAllByText } = render(<ConnectionsRoute />);
+
+    // Move to the Received tab, where a pending request actually lives.
+    fireEvent.press(getByText('Received'));
+
+    expect(queryByText('connections.status.pending')).toBeNull();
+    // Two "Received": the tab and the status chip. Both are correct; the point is that
+    // neither is a raw key.
+    expect(getAllByText('Received').length).toBeGreaterThanOrEqual(2);
+  });
+
+  /**
+   * 🔴 And the date label has to follow the tab too: `created_at` is when the request was
+   * MADE. On the pending tabs the card said "Connected 22 Aug 2026" about two members who
+   * were not connected — which is the entire distinction the tab exists to draw.
+   */
+  it('says a pending request was requested, not that it is connected', () => {
+    const pending = { ...connection, status: 'pending' as const };
+    mockUseApi.mockReturnValue({
+      data: { data: [pending] },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, queryByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Received'));
+
+    expect(getByText(/^Requested /)).toBeTruthy();
+    expect(queryByText(/^Connected \d/)).toBeNull();
   });
 });

@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
 | 3 — Timebanking core | 20 | 3 | 4 | 5 | 0 | 7 | 1 | 0.350 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 6 | 0 | 12 | 0 | 16 | 0 | 0.265 |
-| 6 — Money and wallet | 12 | 0 | 3 | 2 | 1 | 5 | 1 | 0.236 |
+| 5 — Community modules | 34 | 7 | 4 | 12 | 0 | 11 | 0 | 0.365 |
+| 6 — Money and wallet | 12 | 0 | 4 | 2 | 1 | 4 | 1 | 0.291 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **21** | **29** | **26** | **5** | **57** | **2** | — |
+| **Total** | **140** | **22** | **34** | **26** | **5** | **51** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(21 × 1.0) + (29 × 0.6) + (26 × 0.25) + (5 × 0.30) = 46.40`, over `140 − 2 excluded = 138`
-rows → **0.336**.
+`(22 × 1.0) + (34 × 0.6) + (26 × 0.25) + (5 × 0.30) = 50.40`, over `140 − 2 excluded = 138`
+rows → **0.365**.
 
 ### Credit recomputation
 
@@ -87,8 +87,8 @@ rows → **0.336**.
 | 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
 | 3 | (3 × 1.0) + (4 × 0.6) + (5 × 0.25) = 6.65 | ÷ 19 † | **0.350** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (6 × 1.0) + (12 × 0.25) = 9.00 | ÷ 34 | **0.265** |
-| 6 | (3 × 0.6) + (2 × 0.25) + (1 × 0.30) = 2.60 | ÷ 11 † | **0.236** |
+| 5 | (7 × 1.0) + (4 × 0.6) + (12 × 0.25) = 12.40 | ÷ 34 | **0.365** |
+| 6 | (4 × 0.6) + (2 × 0.25) + (1 × 0.30) = 3.20 | ÷ 11 † | **0.291** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
@@ -213,9 +213,9 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.4 | Event attendance / check-in | OPEN | Never walked |
 | 5.5 | Event detail | RENDERS | Screen exists |
 | 5.6 | Groups list | RENDERS | Photographed, stat tiles wrap correctly |
-| 5.7 | Create a group | OPEN | Never submitted |
-| 5.8 | Join a group | OPEN | Never walked |
-| 5.9 | Post in a group | OPEN | Never walked |
+| 5.7 | Create a group | PROVEN | 2026-08-22: created "WalkGroup" from the device — `groups` row 974 (owner 674, public, active). 🔴 Tenant 2 had **zero** groups before this, so 5.8 and 5.9 could not have been walked at all without it. The form refused an 11-character description and said why ("Use 20 to 2000 characters") |
+| 5.8 | Join a group | PROVEN | 2026-08-22: joined group 974 from the second emulator — `group_members` row (974, 675, `member`), the header switched to "Joined" with a Leave button, and MEMBERS went 1 → 2 |
+| 5.9 | Post in a group | PROVEN | 2026-08-22: started a discussion from the joined member's device — `group_discussions` row 49 and its first message in `group_posts` row 48. 🔴 The first message is in **`group_posts`**; `group_discussion_messages` is a two-column stub and reading it first nearly produced a false "the message vanished" finding |
 | 5.10 | Group tabs (discussion, wiki, tasks, analytics) | RENDERS | Tab strip scrolls correctly |
 | 5.11 | Messages list | RENDERS | Photographed |
 | 5.12 | Send a message to another member | CERTIFIED | 2026-08-21: sent from the second emulator as UserB — `messages` row 545 (675 → 674, unread). Guarded by `app/(modals)/thread.test.tsx` ("sends replies to the other user from conversation metadata") |
@@ -224,8 +224,8 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.15 | Voice message | OPEN | Never walked |
 | 5.16 | Members directory | RENDERS | Photographed, clean at 360dp |
 | 5.17 | View a member profile | RENDERS | Screen exists |
-| 5.18 | Send a connection request | OPEN | Never walked |
-| 5.19 | Accept a connection request | OPEN | Never walked |
+| 5.18 | Send a connection request | PROVEN | 2026-08-22: sent from UserB's profile — `connections` row 160 (674 → 675, `pending`) |
+| 5.19 | Accept a connection request | CERTIFIED | 2026-08-22: accepted on the recipient's device, row 160 → `accepted`. Two defects found and fixed on this screen: the status chip printed the raw key `connections.status.pending`, and a pending request was labelled "Connected <date>". Guarded by `app/(modals)/connections.test.tsx` (both mutation-verified) |
 | 5.20 | Polls list | RENDERS | Photographed |
 | 5.21 | Vote in a poll | OPEN | Never walked |
 | 5.22 | Create a poll | OPEN | Create entry resolves; never submitted |
@@ -248,7 +248,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | --- | --- | --- | --- |
 | 6.1 | See your balance | RENDERS | Wallet screen photographed; balance correct |
 | 6.2 | See your transaction history | PARTIAL | 🔴 It does not reconcile. A balance moved 90.00 → 85.00 while the member's own history stayed at one row (`transaction_count: 1`). The organisation side records it; the member's statement does not |
-| 6.3 | Send credits to another member | OPEN | Never walked |
+| 6.3 | Send credits to another member | PROVEN | 2026-08-22: sent 1 hour from the wallet — UserA 86.00 → 85.00, UserB 26.00 → 27.00, `transactions` row 270 ("Time credit transfer"). 🔴 The recipient search field was a narrow pill, hard to hit and showing almost no text; fixed in `components/ui/Input.tsx` for every field in the app |
 | 6.4 | Receive credits and see them | PROVEN | Volunteering credit landed and showed (Tier 4) |
 | 6.5 | Organisation wallet balance | PROVEN | −2.00 → 8.00 → 13.00 across two deposits, with ledger rows |
 | 6.6 | Deposit credits into an organisation wallet | PROVEN | Device + API; organiser correctly debited |

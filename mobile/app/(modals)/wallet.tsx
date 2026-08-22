@@ -447,8 +447,22 @@ function WalletActionPanel({
         {needsRecipient ? (
           <View className="gap-3">
             <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('actions.recipientSearch')}</Text>
-            <View className="flex-row gap-2">
+            {/*
+              🔴 `containerClassName="flex-1"`, and it is load-bearing. An `Input` in a
+              `flex-row` beside a button takes its INTRINSIC width unless the container is
+              told to fill the space — and `components/ui/Input.tsx` sizes from
+              `containerClassName`, not `className`. Without it the recipient field rendered
+              as a ~275px pill next to a full-size Search button while Amount and
+              Description below it were full width; it was hard to hit and showed almost no
+              text. Measured on a device on 2026-08-22.
+
+              `flex-wrap` on the row is the 360dp insurance: the button carries an icon and
+              a word, so at narrow widths the two go onto separate lines instead of
+              squeezing the field back down to nothing.
+            */}
+            <View className="flex-row flex-wrap items-center gap-2">
               <Input
+                containerClassName="mb-0 min-w-[60%] flex-1"
                 style={{ color: theme.text }}
                 placeholder={t('actions.recipientSearchPlaceholder')}
                 placeholderTextColor={theme.textMuted}

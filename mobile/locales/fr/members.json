@@ -45,6 +45,7 @@
     "browseMembers": "Parcourir les membres",
     "viewProfile": "Afficher le profil de {{name}}",
     "connectedSince": "Connecté {{date}}",
+    "requestedOn": "Demandé le {{date}}",
     "message": "Message",
     "remove": "Supprimer",
     "accept": "Accepter",

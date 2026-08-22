@@ -138,6 +138,24 @@ Useful column names for checking the result:
 | `exchange_history` | one row per step; `action` is one of `request_created`, `status_changed`, `provider_confirmed`, `requester_confirmed` |
 | `transactions` | 🔴 `giver_id` is **NULL** on an exchange transaction. Reading the table alone suggests the debit was never recorded against the payer; the API derives it from the exchange, and the member's own statement is correct. Check the API before filing a money defect |
 
+## Column names and fixtures for the Tier 5 and 6 walks (2026-08-22)
+
+| Table | Note |
+| --- | --- |
+| `groups` | 🔴 Tenant 2 had **zero** groups. Joining or posting cannot be walked without creating one first — the create form needs a description of **20–2000 characters** and says so |
+| `group_posts` | 🔴 Where a discussion's FIRST MESSAGE lives. `group_discussion_messages` exists with two columns (`id`, `created_at`), is empty, and reading it first nearly produced a false "the message vanished" finding |
+| `group_discussions` | `user_id` (not `created_by`), no body column — the body is the `group_posts` row |
+| `connections` | `requester_id` / `receiver_id` / `status` (`pending` \| `accepted`). No `user_id` |
+| `messages` | the text column is **`body`**, not `content` |
+| `transactions` | a member-to-member transfer has description "Time credit transfer"; `giver_id` is NULL, as with exchanges |
+
+🔴 **`(modals)/chat.tsx` is the AI assistant, not member messaging.** Member conversations are
+`(modals)/thread.tsx`. Walking "send a message" through chat.tsx proves nothing about it.
+
+🔴 **The wallet's send-credits panel does not scroll the focused field above the keyboard.**
+Type into the recipient search and the field is hidden behind the keyboard, along with any
+results. Recorded rather than fixed — dismiss the keyboard and scroll to read the result.
+
 ## Testing screen width
 
 ```bash

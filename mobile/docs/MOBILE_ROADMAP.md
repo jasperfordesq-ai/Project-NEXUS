@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **475 / 1000 on rubric M1** — see
+Current position: **491 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -143,10 +143,21 @@ the send path is guarded by `app/(modals)/thread.test.tsx` and the badge by
 messaging. Member threads are `(modals)/thread.tsx`, and the `messages` table's body column is
 `body`, not `content`.
 
-**Still to do here:** connection request and acceptance (5.18, 5.19), event RSVP (5.3), group
-join and post (5.8, 5.9), poll voting (5.21).
+**Connections and groups are done too (2026-08-22).** Connection request sent and accepted
+across the two devices (`connections` row 160), and — because tenant 2 had **no groups at
+all** — a group was created, joined from the second device, and a discussion started in it
+(`groups` 974, `group_members`, `group_discussions` 49 + `group_posts` 48). Two defects on the
+connections screen were fixed on the way: a raw translation key on screen, and a pending
+request labelled "Connected".
 
-**Exit criteria:** those six rows at PROVEN or better. Tier 5 credit 0.265 → ≥ 0.45.
+**Money moved a second way (2026-08-22):** sending credits member-to-member from the wallet,
+86.00 → 85.00 and 26.00 → 27.00, `transactions` row 270. That walk found every text field in
+the app being sized by its own content — fixed once in `components/ui/Input.tsx`.
+
+**Still to do here:** event RSVP (5.3), poll voting (5.21), creating an event or a poll,
+voice messages, the marketplace buy/sell pair, and applying for a job. Eleven of thirty-four.
+
+**Exit criteria:** Tier 5 credit 0.365 → ≥ 0.50.
 
 ## Phase 5 — Money integrity
 
@@ -232,5 +243,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-475 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
+491 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
 writing features.

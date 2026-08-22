@@ -207,6 +207,9 @@ function ConnectionCard({
   const userName = displayName(connection.user, t('connections.unknownMember'));
   const id = connectionId(connection);
   const connectedDate = formatDate(connection.created_at);
+  // 'accepted' | 'pending_received' | 'pending_sent' — the tab carries the direction that
+  // `connection.status` ('accepted' | 'pending') cannot express on its own.
+  const statusKey = connection.status === 'accepted' ? 'accepted' : tab;
 
   function openProfile() {
     router.push({ pathname: '/(modals)/member-profile', params: { id: String(connection.user.id) } } as unknown as Href);
@@ -260,12 +263,34 @@ function ConnectionCard({
             {connection.user.bio ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{connection.user.bio}</Text> : null}
           </View>
         </View>
+        {/*
+          🔴 The status chip is keyed off the TAB, not off `connection.status`.
+
+          The API returns `pending` for a request in either direction, and the translations
+          are `accepted` / `pending_received` / `pending_sent` — so `connections.status.pending`
+          missed and i18next printed the key itself. A member looking at a request they had
+          just received saw the literal text "connections.status.pending". Found on a device
+          on 2026-08-22.
+
+          The tab already knows the direction, which is what the key names were built for.
+          `statusKey` falls back to the raw status so an unexpected value still resolves to
+          something rather than reintroducing a raw key.
+        */}
         <View className="flex-row flex-wrap gap-2">
-          <Chip size="sm" variant="secondary"><Chip.Label>{t(`connections.status.${connection.status}`)}</Chip.Label></Chip>
+          <Chip size="sm" variant="secondary"><Chip.Label>{t(`connections.status.${statusKey}`)}</Chip.Label></Chip>
           {connectedDate ? (
             <Chip size="sm" variant="soft" color="default">
               <Ionicons name="calendar-outline" size={12} color={theme.textMuted} />
-              <Chip.Label>{t('connections.connectedSince', { date: connectedDate })}</Chip.Label>
+              {/*
+                🔴 And the date label depends on the tab too. `created_at` is when the
+                REQUEST was made; on the pending tabs "Connected 22 Aug" was simply untrue —
+                they are not connected, that is the whole point of the tab.
+              */}
+              <Chip.Label>
+                {tab === 'accepted'
+                  ? t('connections.connectedSince', { date: connectedDate })
+                  : t('connections.requestedOn', { date: connectedDate })}
+              </Chip.Label>
             </Chip>
           ) : null}
         </View>

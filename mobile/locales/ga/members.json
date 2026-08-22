@@ -45,6 +45,7 @@
     "browseMembers": "Brabhsáil baill",
     "viewProfile": "Féach ar phróifíl le haghaidh {{name}}",
     "connectedSince": "Ceangailte {{date}}",
+    "requestedOn": "Iarrtha {{date}}",
     "message": "Teachtaireacht",
     "remove": "Bain",
     "accept": "Glac le",
