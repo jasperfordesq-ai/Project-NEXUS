@@ -63,7 +63,7 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Onboarding and access | 14 | 4 | 3 | 3 | 0 | 4 | 0 | 0.468 |
+| 1 — Onboarding and access | 14 | 5 | 3 | 3 | 0 | 3 | 0 | 0.539 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
@@ -71,19 +71,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **38** | **41** | **24** | **4** | **31** | **2** | — |
+| **Total** | **140** | **39** | **41** | **24** | **4** | **30** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.505**.
+rows → **0.513**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (4 × 1.0) + (3 × 0.6) + (3 × 0.25) = 6.55 | ÷ 14 | **0.468** |
+| 1 | (5 × 1.0) + (3 × 0.6) + (3 × 0.25) = 7.55 | ÷ 14 | **0.539** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
@@ -117,7 +117,7 @@ uninterpretable.
 | 1.10 | Onboarding flow for a brand-new member | CERTIFIED | Walked 2026-08-22: registration form filled on a device, `users` row 900019 created in tenant 2 as `pending`, unapproved and unverified — then deleted. Three real defects found, all fixed. 🔴 **The account was created and the app said "Request timed out. Please check your connection."** — registration does an MX lookup and a breach-database check before answering, and the ordinary 15s mutation timeout fired on a request the server completed. Registration now has its own 45s timeout, and a no-answer no longer claims failure: it says the account may already exist and to try signing in. The error banner also renders at the TOP of a form taller than the screen, so a member at the bottom saw nothing at all; it now scrolls into view. Guarded by three tests in `app/(auth)/register.test.tsx` and one in `lib/api/auth.test.ts`, all mutation-verified. 🔴 A `.local` email address cannot register — the MX check refuses it, which is why every fixture account was seeded directly |
 | 1.11 | Switch community while signed in | RENDERS | Picker reached and listed real communities against the live API |
 | 1.12 | Tenant branding applies (logo, accent) | RENDERS | "Hour Timebank / Local development tenant" header correct; only one tenant checked |
-| 1.13 | Force-update screen appears below the minimum version | OPEN | Server lever exists (`EnforceMobileMinimumVersion`, 426); never triggered against a device |
+| 1.13 | Force-update screen appears below the minimum version | CERTIFIED | **Fired for the first time, 2026-08-22.** The server floor was raised to 1.3.0 in local config, the API refused the 1.2.0 build with 426, and the app replaced itself with the blocking screen — "Time to update", the server's own download link, and no dismiss, back or skip. Floor restored afterwards and the app confirmed unblocked. 🔴 One real defect found by firing it: the footer read **"Latest version 1.2.0 · you have 1.2.0"** on a screen refusing to let the member continue — a sentence that tells them the block is a bug and leaves them nothing to do. The server was not wrong (`current_version` is the newest build that exists, and no 1.3.0 existed), but a screen this final must not present a contradiction whatever it is told: it now shows the version actually required, and says nothing at all when neither number is ahead. Three tests added, mutation-verified |
 | 1.14 | "Update ready — restart" prompt | OPEN | Implemented 2026-08-20; never seen on a device |
 
 ## Tier 2 — Feed and social (14 rows)

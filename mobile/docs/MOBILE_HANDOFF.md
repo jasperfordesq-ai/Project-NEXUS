@@ -30,15 +30,17 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    anything else.
 2. **Zero BROKEN rows**, or each remaining one explicitly accepted in writing by the owner.
 3. Crash reporting **on** in the profile that gets distributed, and one crash seen arriving.
-4. The force-update lever **proven end to end** — it cannot be retrofitted onto a binary that
-   is already on someone's phone.
+4. ~~The force-update lever proven end to end.~~ **Done 2026-08-22** — fired for the first
+   time by raising the server floor locally: the API refused the build with 426 and the app
+   replaced itself with an undismissable screen. What remains for a release is that the update
+   it demands must actually be downloadable, which is item 5.
 5. The distribution path **exercised once**: a build published, installed from that channel,
    and opened.
 6. A **screen-reader pass** over one complete journey. The platform's other frontend is
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 545 or 700 is not the point.
+Nothing in that list is a score. A total of 547 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -78,8 +80,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-22
 
-**545 / 1000 on rubric M1.** Of 140 journeys: 38 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
-2 BROKEN, 29 never attempted, 2 not applicable.
+**547 / 1000 on rubric M1.** Of 140 journeys: 39 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
+2 BROKEN, 28 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
@@ -115,8 +117,8 @@ a look at the database afterwards.
 
 ### Still to walk — 29 rows, grouped by what they need
 
-**Tier 1, getting in (4 rows) — do these first.** The legal-acceptance gate, passkey sign-in,
-the force-update screen and the "update ready — restart" prompt.
+**Tier 1, getting in (3 rows) — do these first.** The legal-acceptance gate, passkey sign-in,
+and the "update ready — restart" prompt.
 
 🔴 Password reset is CERTIFIED, and the local seam is worth knowing: **the mail leg cannot
 complete here, and that is correct behaviour.** The reset token is stored only AFTER the mailer

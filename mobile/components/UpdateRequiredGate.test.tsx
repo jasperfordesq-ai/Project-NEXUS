@@ -137,6 +137,54 @@ describe('UpdateRequiredGate', () => {
     expect(String(line.props.children)).not.toContain('undefined');
   });
 
+  /**
+   * 🔴 Measured on a device on 2026-08-22, firing the lever for the first time. With the
+   * server floor raised to 1.3.0 while the newest build was still 1.2.0, this line read
+   * "Latest version 1.2.0 · you have 1.2.0" on a screen refusing to let the member continue —
+   * a sentence that tells them the block is a bug and leaves them nothing to do.
+   */
+  it('🔴 never offers a "latest" that is not newer than what the member has', () => {
+    updateRequiredStore.require({
+      ...REQUIREMENT,
+      clientVersion: '1.2.0',
+      minimumVersion: '1.3.0',
+      currentVersion: '1.2.0', // the server's newest build is the one they already have
+    });
+
+    render(<App />);
+
+    const line = screen.getByTestId('update-required-versions');
+    // Falls back to the version actually required, which IS ahead of theirs.
+    expect(String(line.props.children)).toContain('1.3.0');
+    expect(String(line.props.children)).not.toMatch(/1\.2\.0.*1\.2\.0/);
+  });
+
+  it('says nothing at all when no offered version is ahead', () => {
+    updateRequiredStore.require({
+      ...REQUIREMENT,
+      clientVersion: '1.2.0',
+      minimumVersion: '1.2.0',
+      currentVersion: '1.2.0',
+    });
+
+    render(<App />);
+
+    expect(screen.queryByTestId('update-required-versions')).toBeNull();
+  });
+
+  it('ignores an unparseable version rather than claiming an upgrade', () => {
+    updateRequiredStore.require({
+      ...REQUIREMENT,
+      clientVersion: '1.2.0',
+      minimumVersion: 'not-a-version',
+      currentVersion: 'also-not',
+    });
+
+    render(<App />);
+
+    expect(screen.queryByTestId('update-required-versions')).toBeNull();
+  });
+
   it('🔴 offers no dismiss, back or skip', () => {
     // The exit IS the policy. Any "continue anyway" leads straight to a wall of
     // unexplained failures, because the API refuses every request from this build.
