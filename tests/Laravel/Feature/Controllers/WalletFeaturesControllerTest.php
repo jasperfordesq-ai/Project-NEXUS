@@ -103,6 +103,86 @@ class WalletFeaturesControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * 🔴 200 is not the same as an answer.
+     *
+     * `test_community_fund_returns_data()` above asserts only the status, and it passed for
+     * as long as this endpoint has existed while the body was
+     * `{"balance": 0, "enabled": false}` for EVERY tenant on the platform. The gate asked
+     * `TenantContext::hasFeature('wallet')`, but `wallet` lives in
+     * `TenantFeatureConfig::MODULE_DEFAULTS`, not `FEATURE_DEFAULTS` — so the feature lookup
+     * could never be true, and no tenant writes a `wallet` key into its `features` JSON.
+     *
+     * Found by walking the mobile wallet on 2026-08-22: a member donated a credit, the fund
+     * account recorded it, and the wallet screen showed FUND 0h / DONATED 0h. The credit had
+     * left their balance. Nothing was lost — it was invisible.
+     *
+     * This test asserts the CONTENT after a real donation, which is what the status-only
+     * test could not do.
+     */
+    public function test_community_fund_reports_a_donation_rather_than_reporting_itself_disabled(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $before = $this->apiGet('/v2/wallet/community-fund');
+        $before->assertStatus(200);
+        $this->assertArrayNotHasKey(
+            'enabled',
+            (array) $before->json('data'),
+            'The fund answered with the feature-disabled shape. `wallet` is a MODULE, not a '
+            . 'feature: use TenantContext::hasModule("wallet").'
+        );
+        $startingBalance = (float) ($before->json('data.balance') ?? 0);
+
+        $donation = $this->apiPost('/v2/wallet/donate', [
+            'recipient_type' => 'community_fund',
+            'amount' => 2.0,
+            'message' => 'Regression: the fund must show this',
+        ]);
+        $donation->assertStatus(201);
+
+        $after = $this->apiGet('/v2/wallet/community-fund');
+        $after->assertStatus(200);
+
+        $this->assertSame(
+            $startingBalance + 2.0,
+            (float) $after->json('data.balance'),
+            'The community fund balance did not move after a donation that debited the member.'
+        );
+        $this->assertGreaterThanOrEqual(
+            2.0,
+            (float) $after->json('data.total_donated'),
+            'total_donated did not record the member donation.'
+        );
+    }
+
+    /**
+     * 🔴 A shape guard on the gate itself, because the wrong registry fails SILENTLY.
+     *
+     * Asking for a module in the feature registry does not error — it returns false, and the
+     * endpoint answers with a polite "disabled" that looks like a tenant setting. Six
+     * endpoints in this controller were dead that way. If a future edit reaches for
+     * `hasFeature('wallet')` again, this says so immediately.
+     */
+    public function test_wallet_gates_ask_the_module_registry_not_the_feature_registry(): void
+    {
+        $source = file_get_contents(base_path('app/Http/Controllers/Api/WalletFeaturesController.php'));
+        $this->assertIsString($source);
+
+        // 🔴 Comments are stripped first. The controller's own explanation of this defect
+        // quotes `hasFeature('wallet')` several times, and matching prose made this guard
+        // fail against the very fix it is guarding.
+        $code = preg_replace('~^\s*(//|\*|/\*).*$~m', '', $source) ?? $source;
+
+        $this->assertStringNotContainsString(
+            "hasFeature('wallet')",
+            $code,
+            '`wallet` is in MODULE_DEFAULTS, not FEATURE_DEFAULTS, so hasFeature("wallet") is '
+            . 'false for every tenant and silently disables the community fund everywhere.'
+        );
+        $this->assertStringContainsString("hasModule('wallet')", $code);
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/wallet/community-fund/transactions
     // ------------------------------------------------------------------

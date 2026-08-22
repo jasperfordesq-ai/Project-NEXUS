@@ -38,12 +38,31 @@ class WalletFeaturesController extends BaseApiController
     // COMMUNITY FUND (W1)
     // ============================================
 
+    // 🔴 The six gates below ask `hasModule('wallet')`, NOT `hasFeature('wallet')`.
+    //
+    // `wallet` lives in `TenantFeatureConfig::MODULE_DEFAULTS`, not in `FEATURE_DEFAULTS`.
+    // `hasFeature('wallet')` therefore returned false for EVERY tenant on the platform,
+    // always — `mergeFeatureDefaults()` starts from the feature defaults, and `wallet` is
+    // simply not a key there, so nothing could ever make it true short of a tenant writing
+    // a `wallet` key into its `features` JSON by hand. No tenant does.
+    //
+    // Consequence, found by walking the mobile wallet on 2026-08-22: a member donates a
+    // credit, the fund account records it (`community_fund_accounts` balance 1.00,
+    // `community_fund_transactions` row written), and the balance endpoint answers
+    // `{"balance": 0, "enabled": false}`. The mobile wallet duly shows FUND 0h / DEPOSITED
+    // 0h / DONATED 0h, so the member's donation is invisible to them and to everyone else.
+    // Deposit, withdraw, the fund's own donate route and the transaction-category endpoints
+    // were dead the same way.
+    //
+    // The member-facing `donate()` at the bottom of this controller is NOT gated, which is
+    // why donating worked while seeing the result did not.
+
     /** GET /api/v2/wallet/community-fund/balance */
     public function communityFundBalance(): JsonResponse
     {
         $this->requireAuth();
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
@@ -57,7 +76,7 @@ class WalletFeaturesController extends BaseApiController
     {
         $this->requireAuth();
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
@@ -75,7 +94,7 @@ class WalletFeaturesController extends BaseApiController
         $userId = $this->requireAuth();
         $this->requireAdmin();
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
@@ -108,7 +127,7 @@ class WalletFeaturesController extends BaseApiController
         $userId = $this->requireAuth();
         $this->requireAdmin();
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
@@ -144,7 +163,7 @@ class WalletFeaturesController extends BaseApiController
         // this is the same irreversible credit transfer under a second route.
         $this->rateLimit('wallet_donate', 10, 60);
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
@@ -191,7 +210,7 @@ class WalletFeaturesController extends BaseApiController
     {
         $this->requireAuth();
 
-        if (!TenantContext::hasFeature('wallet')) {
+        if (!TenantContext::hasModule('wallet')) {
             return $this->respondWithData(['balance' => 0, 'enabled' => false]);
         }
 
