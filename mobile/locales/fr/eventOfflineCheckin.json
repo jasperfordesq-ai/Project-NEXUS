@@ -27,7 +27,11 @@
     "keep": "Conserver l’appareil",
     "empty": "Aucun appareil n’est autorisé pour cet événement.",
     "version": "Version {{version}}",
-    "status": { "active": "Actif", "revoked": "Révoqué", "expired": "Expiré" }
+    "status": {
+      "active": "Actif",
+      "revoked": "Révoqué",
+      "expired": "Expiré"
+    }
   },
   "scan": {
     "title": "Scanner ou saisir le code du participant",
@@ -37,7 +41,12 @@
     "codeLabel": "QR ou code du participant",
     "codeHint": "Le code commence par nqx2_",
     "operation": "Action de présence",
-    "operations": { "check_in": "Enregistrer l’arrivée", "check_out": "Enregistrer le départ", "no_show": "Marquer absent", "undo": "Annuler la dernière action" },
+    "operations": {
+      "check_in": "Enregistrer l’arrivée",
+      "check_out": "Enregistrer le départ",
+      "no_show": "Marquer absent",
+      "undo": "Annuler la dernière action"
+    },
     "reason": "Motif de correction",
     "reasonHint": "Obligatoire pour une annulation. N’indiquez aucune information sensible.",
     "queue": "Ajouter à la file chiffrée",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "File hors ligne chiffrée",
     "pending": "{{count}} actions en attente",
+    "pending_one": "{{count}} action en attente",
     "sync": "Synchroniser",
     "synced": "Les décisions du serveur ont été appliquées à la file.",
     "syncError": "La synchronisation a échoué. La file chiffrée peut être réessayée avec les mêmes clés d’idempotence.",
@@ -57,7 +67,12 @@
     "purge": "Supprimer les données hors ligne",
     "purgeTitle": "Supprimer les données hors ligne de cet appareil ?",
     "purgeDescription": "La liste chiffrée, le secret de l’appareil et les actions non synchronisées seront définitivement supprimés.",
-    "states": { "pending": "En attente", "synced": "Synchronisé", "conflict": "Conflit", "rejected": "Rejeté" }
+    "states": {
+      "pending": "En attente",
+      "synced": "Synchronisé",
+      "conflict": "Conflit",
+      "rejected": "Rejeté"
+    }
   },
   "conflicts": {
     "title": "Conflits d’enregistrement",

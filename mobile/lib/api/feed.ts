@@ -39,20 +39,36 @@ export type FeedFilter =
 
 export type FeedMode = 'ranking' | 'recent';
 
+/**
+ * 🔴 The tallies are nullable, and the app has to cope with that.
+ *
+ * `FeedService` withholds results from everyone except the poll's creator while the poll
+ * is open, so `total_votes`, `vote_count` and `percentage` all arrive as `null`. They were
+ * typed as plain `number` here, which is why `PollCard` did arithmetic on them and drew a
+ * chart out of nothing (fixed 2026-08-22).
+ */
 export interface PollOption {
   id: number;
   text: string;
-  vote_count: number;
-  percentage: number;
+  vote_count: number | null;
+  percentage: number | null;
 }
 
 export interface PollData {
   id: number;
   question: string;
   options: PollOption[];
-  total_votes: number;
+  total_votes: number | null;
   user_vote_option_id: number | null;
   is_active: boolean;
+  /**
+   * 🔴 Two endpoints say "results are withheld" in two different ways, and a client has to
+   * accept both. `PollService` (the vote endpoint) sends `results_visible: false` and still
+   * sends a real `total_votes` — participation volume is deliberately public, only the
+   * distribution is secret. `FeedService` sends no such flag and nulls `total_votes`
+   * instead. Trusting only the null is what made the card show "2 votes" beside 0% and 0%.
+   */
+  results_visible?: boolean;
 }
 
 export interface FeedItem {

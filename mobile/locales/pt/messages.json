@@ -11,6 +11,7 @@
   "searchPlaceholder": "Pesquisar mensagens",
   "resultsLoading": "Carregando",
   "conversationCount": "{{count}} conversa",
+  "conversationCount_one": "{{count}} conversa",
   "conversationCount_other": "{{count}} conversas",
   "visibleCount": "{{count}} mostradas",
   "archivedCount": "{{count}} arquivadas",
@@ -41,6 +42,7 @@
     "you": "Você:",
     "goBack": "Voltar",
     "messageCount": "{{count}} mensagem",
+    "messageCount_one": "{{count}} mensagem",
     "messageCount_other": "{{count}} mensagens",
     "messagingRestrictedTitle": "Mensagens em pausa",
     "messagingRestrictedContact": "Contacte a sua equipa da comunidade antes de enviar mais mensagens.",
@@ -116,6 +118,7 @@
     "emptySubtitle": "Tente um nome diferente ou verifique o diretório de membros.",
     "memberFallback": "Membro da comunidade",
     "resultsCount": "{{count}} membro mostrado",
+    "resultsCount_one": "{{count}} membro apresentado",
     "resultsCount_other": "{{count}} membros apresentados",
     "openThread": "Enviar mensagem a {{name}}"
   },

@@ -5,10 +5,13 @@
   "subtitle": "Communautés connectées",
   "stats": {
     "partners": "{{count}} partenaire",
+    "partners_one": "{{count}} partenaire",
     "partners_other": "{{count}} partenaires",
     "members": "{{count}} membre fédéré",
+    "members_one": "{{count}} membre fédéré",
     "members_other": "{{count}} membres fédérés",
     "exchanges": "{{count}} échange inter-communautaire",
+    "exchanges_one": "{{count}} échange inter-communautaire",
     "exchanges_other": "{{count}} échanges inter-communautaires"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Aucune activité pour l'instant",
     "noActivityDescription": "Les messages, partenariats et échanges intercommunautaires apparaîtront ici.",
     "memberCount": "{{count}} membre",
+    "memberCount_one": "{{count}} membre",
     "memberCount_other": "{{count}} membres",
     "viewCommunity": "Afficher la communauté",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "aujourd'hui",
     "daysAgo": "{{count}}il y a un jour",
+    "daysAgo_one": "il y a {{count}} jour",
     "daysAgo_other": "{{count}} il y a jours",
     "monthsAgo": "{{count}} il y a un mois",
+    "monthsAgo_one": "il y a {{count}} mois",
     "monthsAgo_other": "{{count}} il y a mois"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "membres",
     "memberTotal": "Nombre de membres",
     "memberCount": "{{count}} membre",
+    "memberCount_one": "{{count}} membre",
     "memberCount_other": "{{count}} membres",
     "partnerSince": "Partenaire depuis {{date}}",
     "partnerSinceLabel": "Partenaire depuis",
@@ -133,8 +140,10 @@
     "tryAgain": "Réessayez",
     "backToHub": "Retour au hub de la fédération",
     "resultsCount": "{{count}} résultat",
+    "resultsCount_one": "{{count}} résultat",
     "resultsCount_other": "{{count}} résultats",
     "memberCount": "{{count}} membre",
+    "memberCount_one": "{{count}} membre",
     "memberCount_other": "{{count}} membres",
     "external": "Externe",
     "unknownCommunity": "Communauté de partenaires",
@@ -289,6 +298,7 @@
       "unavailableTitle": "Les groupes fédérés ne sont pas activés",
       "unavailableDescription": "La fédération est active pour ce locataire, mais les groupes partenaires le sont désactivé. Un administrateur de communauté doit activer les groupes fédérés.",
       "memberCount": "{{count}} membre",
+      "memberCount_one": "{{count}} membre",
       "memberCount_other": "{{count}} membres",
       "loadMore": "Charger plus de groupes",
       "openDetails": "Ouvrir les détails de {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Organisateur de l'événement",
       "ends": "Fin le {{date}}",
       "attendeeCount": "{{count}} participant",
+      "attendeeCount_one": "{{count}} participant",
       "attendeeCount_other": "{{count}} participants"
     },
     "onboarding": {

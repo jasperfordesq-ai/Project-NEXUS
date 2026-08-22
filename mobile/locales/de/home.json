@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} Stimmen",
+    "totalVotes_one": "{{count}} Stimme",
     "voted": "Du hast abgestimmt",
     "closed": "Umfrage beendet",
-    "vote": "Abstimmen"
+    "vote": "Abstimmen",
+    "resultsHiddenUntilClose": "Ergebnisse erscheinen nach Ablauf der Umfrage",
+    "voteToSeeResults": "Abstimmen, um Ergebnisse zu sehen"
   },
   "pollsScreen": {
     "title": "Umfragen",
@@ -202,9 +205,13 @@
     "comments": "{{count}} Kommentar",
     "views": "{{count}} Aufruf",
     "shares": "{{count}} geteilt",
+    "reactions_one": "{{count}} Reaktion",
     "reactions_other": "{{count}} Reaktionen",
+    "comments_one": "{{count}} Kommentar",
     "comments_other": "{{count}} Kommentare",
+    "views_one": "{{count}} Aufruf",
     "views_other": "{{count}} Aufrufe",
+    "shares_one": "{{count}} mal geteilt",
     "shares_other": "{{count}} geteilt"
   },
   "milestone": {
@@ -222,7 +229,8 @@
     "eyebrow": "Entdecken",
     "subtitle": "Finde aktive Themen und Gesprache in deinem Feed.",
     "searchPlaceholder": "Hashtags suchen",
-    "postCount": "{{count}} Beitrage",
+    "postCount": "{{count}} Beiträge",
+    "postCount_one": "{{count}} Beitrag",
     "open": "Offnen",
     "openTag": "#{{tag}} offnen",
     "loadFailed": "Hashtags konnten nicht geladen werden.",
@@ -234,7 +242,8 @@
   "hashtag": {
     "title": "Hashtag",
     "subtitle": "Getaggte Feed-Beitrage",
-    "postCount": "{{count}} Beitrage",
+    "postCount": "{{count}} Beiträge",
+    "postCount_one": "{{count}} Beitrag",
     "loadFailed": "Beitrage fur dieses Hashtag konnten nicht geladen werden.",
     "unableToLoad": "Dieses Hashtag konnte nicht geladen werden",
     "emptyTitle": "Noch keine Beitrage",
@@ -254,6 +263,7 @@
     "failed": "Deine Reaktion konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "summaryTwo": "{{a}} und {{b}}",
     "summaryMany": "{{name}} und {{count}} weitere Person",
+    "summaryMany_one": "{{name}} und {{count}} weitere Person",
     "summaryMany_other": "{{name}} und {{count}} weitere Personen",
     "viewReactors": "Ansehen, wer reagiert hat",
     "reactorsTitle": "Reaktionen",

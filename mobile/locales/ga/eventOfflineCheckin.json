@@ -27,7 +27,11 @@
     "keep": "Coinnigh an gléas",
     "empty": "Níl aon ghléas údaraithe don imeacht seo.",
     "version": "Leagan {{version}}",
-    "status": { "active": "Gníomhach", "revoked": "Cúlghairthe", "expired": "Imithe in éag" }
+    "status": {
+      "active": "Gníomhach",
+      "revoked": "Cúlghairthe",
+      "expired": "Imithe in éag"
+    }
   },
   "scan": {
     "title": "Scan nó cuir cód an fhreastalaí isteach",
@@ -37,7 +41,12 @@
     "codeLabel": "QR nó cód an fhreastalaí",
     "codeHint": "Tosaíonn an cód le nqx2_",
     "operation": "Gníomh tinrimh",
-    "operations": { "check_in": "Seiceáil isteach", "check_out": "Seiceáil amach", "no_show": "Marcáil mar dhuine nár fhreastail", "undo": "Cealaigh an gníomh is déanaí" },
+    "operations": {
+      "check_in": "Seiceáil isteach",
+      "check_out": "Seiceáil amach",
+      "no_show": "Marcáil mar dhuine nár fhreastail",
+      "undo": "Cealaigh an gníomh is déanaí"
+    },
     "reason": "Cúis an cheartúcháin",
     "reasonHint": "Riachtanach chun gníomh a chealú. Ná cuir faisnéis íogair san áireamh.",
     "queue": "Cuir leis an scuaine chriptithe",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "Scuaine chriptithe as líne",
     "pending": "{{count}} gníomh ar feitheamh",
+    "pending_one": "{{count}} ghníomh ar feitheamh",
     "sync": "Sioncronaigh anois",
     "synced": "Cuireadh cinntí an fhreastalaí i bhfeidhm ar an scuaine.",
     "syncError": "Theip ar an sioncronú. Is féidir an scuaine chriptithe a atriail go sábháilte leis na heochracha idéimpitéise céanna.",
@@ -57,7 +67,12 @@
     "purge": "Bain sonraí as líne",
     "purgeTitle": "Sonraí as líne an ghléis seo a bhaint?",
     "purgeDescription": "Bainfear an liosta criptithe, rún an ghléis agus gníomhartha nár sioncronaíodh go buan.",
-    "states": { "pending": "Ar feitheamh", "synced": "Sioncronaithe", "conflict": "Coinbhleacht", "rejected": "Diúltaithe" }
+    "states": {
+      "pending": "Ar feitheamh",
+      "synced": "Sioncronaithe",
+      "conflict": "Coinbhleacht",
+      "rejected": "Diúltaithe"
+    }
   },
   "conflicts": {
     "title": "Coinbhleachtaí seiceáil isteach",

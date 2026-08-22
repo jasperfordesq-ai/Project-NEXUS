@@ -168,6 +168,7 @@
     "history": {
       "title": "Export history",
       "count": "{{count}} exports",
+      "count_one": "{{count}} export",
       "empty": "No exports yet",
       "emptyDesc": "Your completed export requests will appear here."
     }
@@ -241,7 +242,15 @@
       "can_manage_listings": "Manage listings",
       "can_transact": "Transfer credits"
     },
-    "tiers": { "activity": "Attività", "listings": "Annunci", "credits": "Crediti", "none": "Nessuno", "assist": "Solo visualizzazione", "co_decide": "Prepara; approvi ogni azione", "represent": "Agire in autonomia" },
+    "tiers": {
+      "activity": "Attività",
+      "listings": "Annunci",
+      "credits": "Crediti",
+      "none": "Nessuno",
+      "assist": "Solo visualizzazione",
+      "co_decide": "Prepara; approvi ogni azione",
+      "represent": "Agire in autonomia"
+    },
     "permissionToggle": "Toggle {{permission}} for {{name}}",
     "activity": {
       "show": "Vedi la sua attività",

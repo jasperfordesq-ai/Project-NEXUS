@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} votos",
+    "totalVotes_one": "{{count}} voto",
     "voted": "Has votado",
     "closed": "Encuesta cerrada",
-    "vote": "Votar"
+    "vote": "Votar",
+    "resultsHiddenUntilClose": "Resultados revelados cuando cierre la encuesta",
+    "voteToSeeResults": "Vota para ver los resultados"
   },
   "pollsScreen": {
     "title": "Encuestas",
@@ -202,9 +205,13 @@
     "comments": "{{count}} comentario",
     "views": "{{count}} visualización",
     "shares": "{{count}} vez compartido",
+    "reactions_one": "{{count}} reacción",
     "reactions_other": "{{count}} reacciones",
+    "comments_one": "{{count}} comentario",
     "comments_other": "{{count}} comentarios",
+    "views_one": "{{count}} visualización",
     "views_other": "{{count}} visualizaciones",
+    "shares_one": "{{count}} vez compartido",
     "shares_other": "{{count}} veces compartido"
   },
   "milestone": {
@@ -223,6 +230,7 @@
     "subtitle": "Encuentra temas activos y conversaciones en tu feed.",
     "searchPlaceholder": "Buscar hashtags",
     "postCount": "{{count}} publicaciones",
+    "postCount_one": "{{count}} publicación",
     "open": "Abrir",
     "openTag": "Abrir #{{tag}}",
     "loadFailed": "No se pudieron cargar los hashtags.",
@@ -235,6 +243,7 @@
     "title": "Hashtag",
     "subtitle": "Publicaciones etiquetadas",
     "postCount": "{{count}} publicaciones",
+    "postCount_one": "{{count}} publicación",
     "loadFailed": "No se pudieron cargar las publicaciones de este hashtag.",
     "unableToLoad": "No se pudo cargar este hashtag",
     "emptyTitle": "Aun no hay publicaciones",
@@ -254,6 +263,7 @@
     "failed": "No se pudo guardar tu reacción. Inténtalo de nuevo.",
     "summaryTwo": "{{a}} y {{b}}",
     "summaryMany": "{{name}} y {{count}} persona más",
+    "summaryMany_one": "{{name}} y {{count}} persona más",
     "summaryMany_other": "{{name}} y {{count}} personas más",
     "viewReactors": "Ver quién reaccionó",
     "reactorsTitle": "Reacciones",

@@ -62,6 +62,7 @@
   "shifts": "Aistrithe",
   "shiftDateUnavailable": "Seal oibre",
   "shiftSpots": "{{count}} láthair ar fáil",
+  "shiftSpots_one": "{{count}} spota ar fáil",
   "shiftSpots_other": "{{count}} spotaí ar fáil",
   "shiftCapacity": "{{count}} sínithe",
   "signUpForShift": "Cláraigh le haghaidh seala",
@@ -110,6 +111,7 @@
     "generateError": "Níorbh fhéidir teastas a chruthú. Seans go mbeidh uaireanta ceadaithe ag teastáil ar dtús.",
     "emptyTitle": "Níl aon teastas ann fós",
     "verifiedHours": "{{count}} uair dheimhnithe",
+    "verifiedHours_one": "{{count}} uair dheimhnithe",
     "dateRange": "{{start}} - {{end}}",
     "dateUnknown": "Dáta gan fáil",
     "organizationHours": "{{name}}: {{hours}} u",
@@ -185,6 +187,7 @@
     "declined": "Diúltaithe"
   },
   "spots": "{{count}} áit fágtha",
+  "spots_one": "{{count}} áit fágtha",
   "spots_other": "{{count}} áit fágtha",
   "status": {
     "open": "Oscailte",
@@ -305,6 +308,7 @@
     "volunteers": {
       "empty": "Níl aon oibrí deonach ceadaithe fós.",
       "summary": "{{hours}} u thar {{count}} iarratas",
+      "summary_one": "{{hours}} u thar {{count}} iarratas",
       "openProfile": "Oscail próifíl {{name}}"
     },
     "wallet": {

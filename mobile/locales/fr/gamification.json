@@ -20,6 +20,7 @@
     "you": "Toi",
     "empty": "Aucun classement pour le moment.",
     "badgesCount": "{{count}} insigne",
+    "badgesCount_one": "{{count}} insigne",
     "badgesCount_other": "{{count}} insignes"
   },
   "subtitle": "Track your level, badges, streak, and community standing.",
@@ -50,6 +51,7 @@
     "claimToday": "Claim {{xp}} XP today",
     "comeBackTomorrow": "Come back tomorrow for {{xp}} XP",
     "streak": "{{count}} day streak",
+    "streak_one": "{{count}} day streak",
     "streak_other": "{{count}} day streak",
     "claimReward": "Claim reward",
     "claiming": "Claiming",

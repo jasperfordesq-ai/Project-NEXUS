@@ -92,6 +92,7 @@
     "profileStory": "Profil histoire",
     "aboutPlaceholder": "Parlez de vous à la communauté...",
     "bioHint": "{{count}} caractères restants",
+    "bioHint_one": "{{count}} caractère restant",
     "contactDetails": "Coordonnées",
     "location": "Localisation",
     "locationPlaceholder": "par ex. New York, États-Unis",

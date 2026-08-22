@@ -12,11 +12,14 @@
   "download": "Abrir recurso",
   "readArticle": "Leer artículo",
   "downloads": "{{count}} descargas",
+  "downloads_one": "{{count}} descarga",
   "views": "{{count}} visualizaciones",
+  "views_one": "{{count}} visualización",
   "helpful": "Personas que lo consideran útil: {{yes}}",
   "emptyTitle": "No se encontró nada",
   "emptySubtitle": "Prueba otra búsqueda o categoría.",
   "errorTitle": "No se pudieron cargar los recursos",
   "categoryCount": "{{count}} elementos",
+  "categoryCount_one": "{{count}} elemento",
   "uncategorized": "General"
 }

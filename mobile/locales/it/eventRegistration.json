@@ -56,6 +56,7 @@
     "version": "Versione {{version}}",
     "no_description": "Nessuna descrizione",
     "question_count": "{{count}} domanda",
+    "question_count_one": "{{count}} domanda",
     "question_count_other": "{{count}} domande",
     "published_at": "Pubblicato {{date}}",
     "edit": "Modifica bozza",
@@ -149,6 +150,7 @@
     "preview_title": "Anteprima del destinatario",
     "snapshot_notice": "Questa esatta istantanea del destinatario valido verrà utilizzata al momento dell'invio, anche se l'appartenenza al gruppo cambia successivamente.",
     "valid_count": "{{count}} destinatario valido",
+    "valid_count_one": "{{count}} destinatario valido",
     "valid_count_other": "{{count}} destinatari validi",
     "previewed": "Anteprima delle righe",
     "valid": "Valido",
@@ -323,8 +325,10 @@
       "min_length": "Inserisci almeno {{limit}} caratteri.",
       "max_length": "Inserisci non più di {{limit}} caratteri.",
       "min_selections": "Seleziona almeno {{count}} opzione.",
+      "min_selections_one": "Seleziona almeno {{count}} opzione.",
       "min_selections_other": "Seleziona almeno {{count}} opzioni.",
       "max_selections": "Seleziona non più di {{count}} opzione.",
+      "max_selections_one": "Seleziona non più di {{count}} opzione.",
       "max_selections_other": "Seleziona non più di {{count}} opzioni."
     }
   },

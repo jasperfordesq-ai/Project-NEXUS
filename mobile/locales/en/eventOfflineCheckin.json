@@ -58,6 +58,7 @@
   "queue": {
     "title": "Encrypted offline queue",
     "pending": "{{count}} pending actions",
+    "pending_one": "{{count}} pending action",
     "sync": "Sync now",
     "synced": "Server decisions were applied to the queue.",
     "syncError": "Sync failed. The encrypted queue is safe for another retry with the same idempotency keys.",

@@ -10,6 +10,7 @@
   "startTyping": "Inizia a digitare per cercare…",
   "searching": "Ricerca in corso...",
   "resultsCount": "{{count}} risultato",
+  "resultsCount_one": "{{count}} risultato",
   "resultsCount_other": "{{count}} risultati",
   "types": {
     "user": "Persone",
@@ -35,6 +36,7 @@
     "empty": "No saved searches yet.",
     "noQuery": "No query",
     "resultCount": "{{count}} result",
+    "resultCount_one": "{{count}} result",
     "resultCount_other": "{{count}} results",
     "saveFailedTitle": "Could not save search",
     "saveFailedMessage": "Please check the search name and try again.",

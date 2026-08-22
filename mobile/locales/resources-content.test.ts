@@ -33,6 +33,10 @@ describe('mobile resources locale content', () => {
   const validIdenticalValues: Partial<Record<keyof typeof locales, Set<string>>> = {
     es: new Set(['uncategorized']),
     fr: new Set(['articleTitle']),
+    // "download" is the ordinary Italian word too, and Italian does not add an -s, so the
+    // singular is correct BECAUSE it matches English. The plural already differs
+    // ("{{count}} download" vs "{{count}} downloads"), which is why only this one shows up.
+    it: new Set(['downloads_one']),
   };
 
   it.each(Object.entries(locales))('%s does not fall back to English', (locale, catalog) => {

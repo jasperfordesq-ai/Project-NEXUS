@@ -5,10 +5,13 @@
   "subtitle": "Comunità connesse",
   "stats": {
     "partners": "{{count}} partner",
+    "partners_one": "{{count}} partner",
     "partners_other": "{{count}} partner",
     "members": "{{count}} membro federato",
+    "members_one": "{{count}} membro federato",
     "members_other": "{{count}} membri federati",
     "exchanges": "{{count}} scambio tra comunità",
+    "exchanges_one": "{{count}} scambio tra comunità",
     "exchanges_other": "{{count}} scambi tra comunità"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Ancora nessuna attività",
     "noActivityDescription": "Messaggi, partnership e scambi tra comunità verranno visualizzati qui.",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}} membri",
     "viewCommunity": "Visualizza comunità",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "oggi",
     "daysAgo": "{{count}}giorno fa",
+    "daysAgo_one": "{{count}} giorno fa",
     "daysAgo_other": "{{count}} giorni fa",
     "monthsAgo": "{{count}} mese fa",
+    "monthsAgo_one": "{{count}} mese fa",
     "monthsAgo_other": "{{count}} mesi fa"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "membri",
     "memberTotal": "Conteggio membri",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}}membri",
     "partnerSince": "Partner dal {{date}}",
     "partnerSinceLabel": "Partner dal",
@@ -133,8 +140,10 @@
     "tryAgain": "Riprova",
     "backToHub": "Torna all'hub della federazione",
     "resultsCount": "{{count}} risultato",
+    "resultsCount_one": "{{count}} risultato",
     "resultsCount_other": "{{count}} risultati",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}}membri",
     "external": "Esterno",
     "unknownCommunity": "Comunità partner",
@@ -289,6 +298,7 @@
       "unavailableTitle": "I gruppi federati non sono abilitati",
       "unavailableDescription": "La federazione è attiva per questo tenant, ma i gruppi partner sono disabilitati. Un amministratore della comunità deve abilitare i gruppi federati.",
       "memberCount": "{{count}}membro",
+      "memberCount_one": "Membro {{count}}",
       "memberCount_other": "Membri {{count}}",
       "loadMore": "Carica altri gruppi",
       "openDetails": "Apri dettagli per {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Organizzatore dell'evento",
       "ends": "Termina {{date}}",
       "attendeeCount": "Partecipante {{count}}",
+      "attendeeCount_one": "Partecipante {{count}}",
       "attendeeCount_other": "Partecipanti {{count}}"
     },
     "onboarding": {

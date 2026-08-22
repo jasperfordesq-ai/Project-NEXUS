@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 7 | 6 | 12 | 0 | 9 | 0 | 0.400 |
+| 5 — Community modules | 34 | 9 | 6 | 12 | 0 | 7 | 0 | 0.459 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **23** | **41** | **26** | **4** | **44** | **2** | — |
+| **Total** | **140** | **25** | **41** | **26** | **4** | **42** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.401**.
+rows → **0.415**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.401**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (7 × 1.0) + (6 × 0.6) + (12 × 0.25) = 13.60 | ÷ 34 | **0.400** |
+| 5 | (9 × 1.0) + (6 × 0.6) + (12 × 0.25) = 15.60 | ÷ 34 | **0.459** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -227,8 +227,8 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.18 | Send a connection request | PROVEN | 2026-08-22: sent from UserB's profile — `connections` row 160 (674 → 675, `pending`) |
 | 5.19 | Accept a connection request | CERTIFIED | 2026-08-22: accepted on the recipient's device, row 160 → `accepted`. Two defects found and fixed on this screen: the status chip printed the raw key `connections.status.pending`, and a pending request was labelled "Connected <date>". Guarded by `app/(modals)/connections.test.tsx` (both mutation-verified) |
 | 5.20 | Polls list | RENDERS | Photographed |
-| 5.21 | Vote in a poll | OPEN | Never walked |
-| 5.22 | Create a poll | OPEN | Create entry resolves; never submitted |
+| 5.21 | Vote in a poll | CERTIFIED | Walked on two devices 2026-08-22. UserA voted (poll_votes 226), UserB voted the other option (227). Found and fixed three real faults: the tallies the server withholds from non-creators rendered as a chip with no number in it, then as 0%/0% bars after voting, and the card printed the question twice. Now reads "Vote to see results" / "Results revealed when poll closes", per the website's wording. |
+| 5.22 | Create a poll | CERTIFIED | Walked 2026-08-22: Create tab -> New poll -> question + two options -> Publish. polls row 41 (tenant 2, user 674) with poll_options 141/142; the new poll appeared in the list and in both members' feeds. |
 | 5.23 | Ideas / challenges | RENDERS | Photographed |
 | 5.24 | Submit an idea | OPEN | Never walked |
 | 5.25 | Jobs list | RENDERS | Photographed |

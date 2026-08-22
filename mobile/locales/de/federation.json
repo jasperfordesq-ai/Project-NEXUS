@@ -5,10 +5,13 @@
   "subtitle": "Verbundene Gemeinschaften",
   "stats": {
     "partners": "{{count}} Partner",
+    "partners_one": "{{count}} Partner",
     "partners_other": "{{count}} Partner",
     "members": "{{count}} Verbundmitglied",
+    "members_one": "{{count}} Verbundmitglied",
     "members_other": "{{count}} Verbundmitglieder",
     "exchanges": "{{count}} gemeinschaftsübergreifender Austausch",
+    "exchanges_one": "{{count}} gemeinschaftsübergreifender Austausch",
     "exchanges_other": "{{count}} gemeinschaftsübergreifende Austausche"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Noch keine Aktivität",
     "noActivityDescription": "Communityübergreifende Nachrichten, Partnerschaften und Austausch werden hier angezeigt.",
     "memberCount": "{{count}}-Mitglied",
+    "memberCount_one": "{{count}} Mitglied",
     "memberCount_other": "{{count}}-Mitglieder",
     "viewCommunity": "Community anzeigen",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "today",
     "daysAgo": "{{count}}vor einem Tag",
+    "daysAgo_one": "vor {{count}} Tag",
     "daysAgo_other": "{{count}} days ago",
     "monthsAgo": "{{count}} vor einem Monat",
+    "monthsAgo_one": "vor {{count}} Monat",
     "monthsAgo_other": "{{count}} vor einem Monat"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "Mitglieder",
     "memberTotal": "Mitgliederzahl",
     "memberCount": "{{count}} Mitglied",
+    "memberCount_one": "{{count}} Mitglied",
     "memberCount_other": "{{count}} Mitglieder",
     "partnerSince": "Partner seit {{date}}",
     "partnerSinceLabel": "Partner seit",
@@ -133,8 +140,10 @@
     "tryAgain": "Erneut versuchen",
     "backToHub": "Zurück zum Föderations-Hub",
     "resultsCount": "{{count}} Ergebnis",
+    "resultsCount_one": "{{count}} Ergebnis",
     "resultsCount_other": "{{count}} Ergebnisse",
     "memberCount": "{{count}} Mitglied",
+    "memberCount_one": "{{count}} Mitglied",
     "memberCount_other": "{{count}} Mitglieder",
     "external": "Extern",
     "unknownCommunity": "Partnergemeinschaft",
@@ -289,6 +298,7 @@
       "unavailableTitle": "Verbundgruppen sind nicht aktiviert",
       "unavailableDescription": "Der Verbund ist für diesen Mandanten aktiv, aber Partnergruppen sind deaktiviert. Ein Community-Administrator muss Verbundgruppen aktivieren.",
       "memberCount": "{{count}} Mitglied",
+      "memberCount_one": "{{count}} Mitglied",
       "memberCount_other": "{{count}} Mitglieder",
       "loadMore": "Weitere Gruppen laden",
       "openDetails": "Details öffnen für {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Veranstalter",
       "ends": "Endet am {{date}}",
       "attendeeCount": "{{count}} Teilnehmer",
+      "attendeeCount_one": "{{count}} Teilnehmer",
       "attendeeCount_other": "{{count}} Teilnehmer"
     },
     "onboarding": {

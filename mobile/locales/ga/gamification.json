@@ -20,6 +20,7 @@
     "you": "Tusa",
     "empty": "Níl aon rangú ann fós.",
     "badgesCount": "{{count}} suaitheantas",
+    "badgesCount_one": "{{count}} suaitheantas",
     "badgesCount_other": "{{count}} suaitheantas"
   },
   "subtitle": "Coinnigh súil ar do leibhéal, do shuaitheantais, do shraith agus do sheasamh sa phobal.",
@@ -50,6 +51,7 @@
     "claimToday": "Éiligh {{xp}} XP inniu",
     "comeBackTomorrow": "Fill amárach le haghaidh {{xp}} XP",
     "streak": "Sraith {{count}} lá",
+    "streak_one": "Sraith {{count}} lá",
     "streak_other": "Sraith {{count}} lá",
     "claimReward": "Éiligh an luach saothair",
     "claiming": "Á éileamh",

@@ -27,7 +27,11 @@
     "keep": "Gerät behalten",
     "empty": "Für diese Veranstaltung sind keine Geräte autorisiert.",
     "version": "Version {{version}}",
-    "status": { "active": "Aktiv", "revoked": "Widerrufen", "expired": "Abgelaufen" }
+    "status": {
+      "active": "Aktiv",
+      "revoked": "Widerrufen",
+      "expired": "Abgelaufen"
+    }
   },
   "scan": {
     "title": "Teilnehmercode scannen oder eingeben",
@@ -37,7 +41,12 @@
     "codeLabel": "Teilnehmer-QR-Code oder Code",
     "codeHint": "Der Code beginnt mit nqx2_",
     "operation": "Anwesenheitsaktion",
-    "operations": { "check_in": "Einchecken", "check_out": "Auschecken", "no_show": "Als nicht erschienen markieren", "undo": "Letzte Aktion rückgängig machen" },
+    "operations": {
+      "check_in": "Einchecken",
+      "check_out": "Auschecken",
+      "no_show": "Als nicht erschienen markieren",
+      "undo": "Letzte Aktion rückgängig machen"
+    },
     "reason": "Grund der Korrektur",
     "reasonHint": "Für Rückgängig erforderlich. Geben Sie keine vertraulichen Informationen ein.",
     "queue": "Zur verschlüsselten Warteschlange hinzufügen",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "Verschlüsselte Offline-Warteschlange",
     "pending": "{{count}} ausstehende Aktionen",
+    "pending_one": "{{count}} ausstehende Aktion",
     "sync": "Jetzt synchronisieren",
     "synced": "Die Serverentscheidungen wurden auf die Warteschlange angewendet.",
     "syncError": "Die Synchronisierung ist fehlgeschlagen. Die verschlüsselte Warteschlange kann mit denselben Idempotenzschlüsseln sicher erneut versucht werden.",
@@ -57,7 +67,12 @@
     "purge": "Offline-Daten entfernen",
     "purgeTitle": "Offline-Daten dieses Geräts entfernen?",
     "purgeDescription": "Verschlüsselte Teilnehmerliste, Geräteschlüssel und nicht synchronisierte Aktionen werden dauerhaft entfernt.",
-    "states": { "pending": "Ausstehend", "synced": "Synchronisiert", "conflict": "Konflikt", "rejected": "Abgelehnt" }
+    "states": {
+      "pending": "Ausstehend",
+      "synced": "Synchronisiert",
+      "conflict": "Konflikt",
+      "rejected": "Abgelehnt"
+    }
   },
   "conflicts": {
     "title": "Check-in-Konflikte",

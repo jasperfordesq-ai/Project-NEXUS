@@ -27,7 +27,11 @@
     "keep": "Mantieni il dispositivo",
     "empty": "Nessun dispositivo è autorizzato per questo evento.",
     "version": "Versione {{version}}",
-    "status": { "active": "Attivo", "revoked": "Revocato", "expired": "Scaduto" }
+    "status": {
+      "active": "Attivo",
+      "revoked": "Revocato",
+      "expired": "Scaduto"
+    }
   },
   "scan": {
     "title": "Scansiona o inserisci il codice del partecipante",
@@ -37,7 +41,12 @@
     "codeLabel": "QR o codice del partecipante",
     "codeHint": "Il codice inizia con nqx2_",
     "operation": "Azione di presenza",
-    "operations": { "check_in": "Registra ingresso", "check_out": "Registra uscita", "no_show": "Segna come assente", "undo": "Annulla l’ultima azione" },
+    "operations": {
+      "check_in": "Registra ingresso",
+      "check_out": "Registra uscita",
+      "no_show": "Segna come assente",
+      "undo": "Annulla l’ultima azione"
+    },
     "reason": "Motivo della correzione",
     "reasonHint": "Obbligatorio per annullare. Non inserire informazioni sensibili.",
     "queue": "Aggiungi alla coda cifrata",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "Coda offline cifrata",
     "pending": "{{count}} azioni in attesa",
+    "pending_one": "{{count}} azione in attesa",
     "sync": "Sincronizza ora",
     "synced": "Le decisioni del server sono state applicate alla coda.",
     "syncError": "Sincronizzazione non riuscita. È possibile riprovare in sicurezza con le stesse chiavi di idempotenza.",
@@ -57,7 +67,12 @@
     "purge": "Rimuovi dati offline",
     "purgeTitle": "Rimuovere i dati offline del dispositivo?",
     "purgeDescription": "L’elenco cifrato, il segreto del dispositivo e le azioni non sincronizzate saranno rimossi definitivamente.",
-    "states": { "pending": "In attesa", "synced": "Sincronizzato", "conflict": "Conflitto", "rejected": "Rifiutato" }
+    "states": {
+      "pending": "In attesa",
+      "synced": "Sincronizzato",
+      "conflict": "Conflitto",
+      "rejected": "Rifiutato"
+    }
   },
   "conflicts": {
     "title": "Conflitti di check-in",

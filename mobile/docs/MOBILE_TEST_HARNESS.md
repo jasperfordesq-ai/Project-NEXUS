@@ -151,6 +151,7 @@ Useful column names for checking the result:
 | `events` | 🔴 The date is **`start_time`**. `events.start_date` exists and is always NULL — reading it first produced a false "the date was not saved" finding. A new event is a `draft`; publishing is a separate action behind a confirmation |
 | `event_rsvps` | 🔴 Where an RSVP lands. `event_attendance` is a different thing (check-in), and `event_attendees` does not exist |
 | `exchange_requests` | a provider DECLINE sets status `cancelled` — there is no `declined` state in the machine |
+| `polls` / `poll_options` / `poll_votes` | a vote lands in **`poll_votes`**. 🔴 `poll_options.votes` is a denormalised column that is **always 0** — nothing in `app/` reads it and nothing increments it; every tally is a `COUNT(*)` over `poll_votes`. Reading it as evidence produces a false "the vote was not counted" finding. `polls` has no `status` column: use `is_active` |
 
 🔴 **`(modals)/chat.tsx` is the AI assistant, not member messaging.** Member conversations are
 `(modals)/thread.tsx`. Walking "send a message" through chat.tsx proves nothing about it.
@@ -205,6 +206,10 @@ missing. If a sweep reports fewer screens than it declares, find out which.
 | 🔴 `https://app.project-nexus.ie/...` deep links on a debug build | Open **Chrome**, not the app — app-link verification is not in place on the emulator | Use the custom scheme: `nexus://goals` |
 | 🔴 `adb shell input text "..."` into a React Native field | Only the FIRST character commits. The rest sits in the keyboard's suggestion strip and never reaches the controlled input — visible as "heetWorksNow" offered as a suggestion while the field holds "S" | Type one short string, verify with a screenshot, and design the check so one character is enough |
 | 🔴 Screenshotting 2–3 s after a tap to see whether a sheet opened | A sheet that opens and closes itself is invisible at that distance. This is exactly how a working-then-closing sheet was recorded as "nothing renders" for six days | Burst-capture immediately: `for i in 1 2 3 4; do adb exec-out screencap -p > f-$i.png; done` and scan the frames |
+| 🔴 `pidof com.projectnexus.mobile` to check the app is alive | The package is **`ie.project.nexus`**. The wrong name answers "not running" for an app that is running perfectly, and the next move is a pointless restart | `adb -s <serial> shell pidof ie.project.nexus` |
+| 🔴 Reading the screen after a long gap and treating it as live | Android keeps painting the last frame. A screen left mid-journey an hour ago looks exactly like a blank-screen defect, and one nearly got filed | Note the status-bar clock in two shots a minute apart; if it advances the screen is live |
+| 🔴 Tapping a field that the keyboard is covering | The tap lands on the keyboard, and the text goes into the field that still has focus — three strings ended up in one Question field this way | Dismiss the keyboard between fields with the IME's own hide chevron (bottom-left, ~`161 2335` at 1080×2400), then re-screenshot before the next tap |
+| 🔴 Clearing a field with repeated `keyevent 67` | 40 taps of backspace, and any miss leaves debris that reads as a save bug | `adb shell input keycombination 113 29` (Ctrl+A) then `input keyevent 67`. Verified working on this emulator image |
 
 ## Instruments that lie
 
@@ -222,6 +227,13 @@ Recorded because each one produced a confident wrong answer:
 - **A "not found" screen** proved nothing about a deep link: the slug belonged to another
   tenant *and* the feature was disabled for the test community, so that screen says "not
   found" regardless. Check tenant and feature flags before believing an empty screen.
+- **A number on screen looked like proof the data was wrong.** A poll card read "1 votes"
+  next to a correct database row. Nothing was wrong with the vote — the singular
+  translation simply did not exist, so i18next fell back to the plural wording. The same
+  card then showed "2 votes" beside 0% and 0%, which was the app failing to handle tallies
+  the server deliberately withholds. Two different faults, both looking like bad data. When
+  a figure looks wrong, separate "the value is wrong" from "the sentence around it is
+  wrong" before filing anything.
 
 ## Known-fragile areas
 
@@ -233,3 +245,5 @@ Recorded because each one produced a confident wrong answer:
 | `SafeAreaView` from `react-native-safe-area-context` | `className` is inert — uniwind does not patch it. 90 screens still rely on a class that does nothing; 93 carry the `style={{ flex: 1 }}` fix |
 | `+native-intent.ts` | Parameter **names** must match what each screen reads. Guarded by `app/deepLinkParams.test.ts` |
 | `flex-1` generally | Three distinct ways it silently does nothing in this app. The pattern is always the same: the class is on a different element from the one that decides the size |
+| Anything counted in a label | 129 keys were called with a `count` and had no singular form, so every "1 of something" read as a plural in all seven languages. Guarded by `locales/pluralForms.test.ts`, a shrink-only ratchet with 43 deliberate exemptions (a number that is not counting a noun) |
+| Poll tallies | 🔴 Nullable by design. `FeedService` sends `total_votes: null` and null per-option counts to anyone but the poll's creator while the poll is open; `PollService` (the vote endpoint) sends a real `total_votes` plus `results_visible: false`. **Two shapes for the same idea** — a client must handle both, and `null + 1` is `1`, so getting it wrong looks plausible rather than broken |

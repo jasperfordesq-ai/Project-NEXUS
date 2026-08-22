@@ -20,9 +20,15 @@ interface PollCardProps {
   pollData: PollData;
   itemId: number;
   onVoted?: (updated: PollData) => void;
+  /**
+   * A feed card already prints the poll's question as its own title, so the card asks for
+   * it to be left out here. Without this the question appeared twice, one line under
+   * itself (seen on a device, 2026-08-22).
+   */
+  showQuestion?: boolean;
 }
 
-export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
+export default function PollCard({ pollData, itemId, onVoted, showQuestion = true }: PollCardProps) {
   const { t } = useTranslation('home');
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -40,7 +46,27 @@ export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
 
   const selectedOptionId = poll?.user_vote_option_id ?? null;
   const hasVoted = selectedOptionId !== null;
-  const showResults = hasVoted || (poll ? !poll.is_active : false);
+
+  /**
+   * 🔴 The server WITHHOLDS the tallies from anyone but the poll's creator while the poll
+   * is still open, so nobody's vote is swayed by the running result. `FeedService` sends
+   * `total_votes: null` and every option's `vote_count`/`percentage` as `null`.
+   *
+   * Measured on a device on 2026-08-22 with a second account: this card did not handle
+   * that at all. The chip rendered the label with no number in it — just "votes" — and
+   * after voting it drew percentage bars from `null`, so the member saw a result that was
+   * not a result. `null + 1` is `1` in JavaScript, which is why the optimistic total also
+   * looked plausible instead of failing loudly.
+   *
+   * The website has always handled it (`react-frontend/src/components/feed/FeedCard.tsx`):
+   * "Vote to see results" while you can still vote, "Results revealed when poll closes"
+   * once you have. The same two lines are used here, from the same wording.
+   */
+  const resultsWithheld = poll ? poll.results_visible === false || poll.total_votes == null : false;
+  const showResults = !resultsWithheld && (hasVoted || (poll ? !poll.is_active : false));
+  // Participation volume is public even when the split is not, so show the count whenever
+  // the server actually sent one.
+  const knownTotal = poll && poll.total_votes != null ? poll.total_votes : null;
 
   const handleVote = useCallback(async (optionId: number) => {
     if (!poll || isVoting || hasVoted || !poll.is_active) return;
@@ -48,10 +74,14 @@ export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsVoting(true);
 
-    // Optimistic update
+    // Optimistic update. With the tallies withheld there is no number to add to, so the
+    // counts are left exactly as the server sent them (null) and only the member's own
+    // choice is recorded — never `null + 1`, which would invent a total of 1.
     const previousPoll = poll;
-    const newTotalVotes = poll.total_votes + 1;
+    const previousTotal = poll.total_votes;
+    const newTotalVotes = previousTotal == null ? null : previousTotal + 1;
     const optimisticOptions = poll.options.map((opt) => {
+      if (newTotalVotes == null || opt.vote_count == null) return opt;
       const newCount = opt.id === optionId ? opt.vote_count + 1 : opt.vote_count;
       return {
         ...opt,
@@ -83,7 +113,9 @@ export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
 
   return (
     <View className="gap-3">
-      <Text className="text-base font-semibold leading-6 text-foreground" numberOfLines={3}>{poll.question}</Text>
+      {showQuestion ? (
+        <Text className="text-base font-semibold leading-6 text-foreground" numberOfLines={3}>{poll.question}</Text>
+      ) : null}
 
       {poll.options.map((option) => (
         <PollOptionRow
@@ -99,10 +131,27 @@ export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
       ))}
 
       <View className="mt-0.5 flex-row flex-wrap items-center gap-2">
-        <Chip size="sm" variant="soft">
-          <Ionicons name="bar-chart-outline" size={12} color={theme.textSecondary} />
-          <Chip.Label>{t('poll.totalVotes', { count: poll.total_votes })}</Chip.Label>
-        </Chip>
+        {resultsWithheld ? (
+          <>
+            {knownTotal != null && (
+              <Chip size="sm" variant="soft">
+                <Ionicons name="bar-chart-outline" size={12} color={theme.textSecondary} />
+                <Chip.Label>{t('poll.totalVotes', { count: knownTotal })}</Chip.Label>
+              </Chip>
+            )}
+            <Chip size="sm" variant="soft">
+              <Ionicons name="eye-off-outline" size={12} color={theme.textSecondary} />
+              <Chip.Label>
+                {hasVoted ? t('poll.resultsHiddenUntilClose') : t('poll.voteToSeeResults')}
+              </Chip.Label>
+            </Chip>
+          </>
+        ) : (
+          <Chip size="sm" variant="soft">
+            <Ionicons name="bar-chart-outline" size={12} color={theme.textSecondary} />
+            <Chip.Label>{t('poll.totalVotes', { count: poll.total_votes ?? 0 })}</Chip.Label>
+          </Chip>
+        )}
         {hasVoted && (
           <Chip size="sm" variant="secondary" color="accent">
             <Ionicons name="checkmark-circle" size={14} color={primary} />
@@ -121,7 +170,7 @@ export default function PollCard({ pollData, itemId, onVoted }: PollCardProps) {
 }
 
 interface PollOptionRowProps {
-  option: { id: number; text: string; vote_count: number; percentage: number };
+  option: { id: number; text: string; vote_count: number | null; percentage: number | null };
   showResults: boolean;
   isUserVote: boolean;
   primary: string;
@@ -139,18 +188,21 @@ interface PollOptionRowProps {
 
 function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPress, disabled }: PollOptionRowProps) {
   const fillAnim = useRef(new Animated.Value(0)).current;
+  // Withheld tallies arrive as null; animating to null leaves the bar in an undefined
+  // state, so treat it as an empty bar.
+  const percentage = option.percentage ?? 0;
 
   useEffect(() => {
     if (showResults) {
       Animated.timing(fillAnim, {
-        toValue: option.percentage,
+        toValue: percentage,
         duration: 500,
         useNativeDriver: false,
       }).start();
     } else {
       fillAnim.setValue(0);
     }
-  }, [showResults, option.percentage, fillAnim]);
+  }, [showResults, percentage, fillAnim]);
 
   const fillWidth = fillAnim.interpolate({
     inputRange: [0, 100],
@@ -210,7 +262,7 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
               className="text-center text-xs font-bold"
               style={{ color: isUserVote ? primary : theme.textSecondary }}
             >
-              {option.percentage}%
+              {percentage}%
             </Text>
           </View>
         </View>

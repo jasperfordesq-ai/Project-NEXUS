@@ -5,10 +5,13 @@
   "subtitle": "Comunidades conectadas",
   "stats": {
     "partners": "{{count}} parceiro",
+    "partners_one": "{{count}} parceiro",
     "partners_other": "{{count}} parceiros",
     "members": "{{count}} membro federado",
+    "members_one": "{{count}} membro federado",
     "members_other": "{{count}} membros federados",
     "exchanges": "{{count}} troca entre comunidades",
+    "exchanges_one": "{{count}} troca entre comunidades",
     "exchanges_other": "{{count}} trocas entre comunidades"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Nenhuma atividade ainda",
     "noActivityDescription": "Mensagens, parcerias e trocas entre comunidades aparecerão aqui.",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}} membros",
     "viewCommunity": "Ver comunidade",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "hoje",
     "daysAgo": "{{count}}dia atrás",
+    "daysAgo_one": "{{count}} dia atrás",
     "daysAgo_other": "{{count}} dias atrás",
     "monthsAgo": "{{count}} mês atrás",
+    "monthsAgo_one": "{{count}} mês atrás",
     "monthsAgo_other": "{{count}} meses atrás"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "membros",
     "memberTotal": "contagem de membros",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}} membros",
     "partnerSince": "Parceiro desde {{date}}",
     "partnerSinceLabel": "Parceiro desde",
@@ -133,8 +140,10 @@
     "tryAgain": "Tente novamente",
     "backToHub": "Voltar ao hub da federação",
     "resultsCount": "{{count}} resultado",
+    "resultsCount_one": "{{count}} resultado",
     "resultsCount_other": "{{count}} resultados",
     "memberCount": "{{count}} membro",
+    "memberCount_one": "{{count}} membro",
     "memberCount_other": "{{count}} membros",
     "external": "Externo",
     "unknownCommunity": "Comunidade de parceiros",
@@ -289,6 +298,7 @@
       "unavailableTitle": "Grupos federados não estão habilitados",
       "unavailableDescription": "A federação está ativa para este locatário, mas os grupos de parceiros estão desabilitados. Um administrador da comunidade precisa ativar grupos federados.",
       "memberCount": "{{count}} membro",
+      "memberCount_one": "{{count}} membro",
       "memberCount_other": "{{count}} membros",
       "loadMore": "Carregar mais grupos",
       "openDetails": "Abrir detalhes para {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Organizador do evento",
       "ends": "Termina em {{date}}",
       "attendeeCount": "{{count}} participante",
+      "attendeeCount_one": "{{count}} participante",
       "attendeeCount_other": "{{count}} participantes"
     },
     "onboarding": {

@@ -168,6 +168,7 @@
     "history": {
       "title": "Stair easpórtála",
       "count": "{{count}} easpórtáil",
+      "count_one": "{{count}} easpórtáil",
       "empty": "Níl aon easpórtáil ann fós",
       "emptyDesc": "Beidh d'iarratais easpórtála chríochnaithe le feiceáil anseo."
     }
@@ -241,7 +242,15 @@
       "can_manage_listings": "Bainistigh liostuithe",
       "can_transact": "Aistrigh creidmheasanna"
     },
-    "tiers": { "activity": "Gníomhaíocht", "listings": "Liostúáin", "credits": "Creidmheasanna", "none": "Ceann ar bith", "assist": "Amharc amháin", "co_decide": "Ullmhaigh; ceadaíonn tú gach gníomh", "represent": "Gníomhaigh go neamhspleách" },
+    "tiers": {
+      "activity": "Gníomhaíocht",
+      "listings": "Liostúáin",
+      "credits": "Creidmheasanna",
+      "none": "Ceann ar bith",
+      "assist": "Amharc amháin",
+      "co_decide": "Ullmhaigh; ceadaíonn tú gach gníomh",
+      "represent": "Gníomhaigh go neamhspleách"
+    },
     "permissionToggle": "Scoránaigh {{permission}} do {{name}}",
     "activity": {
       "show": "Féach ar a ngníomhaíocht",

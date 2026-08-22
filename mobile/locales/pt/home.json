@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} votos",
+    "totalVotes_one": "{{count}} voto",
     "voted": "Você votou",
     "closed": "Enquete encerrada",
-    "vote": "Votar"
+    "vote": "Votar",
+    "resultsHiddenUntilClose": "Resultados revelados quando a sondagem fechar",
+    "voteToSeeResults": "Vote para ver os resultados"
   },
   "pollsScreen": {
     "title": "Enquetes",
@@ -202,9 +205,13 @@
     "comments": "{{count}} comentário",
     "views": "{{count}} visualização",
     "shares": "{{count}} partilha",
+    "reactions_one": "{{count}} reação",
     "reactions_other": "{{count}} reações",
+    "comments_one": "{{count}} comentário",
     "comments_other": "{{count}} comentários",
+    "views_one": "{{count}} visualização",
     "views_other": "{{count}} visualizações",
+    "shares_one": "{{count}} partilha",
     "shares_other": "{{count}} partilhas"
   },
   "milestone": {
@@ -222,7 +229,8 @@
     "eyebrow": "Descobrir",
     "subtitle": "Encontra topicos ativos e conversas no teu feed.",
     "searchPlaceholder": "Pesquisar hashtags",
-    "postCount": "{{count}} publicacoes",
+    "postCount": "{{count}} publicações",
+    "postCount_one": "{{count}} publicação",
     "open": "Abrir",
     "openTag": "Abrir #{{tag}}",
     "loadFailed": "Nao foi possivel carregar hashtags.",
@@ -234,7 +242,8 @@
   "hashtag": {
     "title": "Hashtag",
     "subtitle": "Publicacoes etiquetadas",
-    "postCount": "{{count}} publicacoes",
+    "postCount": "{{count}} publicações",
+    "postCount_one": "{{count}} publicação",
     "loadFailed": "Nao foi possivel carregar publicacoes desta hashtag.",
     "unableToLoad": "Nao foi possivel carregar esta hashtag",
     "emptyTitle": "Ainda nao ha publicacoes",
@@ -254,6 +263,7 @@
     "failed": "Não foi possível guardar a sua reação. Tente novamente.",
     "summaryTwo": "{{a}} e {{b}}",
     "summaryMany": "{{name}} e {{count}} outra pessoa",
+    "summaryMany_one": "{{name}} e mais {{count}} pessoa",
     "summaryMany_other": "{{name}} e mais {{count}} pessoas",
     "viewReactors": "Ver quem reagiu",
     "reactorsTitle": "Reações",

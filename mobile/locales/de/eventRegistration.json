@@ -56,6 +56,7 @@
     "version": "Version Nr. {{version}}",
     "no_description": "Keine Beschreibung",
     "question_count": "{{count}}-Frage",
+    "question_count_one": "{{count}} Frage",
     "question_count_other": "{{count}} Fragen",
     "published_at": "Veröffentlicht {{date}}",
     "edit": "Entwurf bearbeiten",
@@ -149,6 +150,7 @@
     "preview_title": "Empfängervorschau",
     "snapshot_notice": "Dieser genaue gültige Empfänger-Snapshot wird zum Zeitpunkt des Sendens verwendet, auch wenn sich die Gruppenmitgliedschaft später ändert.",
     "valid_count": "{{count}} gültiger Empfänger",
+    "valid_count_one": "{{count}} gültiger Empfänger",
     "valid_count_other": "{{count}} gültige Empfänger",
     "previewed": "Vorschau der Zeilen",
     "valid": "Gültig",
@@ -323,8 +325,10 @@
       "min_length": "Geben Sie mindestens {{limit}} Zeichen ein.",
       "max_length": "Geben Sie höchstens {{limit}} Zeichen ein.",
       "min_selections": "Wählen Sie mindestens {{count}} Option aus.",
+      "min_selections_one": "Wählen Sie mindestens {{count}} Option aus.",
       "min_selections_other": "Wählen Sie mindestens {{count}} Optionen aus.",
       "max_selections": "Wählen Sie höchstens {{count}} Option aus.",
+      "max_selections_one": "Wählen Sie höchstens {{count}} Option aus.",
       "max_selections_other": "Wählen Sie höchstens {{count}} Optionen aus."
     }
   },

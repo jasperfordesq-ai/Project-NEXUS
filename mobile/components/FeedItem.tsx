@@ -847,7 +847,14 @@ function FeedItemInner({
             ) : null}
 
             {item.type === 'poll' && pollData ? (
-              <PollCard pollData={pollData} itemId={item.id} onVoted={(updated) => setPollData(updated)} />
+              <PollCard
+                pollData={pollData}
+                itemId={item.id}
+                onVoted={(updated) => setPollData(updated)}
+                // The card's own title is the poll question for a poll item, so asking the
+                // poll to print it again put the same line on screen twice.
+                showQuestion={(item.title ?? '').trim() !== (pollData.question ?? '').trim()}
+              />
             ) : null}
 
             {item.location ? (

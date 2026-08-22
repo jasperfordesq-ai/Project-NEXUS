@@ -10,6 +10,7 @@
   "startTyping": "Tosaigh ag clóscríobh le cuardach…",
   "searching": "Ag cuardach...",
   "resultsCount": "{{count}} toradh",
+  "resultsCount_one": "{{count}} toradh",
   "resultsCount_other": "{{count}} toradh",
   "types": {
     "user": "Daoine",
@@ -35,6 +36,7 @@
     "empty": "No saved searches yet.",
     "noQuery": "No query",
     "resultCount": "{{count}} result",
+    "resultCount_one": "{{count}} result",
     "resultCount_other": "{{count}} results",
     "saveFailedTitle": "Could not save search",
     "saveFailedMessage": "Please check the search name and try again.",

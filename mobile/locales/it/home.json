@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} voti",
+    "totalVotes_one": "{{count}} voto",
     "voted": "Hai votato",
     "closed": "Sondaggio chiuso",
-    "vote": "Vota"
+    "vote": "Vota",
+    "resultsHiddenUntilClose": "Risultati rivelati alla chiusura del sondaggio",
+    "voteToSeeResults": "Vota per vedere i risultati"
   },
   "pollsScreen": {
     "title": "Sondaggi",
@@ -202,9 +205,13 @@
     "comments": "{{count}} commento",
     "views": "{{count}} visualizzazione",
     "shares": "{{count}} condivisione",
+    "reactions_one": "{{count}} reazione",
     "reactions_other": "{{count}} reazioni",
+    "comments_one": "{{count}} commento",
     "comments_other": "{{count}} commenti",
+    "views_one": "{{count}} visualizzazione",
     "views_other": "{{count}} visualizzazioni",
+    "shares_one": "{{count}} condivisione",
     "shares_other": "{{count}} condivisioni"
   },
   "milestone": {
@@ -223,6 +230,7 @@
     "subtitle": "Trova argomenti attivi e conversazioni nel tuo feed.",
     "searchPlaceholder": "Cerca hashtag",
     "postCount": "{{count}} post",
+    "postCount_one": "{{count}} post",
     "open": "Apri",
     "openTag": "Apri #{{tag}}",
     "loadFailed": "Impossibile caricare gli hashtag.",
@@ -235,6 +243,7 @@
     "title": "Hashtag",
     "subtitle": "Post taggati",
     "postCount": "{{count}} post",
+    "postCount_one": "{{count}} post",
     "loadFailed": "Impossibile caricare i post per questo hashtag.",
     "unableToLoad": "Impossibile caricare questo hashtag",
     "emptyTitle": "Ancora nessun post",
@@ -254,6 +263,7 @@
     "failed": "Impossibile salvare la tua reazione. Riprova.",
     "summaryTwo": "{{a}} e {{b}}",
     "summaryMany": "{{name}} e {{count}} altra persona",
+    "summaryMany_one": "{{name}} e un'altra {{count}} persona",
     "summaryMany_other": "{{name}} e altre {{count}} persone",
     "viewReactors": "Vedi chi ha reagito",
     "reactorsTitle": "Reazioni",

@@ -12,11 +12,14 @@
   "download": "Open resource",
   "readArticle": "Read article",
   "downloads": "{{count}} downloads",
+  "downloads_one": "{{count}} download",
   "views": "{{count}} views",
+  "views_one": "{{count}} view",
   "helpful": "{{yes}} helpful",
   "emptyTitle": "Nothing found",
   "emptySubtitle": "Try another search or category.",
   "errorTitle": "Could not load resources",
   "categoryCount": "{{count}} items",
+  "categoryCount_one": "{{count}} item",
   "uncategorized": "General"
 }

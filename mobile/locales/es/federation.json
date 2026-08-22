@@ -5,10 +5,13 @@
   "subtitle": "Comunidades conectadas",
   "stats": {
     "partners": "{{count}} socio",
+    "partners_one": "{{count}} socio",
     "partners_other": "{{count}} socios",
     "members": "{{count}} miembro federado",
+    "members_one": "{{count}} miembro federado",
     "members_other": "{{count}} miembros federados",
     "exchanges": "{{count}} intercambio entre comunidades",
+    "exchanges_one": "{{count}} intercambio entre comunidades",
     "exchanges_other": "{{count}} intercambios entre comunidades"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Aún no hay actividad",
     "noActivityDescription": "Los mensajes, asociaciones e intercambios entre comunidades aparecerán aquí.",
     "memberCount": "{{count}} miembro",
+    "memberCount_one": "{{count}} miembro",
     "memberCount_other": "{{count}} miembros",
     "viewCommunity": "Ver comunidad",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "hoy",
     "daysAgo": "{{count}}hace un día",
+    "daysAgo_one": "hace {{count}} día",
     "daysAgo_other": "{{count}} hace días",
     "monthsAgo": "{{count}} hace meses",
+    "monthsAgo_one": "hace {{count}} mes",
     "monthsAgo_other": "{{count}} hace meses"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "miembros",
     "memberTotal": "Recuento de miembros",
     "memberCount": "{{count}} miembro",
+    "memberCount_one": "{{count}} miembro",
     "memberCount_other": "{{count}} miembros",
     "partnerSince": "Socio desde {{date}}",
     "partnerSinceLabel": "Socio desde",
@@ -133,8 +140,10 @@
     "tryAgain": "Inténtalo de nuevo",
     "backToHub": "Volver al centro de la federación",
     "resultsCount": "{{count}} resultado",
+    "resultsCount_one": "{{count}} resultado",
     "resultsCount_other": "{{count}} resultados",
     "memberCount": "{{count}} miembro",
+    "memberCount_one": "{{count}} miembro",
     "memberCount_other": "{{count}} miembros",
     "external": "Externo",
     "unknownCommunity": "Comunidad de socios",
@@ -289,6 +298,7 @@
       "unavailableTitle": "Federados los grupos no están habilitados",
       "unavailableDescription": "La federación está activa para este inquilino, pero los grupos de socios están deshabilitados. Un administrador de la comunidad necesita habilitar grupos federados.",
       "memberCount": "{{count}} miembro",
+      "memberCount_one": "{{count}} miembro",
       "memberCount_other": "{{count}} miembros",
       "loadMore": "Cargar más grupos",
       "openDetails": "Abrir detalles para {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Organizador del evento",
       "ends": "Termina {{date}}",
       "attendeeCount": "{{count}} asistente",
+      "attendeeCount_one": "{{count}} asistente",
       "attendeeCount_other": "{{count}} asistentes"
     },
     "onboarding": {

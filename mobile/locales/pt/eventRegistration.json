@@ -56,6 +56,7 @@
     "version": "Versão {{version}}",
     "no_description": "Sem descrição",
     "question_count": "{{count}} pergunta",
+    "question_count_one": "{{count}} pergunta",
     "question_count_other": "{{count}} perguntas",
     "published_at": "Publicado {{date}}",
     "edit": "Editar rascunho",
@@ -149,6 +150,7 @@
     "preview_title": "Visualização do destinatário",
     "snapshot_notice": "Este instantâneo exato do destinatário válido será usado no momento do envio, mesmo que a associação ao grupo seja alterada posteriormente.",
     "valid_count": "{{count}} destinatário válido",
+    "valid_count_one": "{{count}} destinatário válido",
     "valid_count_other": "{{count}} destinatários válidos",
     "previewed": "Linhas visualizadas",
     "valid": "Válido",
@@ -323,8 +325,10 @@
       "min_length": "Introduza pelo menos {{limit}} caracteres.",
       "max_length": "Introduza no máximo {{limit}} caracteres.",
       "min_selections": "Selecione pelo menos {{count}} opção.",
+      "min_selections_one": "Selecione pelo menos {{count}} opção.",
       "min_selections_other": "Selecione pelo menos {{count}} opções.",
       "max_selections": "Selecione no máximo {{count}} opção.",
+      "max_selections_one": "Selecione no máximo {{count}} opção.",
       "max_selections_other": "Selecione no máximo {{count}} opções."
     }
   },

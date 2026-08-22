@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} votes",
+    "totalVotes_one": "{{count}} vote",
     "voted": "Vous avez voté",
     "closed": "Sondage terminé",
-    "vote": "Voter"
+    "vote": "Voter",
+    "resultsHiddenUntilClose": "Résultats révélés à la clôture du sondage",
+    "voteToSeeResults": "Votez pour voir les résultats"
   },
   "pollsScreen": {
     "title": "Sondages",
@@ -202,9 +205,13 @@
     "comments": "{{count}} commentaire",
     "views": "{{count}} vue",
     "shares": "{{count}} partage",
+    "reactions_one": "{{count}} réaction",
     "reactions_other": "{{count}} réactions",
+    "comments_one": "{{count}} commentaire",
     "comments_other": "{{count}} commentaires",
+    "views_one": "{{count}} vue",
     "views_other": "{{count}} vues",
+    "shares_one": "{{count}} partage",
     "shares_other": "{{count}} partages"
   },
   "milestone": {
@@ -223,6 +230,7 @@
     "subtitle": "Trouvez les sujets actifs et les conversations de votre fil.",
     "searchPlaceholder": "Rechercher des hashtags",
     "postCount": "{{count}} publications",
+    "postCount_one": "{{count}} publication",
     "open": "Ouvrir",
     "openTag": "Ouvrir #{{tag}}",
     "loadFailed": "Impossible de charger les hashtags.",
@@ -235,6 +243,7 @@
     "title": "Hashtag",
     "subtitle": "Publications taguees",
     "postCount": "{{count}} publications",
+    "postCount_one": "{{count}} publication",
     "loadFailed": "Impossible de charger les publications de ce hashtag.",
     "unableToLoad": "Impossible de charger ce hashtag",
     "emptyTitle": "Aucune publication pour le moment",
@@ -254,6 +263,7 @@
     "failed": "Impossible d’enregistrer votre réaction. Veuillez réessayer.",
     "summaryTwo": "{{a}} et {{b}}",
     "summaryMany": "{{name}} et {{count}} autre personne",
+    "summaryMany_one": "{{name}} et {{count}} autre personne",
     "summaryMany_other": "{{name}} et {{count}} autres personnes",
     "viewReactors": "Voir qui a réagi",
     "reactorsTitle": "Réactions",

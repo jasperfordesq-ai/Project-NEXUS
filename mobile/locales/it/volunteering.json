@@ -62,6 +62,7 @@
   "shifts": "Turni",
   "shiftDateUnavailable": "Spostare",
   "shiftSpots": "{{count}} posto disponibile",
+  "shiftSpots_one": "{{count}} posto disponibile",
   "shiftSpots_other": "{{count}} posti disponibili",
   "shiftCapacity": "{{count}} iscritto",
   "signUpForShift": "Iscriviti al turno",
@@ -110,6 +111,7 @@
     "generateError": "Could not generate a certificate. You may need approved hours first.",
     "emptyTitle": "No certificates yet",
     "verifiedHours": "{{count}} verified hours",
+    "verifiedHours_one": "{{count}} verified hour",
     "dateRange": "{{start}} - {{end}}",
     "dateUnknown": "Date unavailable",
     "organizationHours": "{{name}}: {{hours}}h",
@@ -185,6 +187,7 @@
     "declined": "Rifiutato"
   },
   "spots": "{{count}} posto disponibile",
+  "spots_one": "{{count}} posto disponibile",
   "spots_other": "{{count}} posti disponibili",
   "status": {
     "open": "Aperto",
@@ -305,6 +308,7 @@
     "volunteers": {
       "empty": "No approved volunteers yet.",
       "summary": "{{hours}}h across {{count}} applications",
+      "summary_one": "{{hours}}h across {{count}} application",
       "openProfile": "Open profile for {{name}}"
     },
     "wallet": {

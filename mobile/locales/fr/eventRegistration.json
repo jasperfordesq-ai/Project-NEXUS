@@ -56,6 +56,7 @@
     "version": "Version n° {{version}}",
     "no_description": "Pas de description",
     "question_count": "Nombre de questions : {{count}}",
+    "question_count_one": "Nombre de questions : {{count}}",
     "question_count_other": "Nombre de questions : {{count}}",
     "published_at": "Publié {{date}}",
     "edit": "Modifier le brouillon",
@@ -149,6 +150,7 @@
     "preview_title": "Aperçu du destinataire",
     "snapshot_notice": "Cet instantané exact du destinataire valide sera utilisé au moment de l'envoi, même si l'appartenance au groupe change ultérieurement.",
     "valid_count": "{{count}} destinataire valide",
+    "valid_count_one": "{{count}} destinataire valide",
     "valid_count_other": "{{count}} destinataires valides",
     "previewed": "Lignes prévisualisées",
     "valid": "Valide",
@@ -323,8 +325,10 @@
       "min_length": "Saisissez au moins {{limit}} caractères.",
       "max_length": "Saisissez au maximum {{limit}} caractères.",
       "min_selections": "Sélectionnez au moins {{count}} option.",
+      "min_selections_one": "Sélectionnez au moins {{count}} option.",
       "min_selections_other": "Sélectionnez au moins {{count}} options.",
       "max_selections": "Sélectionnez au maximum {{count}} option.",
+      "max_selections_one": "Sélectionnez au maximum {{count}} option.",
       "max_selections_other": "Sélectionnez au maximum {{count}} options."
     }
   },

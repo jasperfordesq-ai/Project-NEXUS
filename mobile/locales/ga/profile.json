@@ -92,6 +92,7 @@
     "profileStory": "Scéal próifíle",
     "aboutPlaceholder": "Inis don phobal fút féin...",
     "bioHint": "{{count}} carachtair fágtha",
+    "bioHint_one": "{{count}} charachtar fágtha",
     "contactDetails": "Sonraí teagmhála",
     "location": "Suíomh",
     "locationPlaceholder": "e.g. Nua Eabhrac, SAM",

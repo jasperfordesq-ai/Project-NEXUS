@@ -11,6 +11,7 @@
   "searchPlaceholder": "Cuardaigh teachtaireachtaí",
   "resultsLoading": "Áluchtú",
   "conversationCount": "{{count}} comhrá",
+  "conversationCount_one": "{{count}} chomhrá",
   "conversationCount_other": "{{count}} comhráite",
   "visibleCount": "{{count}} léirithe",
   "archivedCount": "{{count}} sa chartlann",
@@ -41,6 +42,7 @@
     "you": "Tusa:",
     "goBack": "Téigh ar ais",
     "messageCount": "{{count}} teachtaireacht",
+    "messageCount_one": "{{count}} teachtaireacht",
     "messageCount_other": "{{count}} teachtaireacht",
     "messagingRestrictedTitle": "Teachtaireachtaí curtha ar sos",
     "messagingRestrictedContact": "Déan teagmháil le d'fhoireann pobail sula seolann tú tuilleadh teachtaireachtaí.",
@@ -116,6 +118,7 @@
     "emptySubtitle": "Bain triail as ainm eile nó seiceáil eolaire na mball.",
     "memberFallback": "Ball den Phobal",
     "resultsCount": "{{count}} ball taispeánta",
+    "resultsCount_one": "{{count}} ball á thaispeáint",
     "resultsCount_other": "{{count}} ball á dtaispeáint",
     "openThread": "Teachtaireacht chuig {{name}}"
   },

@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} votes",
+    "totalVotes_one": "{{count}} vote",
     "voted": "You voted",
     "closed": "Poll closed",
-    "vote": "Vote"
+    "vote": "Vote",
+    "resultsHiddenUntilClose": "Results revealed when poll closes",
+    "voteToSeeResults": "Vote to see results"
   },
   "pollsScreen": {
     "title": "Polls",
@@ -202,9 +205,13 @@
     "comments": "{{count}} comment",
     "views": "{{count}} view",
     "shares": "{{count}} share",
+    "reactions_one": "{{count}} reaction",
     "reactions_other": "{{count}} reactions",
+    "comments_one": "{{count}} comment",
     "comments_other": "{{count}} comments",
+    "views_one": "{{count}} view",
     "views_other": "{{count}} views",
+    "shares_one": "{{count}} share",
     "shares_other": "{{count}} shares"
   },
   "milestone": {
@@ -223,6 +230,7 @@
     "subtitle": "Find active topics and open conversations across your feed.",
     "searchPlaceholder": "Search hashtags",
     "postCount": "{{count}} posts",
+    "postCount_one": "{{count}} post",
     "open": "Open",
     "openTag": "Open #{{tag}}",
     "loadFailed": "Could not load hashtags.",
@@ -235,6 +243,7 @@
     "title": "Hashtag",
     "subtitle": "Tagged feed posts",
     "postCount": "{{count}} posts",
+    "postCount_one": "{{count}} post",
     "loadFailed": "Could not load posts for this hashtag.",
     "unableToLoad": "Could not load this hashtag",
     "emptyTitle": "No posts yet",
@@ -254,6 +263,7 @@
     "failed": "Could not save your reaction. Please try again.",
     "summaryTwo": "{{a}} and {{b}}",
     "summaryMany": "{{name}} and {{count}} other",
+    "summaryMany_one": "{{name}} and {{count}} other",
     "summaryMany_other": "{{name}} and {{count}} others",
     "viewReactors": "See who reacted",
     "reactorsTitle": "Reactions",

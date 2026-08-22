@@ -12,6 +12,7 @@
   "emptyFilteredHint": "Bain triail as cuardach eile.",
   "loadMore": "Lódáil tuilleadh",
   "postsCount": "{{count}} postáil",
+  "postsCount_one": "{{count}} postáil",
   "postsCount_other": "{{count}} postáil",
   "publishedOn": "{{date}}",
   "readingTime": "{{minutes}} nóim léitheoireachta",

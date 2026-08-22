@@ -27,7 +27,11 @@
     "keep": "Conservar dispositivo",
     "empty": "No hay dispositivos autorizados para este evento.",
     "version": "Versión {{version}}",
-    "status": { "active": "Activo", "revoked": "Revocado", "expired": "Caducado" }
+    "status": {
+      "active": "Activo",
+      "revoked": "Revocado",
+      "expired": "Caducado"
+    }
   },
   "scan": {
     "title": "Escanear o introducir el código del asistente",
@@ -37,7 +41,12 @@
     "codeLabel": "QR o código del asistente",
     "codeHint": "El código empieza por nqx2_",
     "operation": "Acción de asistencia",
-    "operations": { "check_in": "Registrar entrada", "check_out": "Registrar salida", "no_show": "Marcar ausencia", "undo": "Deshacer la última acción" },
+    "operations": {
+      "check_in": "Registrar entrada",
+      "check_out": "Registrar salida",
+      "no_show": "Marcar ausencia",
+      "undo": "Deshacer la última acción"
+    },
     "reason": "Motivo de la corrección",
     "reasonHint": "Obligatorio para deshacer. No incluyas información sensible.",
     "queue": "Añadir a la cola cifrada",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "Cola sin conexión cifrada",
     "pending": "{{count}} acciones pendientes",
+    "pending_one": "{{count}} acción pendiente",
     "sync": "Sincronizar ahora",
     "synced": "Las decisiones del servidor se aplicaron a la cola.",
     "syncError": "La sincronización falló. La cola cifrada puede reintentarse con las mismas claves de idempotencia.",
@@ -57,7 +67,12 @@
     "purge": "Eliminar datos sin conexión",
     "purgeTitle": "¿Eliminar los datos sin conexión de este dispositivo?",
     "purgeDescription": "La lista cifrada, el secreto del dispositivo y las acciones sin sincronizar se eliminarán de forma permanente.",
-    "states": { "pending": "Pendiente", "synced": "Sincronizado", "conflict": "Conflicto", "rejected": "Rechazado" }
+    "states": {
+      "pending": "Pendiente",
+      "synced": "Sincronizado",
+      "conflict": "Conflicto",
+      "rejected": "Rechazado"
+    }
   },
   "conflicts": {
     "title": "Conflictos de registro",

@@ -12,6 +12,7 @@
   "emptyFilteredHint": "Pruebe con una búsqueda diferente.",
   "loadMore": "Cargar más",
   "postsCount": "{{count}} publicación",
+  "postsCount_one": "{{count}} publicación",
   "postsCount_other": "{{count}} publicaciones",
   "publishedOn": "{{date}}",
   "readingTime": "{{minutes}} min de lectura",

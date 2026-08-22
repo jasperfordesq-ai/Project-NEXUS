@@ -11,6 +11,7 @@
   "searchPlaceholder": "Search messages",
   "resultsLoading": "Loading",
   "conversationCount": "{{count}} conversation",
+  "conversationCount_one": "{{count}} conversation",
   "conversationCount_other": "{{count}} conversations",
   "visibleCount": "{{count}} shown",
   "archivedCount": "{{count}} archived",
@@ -41,6 +42,7 @@
     "you": "You: ",
     "goBack": "Go back",
     "messageCount": "{{count}} message",
+    "messageCount_one": "{{count}} message",
     "messageCount_other": "{{count}} messages",
     "messagingRestrictedTitle": "Messaging paused",
     "messagingRestrictedContact": "Please contact your community team before sending more messages.",
@@ -116,6 +118,7 @@
     "emptySubtitle": "Try a different name or check the member directory.",
     "memberFallback": "Community member",
     "resultsCount": "{{count}} member shown",
+    "resultsCount_one": "{{count}} member shown",
     "resultsCount_other": "{{count}} members shown",
     "openThread": "Message {{name}}"
   },

@@ -56,6 +56,7 @@
     "version": "Leagan {{version}}",
     "no_description": "Gan tuairisc",
     "question_count": "{{count}} cheist",
+    "question_count_one": "{{count}} cheist",
     "question_count_other": "{{count}} ceisteanna",
     "published_at": "Foilsithe {{date}}",
     "edit": "Cuir dréacht in eagar",
@@ -149,6 +150,7 @@
     "preview_title": "Réamhamharc faighteoir",
     "snapshot_notice": "Úsáidfear an pictiúr cruinn faighteoir bailí seo ag am seolta, fiú má thagann athrú ar bhallraíocht an ghrúpa níos déanaí.",
     "valid_count": "{{count}} faighteoir bailí",
+    "valid_count_one": "{{count}} faighteoir bailí",
     "valid_count_other": "{{count}} faighteoirí bailí",
     "previewed": "Réamhamhairc ar na sraitheanna",
     "valid": "Bailí",
@@ -323,8 +325,10 @@
       "min_length": "Cuir isteach {{limit}} carachtar ar a laghad.",
       "max_length": "Ná cuir isteach níos mó ná {{limit}} carachtar.",
       "min_selections": "Roghnaigh {{count}} rogha ar a laghad.",
+      "min_selections_one": "Roghnaigh {{count}} rogha ar a laghad.",
       "min_selections_other": "Roghnaigh {{count}} rogha ar a laghad.",
       "max_selections": "Ná roghnaigh níos mó ná {{count}} rogha.",
+      "max_selections_one": "Ná roghnaigh níos mó ná {{count}} rogha.",
       "max_selections_other": "Ná roghnaigh níos mó ná {{count}} rogha."
     }
   },

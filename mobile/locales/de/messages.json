@@ -11,6 +11,7 @@
   "searchPlaceholder": "Nachrichten suchen",
   "resultsLoading": "Laden",
   "conversationCount": "{{count}} Konversation",
+  "conversationCount_one": "{{count}} Konversation",
   "conversationCount_other": "{{count}} Konversationen",
   "visibleCount": "{{count}} angezeigt",
   "archivedCount": "{{count}} archiviert",
@@ -41,6 +42,7 @@
     "you": "Du:",
     "goBack": "Zurück",
     "messageCount": "{{count}}-Nachricht",
+    "messageCount_one": "{{count}} Nachricht",
     "messageCount_other": "{{count}} Nachrichten",
     "messagingRestrictedTitle": "Nachrichten pausiert",
     "messagingRestrictedContact": "Bitte kontaktiere dein Community-Team, bevor du weitere Nachrichten sendest.",
@@ -116,6 +118,7 @@
     "emptySubtitle": "Versuchen Sie es mit einem anderen Namen oder überprüfen Sie das Mitgliederverzeichnis.",
     "memberFallback": "Community-Mitglied",
     "resultsCount": "{{count}} Mitglied angezeigt",
+    "resultsCount_one": "{{count}} Mitglied angezeigt",
     "resultsCount_other": "{{count}} Mitglieder angezeigt",
     "openThread": "Nachricht an {{name}}"
   },

@@ -140,9 +140,12 @@
   },
   "poll": {
     "totalVotes": "{{count}} vóta",
+    "totalVotes_one": "{{count}} vóta",
     "voted": "Vótáil tú",
     "closed": "Pobalbhreith dúnta",
-    "vote": "Vótáil"
+    "vote": "Vótáil",
+    "resultsHiddenUntilClose": "Nochtfar na torthaí nuair a dhúnfar an phobalbhreith",
+    "voteToSeeResults": "Vótáil chun torthaí a fheiceáil"
   },
   "pollsScreen": {
     "title": " Pobalbhreith",
@@ -202,9 +205,13 @@
     "comments": "{{count}} nóta tráchta",
     "views": "{{count}} amharc",
     "shares": "{{count}} roinnt",
+    "reactions_one": "{{count}} freagairt",
     "reactions_other": "{{count}} freagairtí",
+    "comments_one": "{{count}} nóta tráchta",
     "comments_other": "{{count}} nótaí tráchta",
+    "views_one": "{{count}} amharc",
     "views_other": "{{count}} amharc",
+    "shares_one": "{{count}} roinnt",
     "shares_other": "{{count}} roinnt"
   },
   "milestone": {
@@ -222,7 +229,8 @@
     "eyebrow": "Aimsigh",
     "subtitle": "Aimsigh topaici gniomhacha agus comhra i do shruth.",
     "searchPlaceholder": "Cuardaigh hashtags",
-    "postCount": "{{count}} postail",
+    "postCount": "{{count}} postáil",
+    "postCount_one": "{{count}} postáil",
     "open": "Oscail",
     "openTag": "Oscail #{{tag}}",
     "loadFailed": "Niorbh fheider hashtags a luchtu.",
@@ -234,7 +242,8 @@
   "hashtag": {
     "title": "Hashtag",
     "subtitle": "Postail chlibeailte",
-    "postCount": "{{count}} postail",
+    "postCount": "{{count}} postáil",
+    "postCount_one": "{{count}} postáil",
     "loadFailed": "Niorbh fheider postail don hashtag seo a luchtu.",
     "unableToLoad": "Niorbh fheider an hashtag seo a luchtu",
     "emptyTitle": "Gan phostail fos",
@@ -254,6 +263,7 @@
     "failed": "Níorbh fhéidir do fhreagairt a shábháil. Bain triail eile as.",
     "summaryTwo": "{{a}} agus {{b}}",
     "summaryMany": "{{name}} agus {{count}} duine eile",
+    "summaryMany_one": "{{name}} agus {{count}} duine eile",
     "summaryMany_other": "{{name}} agus {{count}} duine eile",
     "viewReactors": "Féach cé a d’fhreagair",
     "reactorsTitle": "Freagairtí",

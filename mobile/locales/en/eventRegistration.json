@@ -56,6 +56,7 @@
     "version": "Version {{version}}",
     "no_description": "No description",
     "question_count": "{{count}} question",
+    "question_count_one": "{{count}} question",
     "question_count_other": "{{count}} questions",
     "published_at": "Published {{date}}",
     "edit": "Edit draft",
@@ -149,6 +150,7 @@
     "preview_title": "Recipient preview",
     "snapshot_notice": "This exact valid-recipient snapshot will be used at send time, even if group membership later changes.",
     "valid_count": "{{count}} valid recipient",
+    "valid_count_one": "{{count}} valid recipient",
     "valid_count_other": "{{count}} valid recipients",
     "previewed": "Rows previewed",
     "valid": "Valid",
@@ -173,11 +175,26 @@
       "csv": "CSV upload"
     },
     "sources": {
-      "member": { "label": "Member IDs", "description": "Enter member IDs separated by commas, spaces or new lines." },
-      "email": { "label": "Email addresses", "description": "Enter one or more addresses separated by commas or new lines." },
-      "group": { "label": "Group ID", "description": "Enter the group whose current active members should be snapshotted." },
-      "audience": { "label": "Optional member roles", "description": "Leave blank for all active members, or enter allow-listed roles separated by commas." },
-      "csv": { "label": "CSV data", "description": "Paste CSV with an email column. Invalid and duplicate rows are reported before send." }
+      "member": {
+        "label": "Member IDs",
+        "description": "Enter member IDs separated by commas, spaces or new lines."
+      },
+      "email": {
+        "label": "Email addresses",
+        "description": "Enter one or more addresses separated by commas or new lines."
+      },
+      "group": {
+        "label": "Group ID",
+        "description": "Enter the group whose current active members should be snapshotted."
+      },
+      "audience": {
+        "label": "Optional member roles",
+        "description": "Leave blank for all active members, or enter allow-listed roles separated by commas."
+      },
+      "csv": {
+        "label": "CSV data",
+        "description": "Paste CSV with an email column. Invalid and duplicate rows are reported before send."
+      }
     },
     "error_codes": {
       "member_not_found": "member not found",
@@ -308,8 +325,10 @@
       "min_length": "Enter at least {{limit}} characters.",
       "max_length": "Enter no more than {{limit}} characters.",
       "min_selections": "Select at least {{count}} option.",
+      "min_selections_one": "Select at least {{count}} option.",
       "min_selections_other": "Select at least {{count}} options.",
       "max_selections": "Select no more than {{count}} option.",
+      "max_selections_one": "Select no more than {{count}} option.",
       "max_selections_other": "Select no more than {{count}} options."
     }
   },

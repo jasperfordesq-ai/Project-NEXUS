@@ -27,7 +27,11 @@
     "keep": "Manter dispositivo",
     "empty": "Não existem dispositivos autorizados para este evento.",
     "version": "Versão {{version}}",
-    "status": { "active": "Ativo", "revoked": "Revogado", "expired": "Expirado" }
+    "status": {
+      "active": "Ativo",
+      "revoked": "Revogado",
+      "expired": "Expirado"
+    }
   },
   "scan": {
     "title": "Digitalizar ou introduzir o código do participante",
@@ -37,7 +41,12 @@
     "codeLabel": "QR ou código do participante",
     "codeHint": "O código começa por nqx2_",
     "operation": "Ação de presença",
-    "operations": { "check_in": "Registar entrada", "check_out": "Registar saída", "no_show": "Marcar falta", "undo": "Anular a última ação" },
+    "operations": {
+      "check_in": "Registar entrada",
+      "check_out": "Registar saída",
+      "no_show": "Marcar falta",
+      "undo": "Anular a última ação"
+    },
     "reason": "Motivo da correção",
     "reasonHint": "Obrigatório para anular. Não inclua informações sensíveis.",
     "queue": "Adicionar à fila cifrada",
@@ -49,6 +58,7 @@
   "queue": {
     "title": "Fila offline cifrada",
     "pending": "{{count}} ações pendentes",
+    "pending_one": "{{count}} ação pendente",
     "sync": "Sincronizar agora",
     "synced": "As decisões do servidor foram aplicadas à fila.",
     "syncError": "A sincronização falhou. A fila cifrada pode ser repetida com as mesmas chaves de idempotência.",
@@ -57,7 +67,12 @@
     "purge": "Remover dados offline",
     "purgeTitle": "Remover os dados offline deste dispositivo?",
     "purgeDescription": "A lista cifrada, o segredo do dispositivo e as ações não sincronizadas serão removidos permanentemente.",
-    "states": { "pending": "Pendente", "synced": "Sincronizado", "conflict": "Conflito", "rejected": "Rejeitado" }
+    "states": {
+      "pending": "Pendente",
+      "synced": "Sincronizado",
+      "conflict": "Conflito",
+      "rejected": "Rejeitado"
+    }
   },
   "conflicts": {
     "title": "Conflitos de check-in",

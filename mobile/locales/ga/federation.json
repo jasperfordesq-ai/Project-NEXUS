@@ -5,10 +5,13 @@
   "subtitle": "Pobail nasctha",
   "stats": {
     "partners": "{{count}} comhpháirtí",
+    "partners_one": "{{count}} comhpháirtí",
     "partners_other": "{{count}} comhpháirtithe",
     "members": "{{count}} ball cónaidhme",
+    "members_one": "{{count}} ball cónaidhme",
     "members_other": "{{count}} ball cónaidhme",
     "exchanges": "{{count}} malartú tras-pobail",
+    "exchanges_one": "{{count}} malartú tras-pobail",
     "exchanges_other": "{{count}} malartú tras-pobail"
   },
   "hub": {
@@ -31,6 +34,7 @@
     "noActivityYet": "Níl aon ghníomhaíocht fós",
     "noActivityDescription": "Beidh teachtaireachtaí trasphobail, comhpháirtíochtaí agus malartuithe le feiceáil anseo.",
     "memberCount": "{{count}} ball",
+    "memberCount_one": "{{count}} ball",
     "memberCount_other": "{{count}} ball",
     "viewCommunity": "Féach ar an bpobal",
     "quick": {
@@ -83,8 +87,10 @@
   "relative": {
     "today": "inniu",
     "daysAgo": "{{count}}lá ó shin",
+    "daysAgo_one": "{{count}} lá ó shin",
     "daysAgo_other": "{{count}} lá ó shin",
     "monthsAgo": "{{count}} mí ó shin",
+    "monthsAgo_one": "{{count}} mhí ó shin",
     "monthsAgo_other": "{{count}} mí ó shin"
   },
   "detail": {
@@ -94,6 +100,7 @@
     "members": "baill",
     "memberTotal": "Comhaireamh na mball",
     "memberCount": "{{count}} ball",
+    "memberCount_one": "{{count}} ball",
     "memberCount_other": "{{count}} ball",
     "partnerSince": "Comhpháirtí ó {{date}}",
     "partnerSinceLabel": "Comhpháirtí ó",
@@ -133,8 +140,10 @@
     "tryAgain": "Déan iarracht eile",
     "backToHub": "Ar ais chuig mol an chónaidhm",
     "resultsCount": "{{count}} toradh",
+    "resultsCount_one": "{{count}} toradh",
     "resultsCount_other": "{{count}} toradh",
     "memberCount": "{{count}} ball",
+    "memberCount_one": "{{count}} ball",
     "memberCount_other": "{{count}} ball",
     "external": "Seachtrach",
     "unknownCommunity": "Comhphobal comhpháirtíochta",
@@ -289,6 +298,7 @@
       "unavailableTitle": "Níl grúpaí Cónaidhme cumasaithe",
       "unavailableDescription": "Tá Cónaidhm gníomhach don tionónta seo, ach tá grúpaí comhpháirtíochta díchumasaithe. Ní mór do riarthóir pobail grúpaí cónasctha a chumasú.",
       "memberCount": "{{count}} ball",
+      "memberCount_one": "{{count}} ball",
       "memberCount_other": "{{count}} baill",
       "loadMore": "Lódáil tuilleadh grúpaí",
       "openDetails": "Sonraí oscailte do {{name}}",
@@ -321,6 +331,7 @@
       "organizerFallback": "Eagraí an imeachta",
       "ends": "Ag críochnú {{date}}",
       "attendeeCount": "{{count}} freastail",
+      "attendeeCount_one": "{{count}} duine i láthair",
       "attendeeCount_other": "{{count}} lucht freastail"
     },
     "onboarding": {

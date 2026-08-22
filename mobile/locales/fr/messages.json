@@ -11,6 +11,7 @@
   "searchPlaceholder": "Rechercher dans les messages",
   "resultsLoading": "Chargement",
   "conversationCount": "{{count}} conversation",
+  "conversationCount_one": "{{count}} conversation",
   "conversationCount_other": "{{count}} conversations",
   "visibleCount": "{{count}} affichées",
   "archivedCount": "{{count}} archivée",
@@ -41,6 +42,7 @@
     "you": "Toi:",
     "goBack": "Retour",
     "messageCount": "{{count}} message",
+    "messageCount_one": "{{count}} message",
     "messageCount_other": "{{count}} messages",
     "messagingRestrictedTitle": "Messages en pause",
     "messagingRestrictedContact": "Veuillez contacter votre equipe communautaire avant d'envoyer d'autres messages.",
@@ -116,6 +118,7 @@
     "emptySubtitle": "Essayez un autre nom ou consultez le répertoire des membres.",
     "memberFallback": "Membre de la communauté",
     "resultsCount": "{{count}} membre affiché",
+    "resultsCount_one": "{{count}} membre affiché",
     "resultsCount_other": "{{count}} membres affichés",
     "openThread": "Envoyer un message à {{name}}"
   },

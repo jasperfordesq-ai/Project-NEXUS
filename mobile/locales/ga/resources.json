@@ -12,11 +12,14 @@
   "download": "Oscail an acmhainn",
   "readArticle": "Léigh an t-alt",
   "downloads": "Líon íoslódálacha: {{count}}",
+  "downloads_one": "Líon íoslódálacha: {{count}}",
   "views": "Líon amharc: {{count}}",
+  "views_one": "Líon amharc: {{count}}",
   "helpful": "Líon daoine a mheas go raibh sé cabhrach: {{yes}}",
   "emptyTitle": "Níor aimsíodh aon rud",
   "emptySubtitle": "Bain triail as cuardach nó catagóir eile.",
   "errorTitle": "Níorbh fhéidir na hacmhainní a lódáil",
   "categoryCount": "Líon míreanna: {{count}}",
+  "categoryCount_one": "Líon míreanna: {{count}}",
   "uncategorized": "Ginearálta"
 }

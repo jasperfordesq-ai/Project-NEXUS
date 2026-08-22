@@ -9,6 +9,7 @@
   "filtersIntro": "Switch between upcoming and past events.",
   "resultsLoading": "Loading",
   "resultsCount": "{{count}} event",
+  "resultsCount_one": "{{count}} event",
   "resultsCount_other": "{{count}} events",
   "createEvent": "Create event",
   "upcoming": "Upcoming",
@@ -74,8 +75,19 @@
     "longitudePlaceholder": "-0.1246",
     "venueAccessibilityTitle": "Venue accessibility",
     "venueAccessibilityHint": "Share confirmed information so members can plan their visit.",
-    "venueAccessibilityFeatures": { "step_free_access": "Step-free access", "accessible_toilet": "Accessible toilet", "hearing_loop": "Hearing loop", "quiet_space": "Quiet space", "seating_available": "Seating available", "accessible_parking": "Accessible parking" },
-    "venueAccessibilityStatus": { "unknown": "Not known", "yes": "Yes", "no": "No" },
+    "venueAccessibilityFeatures": {
+      "step_free_access": "Step-free access",
+      "accessible_toilet": "Accessible toilet",
+      "hearing_loop": "Hearing loop",
+      "quiet_space": "Quiet space",
+      "seating_available": "Seating available",
+      "accessible_parking": "Accessible parking"
+    },
+    "venueAccessibilityStatus": {
+      "unknown": "Not known",
+      "yes": "Yes",
+      "no": "No"
+    },
     "venueAccessibilityParkingDetails": "Accessible parking details",
     "venueAccessibilityParkingPlaceholder": "Spaces, access route, or booking instructions",
     "venueAccessibilityTransitDetails": "Public transport and arrival details",
@@ -94,11 +106,29 @@
     "recurrenceTitle": "Repeating schedule",
     "recurrenceToggle": "Make this a recurring event",
     "recurrenceFrequency": "Frequency",
-    "recurrenceFrequencies": { "daily": "Daily", "weekly": "Weekly", "biweekly": "Every two weeks", "monthly": "Monthly", "yearly": "Yearly" },
+    "recurrenceFrequencies": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Every two weeks",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
     "recurrenceDays": "Repeat on",
-    "recurrenceWeekdays": { "MO": "Mon", "TU": "Tue", "WE": "Wed", "TH": "Thu", "FR": "Fri", "SA": "Sat", "SU": "Sun" },
+    "recurrenceWeekdays": {
+      "MO": "Mon",
+      "TU": "Tue",
+      "WE": "Wed",
+      "TH": "Thu",
+      "FR": "Fri",
+      "SA": "Sat",
+      "SU": "Sun"
+    },
     "recurrenceEnds": "Ends",
-    "recurrenceEndTypes": { "after_count": "After a number of events", "on_date": "On a date", "never": "Never" },
+    "recurrenceEndTypes": {
+      "after_count": "After a number of events",
+      "on_date": "On a date",
+      "never": "Never"
+    },
     "recurrenceCount": "Number of events",
     "recurrenceCountPlaceholder": "2 to {{max}}",
     "recurrenceEndDate": "Series end date",
@@ -112,8 +142,11 @@
     "revisionPreview": "Preview changes",
     "revisionImpactTitle": "Review recurring changes",
     "revisionImpact": "{{count}} future event(s) will change.",
+    "revisionImpact_one": "{{count}} future event will change.",
     "revisionRecipients": "{{count}} participant(s) may be notified.",
+    "revisionRecipients_one": "{{count}} participant may be notified.",
     "revisionBlocked": "Resolve {{count}} conflict(s) before applying these changes.",
+    "revisionBlocked_one": "Resolve {{count}} conflict before applying these changes.",
     "revisionConfirm": "Apply changes",
     "revisionImageUnsupported": "A cover image cannot be changed in the same this-and-future update. Save it to only this event or update the series separately.",
     "revisionDateUnsupported": "Calendar dates cannot be moved for this and future events. Choose only this event or keep the dates unchanged.",
@@ -148,7 +181,12 @@
   "accessibilityFilter": {
     "label": "Step-free venue access",
     "hint": "Filter by the venue information confirmed by the organiser.",
-    "options": { "any": "Any venue", "yes": "Step-free access confirmed", "no": "Not step-free", "unknown": "Not known" }
+    "options": {
+      "any": "Any venue",
+      "yes": "Step-free access confirmed",
+      "no": "Not step-free",
+      "unknown": "Not known"
+    }
   },
   "detail": {
     "submitForReviewConfirm": "Submit this event to the moderation queue? Organisers can still edit it while it is awaiting review.",
@@ -211,6 +249,7 @@
     "pollOptionFallback": "Poll option",
     "pollOptionResult": "{{label}} · {{percent}}%",
     "pollTotalVotes": "{{count}} vote",
+    "pollTotalVotes_one": "{{count}} vote",
     "pollTotalVotes_other": "{{count}} votes",
     "communityMember": "Community member",
     "shareMessage": "{{title}} — {{url}}"
@@ -221,6 +260,7 @@
     "loadError": "The event agenda could not be loaded.",
     "retry": "Retry agenda",
     "sessionCount": "{{count}} session",
+    "sessionCount_one": "{{count}} session",
     "sessionCount_other": "{{count}} sessions",
     "starts": "Starts",
     "ends": "Ends",
@@ -255,7 +295,14 @@
       "capacityLimited": "{{registered}} of {{limit}} registered",
       "full": "Full",
       "resourcesTitle": "Session resources",
-      "resourceType": { "link": "Link", "document": "Document", "slides": "Slides", "download": "Download", "stream": "Live stream", "recording": "Recording" },
+      "resourceType": {
+        "link": "Link",
+        "document": "Document",
+        "slides": "Slides",
+        "download": "Download",
+        "stream": "Live stream",
+        "recording": "Recording"
+      },
       "openResource": "Open {{title}}",
       "resourceUnavailable": "{{title}} is unavailable",
       "registering": "Registering…",
@@ -322,6 +369,7 @@
     "loadErrorDescription": "The live check-in roster could not be loaded.",
     "empty": "No confirmed attendees match this search and filter.",
     "resultCount": "{{count}} attendee",
+    "resultCount_one": "{{count}} attendee",
     "resultCount_other": "{{count}} attendees",
     "noActions": "No attendance action is currently available.",
     "memberFallback": "Member #{{id}}",
@@ -338,12 +386,15 @@
     "conflictRefreshed": "These settings changed elsewhere. The latest version has been loaded; review it before saving again.",
     "customBounds": "Enter a whole number from {{min}} to {{max}} minutes.",
     "ruleLimit": "You can add up to {{count}} reminders.",
+    "ruleLimit_one": "You can add up to {{count}} reminder.",
     "resetSuccess": "Custom reminder settings removed.",
     "timing": "Reminder times",
     "customMinutes": "Custom time in minutes",
     "addCustom": "Add time",
     "customValue": "{{count}} minutes before",
+    "customValue_one": "{{count}} minute before",
     "removeCustom": "Remove the reminder {{count}} minutes before",
+    "removeCustom_one": "Remove the reminder {{count}} minute before",
     "channels": "Delivery channels",
     "channel": {
       "email": "Email",
@@ -389,6 +440,7 @@
     "download_error": "The analytics export could not be downloaded.",
     "privacy_title": "Privacy-protected reporting",
     "privacy_note": "Optional metrics are hidden until at least {{count}} consented people are represented.",
+    "privacy_note_one": "Optional metrics are hidden until at least {{count}} consented person is represented.",
     "consent_bound": "Consent-bound",
     "suppressed": "Suppressed",
     "not_limited": "No limit",
@@ -461,8 +513,18 @@
     "loadingMore": "Loading more history",
     "loadMoreFailed": "More history could not be loaded. Try again.",
     "states": {
-      "publication": { "draft": "Draft", "pending_review": "Pending review", "published": "Published", "archived": "Archived" },
-      "operational": { "scheduled": "Scheduled", "postponed": "Postponed", "cancelled": "Cancelled", "completed": "Completed" }
+      "publication": {
+        "draft": "Draft",
+        "pending_review": "Pending review",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "operational": {
+        "scheduled": "Scheduled",
+        "postponed": "Postponed",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      }
     },
     "cascade": {
       "reminders_cancelled": "Reminder schedules cancelled: {{count}}",
