@@ -126,7 +126,7 @@ function MarketplaceMapScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('map.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="map-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
       </SafeAreaView>
@@ -134,7 +134,7 @@ function MarketplaceMapScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('map.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList
         data={items}

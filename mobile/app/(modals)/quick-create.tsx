@@ -107,7 +107,7 @@ function QuickCreateRouteInner() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('quickCreate.title')} backLabel={t('buttons.back')} fallbackHref="/(tabs)/home" />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">

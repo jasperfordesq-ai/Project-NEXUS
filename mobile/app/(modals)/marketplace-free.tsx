@@ -99,7 +99,7 @@ function MarketplaceFreeScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('free.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="bag-handle-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
       </SafeAreaView>
@@ -107,7 +107,7 @@ function MarketplaceFreeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={t('free.title')}
         backLabel={t('common:back')}

@@ -135,7 +135,7 @@ export default function SettingsScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('title')} backLabel={t('common:buttons.back')} fallbackHref="/(tabs)/profile" />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
           <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.borderSubtle }}>

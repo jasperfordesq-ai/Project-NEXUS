@@ -81,7 +81,7 @@ function MarketplaceSellerScreen() {
 
   if (!safeId) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('seller.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="storefront-outline" title={t('seller.notFound')} subtitle={t('seller.notFoundHint')} />
       </SafeAreaView>
@@ -89,7 +89,7 @@ function MarketplaceSellerScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('seller.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList<SellerListItem>
         data={listData}

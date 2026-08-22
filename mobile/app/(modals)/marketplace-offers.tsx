@@ -71,7 +71,7 @@ function MarketplaceOffersScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('offers.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="hand-left-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
       </SafeAreaView>
@@ -80,7 +80,7 @@ function MarketplaceOffersScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('offers.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="py-16">
           <LoadingSpinner />
@@ -91,7 +91,7 @@ function MarketplaceOffersScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('offers.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState
           icon="hand-left-outline"
@@ -134,7 +134,7 @@ function MarketplaceOffersScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('offers.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList
         data={offers.items}

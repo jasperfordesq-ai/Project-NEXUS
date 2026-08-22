@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
@@ -56,6 +56,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { useParamTab } from '@/lib/hooks/useParamTab';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,30 @@ const ALERT_JOB_TYPES = ['paid', 'volunteer', 'timebank'] as const;
 const COMMITMENT_TYPES = ['', 'full_time', 'part_time', 'flexible', 'one_off'] as const;
 const ALERT_COMMITMENT_TYPES = ['full_time', 'part_time', 'flexible', 'one_off'] as const;
 type JobsTab = 'browse' | 'myApplications' | 'myPostings' | 'alerts';
+
+/**
+ * Every spelling a link might use for a tab on this screen. Unrecognised values return null,
+ * which leaves the member where they are instead of bouncing them to Browse.
+ */
+function resolveJobsTab(raw: string | undefined): JobsTab | null {
+  switch (raw) {
+    case 'alerts':
+    case 'job-alerts':
+      return 'alerts';
+    case 'applications':
+    case 'myApplications':
+    case 'my-applications':
+      return 'myApplications';
+    case 'postings':
+    case 'myPostings':
+    case 'my-postings':
+      return 'myPostings';
+    case 'browse':
+      return 'browse';
+    default:
+      return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Job card component
@@ -895,7 +920,20 @@ export default function JobsScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
 
-  const [activeTab, setActiveTab] = useState<JobsTab>('browse');
+  /**
+   * 🔴 This screen ignored its own deep-link parameter entirely.
+   *
+   * `+native-intent.ts` maps `nexus://jobs/alerts` to `/(modals)/jobs?view=alerts`, and it
+   * did so correctly — but nothing here ever read `view`, so every job-alerts link landed on
+   * Browse. Journey 5.28, measured 2026-08-21 and fixed 2026-08-22. `useParamTab` also makes
+   * a second link work when the screen is already open, which is the other half of 7.2.
+   */
+  const params = useLocalSearchParams<{ view?: string | string[]; tab?: string | string[] }>();
+  const [activeTab, setActiveTab] = useParamTab<JobsTab>(
+    params.view ?? params.tab,
+    resolveJobsTab,
+    'browse',
+  );
   // See the tab-bar comment below: four across does not fit a narrow phone.
   const { width: screenWidth } = useWindowDimensions();
   const tabsPerRow = screenWidth < 380 ? 2 : 4;
@@ -1065,7 +1103,14 @@ export default function JobsScreen() {
 
   return (
     <ModalErrorBoundary>
-    <SafeAreaView className="flex-1 bg-background">
+    {/*
+      🔴 `className` is inert on react-native-safe-area-context's SafeAreaView — uniwind
+      does not patch it — so `flex-1` here did nothing and this root sized itself to its
+      content. The Alerts tab's list then rendered BELOW the bottom of the screen with
+      nothing to scroll: the alert you had just created was unreachable. Measured on a
+      device on 2026-08-22. The explicit style is the fix used by the other 97 screens.
+    */}
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar
         title={t('title')}
         backLabel={t('common:back')}

@@ -88,7 +88,7 @@ export default function SettingsDataExportScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('dataExport.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
           <HeroCard className="overflow-hidden rounded-panel p-0">

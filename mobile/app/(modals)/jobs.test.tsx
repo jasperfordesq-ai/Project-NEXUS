@@ -10,10 +10,12 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 const mockRouterPush = jest.fn();
 
+let mockJobsParams: Record<string, string> = {};
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockJobsParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -180,6 +182,7 @@ beforeEach(() => {
   });
   jest.clearAllMocks();
   mockRouterPush.mockReset();
+  mockJobsParams = {};
 });
 
 const mockJob: JobVacancy = {
@@ -255,6 +258,22 @@ describe('JobsScreen', () => {
     const { getByPlaceholderText, getByLabelText } = render(<JobsScreen />);
     fireEvent.changeText(getByPlaceholderText('Search jobs...'), 'coordinator');
     expect(getByLabelText('Clear search')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 `+native-intent.ts` maps `nexus://jobs/alerts` to `/(modals)/jobs?view=alerts`, and
+   * always did — but nothing on this screen read `view`, so every job-alerts link landed on
+   * Browse. Journey 5.28.
+   */
+  it('opens on the alerts tab when the deep link asks for it', () => {
+    mockJobsParams = { view: 'alerts' };
+    const { getByText } = render(<JobsScreen />);
+    expect(getByText('Job alerts')).toBeTruthy();
+  });
+
+  it('opens on browse when the link names no tab', () => {
+    const { getByText } = render(<JobsScreen />);
+    expect(getByText('Browse')).toBeTruthy();
   });
 
   it('renders Browse, My Applications, and My Postings tabs', () => {

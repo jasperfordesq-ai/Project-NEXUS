@@ -128,7 +128,7 @@ function MarketplaceMyListingsScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('myListings.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="py-16">
           <LoadingSpinner />
@@ -139,7 +139,7 @@ function MarketplaceMyListingsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('myListings.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState
           icon="storefront-outline"
@@ -153,7 +153,7 @@ function MarketplaceMyListingsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={t('myListings.title')}
         backLabel={t('common:back')}

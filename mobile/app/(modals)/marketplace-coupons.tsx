@@ -40,7 +40,7 @@ function MarketplaceCouponsScreen() {
 
   if (!hasFeature('merchant_coupons')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('publicCoupons.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="flex-1 justify-center px-4">
           <EmptyState icon="ticket-outline" title={t('publicCoupons.unavailableTitle')} subtitle={t('publicCoupons.unavailableSubtitle')} />
@@ -50,7 +50,7 @@ function MarketplaceCouponsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('publicCoupons.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList
         data={items}

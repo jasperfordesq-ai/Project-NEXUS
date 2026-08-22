@@ -134,7 +134,7 @@ export default function MoreScreen() {
   // zero references to `error` in it).
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <ProfileSkeleton />
       </SafeAreaView>
     );
@@ -147,7 +147,7 @@ export default function MoreScreen() {
   // endless skeleton.
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <ErrorState
           testID="profile-session-unavailable"
           title={t('sessionUnavailableTitle')}
@@ -160,7 +160,7 @@ export default function MoreScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 112 }} showsVerticalScrollIndicator={false}>
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />

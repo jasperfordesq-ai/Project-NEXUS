@@ -120,6 +120,7 @@ jest.mock('react-native-gesture-handler', () => {
 
 jest.mock('@/lib/api/notifications', () => ({
   getNotifications: jest.fn(),
+  getNotificationCounts: jest.fn(),
   markAllRead: jest.fn().mockResolvedValue(undefined),
   markGroupRead: jest.fn().mockResolvedValue(undefined),
   markRead: jest.fn().mockResolvedValue(undefined),
@@ -217,6 +218,42 @@ describe('NotificationsScreen', () => {
     const { getByText } = render(<NotificationsScreen />);
     expect(getByText('New message from Alice')).toBeTruthy();
     expect(getByText('Alice sent you a message about your listing.')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 The header counted only the page that happened to be loaded. On a device with 26
+   * unread notifications it read "10 unread", because the list is paginated at 20 and then
+   * grouped. `/v2/notifications/counts` has the real total. Journey 7.15.
+   */
+  it('shows the unread total from the server, not the count on the loaded page', () => {
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      if (call === 1) {
+        return { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: jest.fn() };
+      }
+      return { data: { data: { total: 26 } }, isLoading: false, error: null, refresh: jest.fn() };
+    });
+
+    const { getByText } = render(<NotificationsScreen />);
+
+    expect(getByText('26 unread')).toBeTruthy();
+    expect(getByText('You have 26 unread notifications.')).toBeTruthy();
+  });
+
+  it('falls back to the loaded page when the count request gives nothing', () => {
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      if (call === 1) {
+        return { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: jest.fn() };
+      }
+      return { data: null, isLoading: false, error: 'offline', refresh: jest.fn() };
+    });
+
+    const { getByText } = render(<NotificationsScreen />);
+
+    expect(getByText('1 unread')).toBeTruthy();
   });
 
   it('marks a single notification as read from the card action', async () => {

@@ -204,7 +204,7 @@ function VerifyIdentityScreenInner() {
   const fee = status ? formatFee(status.fee_cents, status.fee_currency) : '';
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('identity.page_title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
       <ScrollView
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} tintColor={primary} colors={[primary]} />}

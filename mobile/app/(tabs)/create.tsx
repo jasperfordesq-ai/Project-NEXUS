@@ -28,7 +28,7 @@ export default function CreateTabFallback() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <LoadingSpinner />
     </SafeAreaView>
   );

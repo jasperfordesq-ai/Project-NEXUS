@@ -201,7 +201,7 @@ function MarketplaceCategoryScreen() {
 
   if (!hasFeature('marketplace') || !safeCategoryId) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('category.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="grid-outline" title={t('category.notFound')} subtitle={t('category.notFoundHint')} />
       </SafeAreaView>
@@ -209,7 +209,7 @@ function MarketplaceCategoryScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={categoryName} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
 
       <FlatList

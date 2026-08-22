@@ -41,7 +41,7 @@ function MarketplacePickupsScreen() {
 
   if (!marketplaceEnabled) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('pickup.myTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="flex-1 justify-center px-4">
           <EmptyState icon="bag-handle-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
@@ -52,7 +52,7 @@ function MarketplacePickupsScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('pickup.myTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="py-16">
           <LoadingSpinner />
@@ -63,7 +63,7 @@ function MarketplacePickupsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('pickup.myTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="flex-1 justify-center px-4">
           <EmptyState
@@ -79,7 +79,7 @@ function MarketplacePickupsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('pickup.myTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132, gap: 12 }}

@@ -74,7 +74,7 @@ export default function MembersScreen() {
   const hasSearch = search.trim().length > 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('back')} fallbackHref="/(tabs)/home" />
       <FlatList<Member>
         data={items}

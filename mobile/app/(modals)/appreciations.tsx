@@ -118,7 +118,7 @@ function AppreciationsScreenInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={titleName ? t('appreciations.wallTitleFor', { name: titleName }) : t('appreciations.wallTitle')}
         backLabel={t('common:back')}

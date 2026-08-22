@@ -287,7 +287,7 @@ function EventTemplatesScreenInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']} style={{ flex: 1 }}>
       <AppTopBar
         title={t('templates.mobile.title')}
         backLabel={t('common:back')}

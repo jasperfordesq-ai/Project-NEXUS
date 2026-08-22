@@ -82,7 +82,7 @@ export default function ResourcesScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('resources:title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
         <ScrollView
           contentContainerStyle={{ paddingBottom: 40 }}

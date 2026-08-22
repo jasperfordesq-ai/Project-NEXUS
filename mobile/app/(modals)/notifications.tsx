@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   deleteNotification,
+  getNotificationCounts,
   getNotifications,
   markAllRead,
   markGroupRead,
@@ -35,6 +36,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import NativePressable from '@/components/ui/NativePressable';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -52,7 +54,32 @@ export default function NotificationsScreen() {
 
   const { data, isLoading, error, refresh } = useApi(() => getNotifications());
   const notifications = data?.data ?? [];
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  /**
+   * 🔴 Count unread from the SERVER, not from the page that happens to be loaded.
+   *
+   * This counted `notifications.filter(n => !n.is_read)` — the first page only. Measured on
+   * a device on 2026-08-22 with 26 genuinely unread notifications: the header read "10
+   * unread", because the list is paginated at 20 and then grouped. `/v2/notifications/counts`
+   * has always returned the true total (26, matching the database); `getNotificationCounts`
+   * existed in the client and nothing called it. Journey 7.15.
+   *
+   * The loaded page is still the fallback, so the number degrades to the old behaviour
+   * rather than to zero if that request fails.
+   */
+  const countsApi = useApi(() => getNotificationCounts());
+  const loadedUnread = notifications.filter((n) => !n.is_read).length;
+  const serverUnread = countsApi.data?.data?.total;
+  const unreadCount = typeof serverUnread === 'number' ? serverUnread : loadedUnread;
+
+  /**
+   * Marking or deleting changes BOTH the list and the count, so both are refetched. Before
+   * this, refreshing the list alone would have left a stale total in the header.
+   */
+  const refreshAll = useCallback(() => {
+    refresh();
+    countsApi.refresh();
+  }, [refresh, countsApi]);
 
   function handleMarkAll() {
     confirm({
@@ -66,7 +93,7 @@ export default function NotificationsScreen() {
         try {
           await markAllRead();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          refresh();
+          refreshAll();
         } catch {
           showToast({ title: t('common:errors.alertTitle'), description: t('markError'), variant: 'danger' });
         } finally {
@@ -78,7 +105,7 @@ export default function NotificationsScreen() {
 
   function handleNotificationPress(item: Notification) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    void markRead(item.id).then(() => refresh()).catch(console.warn);
+    void markRead(item.id).then(() => refreshAll()).catch(console.warn);
     navigateToLink(item.link ?? null);
   }
 
@@ -91,7 +118,7 @@ export default function NotificationsScreen() {
         await markRead(item.id);
       }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      refresh();
+      refreshAll();
     } catch {
       showToast({ title: t('common:errors.alertTitle'), description: t('markError'), variant: 'danger' });
     } finally {
@@ -104,7 +131,7 @@ export default function NotificationsScreen() {
     try {
       await deleteNotification(item.id);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      refresh();
+      refreshAll();
     } catch {
       showToast({ title: t('common:errors.alertTitle'), description: t('deleteError'), variant: 'danger' });
     } finally {
@@ -204,13 +231,19 @@ export default function NotificationsScreen() {
         <HeroCard className={`overflow-hidden rounded-panel p-0 ${!item.is_read ? 'border border-primary/30' : ''}`}>
           {!item.is_read ? <View className="h-1.5" style={{ backgroundColor: primary }} /> : null}
           <HeroCard.Body className="gap-3 p-4">
-            <HeroButton
-              variant="ghost"
-              feedbackVariant="scale"
-              className="w-full p-0"
+            {/*
+              🔴 This was a HeroButton wrapping the whole card body, and a button caps its
+              own height: the notification text was cut through the middle of its third
+              line, so "You have a new order #MKT-… for "Folding wooden drying rack"" ended
+              mid-word with no ellipsis. Measured on a device 2026-08-22. A card-sized tap
+              target belongs in NativePressable, which lets its content decide the height.
+            */}
+            <NativePressable
+              feedback="scale"
+              className="w-full"
               onPress={() => handleNotificationPress(item)}
+              accessibilityRole="button"
               accessibilityLabel={item.is_read ? label : t('unreadItem', { label })}
-              accessibilityHint={t('itemHint')}
             >
               <View className="flex-row items-start gap-3">
                 {isGrouped && item.actors?.length ? (
@@ -234,12 +267,28 @@ export default function NotificationsScreen() {
                 <View className="min-w-0 flex-1 gap-2">
                   <View className="flex-row items-start gap-2">
                     <View className="min-w-0 flex-1">
+                      {/*
+                        🔴 The line height has to be in `style`, not in `leading-5`.
+                        With the class alone the text was cut through the middle of the
+                        third line instead of ending in an ellipsis — a member reading
+                        "You have a new order #MKT-… for "Folding wooden drying rack""
+                        saw the last line sliced in half. Measured on a device 2026-08-22;
+                        the same remedy as `components/ui/ActionSheet.tsx`.
+                      */}
                       {item.title ? (
-                        <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>
+                        <Text
+                          className="text-base font-bold"
+                          style={{ color: theme.text, fontSize: 16, lineHeight: 22 }}
+                          numberOfLines={2}
+                        >
                           {item.title}
                         </Text>
                       ) : null}
-                      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                      <Text
+                        className="text-sm leading-5"
+                        style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}
+                        numberOfLines={3}
+                      >
                         {item.message}
                       </Text>
                     </View>
@@ -270,7 +319,7 @@ export default function NotificationsScreen() {
                   </View>
                 </View>
               </View>
-            </HeroButton>
+            </NativePressable>
 
             <View className="flex-row flex-wrap gap-2 border-t border-border pt-2">
               {isGrouped ? (
@@ -343,7 +392,7 @@ export default function NotificationsScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
 
         <FlatList<Notification>
@@ -362,7 +411,7 @@ export default function NotificationsScreen() {
                 <View className="items-center gap-3">
                   <Ionicons name="warning-outline" size={34} color={theme.error} />
                   <Text className="text-center text-sm" style={{ color: theme.text }}>{error}</Text>
-                  <HeroButton variant="secondary" onPress={() => void refresh()}>
+                  <HeroButton variant="secondary" onPress={() => void refreshAll()}>
                     <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                   </HeroButton>
                 </View>

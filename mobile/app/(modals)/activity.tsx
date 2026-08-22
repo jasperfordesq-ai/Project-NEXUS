@@ -107,7 +107,7 @@ export default function ActivityScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('activity.title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
         <FlatList<ActivityItem>
           data={dashboard.timeline}

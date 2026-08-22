@@ -117,16 +117,42 @@ describe('SafeAreaView flex', () => {
     expect(atRiskScreens()).toEqual([]);
   });
 
-  it('records how many screens still carry an inert className, without failing on it', () => {
-    // Not a failure: on most screens the dead className is harmless, and rewriting 112
-    // files to chase it would risk changing layouts that currently look right. This
-    // assertion exists so the number stays visible and cannot quietly grow into the
-    // hundreds — if it does, the wrapper-component approach becomes worth the churn.
-    const inert = filesUsingContextSafeArea().filter((file) =>
-      /<SafeAreaView\b[^>]*className="[^"]*\bflex-1\b/.test(fs.readFileSync(file, 'utf8'))
-    );
+  /**
+   * 🔴 This used to be a tolerance of 115, on the reasoning that "on most screens the dead
+   * className is harmless" and that rewriting them "would risk changing layouts that
+   * currently look right". That reasoning was wrong, and a device proved it on 2026-08-22.
+   *
+   * The Alerts tab of `app/(modals)/jobs.tsx` rendered its list BELOW the bottom of the
+   * screen with nothing to scroll — the job alert the member had just created could not be
+   * reached at all, at any scroll position. Nothing in the component tree was wrong; only
+   * the measured height was, because the root had no flex.
+   *
+   * Whether a given screen breaks depends on rendered heights, which no source scan can
+   * know: `settings` scrolls perfectly with the same inert className, `jobs` does not. So
+   * the tolerance could never be turned into a smarter predicate — the only safe position
+   * is zero. 86 tags across 56 files were given an explicit `style={{ flex: 1 }}` on
+   * 2026-08-22, matching the 97 screens that already had it. The whole suite stayed green
+   * and three screens were re-checked on a device.
+   */
+  it('🔴 no SafeAreaView declares flex through className alone', () => {
+    const inert: string[] = [];
 
-    expect(inert.length).toBeLessThanOrEqual(115);
+    for (const file of filesUsingContextSafeArea()) {
+      const source = fs.readFileSync(file, 'utf8');
+      const tagPattern = /<SafeAreaView\b([^>]*?)>/g;
+      let match: RegExpExecArray | null;
+
+      while ((match = tagPattern.exec(source)) !== null) {
+        const attrs = match[1] ?? '';
+        if (!/className="[^"]*\bflex-1\b/.test(attrs)) continue;
+        if (/style=/.test(attrs)) continue;
+        inert.push(path.relative(MOBILE_ROOT, file).replace(/\\/g, '/'));
+      }
+    }
+
+    // `flex-1` in the className is fine to keep — it documents the intent and costs
+    // nothing. What must always accompany it is a style that actually applies.
+    expect([...new Set(inert)].sort()).toEqual([]);
   });
 
   it('🔴 nobody has switched to react-native’s SafeAreaView to "fix" this', () => {

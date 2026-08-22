@@ -121,7 +121,7 @@ export default function FeedHashtagsScreen() {
 
   return (
     <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('hashtags.title')} backLabel={t('common:buttons.back')} fallbackHref="/(tabs)/home" />
         {!hasModule('feed') ? (
           <EmptyState icon="pricetag-outline" title={t('common:errors.notFound')} subtitle={t('feed.emptySubtitle')} />

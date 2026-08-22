@@ -236,7 +236,7 @@ function EditExchangeModalInner() {
 
   if (safeListingId <= 0) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref="/(tabs)/exchanges" />
         <HeroCard variant="secondary" className="mx-4 my-6">
           <HeroCard.Body className="items-center gap-3 p-6">
@@ -252,7 +252,7 @@ function EditExchangeModalInner() {
 
   if (error || !listing) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref="/(tabs)/exchanges" />
         <HeroCard variant="secondary" className="mx-4 my-6">
           <HeroCard.Body className="items-center gap-3 p-6">
@@ -265,7 +265,7 @@ function EditExchangeModalInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref={{ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }} keyboardShouldPersistTaps="handled">

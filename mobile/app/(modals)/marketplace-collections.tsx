@@ -202,7 +202,7 @@ function MarketplaceCollectionsScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('collections.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState icon="folder-open-outline" title={t('featureGate.title')} subtitle={t('featureGate.description')} />
       </SafeAreaView>
@@ -211,7 +211,7 @@ function MarketplaceCollectionsScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('collections.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <View className="py-16"><LoadingSpinner /></View>
       </SafeAreaView>
@@ -220,7 +220,7 @@ function MarketplaceCollectionsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('collections.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
         <EmptyState
           icon="folder-open-outline"
@@ -235,7 +235,7 @@ function MarketplaceCollectionsScreen() {
 
   if (selectedCollection) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={selectedCollection.name} backLabel={t('common:back')} onBack={() => setSelectedCollection(null)} fallbackHref={'/(modals)/marketplace-collections' as Href} />
         <FlatList
           data={items}
@@ -277,7 +277,7 @@ function MarketplaceCollectionsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('collections.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
 
       <FlatList

@@ -87,7 +87,7 @@ function FederationOnboardingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('directory.onboarding.title')} backLabel={t('common:back')} fallbackHref="/(modals)/federation" />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">

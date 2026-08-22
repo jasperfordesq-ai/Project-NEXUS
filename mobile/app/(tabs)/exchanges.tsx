@@ -520,7 +520,7 @@ export default function ExchangesScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <OfflineBanner />
 
       <View className="px-4 pb-2 pt-3">

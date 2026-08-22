@@ -69,7 +69,7 @@ function GroupExchangesScreenInner() {
   const { items, hasMore } = useMemo(() => unwrapGroupExchanges(data), [data]);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('groupExchanges.title')} backLabel={t('common:buttons.back')} fallbackHref="/(tabs)/profile" />
       <ScrollView
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}

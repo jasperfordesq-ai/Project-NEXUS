@@ -215,7 +215,7 @@ function WalletModalInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('back')} />
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}

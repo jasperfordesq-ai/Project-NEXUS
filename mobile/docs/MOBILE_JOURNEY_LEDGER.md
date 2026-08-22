@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 3 | 6 | 5 | 0 | 5 | 1 | 0.413 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 13 | 6 | 11 | 0 | 4 | 0 | 0.569 |
+| 5 — Community modules | 34 | 14 | 6 | 11 | 0 | 3 | 0 | 0.599 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
-| 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
+| 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **29** | **41** | **25** | **4** | **39** | **2** | — |
+| **Total** | **140** | **31** | **41** | **25** | **4** | **37** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.442**.
+rows → **0.457**.
 
 ### Credit recomputation
 
@@ -87,9 +87,9 @@ rows → **0.442**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (3 × 1.0) + (6 × 0.6) + (5 × 0.25) = 7.85 | ÷ 19 † | **0.413** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (13 × 1.0) + (6 × 0.6) + (11 × 0.25) = 19.35 | ÷ 34 | **0.569** |
+| 5 | (14 × 1.0) + (6 × 0.6) + (11 × 0.25) = 20.35 | ÷ 34 | **0.599** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
-| 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
+| 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
@@ -234,7 +234,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.25 | Jobs list | RENDERS | Photographed |
 | 5.26 | Jobs tabs readable on a narrow phone | CERTIFIED | Truncated to "My A…" until `ec0df3366`; guarded by `app/deepLinkTabs.test.ts` sibling |
 | 5.27 | Apply for a job | OPEN | Never walked |
-| 5.28 | Job alerts | OPEN | Deep link lands on the wrong tab (`view` parameter unread) |
+| 5.28 | Job alerts | CERTIFIED | 2026-08-22: `nexus://jobs/alerts` now opens the Alerts tab and an alert was created and read back (`job_alerts` row 1, user 674, keywords "gardening", active). Two defects fixed on the way: the screen never read its own `view` parameter, so every alerts link landed on Browse; and the alert list was **unreachable** — the root SafeAreaView relied on an inert `className` for flex, so the list rendered below the bottom of the screen with nothing to scroll. Guarded by `lib/hooks/useParamTab.test.ts` and the tightened `components/safeAreaFlex.test.ts` |
 | 5.29 | Marketplace browse | RENDERS | Feature disabled for the test community until enabled locally 2026-08-20 |
 | 5.30 | Marketplace category by slug | CERTIFIED | Deep link said "not found" until `673743f16`; guarded by `app/deepLinkParams.test.ts` |
 | 5.31 | Sell an item | CERTIFIED | Walked 2026-08-22: Create tab -> Sell item -> title, tagline, description, price, currency, condition, category -> Publish. marketplace_listings row 100 (tenant 2, user 674, EUR 12.00 fixed, `good`, category 51). 🔴 Found the worst defect of the sweep: marketplace moderation is ON by default, so the new listing was `pending` and BOTH frontends then navigated the seller to a public read that hides it — "Listing not found. This item may have been sold, removed, or moved." about the item they had just created. Fixed in the API (a seller may read their own listing at any moderation status) and the app now shows the server's "waiting for a moderator" notice. |
@@ -264,7 +264,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
 | 7.1 | Deep links reach the right screen with the right parameter | CERTIFIED | Three were broken; guarded by `app/deepLinkParams.test.ts`, mutation-verified |
-| 7.2 | Deep links honour a `?tab=` | PARTIAL | Works when the screen is opened fresh by the link; ignored when it is already open or after a cold start. Intent mapper proven correct |
+| 7.2 | Deep links honour a `?tab=` | PARTIAL | Works when the screen is opened fresh by the link; ignored when it is already open or after a cold start. Intent mapper proven correct. 2026-08-22: `lib/hooks/useParamTab.ts` now handles both halves and is adopted by `jobs`; the remaining tabbed screens still use `useState(() => fromParam())` and keep the already-open half of the fault |
 | 7.3 | Controls stay reachable at 360dp | CERTIFIED | Five defects found; guarded by `components/narrowScreenReach.test.ts` |
 | 7.4 | Shared form footer never clips its submit | CERTIFIED | Broken at every width; guarded |
 | 7.5 | Text inputs are wide enough to read | CERTIFIED | Guarded by `components/ui/inputSizing.test.ts` |
@@ -277,7 +277,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.12 | Every string translated in the 7 shipped locales | OPEN | ≥3,232 multi-word phrases still English across six locales (~11% each) |
 | 7.13 | Offline check-in queue survives a dropped connection | OPEN | Covered by unit tests; never walked on a device |
 | 7.14 | Push notification arrives and opens the right screen | PARTIAL | 🔴 A real defect was found and fixed 2026-08-21 (`edcee0ba9`): every push from a **queued** listener was dropped — `afterResponse()` does not throw outside HTTP, so the documented inline fallback never ran, and the send also did not run in the tenant it logged. Mutation-verified. **Blocked from PROVEN**: sending a real message locally produced neither a bell nor a queued listener run, so the owner's end-to-end symptom was not reproduced. Arrival on a device is unverified |
-| 7.15 | In-app notification counts are correct | OPEN | Never verified |
+| 7.15 | In-app notification counts are correct | CERTIFIED | 2026-08-22: the header said "10 unread" against 26 genuinely unread rows, because it counted the loaded page rather than asking the server. `/v2/notifications/counts` had the right number all along and `getNotificationCounts` was in the client, unused. Now reads 26, matching the database, and refetches after mark-read/delete. The same walk found the notification cards cropped by a `HeroButton` wrapper — title, category and timestamp were hidden on every row and the body was cut mid-word; swapped to `NativePressable` |
 | 7.16 | Start-up time / bundle size within a budget | OPEN | No budget exists |
 | 7.17 | Pixel regression gate covers the main screens | PARTIAL | Three screens gated of ~137 |
 | 7.18 | The app runs on iOS | OPEN | Never built or run |

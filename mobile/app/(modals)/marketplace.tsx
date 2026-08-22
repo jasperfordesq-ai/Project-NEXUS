@@ -142,7 +142,7 @@ function MarketplaceScreen() {
 
   if (!hasFeature('marketplace')) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
         <EmptyState
           icon="bag-handle-outline"
@@ -180,7 +180,7 @@ function MarketplaceScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={t('title')}
         backLabel={t('common:back')}

@@ -137,7 +137,7 @@ function ProfileCollectionsInner() {
 
   if (selectedCollection) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={selectedCollection.name} backLabel={t('common:back')} onBack={closeCollection} fallbackHref={'/(modals)/profile-collections' as Href} />
         <FlatList<SavedItem>
           data={items}
@@ -200,7 +200,7 @@ function ProfileCollectionsInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={publicScope && params.name ? t('collections.publicTitleFor', { name: params.name }) : t(publicScope ? 'collections.publicTitle' : 'collections.myTitle')}
         backLabel={t('common:back')}

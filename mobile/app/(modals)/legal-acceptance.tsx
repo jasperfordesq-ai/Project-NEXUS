@@ -111,7 +111,7 @@ function LegalAcceptanceScreenInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
         <OfflineBanner />
 

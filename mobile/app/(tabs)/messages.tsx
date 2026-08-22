@@ -207,7 +207,7 @@ export default function MessagesScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <FlatList<Conversation>
         data={filteredConversations}
         keyExtractor={(item) => String(item.id)}

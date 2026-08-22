@@ -571,7 +571,7 @@ function VolunteeringOrgDashboardInner() {
 
   if (!orgId) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('org.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
         <EmptyState icon="business-outline" title={t('org.invalid')} />
       </SafeAreaView>
@@ -579,7 +579,7 @@ function VolunteeringOrgDashboardInner() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={org?.name ?? t('org.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
       <ScrollView
         refreshControl={<RefreshControl refreshing={orgApi.isLoading || statsApi.isLoading} onRefresh={refreshAll} tintColor={primary} colors={[primary]} />}

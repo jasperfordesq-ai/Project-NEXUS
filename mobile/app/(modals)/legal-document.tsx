@@ -66,7 +66,7 @@ function LegalDocumentScreenInner() {
   const notYetInForce = isNotYetInForce(document?.effective_date);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
         title={document?.title || t('legal:document.back')}
         backLabel={t('common:buttons.back')}

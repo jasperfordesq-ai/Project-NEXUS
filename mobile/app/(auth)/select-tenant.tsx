@@ -41,7 +41,7 @@ export default function SelectTenantScreen() {
   const ItemSeparator = useCallback(() => <View className="h-3" />, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <FlatList<TenantListItem>
         data={!isLoading && !error ? tenants : []}
         keyExtractor={(item) => String(item.id)}
