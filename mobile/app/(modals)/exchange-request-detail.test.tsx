@@ -48,6 +48,7 @@ jest.mock('react-i18next', () => ({
         'requests.untitledListing': 'Untitled listing',
       };
       if (key === 'requests.proposedHours') return `Proposed: ${String(opts?.count ?? 0)} hours`;
+      if (key === 'requests.messageOtherParty') return `Message ${String(opts?.name ?? '')}`;
       return map[key] ?? key;
     },
   }),
@@ -193,6 +194,27 @@ describe('ExchangeRequestDetailScreen', () => {
 
     expect(getByTestId('exchange-action-accept')).toBeTruthy();
     expect(getByTestId('exchange-action-decline')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 Journey 3.9, walked 2026-08-22: this screen had no route to the person on the other
+   * side of the exchange. The website offers one while the exchange is live and drops it once
+   * it is finished, and that is the behaviour matched here.
+   */
+  it('offers a way to message the other party while the exchange is live', () => {
+    const { getByText } = mount(exchange({ status: 'in_progress' }));
+    expect(getByText('Message E2E UserB')).toBeTruthy();
+  });
+
+  it('names the requester when the viewer is the requester', () => {
+    mockViewerId = 675;
+    const { getByText } = mount(exchange({ status: 'accepted' }));
+    expect(getByText('Message E2E UserA')).toBeTruthy();
+  });
+
+  it('drops the message button once the exchange is over', () => {
+    const { queryByText } = mount(exchange({ status: 'completed' }));
+    expect(queryByText('Message E2E UserB')).toBeNull();
   });
 
   it('does NOT offer accept to the requester — the server answers 403', () => {

@@ -35,6 +35,7 @@ import {
   getExchangeRequest,
   startExchangeRequest,
   type ExchangeRequest,
+  type ExchangeRequestStatus,
 } from '@/lib/api/exchangeRequests';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
@@ -173,6 +174,58 @@ function ExchangeRequestDetailScreen() {
       t('requests.confirmedToast'),
     );
   }, [exchange, hoursInput, run, showToast, t]);
+
+  /**
+   * 🔴 There was no way to contact the other person about an exchange.
+   *
+   * Walked on a device 2026-08-22 (journey 3.9): this screen showed the status, the hours,
+   * the confirmations and the history, and offered no route to the person on the other side
+   * of it. Someone who needed to say "I'll be twenty minutes late" had to leave, find the
+   * member, and start a conversation from scratch.
+   *
+   * Matches the website (`react-frontend/src/pages/exchanges/ExchangeDetailPage.tsx`), which
+   * shows this only while the exchange is live — once it is completed, cancelled or expired
+   * there is nothing to arrange, and an ordinary message is the right route instead.
+   */
+  const OPEN_STATUSES: ReadonlySet<ExchangeRequestStatus> = new Set([
+    'pending_provider',
+    'pending_broker',
+    'accepted',
+    'in_progress',
+    'pending_confirmation',
+    'disputed',
+  ]);
+
+  const renderMessageOtherParty = () => {
+    if (!exchange || !viewerId) return null;
+    if (!OPEN_STATUSES.has(exchange.status)) return null;
+
+    const otherParty = exchange.requester?.id === viewerId ? exchange.provider : exchange.requester;
+    if (!otherParty?.id || otherParty.id === viewerId) return null;
+
+    return (
+      <View className="mt-3">
+        <HeroButton
+          variant="secondary"
+          onPress={() =>
+            router.push({
+              pathname: '/(modals)/thread',
+              params: { recipientId: String(otherParty.id) },
+            } as never)
+          }
+          accessibilityLabel={t('requests.messageOtherParty', {
+            name: otherParty.name ?? t('requests.withMemberUnknown'),
+          })}
+        >
+          <HeroButton.Label>
+            {t('requests.messageOtherParty', {
+              name: otherParty.name ?? t('requests.withMemberUnknown'),
+            })}
+          </HeroButton.Label>
+        </HeroButton>
+      </View>
+    );
+  };
 
   const renderActions = () => {
     if (!exchange) return null;
@@ -348,6 +401,7 @@ function ExchangeRequestDetailScreen() {
             ) : null}
 
             {renderActions()}
+            {renderMessageOtherParty()}
           </Surface>
 
           <Surface variant="secondary" className="mt-4 rounded-2xl p-4">

@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
-| 3 — Timebanking core | 20 | 5 | 6 | 5 | 0 | 3 | 1 | 0.518 |
+| 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
 | 5 — Community modules | 34 | 14 | 6 | 11 | 0 | 3 | 0 | 0.599 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **33** | **41** | **25** | **4** | **35** | **2** | — |
+| **Total** | **140** | **34** | **41** | **25** | **4** | **34** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
 `(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.471**.
+rows → **0.478**.
 
 ### Credit recomputation
 
@@ -85,7 +85,7 @@ rows → **0.471**.
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
-| 3 | (5 × 1.0) + (6 × 0.6) + (5 × 0.25) = 9.85 | ÷ 19 † | **0.518** |
+| 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
 | 5 | (14 × 1.0) + (6 × 0.6) + (11 × 0.25) = 20.35 | ÷ 34 | **0.599** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
@@ -161,7 +161,7 @@ genuinely unwalked rather than unbuilt.
 | 3.6 | Request someone's offer | PROVEN | 2026-08-21: requested listing 513 from the second emulator as UserB — `exchange_requests` row 61 written (`pending_provider`, 1.00 proposed hours). 🔴 The button reads "Request this service" and opens a MESSAGE thread until the community switches the exchange workflow on; see the harness note |
 | 3.7 | Owner accepts a request | CERTIFIED | 2026-08-21: accepted on the provider's device, status → `accepted`. Required BUILDING the screen — no client function for accept existed. Guarded by `app/(modals)/exchange-request-detail.test.tsx` (including that a requester is never offered Accept, which the server 403s) |
 | 3.8 | Owner declines a request | PROVEN | 2026-08-22: declined request 62 on the provider's device — status → `cancelled` (the server has no separate `declined` state) with `exchange_history` recording provider/status_changed. The requester's note was shown on the card before deciding |
-| 3.9 | Message the other party about an exchange | OPEN | Never walked |
+| 3.9 | Message the other party about an exchange | CERTIFIED | 2026-08-22: **the capability did not exist.** The exchange screen showed status, hours, confirmations and history and offered no route to the person on the other side of it. Added, matching the website (`ExchangeDetailPage.tsx`): a "Message {name}" button shown only while the exchange is live, since once it is finished there is nothing to arrange. Walked on a device — it opened the existing 6-message conversation with the right member and `messages` row 547 was sent from it. The check used a local fixture row temporarily set to `accepted` and restored to `cancelled` afterwards |
 | 3.10 | Agree hours and complete an exchange | CERTIFIED | 2026-08-21: start → mark as done → both parties confirmed 1.00 hour from their own emulators; `exchange_history` records the whole chain and the status reached `completed`. Guarded by the detail-screen tests (confirm sheet pre-fill, comma decimals, zero-hours refusal) |
 | 3.11 | Credits move from receiver to giver | PROVEN | 2026-08-21: UserA 85.00 → **86.00**, UserB 27.00 → **26.00**, `transactions` row 269 (1.00, "Exchange #61 for listing…"), `exchange_requests.transaction_id = 269`. No automated guard on the credit movement itself |
 | 3.12 | Both parties see the transaction in their history | PROVEN | 2026-08-21: the requester's own wallet on the device shows "Exchange #61 … −1h" with SPENT −1h; the provider's side verified through `/v2/wallet/transactions` (credit, sender UserB) and their balance. 🔴 `transactions.giver_id` is NULL for this row — reading the table alone suggests the debit is unrecorded; the API derives it from the exchange, so the member's statement is correct |

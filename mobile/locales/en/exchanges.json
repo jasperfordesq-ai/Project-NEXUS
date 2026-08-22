@@ -473,6 +473,7 @@
       "status_changed": "Status changed",
       "provider_confirmed": "Provider confirmed the hours",
       "requester_confirmed": "Requester confirmed the hours"
-    }
+    },
+    "messageOtherParty": "Message {{name}}"
   }
 }

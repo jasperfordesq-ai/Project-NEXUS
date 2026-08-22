@@ -473,6 +473,7 @@
       "status_changed": "Athraíodh an stádas",
       "provider_confirmed": "Dheimhnigh an duine a chabhraigh na huaireanta",
       "requester_confirmed": "Dheimhnigh an duine a d'iarr cabhair na huaireanta"
-    }
+    },
+    "messageOtherParty": "Cuir teachtaireacht chuig {{name}}"
   }
 }

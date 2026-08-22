@@ -473,6 +473,7 @@
       "status_changed": "Stato modificato",
       "provider_confirmed": "Chi aiuta ha confermato le ore",
       "requester_confirmed": "Chi ha chiesto aiuto ha confermato le ore"
-    }
+    },
+    "messageOtherParty": "Invia un messaggio a {{name}}"
   }
 }

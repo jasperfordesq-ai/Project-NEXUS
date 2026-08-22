@@ -473,6 +473,7 @@
       "status_changed": "Estado alterado",
       "provider_confirmed": "Quem ajuda confirmou as horas",
       "requester_confirmed": "Quem pediu ajuda confirmou as horas"
-    }
+    },
+    "messageOtherParty": "Enviar mensagem a {{name}}"
   }
 }
