@@ -137,7 +137,7 @@ uninterpretable.
 | 2.11 | Save / bookmark a post | PROVEN | Bookmark control present and reachable after `294586010`; toggle observed |
 | 2.12 | Feed filters (All / Following / Saved / Posts / Exchanges) | RENDERS | Chips visible; none exercised |
 | 2.13 | Infinite scroll loads more | OPEN | Fixture too small to page; never exercised on mobile |
-| 2.14 | Hide / report a post | CERTIFIED | 🔴 **No capability existed.** The card's "…" menu offered Share, Save and View post; the app called none of the server's four moderation endpoints, while the website has had hide, not-interested and mute since the V2 feed. Built 2026-08-22 (`lib/api/feedModeration.ts`) and walked: `reports` row 9 (post 183, `safety_concern`, open) and `feed_hidden` row 10. Guarded by `lib/api/feedModeration.test.ts` and four card-level tests, all mutation-verified
+| 2.14 | Hide / report a post | CERTIFIED | 🔴 **No capability existed.** The card's "…" menu offered Share, Save and View post; the app called none of the server's four moderation endpoints, while the website has had hide, not-interested and mute since the V2 feed. Built 2026-08-22 (`lib/api/feedModeration.ts`) and walked: `reports` row 9 (post 183, `safety_concern`, open) and `feed_hidden` row 10. Guarded by `lib/api/feedModeration.test.ts` and four card-level tests, all mutation-verified |
 
 ## Tier 3 — Timebanking core (20 rows)
 
