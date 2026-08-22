@@ -538,14 +538,90 @@ async function runArm(arm) {
     const hrefs = await page.locator('a[href*="/events/"]').evaluateAll((els) =>
       els.map((e) => e.getAttribute('href')).filter((h) => /\/events\/\d+(?:[/?#]|$)/.test(h || '')));
     if (!hrefs.length) skip('no event DETAIL links on the list (only create/filter links)');
-    await page.goto(`${BASE}${hrefs[0].startsWith('/') ? hrefs[0] : `/${hrefs[0]}`}`, { waitUntil: 'networkidle', timeout: 60000 });
+    const eventPath = hrefs[0].startsWith('/') ? hrefs[0] : `/${hrefs[0]}`;
+    await page.goto(`${BASE}${eventPath}`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2500);
-    // Labels read from react-frontend/public/locales/en/events.json rather than guessed.
-    const rsvp = page.locator('button:has-text("Going"), button:has-text("Interested"), [aria-label="RSVP options"] button').first();
-    if (!(await rsvp.count())) skip('no RSVP control on the event page');
-    await rsvp.click().catch(() => {});
+
+    // 🔴 THIS STEP USED TO ASSERT NOTHING. It clicked the RSVP control, waited 3s and
+    // logged "RSVP control clicked" — so it could not fail however broken RSVP was, and
+    // its MATCH verdict carried no information at all about the effect. Row 1.23 was
+    // graded PROVEN on it, and PROVEN requires "an assertion on the effect"; that grade
+    // was withdrawn on 2026-08-22 when this body was read. It now changes the state,
+    // RELOADS and re-reads, which is the bar rows 1.21 and 1.35 already meet.
+    //
+    // 🔴 HOW TO ADDRESS THIS CONTROL. Established by DUMPING THE LIVE DOM after two
+    // selectors in a row silently matched nothing and skipped both arms — a skip looks
+    // like a clean run and measures nothing, which is the dangerous failure here.
+    // The rendered markup (HeroUI v3 ToggleButtonGroup over react-aria-components) is:
+    //
+    //   <div aria-label="RSVP options" role="radiogroup" data-slot="toggle-button-group">
+    //     <button role="radio" aria-checked="false" aria-label="Mark yourself as interested">Interested</button>
+    //     <button role="radio" aria-checked="false" aria-label="Mark yourself as not going">Not Going</button>
+    //
+    // so, in order of how badly each one bit:
+    //   1. the options are role="radio", NOT role="button" — every getByRole('button')
+    //      lookup finds nothing, however right the name is;
+    //   2. the accessible name is the ARIA-LABEL ("Mark yourself as interested"), which
+    //      overrides the visible text ("Interested") — matching on visible text by role
+    //      name cannot work either;
+    //   3. selection reads from aria-checked. `id` is NOT usable: it is the collection
+    //      key and react-aria-components/dist/private/ToggleButton.mjs:73 does
+    //      `delete DOMProps.id`, so it never reaches the DOM. data-selected is only the
+    //      Tailwind variant hook and was absent on every option in the live dump;
+    //   4. "Not Going" CONTAINS "Going", so any substring match picks the wrong option.
+    //
+    // 🔴 Not every event offers every option — the live event offered only Interested
+    // and Not Going, because EventDetailPage gates each one behind showGoingAction /
+    // showInterestedAction / showNotGoingAction. Work from what is actually offered.
+    const RSVP_GROUP = '[aria-label="RSVP options"]';
+    const ARIA = {
+      going: 'Mark yourself as going',
+      interested: 'Mark yourself as interested',
+      not_going: 'Mark yourself as not going',
+    };
+    const opt = (key) => page.locator(`${RSVP_GROUP} [role="radio"][aria-label="${ARIA[key]}"]`).first();
+    const checkedKey = async () => page.evaluate(({ group, aria }) => {
+      for (const [key, label] of Object.entries(aria)) {
+        const el = document.querySelector(`${group} [role="radio"][aria-label="${label}"]`);
+        if (el && el.getAttribute('aria-checked') === 'true') return key;
+      }
+      return null;
+    }, { group: RSVP_GROUP, aria: ARIA });
+
+    if (!(await page.locator(RSVP_GROUP).count())) {
+      skip('no RSVP options group on the event page — selector needs updating, NOT a backend result');
+    }
+    const offered = [];
+    for (const key of Object.keys(ARIA)) if (await opt(key).count()) offered.push(key);
+    console.log(`    RSVP options offered: ${offered.join(', ') || '(none)'}`);
+    if (!offered.length) skip('the RSVP group rendered no options — NOT a backend result');
+
+    const before = await checkedKey();
+    // Choose a state that is a genuine CHANGE, so this drives RSVP rather than
+    // observing whatever the fixture already left behind. Prefer going, then
+    // interested; not_going last, because it is the least informative outcome.
+    const target = ['going', 'interested', 'not_going'].find((k) => offered.includes(k) && k !== before);
+    if (!target) skip(`the only RSVP option offered (${offered.join(', ')}) is already selected — nothing to change`);
+
+    await opt(target).click({ timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(3000);
-    console.log('    RSVP control clicked');
+    console.log(`    RSVP ${before ?? '(none)'} -> clicked "${ARIA[target]}"; in-page selection now: ${await checkedKey() ?? '(none)'}`);
+
+    // The assertion that matters: it must survive a reload, i.e. the backend stored it.
+    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2500);
+    const persisted = await checkedKey();
+    console.log(`    RSVP survived a reload: ${persisted === target ? `YES — "${target}" persisted` : `NO — reads "${persisted ?? '(none)'}"`}`);
+    if (persisted !== target) {
+      throw new Error(`RSVP did not persist: selected "${target}", after a reload the event reads `
+        + `"${persisted ?? '(none)'}". The click was accepted in-page but the backend did not store it.`);
+    }
+
+    // Put it back, so a repeat run is not measuring what the last run left behind.
+    if (before && before !== target && await opt(before).count()) {
+      await opt(before).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+    }
   });
 
   // ── Tier-1 journeys added 2026-08-20 (C.2 of the certification plan) ───────────────
