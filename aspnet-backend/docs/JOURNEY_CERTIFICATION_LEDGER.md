@@ -425,29 +425,53 @@ drawn slightly wrong — rename the affected rows and say so. If it believes a
 genuinely new staff journey exists, it fills `5.RESERVE-A`/`5.RESERVE-B`; if
 both are already filled, it escalates to the owner. It does not re-cut the tier.
 
-🔴 **OWNER DECISION 2026-08-22 — the escalation was raised and answered, and the
-row surgery it authorises is NOT yet done.** Thirteen substantial admin areas
-turned out to be named by no row at all (federation 62 endpoints of which 24 are
-broken, marketplace 20, CRM 19, tools 14, courses 10, ki-agents 10 all broken,
-insurance 9, partner-venues 9, fadp 9, api-partners 8, plus `/admin/volunteering`
-57 only nominally named and `/admin/jobs` 19 unnamed). Two reserve rows cannot
-absorb thirteen areas, so by this tier's own rule it went to the owner rather
-than being silently re-cut. The decision:
+🔴 **OWNER DECISION 2026-08-22 — escalation raised, answered, and IMPLEMENTED the
+same day.** Thirteen substantial admin areas were named by no row at all. Two
+reserve rows cannot absorb thirteen areas, so by this tier's own rule it went to
+the owner rather than being silently re-cut. Every count below is measured from
+`docs/generated/admin-corpus/admin-corpus.json`, not estimated.
 
-1. **Federation admin, CRM admin and courses admin are explicit Laravel-only
-   exclusions.** Record them as `N/A` with this decision as the reason when the
-   surgery is done — `N/A` is excluded from the denominator by the vocabulary, so
-   this removes work without moving the goalposts on what remains.
-2. **Re-point the five thinnest rows** — admin shell, analytics, taxonomy,
-   gamification, credits, which carry 3.0–5.7 endpoints each against a tier
-   average of 16.0 — at the remaining unnamed areas.
+**Excluded — Laravel-only, deliberately carrying NO row (91 endpoints):**
 
-**The denominator does not change.** This is a re-point plus three exclusions,
-not a re-cut, and it is exactly what the reserve-row rule exists to make
-possible. 🔴 Neither part is implemented yet: as of 2026-08-22 the tier still
-holds its 2026-08-21 row names. Doing it is the first Tier 5 job, and it must
-happen BEFORE the measurement pass, or the pass will spend its budget measuring
-five rows that are about to point somewhere else.
+| Area | Endpoints | Stub or absent |
+| --- | ---: | ---: |
+| `admin/federation` | 62 | 24 |
+| `admin/crm` | 19 | 0 |
+| `admin/courses` | 10 | 0 |
+
+🔴 These are out of scope for the ASP.NET edition by owner decision. They are
+recorded here rather than as `N/A` rows **on purpose**: `N/A` is excluded from the
+denominator by the Status Vocabulary, so putting these on rows would shrink the
+denominator — a re-cut by the back door. They never had rows, so excluding them
+costs nothing and changes no arithmetic. If a future session "discovers" one of
+these areas, it is not a discovery and it does not fill a reserve.
+
+**Re-pointed — five rows freed by merging within the five thinnest families,
+measured at 3.0–5.7 endpoints per row against a tier average of 16.0:**
+
+| Freed from | Was | Now covers | Endpoints | Stub or absent |
+| --- | --- | --- | ---: | ---: |
+| A (3.0/row) | 5.2 admin section gating | 5.2 `admin/volunteering/*` | 57 | **34** |
+| P (3.5/row) | 5.50 search analytics | 5.50 `admin/marketplace/*` | 20 | 0 |
+| U (4.0/row) | 5.66 attributes and geocoding | 5.66 `admin/jobs/*` | 19 | 7 |
+| G (4.5/row) | 5.18 org wallets, community fund | 5.18 `admin/tools/*`, `admin/system/*` | 25 | 4 |
+| S (5.7/row) | 5.60 nexus-score analytics | 5.60 insurance, partner-venues, api-partners | 26 | 0 |
+
+**Nothing was dropped in the merges.** Each surviving sibling was renamed to carry
+what its absorbed row described — gating is now part of what admin sign-in must
+prove (5.1), org wallets and the community fund are named in 5.17, geocoding in
+5.65, search analytics in 5.49, nexus-score in 5.61. Read those rows: they are
+broader than they were, deliberately.
+
+**Two more areas absorbed by RENAME, consuming no row** — which this tier's rules
+already permit: `admin/ki-agents` (10 endpoints, **10 of 10 stub or absent**, the
+worst ratio measured anywhere in the admin surface) into row 5.44, and
+`admin/fadp` (9 endpoints, 5 stub or absent) into row 5.37.
+
+**The denominator did not move: 70 journey rows + 2 reserves before and after,
+250 rows overall, and no status changed** (69 OPEN + 1 RENDERS in this tier, both
+before and after). A re-point is bookkeeping, not progress, and it must not move
+the score by a single point. Both reserve rows remain unused and available.
 
 The original tier note stands and is the right sequencing advice: **the admin
 GET corpus is one measurement task, not hundreds.** A generated corpus plus the
@@ -456,12 +480,12 @@ Laravel control answers most of this tier in a single pass and should be run
 endpoints have never been compared"; the current count is **514**, which
 strengthens rather than weakens the argument.
 
-### Family A — Admin access and shell (2 rows)
+### Family A — Admin access, shell, and volunteering administration (2 rows)
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
-| 5.1 | Admin: sign in and land on the admin dashboard | RENDERS | unverified depth — carried over unchanged |
-| 5.2 | Admin: section gating — a `member` and a `broker` are both refused `/v2/admin/*` | OPEN | 🔴 Five authorisation tiers, and `AdminTier` deliberately returns **false** for `broker`/`coordinator`: a broker is an operational role with its own app, not a junior admin. Also: `super_admin`, `god`, `tenant_admin` and `coordinator` are **never written to `users.role`** — a gate that checks only the role string under-authorises a real platform admin. Scope origin: 2026-08-21 R5 expansion |
+| 5.1 | Admin: sign in, land on the admin dashboard, and section gating holds — a `member` and a `broker` are both refused `/v2/admin/*` | RENDERS | Absorbed row 5.2 on 2026-08-22 (family was 6 endpoints across 2 rows, the thinnest in the tier). Gating is not dropped: it is now part of what a successful admin sign-in must prove. 🔴 Five authorisation tiers, and `AdminTier` deliberately returns **false** for `broker`/`coordinator` — a broker is an operational role with its own application (`react-frontend/src/broker/`), not a lesser admin, and is deliberately refused generic `/v2/admin/*`. A gate that checks only `users.role` under-authorises a real platform admin, because `super_admin`/`god`/`tenant_admin`/`coordinator` are never written to that column. Depth still unverified. |
+| 5.2 | Admin: volunteering administration — opportunities, organisations, applications, shifts, hours→credits (`admin/volunteering/*`) | OPEN | 🔴 **Re-pointed 2026-08-22.** 57 endpoints, **34 of them stub or absent** — measured, the worst-served large area in the tier, and it was only nominally named before. Re-pointed 2026-08-22 by owner decision; the row it replaces was merged into its family sibling, so the tier row count is unchanged. |
 
 ### Family B — Members admin (5 rows)
 
@@ -502,12 +526,12 @@ strengthens rather than weakens the argument.
 | 5.15 | Admin: safeguarding reports queue with SLA and escalation (`admin/caring-community/safeguarding`, `admin/volunteering/safeguarding`) | OPEN | 🔴 There are **four** parallel reporting systems in Laravel and none can reference an exchange. Do not assume one table. Scope origin: 2026-08-21 R5 expansion |
 | 5.16 | Admin: safeguarding action log is append-only and records the actor | OPEN | 🔴 The append-only history on `event_guardian_consents` is DB-trigger-enforced — that is the pattern to copy, not to re-invent. Scope origin: 2026-08-21 R5 expansion |
 
-### Family G — Credits and wallet administration (2 rows)
+### Family G — Credits, wallet and platform tools administration (2 rows)
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
-| 5.17 | Admin: adjust a member's credit balance — balance moves **and** an audit row is written (`admin/timebanking`, `admin/timebanking/starting-balances`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.18 | Admin: transaction audit, organisation wallets, community fund (`admin/timebanking/org-wallets`, `/community-fund`, `/user-report`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
+| 5.17 | Admin: credit administration — adjust a member's balance so the balance moves **and** an audit row is written, plus transaction audit, organisation wallets and the community fund (`admin/timebanking`, `/starting-balances`, `/org-wallets`, `/community-fund`, `/user-report`) | OPEN | Absorbed row 5.18 on 2026-08-22 (family was 9 endpoints across 2 rows). Nothing is dropped: the audit row, the organisation wallets and the community fund are all named here and all must be asserted. |
+| 5.18 | Admin: platform tools and system utilities (`admin/tools/*`, `admin/system/*`) | OPEN | 🔴 **Re-pointed 2026-08-22.** 25 endpoints across the two prefixes, 4 stub or absent. Re-pointed 2026-08-22 by owner decision; the row it replaces was merged into its family sibling, so the tier row count is unchanged. |
 
 ### Family H — Tenant settings, gates and branding (3 rows)
 
@@ -566,7 +590,7 @@ evidence.
 | ---: | --- | --- | --- |
 | 5.35 | Admin: DSAR request queue (`admin/enterprise/gdpr/requests`) | OPEN | DSAR endpoints stay behind `requireAdmin()`. Scope origin: 2026-08-21 R5 expansion |
 | 5.36 | Admin: fulfil a DSAR — the member actually receives their data export | OPEN | one of the two endpoints in the fake-success set above. Scope origin: 2026-08-21 R5 expansion |
-| 5.37 | Admin: consents and consent types (`admin/enterprise/gdpr/consents`, `/consent-types`) | OPEN | 🔴 `consent_types` is **platform-global** GDPR consent; per-tenant customisation is a separate override table, and it does **not** model proxy representation. `user_consents` is versioned and hashed. Scope origin: 2026-08-21 R5 expansion |
+| 5.37 | Admin: consents, consent types and FADP data-protection records (`admin/enterprise/gdpr/consents`, `/consent-types`, `admin/fadp/*`) | OPEN | 🔴 Renamed 2026-08-22 to NAME `admin/fadp` explicitly (9 endpoints, 5 stub or absent), which no row did before. A rename, not a new row. 🔴 `consent_types` is **platform-global** GDPR consent; per-tenant customisation is a separate override table, and it does not model proxy representation. |
 | 5.38 | Admin: breach register — record and track a breach (`admin/enterprise/gdpr/breaches`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
 | 5.39 | Admin: enterprise roles and permissions — granted **and** enforced (`admin/enterprise/roles`, `/permissions`) | OPEN | 🔴 Grantable ≠ checked; verify enforcement, not the grant screen. Scope origin: 2026-08-21 R5 expansion |
 
@@ -588,18 +612,18 @@ exists" is least likely to mean the work is done.
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
-| 5.44 | Admin: AI settings and agents — proposals and runs (`admin/ai-settings`, `admin/agents`, `/agents/proposals`, `/agents/runs`, `admin/ai/*`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
+| 5.44 | Admin: AI settings, agents and KI-agents — proposals and runs (`admin/ai-settings`, `admin/agents`, `/agents/proposals`, `/agents/runs`, `admin/ai/*`, `admin/ki-agents/*`) | OPEN | 🔴 Renamed 2026-08-22 to NAME `admin/ki-agents` explicitly, which no row did before: **10 of its 10 endpoints are stub or absent**, the worst ratio measured anywhere in the admin surface. A rename, not a new row — the family already carried these endpoints. |
 | 5.45 | Admin: algorithm settings and feed algorithm (`admin/algorithm-settings`, `admin/feed-algorithm`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
 | 5.46 | Admin: smart matching — configuration, analytics, monitoring (`admin/smart-matching`, `/configuration`, `/analytics`, `admin/smart-match-monitoring`, `/smart-match-users`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
 | 5.47 | Admin: match debug and matching diagnostic (`admin/match-debug`, `admin/matching-diagnostic`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
 
-### Family P — Analytics and reporting dashboards (4 rows)
+### Family P — Analytics dashboards and marketplace administration (4 rows)
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
 | 5.48 | Admin: platform analytics dashboard | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.49 | Admin: community analytics (`admin/community-analytics`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.50 | Admin: search analytics (`admin/search-analytics`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
+| 5.49 | Admin: community and search analytics (`admin/community-analytics`, `admin/search-analytics`) | OPEN | Absorbed row 5.50 on 2026-08-22 (family was 14 endpoints across 4 rows). Both are read-only dashboards over the same reporting surface. |
+| 5.50 | Admin: marketplace administration — listings, orders, disputes, payouts, coupons (`admin/marketplace/*`) | OPEN | 🔴 **Re-pointed 2026-08-22.** 20 endpoints, none currently classified stub — which for this family history means "measure it before believing it". Re-pointed 2026-08-22 by owner decision; the row it replaces was merged into its family sibling, so the tier row count is unchanged. |
 | 5.51 | Admin: regional analytics and the national KISS dashboard (`admin/analytics/regional`, `admin/regional-analytics/subscriptions`, `admin/national/kiss`) | OPEN | named in-scope gaps in `aspnet-backend/CLAUDE.md`. Scope origin: 2026-08-21 R5 expansion |
 
 ### Family Q — Billing and premium (2 rows)
@@ -619,13 +643,13 @@ exists" is least likely to mean the work is done.
 | 5.57 | Admin: legal documents — version, publish, and the acceptance gate enforces it (`admin/legal-documents/*`) | OPEN | 🔴 The legal acceptance gate is **enforced by default** and **fails open** on infrastructure errors. Production has 5 enforceable documents; local has zero, so a local pass proves nothing about the gate. Scope origin: 2026-08-21 R5 expansion |
 | 5.58 | Admin: resources and help/FAQ authoring (`admin/resources/*`, `admin/help`, `/help/faqs`) | OPEN | 🔴 `/help` FAQs were flat where both frontends read grouped and every FAQ silently vanished (fixed `abf4329f0`, member arm is row 2.20). Scope origin: 2026-08-21 R5 expansion |
 
-### Family S — Gamification administration (3 rows)
+### Family S — Gamification and commercial partner administration (3 rows)
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
 | 5.59 | Admin: create a custom badge and award it (`admin/custom-badges`, `/custom-badges/create`, `admin/gamification/badge-config`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.60 | Admin: nexus-score analytics (`admin/nexus-score/analytics`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.61 | Admin: regional points and group ranking (`admin/regional-points`, `admin/group-ranking`, `admin/groups/ranking`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
+| 5.60 | Admin: commercial partner administration — insurance, partner venues, API partners (`admin/insurance/*`, `admin/partner-venues/*`, `admin/api-partners/*`) | OPEN | 🔴 **Re-pointed 2026-08-22.** 26 endpoints across the three prefixes, none currently classified stub. Grouped because all three are the same shape of journey: a staff member administers an external commercial counterparty. Re-pointed 2026-08-22 by owner decision; the row it replaces was merged into its family sibling, so the tier row count is unchanged. |
+| 5.61 | Admin: scoring and ranking analytics — nexus-score, regional points, group ranking (`admin/nexus-score/analytics`, `admin/regional-points`, `admin/group-ranking`, `admin/groups/ranking`) | OPEN | Absorbed row 5.60 on 2026-08-22 (family was 17 endpoints across 3 rows). |
 
 ### Family T — Platform provisioning and identity (3 rows)
 
@@ -635,12 +659,12 @@ exists" is least likely to mean the work is done.
 | 5.63 | Admin: residency verifications (`admin/residency-verifications`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
 | 5.64 | Admin: tenant SSO / OIDC provider administration and the public callback (`admin/sso`) | OPEN | ASP.NET has signed durable state, browser and server PKCE, nonce/JWKS validation and one-time callback grants; **live IdP and browser proof remain certification gaps**, and a general green suite does not substitute. Scope origin: 2026-08-21 R5 expansion |
 
-### Family U — Taxonomy (2 rows)
+### Family U — Taxonomy and jobs administration (2 rows)
 
 | # | Journey | Status | Evidence / blocker |
 | ---: | --- | --- | --- |
-| 5.65 | Admin: group types and categories CRUD (`admin/group-types`, `admin/groups/types`, `admin/categories/*`) | OPEN | Scope origin: 2026-08-21 R5 expansion |
-| 5.66 | Admin: attributes and geocoding groups/locations (`admin/attributes`, `admin/geocode-groups`, `admin/group-locations`) | OPEN | 🔴 Maps default **off** for multi-tenant, and Google Places can return 403 on a misconfigured key. Scope origin: 2026-08-21 R5 expansion |
+| 5.65 | Admin: taxonomy CRUD — group types, categories, attributes, and geocoding groups/locations (`admin/group-types`, `admin/groups/types`, `admin/categories/*`, `admin/attributes`, `admin/geocode-groups`, `admin/group-locations`) | OPEN | Absorbed row 5.66 on 2026-08-22 (family was 8 endpoints across 2 rows). 🔴 Maps default **off** for multi-tenant and the default must be changed in BOTH the PHP and TypeScript sides; Google Places can return 403 on a misconfigured key, which reads as a code fault and is not. |
+| 5.66 | Admin: jobs administration — vacancies, applications, employer reviews (`admin/jobs/*`) | OPEN | 🔴 **Re-pointed 2026-08-22.** 19 endpoints, 7 stub or absent. Beware the schema here: `job_vacancy_applications` is the canonical table and there is recorded drift around it. Re-pointed 2026-08-22 by owner decision; the row it replaces was merged into its family sibling, so the tier row count is unchanged. |
 
 ### Family V — Operations (4 rows)
 
