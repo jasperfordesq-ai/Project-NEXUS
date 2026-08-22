@@ -38,7 +38,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 539 or 700 is not the point.
+Nothing in that list is a score. A total of 541 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -78,8 +78,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-22
 
-**539 / 1000 on rubric M1.** Of 140 journeys: 35 CERTIFIED, 41 PROVEN, 25 RENDERS, 4 PARTIAL,
-3 BROKEN, 30 never attempted, 2 not applicable.
+**541 / 1000 on rubric M1.** Of 140 journeys: 36 CERTIFIED, 41 PROVEN, 25 RENDERS, 4 PARTIAL,
+2 BROKEN, 30 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
@@ -115,11 +115,15 @@ a look at the database afterwards.
 
 ### Still to walk — 30 rows, grouped by what they need
 
-**Tier 1, getting in (6 rows) — do these first.** Register a brand-new member, password
+**Tier 1, getting in (5 rows) — do these first.** Register a brand-new member, password
 reset, the legal-acceptance gate, passkey sign-in, the force-update screen, the
-"update ready — restart" prompt. Journey **1.8 is BROKEN and belongs at the very top**: a
-device with a stale session sat on a bare spinner in a re-fetch loop, which is
-indistinguishable from a dead app. It has never been deliberately reproduced.
+"update ready — restart" prompt.
+
+🔴 Journey 1.8 was the top of this list and is now CERTIFIED — reproduced deliberately by
+deleting the member's refresh sessions, and it behaves correctly: sign-in screen, "your session
+has expired", no request loop. **The BROKEN status predated the fix; the repair had landed and
+nobody had checked it.** Worth expecting more of that: a status recorded before a rewrite is a
+claim about the past, not the present.
 
 **Volunteering (2 rows).** Shift sign-up, shift swap request and response.
 
@@ -136,7 +140,7 @@ remove the tap target that implies it.
 check-in queue on a real dropped connection, start-up budget, and **iOS, which has never been
 built or run**.
 
-**Known-missing capabilities (3 BROKEN rows), all owner decisions:**
+**Known-missing capabilities (2 BROKEN rows), both owner decisions:**
 
 - **2.9 Write a post to the community feed.** No composer exists. The server route and the
   website composer both do.
