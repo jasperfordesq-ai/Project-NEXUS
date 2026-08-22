@@ -231,6 +231,18 @@ Recorded because each one produced a confident wrong answer:
 - **A "not found" screen** proved nothing about a deep link: the slug belonged to another
   tenant *and* the feature was disabled for the test community, so that screen says "not
   found" regardless. Check tenant and feature flags before believing an empty screen.
+- **`npm run screenshot:compare` on its own proves nothing.** It compares the PNGs already
+  sitting in `screenshots/current/` — it does not take new ones. Run against captures from an
+  earlier session it happily reported "0 px — 3 screens match the baseline" for a change that
+  touched two of those three screens. 🔴 Always `screenshot:tour` (or `capture`) first, and
+  with two emulators attached set `ANDROID_SERIAL=emulator-5554`, because the script's adb
+  helper passes no `-s` and every call dies with "more than one device".
+  🔴 And once captured, expect `06-wallet.png` to differ for a reason that is not a
+  regression: it prints balances, and walking any journey changes them. `VOLATILE_SCREENS`
+  already excludes the feed, listings and messages for exactly this reason; wallet is just as
+  data-dependent but is still gated, so its baseline is only meaningful against a pristine
+  fixture. Compare the layout by eye before believing a percentage. This gate is local-only —
+  no CI workflow runs it.
 - **A working filter looked broken.** The listings Offer/Request tabs appeared to do nothing:
   the underline moved and the count stayed at 3 with a "Requesting" card under the Offer tab.
   They work perfectly. The screenshot was taken before the filtered response arrived, and a
