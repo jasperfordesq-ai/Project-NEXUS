@@ -81,7 +81,7 @@ guards it. Three standards that came out of getting this wrong:
 ## Where it stands, 2026-08-22
 
 **549 / 1000 on rubric M1.** Of 140 journeys: 40 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
-2 BROKEN, 27 never attempted, 2 not applicable.
+3 BROKEN, 26 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
@@ -117,10 +117,14 @@ a look at the database afterwards.
 
 ### Still to walk — 29 rows, grouped by what they need
 
-**Tier 1, getting in (2 rows) — do these first.** Passkey sign-in, and the "update ready —
-restart" prompt. Both are blocked on things this environment cannot supply: a platform
-authenticator on the emulator, and a published over-the-air update. Say so rather than
-guessing.
+**Tier 1, getting in (1 row).** The "update ready — restart" prompt, which needs a published
+over-the-air update and so cannot be walked here.
+
+🔴 Passkey sign-in turned out to be a **missing capability, not an untested one** — not one
+file under `mobile/` mentions passkey or WebAuthn, and there is no library for it. The row had
+said "never attempted on a device", which implied otherwise. The website has passkeys and the
+server has the endpoints, so this is a gap between the two frontends. It is now a third BROKEN
+row and an owner decision.
 
 🔴 The legal-acceptance gate is CERTIFIED, and how it is wired is worth knowing before
 walking anything else: it is attached **per write route**, never to a group. So an unaccepted
@@ -165,7 +169,7 @@ remove the tap target that implies it.
 check-in queue on a real dropped connection, start-up budget, and **iOS, which has never been
 built or run**.
 
-**Known-missing capabilities (2 BROKEN rows), both owner decisions:**
+**Known-missing capabilities (3 BROKEN rows), all owner decisions:**
 
 - **2.9 Write a post to the community feed.** No composer exists. The server route and the
   website composer both do.
@@ -174,6 +178,9 @@ built or run**.
   exchange. Needs an endpoint, a structured target, moderation routing and notifications, with
   safeguarding implications.
 - **6.12 Transaction detail view.** See Money above.
+- **1.6 Passkey / biometric sign-in.** No passkey or WebAuthn code exists in the app at all.
+  The website has it and the server has the endpoints; the emulator carries Play Services, so
+  it is testable once built.
 
 ## What I would add to the plan — chief-engineer view
 
