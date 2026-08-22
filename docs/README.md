@@ -90,6 +90,15 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [SENTRY.md](SENTRY.md) | Backend and frontend Sentry configuration. |
 | [SECURITY-SCANNING.md](SECURITY-SCANNING.md) | Public-safe scanner interpretation and suppression policy. |
 
+## Support
+
+| Document | Purpose |
+| --- | --- |
+| [support](support/README.md) | How support works: the in-product report, triage, and writing to members. |
+| [SUPPORT-REPORTS.md](support/SUPPORT-REPORTS.md) | Reference for the in-product `support_reports` subsystem, its Sentry linkage, and its known gaps. |
+| [INTAKE-AND-TRIAGE.md](support/INTAKE-AND-TRIAGE.md) | Working a support report: identifying the application, checking in cost order, and the admin actions that look routine and are not. |
+| [MEMBER-LANGUAGE.md](support/MEMBER-LANGUAGE.md) | Writing to members — vocabulary to avoid, and the scoped exception to the technical register. |
+
 ## Accessible Frontend
 
 **There is one accessible frontend: `web-uk/`.** It is the production Node 22 /

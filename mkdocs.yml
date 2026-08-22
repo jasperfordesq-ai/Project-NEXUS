@@ -127,6 +127,11 @@ nav:
       - SLOs: SLO.md
       - Sentry: SENTRY.md
       - Security scanning: SECURITY-SCANNING.md
+  - Support:
+      - Overview: support/README.md
+      - In-product support reports: support/SUPPORT-REPORTS.md
+      - Intake & triage: support/INTAKE-AND-TRIAGE.md
+      - Writing to members: support/MEMBER-LANGUAGE.md
   - Accessible frontend:
       - Research & constraints: govuk-alpha/RESEARCH.md
       - Attribution: govuk-alpha/ATTRIBUTION.md
