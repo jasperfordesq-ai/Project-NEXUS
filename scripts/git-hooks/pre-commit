@@ -153,20 +153,58 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/check-test-skip-budget.mjs ];
   fi
 fi
 
-# (2) Run the staged test files — needs php + phpunit + the test DB.
-if ! command -v php >/dev/null 2>&1 || [ ! -f vendor/bin/phpunit ]; then
-  echo "pre-commit: php/phpunit unavailable — skipping staged-test run (budget OK)." >&2
-  exit 0
-fi
-if ! php -r '$c=@fsockopen("127.0.0.1",3307,$e,$s,2); exit($c?0:1);' >/dev/null 2>&1; then
-  echo "pre-commit: test DB 127.0.0.1:3307 not reachable — skipping staged-test run (budget OK)." >&2
-  exit 0
+# (2) Run the staged test files — in the CONTAINER.
+#
+# 🔴 This ran on the HOST until 2026-08-22, and on a Windows dev box that meant
+# it never ran at all. The condition was `command -v php` plus a host
+# vendor/bin/phpunit, and AGENTS.md deliberately keeps neither: the host
+# vendor/ is incomplete (no ext-gmp/pcntl/posix) and host PHPUnit produces
+# dozens of false failures. So the guard below correctly declined to run — and
+# nothing ran it anywhere else. The gate AGENTS.md calls the one gate that must
+# never be bypassed was silently inert for months. Measured on this machine:
+# php absent from PATH, no host vendor/bin/phpunit, so it took the skip branch
+# on every commit.
+#
+# The container is the supported place to run PHPUnit, so ask it instead.
+#
+# 🔴 Note the scope limit this shares with the old host version: the container
+# sees the WORKING TREE via its bind mount, not staged content. Gate A above
+# reads `git show :FILE` and so cannot be dodged by editing after `git add`;
+# this gate can. Narrowing that would mean materialising staged blobs into a
+# temp tree, which is not worth it for a gate whose job is "does this test file
+# pass at all" — CI re-runs it against the real commit regardless.
+CONTAINER="${NEXUS_TEST_CONTAINER:-nexus-php-app}"
+
+if ! docker exec "$CONTAINER" test -f vendor/bin/phpunit >/dev/null 2>&1; then
+  echo "" >&2
+  echo "==============================================================" >&2
+  echo " pre-commit: cannot verify staged test file(s) — commit BLOCKED." >&2
+  echo "" >&2
+  echo " Container '$CONTAINER' is not running, or has no vendor/." >&2
+  echo " Start Docker Desktop and retry:  docker compose up -d app" >&2
+  echo "" >&2
+  echo " 🔴 This BLOCKS rather than skips deliberately. 'I could not check'" >&2
+  echo " reporting as 'this is fine' is exactly how this gate stayed inert" >&2
+  echo " for months. If you genuinely cannot start Docker, --no-verify is" >&2
+  echo " the deliberate override — but you are then committing an unverified" >&2
+  echo " test file, so say so in the commit message." >&2
+  echo "==============================================================" >&2
+  exit 1
 fi
 
-echo "pre-commit: verifying staged test file(s)..."
+echo "pre-commit: verifying staged test file(s) in $CONTAINER..."
 echo "$STAGED_TESTS" | sed 's/^/  - /'
-MEILISEARCH_HOST="${MEILISEARCH_HOST:-http://127.0.0.1:7700}" \
-  php vendor/bin/phpunit --no-coverage --stop-on-failure $STAGED_TESTS
+# APP_KEY: the container .env ships a dev placeholder that is NOT a valid
+# base64 32-byte key, so anything touching Crypt dies with "Unsupported cipher
+# or incorrect key length". This is the same fixed, non-secret test key
+# phpunit.xml already declares (see AGENTS.md).
+# BROADCAST_CONNECTION: routes/channels.php resolves the default broadcaster at
+# route load and the pusher driver throws on a null key.
+docker exec \
+  -e MAIL_MAILER=array \
+  -e BROADCAST_CONNECTION=null \
+  -e APP_KEY="base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=" \
+  "$CONTAINER" php vendor/bin/phpunit --no-coverage --stop-on-failure $STAGED_TESTS
 STATUS=$?
 if [ "$STATUS" -ne 0 ]; then
   echo "" >&2
