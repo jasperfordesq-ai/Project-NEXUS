@@ -3,9 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View } from 'react-native';
 import { BottomSheet as HeroBottomSheet } from 'heroui-native';
+import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRootBottomInset } from '@/lib/ui/rootInsets';
 import { useDeferredBottomSheetState } from './useDeferredBottomSheetState';
@@ -35,6 +36,35 @@ export default function BottomSheet({
 }: BottomSheetProps) {
   const insets = useSafeAreaInsets();
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
+
+  /**
+   * 🔴 Close when the screen underneath goes away.
+   *
+   * A sheet renders through a portal at the app root, so it does NOT disappear when the
+   * screen that opened it is navigated away from. Measured on 2026-08-22: the group
+   * "start a discussion" sheet was still sitting on top of an EVENT detail screen after a
+   * deep link, over completely unrelated content, and the member's only way out was to
+   * swipe a sheet that no longer belonged to anything on screen.
+   *
+   * Only visible before 2026-08-21, when sheets began opening at all — which is why it had
+   * never been seen.
+   *
+   * `visibleRef` keeps the effect from re-subscribing on every open/close: the cleanup
+   * needs the value at BLUR time, not at subscribe time.
+   */
+  const visibleRef = useRef(visible);
+  visibleRef.current = visible;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        if (visibleRef.current) onCloseRef.current();
+      },
+      [],
+    ),
+  );
 
   // Inside Android `presentation: 'modal'` screens useSafeAreaInsets()
   // reports bottom: 0, which put sheet footers underneath the system nav

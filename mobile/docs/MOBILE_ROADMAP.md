@@ -12,7 +12,7 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **491 / 1000 on rubric M1** — see
+Current position: **496 / 1000 on rubric M1** — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md).
 
@@ -127,8 +127,9 @@ requester's own wallet on the device showing "Exchange #61 … −1h".
 group exchanges, skills matching, reporting). Journey certification 86 → **94** (planned
 ≥ 130, which assumed all of Tier 3).
 
-**What is left here, and it is small:** walk decline and cancel, walk messaging about an
-exchange, and add a `broker_approval_required` pass so `pending_broker` is exercised at least
+**What is left here, and it is small:** decline is now walked too (request 62 → `cancelled`,
+2026-08-22). Remaining: cancel from the requester's side, messaging the other party about an
+exchange, and a `broker_approval_required` pass so `pending_broker` is exercised at least
 once.
 
 ## Phase 4 — The remaining two-party journeys (Tier 5) — **STARTED 2026-08-21**
@@ -154,10 +155,14 @@ request labelled "Connected".
 86.00 → 85.00 and 26.00 → 27.00, `transactions` row 270. That walk found every text field in
 the app being sized by its own content — fixed once in `components/ui/Input.tsx`.
 
-**Still to do here:** event RSVP (5.3), poll voting (5.21), creating an event or a poll,
-voice messages, the marketplace buy/sell pair, and applying for a job. Eleven of thirty-four.
+**Events are done too (2026-08-22):** an event was created, published behind a confirmation
+that names what publishing triggers, and RSVP'd by the second member (`events` 162,
+`event_rsvps` 1009).
 
-**Exit criteria:** Tier 5 credit 0.365 → ≥ 0.50.
+**Still to do here:** poll voting and creating a poll (5.21, 5.22), voice messages, the
+marketplace buy/sell pair, applying for a job, event check-in. Nine of thirty-four.
+
+**Exit criteria:** Tier 5 credit 0.400 → ≥ 0.50.
 
 ## Phase 5 — Money integrity
 
@@ -243,5 +248,5 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-491 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
+496 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
 writing features.

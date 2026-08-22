@@ -10,6 +10,12 @@ import { router } from 'expo-router';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  // The sheet closes itself when its screen loses focus; the mock runs the effect and
+  // its cleanup so a test still exercises that path.
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => cb(), [cb]);
+  },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),

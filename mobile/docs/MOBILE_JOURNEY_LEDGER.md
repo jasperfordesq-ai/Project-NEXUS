@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 1 | 3 | 4 | 0 | 6 | 0 | 0.271 |
 | 2 — Feed and social | 14 | 5 | 4 | 2 | 0 | 3 | 0 | 0.564 |
-| 3 — Timebanking core | 20 | 3 | 4 | 5 | 0 | 7 | 1 | 0.350 |
+| 3 — Timebanking core | 20 | 3 | 5 | 5 | 0 | 6 | 1 | 0.382 |
 | 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
-| 5 — Community modules | 34 | 7 | 4 | 12 | 0 | 11 | 0 | 0.365 |
+| 5 — Community modules | 34 | 7 | 6 | 12 | 0 | 9 | 0 | 0.400 |
 | 6 — Money and wallet | 12 | 0 | 4 | 2 | 1 | 4 | 1 | 0.291 |
 | 7 — Cross-cutting behaviour | 18 | 5 | 1 | 0 | 4 | 8 | 0 | 0.378 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **22** | **34** | **26** | **5** | **51** | **2** | — |
+| **Total** | **140** | **22** | **37** | **26** | **5** | **48** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(22 × 1.0) + (34 × 0.6) + (26 × 0.25) + (5 × 0.30) = 50.40`, over `140 − 2 excluded = 138`
-rows → **0.365**.
+`(22 × 1.0) + (37 × 0.6) + (26 × 0.25) + (5 × 0.30) = 52.20`, over `140 − 2 excluded = 138`
+rows → **0.378**.
 
 ### Credit recomputation
 
@@ -85,9 +85,9 @@ rows → **0.365**.
 | --- | --- | ---: | ---: |
 | 1 | (1 × 1.0) + (3 × 0.6) + (4 × 0.25) = 3.80 | ÷ 14 | **0.271** |
 | 2 | (5 × 1.0) + (4 × 0.6) + (2 × 0.25) = 7.90 | ÷ 14 | **0.564** |
-| 3 | (3 × 1.0) + (4 × 0.6) + (5 × 0.25) = 6.65 | ÷ 19 † | **0.350** |
+| 3 | (3 × 1.0) + (5 × 0.6) + (5 × 0.25) = 7.25 | ÷ 19 † | **0.382** |
 | 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
-| 5 | (7 × 1.0) + (4 × 0.6) + (12 × 0.25) = 12.40 | ÷ 34 | **0.365** |
+| 5 | (7 × 1.0) + (6 × 0.6) + (12 × 0.25) = 13.60 | ÷ 34 | **0.400** |
 | 6 | (4 × 0.6) + (2 × 0.25) + (1 × 0.30) = 3.20 | ÷ 11 † | **0.291** |
 | 7 | (5 × 1.0) + (1 × 0.6) + (4 × 0.30) = 6.80 | ÷ 18 | **0.378** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -160,7 +160,7 @@ genuinely unwalked rather than unbuilt.
 | 3.5 | Open a listing detail | RENDERS | Photographed, scrolled |
 | 3.6 | Request someone's offer | PROVEN | 2026-08-21: requested listing 513 from the second emulator as UserB — `exchange_requests` row 61 written (`pending_provider`, 1.00 proposed hours). 🔴 The button reads "Request this service" and opens a MESSAGE thread until the community switches the exchange workflow on; see the harness note |
 | 3.7 | Owner accepts a request | CERTIFIED | 2026-08-21: accepted on the provider's device, status → `accepted`. Required BUILDING the screen — no client function for accept existed. Guarded by `app/(modals)/exchange-request-detail.test.tsx` (including that a requester is never offered Accept, which the server 403s) |
-| 3.8 | Owner declines a request | OPEN | The Decline button now exists and its rules are unit-tested, but declining has never been walked on a device |
+| 3.8 | Owner declines a request | PROVEN | 2026-08-22: declined request 62 on the provider's device — status → `cancelled` (the server has no separate `declined` state) with `exchange_history` recording provider/status_changed. The requester's note was shown on the card before deciding |
 | 3.9 | Message the other party about an exchange | OPEN | Never walked |
 | 3.10 | Agree hours and complete an exchange | CERTIFIED | 2026-08-21: start → mark as done → both parties confirmed 1.00 hour from their own emulators; `exchange_history` records the whole chain and the status reached `completed`. Guarded by the detail-screen tests (confirm sheet pre-fill, comma decimals, zero-hours refusal) |
 | 3.11 | Credits move from receiver to giver | PROVEN | 2026-08-21: UserA 85.00 → **86.00**, UserB 27.00 → **26.00**, `transactions` row 269 (1.00, "Exchange #61 for listing…"), `exchange_requests.transaction_id = 269`. No automated guard on the credit movement itself |
@@ -208,8 +208,8 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
 | 5.1 | Events list | RENDERS | Photographed, clean at 360dp |
-| 5.2 | Create an event | OPEN | Create entry resolves; never submitted |
-| 5.3 | RSVP to an event | OPEN | Never walked |
+| 5.2 | Create an event | PROVEN | 2026-08-22: created "WalkEvent" and then PUBLISHED it — `events` row 162, draft → `active`, behind a confirmation naming what publishing triggers. 🔴 The date is in `start_time`; `events.start_date` exists, is always NULL, and reading it first nearly produced a false "the date was not saved" finding |
+| 5.3 | RSVP to an event | PROVEN | 2026-08-22: the second member tapped Going on the published event — `event_rsvps` row 1009 (`going`), and the card moved to "1 going" with the button in its selected state. 🔴 The table is `event_rsvps`; `event_attendance` is a different thing and `event_attendees` does not exist |
 | 5.4 | Event attendance / check-in | OPEN | Never walked |
 | 5.5 | Event detail | RENDERS | Screen exists |
 | 5.6 | Groups list | RENDERS | Photographed, stat tiles wrap correctly |

@@ -9,6 +9,12 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  // The sheet closes itself when its screen loses focus; the mock runs the effect and
+  // its cleanup so a test still exercises that path.
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => cb(), [cb]);
+  },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),

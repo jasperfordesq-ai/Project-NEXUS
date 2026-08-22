@@ -148,6 +148,9 @@ Useful column names for checking the result:
 | `connections` | `requester_id` / `receiver_id` / `status` (`pending` \| `accepted`). No `user_id` |
 | `messages` | the text column is **`body`**, not `content` |
 | `transactions` | a member-to-member transfer has description "Time credit transfer"; `giver_id` is NULL, as with exchanges |
+| `events` | 🔴 The date is **`start_time`**. `events.start_date` exists and is always NULL — reading it first produced a false "the date was not saved" finding. A new event is a `draft`; publishing is a separate action behind a confirmation |
+| `event_rsvps` | 🔴 Where an RSVP lands. `event_attendance` is a different thing (check-in), and `event_attendees` does not exist |
+| `exchange_requests` | a provider DECLINE sets status `cancelled` — there is no `declined` state in the machine |
 
 🔴 **`(modals)/chat.tsx` is the AI assistant, not member messaging.** Member conversations are
 `(modals)/thread.tsx`. Walking "send a message" through chat.tsx proves nothing about it.

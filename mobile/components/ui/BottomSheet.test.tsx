@@ -16,6 +16,16 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 24, left: 0 }),
 }));
 
+// The sheet closes itself when the screen underneath loses focus (a sheet renders through a
+// portal, so navigating away used to leave it sitting over unrelated content). The mock runs
+// the effect and lets its cleanup fire on unmount, which is exactly what blur does.
+jest.mock('expo-router', () => ({
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => cb(), [cb]);
+  },
+}));
+
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Text, View } = require('react-native');
@@ -132,5 +142,42 @@ describe('BottomSheet', () => {
       jest.advanceTimersByTime(400);
     });
     expect(queryByText('Closing body')).toBeNull();
+  });
+
+  /**
+   * 🔴 A sheet renders through a portal at the app root, so it does not vanish when the
+   * screen that opened it goes away. Measured on 2026-08-22: the group "start a discussion"
+   * sheet was still sitting on top of an EVENT detail screen after a deep link, over
+   * completely unrelated content. It was invisible as a defect until 2026-08-21, because
+   * before then no sheet opened at all.
+   */
+  it('tells its owner to close when the screen loses focus', () => {
+    const onClose = jest.fn();
+    const { unmount } = render(
+      <BottomSheet visible title="Focus sheet" onClose={onClose}>
+        <Text>Focus body</Text>
+      </BottomSheet>,
+    );
+
+    expect(onClose).not.toHaveBeenCalled();
+
+    // Blur/unmount runs the focus effect's cleanup.
+    unmount();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not fire a close for a sheet that was already shut', () => {
+    const onClose = jest.fn();
+    const { unmount } = render(
+      <BottomSheet visible={false} title="Shut sheet" onClose={onClose}>
+        <Text>Shut body</Text>
+      </BottomSheet>,
+    );
+
+    unmount();
+    // Calling onClose here would push a spurious state update into a screen that is
+    // already going away — and on a parent that treats onClose as "the member dismissed
+    // it", that is a phantom interaction.
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
