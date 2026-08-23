@@ -547,9 +547,23 @@ class JobVacancyService
      */
     public function getById(int $id): ?array
     {
+        // 🔴 The creator join is load-bearing. `enrichVacancy()` builds
+        // `creator.name` from `creator_first_name`/`creator_last_name`, so without it
+        // every single-vacancy read returned `creator => ['name' => '']` and each
+        // frontend drew a "Posted by" heading with nothing under it. Measured on a
+        // device 2026-08-23; the list queries have always joined `users`, which is why
+        // the cards were fine and only the detail screen was blank.
         $job = $this->vacancy->newQuery()
+            ->leftJoin('users as u', 'job_vacancies.user_id', '=', 'u.id')
             ->leftJoin('organizations as o', 'job_vacancies.organization_id', '=', 'o.id')
-            ->select('job_vacancies.*', 'o.name as organization_name', 'o.logo_url as organization_logo')
+            ->select(
+                'job_vacancies.*',
+                'u.first_name as creator_first_name',
+                'u.last_name as creator_last_name',
+                'u.avatar_url as creator_avatar',
+                'o.name as organization_name',
+                'o.logo_url as organization_logo'
+            )
             ->where('job_vacancies.id', $id)
             ->first();
 
@@ -569,9 +583,19 @@ class JobVacancyService
      */
     public function legacyGetById(int|string $id, ?int $userId = null): ?array
     {
+        // 🔴 Same creator join as getById() above, and for the same reason: this is the
+        // method the public `GET /v2/jobs/{id}` route actually calls.
         $job = $this->vacancy->newQuery()
+            ->leftJoin('users as u', 'job_vacancies.user_id', '=', 'u.id')
             ->leftJoin('organizations as o', 'job_vacancies.organization_id', '=', 'o.id')
-            ->select('job_vacancies.*', 'o.name as organization_name', 'o.logo_url as organization_logo')
+            ->select(
+                'job_vacancies.*',
+                'u.first_name as creator_first_name',
+                'u.last_name as creator_last_name',
+                'u.avatar_url as creator_avatar',
+                'o.name as organization_name',
+                'o.logo_url as organization_logo'
+            )
             ->where('job_vacancies.id', $id)
             ->first();
 

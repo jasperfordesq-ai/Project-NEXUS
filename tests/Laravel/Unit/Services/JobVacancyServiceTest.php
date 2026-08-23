@@ -256,6 +256,38 @@ class JobVacancyServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * 🔴 Every single-vacancy read returned an EMPTY poster name.
+     *
+     * `enrichVacancy()` builds `creator.name` from the `creator_first_name` /
+     * `creator_last_name` aliases, and both of these methods joined only
+     * `organizations` — never `users`. So `creator.name` came back as `''` and each
+     * frontend drew a "Posted by" heading with nothing under it. Measured on a device on
+     * 2026-08-23; the list queries have always joined `users`, which is why the cards
+     * looked right and only the detail screen was blank.
+     *
+     * Both methods are asserted because they are byte-identical query bodies and a fix
+     * aimed at the wrong one passes silently — which is exactly what happened first.
+     */
+    public function test_single_vacancy_reads_include_the_poster_name(): void
+    {
+        $userId = $this->insertUser();
+        $vacId  = $this->insertVacancy($userId);
+
+        foreach (['legacyGetById', 'getById'] as $method) {
+            $result = $this->svc->{$method}($vacId);
+
+            $this->assertIsArray($result, $method . '() should return the vacancy');
+            $this->assertArrayHasKey('creator', $result);
+            $this->assertSame($userId, (int) $result['creator']['id']);
+            $this->assertSame(
+                'Test User',
+                trim((string) $result['creator']['name']),
+                $method . '() must join users so the poster has a name, not an empty string',
+            );
+        }
+    }
+
     // =========================================================================
     // update()
     // =========================================================================
