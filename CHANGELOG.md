@@ -85,11 +85,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The accessible site no longer says "Page not found" about members who are
+  really there.** A member profile that the server declines to show has four
+  quite different reasons, and every one of them landed on the same blank
+  "Page not found" page: the person genuinely is not there; they have not
+  finished setting up their profile; they show their profile only to their
+  connections; or one of you has blocked the other. That last case was worse
+  still — it produced a server-error page. Each now gets its own page, in all
+  eleven languages, and the two that are not errors keep the site's normal
+  header, navigation and footer instead of stranding you on a bare error
+  document. This mattered more than it sounds: on one live community, 235 of
+  its 260 active members were being reported as "Page not found" purely
+  because they had never finished the sign-up wizard.
+
+- **The API now says when a profile is withheld rather than missing.**
+  `GET /api/v2/users/{id}` returns the new `PROFILE_PRIVATE` code for a profile
+  restricted by its owner's privacy setting, mirroring the existing
+  `PROFILE_INCOMPLETE`. Both privacy branches previously returned no code at
+  all, so every client had to guess, and all of them guessed "not found". The
+  change is additive — still HTTP 404, so a restricted profile is still not
+  confirmed to exist by status code alone, and a client that does not know the
+  code behaves exactly as before.
+
+- **A refused profile lookup no longer contaminates the next one.**
+  `UserService::getPublicProfile()` never reset its static error bag, unlike
+  every sibling operation in that service. Because the controller reads the
+  *first* recorded error, any process serving more than one lookup — a queue
+  worker, a test run, Octane — reported every later refusal with the first
+  one's reason, so a member who did not exist could be reported as having an
+  incomplete profile.
+
 - **ASP.NET event RSVPs now survive the page reload.** The self-service action
   returns the canonical relationship, metrics and RSVP counts that the unchanged
   React client validates before refreshing; going and interested states are
   persisted for the signed-in member and reappear on event detail.
 
+- **web-uk: around two dozen forms stopped discarding what the member typed.**
+  A field marked in error was re-rendered EMPTY after the failure redirect, so
+  the member lost their work — worst case a group announcement, where someone
+  could write a long notice, be told "Enter content", and find the box wiped.
+  Group announcements (create and edit), the blog/review/resource/listing/feed/
+  ideation/goal comment forms, the account-deletion reason, insurance details,
+  volunteering wellbeing/donations/expenses/safeguarding, group-exchange
+  creation, saved collections and appreciations now stash the submission and
+  replay it, via shared `src/lib/form-replay.js`. A password is deliberately
+  never stashed. Two further defects surfaced on the way: volunteering training
+  expiry read a field the GOV.UK date input never posts, so every training
+  record saved as never expiring; and the appreciation form hardcoded `checked`
+  on the public box, so a deliberate "keep this private" flipped back to public
+  on every failure.
+- **web-uk: eight create/edit forms sent every error to one hardcoded field.**
+  A member who left the price blank was told "Enter a price", the summary link
+  jumped to Title, and nothing on the page marked Price. Marketplace listings
+  and coupons, seller onboarding, podcasts, federation transfers,
+  organisations, polls and the event registration form now link each error to
+  its own field and mark that field; page-level API failures are no longer
+  pushed into the error-summary list as link-less items. Nine more templates
+  signalled validation through a status string and so never got the browser
+  tab's "Error: " prefix. The resource library also never showed whether you
+  had already liked something — the list rows were requesting reaction fields
+  the API does not return, so the count was always zero.
+- **web-uk: 61 back links moved out of the main landmark.** The skip link
+  targets `#main-content`, so those pages handed a keyboard user "Back" as the
+  first thing after skipping. 154 templates were already correct, so this was
+  drift; `tests/back-link-placement-contract.test.js` now pins it. "Load more"
+  controls also never underlined on hover — 17 block-mode pagination links were
+  missing the modifier `govuk-frontend` adds itself, while the 14 labelled
+  prev/next links are deliberately left alone.
 - **web-uk audit #7 — parity drift left by a week of backend fixes.** The wallet
   manage page summed pending-in and pending-out into a single "Pending" figure
   that corresponds to nothing (the same fault was fixed in `react-frontend` and
