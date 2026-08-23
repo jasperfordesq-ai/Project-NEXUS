@@ -63,7 +63,7 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Onboarding and access | 14 | 6 | 3 | 3 | 0 | 2 | 0 | 0.611 |
+| 1 — Onboarding and access | 14 | 7 | 3 | 3 | 0 | 1 | 0 | 0.682 |
 | 2 — Feed and social | 14 | 8 | 4 | 2 | 0 | 0 | 0 | 0.779 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 1 | 1 | 1 | 0.587 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
@@ -71,19 +71,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
 | 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 3 | 0 | 0.539 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
-| **Total** | **140** | **48** | **41** | **24** | **10** | **15** | **2** | — |
+| **Total** | **140** | **49** | **41** | **24** | **10** | **14** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(48 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 81.60`, over `140 − 2 excluded = 138`
-rows → **0.591**.
+`(49 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 82.60`, over `140 − 2 excluded = 138`
+rows → **0.599**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (6 × 1.0) + (3 × 0.6) + (3 × 0.25) = 8.55 | ÷ 14 | **0.611** |
+| 1 | (7 × 1.0) + (3 × 0.6) + (3 × 0.25) = 9.55 | ÷ 14 | **0.682** |
 | 2 | (8 × 1.0) + (4 × 0.6) + (2 × 0.25) = 10.90 | ÷ 14 | **0.779** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 11.15 | ÷ 19 † | **0.587** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
@@ -110,7 +110,7 @@ uninterpretable.
 | 1.3 | Sign out | PROVEN | Walked 2026-08-20 (reached the login screen afterwards) |
 | 1.4 | Create an account from the app | RENDERS | Register screen photographed, real fields, international phone placeholder; never submitted |
 | 1.5 | Forgot password → email → reset | CERTIFIED | Walked 2026-08-22, both halves. Request: the screen validates, the API resolves the member in the right tenant, and the confirmation is deliberately non-committal ("If an account exists…") so it cannot be used to enumerate addresses. Reset: the deep link to the reset screen carried the token through, the new password was accepted, and the token was consumed — the row was gone afterwards, so it is single-use. Verified by API: the new password signs in and the old one is refused. The fixture password was then restored. 🔴 **The mail leg cannot complete locally and that is correct behaviour, not a defect**: the token is stored ONLY after the dispatcher accepts the email, deliberately, so a mail outage leaves any previous valid link usable instead of silently invalidating it. With no SMTP in the container the send returns false, no token is written, and a WARNING is logged (`[PasswordReset] reset email send returned false`) — the log level is `warning` on purpose because production runs at that level. To walk the mail leg for real, point the container at a mail catcher; to walk the reset screen without one, insert a `password_resets` row whose stored token column holds the SHA-256 of a plaintext you keep, then open the reset deep link carrying that plaintext |
-| 1.6 | Passkey / biometric sign-in | BROKEN | **No capability exists.** Checked 2026-08-22: not one file under `mobile/` mentions passkey, WebAuthn or credentials, and `package.json` carries no library for it. The previous status said "never attempted on a device", which implied the feature was there and merely untested — it is not there at all. The website has it (`react-frontend/src/lib/webauthn.ts`, `components/security/BiometricSettings.tsx`) and the server has the endpoints, so this is a capability gap between the two frontends rather than a missing platform feature. Note the emulator could host it: this AVD carries Play Services, so a platform authenticator is available to test against. **Owner decision — not started** |
+| 1.6 | Passkey / biometric sign-in | CERTIFIED | Built and walked 2026-08-23. 🔴 **Read the scope before trusting this row**: what exists is a **device unlock of the session already on the phone** — the member signs in with a password once, and the phone's fingerprint, face or PIN is what lets the app back in. It is NOT a passkey and does not talk to the server; that capability stays absent and is recorded in the parity table below with its blockers (Credential Manager, a Digital Asset Links file under the API domain, and the release signing certificate — still an open owner decision). Walked on the emulator with a real enrolled fingerprint: the toggle appeared in Settings only once something was enrolled, turning it on raised the system prompt ("Unlock your account", with "Use PIN" offered) and stored nothing until the fingerprint passed, a cold start then showed the prompt before any app content, the fingerprint opened the feed, cancelling showed the lock screen with "Unlock was cancelled." plus Unlock and Sign out, the Unlock button worked, and turning the lock off again needed no fingerprint. Three deliberate safety choices: enabling REQUIRES passing the check first (or a member could lock themselves out of their own session), the phone's PIN stays available as a fallback so a finger that will not read is not a lockout, and Sign out is always on the lock screen. It locks on a **cold start only**, not on every return from the background — recorded as the next step, not claimed. 🔴 Emulator note for whoever walks this next: enrolment is screenshot-blocked (FLAG_SECURE, so `screencap` is black) but `uiautomator dump` reads it fine; `adb -s <id> emu finger touch 1` is what advances it, while `adb shell cmd fingerprint fingerdown` did nothing. `nexus_test` now has PIN 1234 and one enrolled fingerprint. Guarded by `lib/biometricLock.test.ts` (12 cases), with the enable-requires-authentication rule mutation-verified. Adds `expo-local-authentication` and the USE_BIOMETRIC / USE_FINGERPRINT permissions, which meant a native rebuild — the first native dependency added since the last release build |
 | 1.7 | Session survives an app restart | PROVEN | A reaction persisted across a full restart, 2026-08-20 |
 | 1.8 | Session restore failure shows a way out, not a spinner | CERTIFIED | Reproduced deliberately 2026-08-22 by deleting the member's 377 `refresh_token_sessions` rows and launching: the app lands on the sign-in screen with "Signed out — Your session has expired. Please log in again.", and the request log shows one attempt plus one retry, not the 7-16 request loop recorded in August. 🔴 The BROKEN status predated the session-expiry rewrite; the fix had landed and nobody had checked it. Both refresh outcomes are unit-tested — `rejected` for 401/403 only, `unreachable` for 500/502/503/429, a throw, and a 200 carrying no token — so a bad connection cannot sign a member out or purge the offline check-in queue |
 | 1.9 | Legal acceptance gate | CERTIFIED | Walked 2026-08-22 by deleting the member's acceptance row and attempting a write. 🔴 The gate is attached PER WRITE ROUTE, never to a group (`bootstrap/app.php`), so landing on the feed unblocked is correct — reading is allowed, writing is refused. Sending a message produced the acceptance screen with the document, its version, a link to read it in full, and "Sign out instead"; accepting recorded `user_legal_acceptances` for user 674 with user-agent `okhttp/4.12.0` — the first acceptance on this fixture that came from a device rather than a script — and the typed message survived. One defect fixed: the refusal ALSO raised "Message failed to send. Tap to retry.", so the member got the screen explaining it and a red technical failure on top, inviting a retry that cannot work until they accept. 🔴 Recorded, not fixed: `acceptance_method` is stored as `login_prompt` even when the prompt came from a write refusal mid-session, so the legal audit trail names the wrong trigger |
@@ -309,6 +309,8 @@ to it — which is exactly how "write a post" went unnoticed. Keep this table by
 | Capability | Website | Mobile | Decision |
 | --- | --- | --- | --- |
 | Write a feed post | `components/compose/tabs/PostTab.tsx` → `POST /v2/feed/posts` | present (`new-post`) | Built 2026-08-23. Narrower on purpose: no image, no poll. Row 2.9 |
+| Passkey sign-in (server-verified) | `lib/webauthn.ts` + `BiometricSettings.tsx` | **absent** | Blocked on owner decisions, not effort: Android Credential Manager, an `assetlinks.json` published under the API domain, and the release signing certificate. Row 1.6 |
+| Unlock the app with a fingerprint | absent (a browser has no equivalent) | present (2026-08-23) | Mobile-only by nature. Locks the stored session on the device; no server involvement. Row 1.6 |
 | Compose an event | `EventTab.tsx` | present (`new-event`) | — |
 | Compose a goal | `GoalTab.tsx` | present (`goals`) | — |
 | Compose a listing | `ListingTab.tsx` | present (`new-exchange`) | — |

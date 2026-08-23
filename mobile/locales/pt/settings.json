@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} escolheu esses níveis. Só eles podem alterá-los, a partir das suas próprias configurações de salvaguarda."
+  },
+  "biometricLock": {
+    "title": "Desbloquear com impressão digital ou rosto",
+    "hint": "Faça login mais rapidamente com impressão digital, rosto ou PIN.",
+    "prompt": "Desbloqueie a sua conta",
+    "lockedTitle": "Bloqueado",
+    "lockedSubtitle": "Desbloqueie para voltar à sua comunidade.",
+    "unlock": "Desbloquear",
+    "errors": {
+      "cancelled": "O desbloqueio foi cancelado.",
+      "failed": "Não corresponde. Tente novamente.",
+      "lockout": "Demasiadas tentativas. Use o PIN do telefone ou tente novamente mais tarde.",
+      "noHardware": "Este telefone não tem desbloqueio por impressão digital ou rosto.",
+      "notEnrolled": "Configure primeiro impressão digital, rosto ou PIN nas definições do telefone.",
+      "unavailable": "O desbloqueio não está disponível neste telefone neste momento."
+    }
   }
 }

@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} hat diese Ebenen ausgewählt. Nur sie können sie über ihre eigenen Schutzeinstellungen ändern."
+  },
+  "biometricLock": {
+    "title": "Mit Fingerabdruck oder Gesicht entsperren",
+    "hint": "Melden Sie sich schneller mit Fingerabdruck, Gesicht oder PIN an.",
+    "prompt": "Konto entsperren",
+    "lockedTitle": "Gesperrt",
+    "lockedSubtitle": "Entsperren, um zu Ihrer Community zurückzukehren.",
+    "unlock": "Entsperren",
+    "errors": {
+      "cancelled": "Das Entsperren wurde abgebrochen.",
+      "failed": "Das hat nicht gepasst. Versuchen Sie es erneut.",
+      "lockout": "Zu viele Versuche. Verwenden Sie die PIN des Telefons oder versuchen Sie es später erneut.",
+      "noHardware": "Dieses Telefon hat keine Fingerabdruck- oder Gesichtsentsperrung.",
+      "notEnrolled": "Richten Sie zuerst Fingerabdruck, Gesicht oder PIN in den Telefoneinstellungen ein.",
+      "unavailable": "Das Entsperren ist auf diesem Telefon derzeit nicht verfügbar."
+    }
   }
 }

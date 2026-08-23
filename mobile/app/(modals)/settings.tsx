@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Children, Fragment, useState } from 'react';
+import { Children, Fragment, useEffect, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -28,6 +28,11 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
+import {
+  biometricCapability,
+  isBiometricLockEnabled,
+  setBiometricLockEnabled,
+} from '@/lib/biometricLock';
 
 interface NotificationPrefs {
   email_messages: boolean;
@@ -76,6 +81,50 @@ export default function SettingsScreen() {
   function selectThemeMode(nextMode: ThemeMode) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setThemeMode(nextMode);
+  }
+
+  /*
+    Journey 1.6 — unlocking the app with a fingerprint. Kept entirely on the device: the
+    switch is only offered when the phone has biometrics enrolled, and turning it ON has
+    to pass the check first, so nobody can enable a lock they cannot then satisfy.
+  */
+  const [biometricUsable, setBiometricUsable] = useState(false);
+  const [biometricLockOn, setBiometricLockOn] = useState(false);
+  const [biometricBusy, setBiometricBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const [capability, enabled] = await Promise.all([
+        biometricCapability(),
+        isBiometricLockEnabled(),
+      ]);
+      if (cancelled) return;
+      setBiometricUsable(capability.usable);
+      setBiometricLockOn(enabled);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function toggleBiometricLock() {
+    const next = !biometricLockOn;
+    setBiometricBusy(true);
+    try {
+      const result = await setBiometricLockEnabled(next, t('biometricLock.prompt'));
+      if (!result.ok) {
+        // Say which of the phone's answers it was, rather than a generic failure.
+        showToast({
+          title: t(`biometricLock.errors.${result.reason ?? 'failed'}`),
+          variant: result.reason === 'cancelled' ? 'warning' : 'danger',
+        });
+        return;
+      }
+      setBiometricLockOn(next);
+    } finally {
+      setBiometricBusy(false);
+    }
   }
 
   const { data, isLoading } = useApi(() => getPrefs());
@@ -281,6 +330,18 @@ export default function SettingsScreen() {
               }}
               disabled={isLoadingPreferences || savingPrivacy || !currentPrivacy}
             />
+            {/*
+              Absent, not disabled, when the phone has nothing enrolled: a switch that
+              cannot be turned on is a worse answer than no switch at all.
+            */}
+            {biometricUsable ? (
+              <SettingRow
+                label={t('biometricLock.title')}
+                value={biometricLockOn}
+                onToggle={() => void toggleBiometricLock()}
+                disabled={biometricBusy}
+              />
+            ) : null}
             <ActionRow
               label={t('blockedUsers.title')}
               subtitle={t('blockedUsers.settingsHint')}

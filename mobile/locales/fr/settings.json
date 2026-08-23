@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} a choisi ces niveaux. Eux seuls peuvent les modifier, depuis leurs propres paramètres de sauvegarde."
+  },
+  "biometricLock": {
+    "title": "Déverrouiller avec l'empreinte ou le visage",
+    "hint": "Connectez-vous plus rapidement avec votre empreinte digitale, votre visage ou votre code PIN.",
+    "prompt": "Déverrouillez votre compte",
+    "lockedTitle": "Verrouillé",
+    "lockedSubtitle": "Déverrouillez pour retrouver votre communauté.",
+    "unlock": "Déverrouiller",
+    "errors": {
+      "cancelled": "Le déverrouillage a été annulé.",
+      "failed": "Cela ne correspond pas. Réessayez.",
+      "lockout": "Trop de tentatives. Utilisez le code PIN du téléphone ou réessayez plus tard.",
+      "noHardware": "Ce téléphone n'a pas de déverrouillage par empreinte ou par visage.",
+      "notEnrolled": "Configurez d'abord une empreinte, le visage ou un code PIN dans les réglages du téléphone.",
+      "unavailable": "Le déverrouillage n'est pas disponible sur ce téléphone pour le moment."
+    }
   }
 }

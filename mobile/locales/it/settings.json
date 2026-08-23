@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} ha scelto questi livelli. Solo loro possono cambiarli, dalle proprie impostazioni di salvaguardia."
+  },
+  "biometricLock": {
+    "title": "Sblocca con impronta o volto",
+    "hint": "Accedi più velocemente con l'impronta digitale, il volto o il PIN.",
+    "prompt": "Sblocca il tuo account",
+    "lockedTitle": "Bloccato",
+    "lockedSubtitle": "Sblocca per tornare alla tua community.",
+    "unlock": "Sblocca",
+    "errors": {
+      "cancelled": "Sblocco annullato.",
+      "failed": "Non corrisponde. Riprova.",
+      "lockout": "Troppi tentativi. Usa il PIN del telefono o riprova più tardi.",
+      "noHardware": "Questo telefono non ha lo sblocco con impronta o volto.",
+      "notEnrolled": "Configura prima impronta, volto o PIN nelle impostazioni del telefono.",
+      "unavailable": "Lo sblocco non è disponibile su questo telefono in questo momento."
+    }
   }
 }

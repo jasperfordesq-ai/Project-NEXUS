@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "Roghnaigh {{name}} na leibhéil seo. Ní féidir ach leo iad a athrú, óna suíomhanna cosanta féin."
+  },
+  "biometricLock": {
+    "title": "Díghlasáil le méarlorg nó aghaidh",
+    "hint": "Sínigh isteach níos tapúla le méarloirg, aghaidh nó UAP.",
+    "prompt": "Díghlasáil do chuntas",
+    "lockedTitle": "Faoi ghlas",
+    "lockedSubtitle": "Díghlasáil chun filleadh ar do phobal.",
+    "unlock": "Díghlasáil",
+    "errors": {
+      "cancelled": "Cuireadh an díghlasáil ar ceal.",
+      "failed": "Theip air. Bain triail eile as.",
+      "lockout": "An iomarca iarrachtaí. Úsáid PIN do fhóin, nó bain triail eile as níos déanaí.",
+      "noHardware": "Níl méarlorg ná díghlasáil aghaidhe ar an bhfón seo.",
+      "notEnrolled": "Socraigh méarlorg, aghaidh nó PIN i socruithe do fhóin ar dtús.",
+      "unavailable": "Níl an díghlasáil ar fáil ar an bhfón seo faoi láthair."
+    }
   }
 }

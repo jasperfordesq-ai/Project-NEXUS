@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} chose these levels. Only they can change them, from their own safeguarding settings."
+  },
+  "biometricLock": {
+    "title": "Unlock with fingerprint or face",
+    "hint": "Sign in faster with fingerprint, face, or PIN.",
+    "prompt": "Unlock your account",
+    "lockedTitle": "Locked",
+    "lockedSubtitle": "Unlock to get back to your community.",
+    "unlock": "Unlock",
+    "errors": {
+      "cancelled": "Unlock was cancelled.",
+      "failed": "That did not match. Try again.",
+      "lockout": "Too many attempts. Use your phone's PIN, or try again later.",
+      "noHardware": "This phone has no fingerprint or face unlock.",
+      "notEnrolled": "Set up a fingerprint, face or PIN in your phone's settings first.",
+      "unavailable": "Unlock is not available on this phone right now."
+    }
   }
 }

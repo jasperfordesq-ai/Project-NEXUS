@@ -25,6 +25,7 @@ import { validateEnv } from '@/lib/env';
 import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
 import { TenantProvider } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
+import BiometricLockGate from '@/components/BiometricLockGate';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
 import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
@@ -148,7 +149,14 @@ function RootLayout() {
               <TenantProvider>
                 <AuthProvider>
                   <RealtimeProvider>
-                    <ThemedShell />
+                    {/*
+                      Inside AuthProvider, because it only has anything to protect once a
+                      stored session exists — and above the screens, because a locked app
+                      must not render one. Journey 1.6.
+                    */}
+                    <BiometricLockGate>
+                      <ThemedShell />
+                    </BiometricLockGate>
                   </RealtimeProvider>
                 </AuthProvider>
               </TenantProvider>

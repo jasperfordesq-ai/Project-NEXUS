@@ -278,5 +278,21 @@
       }
     },
     "staffRecordedNote": "{{name}} eligió estos niveles. Sólo ellos pueden cambiarlos, desde sus propios entornos de salvaguardia."
+  },
+  "biometricLock": {
+    "title": "Desbloquear con huella o rostro",
+    "hint": "Inicie sesión más rápido con huella digital, rostro o PIN.",
+    "prompt": "Desbloquea tu cuenta",
+    "lockedTitle": "Bloqueado",
+    "lockedSubtitle": "Desbloquea para volver a tu comunidad.",
+    "unlock": "Desbloquear",
+    "errors": {
+      "cancelled": "Se canceló el desbloqueo.",
+      "failed": "No coincide. Inténtalo de nuevo.",
+      "lockout": "Demasiados intentos. Usa el PIN del teléfono o inténtalo más tarde.",
+      "noHardware": "Este teléfono no tiene desbloqueo por huella ni por rostro.",
+      "notEnrolled": "Configura primero una huella, el rostro o un PIN en los ajustes del teléfono.",
+      "unavailable": "El desbloqueo no está disponible en este teléfono ahora mismo."
+    }
   }
 }
