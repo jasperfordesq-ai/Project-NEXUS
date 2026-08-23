@@ -7839,6 +7839,7 @@
                 "options_hint": "Fügen Sie mindestens 2 Optionen hinzu. Lassen Sie alle Felder, die Sie nicht benötigen, leer.",
                 "option_label": "Option :num",
                 "expires_label": "Einsendeschluss (optional)",
+                "expires_past_error": "Das Enddatum muss in der Zukunft liegen",
                 "type_legend": "Umfragetyp",
                 "type_standard": "Standard – Mitglieder wählen eine Option",
                 "type_ranked": "Rangierte Auswahl – Mitglieder bestellen die Optionen",

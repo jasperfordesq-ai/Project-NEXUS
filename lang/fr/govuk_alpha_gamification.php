@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Ajoutez au moins 2 options. Laissez vides ceux dont vous n’avez pas besoin.',
         'option_label' => 'Option :num',
         'expires_label' => 'Date de clôture (facultatif)',
+        'expires_past_error' => 'La date de clôture doit être dans le futur',
         'type_legend' => 'Type de sondage',
         'type_standard' => 'Standard : les membres choisissent une option',
         'type_ranked' => 'Choix classé : les membres commandent les options',

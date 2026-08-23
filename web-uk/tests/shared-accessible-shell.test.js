@@ -327,6 +327,14 @@ process.env.COOKIE_SECRET = 'test-secret-at-least-32-characters';
 process.env.SESSION_SECRET = 'test-session-secret-32-chars!!';
 process.env.NODE_ENV = 'test';
 
+// A closing date that is always genuinely in the future. A hardcoded one silently
+// becomes a PAST date, and a poll closing in the past is now correctly refused.
+function futureDate(days = 60) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 describe('shared accessible frontend shell', () => {
   it('maps Blade account-family paths to the shared account navigation state', () => {
     const { activeNavForPath } = require('../src/lib/accessible-shell');
@@ -15907,7 +15915,12 @@ describe('shared accessible frontend shell', () => {
     expect(create.text).toMatch(/id="poll-option-1"[^>]* required/);
     expect(create.text).toMatch(/id="poll-option-2"[^>]* required/);
     expect(create.text).not.toMatch(/id="poll-option-3"[^>]* required/);
-    expect(create.text).toMatch(/id="poll-expires"[^>]* min="\d{4}-\d{2}-\d{2}"/);
+    // Was `min="YYYY-MM-DD"` on a native date input. That input was converted to the
+    // GOV.UK three-field pattern on 2026-08-19 and its `min` guard moved to the server.
+    expect(create.text).toMatch(/<div class="govuk-date-input" id="poll-expires">/);
+    for (const part of ['day', 'month', 'year']) {
+      expect(create.text).toContain(`name="expires_at-${part}"`);
+    }
 
     const manage = await request(app)
       .get('/polls/parity/manage?status=poll-deleted&locale=ar')
@@ -15954,7 +15967,7 @@ describe('shared accessible frontend shell', () => {
         description: ' Community choice ',
         options: ['Garden', 'Cafe'],
         poll_type: 'multiple',
-        expires_at: '2026-08-01',
+        expires_at: futureDate(60),
         is_anonymous: 'on'
       });
 
@@ -15965,7 +15978,7 @@ describe('shared accessible frontend shell', () => {
       poll_type: 'multiple',
       options: ['Garden', 'Cafe'],
       description: 'Community choice',
-      expires_at: '2026-08-01',
+      expires_at: futureDate(60),
       is_anonymous: true
     });
   });
@@ -16017,7 +16030,7 @@ describe('shared accessible frontend shell', () => {
         options: ['Library', 'Market'],
         poll_type: 'ranked',
         category: 'local',
-        expires_at: '2026-08-15'
+        expires_at: futureDate(75)
       });
 
     expect(response.status).toBe(302);
@@ -16027,7 +16040,7 @@ describe('shared accessible frontend shell', () => {
       poll_type: 'ranked',
       options: ['Library', 'Market'],
       description: 'Choose an order',
-      expires_at: '2026-08-15',
+      expires_at: futureDate(75),
       category: 'local'
     });
   });

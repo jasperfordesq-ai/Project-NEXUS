@@ -7839,6 +7839,7 @@
                 "options_hint": "Adicione pelo menos 2 opções. Deixe em branco aqueles que você não precisa.",
                 "option_label": "Opção :num",
                 "expires_label": "Data de encerramento (opcional)",
+                "expires_past_error": "A data de encerramento deve ser no futuro",
                 "type_legend": "Tipo de enquete",
                 "type_standard": "Padrão – os membros escolhem uma opção",
                 "type_ranked": "Escolha classificada – os membros ordenam as opções",

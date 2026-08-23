@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Aggiungi almeno 2 opzioni. Lascia vuoti quelli che non ti servono.',
         'option_label' => 'Opzione :num',
         'expires_label' => 'Data di chiusura (facoltativa)',
+        'expires_past_error' => 'La data di chiusura deve essere nel futuro',
         'type_legend' => 'Tipo di sondaggio',
         'type_standard' => 'Standard: i membri scelgono un\'opzione',
         'type_ranked' => 'Scelta classificata: i membri ordinano le opzioni',

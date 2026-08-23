@@ -309,6 +309,7 @@ return [
         'options_hint' => 'Add at least 2 options. Leave any you do not need blank.',
         'option_label' => 'Option :num',
         'expires_label' => 'Closing date (optional)',
+        'expires_past_error' => 'The closing date must be in the future',
         'type_legend' => 'Poll type',
         'type_standard' => 'Standard — members choose one option',
         'type_ranked' => 'Ranked choice — members order the options',

@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Dodaj co najmniej 2 opcje. Pozostaw te, których nie potrzebujesz, puste.',
         'option_label' => 'Opcja :num',
         'expires_label' => 'Data zamknięcia (opcjonalnie)',
+        'expires_past_error' => 'Data zamknięcia musi być w przyszłości',
         'type_legend' => 'Typ ankiety',
         'type_standard' => 'Standard — członkowie wybierają jedną opcję',
         'type_ranked' => 'Wybór rankingowy — członkowie porządkują opcje',

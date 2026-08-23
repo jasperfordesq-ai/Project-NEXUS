@@ -21,6 +21,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate, splitDate } = require('../lib/date-input');
 
 const router = express.Router();
 const POLLS_PATH = '/polls';
@@ -187,6 +188,7 @@ function pollStatusBanner(status, t) {
     'vote-failed': { type: 'error', message: t('polls.states.vote-failed') },
     'poll-created': { type: 'success', message: t('polish_discovery.polls_create_success') },
     'poll-create-failed': { type: 'error', message: t('polish_discovery.polls_create_failed') },
+    'poll-expires-past': { type: 'error', message: t('govuk_alpha_gamification.poll_create.expires_past_error') },
     'poll-deleted': { type: 'success', message: t('polls.states.deleted') },
     'poll-delete-failed': { type: 'error', message: t('polls.states.delete-failed') },
     ranked: { type: 'success', message: t('govuk_alpha_gamification.ranked.states.ranked') },
@@ -210,7 +212,8 @@ function pollRedirect(status, id = null) {
 function pollCreateStatusBanner(status, t) {
   const banners = {
     'poll-created': { type: 'success', message: t('govuk_alpha_gamification.poll_create.states.poll-created') },
-    'poll-create-failed': { type: 'error', message: t('govuk_alpha_gamification.poll_create.states.poll-create-failed') }
+    'poll-create-failed': { type: 'error', message: t('govuk_alpha_gamification.poll_create.states.poll-create-failed') },
+    'poll-expires-past': { type: 'error', message: t('govuk_alpha_gamification.poll_create.expires_past_error') }
   };
   return banners[trimmed(status)] || null;
 }
@@ -267,7 +270,7 @@ function pollPayloadFrom(body, { parity = false } = {}) {
   };
 
   const description = trimmed(body.description, 5000);
-  const expiresAt = trimmed(body.expires_at);
+  const expiresAt = trimmed(readDate(body, 'expires_at').value || '');
   const category = trimmed(body.category, 120);
   if (description) payload.description = description;
   if (expiresAt) payload.expires_at = expiresAt;
@@ -303,7 +306,7 @@ function storePollForm(req, parity) {
       description: String(body.description || ''),
       category: String(body.category || ''),
       poll_type: String(body.poll_type || ''),
-      expires_at: String(body.expires_at || ''),
+      expires_at: String(readDate(body, 'expires_at').value || ''),
       is_anonymous: booleanFrom(body.is_anonymous),
       options: rawPollOptions(body)
     }
@@ -325,6 +328,7 @@ function consumePollForm(req, parity) {
     category: values.category || '',
     pollType: values.poll_type || 'standard',
     expiresAt: values.expires_at || '',
+    expiresAtParts: splitDate(values.expires_at || ''),
     isAnonymous: Boolean(values.is_anonymous),
     options: Array.isArray(values.options) ? values.options : []
   };
@@ -534,6 +538,10 @@ async function storePoll(req, res, { parity = false } = {}) {
   if (!isValidPollPayload(payload)) {
     storePollForm(req, parity);
     return redirectTo(res, createPollRedirect('poll-create-failed', parity));
+  }
+  if (payload.expires_at && payload.expires_at < tomorrowDate()) {
+    storePollForm(req, parity);
+    return redirectTo(res, createPollRedirect('poll-expires-past', parity));
   }
 
   let status = 'poll-created';

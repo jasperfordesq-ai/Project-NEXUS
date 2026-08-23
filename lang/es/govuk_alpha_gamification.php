@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Añade al menos 2 opciones. Deje en blanco los que no necesite.',
         'option_label' => 'Opción :num',
         'expires_label' => 'Fecha de cierre (opcional)',
+        'expires_past_error' => 'La fecha de cierre debe ser futura',
         'type_legend' => 'Tipo de encuesta',
         'type_standard' => 'Estándar: los miembros eligen una opción',
         'type_ranked' => 'Elección clasificada: los miembros ordenan las opciones',

@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Voeg minimaal 2 opties toe. Laat de gegevens die u niet nodig heeft leeg.',
         'option_label' => 'Optie :num',
         'expires_label' => 'Sluitingsdatum (optioneel)',
+        'expires_past_error' => 'De sluitingsdatum moet in de toekomst liggen',
         'type_legend' => 'Poll-type',
         'type_standard' => 'Standaard — leden kiezen één optie',
         'type_ranked' => 'Gerangschikte keuze: leden bestellen de opties',

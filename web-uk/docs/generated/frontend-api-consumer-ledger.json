@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-23T12:05:30.617Z",
+  "generatedAt": "2026-08-23T12:21:18.805Z",
   "provenance": {
-    "generatedAt": "2026-08-23T12:05:30.617Z",
+    "generatedAt": "2026-08-23T12:21:18.805Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2",
+    "laravelCommitSha": "5e4ba8800c8f05e37b1cf1dfab8fd20776c1eed7",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2",
+    "webUkRepositoryCommitSha": "5e4ba8800c8f05e37b1cf1dfab8fd20776c1eed7",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -19590,6 +19590,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/poll-expiry-server-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,

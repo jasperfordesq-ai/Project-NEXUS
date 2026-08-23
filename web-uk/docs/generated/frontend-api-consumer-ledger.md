@@ -5,9 +5,9 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-23T12:05:30.617Z
-- Laravel commit SHA: `00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2`
-- Web UK repository commit SHA: `00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2`
+- Generated: 2026-08-23T12:21:18.805Z
+- Laravel commit SHA: `5e4ba8800c8f05e37b1cf1dfab8fd20776c1eed7`
+- Web UK repository commit SHA: `5e4ba8800c8f05e37b1cf1dfab8fd20776c1eed7`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -560,7 +560,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/v2/podcasts/{param}/publish` | `callPodcastApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/podcast-actions.js | tests/api.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/runtime/podcasts-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/podcasts/{param}/subscribe` | `callPodcastApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/podcast-actions.js | tests/api.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/runtime/podcasts-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/podcasts/mine` | `callPodcastApi` | documented | read-only by HTTP method<br>not applicable | src/routes/podcast-actions.js | tests/api.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/runtime/podcasts-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
-| POST | `/api/v2/polls` | `createPoll` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/poll-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/polls` | `createPoll` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/poll-actions.js | tests/api.test.js<br>tests/poll-expiry-server-guard.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/polls?{query}` | `getPolls` | documented | read-only by HTTP method<br>not applicable | src/routes/events.js<br>src/routes/poll-actions.js | tests/api.test.js<br>tests/relative-date-future-values.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/polls/{param}` | `deletePoll` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/poll-actions.js | tests/api.test.js<br>tests/runtime/groups-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/polls/{param}` | `getPoll` | documented | read-only by HTTP method<br>not applicable | src/routes/events.js<br>src/routes/poll-actions.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |

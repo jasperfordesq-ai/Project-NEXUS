@@ -259,6 +259,7 @@ return [
         'options_hint' => '少なくとも 2 つのオプションを追加します。必要のないものは空白のままにしておきます。',
         'option_label' => 'オプション :num',
         'expires_label' => '締切日（オプション）',
+        'expires_past_error' => '締め切り日は未来の日付にしてください',
         'type_legend' => '投票の種類',
         'type_standard' => 'スタンダード — メンバーは 1 つのオプションを選択します',
         'type_ranked' => 'ランク付けされた選択肢 - メンバーがオプションを注文します',

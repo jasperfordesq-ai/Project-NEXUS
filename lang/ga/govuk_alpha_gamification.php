@@ -259,6 +259,7 @@ return [
         'options_hint' => 'Cuir ar a laghad 2 rogha leis. Fág aon cheann nach bhfuil uait bán.',
         'option_label' => 'Rogha :num',
         'expires_label' => 'Dáta deiridh (roghnach)',
+        'expires_past_error' => 'Caithfidh an dáta deiridh a bheith sa todhchaí',
         'type_legend' => 'Cineál vótaíochta',
         'type_standard' => 'Caighdeán — roghnaíonn baill rogha amháin',
         'type_ranked' => 'Rogha rangaithe — ordaíonn baill na roghanna',

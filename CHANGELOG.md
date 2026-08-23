@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **web-uk: the last native date input is converted to the GOV.UK three-field
+  pattern**, and its browser-only `min` guard is replaced by a server-side check
+  that a poll's closing date is in the future. `min` is advisory: anything posting
+  the form directly could always create a poll that was already closed. A new
+  `poll_create.expires_past_error` is hand-written in all eleven languages and both
+  PHP lang gates pass with zero values added to the untranslated count.
 - **web-uk: the 120 recorded GET API contracts are now replayed against a live
   Laravel on every push.** `npm run api:verify` runs as a step of the
   `Web UK authenticated accessibility` job, which boots a real Laravel against a
@@ -54,6 +60,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **web-uk: `scripts/locale-invariants.js` classifies English-identical locale
   values.** `npm run locales:audit` now reports the raw count and the count
   actually needing a translator side by side.
+
+### Fixed
+
+- **web-uk tests: three poll fixtures posted a hardcoded `expires_at: 2026-08-01`,
+  a date that had been in the past since 2026-08-02.** They encoded a stale literal
+  as "a future closing date" and would have reddened the build for whoever added a
+  past-date guard. They now compute a date relative to today.
 
 ### Changed
 
