@@ -80,7 +80,13 @@
         <p class="govuk-body-s nexus-alpha-meta">{{ currentLesson.contentTypeLabel }}</p>
 
         {% if currentLesson.contentType == 'video' and currentLesson.videoUrl %}
-          <video class="nexus-alpha-detail-hero" controls preload="metadata" width="100%">
+          {# The player had no accessible name at all. The lesson title is the
+             name a screen reader needs; the element itself supplies the role.
+             🔴 There is still no captions track: `course_lessons` has no
+             caption/subtitle column, so nothing can be wired here without a
+             backend change. The `body` field below IS rendered for video
+             lessons, so a transcript there is the available text alternative. #}
+          <video class="nexus-alpha-detail-hero" controls preload="metadata" width="100%" aria-label="{{ currentLesson.title }}">
             <source src="{{ currentLesson.videoUrl }}">
             {{ t("govuk_alpha_courses.video_unsupported") }}
           </video>

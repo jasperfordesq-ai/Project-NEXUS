@@ -7233,7 +7233,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('+3.0');
     expect(response.text).toContain('href="/wallet?filter=spent&amp;cursor=next-page#transactions"');
     expect(response.text).toContain('<nav class="govuk-pagination" aria-label="Transaction history">');
-    expect(response.text).toContain('<span class="govuk-pagination__link-title">Next</span>');
+    expect(response.text).toContain('<span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">Next</span>');
     expect(response.text).toContain('class="govuk-pagination__icon govuk-pagination__icon--next"');
     expect(response.text).not.toContain('govuk-pagination govuk-pagination--block');
     expect(response.text).toContain('class="govuk-link govuk-link--no-visited-state" href="/wallet?filter=spent#transactions" aria-current="page">Spent');
@@ -7813,7 +7813,10 @@ describe('shared accessible frontend shell', () => {
         .set('Cookie', cookie);
 
       expect(success.status).toBe(200);
-      expect(success.text).toContain('govuk-panel govuk-panel--confirmation');
+      // A transient flash status is a notification banner, not the green
+      // end-of-transaction confirmation panel.
+      expect(success.text).toContain('govuk-notification-banner--success');
+      expect(success.text).not.toContain('govuk-panel--confirmation');
       expect(success.text).toContain('Your time credits were sent successfully.');
       expect(failure.status).toBe(200);
       expect(failure.text).toContain('govuk-error-summary');
@@ -17909,12 +17912,66 @@ describe('shared accessible frontend shell', () => {
     const replay = await agent
       .get(invalid.headers.location)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
-    expect(replay.text).toContain('Enter the organisation name, a 20+ character description, a valid email, and confirm you agree to the terms.');
+    // 🔴 This used to assert the COARSE message ("Enter the organisation name, a 20+
+    // character description, a valid email, and confirm you agree to the terms."), linked
+    // to `#name`. That message collapsed five different field errors, so a member whose
+    // EMAIL was the problem was sent to the organisation-name box. The redirect URL is
+    // unchanged — the precise status now travels in the session — and the page names the
+    // field that is actually wrong.
+    expect(replay.text).toContain('Enter a valid contact email address');
+    expect(replay.text).toContain('<a href="#email">');
+    expect(replay.text).toContain('id="email-error" class="govuk-error-message"');
     expect(replay.text).toContain('value="Community Helpers"');
     expect(replay.text).toContain('>We coordinate local volunteering projects.</textarea>');
     expect(replay.text).toContain('value="not-an-email"');
     expect(replay.text).toContain('value="https://example.org"');
     expect(replay.text).toContain('id="agreed_terms" name="agreed_terms" type="checkbox" value="1" checked');
+  });
+
+  // 🔴 The embedded organisation form collapsed FIVE field errors into one `org-invalid`
+  // message linked to `#name`. These pin two of the other four: a short description and an
+  // unticked terms box each now mark their own field, and a whole-page API failure is a
+  // sentence rather than a link that sends the member to a field that is fine.
+  it.each([
+    [
+      'a too-short description',
+      { name: 'Community Helpers', description: 'Too short', contact_email: 'ok@example.test', agreed_terms: '1' },
+      '#description',
+      'Enter a description of at least 20 characters'
+    ],
+    [
+      'an unticked terms box',
+      { name: 'Community Helpers', description: 'We coordinate local volunteering projects.', contact_email: 'ok@example.test' },
+      '#agreed_terms',
+      'You must confirm and agree before registering'
+    ]
+  ])('marks the right field on the embedded organisations form for %s', async (label, body, href, message) => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+
+    const first = await agent
+      .get('/organisations')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+
+    const invalid = await agent
+      .post('/organisations')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], ...body });
+
+    // The URL contract is deliberately unchanged; the precise status rides in the session.
+    expect(invalid.headers.location).toBe('/organisations?status=org-invalid');
+
+    api.getVolunteerOrganisations.mockResolvedValueOnce({ data: [] });
+    const replay = await agent
+      .get(invalid.headers.location)
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(replay.text).toContain(`<a href="${href}">${message}</a>`);
+    expect(replay.text).toContain(`id="${href.slice(1)}-error" class="govuk-error-message"`);
   });
 
   it('redirects signed-out visitors from the manage-organisations page before API access', async () => {
@@ -23287,7 +23344,7 @@ describe('shared accessible frontend shell', () => {
     expect(index.text).toContain('Public');
     expect(index.text).toContain('href="/groups?q=repair&amp;filter=joined&amp;cursor=next-groups"');
     expect(index.text).toContain('<nav class="govuk-pagination govuk-!-margin-top-6" aria-label="Group pages">');
-    expect(index.text).toContain('<span class="govuk-pagination__link-title">Next</span>');
+    expect(index.text).toContain('<span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">Next</span>');
     expect(index.text).toContain('class="govuk-pagination__icon govuk-pagination__icon--next"');
     expect(index.text).toContain('id="q" name="q" type="text" value="repair"');
     expect(index.text).toMatch(/value="joined" selected/);
@@ -26125,7 +26182,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Occurrence of recurring template 41');
     expect(response.text).toContain('Duplicate notifications were suppressed');
     expect(response.text).toContain('aria-label="Lifecycle history pages"');
-    expect(response.text).toContain('<span class="govuk-pagination__link-title">View older history</span>');
+    expect(response.text).toContain('<span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">View older history</span>');
     expect(response.text).toContain('opaque%2Bcursor%2F2%3D');
     expect(api.callEventApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/42/lifecycle-history?per_page=20');
   });
@@ -26405,7 +26462,7 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('<dt class="govuk-summary-list__key">Sessions</dt><dd class="govuk-summary-list__value">3</dd>');
     expect(page.text).toContain('<dt class="govuk-summary-list__key">Speakers</dt><dd class="govuk-summary-list__value">2</dd>');
     expect(page.text).not.toContain('event_recurrence_blueprints.counts.unknown');
-    expect(page.text).toContain('<span class="govuk-pagination__link-title">Load more versions</span>');
+    expect(page.text).toContain('<span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">Load more versions</span>');
     api.callEventApi
       .mockResolvedValueOnce({ data: event })
       .mockRejectedValueOnce(new api.ApiError('History unavailable', 503));
@@ -30555,7 +30612,10 @@ describe('shared accessible frontend shell', () => {
     expect(create.status).toBe(200);
     expect(create.text).toContain('Your messaging access is currently restricted. You can still read existing messages.');
     expect(create.text).not.toContain('Direct messaging is currently disabled for this community.');
-    expect(create.text).toMatch(/<button class="govuk-button" data-module="govuk-button" disabled aria-disabled="true">Create group conversation<\/button>/);
+    // An unavailable control must LOOK unavailable: GOV.UK styles
+    // .govuk-button[disabled], and the secondary class stops a dead control
+    // rendering as a full-strength green primary.
+    expect(create.text).toMatch(/<button class="govuk-button govuk-button--secondary" data-module="govuk-button" disabled aria-disabled="true">Create group conversation<\/button>/);
   });
 
   it('uses Blade localized error copy when group conversations fail to load', async () => {
@@ -33074,7 +33134,10 @@ describe('shared accessible frontend shell', () => {
     expect(api.callCourseApi).toHaveBeenCalledWith('test-token', 'GET', '/42/reviews');
     expect(api.callCourseApi).toHaveBeenCalledWith('test-token', 'GET', '/42/progress');
     expect(detail.text).toContain('Advanced community care');
-    expect(detail.text).toContain('class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6"');
+    // Enrolment confirmation is a flash status on a detail page: notification
+    // banner, not the green end-of-transaction panel.
+    expect(detail.text).toContain('govuk-notification-banner--success');
+    expect(detail.text).not.toContain('govuk-panel--confirmation');
     expect(detail.text).toContain('You are now enrolled. Enjoy the course.');
     expect(detail.text).toContain('Build practical skills for supporting neighbours safely.');
     expect(detail.text).not.toContain('<strong>practical</strong>');
@@ -34442,8 +34505,13 @@ describe('shared accessible frontend shell', () => {
     const invalidForm = await agent
       .get('/marketplace/onboarding')
       .set('Cookie', signedAuthCookieHeader());
-    expect(invalidForm.text).toContain('<a href="#display_name">Enter your business name</a>');
+    // 🔴 Both of these used to be `<a href="#display_name">` — the business-name error
+    // pointed at the display-name box, so with both blank the summary showed two items
+    // aiming at the same field and the business-name field was unreachable from it.
     expect(invalidForm.text).toContain('<a href="#display_name">Enter a display name</a>');
+    expect(invalidForm.text).toContain('<a href="#business_name">Enter your business name</a>');
+    expect(invalidForm.text).toContain('id="display_name-error" class="govuk-error-message"');
+    expect(invalidForm.text).toContain('id="business_name-error" class="govuk-error-message"');
     expect(invalidForm.text).toContain('Keep this description');
     expect(invalidForm.text).toContain('value=" KEEP-REG "');
     expect(invalidForm.text).toContain('value=" 2 Market Street "');
@@ -34475,7 +34543,11 @@ describe('shared accessible frontend shell', () => {
     const failedForm = await agent
       .get(failed.headers.location)
       .set('Cookie', signedAuthCookieHeader());
-    expect(failedForm.text).toContain('<li>Sorry, your details could not be saved. Please try again.</li>');
+    // 🔴 This used to be a LINK-LESS `<li>` inside the summary list. An error summary list
+    // is a list of links to things to fix, so a keyboard user could tab onto it and get
+    // nowhere. A whole-page failure is now a sentence in the summary body instead.
+    expect(failedForm.text).toContain('<p class="govuk-body">Sorry, your details could not be saved. Please try again.</p>');
+    expect(failedForm.text).not.toContain('<li>Sorry, your details could not be saved. Please try again.</li>');
     expect(failedForm.text).not.toContain('href="#display_name">Sorry, your details');
     expect(failedForm.text).toContain('value=" Local seller "');
     expect(failedForm.text).toContain('Replayed after failure');
@@ -34689,8 +34761,12 @@ describe('shared accessible frontend shell', () => {
     const invalidForm = await agent
       .get('/marketplace/coupons/new')
       .set('Cookie', signedAuthCookieHeader());
+    // 🔴 The discount-value error used to be `<a href="#coupon_title">` too — a
+    // `#discount_value` field existed all along and was never linked from the summary.
     expect(invalidForm.text).toContain('<a href="#coupon_title">Enter a coupon title</a>');
-    expect(invalidForm.text).toContain('<a href="#coupon_title">Enter a discount value greater than zero</a>');
+    expect(invalidForm.text).toContain('<a href="#discount_value">Enter a discount value greater than zero</a>');
+    expect(invalidForm.text).toContain('id="coupon_title-error" class="govuk-error-message"');
+    expect(invalidForm.text).toContain('id="discount_value-error" class="govuk-error-message"');
     expect(invalidForm.text).toContain('value=" KEEP-ME "');
     expect(invalidForm.text).toContain('Explain this offer');
     expect(invalidForm.text).toContain('value="0"');
@@ -34733,7 +34809,11 @@ describe('shared accessible frontend shell', () => {
     const rejectedForm = await agent
       .get('/marketplace/coupons/new')
       .set('Cookie', signedAuthCookieHeader());
-    expect(rejectedForm.text).toContain('<a href="#coupon_title">This coupon conflicts with an existing offer.</a>');
+    // 🔴 This API rejection used to be linked to `#coupon_title`, telling the member their
+    // title was wrong when the clash was with an existing offer. It is a whole-page
+    // condition, so it is now a sentence and not a link to any field.
+    expect(rejectedForm.text).toContain('<p class="govuk-body">This coupon conflicts with an existing offer.</p>');
+    expect(rejectedForm.text).not.toContain('<a href="#coupon_title">This coupon conflicts with an existing offer.</a>');
     expect(rejectedForm.text).toContain('value=" Autumn offer "');
 
     api.callMarketplaceApi.mockRejectedValueOnce(
@@ -34777,7 +34857,10 @@ describe('shared accessible frontend shell', () => {
     const rejectedEditForm = await agent
       .get('/marketplace/coupons/5/edit')
       .set('Cookie', signedAuthCookieHeader());
-    expect(rejectedEditForm.text).toContain('<a href="#coupon_title">The edited coupon is not valid.</a>');
+    // Same as the create case above: an API rejection is a whole-page condition, so it is
+    // a sentence rather than a link pointing at a field that may be perfectly fine.
+    expect(rejectedEditForm.text).toContain('<p class="govuk-body">The edited coupon is not valid.</p>');
+    expect(rejectedEditForm.text).not.toContain('<a href="#coupon_title">The edited coupon is not valid.</a>');
     expect(rejectedEditForm.text).toContain('value=" Revised offer "');
     expect(rejectedEditForm.text).toContain('Replayed edit');
     expect(rejectedEditForm.text).toContain('value="4.50"');

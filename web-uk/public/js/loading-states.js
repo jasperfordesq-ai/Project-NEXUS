@@ -17,14 +17,21 @@
    * @param {string} loadingText - Optional loading text (defaults to "Loading...")
    */
   function setButtonLoading(button, loadingText) {
-    if (!button || button.disabled) return;
+    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
 
     // Store original state
     button.dataset.originalText = button.textContent;
     button.dataset.originalAriaLabel = button.getAttribute('aria-label') || '';
 
-    // Set loading state
-    button.disabled = true;
+    // 🔴 aria-disabled, NOT disabled. Disabling the element that currently has
+    // focus drops focus to <body>, and a disabled control's new accessible name
+    // ("Signing in…") is never announced — so the one person who most needs to
+    // know the form is working is the one who is not told. GDS is explicit that
+    // submit buttons should not be disabled; this codebase already says so in
+    // public/js/password-strength.js. Double submission is prevented by the
+    // form-level guard in enhanceForms() plus `pointer-events: none` on
+    // .app-button--loading, not by removing the control from the page.
+    button.setAttribute('aria-disabled', 'true');
     button.classList.add('app-button--loading');
     button.setAttribute('aria-busy', 'true');
 
@@ -44,6 +51,7 @@
 
     // Restore original state
     button.disabled = false;
+    button.removeAttribute('aria-disabled');
     button.classList.remove('app-button--loading');
     button.removeAttribute('aria-busy');
 
@@ -132,8 +140,17 @@
   function enhanceForms() {
     document.querySelectorAll('form[data-loading]').forEach(function(form) {
       form.addEventListener('submit', function(event) {
-        // Don't disable if the browser prevented submission (e.g. validation failure)
+        // Don't show loading if the browser prevented submission (e.g. validation failure)
         if (event.defaultPrevented) return;
+
+        // The button stays focusable and operable (see setButtonLoading), so
+        // this flag — not `disabled` — is what stops a second submission from a
+        // keyboard Enter or a double click.
+        if (form.dataset.submitting === 'true') {
+          event.preventDefault();
+          return;
+        }
+        form.dataset.submitting = 'true';
 
         const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
         if (submitButton && submitButton.tagName === 'BUTTON') {
@@ -142,6 +159,7 @@
           // Re-enable the button after 10 seconds as a fallback (in case navigation
           // is prevented by a same-page error or the user stays on the page)
           var fallbackTimer = setTimeout(function() {
+            delete form.dataset.submitting;
             clearButtonLoading(submitButton);
           }, 10000);
 

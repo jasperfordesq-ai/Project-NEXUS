@@ -11,9 +11,11 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate } = require('../lib/date-input');
+const { readDate, dateParts } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
+const { isValidationFailureStatus } = require('../lib/validation-status');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
@@ -475,6 +477,12 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
         : res.locals.t(`govuk_alpha_settings.states.${status}`))
       : '',
     successStatus: ['link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved'].includes(status),
+    // layouts/base.njk cannot see a validation failure signalled only by a status string,
+    // so the "Error:" page-title prefix is passed from the route. `link-user-not-found` is
+    // named explicitly because it is genuine input validation — the member typed an email
+    // address that belongs to nobody here — but it does not end in `-invalid`, so the
+    // shared helper's suffix rule would miss it.
+    pageHasErrors: isValidationFailureStatus(status) || status === 'link-user-not-found',
     errorStatus: [
       'link-email-invalid',
       'link-user-not-found',
@@ -689,6 +697,7 @@ router.get('/insurance', asyncRoute(async (req, res) => {
     statusMessage: SETTINGS_STATUS_MESSAGES[status]
       ? res.locals.t(`govuk_alpha_settings.states.${status}`)
       : '',
+    insuranceForm: consumeFormReplay(req, 'settings', 'insurance'),
     successStatus: status === 'insurance-uploaded',
     errorStatus: [
       'insurance-type-invalid',
@@ -809,12 +818,29 @@ router.post('/insurance', asyncRoute(async (req, res) => {
   }
 
   const insuranceType = allowedValue(req.body.insurance_type, SETTINGS_INSURANCE_TYPES, null);
+  // 🔴 The most input this frontend could lose in one go: four text fields, two GOV.UK
+  // date triples and a 1,000-character notes box, all blanked by a file-type or file-size
+  // rejection the member could not have predicted. The CERTIFICATE cannot be restored —
+  // a browser forbids setting a file input's value — which is precisely why keeping the
+  // details around it matters: they have to re-pick the file either way.
+  const rememberUpload = () => rememberFormReplay(req, 'settings', 'insurance', {
+    insuranceType: trimmed(req.body.insurance_type, 60),
+    providerName: trimmed(req.body.provider_name, 255),
+    policyNumber: trimmed(req.body.policy_number, 255),
+    coverageAmount: trimmed(req.body.coverage_amount, 20),
+    notes: trimmed(req.body.notes, 1000),
+    startDateParts: dateParts(req.body, 'start_date'),
+    expiryDateParts: dateParts(req.body, 'expiry_date')
+  });
+
   if (insuranceType === null) {
+    rememberUpload();
     await removeUploadedFile(file);
     return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-type-invalid', '#upload'));
   }
 
   if (!file) {
+    rememberUpload();
     return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-file-required', '#upload'));
   }
 
@@ -844,6 +870,7 @@ router.post('/insurance', asyncRoute(async (req, res) => {
       : field === 'certificate_file' && /size|large|limit|10\s*mb/.test(message)
         ? 'insurance-file-large'
         : 'insurance-failed';
+    rememberUpload();
     return redirectTo(res, settingsStatusRedirect('/settings/insurance', status, '#upload'));
   } finally {
     await removeUploadedFile(file);

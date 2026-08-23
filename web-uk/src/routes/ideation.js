@@ -8,6 +8,7 @@ const { callIdeationApi } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
 const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { isValidationFailureStatus } = require('../lib/validation-status');
 
 const router = express.Router();
 
@@ -483,6 +484,10 @@ function consumeCampaignForm(req, formKey) {
   return consumeStash(req, 'ideationCampaignForm', formKey);
 }
 
+function consumeIdeaCommentForm(req, challengeId, ideaId) {
+  return consumeStash(req, 'ideationIdeaCommentForm', `${challengeId}:${ideaId}`);
+}
+
 const CAMPAIGN_STATUS_VALUES = ['draft', 'active', 'completed', 'archived'];
 
 // The index filter radios offer exactly these values (ideation/index.njk).
@@ -561,6 +566,10 @@ router.get('/new', asyncRoute(async (req, res) => {
     categories,
     templates,
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     errorMessage: status === 'challenge-failed' ? ideationStateMessage(status, res.locals.t) : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -597,7 +606,11 @@ router.get('/campaigns', asyncRoute(async (req, res) => {
     campaigns,
     campaignForm,
     ideationIsAdmin: ideationAdministrator(profileResult),
-    status
+    status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status)
   });
 }, { redirectOn401: loginRedirect() }));
 
@@ -635,6 +648,10 @@ router.get('/campaigns/:id(\\d+)', asyncRoute(async (req, res) => {
     activeNav: 'explore',
     campaign,
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     ideationIsAdmin: ideationAdministrator(profileResult)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Ideation campaign not found' }));
@@ -764,6 +781,10 @@ router.get('/:id(\\d+)/drafts', asyncRoute(async (req, res) => {
     challenge,
     drafts,
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     successMessage: draftStatusMessage(status, res.locals.t),
     errorMessage: draftErrorMessage(status, res.locals.t)
   });
@@ -801,7 +822,12 @@ router.get('/:id(\\d+)/ideas/:ideaId(\\d+)', asyncRoute(async (req, res) => {
     idea,
     comments,
     media,
+    ideaCommentForm: consumeIdeaCommentForm(req, id, ideaId),
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     successMessage: ideaDetailStatusMessage(status, res.locals.t),
     errorMessage: ideaDetailErrorMessage(status, res.locals.t)
   });
@@ -842,6 +868,10 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     categories,
     templates: [],
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     errorMessage: status === 'challenge-failed' ? ideationStateMessage(status, res.locals.t) : ''
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Ideation challenge not found' }));
@@ -873,6 +903,10 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     ideas,
     ideaForm,
     status,
+    // layouts/base.njk cannot see a validation failure signalled ONLY by a `-invalid`
+    // status string, so the "Error:" page-title prefix is passed from the route. A
+    // template-level {% set %} would run after the parent rendered <head>.
+    pageHasErrors: isValidationFailureStatus(status),
     successMessage: statusMessage(status, res.locals.t),
     errorMessage: errorMessage(status, res.locals.t)
   });

@@ -32,6 +32,7 @@ const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
 
@@ -868,6 +869,41 @@ function parseInviteEmails(value) {
     .filter(Boolean);
 }
 
+// Stash the just-submitted announcement so the error re-render can put the member's own
+// words back, mirroring `storeTransferForm` in routes/wallet.js. Without this, the create
+// form came back EMPTY and the edit form came back showing the SAVED text — so a member
+// who typed a long announcement and tripped any validation or API failure lost all of it.
+// Only echoed input is stored; it is consumed (and deleted) once by the matching GET.
+function rememberAnnouncementForm(req, key, body) {
+  if (!req.session) return;
+  const source = body && typeof body === 'object' ? body : {};
+  req.session.groupAnnouncementForms ||= {};
+  req.session.groupAnnouncementForms[key] = {
+    title: trimmed(source.title, 255),
+    content: trimmed(source.content, 20000),
+    isPinned: checked(source.is_pinned),
+    // The three GOV.UK date fields are echoed as typed, not reformatted: an unreal date
+    // is exactly what the member has to see in order to correct it.
+    expiresAtParts: {
+      day: trimmed(source['expires_at-day'], 2),
+      month: trimmed(source['expires_at-month'], 2),
+      year: trimmed(source['expires_at-year'], 4)
+    }
+  };
+}
+
+function consumeAnnouncementForm(req, key) {
+  const state = req.session?.groupAnnouncementForms?.[key];
+  if (state && req.session?.groupAnnouncementForms) {
+    delete req.session.groupAnnouncementForms[key];
+  }
+  return state && typeof state === 'object' ? state : null;
+}
+
+function announcementFormKey(id, annId = null) {
+  return annId === null ? `create:${id}` : `edit:${id}:${annId}`;
+}
+
 function announcementPayload(body) {
   const title = trimmed(body.title, 255);
   const content = trimmed(body.content, 20000);
@@ -1282,6 +1318,7 @@ router.get('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res) 
     group,
     announcements,
     isAdmin: isGroupAdmin(group, profile),
+    announcementForm: consumeAnnouncementForm(req, announcementFormKey(id)),
     ...announcementStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
@@ -1307,6 +1344,7 @@ router.get('/:id(\\d+)/announcements/:annId(\\d+)/edit', requireAuth, asyncRoute
     activeNav: 'explore',
     group,
     announcement,
+    announcementForm: consumeAnnouncementForm(req, announcementFormKey(id, annId)),
     ...announcementStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Announcement not found' }));
@@ -1447,6 +1485,7 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
     files,
     isAdmin,
     currentUserId,
+    uploadForm: consumeFormReplay(req, 'groupFiles', id),
     ...fileStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
@@ -1758,15 +1797,25 @@ router.post('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
   }
 
   const validationStatus = groupFileValidationStatus(file);
+  // 🔴 A file input cannot be repopulated by HTML — a browser forbids setting its value —
+  // so the member always has to pick the file again after a too-large / wrong-type
+  // rejection. Losing the folder and the 500-character description as well is the
+  // avoidable half, and that is what this preserves.
+  const rememberUpload = () => rememberFormReplay(req, 'groupFiles', id, {
+    folder: trimmed(req.body.folder, 100),
+    description: trimmed(req.body.description, 500)
+  });
 
   if (validationStatus) {
+    rememberUpload();
     await removeUploadedFile(file);
     return res.redirect(groupSubpageRedirect(res, id, 'files', validationStatus));
   }
 
-  return requireGroupAction(req, res, (error) => (
-    groupSubpageRedirect(res, id, 'files', groupFileUploadErrorStatus(error))
-  ), async (token) => {
+  return requireGroupAction(req, res, (error) => {
+    rememberUpload();
+    return groupSubpageRedirect(res, id, 'files', groupFileUploadErrorStatus(error));
+  }, async (token) => {
     try {
       const buffer = await fs.readFile(file.filepath);
       await uploadGroupFile(token, id, {
@@ -1812,10 +1861,14 @@ router.post('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res)
   const payload = announcementPayload(req.body);
 
   if (payload.error) {
+    rememberAnnouncementForm(req, announcementFormKey(id), req.body);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', payload.error));
   }
 
-  return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'announcements', 'ann-create-failed'), async (token) => {
+  return requireGroupAction(req, res, () => {
+    rememberAnnouncementForm(req, announcementFormKey(id), req.body);
+    return groupSubpageRedirect(res, id, 'announcements', 'ann-create-failed');
+  }, async (token) => {
     await callGroup(token, 'POST', `/${id}/announcements`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', 'ann-created'));
   });
@@ -1827,10 +1880,14 @@ router.post('/:id(\\d+)/announcements/:annId(\\d+)/edit', requireAuth, asyncRout
   const payload = announcementPayload(req.body);
 
   if (payload.error) {
+    rememberAnnouncementForm(req, announcementFormKey(id, annId), req.body);
     return res.redirect(announcementEditRedirect(res, id, annId, payload.error));
   }
 
-  return requireGroupAction(req, res, announcementEditRedirect(res, id, annId, 'ann-update-failed'), async (token) => {
+  return requireGroupAction(req, res, () => {
+    rememberAnnouncementForm(req, announcementFormKey(id, annId), req.body);
+    return announcementEditRedirect(res, id, annId, 'ann-update-failed');
+  }, async (token) => {
     await callGroup(token, 'PUT', `/${id}/announcements/${annId}`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', 'ann-updated'));
   });

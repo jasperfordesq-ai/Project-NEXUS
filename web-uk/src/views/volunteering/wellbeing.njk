@@ -94,7 +94,7 @@
       <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
         {% for mood in wellbeing.moodOptions %}
           <div class="govuk-radios__item">
-            <input class="govuk-radios__input" id="mood-{{ mood.value }}" name="mood" type="radio" value="{{ mood.value }}"{% if mood.checked %} checked{% endif %}>
+            <input class="govuk-radios__input" id="mood-{{ mood.value }}" name="mood" type="radio" value="{{ mood.value }}"{% if (checkinForm.mood == mood.value) if checkinForm else mood.checked %} checked{% endif %}>
             <label class="govuk-label govuk-radios__label" for="mood-{{ mood.value }}">{{ mood.label }}</label>
           </div>
         {% endfor %}
@@ -104,7 +104,9 @@
     <div class="govuk-form-group govuk-!-margin-top-4">
       <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.wellbeing.note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
       <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.wellbeing.note_hint") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint note-info"></textarea>
+      {# Refilled after a failure; this box used to come back empty, discarding the whole
+         written check-in over a mood radio or a passing API failure. #}
+      <textarea class="govuk-textarea govuk-js-character-count" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint note-info">{% if checkinForm %}{{ checkinForm.note }}{% endif %}</textarea>
     </div>
     {% endcall %}
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.wellbeing.checkin_button") }}</button>

@@ -19,6 +19,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
 const BLOG_REACTIONS = new Set(['like', 'love', 'laugh', 'wow', 'sad', 'celebrate']);
@@ -271,6 +272,10 @@ function postIdFrom(post) {
   return positiveInteger(post.id || post.post_id || post.blog_id);
 }
 
+// One replay bucket for both blog comment forms: /blog/:slug (detail) and
+// /blog/:slug/comments post to the same handler and are keyed by the same slug.
+const BLOG_COMMENT_REPLAY = 'blogComment';
+
 function blogPostRedirect(slug, status, fragment = 'comments') {
   const suffix = fragment ? `#${fragment}` : '';
   return `/blog/${encodeURIComponent(slug)}?status=${encodeURIComponent(status)}${suffix}`;
@@ -369,6 +374,9 @@ router.get('/:slug([a-zA-Z0-9_-]+)/comments', asyncRoute(async (req, res) => {
     reactions,
     reactionLabels: reactionLabels(res.locals.t),
     reactionEmoji: BLOG_REACTION_EMOJI,
+    // Keyed on the URL slug, the same value the POST handler is given — the API's own
+    // `post.slug` can differ from what was requested, and then nothing would ever match.
+    commentForm: consumeFormReplay(req, BLOG_COMMENT_REPLAY, req.params.slug),
     statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
   });
 }));
@@ -431,6 +439,7 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
     hasLiked: post.hasLiked,
     opengraphImageUrl: post.ogImage,
     articleStructuredData: articleStructuredData(post, res.locals.tenantName || res.locals.serviceName),
+    commentForm: consumeFormReplay(req, BLOG_COMMENT_REPLAY, req.params.slug),
     statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
   });
 }, { notFoundTitle: 'Post not found' }));
@@ -443,7 +452,17 @@ async function createBlogComment(req, res, slug, redirectToPost) {
 
   const body = trimmed(req.body.body, 5000);
   const parentId = positiveInteger(req.body.parent_id);
+  // Both templates redirect on failure, so without this stash the textarea comes back
+  // empty and a long comment is simply gone. `parentId` rides along so a failed REPLY
+  // refills the reply box it came from rather than the top-level composer — the failure
+  // redirect carries no parent id of its own.
+  const rememberComment = () => rememberFormReplay(req, BLOG_COMMENT_REPLAY, slug, {
+    body,
+    parentId: redirectToPost ? null : parentId
+  });
+
   if (body === '') {
+    rememberComment();
     return redirectTo(res, redirectToPost
       ? blogPostRedirect(slug, 'comment-invalid')
       : blogCommentsRedirect(slug, 'comment-invalid'));
@@ -454,6 +473,7 @@ async function createBlogComment(req, res, slug, redirectToPost) {
     const post = await blogPostFromSlug(token, slug);
     const postId = postIdFrom(post);
     if (postId === null) {
+      rememberComment();
       status = 'comment-failed';
     } else {
       await createComment(token, {
@@ -466,6 +486,7 @@ async function createBlogComment(req, res, slug, redirectToPost) {
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
     if (isNotFound(error)) throw error;
+    rememberComment();
     status = 'comment-failed';
   }
 

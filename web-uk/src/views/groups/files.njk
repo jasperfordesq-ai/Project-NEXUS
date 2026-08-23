@@ -90,13 +90,15 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="file-folder">{{ t("govuk_alpha_groups.files.folder_label") }}</label>
       <div id="file-folder-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.folder_hint") }}</div>
-      <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" aria-describedby="file-folder-hint">
+      <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" value="{{ uploadForm.folder if uploadForm else '' }}" aria-describedby="file-folder-hint">
     </div>
 
     {% call characterCount(500, characterCountMessages, "file-description") %}<div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="file-description">{{ t("govuk_alpha_groups.files.description_label") }}</label>
       <div id="file-description-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.description_hint") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="file-description" name="description" rows="2" maxlength="500" aria-describedby="file-description-info file-description-hint"></textarea>
+      {# The chosen file cannot be restored — a browser forbids setting a file input's
+         value — but what the member wrote about it can be. #}
+      <textarea class="govuk-textarea govuk-js-character-count" id="file-description" name="description" rows="2" maxlength="500" aria-describedby="file-description-info file-description-hint">{% if uploadForm %}{{ uploadForm.description }}{% endif %}</textarea>
     </div>{% endcall %}
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.files.submit_upload") }}</button>

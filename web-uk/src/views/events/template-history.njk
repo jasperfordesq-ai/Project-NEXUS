@@ -48,7 +48,7 @@
 
   {% if pagination.has_more and pagination.next_cursor %}
     <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ t('event_templates.audit_pagination_label') }}">
-      <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?cursor=' + (pagination.next_cursor | urlencode) + '&filter=' + filter + (('&library_cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}"><span class="govuk-pagination__link-title">{{ t("event_templates.audit_load_more") }}</span></a></div>
+      <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?cursor=' + (pagination.next_cursor | urlencode) + '&filter=' + filter + (('&library_cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}"><span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("event_templates.audit_load_more") }}</span></a></div>
     </nav>
   {% endif %}
     </div>

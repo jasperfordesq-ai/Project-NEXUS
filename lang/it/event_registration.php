@@ -77,6 +77,7 @@ return [
             'create_title' => 'Crea modulo di registrazione',
             'edit_title' => 'Modifica la bozza del modulo di registrazione',
             'name' => 'Nome del modulo',
+            'questions_required' => 'Attiva almeno una domanda',
             'description' => 'Descrizione',
             'rules_title' => 'Versionato e attento alla privacy',
             'rules_description' => 'Le versioni pubblicate sono immutabili. Di ogni domanda vengono registrati lo scopo, la classificazione, il periodo di conservazione e l\'eventuale regola di visualizzazione condizionale.',

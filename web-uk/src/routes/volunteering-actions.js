@@ -13,6 +13,7 @@ const {
   uploadVolunteerCredential
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { readDate, splitDate, dateParts } = require('../lib/date-input');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -2062,6 +2063,8 @@ async function renderSafeguarding(req, res) {
     subView,
     trainings,
     incidents,
+    trainingForm: consumeFormReplay(req, 'volunteering', 'training'),
+    incidentForm: consumeFormReplay(req, 'volunteering', 'incidents'),
     trainingTypes: SAFEGUARDING_TRAINING_TYPES.map((type) => ({
       ...type,
       label: res.locals.t(`govuk_alpha_volunteering.safeguarding.training_type_${type.value}`)
@@ -2496,6 +2499,7 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     wellbeing,
     loadError,
+    checkinForm: consumeFormReplay(req, 'volunteering', 'wellbeing'),
     status: wellbeingStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2524,6 +2528,7 @@ router.get('/donations', asyncRoute(async (req, res) => {
     dashboard,
     tenantCurrency: tenantCurrency(req),
     loadError,
+    donateForm: consumeFormReplay(req, 'volunteering', 'donations'),
     status: donationStatus(trimmed(req.query.status), trimmed(req.query.donate_error), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2551,6 +2556,7 @@ router.get('/expenses', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     dashboard,
     loadError,
+    expenseForm: consumeFormReplay(req, 'volunteering', 'expenses'),
     status: expenseStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2959,6 +2965,13 @@ router.post('/credentials/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 
 router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
   const mood = positiveInteger(req.body.mood);
+  // The note is a 500-character box; both failure exits used to blank it, so a written
+  // check-in was thrown away over a mood radio or a passing API failure.
+  rememberFormReplay(req, 'volunteering', 'wellbeing', {
+    mood: trimmed(req.body.mood),
+    note: trimmed(req.body.note, 500)
+  });
+
   if (mood === null || mood < 1 || mood > 5) {
     return redirectTo(res, '/volunteering/wellbeing?status=mood-invalid');
   }
@@ -2972,6 +2985,8 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
       mood,
       note: trimmed(req.body.note, 500)
     },
+    // Nothing to replay after a success: the GET clears the stash either way, and on the
+    // success path it is simply discarded unread.
     '/volunteering/wellbeing?status=checkin-saved',
     '/volunteering/wellbeing?status=checkin-failed'
   );
@@ -2979,6 +2994,15 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
 
 router.post('/donations', asyncRoute(async (req, res) => {
   const amount = decimalNumber(req.body.amount);
+  // A rejected amount used to wipe the 500-character message with it.
+  rememberFormReplay(req, 'volunteering', 'donations', {
+    amount: trimmed(req.body.amount),
+    givingDayId: trimmed(req.body.giving_day_id),
+    paymentMethod: trimmed(req.body.payment_method),
+    message: trimmed(req.body.message, 500),
+    isAnonymous: checked(req.body.is_anonymous)
+  });
+
   if (amount <= 0) {
     return redirectTo(res, '/volunteering/donations?status=donate-failed&donate_error=amount#donate');
   }
@@ -3064,6 +3088,16 @@ router.post('/expenses', asyncRoute(async (req, res) => {
   const organizationId = positiveInteger(req.body.organization_id);
   const amount = decimalNumber(req.body.amount);
   const description = trimmed(req.body.description);
+  // Both selects and all three typed fields came back blank on any of the four failure
+  // exits, so a bad amount made the member retype the whole claim.
+  rememberFormReplay(req, 'volunteering', 'expenses', {
+    organizationId: trimmed(req.body.organization_id),
+    expenseType: trimmed(req.body.expense_type),
+    amount: trimmed(req.body.amount),
+    currency: trimmed(req.body.currency, 10),
+    description
+  });
+
   if (organizationId === null) {
     return redirectTo(res, '/volunteering/expenses?status=expense-org-required');
   }
@@ -3098,6 +3132,15 @@ router.post('/training', asyncRoute(async (req, res) => {
   const trainingType = trimmed(req.body.training_type);
   const trainingName = trimmed(req.body.training_name);
   const completedAt = readDate(req.body, 'completed_at').value || '';
+  // Eight typed fields including two date triples, all blanked on every failure exit.
+  rememberFormReplay(req, 'volunteering', 'training', {
+    trainingType,
+    trainingName,
+    provider: trimmed(req.body.provider, 255),
+    completedAtParts: dateParts(req.body, 'completed_at'),
+    expiresAtParts: dateParts(req.body, 'expires_at')
+  });
+
   if (trainingType === '') {
     return redirectTo(res, '/volunteering/training?status=training-type-required&tab=training');
   }
@@ -3118,7 +3161,11 @@ router.post('/training', asyncRoute(async (req, res) => {
       training_name: trainingName,
       provider: trimmed(req.body.provider) || null,
       completed_at: completedAt,
-      expires_at: trimmed(req.body.expires_at) || null
+      // 🔴 Was `trimmed(req.body.expires_at)`, which is ALWAYS undefined: the template
+      // posts the GOV.UK three-field date pattern, so a typed expiry was silently
+      // discarded and every training record was saved as never expiring. Read the same
+      // way `completed_at` above is read.
+      expires_at: readDate(req.body, 'expires_at').value || null
     },
     '/volunteering/training?status=training-added&tab=training',
     '/volunteering/training?status=training-failed&tab=training'
@@ -3128,6 +3175,16 @@ router.post('/training', asyncRoute(async (req, res) => {
 router.post('/incidents', asyncRoute(async (req, res) => {
   const title = trimmed(req.body.title);
   const description = trimmed(req.body.description);
+  // 🔴 The worst case on this page. The `description.length < 20` check below rejected and
+  // then DISCARDED up to 2,000 characters of a safeguarding report — something a member
+  // may not be able to write again from memory.
+  rememberFormReplay(req, 'volunteering', 'incidents', {
+    title,
+    description,
+    severity: trimmed(req.body.severity),
+    category: trimmed(req.body.category, 100)
+  });
+
   if (title === '') {
     return redirectTo(res, '/volunteering/incidents?status=incident-title-required&tab=incidents');
   }

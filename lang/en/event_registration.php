@@ -77,6 +77,7 @@ return [
             'create_title' => 'Create registration form',
             'edit_title' => 'Edit registration form draft',
             'name' => 'Form name',
+            'questions_required' => 'Enable at least one question',
             'description' => 'Description',
             'rules_title' => 'Versioned and privacy-aware',
             'rules_description' => 'Published versions are immutable. Each question records its purpose, classification, retention period and any conditional display rule.',

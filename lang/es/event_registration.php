@@ -77,6 +77,7 @@ return [
             'create_title' => 'Crear formulario de registro',
             'edit_title' => 'Editar borrador del formulario de registro',
             'name' => 'Nombre del formulario',
+            'questions_required' => 'Active al menos una pregunta',
             'description' => 'Descripción',
             'rules_title' => 'Versionado y consciente de la privacidad',
             'rules_description' => 'Las versiones publicadas son inmutables. Cada pregunta registra su propósito, clasificación, período de retención y cualquier regla de visualización condicional.',

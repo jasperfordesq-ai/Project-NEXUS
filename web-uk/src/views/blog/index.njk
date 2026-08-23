@@ -75,7 +75,7 @@
               {% endif %}
               {% set nextHref = nextHref + '&cursor=' + (nextCursor | urlencode) %}
               <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
-                <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+                <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("actions.load_more") }}</span>
                 <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                   <path d="m8.107-0.0078125-1.4136 1.414 4.55 4.5488h-12.846v2h12.846l-4.55 4.5488 1.4136 1.414 6.9706-6.9627z"></path>
                 </svg>

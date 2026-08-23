@@ -22,13 +22,22 @@
 
       {% if statusBanner %}
         {% if statusBanner.type == "error" %}
+          {# 🔴 This was one hardcoded `href="#amount"` for every error, so "Enter a
+             description" sent the member to the Amount box and nothing marked Description.
+             The route now says which field each error belongs to; a whole-page condition
+             (not enabled, insufficient balance, a safeguarding restriction, an API
+             failure) arrives as `formMessage` and is written as a sentence, because a
+             summary list is a list of links to things the member can fix. #}
           <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
             <div role="alert">
               <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
               <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                  <li><a href="#amount">{{ statusBanner.message }}</a></li>
-                </ul>
+                {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+                {% if errorList and errorList.length %}
+                  <ul class="govuk-list govuk-error-summary__list">
+                    {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+                  </ul>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -76,16 +85,18 @@
           <input type="hidden" name="receiver_tenant_id" value="{{ member.tenantId }}">
           <input type="hidden" name="idempotency_key" value="{{ transferIdempotencyKey }}">
 
-          <div class="govuk-form-group">
+          <div class="govuk-form-group{% if fieldErrors.amount %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--m" for="amount">{{ t("fed2.transfer.amount_label") }}</label>
             <div id="amount-hint" class="govuk-hint">{{ t("fed2.transfer.amount_hint") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="amount" name="amount" type="number" inputmode="numeric" min="1" max="100" step="1" aria-describedby="amount-hint">
+            {% if fieldErrors.amount %}<p id="amount-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.amount }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-5{% if fieldErrors.amount %} govuk-input--error{% endif %}" id="amount" name="amount" type="number" inputmode="numeric" min="1" max="100" step="1" aria-describedby="amount-hint{% if fieldErrors.amount %} amount-error{% endif %}">
           </div>
 
-          <div class="govuk-form-group">
+          <div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--m" for="description">{{ t("fed2.transfer.description_field_label") }}</label>
             <div id="description-hint" class="govuk-hint">{{ t("fed2.transfer.description_field_hint") }}</div>
-            <input class="govuk-input govuk-!-width-two-thirds" id="description" name="description" type="text" maxlength="500" aria-describedby="description-hint">
+            {% if fieldErrors.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.description }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if fieldErrors.description %} govuk-input--error{% endif %}" id="description" name="description" type="text" maxlength="500" aria-describedby="description-hint{% if fieldErrors.description %} description-error{% endif %}">
           </div>
 
           <div class="govuk-button-group">

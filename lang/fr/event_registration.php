@@ -77,6 +77,7 @@ return [
             'create_title' => 'Créer un formulaire d\'inscription',
             'edit_title' => 'Modifier le brouillon du formulaire d\'inscription',
             'name' => 'Nom du formulaire',
+            'questions_required' => 'Activez au moins une question',
             'description' => 'Descriptif',
             'rules_title' => 'Versionné et respectueux de la confidentialité',
             'rules_description' => 'Les versions publiées sont immuables. Chaque question enregistre son objectif, sa classification, sa durée de conservation et toute règle d\'affichage conditionnelle.',

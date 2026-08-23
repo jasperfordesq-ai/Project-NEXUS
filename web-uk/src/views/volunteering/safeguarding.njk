@@ -90,7 +90,7 @@
         <select class="govuk-select{% if status.field == 'training_type' %} govuk-select--error{% endif %}" id="training_type" name="training_type"{% if status.field == "training_type" %} aria-describedby="training-type-error"{% endif %}>
           <option value="">{{ t("govuk_alpha_volunteering.safeguarding.training_type_choose") }}</option>
           {% for type in trainingTypes %}
-            <option value="{{ type.value }}">{{ type.label }}</option>
+            <option value="{{ type.value }}"{% if trainingForm and trainingForm.trainingType == type.value %} selected{% endif %}>{{ type.label }}</option>
           {% endfor %}
         </select>
       </div>
@@ -100,19 +100,22 @@
         {% if status.field == "training_name" %}
           <p id="training-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
         {% endif %}
-        <input class="govuk-input{% if status.field == 'training_name' %} govuk-input--error{% endif %}" id="training_name" name="training_name" type="text" maxlength="255"{% if status.field == "training_name" %} aria-describedby="training-name-error"{% endif %}>
+        <input class="govuk-input{% if status.field == 'training_name' %} govuk-input--error{% endif %}" id="training_name" name="training_name" type="text" maxlength="255" value="{{ trainingForm.trainingName if trainingForm else '' }}"{% if status.field == "training_name" %} aria-describedby="training-name-error"{% endif %}>
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="provider">{{ t("govuk_alpha_volunteering.safeguarding.provider_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
-        <input class="govuk-input" id="provider" name="provider" type="text" maxlength="255">
+        <input class="govuk-input" id="provider" name="provider" type="text" maxlength="255" value="{{ trainingForm.provider if trainingForm else '' }}">
       </div>
 
+      {# `value` echoes back what the member typed, including an unreal date — the only
+         way they can see what needs correcting. #}
       {{ nexusDateInput({
   name: "completed_at",
   legend: t("govuk_alpha_volunteering.safeguarding.completed_at_label"),
   legendClasses: "govuk-fieldset__legend--s",
-  hint: t("web_uk.date_input.hint")
+  hint: t("web_uk.date_input.hint"),
+  value: trainingForm.completedAtParts if trainingForm else undefined
 }, t) }}
 
       {#
@@ -125,7 +128,8 @@
         name: "expires_at",
         legend: t("govuk_alpha_volunteering.safeguarding.expires_at_label"),
         legendClasses: "govuk-fieldset__legend--s",
-        hint: t("govuk_alpha_volunteering.shared.optional") ~ " — " ~ t("web_uk.date_input.hint")
+        hint: t("govuk_alpha_volunteering.shared.optional") ~ " — " ~ t("web_uk.date_input.hint"),
+        value: trainingForm.expiresAtParts if trainingForm else undefined
       }, t) }}
 
       <button type="submit" class="govuk-button govuk-!-margin-top-2">{{ t("govuk_alpha_volunteering.safeguarding.submit_training") }}</button>
@@ -182,7 +186,7 @@
         {% if status.field == "title" %}
           <p id="incident-title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
         {% endif %}
-        <input class="govuk-input{% if status.field == 'title' %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255"{% if status.field == "title" %} aria-describedby="incident-title-error"{% endif %}>
+        <input class="govuk-input{% if status.field == 'title' %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255" value="{{ incidentForm.title if incidentForm else '' }}"{% if status.field == "title" %} aria-describedby="incident-title-error"{% endif %}>
       </div>
 
       {% call characterCount(2000, characterCountMessages, "description") %}
@@ -192,7 +196,10 @@
         {% if status.field == "description" %}
           <p id="incident-desc-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
         {% endif %}
-        <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %} description-info"></textarea>
+        {# 🔴 The worst input loss on the whole frontend before this: the "at least 20
+           characters" check rejected the submission and then DISCARDED up to 2,000
+           characters of a safeguarding report the member may not be able to write again. #}
+        <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %} description-info">{% if incidentForm %}{{ incidentForm.description }}{% endif %}</textarea>
       </div>
       {% endcall %}
 
@@ -202,7 +209,7 @@
           <div class="govuk-radios govuk-radios--inline">
             {% for severity in severities %}
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="severity-{{ severity.value }}" name="severity" type="radio" value="{{ severity.value }}"{% if severity.value == "low" %} checked{% endif %}>
+                <input class="govuk-radios__input" id="severity-{{ severity.value }}" name="severity" type="radio" value="{{ severity.value }}"{% if (incidentForm.severity == severity.value) if incidentForm else (severity.value == "low") %} checked{% endif %}>
                 <label class="govuk-label govuk-radios__label" for="severity-{{ severity.value }}">{{ severity.label }}</label>
               </div>
             {% endfor %}
@@ -212,7 +219,7 @@
 
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="category">{{ t("govuk_alpha_volunteering.safeguarding.category_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
-        <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100">
+        <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100" value="{{ incidentForm.category if incidentForm else '' }}">
       </div>
 
       <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-top-2">{{ t("govuk_alpha_volunteering.safeguarding.submit_incident") }}</button>

@@ -171,7 +171,12 @@
                 <form method="post" action="{{ urlFor('/resources/' + (resource.id | string) + '/react') }}" class="nexus-alpha-reaction-form govuk-!-display-inline">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="emoji" value="like">
-                  <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_resources.social.like_aria', { title: resource.title }) }}">
+                  {# `aria-pressed` plus the active class, exactly as resources/comments.njk
+                     does it. Without them this button looked and announced identically
+                     whether or not the member had already liked the resource. The
+                     accessible name still just says which resource: with a real toggle
+                     button, the pressed state is carried by aria-pressed, not by the name. #}
+                  <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if resource.userReaction == 'like' %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{% if resource.userReaction == 'like' %}true{% else %}false{% endif %}" aria-label="{{ t('govuk_alpha_resources.social.like_aria', { title: resource.title }) }}">
                     <span aria-hidden="true">&#128077;</span>
                     {{ t("govuk_alpha_resources.social.like") }}{% if resource.likeCount > 0 %} ({{ formatLocaleNumber(resource.likeCount) }}){% endif %}
                   </button>

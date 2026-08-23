@@ -1380,15 +1380,58 @@ function consumeCouponFormState(req, key) {
   return state && typeof state === 'object' ? state : null;
 }
 
+// Which FIELD each coupon validation error belongs to.
+//
+// 🔴 Every summary item used to be `href="#coupon_title"`. A member who typed a bad
+// discount value or an unreal expiry date was sent to the Title box, and the
+// `#discount_value` field — which exists — was never linked at all. The expiry error is
+// worse still: the GOV.UK date input has real sub-field targets and none was used. Keys
+// come from `couponValidationErrors` in routes/marketplace-actions.js; values are the
+// element ids in views/marketplace/coupon-form.njk.
+const COUPON_ERROR_FIELDS = {
+  'govuk_alpha_commerce.coupons.error_title': 'coupon_title',
+  'govuk_alpha_commerce.coupons.error_discount_value': 'discount_value',
+  'web_uk.date_input.date_invalid': 'valid_until-day'
+};
+
+function couponErrorMessage(req, error) {
+  if (error && typeof error === 'object' && error.key) {
+    return translateMarketplaceMessage(req, error.key, error.key);
+  }
+  if (error && typeof error === 'object') return trimmed(error.text, 2000);
+  return trimmed(error, 2000);
+}
+
+/**
+ * Split the stashed coupon errors into per-field errors and one page-level message.
+ *
+ * An API rejection arrives as `{ text }` with no key, so it has no field — it becomes the
+ * page-level sentence rather than a link-less list item. See `listingFormErrors` above for
+ * why that distinction matters.
+ */
 function couponFormErrors(req, state) {
-  if (!Array.isArray(state?.errors)) return [];
-  return state.errors.map((error) => {
-    if (error && typeof error === 'object' && error.key) {
-      return translateMarketplaceMessage(req, error.key, error.key);
+  const errors = Array.isArray(state?.errors) ? state.errors : [];
+  const errorList = [];
+  const fieldErrors = {};
+  let formMessage = '';
+
+  errors.forEach((error) => {
+    const message = couponErrorMessage(req, error);
+    if (!message) return;
+    const field = error && typeof error === 'object' && error.key
+      ? COUPON_ERROR_FIELDS[error.key]
+      : undefined;
+    if (!field) {
+      if (formMessage === '') formMessage = message;
+      return;
     }
-    if (error && typeof error === 'object') return trimmed(error.text, 2000);
-    return trimmed(error, 2000);
-  }).filter(Boolean);
+    if (fieldErrors[field] === undefined) {
+      fieldErrors[field] = message;
+      errorList.push({ text: message, href: `#${field}` });
+    }
+  });
+
+  return { errorList, fieldErrors, formMessage };
 }
 
 function couponDiscountTypeOptions(req) {
@@ -1429,11 +1472,41 @@ function consumeOnboardingFormState(req) {
   return state && typeof state === 'object' ? state : null;
 }
 
+// Which FIELD each seller-onboarding error belongs to.
+//
+// 🔴 views/marketplace/onboarding.njk linked every message to `#display_name`, so a
+// business seller who left the BUSINESS NAME blank was pointed at the display-name box and
+// the business-name field was never reachable from the summary at all. With both blank, the
+// summary showed two items aiming at the same field.
+const ONBOARDING_ERROR_FIELDS = {
+  'govuk_alpha_commerce.onboarding.error_display_name': 'display_name',
+  'govuk_alpha_commerce.onboarding.error_business_name': 'business_name'
+};
+
+// Page order, so the summary lists errors the way the member reads the form.
+const ONBOARDING_FIELD_ORDER = ['display_name', 'business_name'];
+
 function onboardingFormErrors(req, state) {
-  if (!Array.isArray(state?.errorKeys)) return [];
-  return state.errorKeys
-    .map((key) => translateMarketplaceMessage(req, key, key))
-    .filter(Boolean);
+  const keys = Array.isArray(state?.errorKeys) ? state.errorKeys : [];
+  const fieldErrors = {};
+  let formMessage = '';
+
+  keys.forEach((key) => {
+    const message = translateMarketplaceMessage(req, key, key);
+    if (!message) return;
+    const field = ONBOARDING_ERROR_FIELDS[key];
+    if (!field) {
+      if (formMessage === '') formMessage = message;
+      return;
+    }
+    if (fieldErrors[field] === undefined) fieldErrors[field] = message;
+  });
+
+  const errorList = ONBOARDING_FIELD_ORDER
+    .filter((field) => fieldErrors[field] !== undefined)
+    .map((field) => ({ text: fieldErrors[field], href: `#${field}` }));
+
+  return { errorList, fieldErrors, formMessage };
 }
 
 function reportFormSessionKey(req, id) {
@@ -1460,12 +1533,56 @@ function reportFormErrors(req, state) {
   }));
 }
 
+// Which FIELD each listing validation error belongs to.
+//
+// 🔴 The form used to render one hardcoded `href="#title"` for every message and no
+// field-level error at all, so a member who left the price blank was told "Enter a price"
+// under a link that jumped to the Title box, with nothing on the page marking Price. GDS
+// requires the summary to link to the field at fault and the field itself to be marked.
+// The keys come from `listingValidationErrorKeys` in routes/marketplace-actions.js; the
+// values are the element ids in views/marketplace/form.njk.
+const LISTING_ERROR_FIELDS = {
+  'govuk_alpha_commerce.listing_form.error_title': 'title',
+  'govuk_alpha_commerce.listing_form.error_description': 'description',
+  'govuk_alpha_commerce.listing_form.error_price': 'price'
+};
+
+/**
+ * Split the stashed error keys into per-field errors and one page-level message.
+ *
+ * `errorList` keeps `errorKeys` order, which is field order down the page — GDS requires
+ * the summary to list errors in the order the fields appear.
+ *
+ * A whole-form failure (the API refused the save, or the session state was lost) is NOT a
+ * field error: an error summary list is a list of LINKS to things to fix, so a page-level
+ * failure is rendered as a plain sentence in the summary body instead of a link-less item
+ * a keyboard user can land on and get nowhere from.
+ */
 function listingFormErrors(req, state, status) {
-  if (Array.isArray(state?.errorKeys) && state.errorKeys.length > 0) {
-    return state.errorKeys.map((key) => translateMarketplaceMessage(req, key, key));
+  const keys = Array.isArray(state?.errorKeys) ? state.errorKeys : [];
+  const errorList = [];
+  const fieldErrors = {};
+  let formMessage = '';
+
+  keys.forEach((key) => {
+    const message = translateMarketplaceMessage(req, key, key);
+    const field = LISTING_ERROR_FIELDS[key];
+    if (!field) {
+      if (formMessage === '') formMessage = message;
+      return;
+    }
+    if (fieldErrors[field] === undefined) {
+      fieldErrors[field] = message;
+      errorList.push({ text: message, href: `#${field}` });
+    }
+  });
+
+  if (errorList.length === 0 && formMessage === '') {
+    const entry = statusEntry(req, status);
+    if (entry?.type === 'error') formMessage = entry.message;
   }
-  const entry = statusEntry(req, status);
-  return entry?.type === 'error' ? [entry.message] : [];
+
+  return { errorList, fieldErrors, formMessage };
 }
 
 router.get('/', asyncRoute(async (req, res) => {
@@ -1511,7 +1628,7 @@ router.get('/create', asyncRoute(async (req, res) => {
       listing: { ...blankListing(defaultCurrency), ...(formState?.values || {}) },
       categories,
       action: '/marketplace/create',
-      formErrors: listingFormErrors(req, formState, req.query.status),
+      ...listingFormErrors(req, formState, req.query.status),
       ...formOptions()
     });
   } catch (error) {
@@ -1824,7 +1941,7 @@ router.get('/onboarding', asyncRoute(async (req, res) => {
       ...onboarding,
       profile: { ...onboarding.profile, ...(formState?.profile || {}) },
       address: { ...onboarding.address, ...(formState?.address || {}) },
-      formErrors: onboardingFormErrors(req, formState),
+      ...onboardingFormErrors(req, formState),
       status: ['onboarding-complete', 'onboarding-failed'].includes(statusKey)
         ? statusEntry(req, statusKey)
         : null
@@ -1925,7 +2042,7 @@ router.get('/coupons/new', asyncRoute(async (req, res) => {
     action: '/marketplace/coupons/new',
     discountTypes: couponDiscountTypeOptions(req),
     statuses: couponStatusOptions(req),
-    formErrors: couponFormErrors(req, formState),
+    ...couponFormErrors(req, formState),
     status: null
   });
 }));
@@ -1949,7 +2066,7 @@ router.get('/coupons/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       action: `/marketplace/coupons/${coupon.id}/update`,
       discountTypes: couponDiscountTypeOptions(req),
       statuses: couponStatusOptions(req),
-      formErrors: couponFormErrors(req, formState),
+      ...couponFormErrors(req, formState),
       status: ['coupon-saved', 'coupon-save-failed'].includes(statusKey)
         ? statusEntry(req, statusKey)
         : null
@@ -1979,7 +2096,7 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       listing: { ...listing, ...(formState?.values || {}) },
       categories,
       action: `/marketplace/${listing.id}/update`,
-      formErrors: listingFormErrors(req, formState, req.query.status),
+      ...listingFormErrors(req, formState, req.query.status),
       ...formOptions()
     });
   } catch (error) {

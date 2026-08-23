@@ -77,6 +77,7 @@ return [
             'create_title' => '登録フォームを作成する',
             'edit_title' => '登録フォームの下書きを編集する',
             'name' => 'フォーム名',
+            'questions_required' => '少なくとも1つの質問を有効にしてください',
             'description' => '説明',
             'rules_title' => 'バージョン管理とプライバシー意識',
             'rules_description' => '公開されたバージョンは不変です。各質問には、その目的、分類、保存期間、および条件付き表示ルールが記録されます。',

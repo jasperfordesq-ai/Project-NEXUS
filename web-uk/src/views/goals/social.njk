@@ -38,7 +38,9 @@
               {% call characterCount(5000, characterCountMessages, "reply-" + (comment.id | string)) %}
               <div class="govuk-form-group">
                 <label class="govuk-label govuk-label--s" for="reply-{{ comment.id }}">{{ t("govuk_alpha_goals.social.reply_label") }}</label>
-                <textarea class="govuk-textarea govuk-js-character-count" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required aria-describedby="reply-{{ comment.id }}-info"></textarea>
+                {# A failed reply refills the box it came from — `commentForm.parentId`
+                   records which one, because the redirect does not carry it. #}
+                <textarea class="govuk-textarea govuk-js-character-count" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required aria-describedby="reply-{{ comment.id }}-info">{% if commentForm and commentForm.parentId == comment.id %}{{ commentForm.body }}{% endif %}</textarea>
               </div>
               {% endcall %}
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_goals.social.reply_submit") }}</button>
@@ -169,7 +171,7 @@
         {% if commentInvalid %}
           <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span> {{ t("govuk_alpha_goals.states.comment-invalid") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea{% if commentInvalid %} govuk-textarea--error{% endif %} govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if commentInvalid %} body-error{% endif %} body-info"></textarea>
+        <textarea class="govuk-textarea{% if commentInvalid %} govuk-textarea--error{% endif %} govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if commentInvalid %} body-error{% endif %} body-info">{% if commentForm and not commentForm.parentId %}{{ commentForm.body }}{% endif %}</textarea>
       </div>
       {% endcall %}
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_goals.social.comment_submit") }}</button>

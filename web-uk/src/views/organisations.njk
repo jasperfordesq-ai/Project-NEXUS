@@ -28,25 +28,22 @@
         <p class="govuk-notification-banner__heading">{{ t("govuk_alpha.organisations.states.org-submitted") }}</p>
       </div>
     </div>
-  {% elseif status == "org-invalid" %}
+  {% elseif (errorList and errorList.length) or formMessage %}
+    {# 🔴 Both branches used to be one hardcoded `href="#name"`. `org-invalid` collapses
+       five different field errors, so a member whose DESCRIPTION was too short, or who had
+       not ticked the terms box, was sent to the organisation-name field with nothing
+       marking the real problem. And `org-failed` is an API failure — pointing that at a
+       field says the field is wrong when it is not, so it is now a plain sentence. #}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            <li><a href="#name">{{ t("govuk_alpha.organisations.states.org-invalid") }}</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  {% elseif status == "org-failed" %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
-      <div role="alert">
-        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
-        <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            <li><a href="#name">{{ t("govuk_alpha.organisations.states.org-failed") }}</a></li>
-          </ul>
+          {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+          {% if errorList and errorList.length %}
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+            </ul>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -87,27 +84,31 @@
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-column-two-thirds">
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors["name"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="name">{{ t("govuk_alpha.organisations.name_label") }}</label>
-        <input class="govuk-input" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}" required>
+        {% if fieldErrors["name"] %}<p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["name"] }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors["name"] %} govuk-input--error{% endif %}" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}"{% if fieldErrors["name"] %} aria-describedby="name-error"{% endif %} required>
       </div>
 
       {% call characterCount(2000, characterCountMessages, "description") %}
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors["description"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="description">{{ t("govuk_alpha.organisations.description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.organisations.description_hint") }}</div>
-        <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint description-info" required>{{ values.description or '' }}</textarea>
+        {% if fieldErrors["description"] %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["description"] }}</p>{% endif %}
+        <textarea class="govuk-textarea govuk-js-character-count{% if fieldErrors["description"] %} govuk-textarea--error{% endif %}" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint{% if fieldErrors["description"] %} description-error{% endif %} description-info" required>{{ values.description or '' }}</textarea>
       </div>
       {% endcall %}
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors["email"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="email">{{ t("govuk_alpha.organisations.email_label") }}</label>
-        <input class="govuk-input" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" required>
+        {% if fieldErrors["email"] %}<p id="email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["email"] }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors["email"] %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}"{% if fieldErrors["email"] %} aria-describedby="email-error"{% endif %} required>
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors["website"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="website">{{ t("govuk_alpha.organisations.website_label") }}</label>
-        <input class="govuk-input" id="website" name="website" type="url" inputmode="url" autocomplete="url" value="{{ values.website or '' }}">
+        {% if fieldErrors["website"] %}<p id="website-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["website"] }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors["website"] %} govuk-input--error{% endif %}" id="website" name="website" type="url" inputmode="url" autocomplete="url" value="{{ values.website or '' }}"{% if fieldErrors["website"] %} aria-describedby="website-error"{% endif %}>
       </div>
 
       <div class="govuk-inset-text">
@@ -121,9 +122,10 @@
         </ul>
       </div>
 
-      <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset">
+      <div class="govuk-form-group{% if fieldErrors["agreed_terms"] %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset"{% if fieldErrors["agreed_terms"] %} aria-describedby="agreed_terms-error"{% endif %}>
           <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha.organisations.terms_heading") }}</legend>
+          {% if fieldErrors["agreed_terms"] %}<p id="agreed_terms-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["agreed_terms"] }}</p>{% endif %}
           <div class="govuk-checkboxes" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
               <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %} required>

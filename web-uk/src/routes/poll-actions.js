@@ -406,18 +406,69 @@ function likeStatusFrom(result) {
   return data && data.action === 'unliked' ? 'poll-unliked' : 'poll-liked';
 }
 
+/**
+ * Per-field errors for the poll create form.
+ *
+ * 🔴 The summary was one hardcoded `href="#poll-question"` for every error, so "Enter a
+ * real date" and "The closing date must be in the future" both moved focus to the QUESTION
+ * box — a page about the closing date sending the member somewhere else entirely. The date
+ * group also already accepted `errorMessage`/`errorFields` and was never given them.
+ *
+ * 🔴 `poll-create-failed` is emitted for TWO different things: the local validation check
+ * (no question, or fewer than two options) and an API failure. They need different
+ * treatment, so which one it was is recovered from the stashed form: if the submission
+ * would still fail validation, it was validation; otherwise the API refused it and the
+ * message becomes a page-level sentence rather than a link to a field that is fine.
+ */
+function pollCreateFormErrors(form, status, t) {
+  const banner = pollCreateStatusBanner(status, t);
+  if (!banner || banner.type !== 'error') return { errorList: [], fieldErrors: {}, formMessage: '' };
+
+  const value = trimmed(status);
+  if (value === 'poll-expires-invalid' || value === 'poll-expires-past') {
+    return {
+      errorList: [{ text: banner.message, href: '#poll-expires-day' }],
+      fieldErrors: { expires_at: banner.message },
+      formMessage: ''
+    };
+  }
+
+  const question = trimmed(form && form.question);
+  // `consumePollForm` exposes the raw positional option boxes as `options`.
+  const filledOptions = (Array.isArray(form && form.options) ? form.options : [])
+    .filter((option) => trimmed(option) !== '');
+
+  const errorList = [];
+  const fieldErrors = {};
+  if (question === '') {
+    errorList.push({ text: banner.message, href: '#poll-question' });
+    fieldErrors.question = banner.message;
+  }
+  if (filledOptions.length < 2) {
+    errorList.push({ text: banner.message, href: '#poll-option-1' });
+    fieldErrors.options = banner.message;
+  }
+  if (errorList.length > 0) return { errorList, fieldErrors, formMessage: '' };
+
+  // Nothing is wrong with the input, so this was the API refusing the save.
+  return { errorList: [], fieldErrors: {}, formMessage: banner.message };
+}
+
 router.get('/parity/create', asyncRoute(async (req, res) => {
   const token = requirePollAuth(req, res);
   if (!token) return undefined;
 
   const categories = categoriesFrom(await getPollCategories(token));
+  const form = consumePollForm(req, true);
+  const status = req.query && req.query.status;
   return res.render('polls/create', {
     title: res.locals.t('govuk_alpha_gamification.poll_create.title'),
     activeNav: 'explore',
     categories,
     minDate: tomorrowDate(),
-    form: consumePollForm(req, true),
-    statusBanner: pollCreateStatusBanner(req.query && req.query.status, res.locals.t)
+    form,
+    statusBanner: pollCreateStatusBanner(status, res.locals.t),
+    ...pollCreateFormErrors(form, status, res.locals.t)
   });
 }));
 

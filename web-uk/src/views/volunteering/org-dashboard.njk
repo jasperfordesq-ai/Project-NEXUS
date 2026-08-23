@@ -22,13 +22,17 @@
     </div>
   {% endif %}
 
+  {# A pending-approval STATUS is information, not a consequence of an action the
+     member is about to take, so it is a notification banner rather than the
+     yellow warning-text exclamation. #}
   {% if not dashboard.isApproved %}
-    <div class="govuk-warning-text">
-      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-      <strong class="govuk-warning-text__text">
-        <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
-        {{ t("govuk_alpha_volunteering.org_dashboard.awaiting_approval") }}
-      </strong>
+    <div class="govuk-notification-banner" role="region" aria-labelledby="org-approval-banner-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="org-approval-banner-title">{{ t("states.important") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_volunteering.org_dashboard.awaiting_approval") }}</p>
+      </div>
     </div>
   {% endif %}
 

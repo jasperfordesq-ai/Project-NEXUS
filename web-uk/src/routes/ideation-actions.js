@@ -145,6 +145,19 @@ function storeIdeaForm(req, challengeId, body) {
   };
 }
 
+// The comment box on an idea. It came back EMPTY after any failure, so a member who
+// wrote a long comment on someone's idea lost it outright. Keyed by challenge:idea so a
+// failure on one idea cannot pre-fill the box on another.
+function storeIdeaCommentForm(req, challengeId, ideaId, body) {
+  if (!req.session) return;
+  req.session.ideationIdeaCommentForm = {
+    formKey: `${challengeId}:${ideaId}`,
+    values: {
+      comment_body: String(body.comment_body || body.body || '')
+    }
+  };
+}
+
 function storeCampaignForm(req, formKey, body) {
   if (!req.session) return;
   req.session.ideationCampaignForm = {
@@ -576,7 +589,8 @@ router.post('/:id(\\d+)/ideas/:ideaId(\\d+)/comments', asyncRoute(async (req, re
     `/ideation-ideas/${ideaId}/comments`,
     { body: trimmed(req.body.comment_body || req.body.body, 5000) },
     ideaRedirect(id, ideaId, 'comment-added', '#comments'),
-    ideaRedirect(id, ideaId, 'comment-failed', '#comments')
+    ideaRedirect(id, ideaId, 'comment-failed', '#comments'),
+    () => storeIdeaCommentForm(req, id, ideaId, req.body)
   );
 }));
 

@@ -92,7 +92,7 @@
         <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint{% if status and status.field == 'organization_id' %} organization_id-error{% endif %}" required>
           <option value="">{{ t("govuk_alpha_volunteering.expenses.org_select") }}</option>
           {% for organization in dashboard.organizations %}
-            <option value="{{ organization.id }}">{{ organization.name }}</option>
+            <option value="{{ organization.id }}"{% if expenseForm and expenseForm.organizationId == (organization.id | string) %} selected{% endif %}>{{ organization.name }}</option>
           {% endfor %}
         </select>
       </div>
@@ -115,13 +115,13 @@
             {{ status.message }}
           </p>
         {% endif %}
-        <input class="govuk-input govuk-input--width-10" id="amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" aria-describedby="amount-hint{% if status and status.field == 'amount' %} amount-error{% endif %}" required>
+        <input class="govuk-input govuk-input--width-10" id="amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" aria-describedby="amount-hint{% if status and status.field == 'amount' %} amount-error{% endif %}" value="{{ expenseForm.amount if expenseForm else '' }}" required>
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="currency">{{ t("govuk_alpha_volunteering.expenses.currency_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
         <div id="currency-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.expenses.currency_hint") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="currency" name="currency" type="text" maxlength="10" aria-describedby="currency-hint">
+        <input class="govuk-input govuk-input--width-5" id="currency" name="currency" type="text" maxlength="10" value="{{ expenseForm.currency if expenseForm else '' }}" aria-describedby="currency-hint">
       </div>
 
       <div class="govuk-form-group{% if status and status.field == 'description' %} govuk-form-group--error{% endif %}">
@@ -133,7 +133,7 @@
             {{ status.message }}
           </p>
         {% endif %}
-        <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint{% if status and status.field == 'description' %} description-error{% endif %}" required></textarea>
+        <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint{% if status and status.field == 'description' %} description-error{% endif %}" required>{% if expenseForm %}{{ expenseForm.description }}{% endif %}</textarea>
       </div>
 
       <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.expenses.submit_button") }}</button>

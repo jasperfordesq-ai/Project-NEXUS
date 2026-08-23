@@ -22,6 +22,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { isValidEmail } = require('../lib/inputValidator');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { createChoiceTranslator, createTranslator, SUPPORTED_LOCALES } = require('../lib/localization');
@@ -1692,6 +1693,13 @@ router.post('/delete-account', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const password = String(req.body.password || '');
+  // 🔴 The REASON only. A password is deliberately never stashed or re-rendered: a browser
+  // password manager is the right place for one, a re-rendered page is not — and this form
+  // has five failure exits, so it would sit in the session on most of them.
+  rememberFormReplay(req, 'accountDeletion', 'reason', {
+    reason: trimmed(req.body.reason, 2000)
+  });
+
   if (password === '') {
     return redirectTo(res, deleteAccountRedirect('delete-password-required'));
   }
@@ -1742,6 +1750,7 @@ router.get('/delete-account', (req, res) => {
     errorMessage,
     passwordError: ['delete-password-required', 'delete-password-incorrect'].includes(status),
     confirmError: status === 'delete-confirm-required',
+    deleteForm: consumeFormReplay(req, 'accountDeletion', 'reason'),
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community'
   });
 });

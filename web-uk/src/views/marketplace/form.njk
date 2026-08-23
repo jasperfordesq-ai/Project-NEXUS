@@ -12,14 +12,22 @@
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
 
-  {% if formErrors and formErrors.length %}
+  {# 🔴 Every summary item used to be `<a href="#title">`, whatever the error was about, and
+     no field carried an error of its own. The route now supplies `errorList` (one link per
+     field at fault, in page order) and `fieldErrors` (keyed by field id). A whole-page
+     failure arrives as `formMessage` and is written as a plain sentence, because a summary
+     LIST is a list of links to things to fix — a link-less item just traps the reader. #}
+  {% if (errorList and errorList.length) or formMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            {% for message in formErrors %}<li><a href="#title">{{ message }}</a></li>{% endfor %}
-          </ul>
+          {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+          {% if errorList and errorList.length %}
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+            </ul>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -37,10 +45,11 @@
         <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.listing_form.section_about") }}</h2>
       </legend>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_commerce.listing_form.title_label") }}</label>
         <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_form.title_hint") }}</div>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ listing.title }}" aria-describedby="title-hint">
+        {% if fieldErrors.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.title }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="200" value="{{ listing.title }}" aria-describedby="title-hint{% if fieldErrors.title %} title-error{% endif %}">
       </div>
 
       <div class="govuk-form-group">
@@ -49,10 +58,11 @@
         <input class="govuk-input" id="tagline" name="tagline" type="text" maxlength="300" value="{{ listing.tagline }}" aria-describedby="tagline-hint">
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_commerce.listing_form.description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_form.description_hint") }}</div>
-        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint">{{ listing.description }}</textarea>
+        {% if fieldErrors.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.description }}</p>{% endif %}
+        <textarea class="govuk-textarea{% if fieldErrors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" aria-describedby="description-hint{% if fieldErrors.description %} description-error{% endif %}">{{ listing.description }}</textarea>
       </div>
     </fieldset>
 
@@ -78,10 +88,14 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-form-group">
+          {# The price error is raised when NEITHER a money price nor a time-credit price is
+             given, so it is marked here — the first of the two fields, and the one the
+             summary link targets. #}
+          <div class="govuk-form-group{% if fieldErrors.price %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--s" for="price">{{ t("govuk_alpha_commerce.listing_form.price_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
             <div id="price-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_form.price_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="price" name="price" type="text" inputmode="decimal" value="{{ listing.price }}" aria-describedby="price-hint">
+            {% if fieldErrors.price %}<p id="price-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.price }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-10{% if fieldErrors.price %} govuk-input--error{% endif %}" id="price" name="price" type="text" inputmode="decimal" value="{{ listing.price }}" aria-describedby="price-hint{% if fieldErrors.price %} price-error{% endif %}">
           </div>
         </div>
         <div class="govuk-grid-column-one-half">

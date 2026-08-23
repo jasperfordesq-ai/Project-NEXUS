@@ -82,9 +82,12 @@
               <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
                 <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.jobs_t4.delete_button") }}</span></summary>
                 <div class="govuk-details__text">
+                  {# GDS: warning text carries the CONSEQUENCE, not the question.
+                     The question is ordinary body copy above it. #}
+                  <p class="govuk-body">{{ t("govuk_alpha.jobs_t4.delete_confirm") }}</p>
                   <div class="govuk-warning-text">
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                    <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>{{ t("govuk_alpha.jobs_t4.delete_confirm") }}</strong>
+                    <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>{{ t("govuk_alpha.ux.confirm_irreversible") }}</strong>
                   </div>
                   <form method="post" action="{{ urlFor('/jobs/alerts/' ~ alert.id ~ '/delete') }}" class="nexus-alpha-linkform">
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">

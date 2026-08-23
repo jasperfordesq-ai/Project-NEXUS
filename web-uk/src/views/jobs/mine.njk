@@ -70,8 +70,8 @@
           </p>
 
           <div class="nexus-alpha-actions govuk-!-margin-bottom-2">
-            <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("jobs_t3.manage_button") }}</a>
-            <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/edit') }}">{{ t("jobs_t3.edit_button") }}</a>
+            <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("jobs_t3.manage_button") }}<span class="govuk-visually-hidden"> — {{ job.title }}</span></a>
+            <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/edit') }}">{{ t("jobs_t3.edit_button") }}<span class="govuk-visually-hidden"> — {{ job.title }}</span></a>
           </div>
 
           <div class="nexus-alpha-actions">

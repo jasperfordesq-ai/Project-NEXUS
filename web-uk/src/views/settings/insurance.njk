@@ -90,19 +90,19 @@
             {% endif %}
             <select class="govuk-select" id="insurance_type" name="insurance_type"{% if typeError %} aria-describedby="insurance-type-error"{% endif %}>
               {% for type in insuranceTypes %}
-                <option value="{{ type.value }}">{{ type.label }}</option>
+                <option value="{{ type.value }}"{% if insuranceForm and insuranceForm.insuranceType == type.value %} selected{% endif %}>{{ type.label }}</option>
               {% endfor %}
             </select>
           </div>
 
           <div class="govuk-form-group">
             <label class="govuk-label" for="provider_name">{{ t("govuk_alpha_settings.insurance.provider_label") }}</label>
-            <input class="govuk-input govuk-!-width-two-thirds" id="provider_name" name="provider_name" type="text" maxlength="255">
+            <input class="govuk-input govuk-!-width-two-thirds" id="provider_name" name="provider_name" type="text" maxlength="255" value="{{ insuranceForm.providerName if insuranceForm else '' }}">
           </div>
 
           <div class="govuk-form-group">
             <label class="govuk-label" for="policy_number">{{ t("govuk_alpha_settings.insurance.policy_label") }}</label>
-            <input class="govuk-input govuk-!-width-two-thirds" id="policy_number" name="policy_number" type="text" maxlength="100">
+            <input class="govuk-input govuk-!-width-two-thirds" id="policy_number" name="policy_number" type="text" maxlength="100" value="{{ insuranceForm.policyNumber if insuranceForm else '' }}">
           </div>
 
           {# The handler and the API have always read coverage_amount, start_date
@@ -111,25 +111,31 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="coverage_amount">{{ t("govuk_alpha_settings.insurance.coverage_label") }}</label>
             <div id="coverage-amount-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.coverage_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="coverage_amount" name="coverage_amount" type="text" inputmode="numeric" maxlength="20" aria-describedby="coverage-amount-hint">
+            <input class="govuk-input govuk-input--width-10" id="coverage_amount" name="coverage_amount" type="text" inputmode="numeric" maxlength="20" value="{{ insuranceForm.coverageAmount if insuranceForm else '' }}" aria-describedby="coverage-amount-hint">
           </div>
 
+          {# `value` echoes back what the member typed after a failure — the macro has
+             always accepted it; these two call sites simply never passed it. #}
           {{ nexusDateInput({
   name: "start_date",
   legend: t("govuk_alpha_settings.insurance.start_label"),
-  hint: t("govuk_alpha_settings.insurance.start_hint")
+  hint: t("govuk_alpha_settings.insurance.start_hint"),
+  value: insuranceForm.startDateParts if insuranceForm else undefined
 }, t) }}
 
           {{ nexusDateInput({
   name: "expiry_date",
   legend: t("govuk_alpha_settings.insurance.expiry_label"),
-  hint: t("govuk_alpha_settings.insurance.expiry_hint")
+  hint: t("govuk_alpha_settings.insurance.expiry_hint"),
+  value: insuranceForm.expiryDateParts if insuranceForm else undefined
 }, t) }}
 
           <div class="govuk-form-group">
             <label class="govuk-label" for="insurance_notes">{{ t("govuk_alpha_settings.insurance.notes_label") }}</label>
             <div id="insurance-notes-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.notes_hint") }}</div>
-            <textarea class="govuk-textarea" id="insurance_notes" name="notes" rows="3" maxlength="1000" aria-describedby="insurance-notes-hint"></textarea>
+            {# Refilled after a failure. A rejected certificate used to blank every field on
+           this form, which is a lot to retype for a file the member has to re-pick anyway. #}
+        <textarea class="govuk-textarea" id="insurance_notes" name="notes" rows="3" maxlength="1000" aria-describedby="insurance-notes-hint">{% if insuranceForm %}{{ insuranceForm.notes }}{% endif %}</textarea>
           </div>
 
           {% set fileError = errorAnchor == "certificate_file" and errorStatus %}

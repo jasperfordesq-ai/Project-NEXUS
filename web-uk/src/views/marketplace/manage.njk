@@ -46,8 +46,8 @@
       {% for item in listings %}
         {% include "marketplace/_listing-card.njk" %}
         <div class="nexus-alpha-actions govuk-!-margin-bottom-6">
-          <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.my_listings.action_view") }}</a>
-          <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.my_listings.action_edit") }}</a>
+          <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.my_listings.action_view") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></a>
+          <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.my_listings.action_edit") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></a>
           {% if tab == 'expired' %}
             <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/renew') }}" class="nexus-alpha-inline-form">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">

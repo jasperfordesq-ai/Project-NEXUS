@@ -4,7 +4,6 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -21,17 +20,15 @@
     }) }}
   {% endif %}
 
+  {# A send failure is transient: no field was answered wrongly, so the summary
+     carries no field link and does not steal focus on load. #}
   {% if errorMessage %}
-    {{ govukErrorSummary({
-      titleText: t("states.error_title"),
-      errorList: [
-        {
-          text: errorMessage,
-          href: "#type-nudge"
-        }
-      ],
-      attributes: { tabindex: "-1" }
-    }) }}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ errorMessage }}</p></div>
+      </div>
+    </div>
   {% endif %}
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.buddy.caption") }}: {{ goal.title }}</span>

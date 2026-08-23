@@ -25,15 +25,24 @@
     </div>
   {% endif %}
 
-  {% if formErrors.length or (status and status.type == "error") %}
+  {# 🔴 Two defects fixed here. Every summary item used to be `href="#coupon_title"`, so a
+     discount-value or expiry-date error sent the reader to the Title box; the route now
+     supplies per-field `errorList` hrefs and a `fieldErrors` map. And the API-failure
+     message was pushed in as a LINK-LESS `<li>` — an error summary list is a list of links
+     to things to fix, so a page-level failure is now a plain sentence in the summary body
+     where it cannot be tabbed to and lead nowhere. #}
+  {% if (errorList and errorList.length) or formMessage or (status and status.type == "error") %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            {% for message in formErrors %}<li><a href="#coupon_title">{{ message }}</a></li>{% endfor %}
-            {% if status and status.type == "error" %}<li>{{ status.message }}</li>{% endif %}
-          </ul>
+          {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+          {% if status and status.type == "error" %}<p class="govuk-body">{{ status.message }}</p>{% endif %}
+          {% if errorList and errorList.length %}
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+            </ul>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -50,10 +59,11 @@
         <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.coupons.section_basics") }}</h2>
       </legend>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.coupon_title %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="coupon_title">{{ t("govuk_alpha_commerce.coupons.coupon_title_label") }}</label>
         <div id="coupon_title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.coupon_title_hint") }}</div>
-        <input class="govuk-input" id="coupon_title" name="title" type="text" maxlength="200" value="{{ coupon.title }}" aria-describedby="coupon_title-hint">
+        {% if fieldErrors.coupon_title %}<p id="coupon_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.coupon_title }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors.coupon_title %} govuk-input--error{% endif %}" id="coupon_title" name="title" type="text" maxlength="200" value="{{ coupon.title }}" aria-describedby="coupon_title-hint{% if fieldErrors.coupon_title %} coupon_title-error{% endif %}">
       </div>
 
       <div class="govuk-form-group">
@@ -89,10 +99,11 @@
         </fieldset>
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.discount_value %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="discount_value">{{ t("govuk_alpha_commerce.coupons.discount_value_label") }}</label>
         <div id="discount_value-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.discount_value_hint") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="discount_value" name="discount_value" type="text" inputmode="decimal" value="{{ coupon.discountValue }}" aria-describedby="discount_value-hint">
+        {% if fieldErrors.discount_value %}<p id="discount_value-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.discount_value }}</p>{% endif %}
+        <input class="govuk-input govuk-input--width-5{% if fieldErrors.discount_value %} govuk-input--error{% endif %}" id="discount_value" name="discount_value" type="text" inputmode="decimal" value="{{ coupon.discountValue }}" aria-describedby="discount_value-hint{% if fieldErrors.discount_value %} discount_value-error{% endif %}">
       </div>
 
       <div class="govuk-form-group">
@@ -118,7 +129,9 @@
         legend: t("govuk_alpha_commerce.coupons.valid_until_form_label") ~ " (" ~ t("govuk_alpha_commerce.common.optional") ~ ")",
         legendClasses: "govuk-fieldset__legend--s",
         hint: t("govuk_alpha_commerce.coupons.valid_until_form_hint"),
-        value: coupon.validUntilParts
+        value: coupon.validUntilParts,
+        errorMessage: fieldErrors["valid_until-day"] if fieldErrors else undefined,
+        errorFields: ["day", "month", "year"] if (fieldErrors and fieldErrors["valid_until-day"]) else undefined
       }, t) }}
 
       <div class="govuk-form-group">

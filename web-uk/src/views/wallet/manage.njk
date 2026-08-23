@@ -107,7 +107,8 @@
               </div>
             </div>
           </div>
-          <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_wallet.transfer.send_button", { name: recipient.name }) }}</button>
+          {# Moves credits: same double-click guard the sibling donate button has. #}
+          <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_wallet.transfer.send_button", { name: recipient.name }) }}</button>
         </form>
       </div>
     {% endfor %}

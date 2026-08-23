@@ -221,7 +221,7 @@
         {% if status == 'comment-invalid' %}
           <p id="comment_body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("blog.comment_states.comment-invalid") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea govuk-js-character-count" id="comment_body" name="comment_body" rows="4" maxlength="5000" aria-describedby="{% if status == 'comment-invalid' %}comment_body-error {% endif %}comment_body-info"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="comment_body" name="comment_body" rows="4" maxlength="5000" aria-describedby="{% if status == 'comment-invalid' %}comment_body-error {% endif %}comment_body-info">{% if ideaCommentForm %}{{ ideaCommentForm.comment_body }}{% endif %}</textarea>
       </div>
       {% endcall %}
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>

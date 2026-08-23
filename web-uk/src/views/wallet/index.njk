@@ -7,8 +7,11 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
+  {# A transient flash status is a notification banner, not the green
+     govuk-panel--confirmation end-of-transaction panel. Matches the
+     donate-sent sibling below. #}
   {% if status == "transfer-sent" %}
-    <div class="govuk-panel govuk-panel--confirmation"><h2 class="govuk-panel__title">{{ t("states.success_title") }}</h2><div class="govuk-panel__body">{{ t("wallet.sent") }}</div></div>
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="wallet-transfer-success-title" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="wallet-transfer-success-title">{{ t("states.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("wallet.sent") }}</p></div></div>
   {% elseif status == "transfer-failed" %}
     {% set transferMessage = t("wallet.errors.failed") %}
     {% if transferError == "invalid" %}{% set transferMessage = t("wallet.errors.invalid") %}{% elseif transferError == "insufficient" %}{% set transferMessage = t("wallet.errors.insufficient") %}{% elseif transferError == "not-found" %}{% set transferMessage = t("wallet.errors.not_found") %}{% elseif transferError == "self" %}{% set transferMessage = t("wallet.errors.self") %}{% elseif transferError == "inactive" %}{% set transferMessage = t("wallet.errors.inactive") %}{% elseif transferError == "too-large" %}{% set transferMessage = t("wallet.errors.too_large") %}{% elseif transferError == "decimals" %}{% set transferMessage = t("wallet.errors.decimals") %}{% endif %}
@@ -107,7 +110,7 @@
       <nav class="govuk-pagination" aria-label="{{ t('wallet.history_title') }}">
         <div class="govuk-pagination__next">
           <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/wallet?filter=' + txFilter + '&cursor=' + (txNextCursor | urlencode)) }}#transactions" rel="next">
-            <span class="govuk-pagination__link-title">{{ t("wallet_t1.pagination_next") }}</span>
+            <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("wallet_t1.pagination_next") }}</span>
             <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
               <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
             </svg>

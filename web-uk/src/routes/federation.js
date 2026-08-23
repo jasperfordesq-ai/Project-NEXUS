@@ -642,6 +642,37 @@ function transferStatusBanner(status, t = (key) => key) {
   } : null;
 }
 
+// Which FIELD each transfer error belongs to.
+//
+// 🔴 views/federation/transfer.njk built its summary with one hardcoded `href="#amount"`
+// and no field-level error. A member who left the description blank was told to write one
+// under a link that jumped to the Amount box, and nothing marked Description. Everything
+// not listed here is a whole-page condition (not enabled, insufficient balance, a
+// safeguarding restriction, an API failure) and is NOT a field error at all.
+const TRANSFER_ERROR_FIELDS = {
+  'transfer-amount-invalid': 'amount',
+  'transfer-insufficient': 'amount',
+  'transfer-description-required': 'description',
+  'transfer-description-too-long': 'description'
+};
+
+/**
+ * Split a transfer status into per-field errors and one page-level message, so the summary
+ * can link to the field at fault and the field itself can be marked.
+ */
+function transferFormErrors(status, t = (key) => key) {
+  const banner = transferStatusBanner(status, t);
+  if (!banner || banner.type !== 'error') return { errorList: [], fieldErrors: {}, formMessage: '' };
+
+  const field = TRANSFER_ERROR_FIELDS[trimmed(status)];
+  if (!field) return { errorList: [], fieldErrors: {}, formMessage: banner.message };
+  return {
+    errorList: [{ text: banner.message, href: `#${field}` }],
+    fieldErrors: { [field]: banner.message },
+    formMessage: ''
+  };
+}
+
 function settingsStatusBanner(status, t = (key) => key) {
   const banners = {
     'settings-saved': { type: 'success', message: t('federation.settings.saved') },
@@ -1595,7 +1626,8 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
     balance,
     transferIdempotencyKey: randomUUID(),
     viewerEnabled: (bool(settings.federation_optin) || bool(settingsData.enabled)) && bool(settings.transactions_enabled_federated),
-    statusBanner: transferStatusBanner(req.query.status, res.locals.t)
+    statusBanner: transferStatusBanner(req.query.status, res.locals.t),
+    ...transferFormErrors(req.query.status, res.locals.t)
   });
 }));
 

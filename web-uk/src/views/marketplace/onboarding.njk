@@ -24,15 +24,23 @@
     </div>
   {% endif %}
 
-  {% if formErrors.length or (status and status.type == "error") %}
+  {# 🔴 Two defects fixed here. Every summary item was `href="#display_name"`, so a
+     business seller who left the BUSINESS NAME blank was pointed at the display-name box
+     and the field at fault was unreachable from the summary. And the API-failure message
+     was pushed in as a LINK-LESS `<li>` — an error summary list is a list of links to
+     things to fix, so a page-level failure is now a plain sentence in the summary body. #}
+  {% if (errorList and errorList.length) or formMessage or (status and status.type == "error") %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            {% for message in formErrors %}<li><a href="#display_name">{{ message }}</a></li>{% endfor %}
-            {% if status and status.type == "error" %}<li>{{ status.message }}</li>{% endif %}
-          </ul>
+          {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+          {% if status and status.type == "error" %}<p class="govuk-body">{{ status.message }}</p>{% endif %}
+          {% if errorList and errorList.length %}
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+            </ul>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -76,16 +84,18 @@
         </fieldset>
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.display_name %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="display_name">{{ t("govuk_alpha_commerce.onboarding.display_name_label") }}</label>
         <div id="display_name-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.onboarding.display_name_hint") }}</div>
-        <input class="govuk-input" id="display_name" name="display_name" type="text" maxlength="200" autocomplete="nickname" value="{{ profile.display_name }}" aria-describedby="display_name-hint">
+        {% if fieldErrors.display_name %}<p id="display_name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.display_name }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors.display_name %} govuk-input--error{% endif %}" id="display_name" name="display_name" type="text" maxlength="200" autocomplete="nickname" value="{{ profile.display_name }}" aria-describedby="display_name-hint{% if fieldErrors.display_name %} display_name-error{% endif %}">
       </div>
 
-      <div class="govuk-form-group">
+      <div class="govuk-form-group{% if fieldErrors.business_name %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="business_name">{{ t("govuk_alpha_commerce.onboarding.business_name_label") }}</label>
         <div id="business_name-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.onboarding.business_name_hint") }}</div>
-        <input class="govuk-input" id="business_name" name="business_name" type="text" maxlength="200" value="{{ profile.business_name }}" aria-describedby="business_name-hint">
+        {% if fieldErrors.business_name %}<p id="business_name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.business_name }}</p>{% endif %}
+        <input class="govuk-input{% if fieldErrors.business_name %} govuk-input--error{% endif %}" id="business_name" name="business_name" type="text" maxlength="200" value="{{ profile.business_name }}" aria-describedby="business_name-hint{% if fieldErrors.business_name %} business_name-error{% endif %}">
       </div>
 
       <div class="govuk-form-group">

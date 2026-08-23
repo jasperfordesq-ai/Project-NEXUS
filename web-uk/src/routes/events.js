@@ -2748,9 +2748,11 @@ function registrationFormInput(body) {
   };
 }
 
-function rememberRegistrationForm(req, eventId, formId, values, message) {
+// `causes` records WHICH of the failure conditions fired, so the re-render can mark the
+// field at fault instead of showing one generic message aimed at the name box.
+function rememberRegistrationForm(req, eventId, formId, values, causes = {}) {
   if (!req.session) return;
-  req.session.eventRegistrationForm = { eventId, formId: formId || 0, values, errors: [message] };
+  req.session.eventRegistrationForm = { eventId, formId: formId || 0, values, causes };
 }
 
 function consumeRegistrationForm(req, eventId, formId) {
@@ -2758,7 +2760,7 @@ function consumeRegistrationForm(req, eventId, formId) {
   if (req.session?.eventRegistrationForm) delete req.session.eventRegistrationForm;
   return replay && replay.eventId === eventId && replay.formId === (formId || 0)
     ? replay
-    : { values: null, errors: [] };
+    : { values: null, causes: {} };
 }
 
 router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) => {
@@ -2808,18 +2810,58 @@ router.post('/:id(\\d+)/registration/settings/publish', requireAuth, asyncRoute(
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
+/**
+ * Per-field errors for the registration form editor.
+ *
+ * 🔴 The form had ONE message ("Check the information you entered and try again.") linked
+ * to `#form-name`, for every one of six different causes across 90-plus controls: a blank
+ * form name, no enabled question, three missing hidden revision/idempotency values, and any
+ * API rejection including a 409 conflict. A member who had simply not enabled a question
+ * was told to check the name box.
+ *
+ * The two causes a member can see and fix get their own field error. The hidden-value and
+ * API cases are not field problems at all — the page is stale or the server refused it —
+ * so they stay as the page-level sentence.
+ */
+function registrationFormErrors(res, { nameMissing, questionsMissing, pageFailure }) {
+  const t = res.locals.t;
+  const errorList = [];
+  const fieldErrors = {};
+
+  if (nameMissing) {
+    const text = t('states.validation.required', { field: t('event_registration.forms.editor.name') });
+    errorList.push({ text, href: '#form-name' });
+    fieldErrors.name = text;
+  }
+  if (questionsMissing) {
+    const text = t('event_registration.forms.editor.questions_required');
+    // The rule is about the set of question rows, so the summary aims at the first one.
+    errorList.push({ text, href: '#question-0-enabled' });
+    fieldErrors.questions = text;
+  }
+
+  return {
+    errorList,
+    fieldErrors,
+    formMessage: errorList.length === 0 && pageFailure
+      ? t('event_registration.accessible.validation_error')
+      : ''
+  };
+}
+
 async function renderRegistrationForm(req, res) {
   const id = Number(req.params.id); const formId = positiveInteger(req.params.formId); const state = await registrationProductState(tokenFrom(req), id);
   if (!state.organizer) return renderForbidden(res, new Error('You do not have permission to manage registration forms.'));
   const form = formId ? arrayValues(state.organizer.forms).find((item) => positiveInteger(item?.id) === formId) : null;
   if (formId && (!form || form.status !== 'draft')) return res.status(404).render('errors/404', { title: 'Registration form not found' });
   const replay = consumeRegistrationForm(req, id, formId);
+  const causes = replay.causes || {};
   const formValues = replay.values || form || {};
   const questionRows = replay.values
     ? [...arrayValues(replay.values.questions), ...Array(Math.max(0, 5 - arrayValues(replay.values.questions).length)).fill({ enabled: false })]
     : [...arrayValues(form?.questions).map((row) => ({ ...row, enabled: true })), ...Array(5).fill({ enabled: false })];
   res.set('Cache-Control', 'private, no-store');
-  return res.render('events/registration-form', { title: res.locals.t(`event_registration.forms.editor.${form ? 'edit_title' : 'create_title'}`), activeNav: 'events', eventId: id, form, formValues, formErrors: replay.errors, questionRows, settingsRevision: positiveInteger(state.organizer.settings?.revision) || 1, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
+  return res.render('events/registration-form', { title: res.locals.t(`event_registration.forms.editor.${form ? 'edit_title' : 'create_title'}`), activeNav: 'events', eventId: id, form, formValues, questionRows, settingsRevision: positiveInteger(state.organizer.settings?.revision) || 1, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '', ...registrationFormErrors(res, causes) });
 }
 router.get('/:id(\\d+)/registration/forms/new', requireAuth, asyncRoute(renderRegistrationForm));
 router.get('/:id(\\d+)/registration/forms/:formId(\\d+)', requireAuth, asyncRoute(renderRegistrationForm));
@@ -2827,9 +2869,16 @@ router.get('/:id(\\d+)/registration/forms/:formId(\\d+)', requireAuth, asyncRout
 async function saveRegistrationForm(req, res) {
   const id = Number(req.params.id); const formId = positiveInteger(req.params.formId); const key = trimmed(req.body.idempotency_key, 191); const settingsRevision = positiveInteger(req.body.expected_settings_revision); const formRevision = formId ? positiveInteger(req.body.expected_form_revision) : null; const name = trimmed(req.body.name, 255); const description = trimmed(req.body.description, 2000) || null; const questions = registrationQuestions(req.body.questions);
   const replay = registrationFormInput(req.body);
-  const errorMessage = res.locals.t('event_registration.accessible.validation_error');
-  if (!key || !settingsRevision || !name || questions.length === 0 || (formId && !formRevision)) {
-    rememberRegistrationForm(req, id, formId, replay, errorMessage);
+  // 🔴 Record WHICH condition failed. All five used to collapse into one message pointing
+  // at the name box, so "you have not enabled a question" read as "your name is wrong".
+  // A missing hidden revision or idempotency key is a stale page, not a field error.
+  const staleRequest = !key || !settingsRevision || (formId && !formRevision);
+  if (staleRequest || !name || questions.length === 0) {
+    rememberRegistrationForm(req, id, formId, replay, {
+      nameMissing: !name,
+      questionsMissing: questions.length === 0,
+      pageFailure: staleRequest
+    });
     return redirectTo(res, eventPath(id, formId ? `/registration/forms/${formId}?status=invalid` : '/registration/forms/new?status=invalid'));
   }
   const payload = { name, description, questions, expected_settings_revision: settingsRevision, ...(formId ? { expected_form_revision: formRevision } : {}) };
@@ -2838,7 +2887,7 @@ async function saveRegistrationForm(req, res) {
     else await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/forms`, payload, key);
     return redirectTo(res, eventPath(id, '/registration?status=form-saved'));
   }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberRegistrationForm(req, id, formId, replay, errorMessage); return redirectTo(res, eventPath(id, formId ? `/registration/forms/${formId}?status=failed` : '/registration/forms/new?status=failed')); } throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberRegistrationForm(req, id, formId, replay, { pageFailure: true }); return redirectTo(res, eventPath(id, formId ? `/registration/forms/${formId}?status=failed` : '/registration/forms/new?status=failed')); } throw error; }
 }
 router.post('/:id(\\d+)/registration/forms/new', requireAuth, asyncRoute(saveRegistrationForm));
 router.post('/:id(\\d+)/registration/forms/:formId(\\d+)', requireAuth, asyncRoute(saveRegistrationForm));

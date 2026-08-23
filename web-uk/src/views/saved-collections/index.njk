@@ -85,12 +85,13 @@
       {% if nameError %}
         <p id="collection-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.collection_name_required") }}</p>
       {% endif %}
-      <input class="govuk-input govuk-!-width-two-thirds" id="collection-name" name="name" type="text" maxlength="255" aria-describedby="collection-name-hint{% if nameError %} collection-name-error{% endif %}">
+      <input class="govuk-input govuk-!-width-two-thirds" id="collection-name" name="name" type="text" maxlength="255" aria-describedby="collection-name-hint{% if nameError %} collection-name-error{% endif %}" value="{{ collectionForm.name if collectionForm else '' }}">
     </div>
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="collection-description">{{ t("govuk_alpha_saved.create.description_label") }}</label>
-      <textarea class="govuk-textarea govuk-!-width-two-thirds" id="collection-description" name="description" rows="3"></textarea>
+        {# Refilled after a failure; both fields used to come back empty. #}
+      <textarea class="govuk-textarea govuk-!-width-two-thirds" id="collection-description" name="description" rows="3">{% if collectionForm %}{{ collectionForm.description }}{% endif %}</textarea>
     </div>
 
     <div class="govuk-form-group">
@@ -98,7 +99,7 @@
         <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.create.public_label") }}</legend>
         <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
           <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="collection-public" name="is_public" type="checkbox" value="1" aria-describedby="collection-public-hint">
+            <input class="govuk-checkboxes__input" id="collection-public" name="is_public" type="checkbox" value="1"{% if collectionForm and collectionForm.isPublic %} checked{% endif %} aria-describedby="collection-public-hint">
             <label class="govuk-label govuk-checkboxes__label" for="collection-public">{{ t("govuk_alpha_saved.create.public_label") }}</label>
             <div id="collection-public-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_saved.create.public_hint") }}</div>
           </div>

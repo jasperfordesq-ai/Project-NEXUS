@@ -21,18 +21,34 @@
           <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="poll-create-status-title">{{ t("govuk_alpha_gamification.states.success_title") }}</h2></div>
           <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
         </div>
-      {% elif statusBanner and statusBanner.type == "error" %}
+      {% elif (errorList and errorList.length) or formMessage %}
+        {# 🔴 This was a single hardcoded `href="#poll-question"`, so "Enter a real date" and
+           "The closing date must be in the future" both moved focus to the QUESTION box.
+           The route now says which field each error belongs to, and keeps a whole-page save
+           failure in `formMessage` as a sentence rather than a link to a field that is
+           perfectly fine. #}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
-          <div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_gamification.states.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#poll-question">{{ statusBanner.message }}</a></li></ul></div></div>
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_gamification.states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+              {% if errorList and errorList.length %}
+                <ul class="govuk-list govuk-error-summary__list">
+                  {% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          </div>
         </div>
       {% endif %}
 
       <form method="post" action="{{ urlFor('/polls/parity/create') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <div class="govuk-form-group">
+        <div class="govuk-form-group{% if fieldErrors.question %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--s" for="poll-question">{{ t("govuk_alpha_gamification.poll_create.question_label") }}</label>
           <div id="poll-question-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.question_hint") }}</div>
-          <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" required maxlength="255" value="{{ form.question or '' }}">
+          {% if fieldErrors.question %}<p id="poll-question-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.question }}</p>{% endif %}
+          <input class="govuk-input{% if fieldErrors.question %} govuk-input--error{% endif %}" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint{% if fieldErrors.question %} poll-question-error{% endif %}" required maxlength="255" value="{{ form.question or '' }}">
         </div>
         {% call characterCount(2000, characterCountMessages, "poll-description") %}
         <div class="govuk-form-group">
@@ -52,22 +68,30 @@
             </select>
           </div>
         {% endif %}
-        <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_gamification.poll_create.options_legend") }} <span class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.options_hint") }}</span></legend>
-          {% for number in [1, 2, 3, 4, 5, 6] %}
-            <div class="govuk-form-group govuk-!-margin-bottom-2">
-              <label class="govuk-label" for="poll-option-{{ number }}">{{ t("govuk_alpha_gamification.poll_create.option_label", { num: number }) }}</label>
-              <input class="govuk-input govuk-input--width-30" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255"{% if number <= 2 %} required{% endif %} value="{{ (form.options[number - 1] if form else '') or '' }}">
-            </div>
-          {% endfor %}
-        </fieldset>
+        {# "at least 2 options" is a rule about the GROUP, so GDS puts the error on the
+           fieldset once rather than repeating it on all six boxes. The summary link targets
+           the first box, which is where the member starts fixing it. #}
+        <div class="govuk-form-group{% if fieldErrors.options %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-4"{% if fieldErrors.options %} aria-describedby="poll-options-error"{% endif %}>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_gamification.poll_create.options_legend") }} <span class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.options_hint") }}</span></legend>
+            {% if fieldErrors.options %}<p id="poll-options-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.options }}</p>{% endif %}
+            {% for number in [1, 2, 3, 4, 5, 6] %}
+              <div class="govuk-form-group govuk-!-margin-bottom-2">
+                <label class="govuk-label" for="poll-option-{{ number }}">{{ t("govuk_alpha_gamification.poll_create.option_label", { num: number }) }}</label>
+                <input class="govuk-input govuk-input--width-30{% if fieldErrors.options and number <= 2 %} govuk-input--error{% endif %}" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255"{% if number <= 2 %} required{% endif %} value="{{ (form.options[number - 1] if form else '') or '' }}">
+              </div>
+            {% endfor %}
+          </fieldset>
+        </div>
         <div class="govuk-form-group">
           {{ nexusDateInput({
             name: "expires_at",
             idPrefix: "poll-expires",
             legend: t("govuk_alpha_gamification.poll_create.expires_label"),
             hint: t("web_uk.date_input.hint"),
-            value: form.expiresAtParts if form else undefined
+            value: form.expiresAtParts if form else undefined,
+            errorMessage: fieldErrors.expires_at if fieldErrors else undefined,
+            errorFields: ["day", "month", "year"] if (fieldErrors and fieldErrors.expires_at) else undefined
           }, t) }}
         </div>
         <div class="govuk-form-group">

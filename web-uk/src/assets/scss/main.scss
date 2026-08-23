@@ -350,6 +350,21 @@
   list-style: none;
 }
 
+// Target size (WCAG 2.2 AA, 2.5.8), same reasoning as the filter rows above.
+// Measured in a browser on /feed: most of these controls already come out at
+// 24px, but some render at 21px and pass only by the criterion's SPACING
+// exception (nearest neighbour ~95px away). Leaning on that exception is
+// fragile — one tighter layout turns it into a failure — so the minimum is
+// stated explicitly rather than inherited by luck.
+.nexus-alpha-actions a,
+.nexus-alpha-actions button,
+.nexus-alpha-skill-list a,
+.nexus-alpha-skill-list button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
 .nexus-alpha-card-thumb {
   // Pinned box + object-fit, like every other image class in this file: the old
   // height:auto overrode the markup's width/height attributes, so a non-4:3
@@ -1107,6 +1122,21 @@ body.app-timeout-modal--open {
   padding-inline-start: 0;
   list-style: none;
   margin-bottom: govuk-spacing(2);
+}
+
+// Target size (WCAG 2.2 AA, 2.5.8) — see the note on .nexus-alpha-actions.
+// These rows are the tightest in the app: comment actions and reaction buttons
+// sit side by side, so the 24px minimum is doing real work here rather than
+// relying on the spacing exception.
+.nexus-alpha-comment-actions a,
+.nexus-alpha-comment-actions button,
+.nexus-alpha-reactions a,
+.nexus-alpha-reactions button,
+.nexus-alpha-tag-list a,
+.nexus-alpha-tag-list button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 // Each reaction is its own <form>, so without this the buttons stack.

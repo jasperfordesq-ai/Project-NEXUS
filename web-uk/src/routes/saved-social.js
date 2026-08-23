@@ -16,6 +16,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 
@@ -278,6 +279,7 @@ router.get('/users/:userId(\\d+)/appreciations', asyncRoute(async (req, res) => 
     owner,
     isSelf: viewer.id === owner.id,
     appreciations,
+    appreciationForm: consumeFormReplay(req, 'appreciation', owner.id),
     reactionTypes: APPRECIATION_REACTION_TYPES,
     currentPage,
     lastPage,
@@ -308,6 +310,13 @@ router.post('/users/:userId(\\d+)/appreciations', requireAuth, asyncRoute(async 
   const isPublic = req.body.is_public === undefined
     ? true
     : ['1', 'on', 'true'].includes(String(req.body.is_public).toLowerCase());
+
+  // Six of the seven failure statuses are server-side conditions (rate limit,
+  // safeguarding, a generic failure) that a member did nothing wrong to trigger, and every
+  // one of them used to discard the message they had written. The public/private choice is
+  // stored too: the checkbox is hardcoded `checked`, so a deliberate "keep this private"
+  // silently flipped back to public on every failure.
+  rememberFormReplay(req, 'appreciation', userId, { message, isPublic });
 
   if (!message) {
     return redirectTo(res, appreciationRedirect(userId, 'appreciation-message-required'));

@@ -1432,7 +1432,8 @@ app.get('/organisations', requireOrganisationAuth, (req, res) => {
         organisations,
         organisationsQuery,
         status,
-        values
+        values,
+        ...organisationFormErrors(res, status, values.invalidStatus)
       });
     })
     .catch(() => {
@@ -1442,7 +1443,8 @@ app.get('/organisations', requireOrganisationAuth, (req, res) => {
         organisations: [],
         organisationsQuery,
         status,
-        values
+        values,
+        ...organisationFormErrors(res, status, values.invalidStatus)
       });
     });
 });
@@ -1627,6 +1629,57 @@ function unicodeSlice(value, maximumLength) {
   return Array.from(String(value || '')).slice(0, maximumLength).join('');
 }
 
+// Which FIELD each organisation registration error belongs to, and the already-translated
+// message for it. The /organisations/register page has always mapped these; the embedded
+// form on /organisations did not.
+const ORGANISATION_ERROR_FIELDS = {
+  'org-name-invalid': { field: 'name', key: 'govuk_alpha_organisations.register.errors.org-name-invalid' },
+  'org-description-invalid': { field: 'description', key: 'govuk_alpha_organisations.register.errors.org-description-invalid' },
+  'org-email-invalid': { field: 'email', key: 'govuk_alpha_organisations.register.errors.org-email-invalid' },
+  'org-website-invalid': { field: 'website', key: 'govuk_alpha_organisations.register.errors.org-website-invalid' },
+  'org-terms-required': { field: 'agreed_terms', key: 'govuk_alpha_organisations.register.errors.org-terms-required' }
+};
+
+/**
+ * Per-field errors for the embedded organisation form on /organisations.
+ *
+ * 🔴 That page collapsed FIVE distinct field errors into one `org-invalid` message linked
+ * to `#name`, so a member whose description was too short, or who had not ticked the
+ * terms box, was sent to the organisation-name field and nothing marked the real problem.
+ * Its own copy does not even mention the website rule that can trigger it.
+ *
+ * 🔴 The redirect URL deliberately still says `?status=org-invalid` — that exact location
+ * is asserted by tests/shared-accessible-shell.test.js, and changing it would be a URL
+ * change nobody asked for. The PRECISE status rides in the session beside the echoed
+ * values instead, so the page can target the field without the URL changing at all.
+ *
+ * `org-failed` is an API failure, not a field error: it becomes the page-level sentence.
+ */
+function organisationFormErrors(res, status, invalidStatus) {
+  const t = res.locals.t || ((key) => key);
+  const mapped = ORGANISATION_ERROR_FIELDS[invalidStatus];
+
+  if (status === 'org-invalid') {
+    if (mapped) {
+      const text = t(mapped.key);
+      return {
+        errorList: [{ text, href: `#${mapped.field}` }],
+        fieldErrors: { [mapped.field]: text },
+        formMessage: ''
+      };
+    }
+    // No precise status survived (a bookmarked or hand-typed URL): keep the old coarse
+    // message, but as a sentence rather than a link to a field we cannot identify.
+    return { errorList: [], fieldErrors: {}, formMessage: t('govuk_alpha.organisations.states.org-invalid') };
+  }
+
+  if (status === 'org-failed') {
+    return { errorList: [], fieldErrors: {}, formMessage: t('govuk_alpha.organisations.states.org-failed') };
+  }
+
+  return { errorList: [], fieldErrors: {}, formMessage: '' };
+}
+
 function organisationRegistrationStatus(payload, agreedTerms) {
   if (unicodeLength(payload.name) < 3) return 'org-name-invalid';
   if (unicodeLength(payload.description) < 20) return 'org-description-invalid';
@@ -1655,7 +1708,10 @@ async function handleOrganisationRegistrationPost(req, res, options = {}) {
         description: payload.description,
         email: payload.contact_email,
         website: payload.website,
-        agreedTerms: acceptedOrganisationTerms(req.body.agreed_terms)
+        agreedTerms: acceptedOrganisationTerms(req.body.agreed_terms),
+        // Carried so /organisations can mark the field that is actually wrong. The URL
+        // keeps saying `org-invalid`; see organisationFormErrors for why.
+        invalidStatus
       };
     }
     const invalidRedirect = options.coarseInvalid

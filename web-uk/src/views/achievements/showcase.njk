@@ -69,11 +69,11 @@
         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
           {% for badge in earnedBadges %}
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="showcase-{{ loop.index0 }}" name="badge_keys[]" type="checkbox" value="{{ badge.key }}"{% if badge.isShowcased %} checked{% endif %}>
-              <label class="govuk-label govuk-checkboxes__label" for="showcase-{{ loop.index0 }}">
-                {{ badge.name }}
-                {% if badge.description %}<span class="govuk-hint">{{ badge.description }}</span>{% endif %}
-              </label>
+              <input class="govuk-checkboxes__input" id="showcase-{{ loop.index0 }}" name="badge_keys[]" type="checkbox" value="{{ badge.key }}"{% if badge.isShowcased %} checked{% endif %}{% if badge.description %} aria-describedby="showcase-{{ loop.index0 }}-hint"{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="showcase-{{ loop.index0 }}">{{ badge.name }}</label>
+              {% if badge.description %}
+                <div id="showcase-{{ loop.index0 }}-hint" class="govuk-hint govuk-checkboxes__hint">{{ badge.description }}</div>
+              {% endif %}
             </div>
           {% endfor %}
         </div>

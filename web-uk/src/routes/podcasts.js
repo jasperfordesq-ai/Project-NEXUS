@@ -323,6 +323,37 @@ function studioEpisodes(show) {
     .filter((episode) => episode.id !== null);
 }
 
+// Which FIELD each show-form error belongs to.
+//
+// 🔴 views/podcasts/form.njk built its summary with one hardcoded `href="#title"` and no
+// field-level error at all. Only `show-title-missing` is genuinely about the Title box;
+// `show-create-failed` is the API refusing the save, and pointing that at Title told the
+// member their title was wrong when it was not.
+const SHOW_ERROR_FIELDS = {
+  'show-title-missing': 'title'
+};
+
+/**
+ * Split a show-form status into per-field errors and one page-level message.
+ *
+ * Only an ERROR status is considered. The template used to guard its error summary on
+ * `{% if status %}`, so a success status rendered inside a box headed "There is a problem";
+ * keying off these locals instead makes that impossible.
+ */
+function showFormErrors(status) {
+  const key = trimmed(status);
+  if (!STUDIO_ERROR_KEYS[key]) return { errorList: [], fieldErrors: {}, formMessage: '' };
+
+  const message = translateForRequest(`govuk_alpha_commerce.podcast_studio.${STUDIO_ERROR_KEYS[key]}`);
+  const field = SHOW_ERROR_FIELDS[key];
+  if (!field) return { errorList: [], fieldErrors: {}, formMessage: message };
+  return {
+    errorList: [{ text: message, href: `#${field}` }],
+    fieldErrors: { [field]: message },
+    formMessage: ''
+  };
+}
+
 function statusEntry(status) {
   const key = trimmed(status);
   if (STUDIO_SUCCESS_KEYS[key]) {
@@ -459,7 +490,8 @@ router.get('/studio/new', asyncRoute(async (req, res) => {
         visibility: 'public'
       },
       visibilities: meta.enable_private_shows === true ? ['public', 'members', 'private'] : ['public'],
-      status: statusEntry(req.query.status)
+      status: statusEntry(req.query.status),
+      ...showFormErrors(req.query.status)
     });
   } catch (error) {
     return renderPodcastError(error, res, 'Create a podcast');

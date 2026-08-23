@@ -153,7 +153,7 @@
       {% endif %}
       <div class="govuk-input__wrapper">
         <div class="govuk-input__prefix">{{ tenantCurrency }}</div>
-        <input class="govuk-input govuk-input--width-10{% if status and status.type == 'error' %} govuk-input--error{% endif %}" id="donate-amount" name="amount" type="text" inputmode="decimal" spellcheck="false" aria-describedby="donate-amount-hint{% if status and status.type == 'error' %} donate-amount-error{% endif %}">
+        <input class="govuk-input govuk-input--width-10{% if status and status.type == 'error' %} govuk-input--error{% endif %}" id="donate-amount" name="amount" type="text" inputmode="decimal" spellcheck="false" aria-describedby="donate-amount-hint{% if status and status.type == 'error' %} donate-amount-error{% endif %}" value="{{ donateForm.amount if donateForm else '' }}">
       </div>
     </div>
 
@@ -179,7 +179,7 @@
         <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
           {% for method in dashboard.paymentMethods %}
             <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="donate-method-{{ method.value }}" name="payment_method" type="radio" value="{{ method.value }}"{% if method.checked %} checked{% endif %}>
+              <input class="govuk-radios__input" id="donate-method-{{ method.value }}" name="payment_method" type="radio" value="{{ method.value }}"{% if (donateForm.paymentMethod == method.value) if donateForm else method.checked %} checked{% endif %}>
               <label class="govuk-label govuk-radios__label" for="donate-method-{{ method.value }}">{{ method.label }}</label>
             </div>
           {% endfor %}
@@ -191,14 +191,15 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="donate-message">{{ t("govuk_alpha_volunteering.donations.message_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
       <div id="donate-message-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.message_hint") }}</div>
-      <textarea class="govuk-textarea govuk-js-character-count" id="donate-message" name="message" rows="3" maxlength="500" aria-describedby="donate-message-hint donate-message-info"></textarea>
+      {# Refilled after a failure — a rejected amount used to take the message with it. #}
+      <textarea class="govuk-textarea govuk-js-character-count" id="donate-message" name="message" rows="3" maxlength="500" aria-describedby="donate-message-hint donate-message-info">{% if donateForm %}{{ donateForm.message }}{% endif %}</textarea>
     </div>
     {% endcall %}
 
     <div class="govuk-form-group">
       <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="donate-anonymous" name="is_anonymous" type="checkbox" value="1" aria-describedby="donate-anonymous-hint">
+          <input class="govuk-checkboxes__input" id="donate-anonymous" name="is_anonymous" type="checkbox" value="1"{% if donateForm and donateForm.isAnonymous %} checked{% endif %} aria-describedby="donate-anonymous-hint">
           <label class="govuk-label govuk-checkboxes__label" for="donate-anonymous">{{ t("govuk_alpha_volunteering.donations.anonymous_label") }}</label>
           <div id="donate-anonymous-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_volunteering.donations.anonymous_hint") }}</div>
         </div>

@@ -223,7 +223,7 @@
           <label class="govuk-label" for="image">{{ t("listings.edit.image_label" if listing else "listings.create.image_label") }}</label>
           {% if listingImageUrl %}
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("listings.edit.current_image") }}</p>
-            <img src="{{ listingImageUrl }}" alt="{{ currentTitle }}" width="120" height="90" loading="lazy" decoding="async" class="nexus-alpha-card-thumb govuk-!-margin-bottom-2">
+            <img src="{{ listingImageUrl }}" alt="" width="120" height="90" loading="lazy" decoding="async" class="nexus-alpha-card-thumb govuk-!-margin-bottom-2">
           {% endif %}
           <div id="image-hint" class="govuk-hint">{{ t("listings.edit.image_hint" if listing else "listings.create.image_hint") }}</div>
           {% if fieldErrors.image %}

@@ -17,6 +17,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { normalizeResponse } = require('../lib/normalizeResponse');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -1090,6 +1091,7 @@ router.get('/:id(\\d+)/social', asyncRoute(async (req, res) => {
     commentsTotal,
     commentsTotalLabel: res.locals.tc('govuk_alpha_goals.social.comments_count', commentsTotal, { count: commentsTotal }),
     commentInvalid: trimmed(req.query.status) === 'comment-invalid',
+    commentForm: consumeFormReplay(req, 'goalComment', req.params.id),
     ...socialStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Goal not found' }));
@@ -1292,11 +1294,19 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const content = optionalText(req.body.body || req.body.content, 5000);
+  const parentId = positiveInteger(req.body.parent_id);
+  // Without this the comment box came back empty on failure. `parentId` rides along so a
+  // failed REPLY refills the reply box it came from — the redirect does not carry it.
+  const rememberComment = () => rememberFormReplay(req, 'goalComment', id, {
+    body: String(content || ''),
+    parentId
+  });
+
   if (content === null) {
+    rememberComment();
     return redirectTo(res, goalSubpageRedirect(id, 'social', 'comment-invalid', '#comments'));
   }
 
-  const parentId = positiveInteger(req.body.parent_id);
   const payload = {
     target_type: 'goal',
     target_id: id,
@@ -1314,6 +1324,7 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberComment();
     return redirectTo(res, goalSubpageRedirect(id, 'social', 'comment-failed', '#comments'));
   }
 }));

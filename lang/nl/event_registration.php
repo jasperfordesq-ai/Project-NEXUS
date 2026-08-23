@@ -77,6 +77,7 @@ return [
             'create_title' => 'Registratieformulier maken',
             'edit_title' => 'Ontwerp van het registratieformulier bewerken',
             'name' => 'Formuliernaam',
+            'questions_required' => 'Schakel minstens één vraag in',
             'description' => 'Beschrijving',
             'rules_title' => 'Versiebeheerd en privacybewust',
             'rules_description' => 'Gepubliceerde versies zijn onveranderlijk. Bij elke vraag worden het doel, de classificatie, de bewaartermijn en eventuele voorwaardelijke weergaveregels vastgelegd.',

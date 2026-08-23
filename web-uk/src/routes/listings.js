@@ -29,6 +29,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { audit } = require('../lib/auditLogger');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -967,11 +968,15 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const body = trimmed(req.body.body || req.body.content, 5000);
+  const parentId = positiveInteger(req.body.parent_id);
+  // The textarea came back empty on every failure, so a written comment was lost.
+  const rememberComment = () => rememberFormReplay(req, 'listingComment', id, { body, parentId });
+
   if (body === '') {
+    rememberComment();
     return redirectTo(res, `/listings/${id}/comments?status=comment-invalid#add-comment`);
   }
 
-  const parentId = positiveInteger(req.body.parent_id);
   const payload = {
     target_type: 'listing',
     target_id: id,
@@ -986,6 +991,7 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     await createComment(token, payload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberComment();
     status = error instanceof ApiError && [400, 422].includes(error.status)
       ? 'comment-invalid'
       : 'comment-failed';
@@ -1177,6 +1183,7 @@ router.get('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
     comments: commentData.comments,
     commentsCount: commentData.count,
     status: listingCommentsStatus(req.query.status, res.locals.t),
+    commentForm: consumeFormReplay(req, 'listingComment', id),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Listing not found' }));

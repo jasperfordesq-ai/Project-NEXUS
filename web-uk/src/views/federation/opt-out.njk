@@ -18,15 +18,17 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {# The warning must carry the CONSEQUENCE. The title sentence is a lead-in,
+         so it is ordinary body copy; the two were the other way round. #}
+      <p class="govuk-body-l">{{ t("federation.optout.warning_title") }}</p>
+
       <div class="govuk-warning-text">
         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
         <strong class="govuk-warning-text__text">
           <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
-          {{ t("federation.optout.warning_title") }}
+          {{ t("federation.optout.warning_body") }}
         </strong>
       </div>
-
-      <p class="govuk-body">{{ t("federation.optout.warning_body") }}</p>
 
       <form method="post" action="{{ urlFor('/federation/opt-out') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">

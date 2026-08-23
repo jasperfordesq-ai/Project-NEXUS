@@ -77,6 +77,7 @@ return [
             'create_title' => 'Criar formulário de inscrição',
             'edit_title' => 'Editar rascunho do formulário de registro',
             'name' => 'Nome do formulário',
+            'questions_required' => 'Ative pelo menos uma pergunta',
             'description' => 'Descrição',
             'rules_title' => 'Versionado e com reconhecimento de privacidade',
             'rules_description' => 'As versões publicadas são imutáveis. Cada pergunta registra sua finalidade, classificação, período de retenção e qualquer regra de exibição condicional.',

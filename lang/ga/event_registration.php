@@ -77,6 +77,7 @@ return [
             'create_title' => 'Cruthaigh foirm chlárúcháin',
             'edit_title' => 'Cuir dréacht den fhoirm chlárúcháin in eagar',
             'name' => 'Ainm foirme',
+            'questions_required' => 'Cumasaigh ceist amháin ar a laghad',
             'description' => 'Cur síos',
             'rules_title' => 'Leaganacha agus feasach ar phríobháideachas',
             'rules_description' => 'Tá leaganacha foilsithe do-ath-inmheánach. Taifeadann gach ceist a cuspóir, a rangú, a tréimhse coinneála agus aon riail maidir le taispeáint choinníollach.',

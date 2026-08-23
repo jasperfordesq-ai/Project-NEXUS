@@ -95,14 +95,14 @@
         <div class="govuk-pagination__prev">
           <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/me/collections/' + (collection.id | string) + '?page=' + ((currentPage - 1) | string)) }}" rel="prev">
             <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.7441 1.4062-1.4062-4.3008-4.3398h11.379v-2h-11.397l4.2998-4.2998-1.4063-1.4063z"></path></svg>
-            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
+            <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
           </a>
         </div>
       {% endif %}
       {% if currentPage < lastPage %}
         <div class="govuk-pagination__next">
           <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/me/collections/' + (collection.id | string) + '?page=' + ((currentPage + 1) | string)) }}" rel="next">
-            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.next") }}</span>
+            <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_saved.pagination.next") }}</span>
             <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4062 1.4062 4.2998 4.2998h-11.397v2h11.379l-4.3008 4.3398 1.4062 1.4062 6.7441-6.7441-6.7266-6.7266z"></path></svg>
           </a>
         </div>

@@ -6,6 +6,7 @@
 const express = require('express');
 const { ApiError, callGroupExchangeApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
 const GROUP_EXCHANGES_PATH = '/group-exchanges';
@@ -142,6 +143,15 @@ function splitTypeOf(result) {
 router.post('/new', asyncRoute(async (req, res) => {
   if (!tokenFrom(req)) return redirectTo(res, loginRedirect());
   const payload = exchangePayload(req.body);
+  // The single validation gate is title-or-hours, and it used to throw away the
+  // 2,000-character description along with them.
+  rememberFormReplay(req, 'groupExchange', 'create', {
+    title: trimmed(req.body.title, 150),
+    description: trimmed(req.body.description, 2000),
+    totalHours: trimmed(req.body.total_hours),
+    splitType: trimmed(req.body.split_type)
+  });
+
   if (payload.title === '' || payload.total_hours <= 0) {
     return redirectTo(res, exchangeCreateRedirect('create-invalid'));
   }

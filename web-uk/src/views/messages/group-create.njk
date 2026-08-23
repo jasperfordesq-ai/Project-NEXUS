@@ -126,6 +126,10 @@
           <div id="group-name-hint" class="govuk-hint">{{ t("govuk_alpha_messages.create.name_hint") }}</div>
           <input class="govuk-input govuk-!-width-two-thirds" id="group-name" name="name" type="text" value="{{ groupName }}" maxlength="100" aria-describedby="group-name-hint" required>
         </div>
-        <button class="govuk-button" data-module="govuk-button" {% if not canCreate or not canStart %}disabled aria-disabled="true"{% endif %}>{{ t("govuk_alpha_messages.create.create_button") }}</button>
+        {# A full-strength green primary button that silently did nothing: it
+           carried `disabled` with no disabled styling. GOV.UK styles
+           `.govuk-button[disabled]`, so adding the secondary class alongside is
+           what makes an unavailable control LOOK unavailable. #}
+        <button class="govuk-button{% if not canCreate or not canStart %} govuk-button--secondary{% endif %}" data-module="govuk-button" {% if not canCreate or not canStart %}disabled aria-disabled="true"{% endif %}>{{ t("govuk_alpha_messages.create.create_button") }}</button>
       </form>
 {% endblock %}

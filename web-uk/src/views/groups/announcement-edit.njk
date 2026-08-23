@@ -27,6 +27,9 @@
     </div>
   {% endif %}
 
+  {# After a failed save, `announcementForm` holds what the member just typed. Without it
+     this form re-rendered the SAVED announcement, so their edits were silently thrown
+     away and the page looked as though nothing had been changed. #}
   <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/edit') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
@@ -36,7 +39,7 @@
       {% if statusBanner and statusBanner.href == '#ann-title' %}
         <p class="govuk-error-message" id="edit-ann-title-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ statusBanner.message }}</p>
       {% endif %}
-      <input class="govuk-input{% if statusBanner and statusBanner.href == '#ann-title' %} govuk-input--error{% endif %}" id="edit-ann-title" name="title" type="text" maxlength="255" aria-describedby="edit-ann-title-hint{% if statusBanner and statusBanner.href == '#ann-title' %} edit-ann-title-error{% endif %}" value="{{ announcement.title }}">
+      <input class="govuk-input{% if statusBanner and statusBanner.href == '#ann-title' %} govuk-input--error{% endif %}" id="edit-ann-title" name="title" type="text" maxlength="255" aria-describedby="edit-ann-title-hint{% if statusBanner and statusBanner.href == '#ann-title' %} edit-ann-title-error{% endif %}" value="{{ announcementForm.title if announcementForm else announcement.title }}">
     </div>
 
     <div class="govuk-form-group{% if statusBanner and statusBanner.href == '#ann-content' %} govuk-form-group--error{% endif %}">
@@ -45,7 +48,7 @@
       {% if statusBanner and statusBanner.href == '#ann-content' %}
         <p class="govuk-error-message" id="edit-ann-content-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ statusBanner.message }}</p>
       {% endif %}
-      <textarea class="govuk-textarea{% if statusBanner and statusBanner.href == '#ann-content' %} govuk-textarea--error{% endif %}" id="edit-ann-content" name="content" rows="5" aria-describedby="edit-ann-content-hint{% if statusBanner and statusBanner.href == '#ann-content' %} edit-ann-content-error{% endif %}">{{ announcement.content }}</textarea>
+      <textarea class="govuk-textarea{% if statusBanner and statusBanner.href == '#ann-content' %} govuk-textarea--error{% endif %}" id="edit-ann-content" name="content" rows="5" aria-describedby="edit-ann-content-hint{% if statusBanner and statusBanner.href == '#ann-content' %} edit-ann-content-error{% endif %}">{{ announcementForm.content if announcementForm else announcement.content }}</textarea>
     </div>
 
     {# No fieldset/legend: GDS uses a fieldset only for a GROUP of controls. A single
@@ -53,7 +56,7 @@
     <div class="govuk-form-group">
       <div class="govuk-checkboxes" data-module="govuk-checkboxes">
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="edit-ann-is-pinned" name="is_pinned" type="checkbox" value="1"{% if announcement.isPinned %} checked{% endif %} aria-describedby="edit-ann-is-pinned-hint">
+          <input class="govuk-checkboxes__input" id="edit-ann-is-pinned" name="is_pinned" type="checkbox" value="1"{% if (announcementForm.isPinned if announcementForm else announcement.isPinned) %} checked{% endif %} aria-describedby="edit-ann-is-pinned-hint">
           <label class="govuk-label govuk-checkboxes__label" for="edit-ann-is-pinned">{{ t("govuk_alpha_groups.announcements.is_pinned_label") }}</label>
           <div id="edit-ann-is-pinned-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_groups.announcements.is_pinned_hint") }}</div>
         </div>
@@ -65,7 +68,7 @@
   name: "expires_at",
   legend: t("govuk_alpha_groups.announcements.expires_at_label"),
   hint: t("govuk_alpha_groups.announcements.expires_at_hint"),
-  value: announcement.expiresAtParts,
+  value: announcementForm.expiresAtParts if announcementForm else announcement.expiresAtParts,
   errorMessage: statusBanner.message if expiryInvalid else undefined,
   errorFields: ["day", "month", "year"] if expiryInvalid else undefined
 }, t) }}

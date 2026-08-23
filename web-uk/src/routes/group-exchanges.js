@@ -6,6 +6,7 @@
 const express = require('express');
 const { callGroupExchangeApi, searchUsers } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { consumeFormReplay } = require('../lib/form-replay');
 const { getRequestProfile } = require('../lib/request-profile');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
@@ -231,6 +232,7 @@ router.get('/new', asyncRoute(async (req, res) => {
     titleKey: 'group_exchanges.create_title',
     activeNav: 'group_exchanges',
     status,
+    exchangeForm: consumeFormReplay(req, 'groupExchange', 'create'),
     errorMessage: errorMessage(status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));

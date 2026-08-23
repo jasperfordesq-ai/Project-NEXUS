@@ -54,7 +54,7 @@
         {% if messageError %}
           <p id="appreciation-message-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.appreciation_message_required") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea govuk-!-width-two-thirds govuk-js-character-count" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %} appreciation-message-info"></textarea>
+        <textarea class="govuk-textarea govuk-!-width-two-thirds govuk-js-character-count" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %} appreciation-message-info">{% if appreciationForm %}{{ appreciationForm.message }}{% endif %}</textarea>
       </div>
       {% endcall %}
       <div class="govuk-form-group">
@@ -62,7 +62,9 @@
           <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.send.public_label") }}</legend>
           <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="appreciation-public" name="is_public" type="checkbox" value="1" checked aria-describedby="appreciation-public-hint">
+              {# 🔴 `checked` was hardcoded, so an intentionally UNticked "public" box flipped
+                 back to public on every failure — the opposite of what the member chose. #}
+              <input class="govuk-checkboxes__input" id="appreciation-public" name="is_public" type="checkbox" value="1"{% if appreciationForm.isPublic if appreciationForm else true %} checked{% endif %} aria-describedby="appreciation-public-hint">
               <label class="govuk-label govuk-checkboxes__label" for="appreciation-public">{{ t("govuk_alpha_saved.send.public_label") }}</label>
               <div id="appreciation-public-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_saved.send.public_hint") }}</div>
             </div>
@@ -119,14 +121,14 @@
         <div class="govuk-pagination__prev">
           <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/users/' + (owner.id | string) + '/appreciations?page=' + ((currentPage - 1) | string)) }}" rel="prev">
             <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.7441 1.4062-1.4062-4.3008-4.3398h11.379v-2h-11.397l4.2998-4.2998-1.4063-1.4063z"></path></svg>
-            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
+            <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
           </a>
         </div>
       {% endif %}
       {% if currentPage < lastPage %}
         <div class="govuk-pagination__next">
           <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/users/' + (owner.id | string) + '/appreciations?page=' + ((currentPage + 1) | string)) }}" rel="next">
-            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.next") }}</span>
+            <span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_saved.pagination.next") }}</span>
             <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4062 1.4062 4.2998 4.2998h-11.397v2h11.379l-4.3008 4.3398 1.4062 1.4062 6.7441-6.7441-6.7266-6.7266z"></path></svg>
           </a>
         </div>

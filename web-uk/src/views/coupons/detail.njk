@@ -24,12 +24,13 @@
     <p class="govuk-body govuk-!-margin-bottom-4">{{ coupon.description | striptags | nl2br | safe }}</p>
   {% endif %}
 
+  {# govuk-panel--confirmation is the big green "you have completed a transaction"
+     panel. This is an ordinary detail page rendering stored data on every load,
+     so the code is inset text under a real heading instead. #}
   {% if coupon.code %}
-    <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-4">
-      <h2 class="govuk-panel__title">{{ t("polish_commerce.coupon_code_panel_title") }}</h2>
-      <div class="govuk-panel__body">
-        <strong>{{ coupon.code }}</strong>
-      </div>
+    <h2 class="govuk-heading-m">{{ t("polish_commerce.coupon_code_panel_title") }}</h2>
+    <div class="govuk-inset-text govuk-!-margin-bottom-4">
+      <p class="govuk-body-l govuk-!-margin-bottom-0"><strong>{{ coupon.code }}</strong></p>
     </div>
   {% endif %}
 

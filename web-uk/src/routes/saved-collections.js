@@ -15,6 +15,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 
@@ -204,6 +205,7 @@ router.get('/', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_saved.collections.title'),
     activeNav: 'saved',
     collections,
+    collectionForm: consumeFormReplay(req, 'savedCollection', 'create'),
     status
   });
 }, { redirectOn401: loginRedirect() }));
@@ -239,6 +241,14 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
 router.post('/', requireAuth, asyncRoute(async (req, res) => {
   const payload = collectionPayload(req.body);
+  // `collection-failed` is an API error the member did nothing to cause, and it used to
+  // discard both the name and the description they had written.
+  rememberFormReplay(req, 'savedCollection', 'create', {
+    name: String(req.body.name || '').slice(0, 255),
+    description: String(req.body.description || '').slice(0, 2000),
+    isPublic: ['1', 'on', 'true'].includes(String(req.body.is_public || '').toLowerCase())
+  });
+
   if (!payload.name) {
     return redirectTo(res, collectionRedirect('collection-name-required'));
   }

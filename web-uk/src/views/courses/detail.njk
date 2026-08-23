@@ -14,13 +14,12 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+  {# "enrolled" carries type: 'success' (routes/courses.js), so it now falls
+     through to the success notification banner. It used to get the green
+     govuk-panel--confirmation panel, which is for an end-of-transaction
+     confirmation page, not a transient flash status. #}
   {% if status %}
-    {% if status.key == 'enrolled' %}
-      <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">
-        <h2 class="govuk-panel__title">{{ t("states.success_title") }}</h2>
-        <div class="govuk-panel__body">{{ status.message }}</div>
-      </div>
-    {% elif status.type == 'success' %}
+    {% if status.type == 'success' %}
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="course-status">
         <div class="govuk-notification-banner__header">
           <h2 class="govuk-notification-banner__title" id="course-status">{{ t("states.success_title") }}</h2>

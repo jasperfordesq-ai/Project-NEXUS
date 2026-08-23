@@ -24,6 +24,7 @@ const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { translateForRequest } = require('../lib/request-translator');
+const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
 const RESOURCE_REACTIONS = new Set(['like', 'love', 'laugh', 'wow', 'sad', 'celebrate']);
@@ -477,6 +478,63 @@ function libraryHref(params) {
   return `/resources/library${libraryQuery(params)}`;
 }
 
+// How many reaction lookups to have in flight at once. The library page asks for 20 rows,
+// so this runs in two waves rather than opening twenty sockets at the same instant.
+const VIEWER_REACTION_CONCURRENCY = 10;
+
+/**
+ * Attach the viewer's OWN reaction (and the real like count) to library rows.
+ *
+ * 🔴 Why the extra requests. The library button had no `aria-pressed` and no active
+ * class, and its accessible name read "Like <title>" whether or not the member had
+ * already liked the resource — so there was no way, by eye or by screen reader, to tell
+ * a liked resource from an unliked one. `reactionSummaryFrom` has always known how to
+ * read the viewer's own reaction, but it was only ever called by the comments page.
+ *
+ * 🔴 The list endpoint cannot supply this. `GET /api/v2/resources` selects only the
+ * resource, uploader and category columns — it returns no reaction data at all, which
+ * also means `likeCount` was reading `like_count`/`reaction_count`/`reactions_count`,
+ * none of which exist in that payload, so the count silently stayed 0 for every row.
+ * There is no batch reactions endpoint either (`GET /v2/reactions/{type}/{id}` is
+ * per-target; the only batch variant is messages-specific), so the honest options were
+ * one lookup per visible row or no state at all.
+ *
+ * A lookup that fails leaves that row exactly as it was before — no reaction, count 0 —
+ * rather than failing the page. This is the deliberate exception where swallowing is
+ * right: nothing returns a success-shaped value to a caller, and the worst case is the
+ * old behaviour for one card.
+ */
+async function withViewerReactions(token, rows) {
+  const targets = rows.filter((row) => row.id);
+  if (!token || targets.length === 0) return rows;
+
+  const summaries = new Map();
+  for (let start = 0; start < targets.length; start += VIEWER_REACTION_CONCURRENCY) {
+    const batch = targets.slice(start, start + VIEWER_REACTION_CONCURRENCY);
+    const settled = await Promise.all(batch.map(async (row) => {
+      try {
+        return [row.id, reactionSummaryFrom(await getReactionSummary(token, 'resource', row.id))];
+      } catch {
+        return [row.id, null];
+      }
+    }));
+    settled.forEach(([id, summary]) => {
+      if (summary) summaries.set(id, summary);
+    });
+  }
+
+  return rows.map((row) => {
+    const summary = summaries.get(row.id);
+    if (!summary) return { ...row, userReaction: '' };
+    return {
+      ...row,
+      userReaction: summary.userReaction,
+      // `counts.like` is the like tally specifically; `total` counts every reaction type.
+      likeCount: Number(summary.counts.like) || 0
+    };
+  });
+}
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
@@ -526,13 +584,14 @@ router.get('/library', asyncRoute(async (req, res) => {
   const profile = objectFrom(dataFrom(profileResult));
   const currentUserId = positiveInteger(profile.id || profile.user_id);
   const isAdmin = isResourceAdmin(profile);
-  const resources = resourceItemsFrom(resourcesResult).map((resource) => {
+  const baseResources = resourceItemsFrom(resourcesResult).map((resource) => {
     const normalized = normalizeLibraryResource(resource, res.locals.t, res.locals.formatLocaleDate);
     return {
       ...normalized,
       canManage: isAdmin || normalized.canManage || canManageResource(resource, currentUserId)
     };
   });
+  const resources = await withViewerReactions(token, baseResources);
   const meta = metaFrom(resourcesResult);
   const nextCursor = trimmed(meta.next_cursor || meta.nextCursor || meta.cursor);
   const hasMore = Boolean(meta.has_more || meta.hasMore || nextCursor);
@@ -708,6 +767,7 @@ router.get('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
       res.locals.t(`govuk_alpha_resources.social.reaction_types.${type}`)
     ])),
     reactionEmoji: RESOURCE_REACTION_EMOJI,
+    commentForm: consumeFormReplay(req, 'resourceComment', resourceId),
     status: commentsStatusMessage(trimmed(req.query && req.query.status), res.locals.t)
   });
 }, { redirectOn401: '/login?status=auth-required', notFoundTitle: 'Resource comments' }));
@@ -929,7 +989,11 @@ router.post('/:id(\\d+)/comments/add', asyncRoute(async (req, res) => {
 
   const body = trimmed(req.body.body, 5000);
   const parentId = positiveInteger(req.body.parent_id);
+  // Without this the textarea came back empty on failure and the comment was lost.
+  const rememberComment = () => rememberFormReplay(req, 'resourceComment', id, { body, parentId });
+
   if (body === '') {
+    rememberComment();
     return redirectTo(res, commentsRedirect(id, 'comment-invalid'));
   }
 
@@ -944,6 +1008,7 @@ router.post('/:id(\\d+)/comments/add', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectAuthIfNeeded(error, req, res)) return undefined;
     if (isNotFound(error)) throw error;
+    rememberComment();
     status = 'comment-failed';
   }
 

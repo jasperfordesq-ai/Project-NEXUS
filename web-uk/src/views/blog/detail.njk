@@ -95,7 +95,9 @@
             {% call characterCount(5000, characterCountMessages, "body") %}
             <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">
               <label class="govuk-label govuk-label--s" for="body">{{ t("blog.comment_body_label") }}</label>
-              <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-info"></textarea>
+              {# Refilled from the session stash after a failure; this came back empty before,
+             which threw away whatever the member had written. #}
+          <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-info">{% if commentForm %}{{ commentForm.body }}{% endif %}</textarea>
             </div>
             {% endcall %}
             <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>

@@ -77,6 +77,7 @@ return [
             'create_title' => 'Utwórz formularz rejestracyjny',
             'edit_title' => 'Edytuj wersję roboczą formularza rejestracyjnego',
             'name' => 'Nazwa formularza',
+            'questions_required' => 'Włącz co najmniej jedno pytanie',
             'description' => 'Opis',
             'rules_title' => 'Wersjonowane i uwzględniające prywatność',
             'rules_description' => 'Opublikowane wersje są niezmienne. Każde pytanie rejestruje swój cel, klasyfikację, okres przechowywania i wszelkie reguły warunkowego wyświetlania.',

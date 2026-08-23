@@ -90,8 +90,8 @@
             {% endif %}
             <div class="govuk-button-group">
               {% if connection.messageHref %}
-                <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor(connection.messageHref) }}">{{ t("govuk_alpha_connections.network.message") }}</a>
-                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}</a>
+                <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor(connection.messageHref) }}">{{ t("govuk_alpha_connections.network.message") }}<span class="govuk-visually-hidden"> — {{ connection.name }}</span></a>
+                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}<span class="govuk-visually-hidden"> — {{ connection.name }}</span></a>
               {% endif %}
               {% if connection.removeAction %}
                 <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
@@ -152,7 +152,7 @@
                 </form>
               {% endif %}
               {% if connection.profileHref %}
-                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}</a>
+                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}<span class="govuk-visually-hidden"> — {{ connection.name }}</span></a>
               {% endif %}
             </div>
           </article>
@@ -185,7 +185,7 @@
             <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("govuk_alpha_connections.network.request_pending") }}</p>
             <div class="govuk-button-group">
               {% if connection.profileHref %}
-                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}</a>
+                <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(connection.profileHref) }}">{{ t("govuk_alpha_connections.network.view_profile") }}<span class="govuk-visually-hidden"> — {{ connection.name }}</span></a>
               {% endif %}
               {% if connection.removeAction %}
                 <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">

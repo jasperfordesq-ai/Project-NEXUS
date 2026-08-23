@@ -13,11 +13,19 @@
     <div class="govuk-grid-column-two-thirds">
 <span class="govuk-caption-xl">{{ t("event_registration.title") }}</span><h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
 <p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
-{% if formErrors and (formErrors | length) %}
+{# 🔴 This was ONE generic message linked to `#form-name`, raised for six different
+   causes across ninety-odd controls — a blank name, no enabled question, three missing
+   hidden revision values, and any API rejection including a 409 conflict. The route now
+   says which of the two member-fixable fields is at fault; a stale page or a server
+   refusal is a sentence, because there is no field for the member to go and fix. #}
+{% if (errorList and errorList.length) or formMessage %}
 <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
   <div role="alert">
   <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
-  <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list">{% for error in formErrors %}<li><a href="#form-name">{{ error }}</a></li>{% endfor %}</ul></div>
+  <div class="govuk-error-summary__body">
+    {% if formMessage %}<p class="govuk-body">{{ formMessage }}</p>{% endif %}
+    {% if errorList and errorList.length %}<ul class="govuk-list govuk-error-summary__list">{% for error in errorList %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}</ul>{% endif %}
+  </div>
   </div>
 </div>
 {% endif %}
@@ -29,9 +37,10 @@
   <input type="hidden" name="expected_settings_revision" value="{{ settingsRevision }}">
   {% if form %}<input type="hidden" name="expected_form_revision" value="{{ form.revision }}">{% endif %}
 
-  <div class="govuk-form-group">
+  <div class="govuk-form-group{% if fieldErrors.name %} govuk-form-group--error{% endif %}">
     <label class="govuk-label govuk-label--m" for="form-name">{{ t("event_registration.forms.editor.name") }}</label>
-    <input class="govuk-input" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255" required>
+    {% if fieldErrors.name %}<p id="form-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.name }}</p>{% endif %}
+    <input class="govuk-input{% if fieldErrors.name %} govuk-input--error{% endif %}" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255"{% if fieldErrors.name %} aria-describedby="form-name-error"{% endif %} required>
   </div>
   {% call characterCount(2000, characterCountMessages, "form-description") %}
   <div class="govuk-form-group">
@@ -49,10 +58,16 @@
     {% set condition = (visibility.conditions or [])[0] or {} %}
     <fieldset class="govuk-fieldset govuk-!-margin-bottom-8">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("event_registration.forms.editor.question", { number: loop.index }) }}</h2></legend>
-      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-        <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="question-{{ i }}-enabled" name="questions[{{ i }}][enabled]" type="checkbox" value="1"{% if row.enabled %} checked{% endif %}>
-          <label class="govuk-label govuk-checkboxes__label" for="question-{{ i }}-enabled">{{ t("event_registration.accessible.enabled") }}</label>
+      {# "enable at least one question" is a rule about the whole set, so GDS marks it once
+         — on the FIRST row, which is also where the summary link points — rather than
+         repeating the same message on every question. #}
+      <div class="govuk-form-group{% if fieldErrors.questions and i == 0 %} govuk-form-group--error{% endif %}">
+        {% if fieldErrors.questions and i == 0 %}<p id="question-0-enabled-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.questions }}</p>{% endif %}
+        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="question-{{ i }}-enabled" name="questions[{{ i }}][enabled]" type="checkbox" value="1"{% if row.enabled %} checked{% endif %}{% if fieldErrors.questions and i == 0 %} aria-describedby="question-0-enabled-error"{% endif %}>
+            <label class="govuk-label govuk-checkboxes__label" for="question-{{ i }}-enabled">{{ t("event_registration.accessible.enabled") }}</label>
+          </div>
         </div>
       </div>
       <input type="hidden" name="questions[{{ i }}][stable_key]" value="{{ row.stable_key or ('question_' + (loop.index | string)) }}">

@@ -77,6 +77,7 @@ return [
             'create_title' => 'Anmeldeformular erstellen',
             'edit_title' => 'Bearbeiten Sie den Entwurf des Registrierungsformulars',
             'name' => 'Formularname',
+            'questions_required' => 'Aktivieren Sie mindestens eine Frage',
             'description' => 'Beschreibung',
             'rules_title' => 'Versioniert und datenschutzbewusst',
             'rules_description' => 'Veröffentlichte Versionen sind unveränderlich. Für jede Frage werden Zweck, Klassifizierung, Aufbewahrungsfrist und etwaige bedingte Anzeigeregeln erfasst.',

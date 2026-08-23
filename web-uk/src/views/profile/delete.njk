@@ -55,7 +55,10 @@
 
         <div class="govuk-form-group">
           <label class="govuk-label" for="reason">{{ t("delete_account.reason_label") }}</label>
-          <textarea class="govuk-textarea" id="reason" name="reason" rows="3"></textarea>
+          {# Refilled after a failure. The password box above deliberately is NOT — a browser
+         password manager is the right place to keep a password, a re-rendered page is not,
+         and this form has five failure exits. #}
+      <textarea class="govuk-textarea" id="reason" name="reason" rows="3">{% if deleteForm %}{{ deleteForm.reason }}{% endif %}</textarea>
         </div>
 
         <div class="govuk-form-group{% if confirmError %} govuk-form-group--error{% endif %}">

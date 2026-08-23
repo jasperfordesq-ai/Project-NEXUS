@@ -15,6 +15,7 @@ const {
 } = require('../lib/api');
 const { withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { consumeFormReplay } = require('../lib/form-replay');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
@@ -581,6 +582,9 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     postErrorMessage: ['post-empty', 'post-failed'].includes(status) && statusMessage
       ? statusMessage.text
       : '',
+    // What the member had just typed into the composer, if the post failed. Consumed
+    // once, so a later clean visit to the feed shows an empty composer.
+    postForm: consumeFormReplay(req, 'feedPost', 'composer'),
     perPage,
     requiresAuth: !token,
     listingsEnabled: flagEnabled(tenant, 'listings', 'modules', true),

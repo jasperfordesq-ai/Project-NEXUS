@@ -18,6 +18,7 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { audit } = require('../lib/auditLogger');
 const { getRequestProfile } = require('../lib/request-profile');
+const { isValidationFailureStatus } = require('../lib/validation-status');
 
 const router = express.Router();
 
@@ -77,6 +78,29 @@ function redirectTo(res, pathname) {
 
 function commentsRedirect(id, status, fragment = '') {
   return `${REVIEWS_PATH}/${id}/comments?status=${encodeURIComponent(status)}${fragment}`;
+}
+
+// Stash the just-submitted comment (or reply) so the error re-render puts the member's
+// own words back, mirroring `storeTransferForm` in routes/wallet.js. Without this the
+// textarea came back EMPTY after an API failure, so a long comment was simply gone.
+// `parentId` is stored too, so a failed REPLY refills the reply box it came from rather
+// than the top-level composer. Consumed (and deleted) once by GET /reviews/:id/comments.
+function rememberReviewCommentForm(req, reviewId, { body, parentId }) {
+  if (!req.session) return;
+  req.session.reviewCommentForms ||= {};
+  req.session.reviewCommentForms[String(reviewId)] = {
+    body: String(body || '').slice(0, 5000),
+    parentId: parentId === null || parentId === undefined ? null : Number(parentId)
+  };
+}
+
+function consumeReviewCommentForm(req, reviewId) {
+  const key = String(reviewId);
+  const state = req.session?.reviewCommentForms?.[key];
+  if (state && req.session?.reviewCommentForms) {
+    delete req.session.reviewCommentForms[key];
+  }
+  return state && typeof state === 'object' ? state : null;
 }
 
 function redirectAuthIfNeeded(error, req, res) {
@@ -295,6 +319,7 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
   const parentId = positiveInteger(req.body.parent_id);
 
   if (body === '') {
+    rememberReviewCommentForm(req, id, { body, parentId });
     return redirectTo(res, commentsRedirect(id, 'comment-invalid'));
   }
 
@@ -309,6 +334,7 @@ router.post('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectAuthIfNeeded(error, req, res)) return;
     if (shouldRenderNotFound(error)) throw error;
+    rememberReviewCommentForm(req, id, { body, parentId });
     status = 'comment-failed';
   }
 
@@ -410,9 +436,17 @@ router.get('/:id(\\d+)/comments', requireAuth, asyncRoute(async (req, res) => {
   const comments = commentCollectionFrom(commentsResult).map((comment) => normalizeComment(comment, res.locals.t));
   const reactionData = oneFrom(reactionsResult);
 
+  const statusMessage = commentStatusMessage(req.query.status, res.locals.t);
+
   res.render('reviews/comments', {
     title: res.locals.t('govuk_alpha_blogreviews.review_comments.title'),
-    statusMessage: commentStatusMessage(req.query.status, res.locals.t),
+    statusMessage,
+    // layouts/base.njk derives the "Error:" page-title prefix from `pageHasErrors` and
+    // friends. This page signals validation failure only through a `-invalid` status
+    // string, which the layout cannot see, so the prefix is passed explicitly. A
+    // template-level `{% set %}` would NOT work: it runs after the parent's <head>.
+    pageHasErrors: isValidationFailureStatus(statusMessage),
+    commentForm: consumeReviewCommentForm(req, id),
     review: normalizeReview(rawReview, 'received', res.locals.t),
     comments,
     commentsCount: commentCountFrom(commentsResult, comments),

@@ -80,7 +80,7 @@
           {% if postErrorMessage %}
             <p id="content-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ postErrorMessage }}</p>
           {% endif %}
-          <textarea class="govuk-textarea{% if postErrorMessage %} govuk-textarea--error{% endif %}" id="content" name="content" rows="4" aria-describedby="content-hint{% if postErrorMessage %} content-error{% endif %}"></textarea>
+          <textarea class="govuk-textarea{% if postErrorMessage %} govuk-textarea--error{% endif %}" id="content" name="content" rows="4" aria-describedby="content-hint{% if postErrorMessage %} content-error{% endif %}">{% if postForm %}{{ postForm.content }}{% endif %}</textarea>
         </div>
         <div class="govuk-form-group">
           <label class="govuk-label" for="image">{{ t("feed.image_label") }}</label>
@@ -90,7 +90,9 @@
         <div class="govuk-form-group">
           <label class="govuk-label" for="image_alt">{{ t("feed.image_alt_label") }}</label>
           <div id="image-alt-hint" class="govuk-hint">{{ t("feed.image_alt_hint") }}</div>
-          <input class="govuk-input" id="image_alt" name="image_alt" type="text" maxlength="500" aria-describedby="image-alt-hint">
+          {# The image itself cannot be restored — a browser forbids setting a file input's
+             value — but the alt text the member wrote for it can be. #}
+          <input class="govuk-input" id="image_alt" name="image_alt" type="text" maxlength="500" value="{{ postForm.imageAlt if postForm else '' }}" aria-describedby="image-alt-hint">
         </div>
         {{ govukButton({ text: t("actions.post") }) }}
       </form>

@@ -60,7 +60,7 @@
           {% if status and status.anchor == 'body' %}
             <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
           {% endif %}
-          <textarea class="govuk-textarea{% if status and status.anchor == 'body' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %} body-info"></textarea>
+          <textarea class="govuk-textarea{% if status and status.anchor == 'body' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %} body-info">{% if commentForm %}{{ commentForm.body }}{% endif %}</textarea>
         </div>
         {% endcall %}
         <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_listings.comments.submit") }}</button>

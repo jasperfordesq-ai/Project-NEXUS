@@ -26,6 +26,12 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { rememberFormReplay } = require('../lib/form-replay');
+
+// The feed composer's replay bucket. One key ('composer') because the composer is a
+// single form at the top of the feed, not per-item.
+const FEED_POST_REPLAY = 'feedPost';
+const FEED_POST_REPLAY_KEY = 'composer';
 
 const router = express.Router();
 const FEED_PATH = '/feed';
@@ -142,7 +148,17 @@ router.post('/posts', asyncRoute(async (req, res) => {
   const content = trimmed(req.body.content, 5000);
   const imageAlt = trimmed(req.body.image_alt, 500);
   const image = uploadedFile(req, 'image');
+  // 🔴 The composer came back blank after any failure, so a post the member had just
+  // written was gone. The picked IMAGE cannot be restored — a browser forbids setting a
+  // file input's value — which is exactly why keeping the words and the alt text matters:
+  // re-choosing a file is a nuisance, retyping the post is the real loss.
+  const rememberPost = () => rememberFormReplay(req, FEED_POST_REPLAY, FEED_POST_REPLAY_KEY, {
+    content,
+    imageAlt
+  });
+
   if (content === '') {
+    rememberPost();
     await removeUploadedFile(image);
     return redirectTo(res, feedStatusRedirect('post-empty'));
   }
@@ -167,6 +183,7 @@ router.post('/posts', asyncRoute(async (req, res) => {
     await createFeedPostV2(token, payload);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req)) return undefined;
+    rememberPost();
     status = 'post-failed';
   } finally {
     await removeUploadedFile(image);

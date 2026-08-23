@@ -11,13 +11,11 @@
       <h1 class="govuk-heading-xl">{{ t("trust_safety.title") }}</h1>
       <p class="govuk-body-l">{{ t("trust_safety.subtitle", { name: communityName }) }}</p>
 
-      <div class="govuk-warning-text">
-        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-        <strong class="govuk-warning-text__text">
-          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
-          <span class="govuk-!-font-weight-bold">{{ t("trust_safety.safeguarding_title") }}.</span>
-          {{ t("trust_safety.safeguarding_body") }}
-        </strong>
+      {# This is signposting, not a consequence, so it is inset text under a real
+         heading rather than warning text with a bolded pseudo-heading inside it. #}
+      <h2 class="govuk-heading-m">{{ t("trust_safety.safeguarding_title") }}</h2>
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("trust_safety.safeguarding_body") }}</p>
       </div>
 
       {% for section in sections %}

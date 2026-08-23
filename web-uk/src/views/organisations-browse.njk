@@ -82,7 +82,7 @@
 
     {% if hasMore and loadMoreHref %}
       <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('govuk_alpha_organisations.browse.load_more') }}">
-        <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(loadMoreHref) }}"><span class="govuk-pagination__link-title">{{ t("govuk_alpha_organisations.browse.load_more") }}</span></a></div>
+        <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(loadMoreHref) }}"><span class="govuk-pagination__link-title govuk-pagination__link-title--decorated">{{ t("govuk_alpha_organisations.browse.load_more") }}</span></a></div>
       </nav>
     {% endif %}
   {% else %}
