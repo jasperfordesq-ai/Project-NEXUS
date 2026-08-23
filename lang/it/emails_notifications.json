@@ -75,6 +75,7 @@
     "cancelled_msg": "Questo scambio è stato annullato.",
     "cancelled_reason": " Motivo: \"{{reason}}\"",
     "disputed_msg": "C'è una discrepanza nelle ore confermate da entrambe le parti. Un coordinatore esaminerà questo scambio e aiuterà a risolvere la differenza.",
+    "problem_reported_msg": "Una delle persone coinvolte in questo scambio ha segnalato un problema. Un coordinatore lo esaminerà e vi contatterà.",
     "disputed_under_review": "Un coordinatore esaminerà le ore confermate e prenderà una decisione equa.",
     "accepted_msg": "Ottime notizie! {{name}} ha accettato la tua richiesta di scambio. Puoi ora coordinare quando e dove il servizio avrà luogo.",
     "accepted_next_step": "Invia un messaggio a {{name}} per concordare quando e dove il servizio avrà luogo.",

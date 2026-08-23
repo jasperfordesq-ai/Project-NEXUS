@@ -1,13 +1,13 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2233 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 49,
-    "call_sites": 506,
-    "distinct_endpoints": 417,
-    "verified": 417,
+    "call_sites": 507,
+    "distinct_endpoints": 418,
+    "verified": 418,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -787,6 +787,15 @@
       "matched_via": "exact",
       "sites": [
         "exchangeRequests.ts:149"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/dispute",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:226"
       ]
     },
     {

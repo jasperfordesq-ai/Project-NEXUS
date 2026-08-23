@@ -75,6 +75,7 @@
     "cancelled_msg": "Cuireadh an malartú seo ar ceal.",
     "cancelled_reason": " Cúis: \"{{reason}}\"",
     "disputed_msg": "Tá easaontas sna huaireanta a dheimhnigh an dá pháirtí. Déanfaidh comhordaitheoir athbhreithniú ar an malartú seo agus cabhróidh siad chun an difríocht a réiteach.",
+    "problem_reported_msg": "Thuairiscigh duine sa mhalartú seo fadhb. Déanfaidh comhordaitheoir athbhreithniú air agus beidh sé i dteagmháil.",
     "disputed_under_review": "Déanfaidh comhordaitheoir athbhreithniú ar na huaireanta deimhnithe agus glacfaidh siad cinneadh cóir.",
     "accepted_msg": "Nuacht mhaith! Ghlac {{name}} le d'iarratas malairte. Is féidir leat comhordú anois cathain agus cá dtarlóidh an tseirbhís.",
     "accepted_next_step": "Seol teachtaireacht chuig {{name}} chun socrú a dhéanamh cathain agus cá dtarlóidh an tseirbhís.",

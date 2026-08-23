@@ -31,9 +31,12 @@ import {
   completeExchangeRequest,
   confirmExchangeRequest,
   declineExchangeRequest,
+  disputeExchangeRequest,
+  DISPUTE_REASONS,
   exchangeRequestActions,
   getExchangeRequest,
   startExchangeRequest,
+  type DisputeReason,
   type ExchangeRequest,
   type ExchangeRequestStatus,
 } from '@/lib/api/exchangeRequests';
@@ -45,6 +48,7 @@ import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import BottomSheet from '@/components/ui/BottomSheet';
+import TextArea from '@/components/ui/TextArea';
 import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -115,12 +119,18 @@ function ExchangeRequestDetailScreen() {
             canConfirm: false,
             canCancel: false,
             awaitingOtherConfirmation: false,
+            canReportProblem: false,
           },
     [exchange, viewerId],
   );
 
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmSheetOpen, setConfirmSheetOpen] = useState(false);
+  // Journey 3.20 — reporting a problem. No reason is pre-selected: a pre-ticked answer in
+  // a report is a guess put in the member's mouth, and a broker reads these.
+  const [reportSheetOpen, setReportSheetOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<DisputeReason | null>(null);
+  const [reportDetails, setReportDetails] = useState('');
   // Pre-filled with the hours already agreed, because that is the answer in most cases and
   // an empty field invites a typo into the one step that moves credits.
   const [hoursInput, setHoursInput] = useState('');
@@ -148,6 +158,22 @@ function ExchangeRequestDetailScreen() {
     },
     [refresh, showToast, t],
   );
+
+  const submitReport = useCallback(async () => {
+    if (!exchange || !reportReason) return;
+    /*
+      The sheet closes FIRST, then the request runs. The other way round leaves a sheet
+      sitting over the screen while a slow request finishes, and this app has already been
+      bitten by a sheet outliving the screen underneath it.
+    */
+    setReportSheetOpen(false);
+    await run(
+      'report',
+      () => disputeExchangeRequest(exchange.id, reportReason, reportDetails),
+      // Matches the server's own message, which is translated for this member's language.
+      t('requests.dispute.sent'),
+    );
+  }, [exchange, reportReason, reportDetails, run, t]);
 
   const openConfirmSheet = useCallback(() => {
     if (!exchange) return;
@@ -285,6 +311,18 @@ function ExchangeRequestDetailScreen() {
           ).then(() => router.back()),
       });
     }
+    if (actions.canReportProblem) {
+      buttons.push({
+        key: 'report',
+        label: t('requests.dispute.action'),
+        variant: 'secondary',
+        onPress: () => {
+          setReportReason(null);
+          setReportDetails('');
+          setReportSheetOpen(true);
+        },
+      });
+    }
     if (actions.canCancel) {
       buttons.push({
         key: 'cancel',
@@ -299,33 +337,42 @@ function ExchangeRequestDetailScreen() {
       });
     }
 
-    if (buttons.length === 0) {
-      return (
-        <Text className="mt-4 text-sm text-muted-foreground">
-          {actions.awaitingOtherConfirmation
-            ? t('requests.awaitingOther')
-            : t('requests.noActions')}
-        </Text>
-      );
-    }
+    /*
+      🔴 The waiting line is NOT an else-branch of "there are no buttons", and that
+      distinction is a real defect this caught. Adding "Report a problem" gave this member
+      a button, which silently removed "You have confirmed, waiting for the other member"
+      — the one thing they needed to read. State and actions are separate things.
+    */
+    const statusLine = actions.awaitingOtherConfirmation
+      ? t('requests.awaitingOther')
+      : buttons.length === 0
+        ? t('requests.noActions')
+        : null;
 
     // Wrapping row with grow-to-fit buttons: the same shape as FormActionFooter, and for
     // the same reason — a fixed row clipped its last button at every screen width.
     return (
-      <View className="mt-4 flex-row flex-wrap gap-2">
-        {buttons.map((button) => (
-          <HeroButton
-            key={button.key}
-            variant={button.variant ?? 'primary'}
-            isDisabled={busy !== null}
-            onPress={button.onPress}
-            style={{ flexGrow: 1, flexBasis: 'auto' }}
-            testID={`exchange-action-${button.key}`}
-          >
-            <HeroButton.Label>{button.label}</HeroButton.Label>
-          </HeroButton>
-        ))}
-      </View>
+      <>
+        {statusLine ? (
+          <Text className="mt-4 text-sm text-muted-foreground">{statusLine}</Text>
+        ) : null}
+        {buttons.length > 0 ? (
+          <View className="mt-4 flex-row flex-wrap gap-2">
+            {buttons.map((button) => (
+              <HeroButton
+                key={button.key}
+                variant={button.variant ?? 'primary'}
+                isDisabled={busy !== null}
+                onPress={button.onPress}
+                style={{ flexGrow: 1, flexBasis: 'auto' }}
+                testID={`exchange-action-${button.key}`}
+              >
+                <HeroButton.Label>{button.label}</HeroButton.Label>
+              </HeroButton>
+            ))}
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -443,6 +490,63 @@ function ExchangeRequestDetailScreen() {
           ) : null}
         </ScrollView>
       )}
+
+      <BottomSheet
+        visible={reportSheetOpen}
+        onClose={() => setReportSheetOpen(false)}
+        title={t('requests.dispute.title')}
+      >
+        <View className="gap-3 pt-2">
+          <Text className="text-sm text-muted-foreground">{t('requests.dispute.body')}</Text>
+          {/*
+            🔴 The safety line is not decoration. This routes to the community's brokers as
+            an exchange problem; it is NOT a safeguarding case, and a member in danger must
+            not be left thinking it is.
+          */}
+          <Text className="text-sm text-muted-foreground">{t('requests.dispute.safetyNote')}</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {DISPUTE_REASONS.map((reason) => (
+              <Chip
+                key={reason}
+                variant={reportReason === reason ? 'primary' : 'secondary'}
+                onPress={() => setReportReason(reason)}
+                testID={`exchange-dispute-reason-${reason}`}
+                accessibilityLabel={t(`requests.dispute.reasons.${reason}`)}
+              >
+                <Chip.Label>{t(`requests.dispute.reasons.${reason}`)}</Chip.Label>
+              </Chip>
+            ))}
+          </View>
+          <TextArea
+            value={reportDetails}
+            onChangeText={setReportDetails}
+            placeholder={t('requests.dispute.detailsPlaceholder')}
+            accessibilityLabel={t('requests.dispute.detailsPlaceholder')}
+            numberOfLines={4}
+            containerClassName="mb-0"
+            testID="exchange-dispute-details"
+          />
+          <View className="flex-row flex-wrap gap-2">
+            <HeroButton
+              variant="secondary"
+              onPress={() => setReportSheetOpen(false)}
+              style={{ flexGrow: 1, flexBasis: 'auto' }}
+            >
+              <HeroButton.Label>{t('requests.actions.cancelSheet')}</HeroButton.Label>
+            </HeroButton>
+            <HeroButton
+              onPress={() => void submitReport()}
+              // Disabled until a reason is chosen: the server refuses without one, and a
+              // button that fails on purpose is worse than one that waits.
+              isDisabled={busy !== null || reportReason === null}
+              style={{ flexGrow: 1, flexBasis: 'auto' }}
+              testID="exchange-dispute-submit"
+            >
+              <HeroButton.Label>{t('requests.dispute.submit')}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        </View>
+      </BottomSheet>
 
       <BottomSheet
         visible={confirmSheetOpen}

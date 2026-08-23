@@ -151,6 +151,7 @@ return [
     'exchange_completed' => '交換完了！ :hours 時間転送されました。',
     'exchange_cancelled' => '交換がキャンセルされました',
     'exchange_disputed' => 'Exchange の時間確認に矛盾があります - ブローカーのレビューが必要です',
+    'exchange_problem_reported' => 'あなたの交換について問題が報告されました。コーディネーターが確認します。',
     'exchange_accepted' => '交換リクエストは受け付けられました！これでサービスを調整できるようになりました。',
     'exchange_pending_broker' => '交換が承認されました - コーディネーターの承認待ち',
     'exchange_started' => '交換が始まりました！現在サービス中です。',

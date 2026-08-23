@@ -75,6 +75,7 @@
     "cancelled_msg": "Dieser Tausch wurde storniert.",
     "cancelled_reason": " Grund: \"{{reason}}\"",
     "disputed_msg": "Es gibt eine Abweichung bei den von beiden Parteien bestätigten Stunden. Eine Koordinatorin oder ein Koordinator wird diesen Tausch prüfen und die Differenz klären.",
+    "problem_reported_msg": "Eine an diesem Austausch beteiligte Person hat ein Problem gemeldet. Ein Koordinator wird es prüfen und sich melden.",
     "disputed_under_review": "Eine Koordinatorin oder ein Koordinator wird die bestätigten Stunden prüfen und eine faire Entscheidung treffen.",
     "accepted_msg": "Gute Nachrichten! {{name}} hat Ihre Tausch­anfrage angenommen. Sie können nun koordinieren, wann und wo die Leistung stattfinden soll.",
     "accepted_next_step": "Schreiben Sie {{name}} eine Nachricht, um Zeit und Ort der Leistung zu vereinbaren.",

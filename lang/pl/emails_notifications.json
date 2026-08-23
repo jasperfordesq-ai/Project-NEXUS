@@ -75,6 +75,7 @@
     "cancelled_msg": "Ta wymiana została anulowana.",
     "cancelled_reason": " Powód: \"{{reason}}\"",
     "disputed_msg": "Wystąpiła rozbieżność w godzinach potwierdzonych przez obie strony. Koordynator przejrzy tę wymianę i pomoże rozwiązać różnicę.",
+    "problem_reported_msg": "Ktoś uczestniczący w tej wymianie zgłosił problem. Koordynator go sprawdzi i skontaktuje się z Tobą.",
     "disputed_under_review": "Koordynator przejrzy potwierdzone godziny i podejmie sprawiedliwą decyzję.",
     "accepted_msg": "Świetne wiadomości! {{name}} zaakceptował(a) Twoje żądanie wymiany. Możesz teraz ustalić kiedy i gdzie usługa zostanie wykonana.",
     "accepted_next_step": "Wyślij wiadomość do {{name}}, aby ustalić kiedy i gdzie usługa zostanie wykonana.",

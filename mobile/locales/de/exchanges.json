@@ -474,6 +474,22 @@
       "provider_confirmed": "Helfende Person hat die Stunden bestätigt",
       "requester_confirmed": "Anfragende Person hat die Stunden bestätigt"
     },
-    "messageOtherParty": "{{name}} eine Nachricht senden"
+    "messageOtherParty": "{{name}} eine Nachricht senden",
+    "dispute": {
+      "action": "Problem melden",
+      "title": "Was ist schiefgelaufen?",
+      "body": "Ein Koordinator sieht dies und kann eingreifen. Sie beide behalten währenddessen Zugriff auf den Austausch.",
+      "safetyNote": "Dies ist kein Notfallweg. Wenn Sie sich unsicher fühlen, wenden Sie sich direkt an Ihre Community.",
+      "detailsPlaceholder": "Alles, was hilft (optional)",
+      "submit": "Meldung senden",
+      "sent": "Gemeldet. Ein Koordinator wird sich das ansehen.",
+      "reasons": {
+        "conduct": "Wie ich behandelt wurde",
+        "hours": "Die Stunden stimmen nicht",
+        "no_show": "Niemand ist erschienen",
+        "other": "Etwas anderes",
+        "quality": "Nicht wie vereinbart"
+      }
+    }
   }
 }

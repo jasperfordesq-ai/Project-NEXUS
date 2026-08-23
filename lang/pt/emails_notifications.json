@@ -75,6 +75,7 @@
     "cancelled_msg": "Esta troca foi cancelada.",
     "cancelled_reason": " Motivo: \"{{reason}}\"",
     "disputed_msg": "Existe uma discrepância nas horas confirmadas por ambas as partes. Um coordenador analisará esta troca e ajudará a resolver a diferença.",
+    "problem_reported_msg": "Alguém nesta troca reportou um problema. Um coordenador irá analisá-lo e entrará em contacto.",
     "disputed_under_review": "Um coordenador irá rever as horas confirmadas e tomar uma decisão justa.",
     "accepted_msg": "Ótimas notícias! {{name}} aceitou o seu pedido de troca. Pode agora coordenar quando e onde o serviço terá lugar.",
     "accepted_next_step": "Envie uma mensagem a {{name}} para combinar quando e onde o serviço decorrerá.",

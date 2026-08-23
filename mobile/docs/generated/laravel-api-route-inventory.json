@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2721,
-  "api_route_rows": 2686,
-  "distinct_api_paths": 2232,
+  "total_registered_routes": 2722,
+  "api_route_rows": 2687,
+  "distinct_api_paths": 2233,
   "route_source_fingerprint": {
-    "digest": "7d57f15d3d544ba6dd5e18d290fa3470f369ad8b260ada183680b3d3fddb679a",
+    "digest": "e6b30c5fa7dc6d4782beab349081438ecb0f9d68479fdd4ba15b211eb60f1e4e",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "262ddbb432dbe361a0933b9783a5eb8477fb4b68f976c0609128293ac7f39fdd"
+        "sha256": "de145589b0659f10f21acfdecd7bcb040ebf22ae61a9871440fe496167ee469c"
       },
       {
         "file": "routes/channels.php",
@@ -4407,6 +4407,9 @@
       "POST"
     ],
     "/api/v2/exchanges/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/exchanges/{id}/dispute": [
       "POST"
     ],
     "/api/v2/exchanges/{id}/rate": [

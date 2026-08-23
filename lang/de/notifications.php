@@ -148,6 +148,7 @@ return [
     'exchange_completed' => 'Austausch abgeschlossen! :hours Stunden übertragen.',
     'exchange_cancelled' => 'Der Umtausch wurde abgebrochen',
     'exchange_disputed' => 'Die Börse hat widersprüchliche Stundenbestätigungen – eine Überprüfung durch den Broker ist erforderlich',
+    'exchange_problem_reported' => 'Zu Ihrem Austausch wurde ein Problem gemeldet. Ein Koordinator wird es prüfen.',
     'exchange_accepted' => 'Ihre Umtauschanfrage wurde angenommen! Sie können nun den Service koordinieren.',
     'exchange_pending_broker' => 'Umtausch akzeptiert – Genehmigung durch den Koordinator erforderlich',
     'exchange_started' => 'Der Austausch hat begonnen! Der Service ist jetzt im Gange.',

@@ -75,6 +75,7 @@
     "cancelled_msg": "This exchange has been cancelled.",
     "cancelled_reason": " Reason: \"{{reason}}\"",
     "disputed_msg": "There's a discrepancy in the hours confirmed by both parties. A coordinator will review this exchange and help resolve the difference.",
+    "problem_reported_msg": "Someone in this exchange has reported a problem. A coordinator will review it and be in touch.",
     "disputed_under_review": "A coordinator will review the confirmed hours and make a fair decision.",
     "accepted_msg": "Great news! {{name}} has accepted your exchange request. You can now coordinate when and where the service will take place.",
     "accepted_next_step": "Message {{name}} to arrange when and where the service will happen.",

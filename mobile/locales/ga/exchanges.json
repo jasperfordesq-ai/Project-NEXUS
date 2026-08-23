@@ -474,6 +474,22 @@
       "provider_confirmed": "Dheimhnigh an duine a chabhraigh na huaireanta",
       "requester_confirmed": "Dheimhnigh an duine a d'iarr cabhair na huaireanta"
     },
-    "messageOtherParty": "Cuir teachtaireacht chuig {{name}}"
+    "messageOtherParty": "Cuir teachtaireacht chuig {{name}}",
+    "dispute": {
+      "action": "Tuairiscigh fadhb",
+      "title": "Cad a chuaigh mícheart?",
+      "body": "Feicfidh comhordaitheoir é seo agus is féidir leis idirghabháil a dhéanamh. Coinníonn an bheirt agaibh rochtain ar an malartú fad is atá sé á scrúdú.",
+      "safetyNote": "Ní bealach éigeandála é seo. Mura mbraitheann tú sábháilte, déan teagmháil dhíreach le do phobal.",
+      "detailsPlaceholder": "Aon rud a chuidíonn (roghnach)",
+      "submit": "Seol an tuairisc",
+      "sent": "Tuairiscithe. Déanfaidh comhordaitheoir scrúdú air.",
+      "reasons": {
+        "conduct": "An chaoi ar caitheadh liom",
+        "hours": "Tá na huaireanta mícheart",
+        "no_show": "Níor tháinig aon duine",
+        "other": "Rud eile",
+        "quality": "Ní hé a aontaíomar"
+      }
+    }
   }
 }

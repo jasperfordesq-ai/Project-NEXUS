@@ -151,6 +151,7 @@ return [
     'exchange_completed' => 'Wymiana zakończona! Przeniesiono :hours godzin.',
     'exchange_cancelled' => 'Wymiana została anulowana',
     'exchange_disputed' => 'Exchange ma sprzeczne potwierdzenia godzin - konieczna jest recenzja brokera',
+    'exchange_problem_reported' => 'Zgłoszono problem dotyczący Twojej wymiany. Koordynator go sprawdzi.',
     'exchange_accepted' => 'Twoja prośba o wymianę została zaakceptowana! Możesz teraz koordynować usługę.',
     'exchange_pending_broker' => 'Wymiana zaakceptowana – oczekuje na akceptację koordynatora',
     'exchange_started' => 'Rozpoczęła się wymiana! Usługa jest obecnie w toku.',

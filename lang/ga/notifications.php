@@ -148,6 +148,7 @@ return [
     'exchange_completed' => 'Malartú críochnaithe! :hours uaireanta aistrithe.',
     'exchange_cancelled' => 'Cuireadh an malartú ar ceal',
     'exchange_disputed' => 'Tá dearbhuithe contrártha uair an chloig ag Malartú - is gá athbhreithniú bróicéir',
+    'exchange_problem_reported' => 'Tuairiscíodh fadhb faoi do mhalartú. Déanfaidh comhordaitheoir athbhreithniú air.',
     'exchange_accepted' => 'Glacadh le d\'iarratas malairte! Is féidir leat an tseirbhís a chomhordú anois.',
     'exchange_pending_broker' => 'Malartú glactha - ag fanacht le ceadú an chomhordaitheora',
     'exchange_started' => 'Tá malartú tosaithe! Tá seirbhís ar siúl anois.',

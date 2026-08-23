@@ -268,6 +268,164 @@ class ExchangeWorkflowTest extends TestCase
             'a non-provider must never be able to accept an exchange');
     }
 
+    /**
+     * Journey 3.20 — a member reports a problem with their own exchange.
+     *
+     * Nothing on the platform could raise a dispute before this: brokers had
+     * resolve-dispute with nothing to resolve unless the automatic hours-variance rule
+     * fired. These cases hold the parts that would hurt a member if they broke.
+     */
+    public function test_a_party_can_report_a_problem_with_a_running_exchange(): void
+    {
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'in_progress'],
+        ]);
+
+        Sanctum::actingAs($scenario['requester'], ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason'  => 'no_show',
+            'details' => 'Nobody came on Saturday and I could not reach them.',
+        ]);
+
+        $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+        $scenario['exchange']->refresh();
+        $this->assertSame('disputed', $scenario['exchange']->status);
+
+        // The history entry is what a broker reads, so the reason code has to be in it.
+        $history = DB::table('exchange_history')
+            ->where('exchange_id', $scenario['exchange']->id)
+            ->where('new_status', 'disputed')
+            ->orderByDesc('id')
+            ->first();
+        $this->assertNotNull($history, 'a raised dispute must be recorded in exchange_history');
+        $this->assertStringContainsString('no_show', (string) $history->notes);
+    }
+
+    public function test_the_other_member_is_told_what_was_actually_reported(): void
+    {
+        /*
+          🔴 Measured on a device 2026-08-23: a `no_show` report told the other member
+          "Exchange has conflicting hour confirmations - broker review needed", because the
+          only thing that had ever raised a dispute was the automatic hours-variance rule
+          and both share the `exchange_disputed` notification type. Telling a member their
+          hours are in dispute when someone said nobody turned up is a false statement
+          about their own exchange.
+        */
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'in_progress'],
+        ]);
+
+        Sanctum::actingAs($scenario['requester'], ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason' => 'no_show',
+        ]);
+        $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
+
+        $notification = DB::table('notifications')
+            ->where('user_id', $scenario['provider']->id)
+            ->where('type', 'exchange_disputed')
+            ->orderByDesc('id')
+            ->first();
+
+        $this->assertNotNull($notification, 'the other member must be told');
+        $this->assertStringNotContainsStringIgnoringCase(
+            'hour',
+            (string) $notification->message,
+            'a reported problem must not be described to the other member as an hours discrepancy'
+        );
+        $this->assertStringContainsStringIgnoringCase('problem', (string) $notification->message);
+    }
+
+    public function test_a_stranger_cannot_report_a_problem_and_learns_nothing(): void
+    {
+        // 🔴 The load-bearing case. NOT_FOUND rather than FORBIDDEN is deliberate: a
+        // stranger must not be able to discover that an exchange exists, and above all
+        // must not be able to freeze someone else's exchange.
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'in_progress'],
+        ]);
+
+        $stranger = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($stranger, ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason' => 'conduct',
+        ]);
+
+        $this->assertSame(404, $response->getStatusCode());
+        $scenario['exchange']->refresh();
+        $this->assertSame('in_progress', $scenario['exchange']->status,
+            'a non-party must never be able to move someone else\'s exchange to disputed');
+    }
+
+    public function test_a_reason_outside_the_closed_list_is_refused(): void
+    {
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'in_progress'],
+        ]);
+
+        Sanctum::actingAs($scenario['provider'], ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason' => 'because-i-say-so',
+        ]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $scenario['exchange']->refresh();
+        $this->assertSame('in_progress', $scenario['exchange']->status);
+    }
+
+    public function test_a_finished_exchange_cannot_be_disputed(): void
+    {
+        // The credits have already moved. Reversing that is reverseCompletedExchange(),
+        // a staff action — so this path must refuse rather than half-open a case.
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'completed'],
+        ]);
+
+        Sanctum::actingAs($scenario['requester'], ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason' => 'hours',
+        ]);
+
+        $this->assertSame(409, $response->getStatusCode());
+        $scenario['exchange']->refresh();
+        $this->assertSame('completed', $scenario['exchange']->status);
+    }
+
+    public function test_reporting_twice_does_not_reopen_a_dispute_a_broker_already_has(): void
+    {
+        $scenario = $this->createExchangeScenario([
+            'provider'  => ['status' => 'active', 'is_approved' => true],
+            'requester' => ['status' => 'active', 'is_approved' => true],
+            'exchange'  => ['status' => 'disputed'],
+        ]);
+
+        Sanctum::actingAs($scenario['provider'], ['*']);
+
+        $response = $this->apiPost("/v2/exchanges/{$scenario['exchange']->id}/dispute", [
+            'reason' => 'quality',
+        ]);
+
+        $this->assertSame(409, $response->getStatusCode());
+    }
+
     public function test_exchange_not_visible_to_third_party(): void
     {
         $scenario = $this->createExchangeScenario([

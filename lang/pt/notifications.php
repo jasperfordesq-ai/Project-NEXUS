@@ -148,6 +148,7 @@ return [
     'exchange_completed' => 'Troca concluída! :hours horas transferidas.',
     'exchange_cancelled' => 'A troca foi cancelada',
     'exchange_disputed' => 'Exchange tem confirmações de horários conflitantes – é necessária revisão do corretor',
+    'exchange_problem_reported' => 'Foi reportado um problema na sua troca. Um coordenador irá analisá-lo.',
     'exchange_accepted' => 'Sua solicitação de troca foi aceita! Agora você pode coordenar o serviço.',
     'exchange_pending_broker' => 'Troca aceita - aguardando aprovação do coordenador',
     'exchange_started' => 'A troca começou! O serviço já está em andamento.',

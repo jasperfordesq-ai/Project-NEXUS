@@ -14,7 +14,7 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2233 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents 862 paths of the 2,232 the
 > application actually registers, so using it produced 179 false drift findings out of 404.
@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 49 |
-| Call sites | 506 |
-| Distinct method + endpoint pairs | 417 |
-| Verified against openapi.json | 417 |
+| Call sites | 507 |
+| Distinct method + endpoint pairs | 418 |
+| Verified against openapi.json | 418 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -160,6 +160,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/exchanges/{param}/complete` | exchangeRequests.ts:161 |
 | POST | `/api/v2/exchanges/{param}/confirm` | exchangeRequests.ts:177 |
 | POST | `/api/v2/exchanges/{param}/decline` | exchangeRequests.ts:149 |
+| POST | `/api/v2/exchanges/{param}/dispute` | exchangeRequests.ts:226 |
 | POST | `/api/v2/exchanges/{param}/start` | exchangeRequests.ts:156 |
 | GET | `/api/v2/exchanges/check` | exchanges.ts:200 |
 | GET | `/api/v2/exchanges/config` | exchanges.ts:195 |

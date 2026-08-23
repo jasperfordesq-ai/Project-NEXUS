@@ -474,6 +474,22 @@
       "provider_confirmed": "Quien ayuda ha confirmado las horas",
       "requester_confirmed": "Quien pidió ayuda ha confirmado las horas"
     },
-    "messageOtherParty": "Enviar un mensaje a {{name}}"
+    "messageOtherParty": "Enviar un mensaje a {{name}}",
+    "dispute": {
+      "action": "Informar de un problema",
+      "title": "¿Qué ha ido mal?",
+      "body": "Un coordinador lo verá y podrá intervenir. Los dos mantenéis el acceso al intercambio mientras lo revisa.",
+      "safetyNote": "Esta no es una vía de emergencia. Si no te sientes seguro, contacta directamente con tu comunidad.",
+      "detailsPlaceholder": "Lo que pueda ayudar (opcional)",
+      "submit": "Enviar informe",
+      "sent": "Informado. Un coordinador lo revisará.",
+      "reasons": {
+        "conduct": "Cómo me trataron",
+        "hours": "Las horas no son correctas",
+        "no_show": "No apareció nadie",
+        "other": "Otra cosa",
+        "quality": "No es lo acordado"
+      }
+    }
   }
 }

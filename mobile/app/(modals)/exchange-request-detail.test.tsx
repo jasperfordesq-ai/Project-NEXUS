@@ -46,6 +46,18 @@ jest.mock('react-i18next', () => ({
         'requests.hoursInvalidBody': 'Enter the hours given.',
         'requests.confirmSheetTitle': 'Confirm hours',
         'requests.untitledListing': 'Untitled listing',
+        'requests.dispute.action': 'Report a problem',
+        'requests.dispute.title': 'What went wrong?',
+        'requests.dispute.body': 'A coordinator will see this and can step in.',
+        'requests.dispute.safetyNote': 'This is not an emergency route.',
+        'requests.dispute.detailsPlaceholder': 'Anything that helps (optional)',
+        'requests.dispute.submit': 'Send report',
+        'requests.dispute.sent': 'Reported. A coordinator will look into it.',
+        'requests.dispute.reasons.hours': 'The hours are wrong',
+        'requests.dispute.reasons.no_show': 'Nobody turned up',
+        'requests.dispute.reasons.quality': 'Not what we agreed',
+        'requests.dispute.reasons.conduct': 'How I was treated',
+        'requests.dispute.reasons.other': 'Something else',
       };
       if (key === 'requests.proposedHours') return `Proposed: ${String(opts?.count ?? 0)} hours`;
       if (key === 'requests.messageOtherParty') return `Message ${String(opts?.name ?? '')}`;
@@ -67,6 +79,8 @@ jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn(),
   NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
+const mockDispute = jest.fn();
+
 jest.mock('@/lib/api/exchangeRequests', () => {
   const actual = jest.requireActual('@/lib/api/exchangeRequests');
   return {
@@ -80,6 +94,10 @@ jest.mock('@/lib/api/exchangeRequests', () => {
     completeExchangeRequest: (...a: unknown[]) => mockComplete(...a),
     confirmExchangeRequest: (...a: unknown[]) => mockConfirm(...a),
     cancelExchangeRequest: (...a: unknown[]) => mockCancel(...a),
+    // 🔴 The real reason list, not a stub: it has to stay identical to the server's
+    // ExchangeWorkflowService::DISPUTE_REASONS or every report is refused with a 422.
+    DISPUTE_REASONS: actual.DISPUTE_REASONS,
+    disputeExchangeRequest: (...a: unknown[]) => mockDispute(...a),
   };
 });
 jest.mock('@/lib/api/describeApiError', () => ({
@@ -304,6 +322,84 @@ describe('ExchangeRequestDetailScreen', () => {
     expect(queryByTestId('exchange-action-confirm')).toBeNull();
     expect(queryByTestId('exchange-action-cancel')).toBeNull();
     expect(getByText('Nothing to do here right now.')).toBeTruthy();
+  });
+
+  /*
+    Journey 3.20 — reporting a problem. Nothing on the platform could raise a dispute
+    before this: brokers had a resolve tool with nothing to resolve unless the automatic
+    hours-variance rule fired.
+  */
+  it('offers reporting a problem exactly where the server allows it', () => {
+    const running = mount(exchange({ status: 'in_progress' }));
+    expect(running.queryByTestId('exchange-action-report')).not.toBeNull();
+    running.unmount();
+
+    const awaiting = mount(exchange({ status: 'pending_confirmation' }));
+    expect(awaiting.queryByTestId('exchange-action-report')).not.toBeNull();
+    awaiting.unmount();
+
+    // 🔴 Not before the work starts (either side can just cancel) and not after it is
+    // finished (the credits have moved; only staff can reverse that). A button offered
+    // here would 409 on tap.
+    const notStarted = mount(exchange({ status: 'pending_provider' }));
+    expect(notStarted.queryByTestId('exchange-action-report')).toBeNull();
+    notStarted.unmount();
+
+    const finished = mount(exchange({ status: 'completed', final_hours: 1 }));
+    expect(finished.queryByTestId('exchange-action-report')).toBeNull();
+  });
+
+  it('sends the reason and the details, and says the report landed', async () => {
+    mockDispute.mockResolvedValue({ data: {} });
+    const { getByTestId } = mount(exchange({ status: 'in_progress' }));
+
+    fireEvent.press(getByTestId('exchange-action-report'));
+    fireEvent.press(getByTestId('exchange-dispute-reason-no_show'));
+    fireEvent.changeText(getByTestId('exchange-dispute-details'), '  Nobody came on Saturday.  ');
+    fireEvent.press(getByTestId('exchange-dispute-submit'));
+
+    await waitFor(() =>
+      expect(mockDispute).toHaveBeenCalledWith(61, 'no_show', '  Nobody came on Saturday.  '),
+    );
+    await waitFor(() =>
+      expect(mockShowToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Reported. A coordinator will look into it.' }),
+      ),
+    );
+  });
+
+  it('will not send a report with no reason chosen', () => {
+    const { getByTestId } = mount(exchange({ status: 'in_progress' }));
+
+    fireEvent.press(getByTestId('exchange-action-report'));
+    // 🔴 Nothing is pre-selected: a pre-ticked reason is a guess put in the member's
+    // mouth, and a broker reads this. So the submit has to wait.
+    //
+    // 🔴 BOTH halves are asserted on purpose. The button being disabled and the handler
+    // refusing an empty reason each cover the other, so removing either one on its own
+    // left this test green — measured by mutating each in turn. Asserting the visible
+    // state as well as the outcome is what gives it teeth.
+    expect(getByTestId('exchange-dispute-submit').props.accessibilityState?.disabled).toBe(true);
+
+    fireEvent.press(getByTestId('exchange-dispute-submit'));
+
+    expect(mockDispute).not.toHaveBeenCalled();
+  });
+
+  it('keeps telling this member who they are waiting for, even now they have a button', () => {
+    // 🔴 This is a regression the report button caused and this test caught: the waiting
+    // line used to be the "no buttons" branch, so adding one silently removed the only
+    // sentence explaining why nothing was happening.
+    const { getByText, queryByTestId } = mount(
+      exchange({
+        status: 'pending_confirmation',
+        provider_confirmed_at: '2026-08-21 20:30:00',
+        provider_confirmed_hours: 1,
+      }),
+    );
+
+    expect(getByText('You have confirmed. Waiting for the other member.')).toBeTruthy();
+    expect(queryByTestId('exchange-action-report')).not.toBeNull();
   });
 
   it('shows the failure reason from the server rather than a generic apology', async () => {

@@ -1609,7 +1609,17 @@ class NotificationDispatcher
             case 'exchange_cancelled':
                 return __('notifications.exchange_cancelled');
             case 'exchange_disputed':
-                return __('notifications.exchange_disputed');
+                /*
+                  🔴 Two very different things reach this type, and telling a member the
+                  wrong one is a false statement about their own exchange. The automatic
+                  rule fires when the two confirmed hour figures disagree; a member-raised
+                  report (journey 3.20) carries a `dispute_reason` and may have nothing to
+                  do with hours at all. Measured on a device 2026-08-23: a `no_show` report
+                  told the other member "Exchange has conflicting hour confirmations".
+                */
+                return !empty($data['dispute_reason'])
+                    ? __('notifications.exchange_problem_reported')
+                    : __('notifications.exchange_disputed');
             case 'exchange_accepted':
                 return __('notifications.exchange_accepted');
             case 'exchange_pending_broker':
@@ -2567,7 +2577,11 @@ HTML;
                 'gradient' => 'linear-gradient(135deg, #ef4444, #dc2626)',
                 'icon' => '⚠️',
                 'title' => __('notifications.exchange_title_disputed'),
-                'message' => __('emails_notifications.exchange.disputed_msg'),
+                // See buildNotificationContent(): a member-raised report is not an
+                // hours discrepancy, and the email must not claim it is.
+                'message' => !empty($data['dispute_reason'])
+                    ? __('emails_notifications.exchange.problem_reported_msg')
+                    : __('emails_notifications.exchange.disputed_msg'),
                 'buttonText' => __('notifications.exchange_btn_view_exchange'),
                 'helpText' => __('notifications.exchange_help_disputed'),
                 'typeColor' => $typeColor,

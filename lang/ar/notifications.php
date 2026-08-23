@@ -151,6 +151,7 @@ return [
     'exchange_completed' => 'اكتمل التبادل! تم نقل :hours ساعة.',
     'exchange_cancelled' => 'تم إلغاء التبادل',
     'exchange_disputed' => 'لدى Exchange تأكيدات متضاربة للساعات - يلزم مراجعة الوسيط',
+    'exchange_problem_reported' => 'تم الإبلاغ عن مشكلة في التبادل الخاص بك. سيقوم منسق بمراجعتها.',
     'exchange_accepted' => 'تم قبول طلب التبادل الخاص بك! يمكنك الآن تنسيق الخدمة.',
     'exchange_pending_broker' => 'تم قبول التبادل - في انتظار موافقة المنسق',
     'exchange_started' => 'لقد بدأ التبادل! الخدمة الآن قيد التقدم.',

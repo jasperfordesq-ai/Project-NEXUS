@@ -474,6 +474,22 @@
       "provider_confirmed": "Quem ajuda confirmou as horas",
       "requester_confirmed": "Quem pediu ajuda confirmou as horas"
     },
-    "messageOtherParty": "Enviar mensagem a {{name}}"
+    "messageOtherParty": "Enviar mensagem a {{name}}",
+    "dispute": {
+      "action": "Reportar um problema",
+      "title": "O que correu mal?",
+      "body": "Um coordenador vai ver isto e pode intervir. Ambos mantêm o acesso à troca enquanto ele analisa.",
+      "safetyNote": "Esta não é uma via de emergência. Se não se sentir seguro, contacte diretamente a sua comunidade.",
+      "detailsPlaceholder": "Tudo o que ajude (opcional)",
+      "submit": "Enviar relato",
+      "sent": "Reportado. Um coordenador irá analisar.",
+      "reasons": {
+        "conduct": "Como fui tratado",
+        "hours": "As horas estão erradas",
+        "no_show": "Não apareceu ninguém",
+        "other": "Outra coisa",
+        "quality": "Não foi o combinado"
+      }
+    }
   }
 }

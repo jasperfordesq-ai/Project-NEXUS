@@ -222,6 +222,7 @@ return [
     'exchange_completed'             => 'Exchange completed! :hours hours transferred.',
     'exchange_cancelled'             => 'Exchange was cancelled',
     'exchange_disputed'              => 'Exchange has conflicting hour confirmations - broker review needed',
+    'exchange_problem_reported' => 'A problem was reported with your exchange. A coordinator will review it.',
     'exchange_accepted'              => 'Your exchange request was accepted! You can now coordinate the service.',
     'exchange_pending_broker'        => 'Exchange accepted - awaiting coordinator approval',
     'exchange_started'               => 'Exchange has started! Service is now in progress.',

@@ -474,6 +474,22 @@
       "provider_confirmed": "Provider confirmed the hours",
       "requester_confirmed": "Requester confirmed the hours"
     },
-    "messageOtherParty": "Message {{name}}"
+    "messageOtherParty": "Message {{name}}",
+    "dispute": {
+      "action": "Report a problem",
+      "title": "What went wrong?",
+      "body": "A coordinator will see this and can step in. Both of you keep access to the exchange while they look.",
+      "safetyNote": "This is not an emergency route. If you feel unsafe, contact your community directly.",
+      "detailsPlaceholder": "Anything that helps (optional)",
+      "submit": "Send report",
+      "sent": "Reported. A coordinator will look into it.",
+      "reasons": {
+        "conduct": "How I was treated",
+        "hours": "The hours are wrong",
+        "no_show": "Nobody turned up",
+        "other": "Something else",
+        "quality": "Not what we agreed"
+      }
+    }
   }
 }

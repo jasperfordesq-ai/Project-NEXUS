@@ -197,6 +197,39 @@ export function cancelExchangeRequest(
 }
 
 /**
+ * What a member can say went wrong — journey 3.20.
+ *
+ * 🔴 This list must stay identical to `ExchangeWorkflowService::DISPUTE_REASONS`. The
+ * server refuses anything else with a 422, so a mismatch here is a button that always
+ * fails. The codes are what get stored; the labels are translated in the screen.
+ */
+export const DISPUTE_REASONS = ['hours', 'no_show', 'quality', 'conduct', 'other'] as const;
+
+export type DisputeReason = (typeof DISPUTE_REASONS)[number];
+
+/**
+ * POST /api/v2/exchanges/{id}/dispute — report a problem with this exchange.
+ *
+ * Nothing on the platform could raise a dispute until 2026-08-23: brokers had a
+ * resolve-dispute tool with no way for a member to open one. Only the two people in the
+ * exchange may call it, and only while the work is under way or awaiting confirmation.
+ *
+ * The server answers with the updated exchange plus its own `message`, which is already
+ * translated for the member's locale — so the screen shows that rather than inventing a
+ * second copy of the same sentence.
+ */
+export function disputeExchangeRequest(
+  id: number,
+  reason: DisputeReason,
+  details?: string,
+): Promise<{ data: ExchangeRequest & { message?: string } }> {
+  return api.post<{ data: ExchangeRequest & { message?: string } }>(
+    `${API_V2}/exchanges/${id}/dispute`,
+    { reason, details: details?.trim() || undefined },
+  );
+}
+
+/**
  * Which actions the signed-in member may take right now.
  *
  * Kept as a pure function beside the client so a screen never has to re-derive the state
@@ -213,6 +246,13 @@ export interface ExchangeRequestActions {
   canCancel: boolean;
   /** True when this member has already confirmed and is waiting on the other side. */
   awaitingOtherConfirmation: boolean;
+  /**
+   * Journey 3.20. Mirrors the server's transition map: a problem can be reported while
+   * the work is under way or awaiting confirmation, and not before or after. Before, either
+   * side can simply cancel; after completion the credits have moved and only staff can
+   * reverse that.
+   */
+  canReportProblem: boolean;
 }
 
 export function exchangeRequestActions(
@@ -234,6 +274,7 @@ export function exchangeRequestActions(
     canConfirm: false,
     canCancel: false,
     awaitingOtherConfirmation: false,
+    canReportProblem: false,
   };
 
   if (!viewerId) return none;
@@ -262,12 +303,19 @@ export function exchangeRequestActions(
       return { ...none, canStart: true, canCancel: true };
     case 'in_progress':
       // The server accepts `confirm` straight from in_progress, so both are offered.
-      return { ...none, canComplete: true, canConfirm: !alreadyConfirmed, canCancel: true };
+      return {
+        ...none,
+        canComplete: true,
+        canConfirm: !alreadyConfirmed,
+        canCancel: true,
+        canReportProblem: true,
+      };
     case 'pending_confirmation':
       return {
         ...none,
         canConfirm: !alreadyConfirmed,
         awaitingOtherConfirmation: alreadyConfirmed,
+        canReportProblem: true,
       };
     case 'disputed':
       // A broker owns it now; confirming again is not the member's move.

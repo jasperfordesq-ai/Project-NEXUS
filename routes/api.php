@@ -226,6 +226,9 @@ Route::post('/v2/exchanges/{id}/decline', [\App\Http\Controllers\Api\ExchangesCo
 Route::post('/v2/exchanges/{id}/start', [\App\Http\Controllers\Api\ExchangesController::class, 'start']);
 Route::post('/v2/exchanges/{id}/complete', [\App\Http\Controllers\Api\ExchangesController::class, 'complete']);
 Route::post('/v2/exchanges/{id}/confirm', [\App\Http\Controllers\Api\ExchangesController::class, 'confirm']);
+// Journey 3.20 — a member reports a problem with their own exchange. Throttled like the
+// other write paths: it moves the exchange to `disputed` and alerts the community's brokers.
+Route::post('/v2/exchanges/{id}/dispute', [\App\Http\Controllers\Api\ExchangesController::class, 'dispute'])->middleware('throttle:nexus-route-60-per-1m');
 Route::delete('/v2/exchanges/{id}', [\App\Http\Controllers\Api\ExchangesController::class, 'cancel']);
 
 // ============================================

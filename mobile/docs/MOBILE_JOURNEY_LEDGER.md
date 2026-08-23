@@ -65,19 +65,19 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 7 | 3 | 3 | 0 | 1 | 0 | 0.682 |
 | 2 — Feed and social | 14 | 8 | 4 | 2 | 0 | 0 | 0 | 0.779 |
-| 3 — Timebanking core | 20 | 6 | 6 | 5 | 1 | 1 | 1 | 0.587 |
+| 3 — Timebanking core | 20 | 7 | 6 | 5 | 1 | 0 | 1 | 0.639 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
 | 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 3 | 0 | 0.539 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
-| **Total** | **140** | **49** | **41** | **24** | **10** | **14** | **2** | — |
+| **Total** | **140** | **50** | **41** | **24** | **10** | **13** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(49 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 82.60`, over `140 − 2 excluded = 138`
-rows → **0.599**.
+`(50 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 83.60`, over `140 − 2 excluded = 138`
+rows → **0.606**.
 
 ### Credit recomputation
 
@@ -85,7 +85,7 @@ rows → **0.599**.
 | --- | --- | ---: | ---: |
 | 1 | (7 × 1.0) + (3 × 0.6) + (3 × 0.25) = 9.55 | ÷ 14 | **0.682** |
 | 2 | (8 × 1.0) + (4 × 0.6) + (2 × 0.25) = 10.90 | ÷ 14 | **0.779** |
-| 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 11.15 | ÷ 19 † | **0.587** |
+| 3 | (7 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 12.15 | ÷ 19 † | **0.639** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (1 × 1.0) + (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 6.00 | ÷ 11 † | **0.545** |
@@ -172,7 +172,7 @@ genuinely unwalked rather than unbuilt.
 | 3.17 | Exchange dead-end check: draft/publish states | CERTIFIED | Fixed `5373940c8`, guarded — recorded in memory as a prior finding |
 | 3.18 | Group exchanges | RENDERS | Screen photographed at 360dp, filter chips scroll correctly |
 | 3.19 | Skills on a profile drive matching | PARTIAL | Walked 2026-08-23 and it found the worst fault of the day. 🔴 **The Matches screen crashed for every member.** `GET /v2/matches/all` returns `module`, a module-specific id (`listing_id` / `organization_id` / `event_id`), `match_reasons` and `created_at`; the screen reads `source_type`, `source_id`, `reasons`, `matched_user` and `id`, **none of which the server sends**. Result on a device: "Render Error — Cannot read property 'tone' of undefined" from `SOURCE_CONFIG[item.source_type]`. `event` was also missing from that map although the server has always been able to return it. Normalised in `lib/api/matches.ts`, unknown modules now fall back instead of crashing, and both match cards render. 🔴 **A member's skills were almost invisible to matching.** Skills are keyed by their raw lowercased name; listing text is tokenised by `KeywordExtractor::extract()`, which splits **and stems**; the two were compared with `array_intersect`. Proved with the real stemmer: `gardening`≠`garden`, `cleaning`≠`clean`, `plumbing`≠`plumb`, `tutoring`≠`tutor`, and any multi-word skill (`dog walking`) could never match at all. Both sides now go through the same extractor, with proficiency weight carried onto each token. 🔴 **PARTIAL, and the reason is worth stating.** The skill fix is proved at the function level by three reflection tests, two of which go red without it — but its effect could **not** be shown end to end, because a member's own listing text usually already supplies the overlapping token, and a second candidate listing would not enter the engine's result set at all (unexplained; not chased). So the mechanism is fixed and demonstrated; the member-visible improvement is not yet measured |
-| 3.20 | Report a problem with an exchange | BROKEN | **No capability exists anywhere on the platform**, so this is not a mobile gap. Checked 2026-08-22: the only route that reaches `disputed` is the automatic hours-variance rule, and the only dispute route is `POST /v2/admin/broker/exchanges/{id}/resolve-dispute` — a broker RESOLVING one, with nothing that raises it. `POST /v2/support/reports` takes free-text summary/description/impact and cannot name an exchange, which matches the known finding that four parallel reporting systems exist and none can reference an exchange. Building this means an API route, a structured target, moderation routing and notifications, with safeguarding implications — **owner decision, not started** |
+| 3.20 | Report a problem with an exchange | CERTIFIED | Built across the server and the app, and walked 2026-08-23. 🔴 **No capability existed anywhere on the platform**: brokers have had `resolve-dispute` since the beginning with nothing able to open a dispute, the only route to `disputed` was the automatic hours-variance rule, and `reports.target_type` has no `exchange` value. Built as the missing half of the existing workflow rather than a fifth reporting system: `ExchangeWorkflowService::raiseDispute()` + `POST /v2/exchanges/{id}/dispute`, a closed list of five reasons, notifications to the counterparty and to the community's brokers, and one added transition (`in_progress → disputed`). Walked on the emulator against exchange 63: the provider tapped "Report a problem", chose "Nobody turned up", typed details, and the exchange moved to `disputed` with the history reading `Problem reported by provider: no_show — Nobody came on Saturday morning.` UserB received the notification. 🔴 The walk found a real defect and it is fixed: the counterparty was told **"Exchange has conflicting hour confirmations — broker review needed"**, because a member-raised report and the automatic hours rule share the `exchange_disputed` type. Telling someone their hours are disputed when the report says nobody turned up is a false statement about their own exchange. The wording is now chosen by whether a `dispute_reason` is present, so the automatic case keeps its precise copy — pinned by a test and mutation-verified. Deliberate limits, each with a reason: only the two parties (a stranger gets 404, never 403, so an exchange cannot be discovered — mutation-verified); only while the work is under way or awaiting confirmation (before that either side can just cancel; after completion the credits have moved and only staff can reverse that); and it does **not** open a safeguarding case, which the sheet says in as many words rather than leaving a member in danger thinking it does. 🔴 Two things recorded, not done: the **website has no equivalent** — the capability is mobile-only for now, which is an inversion of the usual gap and is in the parity table; and with the keyboard open the sheet's "Send report" button sits **behind the keyboard**, so a member who types details must dismiss it first. That is pre-existing `BottomSheet` behaviour (the confirm-hours sheet on the same screen has it too), not something this introduced, and is unfixed. Guarded by six cases in `tests/Laravel/Integration/ExchangeWorkflowTest.php` and four in `app/(modals)/exchange-request-detail.test.tsx`; the stranger guard, the terminal-status guard, the reason requirement and the notification wording are each mutation-verified. One further defect fixed on the way: adding the button silently removed "You have confirmed. Waiting for the other member.", because that line was the "no buttons" branch — state and actions are now separate, with its own test |
 
 ## Tier 4 — Volunteering (18 rows)
 
@@ -311,6 +311,7 @@ to it — which is exactly how "write a post" went unnoticed. Keep this table by
 | Write a feed post | `components/compose/tabs/PostTab.tsx` → `POST /v2/feed/posts` | present (`new-post`) | Built 2026-08-23. Narrower on purpose: no image, no poll. Row 2.9 |
 | Passkey sign-in (server-verified) | `lib/webauthn.ts` + `BiometricSettings.tsx` | **absent** | Blocked on owner decisions, not effort: Android Credential Manager, an `assetlinks.json` published under the API domain, and the release signing certificate. Row 1.6 |
 | Unlock the app with a fingerprint | absent (a browser has no equivalent) | present (2026-08-23) | Mobile-only by nature. Locks the stored session on the device; no server involvement. Row 1.6 |
+| Report a problem with an exchange | **absent** | present (2026-08-23) | 🔴 An inversion of the usual gap: the server endpoint was built for this and the website has no way in yet. Row 3.20 |
 | Compose an event | `EventTab.tsx` | present (`new-event`) | — |
 | Compose a goal | `GoalTab.tsx` | present (`goals`) | — |
 | Compose a listing | `ListingTab.tsx` | present (`new-exchange`) | — |

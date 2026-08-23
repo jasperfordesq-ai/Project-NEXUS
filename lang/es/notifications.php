@@ -148,6 +148,7 @@ return [
     'exchange_completed' => '¡Intercambio completado! :hours horas transferidas.',
     'exchange_cancelled' => 'El intercambio fue cancelado.',
     'exchange_disputed' => 'Exchange tiene confirmaciones de horas contradictorias: se necesita revisión del corredor',
+    'exchange_problem_reported' => 'Se ha informado de un problema en tu intercambio. Un coordinador lo revisará.',
     'exchange_accepted' => '¡Tu solicitud de cambio fue aceptada! Ya puedes coordinar el servicio.',
     'exchange_pending_broker' => 'Intercambio aceptado - pendiente de aprobación del coordinador',
     'exchange_started' => '¡El intercambio ha comenzado! El servicio ya está en progreso.',

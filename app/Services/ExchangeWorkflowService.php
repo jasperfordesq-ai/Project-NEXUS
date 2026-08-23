@@ -39,6 +39,15 @@ class ExchangeWorkflowService
     public const STATUS_PENDING_CONFIRMATION = 'pending_confirmation';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_DISPUTED = 'disputed';
+
+    /**
+     * What a member can say is wrong, for `raiseDispute()`.
+     *
+     * A closed list, because a broker reads these in a queue and free text alone cannot
+     * be sorted or counted. Each has translated wording in the clients; the code is what
+     * is stored, in the history note, so it survives a change of copy.
+     */
+    public const DISPUTE_REASONS = ['hours', 'no_show', 'quality', 'conduct', 'other'];
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_EXPIRED = 'expired';
 
@@ -47,7 +56,11 @@ class ExchangeWorkflowService
         self::STATUS_PENDING_PROVIDER => [self::STATUS_PENDING_BROKER, self::STATUS_ACCEPTED, self::STATUS_CANCELLED, self::STATUS_EXPIRED],
         self::STATUS_PENDING_BROKER => [self::STATUS_ACCEPTED, self::STATUS_CANCELLED],
         self::STATUS_ACCEPTED => [self::STATUS_IN_PROGRESS, self::STATUS_CANCELLED],
-        self::STATUS_IN_PROGRESS => [self::STATUS_PENDING_CONFIRMATION, self::STATUS_CANCELLED],
+        // 🔴 DISPUTED added 2026-08-23 so a member can report a problem while the work is
+        // under way, not only after hours are submitted (journey 3.20). A broker resolves
+        // it the same way either side: set the hours, or cancel. resolveDispute() clamps
+        // against proposed_hours, so it does not need both confirmations to exist.
+        self::STATUS_IN_PROGRESS => [self::STATUS_PENDING_CONFIRMATION, self::STATUS_CANCELLED, self::STATUS_DISPUTED],
         self::STATUS_PENDING_CONFIRMATION => [self::STATUS_COMPLETED, self::STATUS_DISPUTED],
         self::STATUS_DISPUTED => [self::STATUS_COMPLETED, self::STATUS_CANCELLED],
         self::STATUS_COMPLETED => [],
@@ -1324,6 +1337,103 @@ class ExchangeWorkflowService
         $role = (string) data_get($caller, 'role', '');
 
         return in_array($role, AdminTier::OPERATIONAL_ROLES, true);
+    }
+
+    /**
+     * A member reports a problem with their own exchange — journey 3.20.
+     *
+     * 🔴 Nothing could raise a dispute before this. `resolveDispute()` has always existed
+     * for brokers, and the ONLY thing that reached `disputed` was the automatic
+     * hours-variance rule in `processConfirmations()` — so a member whose helper never
+     * arrived, or who was treated badly, had no way to say so about that exchange.
+     * `POST /v2/support/reports` takes free text and cannot name an exchange, and
+     * `reports.target_type` has no `exchange` value.
+     *
+     * Deliberate limits:
+     *   - Only the two people IN the exchange. Staff have their own tools, and a third
+     *     member reporting someone else's exchange is a different feature with different
+     *     safeguarding questions.
+     *   - Only while the work is under way or awaiting confirmation. Before that, either
+     *     side can simply cancel; after completion the credits have moved and reversing
+     *     them is `reverseCompletedExchange()`, a staff action.
+     *   - It does NOT raise a safeguarding case. `conduct` is routed to the community's
+     *     brokers like any other problem, and the client copy points anyone in danger at
+     *     the safeguarding route instead of implying this is it.
+     *
+     * @return array{ok: bool, error?: string}
+     */
+    public static function raiseDispute(int $exchangeId, int $actorId, string $reason, string $details = ''): array
+    {
+        $exchange = ExchangeRequest::find($exchangeId);
+        if (!$exchange) {
+            return ['ok' => false, 'error' => 'NOT_FOUND'];
+        }
+
+        $requesterId = (int) $exchange->requester_id;
+        $providerId = (int) $exchange->provider_id;
+        if ($actorId !== $requesterId && $actorId !== $providerId) {
+            // NOT_FOUND, not UNAUTHORIZED: a stranger must not learn the exchange exists.
+            return ['ok' => false, 'error' => 'NOT_FOUND'];
+        }
+
+        if (!in_array($reason, self::DISPUTE_REASONS, true)) {
+            return ['ok' => false, 'error' => 'INVALID_REASON'];
+        }
+
+        if ($exchange->status === self::STATUS_DISPUTED) {
+            return ['ok' => false, 'error' => 'ALREADY_DISPUTED'];
+        }
+
+        $details = trim($details);
+        if (mb_strlen($details) > 2000) {
+            $details = mb_substr($details, 0, 2000);
+        }
+
+        $actorRole = $actorId === $requesterId ? 'requester' : 'provider';
+        $note = $details === ''
+            ? sprintf('Problem reported by %s: %s', $actorRole, $reason)
+            : sprintf('Problem reported by %s: %s — %s', $actorRole, $reason, $details);
+
+        // updateStatus enforces the transition map, so an exchange that is finished,
+        // cancelled or not yet started is refused here rather than by a second check
+        // that could disagree with it.
+        if (!self::updateStatus($exchangeId, self::STATUS_DISPUTED, $actorId, $actorRole, $note)) {
+            return ['ok' => false, 'error' => 'INVALID_STATE'];
+        }
+
+        $counterpartyId = $actorId === $requesterId ? $providerId : $requesterId;
+        $data = [
+            'exchange_id' => $exchangeId,
+            'dispute_reason' => $reason,
+        ];
+
+        // Notifications must never decide whether the dispute was recorded — it already is.
+        try {
+            NotificationDispatcher::send($counterpartyId, 'exchange_disputed', $data);
+        } catch (\Throwable $e) {
+            Log::warning("Exchange #{$exchangeId}: counterparty dispute notification failed", [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            /*
+              🔴 notifyAdmins() selects on users.role IN ('admin','broker','coordinator').
+              `super_admin`, `tenant_admin` and `god` are FLAGS, never written to that
+              column, so a community whose only staff are flag-based admins is not told.
+              That is a pre-existing limitation of the shared dispatcher, recorded rather
+              than silently inherited: the dispute is still raised and still visible in
+              the broker queue, but nobody is alerted. Fixing it means changing the
+              recipient query for every caller.
+            */
+            NotificationDispatcher::notifyAdmins('exchange_disputed', $data);
+        } catch (\Throwable $e) {
+            Log::warning("Exchange #{$exchangeId}: staff dispute notification failed", [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return ['ok' => true];
     }
 
     /**

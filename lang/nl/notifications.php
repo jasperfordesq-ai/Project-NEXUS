@@ -151,6 +151,7 @@ return [
     'exchange_completed' => 'Uitwisseling voltooid! :hours uur overgedragen.',
     'exchange_cancelled' => 'De uitwisseling is geannuleerd',
     'exchange_disputed' => 'Exchange heeft tegenstrijdige uurbevestigingen - beoordeling door makelaar vereist',
+    'exchange_problem_reported' => 'Er is een probleem gemeld bij je ruil. Een coördinator bekijkt het.',
     'exchange_accepted' => 'Je ruilverzoek is geaccepteerd! U kunt nu de service coördineren.',
     'exchange_pending_broker' => 'Uitwisseling geaccepteerd - in afwachting van goedkeuring van de coördinator',
     'exchange_started' => 'De uitwisseling is begonnen! De dienst is nu bezig.',

@@ -148,6 +148,7 @@ return [
     'exchange_completed' => 'Échange terminé ! :hours heures transférées.',
     'exchange_cancelled' => 'L\'échange a été annulé',
     'exchange_disputed' => 'Exchange a des confirmations d\'heures contradictoires - un examen du courtier est nécessaire',
+    'exchange_problem_reported' => 'Un problème a été signalé concernant votre échange. Un coordinateur va l’examiner.',
     'exchange_accepted' => 'Votre demande d\'échange a été acceptée ! Vous pouvez maintenant coordonner le service.',
     'exchange_pending_broker' => 'Échange accepté - en attente de l\'approbation du coordinateur',
     'exchange_started' => 'L\'échange a commencé ! Le service est maintenant en cours.',

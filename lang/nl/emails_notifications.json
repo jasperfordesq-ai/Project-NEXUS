@@ -75,6 +75,7 @@
     "cancelled_msg": "Deze uitwisseling is geannuleerd.",
     "cancelled_reason": " Reden: \"{{reason}}\"",
     "disputed_msg": "Er is een discrepantie in de uren die door beide partijen zijn bevestigd. Een coördinator zal deze uitwisseling beoordelen en helpen het verschil op te lossen.",
+    "problem_reported_msg": "Iemand in deze ruil heeft een probleem gemeld. Een coördinator bekijkt het en neemt contact op.",
     "disputed_under_review": "Een coördinator zal de bevestigde uren beoordelen en een eerlijke beslissing nemen.",
     "accepted_msg": "Goed nieuws! {{name}} heeft uw uitwisselingsverzoek geaccepteerd. U kunt nu afstemmen wanneer en waar de dienst plaatsvindt.",
     "accepted_next_step": "Stuur {{name}} een bericht om af te spreken wanneer en waar de dienst plaatsvindt.",

@@ -300,6 +300,67 @@ class ExchangesController extends BaseApiController
         return $this->respondWithData($this->formatExchange($exchange));
     }
 
+    /**
+     * POST /api/v2/exchanges/{id}/dispute — a member reports a problem with their exchange.
+     *
+     * 🔴 Journey 3.20. Until this, nothing on the platform could raise a dispute: brokers
+     * had `resolve-dispute` with nothing to resolve unless the automatic hours-variance
+     * rule fired, and the general reports table cannot name an exchange at all.
+     *
+     * Refuses with NOT_FOUND for anyone who is not one of the two parties, so a stranger
+     * cannot discover that an exchange exists. Everything else is decided in the service,
+     * against the same transition map every other exchange action uses.
+     */
+    public function dispute($id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $id = (int) $id;
+
+        $reason = trim((string) $this->input('reason', ''));
+        if ($reason === '') {
+            return $this->respondWithError(
+                'VALIDATION_REQUIRED_FIELD',
+                __('api.exchange_dispute_reason_required'),
+                'reason',
+                400
+            );
+        }
+
+        $result = ExchangeWorkflowService::raiseDispute(
+            $id,
+            $userId,
+            $reason,
+            (string) $this->input('details', '')
+        );
+
+        if (!($result['ok'] ?? false)) {
+            $error = (string) ($result['error'] ?? 'INVALID_STATE');
+            if ($error === 'NOT_FOUND') {
+                return $this->respondWithError('NOT_FOUND', __('api.exchange_not_found'), null, 404);
+            }
+            if ($error === 'INVALID_REASON') {
+                return $this->respondWithError(
+                    'VALIDATION_REQUIRED_FIELD',
+                    __('api.exchange_dispute_reason_required'),
+                    'reason',
+                    422
+                );
+            }
+            // ALREADY_DISPUTED and INVALID_STATE are both "not from here": a broker is
+            // already looking at it, or the exchange is finished, cancelled or unstarted.
+            return $this->respondWithError('EXCHANGE_ERROR', __('api.exchange_dispute_failed'), null, 409);
+        }
+
+        // Same shape as confirm(): the formatted exchange plus a message, so a client can
+        // re-render the screen from the response instead of re-fetching it.
+        $exchange = $this->exchangeWorkflowService->getExchange($id);
+
+        return $this->respondWithData(array_merge(
+            $this->formatExchange($exchange),
+            ['message' => __('api.exchange_dispute_raised')],
+        ));
+    }
+
     /** POST /api/v2/exchanges/{id}/confirm — confirm hours */
     public function confirm($id): JsonResponse
     {

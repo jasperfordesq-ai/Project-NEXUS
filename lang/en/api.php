@@ -1384,6 +1384,9 @@ return [
     'exchange_disputed_broker'             => 'Hours recorded. There is a discrepancy - a broker will review.',
     'exchange_hours_confirmed'             => 'Hours confirmed',
     'exchange_cancel_failed'               => 'Unable to cancel this exchange',
+    'exchange_dispute_reason_required' => 'Choose what the problem is',
+    'exchange_dispute_failed' => 'A problem cannot be reported for this exchange right now',
+    'exchange_dispute_raised' => 'Reported. A coordinator will look into it.',
 
     // ============================================
     // USER-FACING — EVENTS (additional)
