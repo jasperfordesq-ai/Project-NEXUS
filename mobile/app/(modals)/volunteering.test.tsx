@@ -70,6 +70,7 @@ jest.mock('react-i18next', () => ({
         'swaps.requested': opts ? `Requested ${String(opts.date ?? '')}` : 'Requested',
         'swaps.yourShift': 'Your shift',
         'swaps.proposedShift': 'Proposed shift',
+        'swaps.theirShift': 'Their shift',
         'swaps.accept': 'Accept',
         'swaps.reject': 'Reject',
         'swaps.cancel': 'Cancel request',
@@ -840,5 +841,84 @@ describe('VolunteeringScreen', () => {
     expect(getByText('For the campaign')).toBeTruthy();
     expect(getByText('Completed')).toBeTruthy();
     expect(getAllByText('Submit donation').length).toBeGreaterThan(0);
+  });
+  /**
+   * 🔴 The swap payload is REQUESTER-relative and the card labelled it viewer-relative,
+   * so on every request you can actually act on, the two shifts were the wrong way round.
+   *
+   * `original_shift` is always the requester's own shift; `proposed_shift` is always the
+   * one they are asking for. Walked on two devices 2026-08-23: UserB (on Aug 26) asked
+   * UserA (on Aug 29) to swap, and UserA's card read "YOUR SHIFT — Aug 26 / PROPOSED
+   * SHIFT — Aug 29". Both wrong, on the one card carrying Accept and Reject.
+   *
+   * The two fixtures below deliberately give the shifts different opportunity titles so
+   * a swapped pairing cannot pass by coincidence.
+   */
+  function swapPanelApi(direction: 'sent' | 'received') {
+    let apiCall = 0;
+    const swap = {
+      id: 77,
+      status: 'pending',
+      direction,
+      requester: { id: 12, name: 'Alex Volunteer', avatar_url: null },
+      recipient: { id: 1, name: 'Current User', avatar_url: null },
+      original_shift: {
+        id: 42,
+        start_time: '2026-06-01T10:00:00Z',
+        end_time: '2026-06-01T12:00:00Z',
+        opportunity_title: 'Requester Shift',
+        organization_name: 'Green Spaces',
+      },
+      proposed_shift: {
+        id: 43,
+        start_time: '2026-06-02T10:00:00Z',
+        end_time: '2026-06-02T12:00:00Z',
+        opportunity_title: 'Recipient Shift',
+        organization_name: 'Care Hub',
+      },
+      message: 'Can we trade shifts?',
+      created_at: '2026-05-29T10:00:00Z',
+    };
+
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [swap] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+  }
+
+  it('shows the recipient THEIR OWN shift under "your shift" on a received swap', () => {
+    swapPanelApi('received');
+
+    const { getByText, getByTestId } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    // The viewer is the recipient, so their shift is `proposed_shift`.
+    expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Care Hub');
+    expect(getByTestId('swap-other-label-77').props.children).toBe('Their shift');
+    expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Green Spaces');
+  });
+
+  it('shows the requester their own shift under "your shift" on a sent swap', () => {
+    swapPanelApi('sent');
+
+    const { getByText, getByTestId } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    // The viewer is the requester, so their shift is `original_shift`.
+    expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Green Spaces');
+    expect(getByTestId('swap-other-label-77').props.children).toBe('Proposed shift');
+    expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
   });
 });

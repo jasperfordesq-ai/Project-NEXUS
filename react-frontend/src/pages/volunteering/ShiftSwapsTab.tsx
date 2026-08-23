@@ -97,6 +97,19 @@ const formatShiftTime = (shift: SwapShift) => {
   return `${start.toLocaleDateString(getFormattingLocale())} ${start.toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' })}`;
 };
 
+/**
+ * The swap payload is REQUESTER-relative: `original_shift` is always the requester's own
+ * shift and `proposed_shift` is always the one they are asking for. So which of the two
+ * belongs to the person reading the card depends on the direction, and reading
+ * `original_shift` as "yours" was backwards on every received request — the only kind that
+ * carries Accept and Reject. Found on the mobile app on 2026-08-23; identical fault here.
+ */
+const ownShiftOf = (swap: ShiftSwap): SwapShift =>
+  swap.direction === 'received' ? swap.proposed_shift : swap.original_shift;
+
+const otherShiftOf = (swap: ShiftSwap): SwapShift =>
+  swap.direction === 'received' ? swap.original_shift : swap.proposed_shift;
+
 export function ShiftSwapsTab() {
   const { t } = useTranslation('volunteering');
   const toast = useToast();
@@ -361,40 +374,51 @@ export function ShiftSwapsTab() {
                       )}
                     </div>
 
-                    {/* Shift details: original -> proposed */}
+                    {/*
+                      Shift details: the viewer's own shift, then the other person's.
+
+                      The payload is REQUESTER-relative — `original_shift` is always the
+                      requester's own shift and `proposed_shift` always the one they are
+                      asking for. Labelling `original_shift` "your shift" unconditionally
+                      was therefore backwards on every received request, which is the only
+                      kind carrying Accept and Reject. Found by walking the mobile app on
+                      2026-08-23, where the same fault existed; both are now viewer-relative.
+                    */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                      {/* Original shift */}
+                      {/* The viewer's own shift */}
                       <div className="rounded-lg bg-theme-hover/50 p-3">
-                        <p className="text-xs font-medium text-theme-muted mb-1">{t('swaps.your_shift')}</p>
-                        <p className="text-sm font-semibold text-theme-primary">
-                          {swap.original_shift.opportunity_title}
+                        <p className="text-xs font-medium text-theme-muted mb-1" data-testid={`swap-own-label-${swap.id}`}>{t('swaps.your_shift')}</p>
+                        <p className="text-sm font-semibold text-theme-primary" data-testid={`swap-own-title-${swap.id}`}>
+                          {ownShiftOf(swap).opportunity_title}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-theme-subtle">
                           <span className="flex items-center gap-1">
                             <Building2 className="w-3 h-3" aria-hidden="true" />
-                            {swap.original_shift.organization_name}
+                            {ownShiftOf(swap).organization_name}
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" aria-hidden="true" />
-                            {formatShiftTime(swap.original_shift)}
+                            {formatShiftTime(ownShiftOf(swap))}
                           </span>
                         </div>
                       </div>
 
-                      {/* Proposed shift */}
+                      {/* The other person's shift */}
                       <div className="rounded-lg bg-theme-hover/50 p-3">
-                        <p className="text-xs font-medium text-theme-muted mb-1">{t('swaps.proposed_shift')}</p>
-                        <p className="text-sm font-semibold text-theme-primary">
-                          {swap.proposed_shift.opportunity_title}
+                        <p className="text-xs font-medium text-theme-muted mb-1" data-testid={`swap-other-label-${swap.id}`}>
+                          {swap.direction === 'received' ? t('swaps.their_shift') : t('swaps.proposed_shift')}
+                        </p>
+                        <p className="text-sm font-semibold text-theme-primary" data-testid={`swap-other-title-${swap.id}`}>
+                          {otherShiftOf(swap).opportunity_title}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-theme-subtle">
                           <span className="flex items-center gap-1">
                             <Building2 className="w-3 h-3" aria-hidden="true" />
-                            {swap.proposed_shift.organization_name}
+                            {otherShiftOf(swap).organization_name}
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" aria-hidden="true" />
-                            {formatShiftTime(swap.proposed_shift)}
+                            {formatShiftTime(otherShiftOf(swap))}
                           </span>
                         </div>
                       </div>

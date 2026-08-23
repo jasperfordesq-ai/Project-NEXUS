@@ -868,12 +868,33 @@ function SwapsPanel({
         filteredSwaps.map((swap) => {
           const actorName = swap.direction === 'sent' ? swap.recipient?.name : swap.requester?.name;
           const statusTone = swapStatusTone(String(swap.status), theme);
-          const originalDate = formatDate(swap.original_shift?.start_time);
-          const originalStart = formatTime(swap.original_shift?.start_time);
-          const originalEnd = formatTime(swap.original_shift?.end_time);
-          const proposedDate = formatDate(swap.proposed_shift?.start_time);
-          const proposedStart = formatTime(swap.proposed_shift?.start_time);
-          const proposedEnd = formatTime(swap.proposed_shift?.end_time);
+
+          /**
+           * 🔴 The payload is REQUESTER-relative, and labelling it viewer-relative got
+           * the two shifts the wrong way round on every request you can act on.
+           *
+           * `original_shift` is always the requester's own shift and `proposed_shift`
+           * always the one they are asking for. Reading `original_shift` as "your
+           * shift" is therefore right only when `direction === 'sent'`. Measured on a
+           * device 2026-08-23: UserB (on Aug 26) asked UserA (on Aug 29) to swap, and
+           * UserA's card read "YOUR SHIFT — Aug 26 / PROPOSED SHIFT — Aug 29" — both
+           * backwards, on the one card that carries Accept and Reject. A member
+           * checking their diary would decline a swap that suited them.
+           *
+           * The website has the same fault at `ShiftSwapsTab.tsx` (`swaps.your_shift`
+           * hardcoded onto `original_shift`); it is fixed separately.
+           */
+          const isReceived = swap.direction === 'received';
+          const ownShift = isReceived ? swap.proposed_shift : swap.original_shift;
+          const otherShift = isReceived ? swap.original_shift : swap.proposed_shift;
+          const otherShiftLabel = isReceived ? t('swaps.theirShift') : t('swaps.proposedShift');
+
+          const originalDate = formatDate(ownShift?.start_time);
+          const originalStart = formatTime(ownShift?.start_time);
+          const originalEnd = formatTime(ownShift?.end_time);
+          const proposedDate = formatDate(otherShift?.start_time);
+          const proposedStart = formatTime(otherShift?.start_time);
+          const proposedEnd = formatTime(otherShift?.end_time);
 
           return (
             <HeroCard key={swap.id} className="rounded-panel p-0">
@@ -892,21 +913,21 @@ function SwapsPanel({
 
                 <View className="gap-2">
                   <Surface variant="secondary" className="rounded-panel-inner p-3">
-                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('swaps.yourShift')}</Text>
+                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-own-label-${swap.id}`}>{t('swaps.yourShift')}</Text>
                     <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
-                      {swap.original_shift?.opportunity_title}
+                      {ownShift?.opportunity_title}
                     </Text>
-                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2}>
-                      {swap.original_shift?.organization_name} · {originalDate ?? t('myShifts.dateUnknown')} {originalStart && originalEnd ? t('myShifts.timeRange', { start: originalStart, end: originalEnd }) : ''}
+                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2} testID={`swap-own-detail-${swap.id}`}>
+                      {ownShift?.organization_name} · {originalDate ?? t('myShifts.dateUnknown')} {originalStart && originalEnd ? t('myShifts.timeRange', { start: originalStart, end: originalEnd }) : ''}
                     </Text>
                   </Surface>
                   <Surface variant="secondary" className="rounded-panel-inner p-3">
-                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('swaps.proposedShift')}</Text>
+                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-other-label-${swap.id}`}>{otherShiftLabel}</Text>
                     <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
-                      {swap.proposed_shift?.opportunity_title}
+                      {otherShift?.opportunity_title}
                     </Text>
-                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2}>
-                      {swap.proposed_shift?.organization_name} · {proposedDate ?? t('myShifts.dateUnknown')} {proposedStart && proposedEnd ? t('myShifts.timeRange', { start: proposedStart, end: proposedEnd }) : ''}
+                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2} testID={`swap-other-detail-${swap.id}`}>
+                      {otherShift?.organization_name} · {proposedDate ?? t('myShifts.dateUnknown')} {proposedStart && proposedEnd ? t('myShifts.timeRange', { start: proposedStart, end: proposedEnd }) : ''}
                     </Text>
                   </Surface>
                 </View>

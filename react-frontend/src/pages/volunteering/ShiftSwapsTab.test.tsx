@@ -43,6 +43,9 @@ vi.mock("react-i18next", () => ({
         "swaps.received": "Received",
         "swaps.reject": "Reject",
         "swaps.sent": "Sent",
+        "swaps.your_shift": "Your Shift",
+        "swaps.their_shift": "Their Shift",
+        "swaps.proposed_shift": "Proposed Shift",
       };
       if (typeof fallbackOrOptions === "string") return fallbackOrOptions;
       return translations[key] ?? key;
@@ -204,5 +207,42 @@ describe("ShiftSwapsTab", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Sent \(1\)/i }));
     expect(screen.getAllByText("Food Bank Shift A")).toHaveLength(1);
+  });
+  /**
+   * The payload is requester-relative: `original_shift` is always the requester's own
+   * shift, `proposed_shift` always the one they are asking for. This card labelled
+   * `original_shift` "Your Shift" unconditionally, so on a RECEIVED request — the only
+   * kind carrying Accept and Reject — it named the other person's shift as the reader's
+   * own and their own as the proposal. Found by walking the mobile app on 2026-08-23,
+   * which had the identical fault.
+   */
+  it("names the recipient's own shift under Your Shift on a received swap", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { swaps: [makeSwap("received", "pending")] },
+    });
+    render(<ShiftSwapsTab />);
+
+    await waitFor(() => {
+      // Received: the reader is the recipient, so their shift is `proposed_shift`.
+      expect(screen.getByTestId("swap-own-title-1")).toHaveTextContent("Food Bank Shift B");
+    });
+    expect(screen.getByTestId("swap-other-title-1")).toHaveTextContent("Food Bank Shift A");
+    expect(screen.getByTestId("swap-other-label-1")).toHaveTextContent("Their Shift");
+  });
+
+  it("names the requester's own shift under Your Shift on a sent swap", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { swaps: [makeSwap("sent", "pending")] },
+    });
+    render(<ShiftSwapsTab />);
+
+    await waitFor(() => {
+      // Sent: the reader is the requester, so their shift is `original_shift`.
+      expect(screen.getByTestId("swap-own-title-1")).toHaveTextContent("Food Bank Shift A");
+    });
+    expect(screen.getByTestId("swap-other-title-1")).toHaveTextContent("Food Bank Shift B");
+    expect(screen.getByTestId("swap-other-label-1")).toHaveTextContent("Proposed Shift");
   });
 });
