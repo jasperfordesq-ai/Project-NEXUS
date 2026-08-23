@@ -31,6 +31,7 @@ import {
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
+import NativePressable from '@/components/ui/NativePressable';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -105,6 +106,27 @@ function WalletModalInner() {
   const balanceQuery = useApi(() => getWalletBalance(), []);
   const transactionsQuery = useApi(() => getWalletTransactions(undefined, 50, 'all'), []);
   const fundQuery = useApi(() => getCommunityFundBalance(), []);
+  /**
+   * 🔴 Pending rows are a separate request on purpose.
+   *
+   * `GET /v2/wallet/transactions` is completed-only for every other filter, because both
+   * frontends compute earned/spent totals from this list as a fallback and a pending amount
+   * must never be counted as settled. So the Pending filter asks for them explicitly. Until
+   * 2026-08-23 the endpoint had no pending mode at all, and this filter answered "No
+   * matching transactions" while the tile beside it read "PENDING 11h".
+   */
+  const pendingQuery = useApi(
+    () => getWalletTransactions(undefined, 50, 'pending'),
+    [],
+    { enabled: filter === 'pending' },
+  );
+  const pendingTransactions = useMemo(() => {
+    // Array-checked rather than `?? []`: a payload that is present but not a list would
+    // otherwise reach the list renderer and be spread, taking the whole wallet down with
+    // an error boundary instead of showing an empty filter.
+    const items = unwrap<TransactionItem[]>(pendingQuery.data);
+    return Array.isArray(items) ? items : [];
+  }, [pendingQuery.data]);
 
   const balance = unwrap<WalletBalance>(balanceQuery.data)?.balance ?? null;
   const wallet = unwrap<WalletBalance>(balanceQuery.data);
@@ -129,18 +151,27 @@ function WalletModalInner() {
   const stats = useMemo(() => {
     const earned = wallet?.total_earned ?? wallet?.total_credits ?? transactions.filter((tx) => tx.type === 'credit').reduce((total, tx) => total + tx.amount, 0);
     const spent = wallet?.total_spent ?? wallet?.total_debits ?? transactions.filter((tx) => tx.type === 'debit').reduce((total, tx) => total + tx.amount, 0);
-    const pending = (wallet?.pending_in ?? wallet?.pending_incoming ?? 0) + (wallet?.pending_out ?? wallet?.pending_outgoing ?? 0);
-    return { earned, spent, pending };
+    /**
+     * 🔴 These two were ADDED TOGETHER and shown as one number.
+     *
+     * Credits coming in and credits going out are opposite directions, so their sum is
+     * neither figure. Measured on a device 2026-08-23 with 7 in and 4 out: the wallet said
+     * "11 pending" in the chip and "PENDING 11h" in the tile — beside EARNED "+3h" and
+     * SPENT "-5h", which do carry a direction.
+     */
+    const pendingIn = wallet?.pending_in ?? wallet?.pending_incoming ?? 0;
+    const pendingOut = wallet?.pending_out ?? wallet?.pending_outgoing ?? 0;
+    return { earned, spent, pendingIn, pendingOut };
   }, [transactions, wallet]);
 
   const filteredTransactions = useMemo(() => {
+    if (filter === 'pending') return pendingTransactions;
     return transactions.filter((tx) => {
       if (filter === 'all') return true;
       if (filter === 'earned') return tx.type === 'credit';
-      if (filter === 'spent') return tx.type === 'debit';
-      return tx.status === 'pending';
+      return tx.type === 'debit';
     });
-  }, [filter, transactions]);
+  }, [filter, pendingTransactions, transactions]);
 
   function refresh() {
     setIsRefreshing(true);
@@ -230,7 +261,8 @@ function WalletModalInner() {
           <View className="gap-4">
             <BalanceCard
               balance={balance}
-              pending={stats.pending}
+              pendingIn={stats.pendingIn}
+              pendingOut={stats.pendingOut}
               isLoading={balanceQuery.isLoading}
               primary={primary}
               theme={theme}
@@ -261,7 +293,13 @@ function WalletModalInner() {
             <View className="flex-row gap-3">
               <StatCard icon="arrow-down-outline" label={t('stats.earned')} value={t('signedHours', { sign: '+', count: stats.earned })} tone="#22c55e" theme={theme} />
               <StatCard icon="arrow-up-outline" label={t('stats.spent')} value={t('signedHours', { sign: '-', count: stats.spent })} tone="#f43f5e" theme={theme} />
-              <StatCard icon="time-outline" label={t('stats.pending')} value={t('hoursValue', { count: stats.pending })} tone="#f59e0b" theme={theme} />
+              <StatCard
+                icon="time-outline"
+                label={t('stats.pending')}
+                value={`${t('signedHours', { sign: '+', count: stats.pendingIn })} ${t('signedHours', { sign: '-', count: stats.pendingOut })}`}
+                tone="#f59e0b"
+                theme={theme}
+              />
             </View>
 
             <HeroCard className="rounded-panel p-0">
@@ -582,7 +620,8 @@ function HeaderCard({
 
 function BalanceCard({
   balance,
-  pending,
+  pendingIn,
+  pendingOut,
   isLoading,
   primary,
   theme,
@@ -591,7 +630,8 @@ function BalanceCard({
   onDonate,
 }: {
   balance: number | null;
-  pending: number;
+  pendingIn: number;
+  pendingOut: number;
   isLoading: boolean;
   primary: string;
   theme: Theme;
@@ -600,6 +640,15 @@ function BalanceCard({
   onDonate: () => void;
 }) {
   const canSpend = (balance ?? 0) > 0 && !isLoading;
+  // 🔴 Never add the two directions together — see the block comment on the stats memo.
+  const hasPending = pendingIn > 0 || pendingOut > 0;
+  const pendingLabel = pendingIn > 0 && pendingOut > 0
+    ? t('pendingInOut', { in: formatHours(pendingIn), out: formatHours(pendingOut) })
+    : pendingIn > 0
+      ? t('pendingIn', { hours: formatHours(pendingIn) })
+      : pendingOut > 0
+        ? t('pendingOut', { hours: formatHours(pendingOut) })
+        : t('noPending');
   return (
     <HeroCard className="overflow-hidden rounded-panel p-0">
       <View className="h-1.5" style={{ backgroundColor: primary }} />
@@ -615,9 +664,9 @@ function BalanceCard({
             </View>
           )}
           <View className="flex-row flex-wrap gap-2">
-            <Chip size="sm" variant="secondary" color={pending > 0 ? 'warning' : 'default'}>
-              <Ionicons name="time-outline" size={12} color={pending > 0 ? '#f59e0b' : primary} />
-              <Chip.Label>{pending > 0 ? t('pendingIn', { count: formatHours(pending) }) : t('noPending')}</Chip.Label>
+            <Chip size="sm" variant="secondary" color={hasPending ? 'warning' : 'default'}>
+              <Ionicons name="time-outline" size={12} color={hasPending ? '#f59e0b' : primary} />
+              <Chip.Label testID="wallet-pending-chip">{pendingLabel}</Chip.Label>
             </Chip>
           </View>
         </View>
@@ -734,9 +783,18 @@ function TransactionCard({
   const partnerName = transaction.federation?.partner_name?.trim();
 
   return (
-    <HeroButton
-      variant="ghost"
-      feedbackVariant="scale"
+    /*
+      🔴 This was a HeroButton wrapping the whole row, and a button caps its own height —
+      so every transaction was cropped: the description and the amount were not rendered at
+      all, leaving a card showing only an avatar, a name and a date. Measured on a device
+      2026-08-23 while walking pending credits; the same fault as the notification cards
+      fixed on 2026-08-22. A card-sized tap target belongs in NativePressable, which lets
+      its content decide the height.
+    */
+    <NativePressable
+      feedback="scale"
+      className="w-full"
+      accessibilityRole="button"
       accessibilityLabel={t('transactionLabel', { name, amount })}
       onPress={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
     >
@@ -773,7 +831,7 @@ function TransactionCard({
           </View>
         </View>
       </Surface>
-    </HeroButton>
+    </NativePressable>
   );
 }
 

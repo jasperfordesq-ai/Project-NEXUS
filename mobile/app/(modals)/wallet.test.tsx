@@ -38,7 +38,9 @@ jest.mock('react-i18next', () => ({
         'sendCredits': 'Send credits',
         'donate': 'Donate',
         'noPending': 'No pending credits',
-        'pendingIn': `${String(opts?.count ?? '')} pending`,
+        'pendingIn': `${String(opts?.hours ?? '')} coming in`,
+        'pendingOut': `${String(opts?.hours ?? '')} going out`,
+        'pendingInOut': `${String(opts?.in ?? '')} coming in, ${String(opts?.out ?? '')} going out`,
         'communityFund': 'Community fund',
         'communityFundDesc': 'Shared credits available for community support.',
         'history': 'Transaction history',
@@ -111,7 +113,17 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 const mockUseApi = jest.fn();
 jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: (...args: unknown[]) => mockUseApi(...args),
+  /**
+   * 🔴 Falls back when the queue runs out, on purpose.
+   *
+   * Every test below sets up exactly three `mockReturnValueOnce` calls for the balance,
+   * transactions and community-fund queries. The screen gained a FOURTH `useApi` on
+   * 2026-08-23 (the pending-transactions query) and all thirteen tests broke at once with
+   * "Cannot read properties of undefined" — a harness failure that reads like a screen
+   * crash. A fallback keeps the next added query from taking the suite down.
+   */
+  useApi: (...args: unknown[]) =>
+    mockUseApi(...args) ?? { data: null, isLoading: false, error: null, refresh: () => {} },
 }));
 
 jest.mock('@expo/vector-icons', () => ({
@@ -153,7 +165,12 @@ beforeEach(() => {
     .mockReset()
     .mockReturnValueOnce(defaultApiState)
     .mockReturnValueOnce(defaultApiState)
-    .mockReturnValueOnce(defaultApiState);
+    .mockReturnValueOnce(defaultApiState)
+    // 🔴 A trailing default, not a fourth `Once`. The screen gained a fourth `useApi`
+    // (the pending-transactions query) on 2026-08-23 and every test in this file broke,
+    // because the chain ran out and returned undefined. A default means the next one
+    // added here does not take the suite down with it.
+    .mockReturnValue(defaultApiState);
 });
 
 const mockTransaction = {
@@ -163,6 +180,16 @@ const mockTransaction = {
   description: 'Tutoring session',
   status: 'completed' as const,
   created_at: '2026-02-14T10:00:00Z',
+  other_user: { id: 5, name: 'Bob Smith', avatar_url: null },
+};
+
+const mockPendingTransaction = {
+  id: 103,
+  type: 'credit' as const,
+  amount: 7,
+  description: 'Pending inbound fixture',
+  status: 'pending' as const,
+  created_at: '2026-08-23T09:00:00Z',
   other_user: { id: 5, name: 'Bob Smith', avatar_url: null },
 };
 
@@ -286,6 +313,7 @@ describe('WalletModal', () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const routeParams: { current: Record<string, string> } = { current: {} };
     let apiCall = 0;
 
@@ -293,7 +321,12 @@ describe('WalletModal', () => {
     mockUseApi
       .mockReset()
       .mockImplementation(() => {
-        const states = [walletState, transactionsState, fundState];
+        // 🔴 The cycle length MUST equal the number of useApi calls in the screen.
+        // With three states and four queries the mapping stayed correct on the first
+        // render and then slid by one on every render after it, handing the transactions
+        // query the community-fund payload — which is not a list, and took the wallet down
+        // inside its error boundary. Add a state here whenever the screen adds a query.
+        const states = [walletState, transactionsState, fundState, pendingState];
         const state = states[apiCall % states.length];
         apiCall += 1;
         return state;
@@ -313,11 +346,17 @@ describe('WalletModal', () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     let apiCall = 0;
     mockUseApi
       .mockReset()
       .mockImplementation(() => {
-        const states = [walletState, transactionsState, fundState];
+        // 🔴 The cycle length MUST equal the number of useApi calls in the screen.
+        // With three states and four queries the mapping stayed correct on the first
+        // render and then slid by one on every render after it, handing the transactions
+        // query the community-fund payload — which is not a list, and took the wallet down
+        // inside its error boundary. Add a state here whenever the screen adds a query.
+        const states = [walletState, transactionsState, fundState, pendingState];
         const state = states[apiCall % states.length];
         apiCall += 1;
         return state;
@@ -351,6 +390,7 @@ describe('WalletModal', () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     let apiCall = 0;
     jest.mocked(searchWalletUsers).mockResolvedValueOnce({
       data: {
@@ -362,7 +402,12 @@ describe('WalletModal', () => {
     mockUseApi
       .mockReset()
       .mockImplementation(() => {
-        const states = [walletState, transactionsState, fundState];
+        // 🔴 The cycle length MUST equal the number of useApi calls in the screen.
+        // With three states and four queries the mapping stayed correct on the first
+        // render and then slid by one on every render after it, handing the transactions
+        // query the community-fund payload — which is not a list, and took the wallet down
+        // inside its error boundary. Add a state here whenever the screen adds a query.
+        const states = [walletState, transactionsState, fundState, pendingState];
         const state = states[apiCall % states.length];
         apiCall += 1;
         return state;
@@ -384,6 +429,7 @@ describe('WalletModal', () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [mockTransaction], meta: { cursor: 'next-page', has_more: true } }, isLoading: false, error: null, refresh: jest.fn() };
     const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     let apiCall = 0;
     mockGetWalletTransactions.mockResolvedValueOnce({
       data: [mockDebitTransaction],
@@ -392,7 +438,12 @@ describe('WalletModal', () => {
     mockUseApi
       .mockReset()
       .mockImplementation(() => {
-        const states = [walletState, transactionsState, fundState];
+        // 🔴 The cycle length MUST equal the number of useApi calls in the screen.
+        // With three states and four queries the mapping stayed correct on the first
+        // render and then slid by one on every render after it, handing the transactions
+        // query the community-fund payload — which is not a list, and took the wallet down
+        // inside its error boundary. Add a state here whenever the screen adds a query.
+        const states = [walletState, transactionsState, fundState, pendingState];
         const state = states[apiCall % states.length];
         apiCall += 1;
         return state;
@@ -415,5 +466,72 @@ describe('WalletModal', () => {
     const { getByText } = render(<WalletModal />);
     expect(getByText('Partner referral support')).toBeTruthy();
     expect(getByText('TimeOverflow credit')).toBeTruthy();
+  });
+  /**
+   * 🔴 Pending IN and pending OUT were ADDED TOGETHER and shown as one figure.
+   *
+   * Credits coming in and credits going out are opposite directions, so their sum is
+   * neither. Measured on a device 2026-08-23 with 7 in and 4 out: the wallet read
+   * "11 pending" in the chip and "PENDING 11h" in the tile, beside EARNED "+3h" and SPENT
+   * "-5h" which do carry a direction. 11 is not a number the member has anywhere.
+   */
+  function walletWithPending(pendingIn: number, pendingOut: number) {
+    const walletState = {
+      data: { data: { balance: 23, total_earned: 3, total_spent: 5, pending_in: pendingIn, pending_out: pendingOut } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    };
+    const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [mockPendingTransaction] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockReset().mockImplementation(() => {
+      const states = [walletState, transactionsState, fundState, pendingState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+  }
+
+  it('never adds pending in and pending out together', () => {
+    walletWithPending(7, 4);
+
+    const { getByTestId, queryByText } = render(<WalletModal />);
+
+    expect(getByTestId('wallet-pending-chip').props.children)
+      .toBe('7 coming in, 4 going out');
+    // 11 is the sum, and it is not a figure the member has anywhere.
+    expect(queryByText('11 pending')).toBeNull();
+    expect(queryByText('11h')).toBeNull();
+  });
+
+  it('names the direction when only one side is pending', () => {
+    walletWithPending(0, 4);
+    const outOnly = render(<WalletModal />);
+    expect(outOnly.getByTestId('wallet-pending-chip').props.children).toBe('4 going out');
+    outOnly.unmount();
+
+    walletWithPending(6, 0);
+    const inOnly = render(<WalletModal />);
+    expect(inOnly.getByTestId('wallet-pending-chip').props.children).toBe('6 coming in');
+  });
+
+  /**
+   * 🔴 The Pending filter answered "No matching transactions" while the tile beside it
+   * claimed hours were pending. `GET /v2/wallet/transactions` was hard-scoped to completed
+   * rows for every filter, so nothing could ever appear there — in this app or on the
+   * website. The server now honours `type=pending`, and this screen must ask for it.
+   */
+  it('asks the server for pending rows when the member selects the Pending filter', () => {
+    // A source assertion, deliberately: `useApi` is mocked here and never runs the factory,
+    // so pressing the chip could not prove which request is made. What must not regress is
+    // that the pending filter has its OWN request with `type: 'pending'` — the default list
+    // is completed-only on purpose, because clients derive earned/spent from it.
+    const source = require('node:fs').readFileSync(
+      require('node:path').resolve(__dirname, 'wallet.tsx'),
+      'utf8',
+    );
+    expect(source).toContain("getWalletTransactions(undefined, 50, 'pending')");
+    expect(source).toContain("enabled: filter === 'pending'");
+    expect(source).toContain("if (filter === 'pending') return pendingTransactions;");
   });
 });

@@ -136,7 +136,7 @@ export function getWalletBalance(): Promise<WalletBalanceResponse> {
 export function getWalletTransactions(
   cursor?: string,
   perPage = 20,
-  type: 'all' | 'sent' | 'received' = 'all',
+  type: 'all' | 'sent' | 'received' | 'pending' = 'all',
 ): Promise<WalletTransactionsResponse> {
   const params: Record<string, string> = {
     per_page: String(perPage),

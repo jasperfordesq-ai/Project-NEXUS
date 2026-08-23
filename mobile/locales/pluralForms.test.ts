@@ -75,11 +75,10 @@ const ALLOWED_WITHOUT_SINGULAR = [
   'volunteering:swaps.received',
   'volunteering:swaps.sent',
   'wallet:hoursValue',
-  'wallet:pendingIn',
   'wallet:signedHours',
 ];
 
-const BUDGET = 43;
+const BUDGET = 42;
 
 type Catalogue = Record<string, string>;
 
