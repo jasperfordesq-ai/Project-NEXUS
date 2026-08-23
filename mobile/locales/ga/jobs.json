@@ -137,7 +137,8 @@
     "submitting": "Ag cur isteach...",
     "success": "Iarratas curtha isteach!",
     "successMessage": "Seoladh d'iarratas. Ádh mór ort!",
-    "error": "Theip ar sheoladh an iarratais"
+    "error": "Theip ar sheoladh an iarratais",
+    "noAnswerFromServer": "Ní bhfuaireamar freagra in am. Seans go bhfuil d'iarratas seolta cheana — seiceáil d'iarratais sula ndéanann tú iarracht eile."
   },
   "applications": {
     "empty": "Gan iarratas fós",

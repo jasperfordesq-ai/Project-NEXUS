@@ -137,7 +137,8 @@
     "submitting": "Wird gesendet...",
     "success": "Bewerbung abgeschickt!",
     "successMessage": "Ihre Bewerbung wurde gesendet. Viel Erfolg!",
-    "error": "Bewerbung konnte nicht gesendet werden"
+    "error": "Bewerbung konnte nicht gesendet werden",
+    "noAnswerFromServer": "Wir haben nicht rechtzeitig eine Antwort erhalten. Deine Bewerbung wurde möglicherweise schon gesendet — prüfe deine Bewerbungen, bevor du es erneut versuchst."
   },
   "applications": {
     "empty": "Noch keine Bewerbungen",

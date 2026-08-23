@@ -41,7 +41,7 @@ jest.mock('@/lib/constants', () => ({
   API_V2: '/api/v2',
   API_BASE_URL: 'https://test.api',
   STORAGE_KEYS: { AUTH_TOKEN: 'auth_token', TENANT_SLUG: 'tenant_slug' },
-  TIMEOUTS: { API_REQUEST: 15_000 },
+  TIMEOUTS: { API_REQUEST: 15_000, API_JOB_APPLY: 45_000 },
   DEFAULT_TENANT: 'test-tenant',
 }));
 
@@ -200,12 +200,23 @@ describe('acting on a vacancy', () => {
     mockDelete.mockResolvedValue(undefined);
   });
 
-  it('submits an application with the covering message', async () => {
+  /**
+   * 🔴 The timeout is load-bearing, not a tuning preference.
+   *
+   * The endpoint sends TWO emails inside the request — a confirmation to the applicant and
+   * an alert to the employer — before it answers, and was measured at 9.5s against the
+   * ordinary 15s mutation timeout on 2026-08-23. The application row is written in the
+   * first second, so a timeout does not undo it: the member is told their application
+   * failed while the employer already has it, and applying again is refused as a duplicate.
+   */
+  it('submits an application with the covering message and its own longer timeout', async () => {
     await applyToJob(42, 'I would like to help.');
 
-    expect(mockPost).toHaveBeenCalledWith('/api/v2/jobs/42/apply', {
-      message: 'I would like to help.',
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      '/api/v2/jobs/42/apply',
+      { message: 'I would like to help.' },
+      { timeout: 45_000 },
+    );
   });
 
   it('saves and unsaves through the same path with different verbs', async () => {

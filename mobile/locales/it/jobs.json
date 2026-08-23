@@ -137,7 +137,8 @@
     "submitting": "Invio in corso...",
     "success": "Candidatura inviata!",
     "successMessage": "La tua candidatura è stata inviata. Buona fortuna!",
-    "error": "Invio della candidatura non riuscito"
+    "error": "Invio della candidatura non riuscito",
+    "noAnswerFromServer": "Non abbiamo ricevuto una risposta in tempo. La tua candidatura potrebbe essere già stata inviata — controlla le tue candidature prima di riprovare."
   },
   "applications": {
     "empty": "Nessuna candidatura ancora",

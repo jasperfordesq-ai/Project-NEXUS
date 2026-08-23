@@ -18,6 +18,8 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, getJobDetail, applyToJob, saveJob, unsaveJob, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
+import { ApiResponseError } from '@/lib/api/client';
+import { describeApiError } from '@/lib/api/describeApiError';
 import type { JobOwnerApplication, JobVacancy } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -159,8 +161,19 @@ export default function JobDetailScreen() {
       await applyToJob(job.id, coverMessage.trim());
       setApplySuccess(true);
       setHasApplied(true);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('apply.error'), variant: 'danger' });
+    } catch (err) {
+      // 🔴 The application row is written in the first second of a request that then spends
+      // several more sending two emails, so a timeout here does NOT mean nothing happened.
+      // Telling the member it failed sends them back to a duplicate refusal. Measured at
+      // 9.5s against a 15s mutation timeout on 2026-08-23; see TIMEOUTS.API_JOB_APPLY.
+      const noAnswer = err instanceof ApiResponseError && err.status === 0;
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: noAnswer
+          ? t('apply.noAnswerFromServer')
+          : describeApiError(err, t('apply.error')),
+        variant: 'danger',
+      });
     } finally {
       setApplyLoading(false);
     }

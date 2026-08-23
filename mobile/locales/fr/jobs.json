@@ -137,7 +137,8 @@
     "submitting": "Envoi en cours...",
     "success": "Candidature envoyée !",
     "successMessage": "Votre candidature a été transmise. Bonne chance !",
-    "error": "Échec de l'envoi de la candidature"
+    "error": "Échec de l'envoi de la candidature",
+    "noAnswerFromServer": "Nous n'avons pas reçu de réponse à temps. Votre candidature a peut-être déjà été envoyée — vérifiez vos candidatures avant de réessayer."
   },
   "applications": {
     "empty": "Aucune candidature pour le moment",

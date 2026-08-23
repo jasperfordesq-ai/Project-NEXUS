@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { API_V2 } from '@/lib/constants';
+import { API_V2, TIMEOUTS } from '@/lib/constants';
 
 export interface JobVacancy {
   id: number;
@@ -311,7 +311,12 @@ export function applyToJob(
   id: number,
   message: string,
 ): Promise<{ success: boolean; message: string }> {
-  return api.post<{ success: boolean; message: string }>(`${API_V2}/jobs/${id}/apply`, { message });
+  // See TIMEOUTS.API_JOB_APPLY: this endpoint sends two emails inside the request and was
+  // measured at 9.5s against the ordinary 15s mutation timeout, on a write that has already
+  // committed by the time it is still waiting.
+  return api.post<{ success: boolean; message: string }>(`${API_V2}/jobs/${id}/apply`, { message }, {
+    timeout: TIMEOUTS.API_JOB_APPLY,
+  });
 }
 
 /**

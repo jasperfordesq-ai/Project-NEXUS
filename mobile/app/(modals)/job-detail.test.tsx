@@ -78,6 +78,7 @@ jest.mock('react-i18next', () => ({
         'apply.messagePlaceholder': 'Why are you a great fit?',
         'apply.submit': 'Submit Application',
         'apply.error': 'Application failed.',
+        'apply.noAnswerFromServer': 'We did not get a reply in time. Your application may already have been sent.',
         'card.applications': opts ? `${String(opts.count ?? 0)} applications` : '0 applications',
         'card.remote': 'Remote',
         'applications.status.pending': 'Pending',
@@ -166,17 +167,18 @@ jest.mock('@/components/ui/BottomSheet', () => ({
   },
 }));
 
+const mockShowToast = jest.fn();
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
   // dependency array don't re-run their effects on every render.
-  const show = jest.fn();
   const hide = jest.fn();
-  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+  return { useAppToast: () => ({ show: mockShowToast, hide, isToastVisible: false }) };
 });
 
 // --- Tests ---
 
 import JobDetailScreen from './job-detail';
+import { ApiResponseError } from '@/lib/api/client';
 import { router } from 'expo-router';
 import { applyToJob, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
 
@@ -412,6 +414,53 @@ describe('JobDetailScreen', () => {
 
     await waitFor(() => {
       expect(applyToJob).toHaveBeenCalledWith(1, 'I can support this role with community coordination experience.');
+    });
+  });
+  /**
+   * 🔴 A timeout here does NOT mean nothing happened.
+   *
+   * The endpoint writes the application row in its first second and then spends several
+   * more sending two emails — measured at 9.5s against a 15s mutation timeout on
+   * 2026-08-23. Saying "Application failed" sends the member back to try again, where the
+   * server refuses them as a duplicate, so they conclude the platform is broken while the
+   * employer already has their application.
+   */
+  it('tells a member their application may already have been sent when the server does not answer', async () => {
+    (applyToJob as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'timeout'));
+    (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'Cover text.' });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.press(getByText('Use Saved Cover Letter'));
+    fireEvent.press(getByText('Submit Application'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        description: expect.stringContaining('may already have been sent'),
+        variant: 'danger',
+      }));
+    });
+  });
+
+  it('shows the server’s own refusal rather than a generic failure', async () => {
+    (applyToJob as jest.Mock).mockRejectedValueOnce(
+      new ApiResponseError(409, 'You have already applied to this vacancy'),
+    );
+    (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'Cover text.' });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.press(getByText('Use Saved Cover Letter'));
+    fireEvent.press(getByText('Submit Application'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        description: 'You have already applied to this vacancy',
+      }));
     });
   });
 });

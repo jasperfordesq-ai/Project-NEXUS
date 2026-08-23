@@ -137,7 +137,8 @@
     "submitting": "Submitting...",
     "success": "Application submitted!",
     "successMessage": "Your application has been sent. Good luck!",
-    "error": "Failed to submit application"
+    "error": "Failed to submit application",
+    "noAnswerFromServer": "We did not get a reply in time. Your application may already have been sent — check your applications before trying again."
   },
   "applications": {
     "empty": "No applications yet",

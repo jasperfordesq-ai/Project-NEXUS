@@ -137,7 +137,8 @@
     "submitting": "Enviando...",
     "success": "¡Solicitud enviada!",
     "successMessage": "Tu solicitud ha sido enviada. ¡Buena suerte!",
-    "error": "Error al enviar la solicitud"
+    "error": "Error al enviar la solicitud",
+    "noAnswerFromServer": "No recibimos respuesta a tiempo. Tu solicitud puede haberse enviado ya: comprueba tus solicitudes antes de volver a intentarlo."
   },
   "applications": {
     "empty": "Aún no hay solicitudes",

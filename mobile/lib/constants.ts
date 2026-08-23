@@ -100,6 +100,18 @@ export const TIMEOUTS = {
    */
   API_REGISTER: 45_000,
   /**
+   * 🔴 Applying for a job only. The endpoint sends TWO emails inside the request — a
+   * confirmation to the applicant and an alert to the employer — before it answers.
+   * Measured against the local API on 2026-08-23: **9.5 seconds** warm, against a 15s
+   * mutation timeout. The application row is written in the first second, so a timeout
+   * does not undo it: the member is told their application failed while the employer has
+   * it, and applying again is refused as a duplicate. Same shape as API_REGISTER above.
+   *
+   * The durable fix is to move those two emails off the request; until then this stops the
+   * member being lied to. Recorded in the ledger against journey 5.27.
+   */
+  API_JOB_APPLY: 45_000,
+  /**
    * @deprecated Use API_GET, API_MUTATION, or API_UPLOAD instead.
    * Kept for backward compatibility with tests.
    */

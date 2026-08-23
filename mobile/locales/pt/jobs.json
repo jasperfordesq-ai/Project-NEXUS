@@ -137,7 +137,8 @@
     "submitting": "Enviando...",
     "success": "Candidatura enviada!",
     "successMessage": "Sua candidatura foi enviada. Boa sorte!",
-    "error": "Falha ao enviar a candidatura"
+    "error": "Falha ao enviar a candidatura",
+    "noAnswerFromServer": "Não recebemos resposta em tempo útil. A sua candidatura pode já ter sido enviada — verifique as suas candidaturas antes de tentar novamente."
   },
   "applications": {
     "empty": "Nenhuma candidatura ainda",
