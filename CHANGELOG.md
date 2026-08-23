@@ -82,8 +82,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without any poll existing — `E2ETestDataSeeder` seeds none, and the gate had
   only ever passed against a developer database that happened to hold polls. The
   stale assertion is replaced by one pinning the corrected placement (verified to
-  go red when the old form is reintroduced), and the job now seeds one open poll
-  with two options as an explicit precondition.
+  go red when the old form is reintroduced), and the job now seeds the polls the
+  gates need as an explicit precondition.
+
+- **That poll gate then proved nothing, and now runs.** Seeding one standard poll
+  cleared the failure but the gate walks on to a RANKED ballot, and its
+  `test.skip` for "no ranked-choice poll" marks the whole test skipped
+  retroactively — discarding the assertions that had already passed. The job went
+  green while the Arabic poll family was never checked. It now seeds an open
+  standard poll AND an open ranked poll, each with two options, idempotent per
+  `poll_type`. The remaining skips in that job are the declared ones
+  (`ACCESSIBILITY_ORG_ID=none`, `ACCESSIBILITY_GOAL_ID=none`), which state their
+  absence rather than inferring it from whatever the database happens to hold.
 
 - **ASP.NET global React bootstrap calls now return tenant/member state instead
   of plausible empty payloads.** Public menus include persisted published pages,
