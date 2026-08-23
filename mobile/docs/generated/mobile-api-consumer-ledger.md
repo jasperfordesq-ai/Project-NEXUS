@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 49 |
-| Call sites | 504 |
-| Distinct method + endpoint pairs | 415 |
-| Verified against openapi.json | 415 |
+| Call sites | 505 |
+| Distinct method + endpoint pairs | 416 |
+| Verified against openapi.json | 416 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -525,9 +525,10 @@ and the places a contract test earns the most.
 | GET | `/api/v2/volunteering/swaps` | volunteering.ts:579 |
 | DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:589 |
 | PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:585 |
-| GET | `/api/v2/wallet/balance` | wallet.ts:125 |
-| GET | `/api/v2/wallet/community-fund` | wallet.ts:156 |
-| POST | `/api/v2/wallet/donate` | wallet.ts:183 |
-| GET | `/api/v2/wallet/transactions` | wallet.ts:148 |
-| POST | `/api/v2/wallet/transfer` | wallet.ts:175 |
-| GET | `/api/v2/wallet/user-search` | wallet.ts:164 |
+| GET | `/api/v2/wallet/balance` | wallet.ts:170 |
+| GET | `/api/v2/wallet/community-fund` | wallet.ts:206 |
+| POST | `/api/v2/wallet/donate` | wallet.ts:233 |
+| GET | `/api/v2/wallet/transactions` | wallet.ts:198 |
+| GET | `/api/v2/wallet/transactions/{param}` | wallet.ts:183 |
+| POST | `/api/v2/wallet/transfer` | wallet.ts:225 |
+| GET | `/api/v2/wallet/user-search` | wallet.ts:214 |

@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **You can now open a time credit to see what it was.** Tapping a line in your wallet history opens it: who it was with, what it was for, when, what kind of exchange, and your balance afterwards where the platform has it. Before this the rows did nothing at all — and the server has been able to answer this question all along, with nothing anywhere asking it, in the app or on the website.
+
+- **Every achievement you had earned was shown as locked.** Ten of them, behind padlocks, on the Achievements screen. The app was looking for three different "has this been earned" markers and the server sends none of them — it records the date the badge was awarded instead. Found by the new check that compares what the app expects with what the server sends, which is exactly the kind of silent mismatch it was built for. Worth noting the achievements screen had **no entry at all** on the 140-item work list, though it is a whole part of the app; it has one now.
+
 - **A check that the phone app and the server still agree with each other.** Three of today's faults came from the same place: the app assumed the server would answer in a particular shape, nobody had ever checked, and the test alongside it was written from the app's assumption rather than the server's answer. There is now a check that takes **nineteen real answers from the server** — fifteen questions and four actions — and runs each one through the app's own code. Proof it works: delete the field that caused this morning's check-in fault and the check goes red. Worth knowing that the first version of it only covered questions, not actions, and would **not** have caught that fault — actions are the dangerous half, because by the time the app complains the server has already done the thing.
 
 - **And it says what it does not cover.** Five lists were empty when the answers were captured, so the check proves nothing about the items inside them, and it names all five rather than quietly implying it covers everything.

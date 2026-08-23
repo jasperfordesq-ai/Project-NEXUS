@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 49,
-    "call_sites": 504,
-    "distinct_endpoints": 415,
-    "verified": 415,
+    "call_sites": 505,
+    "distinct_endpoints": 416,
+    "verified": 416,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -4092,7 +4092,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:125"
+        "wallet.ts:170"
       ]
     },
     {
@@ -4101,7 +4101,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:156"
+        "wallet.ts:206"
       ]
     },
     {
@@ -4110,7 +4110,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:183"
+        "wallet.ts:233"
       ]
     },
     {
@@ -4119,7 +4119,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:148"
+        "wallet.ts:198"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/wallet/transactions/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "wallet.ts:183"
       ]
     },
     {
@@ -4128,7 +4137,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:175"
+        "wallet.ts:225"
       ]
     },
     {
@@ -4137,7 +4146,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "wallet.ts:164"
+        "wallet.ts:214"
       ]
     }
   ]

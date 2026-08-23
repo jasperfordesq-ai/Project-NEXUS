@@ -68,16 +68,16 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 1 | 1 | 1 | 0.587 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
-| 6 — Money and wallet | 12 | 0 | 7 | 2 | 1 | 1 | 1 | 0.455 |
+| 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
 | 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 6 | 4 | 0 | 0.522 |
-| 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **44** | **41** | **24** | **9** | **20** | **2** | — |
+| 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
+| **Total** | **140** | **46** | **41** | **24** | **9** | **18** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(44 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 77.30`, over `140 − 2 excluded = 138`
-rows → **0.560**.
+`(46 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 79.30`, over `140 − 2 excluded = 138`
+rows → **0.575**.
 
 ### Credit recomputation
 
@@ -88,9 +88,9 @@ rows → **0.560**.
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 11.15 | ÷ 19 † | **0.587** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
-| 6 | (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 5.00 | ÷ 11 † | **0.455** |
+| 6 | (1 × 1.0) + (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 6.00 | ÷ 11 † | **0.545** |
 | 7 | (7 × 1.0) + (1 × 0.6) + (6 × 0.30) = 9.40 | ÷ 18 | **0.522** |
-| 8 | 0 | ÷ 10 | **0.000** |
+| 8 | (1 × 1.0) = 1.00 | ÷ 10 | **0.100** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
 (the review composer, a recorded parity decision) and Tier 6 has one (the removed
@@ -257,7 +257,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 6.9 | Wallet limits and refusals | PROVEN | 2026-08-22: tried to send 999 credits on an 85-credit balance — refused before any request with "Check the details / You do not have enough time credits for this amount." Balances untouched, no transaction row |
 | 6.10 | Donations | RENDERS | Tab exists |
 | 6.11 | Auto-pay control on an organisation wallet | N/A | Removed `df0d4085c`: the endpoint returned 404 and the flag governed nothing. React had already removed it |
-| 6.12 | Transaction detail view | OPEN | 🔴 Cannot be walked: there is no such screen. The history rows have no `onPress` and no client calls `GET /v2/wallet/transactions/{id}` — **not the website either**, so this is an unused server endpoint rather than a mobile gap. Owner question: build it or drop the row |
+| 6.12 | Transaction detail view | CERTIFIED | **Built 2026-08-23** on the owner's decision, and walked: tapping a history row opens `GET /v2/wallet/transactions/270` (200) and shows the direction, amount, description, status, the other party, when, kind and reference. Before this the rows had no `onPress` and the endpoint had no caller anywhere — not the website either. 🔴 Two details worth keeping: the endpoint sends the parties as `{ id, name, avatar }` where the LIST sends `avatar_url`, so typing it from the neighbouring list type would have declared a field this route never sends — the fault that crashed Matches; and a **negative** id addresses a `federation_transactions` row, so the id is parsed with `parseInt`, not `Number`. `balance_after` is genuinely null on older rows and the row is hidden rather than printed as 0, which would tell the member their balance was zero. Guarded by six tests in `wallet-transaction.test.tsx` written from the live response |
 
 ## Tier 7 — Cross-cutting behaviour (18 rows)
 
@@ -289,7 +289,7 @@ arrives; never add a row to another tier.
 
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
-| 8.1 | RESERVE | OPEN | — |
+| 8.1 | Earned achievements show as earned | CERTIFIED | 🔴 **Claimed from RESERVE 2026-08-23: the achievements module had no row at all** across 140, though it is a whole member-facing screen (XP, levels, badges). Found by the API field audit, which reported `is_earned` absent from the badges response. It is: `GET /v2/gamification/badges` populates **`awarded_at`** and leaves `earned_at` and `claimed_at` null, sending neither `is_earned` nor `earned`. `isBadgeEarned()` checked all three of the fields the server does not send, so **all ten of a member's earned badges rendered as "Locked" behind a padlock** — measured on a device. Fixed by accepting `awarded_at`; re-measured, all ten now read "Earned". Guarded by two tests using the real payload, mutation-verified. 🔴 The existing fixture set `is_earned: true` AND `earned_at` — the fourth fixture that day written from the client's type instead of the response |
 | 8.2 | RESERVE | OPEN | — |
 | 8.3 | RESERVE | OPEN | — |
 | 8.4 | RESERVE | OPEN | — |

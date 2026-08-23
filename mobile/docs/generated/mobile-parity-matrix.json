@@ -2,14 +2,14 @@
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
     "react_member_routes": 254,
-    "mobile_routes": 139,
+    "mobile_routes": 140,
     "native": 125,
     "out_of_scope": 65,
     "gap": 33,
     "needs_review": 31,
     "needs_review_budget": 31,
     "undeclared": 0,
-    "mobile_routes_not_claimed_by_any_react_route": 25,
+    "mobile_routes_not_claimed_by_any_react_route": 26,
     "broken_declarations": 0
   },
   "undeclared": [],
@@ -621,6 +621,7 @@
     "marketplace-tools",
     "quick-create",
     "settings-translation",
+    "wallet-transaction",
     "create",
     "index"
   ],
