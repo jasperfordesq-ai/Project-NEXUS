@@ -59,6 +59,16 @@ type ApiBadge = Badge & {
   badge_key?: string;
   earned?: boolean;
   is_showcased?: boolean;
+  /**
+   * 🔴 The column the server actually populates when a badge is awarded.
+   *
+   * `GET /v2/gamification/badges` returns `awarded_at` with a timestamp and leaves both
+   * `earned_at` and `claimed_at` null. `is_earned` and `earned` are not sent at all. So
+   * every check here missed, and all ten of a member's earned badges rendered as "Locked"
+   * behind a padlock. Measured on a device 2026-08-23; found by auditing what the API
+   * sends against what this screen declares it needs.
+   */
+  awarded_at?: string | null;
 };
 type ApiProfile = GamificationProfile & {
   level_progress?: {
@@ -183,7 +193,11 @@ function getProfileStreak(profile: ApiProfile) {
 }
 
 function isBadgeEarned(badge: ApiBadge) {
-  return badge.is_earned === true || badge.earned === true || Boolean(badge.earned_at);
+  // `awarded_at` last but load-bearing: it is the only one of these the server populates.
+  return badge.is_earned === true
+    || badge.earned === true
+    || Boolean(badge.earned_at)
+    || Boolean(badge.awarded_at);
 }
 
 function getBadgeKey(badge: ApiBadge) {

@@ -222,6 +222,27 @@ const mockProfile = {
   streak_days: 7,
 };
 
+/**
+ * 🔴 The badge shape the server ACTUALLY sends.
+ *
+ * `mockBadge` below sets `is_earned: true` and `earned_at` — neither of which
+ * `GET /v2/gamification/badges` returns. It populates `awarded_at` and leaves `earned_at`
+ * and `claimed_at` null. So the earned check missed on every badge, and all ten of a
+ * member's earned badges rendered as "Locked" behind a padlock. Measured on a device
+ * 2026-08-23. Fourth fixture today written from the client's type instead of the response.
+ */
+const realAwardedBadge = {
+  id: 2855,
+  name: 'Team Player',
+  description: 'joining your first group',
+  icon: '👥',
+  badge_key: 'group_join_1',
+  awarded_at: '2026-08-23 13:03:44',
+  earned_at: null,
+  claimed_at: null,
+  is_showcased: 0,
+};
+
 const mockBadge = {
   id: 1,
   name: 'First Exchange',
@@ -575,5 +596,24 @@ describe('GamificationScreen', () => {
 
       expect(queryByTestId('gamification-load-failed')).toBeNull();
     });
+  });
+  it('shows a badge the server has awarded as earned, not locked', () => {
+    mockLoadedGamification({ badges: [realAwardedBadge] });
+
+    const { getAllByText, queryByText } = render(<GamificationScreen />);
+
+    expect(getAllByText('Earned').length).toBeGreaterThan(0);
+    // "Locked" beside a badge the member has genuinely won is the fault this pins.
+    expect(queryByText('Locked')).toBeNull();
+  });
+
+  it('still treats a badge with no award timestamp as locked', () => {
+    const unearned = { ...realAwardedBadge, id: 9999, name: 'Not Yet', awarded_at: null };
+    mockLoadedGamification({ badges: [unearned] });
+
+    const { getAllByText, queryByText } = render(<GamificationScreen />);
+
+    expect(getAllByText('Locked').length).toBeGreaterThan(0);
+    expect(queryByText('Earned')).toBeNull();
   });
 });
