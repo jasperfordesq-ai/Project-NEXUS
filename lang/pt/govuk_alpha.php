@@ -140,7 +140,7 @@ return [
             ],
         ],
         'sign_out' => 'Sair',
-        'licence' => 'Project NEXUS é um software livre licenciado sob AGPL-3.0-or-later.',
+        'licence' => 'O Project NEXUS é desenvolvido de forma aberta. O software é de código aberto sob a licença AGPL-3.0-or-later.',
         'attribution' => 'Direitos autorais © 2024–2026 Jasper Ford. Consulte NOTICE para atribuições e reconhecimentos.',
         'source' => 'Veja o código-fonte no GitHub',
     ],

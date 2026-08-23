@@ -1148,7 +1148,7 @@
                     }
                 },
                 "sign_out": "تسجيل الخروج",
-                "licence": "Project NEXUS هو برنامج مجاني مرخص بموجب AGPL-3.0-or-later.",
+                "licence": "يُطوَّر Project NEXUS بشكل مفتوح. البرنامج مفتوح المصدر بموجب ترخيص AGPL-3.0-or-later.",
                 "attribution": "حقوق الطبع والنشر © 2024–2026 Jasper Ford. انظر NOTICE للإسناد والتقدير.",
                 "source": "عرض الشفرة المصدرية على GitHub"
             },

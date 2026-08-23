@@ -141,7 +141,7 @@ return [
             ],
         ],
         'sign_out' => 'Sign out',
-        'licence' => 'Project NEXUS is free software licensed under AGPL-3.0-or-later.',
+        'licence' => 'Project NEXUS is built in the open. The software is open source under AGPL-3.0-or-later.',
         'attribution' => 'Copyright © 2024–2026 Jasper Ford. See NOTICE for attribution and acknowledgements.',
         'source' => 'View the source code on GitHub',
     ],

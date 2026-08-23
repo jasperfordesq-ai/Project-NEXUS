@@ -1148,7 +1148,7 @@
                     }
                 },
                 "sign_out": "Cerrar sesión",
-                "licence": "Project NEXUS es un software gratuito con licencia AGPL-3.0-or-later.",
+                "licence": "Project NEXUS se desarrolla de forma abierta. El software es de código abierto bajo la licencia AGPL-3.0-or-later.",
                 "attribution": "Copyright © 2024–2026 Jasper Ford. Consulte NOTICE para atribuciones y agradecimientos.",
                 "source": "Ver el código fuente en GitHub"
             },

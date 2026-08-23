@@ -1148,7 +1148,7 @@
                     }
                 },
                 "sign_out": "サインアウト",
-                "licence": "Project NEXUS は、AGPL-3.0-or-later に基づいてライセンス供与されたフリー ソフトウェアです。",
+                "licence": "Project NEXUS はオープンに開発されています。このソフトウェアは AGPL-3.0-or-later のもとで公開されているオープンソースです。",
                 "attribution": "著作権 © 2024–2026 Jasper Ford。帰属と謝辞については、NOTICE を参照してください。",
                 "source": "GitHubでソースコードを見る"
             },
