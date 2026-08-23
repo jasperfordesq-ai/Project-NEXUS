@@ -202,7 +202,7 @@ missing. If a sweep reports fewer screens than it declares, find out which.
 | 🔴 Editing source mid-walk | Metro fast-refreshes and **wipes a half-filled form** | Finish the walk, then edit |
 | 🔴 `input keyevent 111` (ESC) | Can trigger a dev-client reload | Tap a neutral area to dismiss the keyboard |
 | 🔴 Fixed tap coordinates after typing | The keyboard shifts the layout, so the next tap lands on the previous field. Two strings ended up in one field this way | Screenshot, locate, tap once |
-| 🔴 `uiautomator dump` | Returns **zero nodes** on this app. It once nearly produced a false critical defect | Screenshots only |
+| 🔴 `uiautomator dump` with no accessibility service running | Returns **zero nodes** on this app, and once nearly produced a false critical defect | Screenshots — **or** enable TalkBack first, see below |
 | 🔴 Reading a screenshot 8 seconds after a tap | Toasts have already gone. "No error appeared" was wrong twice | Capture at ~1–2s **and** later |
 | 🔴 A stale session on a device | Sat on a bare spinner in a re-fetch loop | `adb shell pm clear ie.project.nexus` and sign in again |
 | 🔴 Piping a long build through `\| tail` | Buffers everything; the log looks empty while it works | Redirect to a file and read it |
@@ -258,6 +258,44 @@ Recorded because each one produced a confident wrong answer:
   the server deliberately withholds. Two different faults, both looking like bad data. When
   a figure looks wrong, separate "the value is wrong" from "the sentence around it is
   wrong" before filing anything.
+
+## 🔴 Reading what a screen reader sees — the dump DOES work
+
+`uiautomator dump` returns zero nodes on this app **only while no accessibility service is
+running**. Enable TalkBack and the whole tree appears, with `content-desc`, `clickable`,
+`focusable` and `bounds` for every node. That belief blocked the first screen-reader audit
+for weeks; it was measured without the service on.
+
+```bash
+S=emulator-5554
+adb -s $S shell settings put secure enabled_accessibility_services   com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+adb -s $S shell settings put secure accessibility_enabled 1
+# TalkBack asks for notification permission on first run — dismiss it, then:
+MSYS_NO_PATHCONV=1 adb -s $S shell uiautomator dump /sdcard/ui.xml
+MSYS_NO_PATHCONV=1 adb -s $S shell cat /sdcard/ui.xml > ui.xml
+
+# Put it back afterwards, or every later tap only moves focus:
+adb -s $S shell settings delete secure enabled_accessibility_services
+adb -s $S shell settings put secure accessibility_enabled 0
+```
+
+🔴 Four traps in reading the result:
+
+1. **`MSYS_NO_PATHCONV=1` is required** on this Windows shell, or `/sdcard/ui.xml` is
+   rewritten to a Windows path and the dump lands somewhere useless.
+2. **With TalkBack on, a tap moves focus instead of activating.** Two taps in quick
+   succession activate. Anything driven by coordinates behaves differently from before.
+3. **Use the device's real density.** `adb shell wm density` reported 420dpi here, so
+   48dp = 126px and the WCAG 2.2 AA minimum of 24dp = 63px. Assuming 2.25x understates
+   every measurement and makes failing targets look like passes.
+4. **The Expo dev toast is in the tree** as an unlabelled 52x52px control at
+   `[970,2183][1022,2235]` on every screen. It is not app code. Exclude it by bounds or
+   dismiss it, or it reads as a permanent accessibility defect.
+
+🔴 **`clickable` is a touch property, not an accessibility one.** `accessible={false}` and
+`importantForAccessibility="no"` left a chip's node fully intact — same `content-desc`,
+still `clickable=true`. `focusable={false}` is what flipped it to `clickable=false`. Prove
+a prop reached the view with a temporary `testID` before concluding anything about it.
 
 ## Known-fragile areas
 

@@ -36,11 +36,14 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    it demands must actually be downloadable, which is item 5.
 5. The distribution path **exercised once**: a build published, installed from that channel,
    and opened.
-6. A **screen-reader pass** over one complete journey. The platform's other frontend is
+6. ~~A **screen-reader pass** over one complete journey.~~ **Part done 2026-08-23** — the first
+   screen-reader audit ever run here covered five screens and fixed three defect families.
+   What remains is the narrower thing this bullet actually asks for: one journey driven end
+   to end through TalkBack's own gestures, rather than audited screen by screen. The platform's other frontend is
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 557 or 700 is not the point.
+Nothing in that list is a score. A total of 572 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -80,8 +83,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-23
 
-**557 / 1000 on rubric M1.** Of 140 journeys: 43 CERTIFIED, 41 PROVEN, 24 RENDERS, 6 PARTIAL,
-3 BROKEN, 21 never attempted, 2 not applicable.
+**572 / 1000 on rubric M1.** Of 140 journeys: 43 CERTIFIED, 41 PROVEN, 24 RENDERS, 8 PARTIAL,
+3 BROKEN, 19 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven

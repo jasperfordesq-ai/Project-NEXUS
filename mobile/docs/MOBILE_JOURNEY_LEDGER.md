@@ -69,15 +69,15 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 1 | 1 | 1 | 0.455 |
-| 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
+| 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 6 | 5 | 0 | 0.467 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **43** | **41** | **24** | **6** | **24** | **2** | — |
+| **Total** | **140** | **43** | **41** | **24** | **8** | **22** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(43 × 1.0) + (41 × 0.6) + (24 × 0.25) + (6 × 0.30) = 75.40`, over `140 − 2 excluded = 138`
-rows → **0.546**.
+`(43 × 1.0) + (41 × 0.6) + (24 × 0.25) + (8 × 0.30) = 76.00`, over `140 − 2 excluded = 138`
+rows → **0.551**.
 
 ### Credit recomputation
 
@@ -89,7 +89,7 @@ rows → **0.546**.
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 5.00 | ÷ 11 † | **0.455** |
-| 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
+| 7 | (6 × 1.0) + (1 × 0.6) + (6 × 0.30) = 8.40 | ÷ 18 | **0.467** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
@@ -271,8 +271,8 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.6 | A failed action explains why | PARTIAL | Helper added (`lib/api/describeApiError.ts`) and applied on walked paths. **186 sites across 57 files** still discard the server's message |
 | 7.7 | Hiding a label keeps an accessible name | CERTIFIED | Guarded in `narrowScreenReach.test.ts` |
 | 7.8 | Crash reports reach the owner | PROVEN | Dual-destination reporting added 2026-08-20; never verified from a real crash |
-| 7.9 | Screen-reader pass over a core journey | OPEN | Never attempted |
-| 7.10 | Touch-target sizes audited | OPEN | Never measured |
+| 7.9 | Screen-reader pass over a core journey | PARTIAL | **First screen-reader audit ever done here, 2026-08-23**, with TalkBack running on the emulator over five screens (feed, exchanges, wallet, messages, event detail). 🔴 **`uiautomator dump` DOES work on this app once an accessibility service is running** — the recorded belief that it returns zero nodes was measured without one, and it blocked this audit for weeks. Three defect families found and fixed. **(a)** Icons rendered as `<Text>` holding a private-use codepoint, and Android composes a control's name from its children — so every tab and filter announced the raw glyph first (`content-desc=", For You"`). Fixed by routing all 131 `Ionicons` imports through `components/ui/Icon.tsx`, which hides them from the tree; zero glyphs remain on the audited screens. **(b)** `heroui-native`'s `Chip` renders a `Pressable` whether or not it has an `onPress`, so every informational chip was offered as a button that does nothing — messages went from 17 reported controls to 12 and the wallet from 9 to 6 once that was fixed. **(c)** The feed's save button was genuinely unlabelled, which only became visible once the glyph noise stopped masking it. 🔴 **PARTIAL, not certified: this is an audit, not a walk.** No journey was driven end to end through TalkBack's own gesture model — with it on, a tap moves focus rather than activating, so the app was still driven by coordinates. Guarded by `components/iconAccessibility.test.ts`, `components/ui/statusChipAccessibility.test.tsx` and `components/chipMigration.test.ts` (91 files left to migrate, shrink-only) |
+| 7.10 | Touch-target sizes audited | PARTIAL | **Measured for the first time 2026-08-23** from the live accessibility tree at the device's real 420dpi (48dp = 126px, the WCAG 2.2 AA minimum of 24dp = 63px — an earlier assumption of 2.25x density would have understated every figure). Across five screens, nine controls sat at **20dp tall**, below the AA minimum: the feed's five filter chips and four exchange status chips. `size="sm"` chips are 20dp. Fixed centrally — interactive chips now carry a 24dp minimum height, decorative ones are no longer targets at all — and re-measured to zero. 🔴 PARTIAL because five screens of roughly 137 were measured, and because a large group sits at **40dp**: above the AA floor but below Android's own 48dp guidance, which is recorded and not addressed |
 | 7.11 | Right-to-left (Arabic) | OPEN | No RTL support exists; `ar` is blocked |
 | 7.12 | Every string translated in the 7 shipped locales | OPEN | ≥3,232 multi-word phrases still English across six locales (~11% each) |
 | 7.13 | Offline check-in queue survives a dropped connection | OPEN | Covered by unit tests; never walked on a device |
