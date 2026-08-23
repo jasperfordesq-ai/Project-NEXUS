@@ -267,6 +267,40 @@ public static class EventContractMapper
     }
 
     /// <summary>
+    /// Canonical response for an RSVP mutation. The React events client validates this
+    /// shape independently from event detail, so returning a successful legacy write
+    /// payload here prevents the UI from refreshing and makes the saved RSVP appear lost.
+    /// Mirrors Laravel's <c>EventContractMapper::registration</c> projection.
+    /// </summary>
+    public static Dictionary<string, object?> Registration(
+        Entities.Event e,
+        Facts facts,
+        string? legacyStatus,
+        string? message = null)
+    {
+        var eventContract = Event(e, facts);
+        var metrics = (Dictionary<string, object?>)eventContract["metrics"]!;
+        var relationship = (Dictionary<string, object?>)eventContract["relationship"]!;
+        var registration = (Dictionary<string, object?>)relationship["registration"]!;
+
+        return new Dictionary<string, object?>
+        {
+            ["contract_version"] = Version,
+            ["event_id"] = e.Id,
+            ["relationship"] = relationship,
+            ["metrics"] = metrics,
+            ["status"] = NullIfBlank(legacyStatus),
+            ["rsvp_counts"] = new Dictionary<string, object?>
+            {
+                ["going"] = metrics["confirmed_count"],
+                ["interested"] = metrics["interested_count"],
+            },
+            ["waitlist_position"] = registration["waitlist_position"],
+            ["message"] = NullIfBlank(message),
+        };
+    }
+
+    /// <summary>
     /// One attendee row for the event roster — Laravel's <c>roster()</c>
     /// (EventContractMapper.php:410-441), same <c>contract_version</c>.
     ///

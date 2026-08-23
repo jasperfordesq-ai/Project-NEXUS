@@ -392,6 +392,7 @@ public class V15MemberParityController : ControllerBase
     [HttpGet("api/v2/events/{id:int}")]
     public async Task<IActionResult> V2Event(int id)
     {
+        var viewerId = CurrentUserId();
         var row = await _db.Events.AsNoTracking()
             .Include(e => e.CreatedBy)
             .Include(e => e.Group)
@@ -400,9 +401,9 @@ public class V15MemberParityController : ControllerBase
             {
                 Event = e,
                 Confirmed = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Going),
-                Interested = e.Rsvps.Count(r => r.Status == Event.RsvpStatus.Maybe),
+                Interested = e.Rsvps.Count(r => r.Status == "interested" || r.Status == Event.RsvpStatus.Maybe),
                 MyStatus = e.Rsvps
-                    .Where(r => r.UserId == CurrentUserId())
+                    .Where(r => r.UserId == viewerId)
                     .Select(r => r.Status)
                     .FirstOrDefault(),
             })
@@ -413,7 +414,6 @@ public class V15MemberParityController : ControllerBase
             return NotFound(new { error = "Event not found" });
         }
 
-        var viewerId = CurrentUserId();
         return Ok(new
         {
             data = ApplyEventContractNegotiation(
@@ -534,7 +534,6 @@ public class V15MemberParityController : ControllerBase
     }
 
     [HttpPost("api/events/rsvp")]
-    [HttpPost("api/v2/events/{id:int}/rsvp")]
     [HttpPost("api/v2/events/{id:int}/attendance")]
     [HttpPost("api/v2/events/{id:int}/attendance/bulk")]
     [HttpPost("api/v2/events/{id:int}/attendees/{attendeeId:int}/check-in")]
@@ -561,6 +560,87 @@ public class V15MemberParityController : ControllerBase
 
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = new { event_id = eventId, user_id = userId, status = rsvp.Status, checked_in = true } });
+    }
+
+    /// <summary>
+    /// Records the authenticated member's RSVP and returns the canonical mutation
+    /// projection consumed by <c>eventsApi.rsvp</c>. This is deliberately separate from
+    /// attendance/check-in compatibility routes: RSVP is self-service and must never
+    /// accept a body-supplied user id.
+    /// </summary>
+    [HttpPost("api/v2/events/{id:int}/rsvp")]
+    public async Task<IActionResult> V2EventRsvp(int id, [FromBody] JsonElement body)
+    {
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        var status = GetString(body, "status")?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(status))
+            return BadRequest(new { success = false, message = "Status is required" });
+        if (status is not (Event.RsvpStatus.Going or "interested" or Event.RsvpStatus.NotGoing or "declined"))
+            return UnprocessableEntity(new { success = false, message = "Invalid RSVP status" });
+
+        var ev = await _db.Events.FirstOrDefaultAsync(e => e.Id == id);
+        if (ev == null) return NotFound(new { error = "Event not found" });
+
+        var rsvp = await _db.EventRsvps
+            .FirstOrDefaultAsync(r => r.EventId == id && r.UserId == userId.Value);
+        if (rsvp == null)
+        {
+            rsvp = new EventRsvp
+            {
+                TenantId = TenantId(),
+                EventId = id,
+                UserId = userId.Value,
+                Status = status,
+                RespondedAt = DateTime.UtcNow,
+            };
+            _db.EventRsvps.Add(rsvp);
+        }
+        else
+        {
+            rsvp.Status = status;
+            rsvp.RespondedAt = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync();
+
+        if (NegotiateEventContractVersion() != EventContractMapper.Version)
+        {
+            return Ok(new
+            {
+                success = true,
+                data = new { event_id = id, user_id = userId.Value, status = rsvp.Status },
+            });
+        }
+
+        var counts = await _db.EventRsvps.AsNoTracking()
+            .Where(candidate => candidate.EventId == id)
+            .GroupBy(_ => 1)
+            .Select(group => new
+            {
+                Confirmed = group.Count(candidate => candidate.Status == Event.RsvpStatus.Going),
+                Interested = group.Count(candidate => candidate.Status == "interested" || candidate.Status == Event.RsvpStatus.Maybe),
+            })
+            .FirstOrDefaultAsync();
+
+        var facts = new EventContractMapper.Facts
+        {
+            ViewerId = userId,
+            LegacyRsvpStatus = rsvp.Status,
+            ConfirmedCount = counts?.Confirmed ?? 0,
+            InterestedCount = counts?.Interested ?? 0,
+            CanEdit = ev.CreatedById == userId,
+            CanRegister = rsvp.Status != Event.RsvpStatus.Going,
+            CanWithdraw = rsvp.Status == Event.RsvpStatus.Going,
+            CanSetInterest = true,
+        };
+
+        return Ok(new
+        {
+            success = true,
+            data = EventContractMapper.Registration(ev, facts, rsvp.Status),
+        });
     }
 
     [HttpDelete("api/v2/events/{id:int}/rsvp")]
@@ -2789,16 +2869,22 @@ public class V15MemberParityController : ControllerBase
     private Dictionary<string, object?> ApplyEventContractNegotiation(
         Dictionary<string, object?> canonical)
     {
+        var version = NegotiateEventContractVersion();
+
+        return version == EventContractMapper.Version
+            ? canonical
+            : EventContractMapper.DowngradeToLegacy(canonical);
+    }
+
+    private int NegotiateEventContractVersion()
+    {
         var requested = Request.Headers[EventContractMapper.ContractHeader].ToString();
         var version = EventContractMapper.NegotiateVersion(requested);
 
         Response.Headers[EventContractMapper.ContractHeader] =
             version.ToString(CultureInfo.InvariantCulture);
         AppendVary(EventContractMapper.ContractHeader);
-
-        return version == EventContractMapper.Version
-            ? canonical
-            : EventContractMapper.DowngradeToLegacy(canonical);
+        return version;
     }
 
     /// <summary>Adds a token to `Vary` without duplicating one already present.</summary>
