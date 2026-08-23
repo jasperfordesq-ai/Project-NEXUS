@@ -3308,7 +3308,22 @@ class EventService
             ->where('tenant_id', (int) TenantContext::getId())
             ->whereKey($rootId)
             ->value('publication_status');
-        if ((string) $rootPublication === EventPublicationState::PendingReview->value
+        // 🔴 `Builder::value()` runs the model's casts, and `publication_status` is cast
+        // to EventPublicationState — so this is an ENUM OBJECT, not a string, and
+        // `(string)` on it is a fatal Error. It was, in production: every attempt to
+        // change the cover image of an event whose publication status is set died here
+        // with "Object of class App\Enums\EventPublicationState could not be converted
+        // to string" (NEXUS-PHP-4M).
+        //
+        // The second half of the condition is safe and deliberately left alone:
+        // `getRawOriginal()` returns the underlying column value, which never passes
+        // through a cast. The difference between those two accessors is the whole bug,
+        // and the reason the line reads as if it were symmetrical when it is not.
+        $rootPublicationValue = $rootPublication instanceof EventPublicationState
+            ? $rootPublication->value
+            : (string) ($rootPublication ?? '');
+
+        if ($rootPublicationValue === EventPublicationState::PendingReview->value
             || (string) $event->getRawOriginal('publication_status') === EventPublicationState::PendingReview->value) {
             self::$errors[] = ['code' => 'EVENT_REVIEW_PENDING', 'message' => __('api.invalid_status')];
             return false;

@@ -192,4 +192,45 @@ class EventServiceTest extends TestCase
 
         EventService::getAll(['step_free' => 'sometimes']);
     }
+
+    /**
+     * 🔴 canUpdateImage read the root event's publication_status through
+     * `Builder::value()`, which APPLIES the model's casts and therefore hands back an
+     * EventPublicationState enum — then cast it to string. That is a fatal Error, so
+     * every cover-image change on an event with a publication status set died before
+     * the authorisation answer was ever produced (NEXUS-PHP-4M).
+     *
+     * A published event must be allowed through; the assertion that matters is that
+     * the call RETURNS AT ALL rather than throwing.
+     */
+    public function test_canUpdateImage_allows_a_published_event_and_does_not_choke_on_the_enum_cast(): void
+    {
+        $user = $this->user();
+        $eventId = $this->event($user->id, now()->addDay()->format('Y-m-d H:i:s'), [
+            'publication_status' => 'published',
+        ]);
+
+        $this->assertTrue(
+            EventService::canUpdateImage($eventId, (int) $user->id),
+            'A published event owned by the caller must be image-editable: ' . json_encode(EventService::getErrors()),
+        );
+    }
+
+    /**
+     * The other side of the same line: the pending-review refusal must still work.
+     * Without this, the fix above could be "make it return true always" and pass.
+     */
+    public function test_canUpdateImage_still_refuses_an_event_awaiting_review(): void
+    {
+        $user = $this->user();
+        $eventId = $this->event($user->id, now()->addDay()->format('Y-m-d H:i:s'), [
+            'publication_status' => 'pending_review',
+        ]);
+
+        $this->assertFalse(EventService::canUpdateImage($eventId, (int) $user->id));
+        $this->assertSame(
+            ['EVENT_REVIEW_PENDING'],
+            array_values(array_unique(array_column(EventService::getErrors(), 'code'))),
+        );
+    }
 }
