@@ -56,6 +56,7 @@ export function WalletPage() {
   const [error, setError] = useState<string | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
   const [filter, setFilter] = useState<TransactionFilter>('all');
+  const [pendingTransactions, setPendingTransactions] = useState<Transaction[]>([]);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const toast = useToast();
@@ -158,6 +159,24 @@ export function WalletPage() {
     }
   }, [isLoadingMore, hasMoreTransactions, txCursor]);
 
+  /*
+    Pending rows are fetched only when the member asks for them, from their own endpoint
+    mode. Kept out of the default list on purpose — see the comment in
+    `filteredTransactions`.
+  */
+  useEffect(() => {
+    if (filter !== 'pending') return;
+    let cancelled = false;
+    (async () => {
+      const response = await api.get<Transaction[]>('/v2/wallet/transactions?per_page=50&type=pending');
+      if (cancelled) return;
+      if (response.success && Array.isArray(response.data)) {
+        setPendingTransactions(response.data);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [filter]);
+
   // Handle successful transfer
   function handleTransferComplete(transaction: Transaction) {
     // Add the new transaction to the list
@@ -179,20 +198,34 @@ export function WalletPage() {
   }
 
   const filteredTransactions = useMemo(() => {
+    /*
+      🔴 The Pending filter used to read `tx.status === 'pending'` over a list that could
+      never contain a pending row: `GET /v2/wallet/transactions` was completed-only for
+      every filter. So it always said "no transactions" while the card beside it claimed
+      hours were pending. The endpoint now honours `type=pending`, and pending rows come
+      from their own request — the default list stays completed-only on purpose, because
+      earned/spent are derived from it and a pending amount must not count as settled.
+    */
+    if (filter === 'pending') return pendingTransactions;
     return transactions.filter((tx) => {
       if (filter === 'all') return true;
       if (filter === 'earned') return tx.type === 'credit';
       if (filter === 'spent') return tx.type === 'debit';
-      if (filter === 'pending') return tx.status === 'pending';
       return true;
     });
-  }, [transactions, filter]);
+  }, [transactions, pendingTransactions, filter]);
 
   const stats = useMemo(() => ({
     earned: balance?.total_earned ?? 0,
     spent: balance?.total_spent ?? 0,
-    pending: (balance?.pending_in ?? balance?.pending_incoming ?? 0)
-           + (balance?.pending_out ?? balance?.pending_outgoing ?? 0),
+    /*
+      🔴 These two were ADDED TOGETHER and shown as one figure. Credits coming in and
+      credits going out are opposite directions, so their sum is neither — with 7 in and
+      4 out the card read "11h", a number the member has nowhere. Found on the mobile app
+      on 2026-08-23; identical fault here.
+    */
+    pendingIn: balance?.pending_in ?? balance?.pending_incoming ?? 0,
+    pendingOut: balance?.pending_out ?? balance?.pending_outgoing ?? 0,
   }), [balance]);
 
   // Export transactions to CSV using papaparse
@@ -385,7 +418,11 @@ export function WalletPage() {
         <StatCard
           icon={<Clock className="w-5 h-5" aria-hidden="true" />}
           label={t('stats.pending')}
-          value={t('hours_value', { count: stats.pending })}
+          // Composed from the already-translated hours format rather than a new format
+          // string: "+7h -4h" is identical in every language, and a locale file full of
+          // byte-identical English is exactly what the untranslated-drift gate exists to
+          // stop. The signs are punctuation, not language.
+          value={`+${t('hours_value', { count: stats.pendingIn })} -${t('hours_value', { count: stats.pendingOut })}`}
           color="amber"
           isLoading={isLoading}
         />

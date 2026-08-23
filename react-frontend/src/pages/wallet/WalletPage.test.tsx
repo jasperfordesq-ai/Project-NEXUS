@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -69,6 +69,7 @@ vi.mock('@/components/wallet', () => ({
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { WalletPage } from './WalletPage';
+import { api } from '@/lib/api';
 
 describe('WalletPage', () => {
   beforeEach(() => {
@@ -106,5 +107,62 @@ describe('WalletPage', () => {
   it('shows Export button', () => {
     render(<WalletPage />);
     expect(screen.getByText('Export')).toBeInTheDocument();
+  });
+  /**
+   * 🔴 Two faults found by walking the mobile app on 2026-08-23, both of which existed
+   * here too.
+   *
+   * The pending card ADDED credits coming in to credits going out and printed the sum, a
+   * figure the member has nowhere. And the "Pending" filter read `tx.status === 'pending'`
+   * over a list that could never contain a pending row, because
+   * `GET /v2/wallet/transactions` was completed-only for every filter — so it said "no
+   * transactions" while the card beside it claimed hours were pending.
+   */
+  function mockWallet(pendingRows: unknown[] = []) {
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(
+      String(url).includes('type=pending')
+        ? { success: true, data: pendingRows }
+        : String(url).includes('/transactions')
+          ? { success: true, data: [] }
+          : { success: true, data: { balance: 23, total_earned: 3, total_spent: 5, pending_in: 7, pending_out: 4 } },
+    ) as never);
+  }
+
+  it('never adds pending in and pending out together', async () => {
+    mockWallet();
+
+    render(<WalletPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('+7h -4h')).toBeInTheDocument();
+    });
+    // 11 is the sum of the two directions and must appear nowhere.
+    expect(screen.queryByText('11h')).not.toBeInTheDocument();
+  });
+
+  it('asks the server for pending rows instead of filtering a completed-only list', async () => {
+    mockWallet([{
+      id: 991, type: 'credit', amount: 7, status: 'pending',
+      description: 'Pending inbound fixture', created_at: '2026-08-23T09:00:00Z',
+      other_user: { id: 5, name: 'Bob Smith', avatar_url: null },
+    }]);
+
+    render(<WalletPage />);
+
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+
+    // "Pending" also labels a stat card, so pick the tab control rather than the text.
+    const pendingTab = screen.getAllByText('Pending')
+      .map((node) => node.closest('[role="tab"], button, [data-key="pending"]'))
+      .find((node): node is HTMLElement => node !== null);
+    expect(pendingTab).toBeTruthy();
+    fireEvent.click(pendingTab as HTMLElement);
+
+    await waitFor(() => {
+      expect(vi.mocked(api.get).mock.calls.some(([url]) => String(url).includes('type=pending'))).toBe(true);
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Pending inbound fixture')).toBeInTheDocument();
+    });
   });
 });
