@@ -53,6 +53,19 @@ const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; 
     tone: '#14b8a6',
     route: (id) => ({ pathname: '/(modals)/group-detail', params: { id: String(id) } }),
   },
+  /*
+    🔴 `event` was missing while the server has always been able to return it
+    (`CrossModuleMatchingService` emits listing, volunteering AND event). Reading
+    `SOURCE_CONFIG[undefined].tone` is what crashed this screen — "Cannot read property
+    'tone' of undefined" — for every member on 2026-08-23. `lib/api/matches.ts` now also
+    falls back for any module this map does not know, so a new one server-side cannot take
+    Matches down a second time.
+  */
+  event: {
+    icon: 'calendar-outline',
+    tone: '#7c3aed',
+    route: (id) => ({ pathname: '/(modals)/event-detail', params: { id: String(id) } }),
+  },
 };
 
 export default function MatchesScreen() {

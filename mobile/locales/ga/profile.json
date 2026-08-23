@@ -35,7 +35,8 @@
       "listing": "Liostú",
       "job": "Post",
       "volunteering": "Obair dheonach",
-      "group": "Grúpa"
+      "group": "Grúpa",
+      "event": "Imeacht"
     },
     "score": "Meaitseáil {{score}}%",
     "open": "Oscail an mheaitseáil",

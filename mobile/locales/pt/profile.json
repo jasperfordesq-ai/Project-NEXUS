@@ -35,7 +35,8 @@
       "listing": "Listing",
       "job": "Job",
       "volunteering": "Volunteering",
-      "group": "Group"
+      "group": "Group",
+      "event": "Evento"
     },
     "score": "{{score}}% match",
     "open": "Open match",
