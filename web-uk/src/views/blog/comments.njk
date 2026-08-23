@@ -100,10 +100,13 @@
   </li>
 {% endmacro %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/blog/' + post.slug) }}">{{ t("govuk_alpha_blogreviews.comments.back_to_post") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/blog/' + post.slug) }}">{{ t("govuk_alpha_blogreviews.comments.back_to_post") }}</a>
 
       {% if statusBanner and statusBanner.type == "success" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="blog-comments-status-title">

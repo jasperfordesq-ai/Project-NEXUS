@@ -6,10 +6,13 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/me/collections') }}">{{ t("govuk_alpha_saved.collections.title") }}</a>
+{% endblock %}
+
 {% block content %}
   {% set editNameError = status == "collection-name-required" %}
 
-  <a class="govuk-back-link" href="{{ urlFor('/me/collections') }}">{{ t("govuk_alpha_saved.collections.title") }}</a>
 
   {% if status == "item-remove-failed" or status == "collection-failed" or editNameError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

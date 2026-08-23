@@ -5,6 +5,10 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% block beforeContent %}
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.idea.back_to_challenge") }}</a>
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -17,7 +21,6 @@
     archived: t("govuk_alpha_ideation.status.archived")
   } %}
 
-  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.idea.back_to_challenge") }}</a>
 
   {% if successMessage %}
     {% set notificationMessage = successMessage %}

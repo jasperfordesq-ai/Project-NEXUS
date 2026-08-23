@@ -13,12 +13,15 @@
   <script type="application/ld+json">{{ organisationStructuredData | safe }}</script>
 {% endblock %}
 
-{% block mainContent %}
+{% block beforeContent %}
   {% if organisation.id %}
     <a class="govuk-back-link" href="{{ urlFor('/organisations/' + (organisation.id | string)) }}">{{ organisationName }}</a>
   {% else %}
     <a class="govuk-back-link" href="{{ urlFor('/organisations/browse') }}">{{ t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
   {% endif %}
+{% endblock %}
+
+{% block mainContent %}
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.jobs.heading", { name: organisationName }) }}</h1>

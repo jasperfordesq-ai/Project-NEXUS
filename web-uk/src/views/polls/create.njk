@@ -7,10 +7,13 @@
 {% from "_character-count.njk" import characterCount %}
 {% from "_date-input.njk" import nexusDateInput %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/polls') }}">{{ t("govuk_alpha_gamification.common.back_to_polls") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/polls') }}">{{ t("govuk_alpha_gamification.common.back_to_polls") }}</a>
 
       <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_create.caption", { community: tenantName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.poll_create.title") }}</h1>

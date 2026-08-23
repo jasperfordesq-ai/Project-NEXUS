@@ -10,15 +10,17 @@
 {% set organisationName = opportunity.organisationName or "" %}
 {% set organisationId = opportunity.organisationId or 0 %}
 
-{% block mainContent %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+{% block beforeContent %}
   {% if organisationId %}
     <a class="govuk-back-link" href="{{ urlFor('/organisations/' + (organisationId | string)) }}">{{ organisationName or t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
   {% else %}
     <a class="govuk-back-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ t("govuk_alpha_organisations.apply.view_opportunity") }}</a>
   {% endif %}
+{% endblock %}
 
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.apply.heading") }}</h1>
 

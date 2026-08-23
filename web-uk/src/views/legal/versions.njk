@@ -5,10 +5,13 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/legal/' + docSlug) }}">{{ documentTitle }}</a>
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/legal/' + docSlug) }}">{{ documentTitle }}</a>
 
       <span class="govuk-caption-xl">{{ t("legal.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("legal.versions_title") }}</h1>

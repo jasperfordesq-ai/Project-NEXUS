@@ -5,9 +5,12 @@
 
 {% extends "layouts/base.njk" %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/members/' + (owner.id | string)) }}">{{ t("govuk_alpha_saved.public.back_to_profile") }}</a>
+{% endblock %}
+
 {% block content %}
   {% set ownerLabel = owner.name or t("govuk_alpha_saved.wall.from_someone") %}
-  <a class="govuk-back-link" href="{{ urlFor('/members/' + (owner.id | string)) }}">{{ t("govuk_alpha_saved.public.back_to_profile") }}</a>
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.public.caption", { name: ownerLabel }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.public.heading", { name: ownerLabel }) }}</h1>

@@ -6,12 +6,15 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
 
+{% block beforeContent %}
+  <a href="{{ urlFor('/ideation/campaigns') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.campaigns.title") }}</a>
+{% endblock %}
+
 {% block content %}
   {% set successStates = ["campaign-updated", "campaign-created", "challenge-unlinked"] %}
   {% set errorStates = ["campaign-invalid", "campaign-failed"] %}
   {% set campaignStatusOptions = ["draft", "active", "completed", "archived"] %}
 
-  <a href="{{ urlFor('/ideation/campaigns') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.campaigns.title") }}</a>
 
   {% if status in successStates %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="campaign-detail-banner">

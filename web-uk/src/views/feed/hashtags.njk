@@ -5,10 +5,13 @@
 
 {% extends "layouts/base.njk" %}
 
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
 
       {% if errorMessage %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

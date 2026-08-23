@@ -6,12 +6,15 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/whats-on') }}">
+        {{ t("govuk_alpha_whats_on.show.back") }}
+      </a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/whats-on') }}">
-        {{ t("govuk_alpha_whats_on.show.back") }}
-      </a>
 
       {% set status = event.operational_status or 'scheduled' %}
       {% set mode = event.attendance_mode or 'in_person' %}

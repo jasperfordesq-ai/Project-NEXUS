@@ -4,10 +4,13 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
 
       <span class="govuk-caption-xl">{{ t("legal.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{% if document %}{{ document.title }}{% else %}{{ config.title }}{% endif %}</h1>

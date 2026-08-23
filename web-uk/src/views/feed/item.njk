@@ -7,10 +7,13 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "feed/_comments.njk" import commentList %}
 
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
 
       <span class="govuk-caption-xl">{{ t("govuk_alpha_feed.item.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{% if item.title %}{{ item.title }}{% else %}{{ t("govuk_alpha_feed.item.heading") }}{% endif %}</h1>

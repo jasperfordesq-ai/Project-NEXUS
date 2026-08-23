@@ -5,10 +5,13 @@
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
 
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
 
       {% if statusMessage and successStatus %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="data-rights-status-title">

@@ -5,10 +5,13 @@
 
 {% extends "layouts/base.njk" %}
 
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed/hashtags') }}" class="govuk-back-link">{{ t("govuk_alpha_feed.hashtag.back_to_hashtags") }}</a>
+{% endblock %}
+
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <a href="{{ urlFor('/feed/hashtags') }}" class="govuk-back-link">{{ t("govuk_alpha_feed.hashtag.back_to_hashtags") }}</a>
 
       {% if errorMessage %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert">
