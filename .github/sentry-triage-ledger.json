@@ -1,7 +1,25 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-08-20T02:10:31.519Z",
+  "lastRunAt": "2026-08-23T08:05:21.985Z",
   "issues": {
+    "130353163": {
+      "title": "Geocoding exception",
+      "culprit": null,
+      "decision": "watching",
+      "note": "Single geocoding exception, no stack detail and no repeat. Most likely a transient failure from the geocoding provider. Too rare to act on; watching for a pattern.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:17:19.136Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "134069538": {
+      "title": "Safeguarding interaction policy unavailable",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Configuration gap, not a code bug, and it is failing in the safe direction. app/Services/SafeguardingInteractionPolicy.php:299 refuses to send when a recipient's path requires vetted interaction but the tenant has no safeguarding jurisdiction configured (no scheme code, attestation code or policy version). Logged reason_code jurisdiction_unconfigured_or_unsupported, channel legacy_match_suggestion, recipient 623, tenant 2, from a scheduled CLI run. Effect: match-suggestion notifications are withheld from that member rather than sent unchecked. Suggested fix is an admin action — configure the tenant's safeguarding jurisdiction and attestation scheme. Sensitive area: no code touched.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:58.916Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
     "140426477": {
       "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
       "culprit": null,
@@ -10,6 +28,195 @@
       "sha": null,
       "decidedAt": "2026-08-13T19:54:48.929Z",
       "decidedAtRelease": "nexus-php@624a08debf57"
+    },
+    "140626265": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): the owner's own admin test requests, not real data-subject requests. No Article 12(3) clock and nothing to action.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:42.386Z",
+      "decidedAtRelease": "nexus-php@a01c8f5c3d49"
+    },
+    "140626269": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:27.335Z",
+      "decidedAtRelease": "nexus-php@869a2a0304fa"
+    },
+    "140823515": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): the owner's own admin test requests, not real data-subject requests. No Article 12(3) clock and nothing to action.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:41.014Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "140934882": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): the owner's own admin test requests, not real data-subject requests. No Article 12(3) clock and nothing to action.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:39.682Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "141073431": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): the owner's own admin test requests, not real data-subject requests. No Article 12(3) clock and nothing to action.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:38.118Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "141074507": {
+      "title": "NEXUS alarm-selftest heartbeat — alarm delivery is wired (release 5afb43ff73da, host 3fcca3edbd75, 2026-08-17T07:55:27+00:00). If this stops arriving weekly, the Sentry/Slack alarm path is broken.",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "Not a fault. This is the weekly alarm-selftest heartbeat, level info, and its arrival is the thing being tested: if it stops appearing, the Sentry/Slack alarm path is broken. Working as designed.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:17:04.826Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "141294336": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): the owner's own admin test requests, not real data-subject requests. No Article 12(3) clock and nothing to action.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:36.734Z",
+      "decidedAtRelease": "nexus-php@5afb43ff73da"
+    },
+    "141342455": {
+      "title": "Blocking Operation",
+      "culprit": "/api/v2/webhooks/stripe",
+      "decision": "watching",
+      "note": "Sentry performance warning (Blocking Operation) on /api/v2/webhooks/stripe, one occurrence. Payment path, so no code touched. Not an error and not a failed webhook — a slow synchronous step inside the handler. Watching; if it recurs the handler work should move to a queued job.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:17:20.523Z",
+      "decidedAtRelease": null
+    },
+    "141345236": {
+      "title": "Symfony\\Component\\Process\\Exception\\RuntimeException: TTY mode requires /dev/tty to be read/writable.",
+      "culprit": "/artisan in ?",
+      "decision": "watching",
+      "note": "Operational, not member-facing: 'TTY mode requires /dev/tty' from /artisan means a console command was run with an interactive terminal requested inside a container that has none. Two events, both 2026-08-18, none since. No member request path involved. Watching in case it turns out to be a scheduled command rather than a one-off manual invocation.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:17:11.399Z",
+      "decidedAtRelease": "nexus-php@4f4dd4d95e93"
+    },
+    "141439346": {
+      "title": "Error: Object of class App\\Enums\\EventPublicationState could not be converted to string",
+      "culprit": "/app/Services/EventService.php in App\\Services\\EventService::canUpdateImage",
+      "decision": "needs-owner",
+      "note": "REAL AND USER-FACING: changing an event's cover image fails for any event that has a publication status set. EventService::canUpdateImage (app/Services/EventService.php:3292) does (string) on the value of publication_status, but the Event model casts that column to the EventPublicationState enum, so Builder::value() returns an enum object and the string cast is a fatal Error. Verified in the local container, not inferred: value() returned App\\Enums\\EventPublicationState and (string) threw the exact production message; 13 of 22 local events have the column populated. The fix is one line — compare against the enum directly (or use ->value) instead of casting to string, on both halves of that condition. NOT applied automatically because it sits inside the permission check that decides whether someone may change an event's image, and this automated run does not change authorisation code.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:50.824Z",
+      "decidedAtRelease": "nexus-php@4e8c77288fac"
+    },
+    "141530982": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:28.749Z",
+      "decidedAtRelease": "nexus-php@76fc2417a8a1"
+    },
+    "141736345": {
+      "title": "[APP LOG] Event: mobile_error | Version: unknown | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"render exploded\",\"stack\":\"Error: render exploded\\n    at Exploding (\\/home\\/runner\\/work\\/Project-NEXUS\\/Project-NEXUS\\/mobile\\/components\\/ErrorBound...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "Same cause as NEXUS-PHP-4R; this group is the GitHub Actions runner (/home/runner/work/... in the stack) rather than a developer machine. Fixed by the same commit.",
+      "sha": "5254a0efb",
+      "decidedAt": "2026-08-23T08:13:33.491Z",
+      "decidedAtRelease": "nexus-php@869a2a0304fa"
+    },
+    "141769855": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:25.942Z",
+      "decidedAtRelease": "nexus-php@a4aaf4796da4"
+    },
+    "141781207": {
+      "title": "[APP LOG] Event: mobile_error | Version: unknown | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"render exploded\",\"stack\":\"Error: render exploded\\n    at Exploding (C:\\\\platforms\\\\htdocs\\\\staging\\\\mobile\\\\components\\\\ErrorBoundary.test.tsx:31:26)\\...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "Not a real crash. report.ts posted diagnostics to the production /api/app/log with raw fetch and had no notion of a test environment, so ErrorBoundary.test.tsx's deliberate throws became real unauthenticated POSTs to production. This group came from a developer machine (Windows checkout path in the stack). postToServer now returns early when JEST_WORKER_ID is set; report.test.ts opts back in against its own fetch mock. Full mobile suite green: 309 suites / 2116 tests.",
+      "sha": "5254a0efb",
+      "decidedAt": "2026-08-23T08:13:28.229Z",
+      "decidedAtRelease": "nexus-php@869a2a0304fa"
+    },
+    "141859389": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Invalid key provided to SecureStore. Keys must not be empty and contain only alphanumeric characters, \\\".\\\", \\\"-\\\", and \\\"_\\\".\",\"stack\":\"Error: Invalid ...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "tenantConfigCacheKey() joined prefix and slug with a colon; Expo SecureStore rejects any key outside [A-Za-z0-9._-]. Both the read and the write threw and both are swallowed by lib/storage.ts, so the tenant config cache was permanently dead while looking merely empty. Separator changed to underscore and the slug is now sanitised. Regression test asserts every key the provider emits is SecureStore-legal.",
+      "sha": "cc7cc78e4",
+      "decidedAt": "2026-08-23T08:13:10.304Z",
+      "decidedAtRelease": "nexus-php@a4aaf4796da4"
+    },
+    "141895091": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Invalid key provided to SecureStore. Keys must not be empty and contain only alphanumeric characters, \\\".\\\", \\\"-\\\", and \\\"_\\\".\",\"stack\":\"Error: Invalid ...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "Duplicate grouping of NEXUS-PHP-4S — same invalid SecureStore key. Fixed by the same commit.",
+      "sha": "cc7cc78e4",
+      "decidedAt": "2026-08-23T08:13:20.953Z",
+      "decidedAtRelease": "nexus-php@a4aaf4796da4"
+    },
+    "141994164": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Invalid key provided to SecureStore. Keys must not be empty and contain only alphanumeric characters, \\\".\\\", \\\"-\\\", and \\\"_\\\".\",\"stack\":\"Error: Invalid ...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "Duplicate grouping of NEXUS-PHP-4S — same invalid SecureStore key. Fixed by the same commit.",
+      "sha": "cc7cc78e4",
+      "decidedAt": "2026-08-23T08:13:15.527Z",
+      "decidedAtRelease": "nexus-php@a4aaf4796da4"
+    },
+    "141998418": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:24.688Z",
+      "decidedAtRelease": "nexus-php@a4aaf4796da4"
+    },
+    "142132275": {
+      "title": "Inefficient Database Queries",
+      "culprit": "/api/csrf-token",
+      "decision": "watching",
+      "note": "Sentry performance warning (Inefficient Database Queries) on /api/csrf-token, one occurrence. Flagged sensitive only because the word 'token' appears in the route, so no code touched. A repeated query on the cheapest endpoint on the platform is worth looking at if it recurs, but one sample is not a signal. Watching.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:17:27.028Z",
+      "decidedAtRelease": null
+    },
+    "142208900": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:23.163Z",
+      "decidedAtRelease": "nexus-php@869a2a0304fa"
+    },
+    "142343073": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "GDPR DSAR backlog alarm. Same standing owner decision as NEXUS-PHP-4A (2026-08-13): these are the owner's own admin test requests, not real data-subject requests, so there is no Article 12(3) clock and nothing to action. Recorded again because the alarm re-fingerprints daily and creates a fresh Sentry group each morning, so the earlier decision cannot suppress it.",
+      "sha": null,
+      "decidedAt": "2026-08-23T08:16:21.754Z",
+      "decidedAtRelease": "nexus-php@869a2a0304fa"
     }
   }
 }
