@@ -596,7 +596,13 @@ test.describe('keyboard, focus, error, and forced-colour gate', () => {
     const summary = page.locator('form[data-validate-form] .govuk-error-summary');
     await expect(summary).toHaveCount(1);
     await expect(summary).toBeFocused();
-    await expect(summary).toHaveAttribute('role', 'alert');
+    // role="alert" belongs on the nested CHILD, never on the focused root:
+    // focusing and alerting the same element races, and screen readers drop the
+    // announcement. This is govuk-frontend's own fix, applied across the
+    // hand-rolled summaries in 9b3481932 and pinned for templates and the
+    // validation script by tests/error-summary-alert-contract.test.js.
+    await expect(summary).not.toHaveAttribute('role', 'alert');
+    await expect(summary.locator('[role="alert"]')).toHaveCount(1);
 
     const errorLinks = summary.locator('a');
     await expect(errorLinks).toHaveCount(2);

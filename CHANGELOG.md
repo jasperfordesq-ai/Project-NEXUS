@@ -73,6 +73,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The two web-uk accessibility gates now pass in CI, where they had never
+  actually run.** The `Web UK authenticated accessibility` job was only added in
+  this cycle, so its first real execution surfaced two faults that a local run
+  could not: the keyboard/focus gate still asserted `role="alert"` on the
+  error-summary root that the same cycle deliberately moved to a nested child,
+  and the Arabic/Irish poll gates walk from the polls index to a poll detail page
+  without any poll existing — `E2ETestDataSeeder` seeds none, and the gate had
+  only ever passed against a developer database that happened to hold polls. The
+  stale assertion is replaced by one pinning the corrected placement (verified to
+  go red when the old form is reintroduced), and the job now seeds one open poll
+  with two options as an explicit precondition.
+
 - **ASP.NET global React bootstrap calls now return tenant/member state instead
   of plausible empty payloads.** Public menus include persisted published pages,
   OAuth discovery requires both the global switch and the tenant's provider

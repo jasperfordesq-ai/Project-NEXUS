@@ -524,6 +524,43 @@ jobs:
             "SELECT id FROM users WHERE tenant_id=${TENANT_ID} AND email <> '${A11Y_MEMBER_EMAIL}' LIMIT 1;")
           echo "ACCESSIBILITY_MEMBER_ID=$OTHER" >> "$GITHUB_ENV"
 
+      # The Arabic/Irish poll gates walk from the polls index to a poll DETAIL
+      # page, so they need one open poll to exist. E2ETestDataSeeder seeds none,
+      # and nothing else in this job creates one: the gate passed locally only
+      # because the developer database happened to hold polls. A test must
+      # establish its own preconditions rather than inherit them.
+      - name: Seed the open poll the poll gates walk through
+        run: |
+          set -euo pipefail
+          OWNER=$(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e             "SELECT id FROM users WHERE tenant_id=${TENANT_ID} LIMIT 1;")
+          test -n "$OWNER"
+          # end_date is deliberately in the FUTURE. PollService reports status
+          # 'open' only for an active poll whose end_date is absent or ahead of
+          # now (PollService.php:39,195), and the index template sorts polls
+          # into open/closed lists on that status. Seeding an open poll keeps the
+          # gate on the branch it is written against.
+          mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -e "
+            INSERT INTO polls
+              (tenant_id, user_id, question, description, end_date, is_active, created_at, poll_type, category, is_anonymous)
+            SELECT ${TENANT_ID}, ${OWNER},
+                   'Which community activity should we run next?',
+                   'A synthetic poll seeded for the accessibility gate.',
+                   DATE_ADD(NOW(), INTERVAL 30 DAY), 1, NOW(), 'standard', 'feedback', 0
+            WHERE NOT EXISTS (SELECT 1 FROM polls WHERE tenant_id = ${TENANT_ID});"
+          POLL_ID=$(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e             "SELECT id FROM polls WHERE tenant_id=${TENANT_ID} ORDER BY id LIMIT 1;")
+          test -n "$POLL_ID"
+          # Idempotent per label, matching the tenant insert above, so a re-run
+          # of this step cannot duplicate the options.
+          for LABEL in 'A repair cafe' 'A skills swap evening'; do
+            mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -e "
+              INSERT INTO poll_options (poll_id, tenant_id, label, votes)
+              SELECT ${POLL_ID}, ${TENANT_ID}, '${LABEL}', 0
+              WHERE NOT EXISTS (
+                SELECT 1 FROM poll_options
+                WHERE poll_id = ${POLL_ID} AND label = '${LABEL}');"
+          done
+          echo "seeded poll ${POLL_ID} with $(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e             "SELECT COUNT(*) FROM poll_options WHERE poll_id=${POLL_ID};") options"
+
       - name: Start Laravel
         run: |
           php -S 127.0.0.1:8099 -t httpdocs httpdocs/index.php &
