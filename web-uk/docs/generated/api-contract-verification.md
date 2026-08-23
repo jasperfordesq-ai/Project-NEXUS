@@ -14,7 +14,7 @@ caller, the status for a signed-in member, and the response keys returned.
 
 - Contracts verified: **120**
 - Contracts with findings: **0**
-- Answered **403** because the fixture community has that module switched off: **22**
+- Answered **403** because the fixture community has that module switched off: **20**
 
 🔴 A 403 is not a fault. It means the module is off for this community, so this file
 is evidence about the endpoints it could actually reach — not about all of them.
@@ -86,8 +86,8 @@ None.
 | `/api/v2/marketplace/seller/pickup-slots` | 403 | 401 | errors |
 | `/api/v2/me/collections` | 200 | 401 | data, meta |
 | `/api/v2/me/courses` | 403 | 401 | errors |
-| `/api/v2/member-premium/me` | 403 | 401 | errors |
-| `/api/v2/member-premium/tiers` | 403 | 403 | errors |
+| `/api/v2/member-premium/me` | 200 | 401 | data, meta |
+| `/api/v2/member-premium/tiers` | 200 | 200 | data, meta |
 | `/api/v2/merchant-onboarding/status` | 403 | 401 | errors |
 | `/api/v2/messages/restriction-status` | 200 | 401 | data, meta |
 | `/api/v2/messages/unread-count` | 200 | 401 | data, meta |

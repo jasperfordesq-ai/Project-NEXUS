@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-19T19:57:24.892Z",
+  "generatedAt": "2026-08-23T12:05:30.617Z",
   "provenance": {
-    "generatedAt": "2026-08-19T19:57:24.892Z",
+    "generatedAt": "2026-08-23T12:05:30.617Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "2cf9977ece4ce787c0df54f579ae1b14d5951083",
+    "laravelCommitSha": "00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "2cf9977ece4ce787c0df54f579ae1b14d5951083",
+    "webUkRepositoryCommitSha": "00f3e0e4e5d6e0d8e8cfba26a4564432a1425da2",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -679,6 +679,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/events-moderation-queue-fidelity.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -720,6 +721,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/events-moderation-queue-fidelity.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -762,6 +764,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/events-moderation-queue-fidelity.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -804,6 +807,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/events-moderation-queue-fidelity.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10712,6 +10716,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/group-management-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10749,6 +10754,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/groups-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10786,6 +10792,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/group-management-mutation.spec.js",
         "tests/runtime/groups-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -10824,6 +10831,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/groups-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10861,6 +10869,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -11527,6 +11536,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/group-management-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -14801,6 +14811,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -14841,6 +14852,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/authenticated-no-store-cache.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/routes.test.js",
         "tests/runtime/listings-mutation.spec.js",
         "tests/runtime/saved-collections-mutation.spec.js",
@@ -14881,6 +14893,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/listings-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -14919,6 +14932,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -14955,6 +14969,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/listings-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -14992,6 +15007,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -24820,6 +24836,7 @@
         "tests/api-locale-context.test.js",
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -24859,6 +24876,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25168,6 +25186,7 @@
         "tests/accessibility/public-pages.spec.js",
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
+        "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,

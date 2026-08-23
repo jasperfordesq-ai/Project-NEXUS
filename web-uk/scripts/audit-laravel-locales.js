@@ -33,6 +33,11 @@ function flattenStrings(value, prefix = '', output = {}) {
 const englishCatalog = loadCatalog('en');
 const englishFlat = flattenStrings(englishCatalog.namespaces);
 const englishKeys = Object.keys(englishFlat).sort();
+
+// See scripts/locale-invariants.js for why the raw identical-value count needs
+// classifying before it means anything, and what the measurement showed.
+const { identicalValueIsLegitimate } = require('./locale-invariants');
+
 const namespaceNames = Object.keys(englishCatalog.namespaces).sort();
 
 const localeResults = SUPPORTED_LOCALES.map((locale) => {
@@ -42,6 +47,11 @@ const localeResults = SUPPORTED_LOCALES.map((locale) => {
   const missingKeys = englishKeys.filter((key) => !(key in flattened));
   const extraKeys = keys.filter((key) => !(key in englishFlat));
   const englishIdenticalKeys = englishKeys.filter((key) => flattened[key] === englishFlat[key]);
+  // The subset that is actually English left untranslated, rather than a value that
+  // is correct because it matches. This is the number worth acting on.
+  const englishIdenticalNeedingTranslation = locale === 'en'
+    ? []
+    : englishIdenticalKeys.filter((key) => !identicalValueIsLegitimate(englishFlat[key]));
   const fullyEnglishIdenticalNamespaces = locale === 'en'
     ? []
     : namespaceNames.filter((namespace) => {
@@ -58,6 +68,8 @@ const localeResults = SUPPORTED_LOCALES.map((locale) => {
     missingKeys: missingKeys.length,
     extraKeys: extraKeys.length,
     englishIdenticalKeys: englishIdenticalKeys.length,
+    englishIdenticalNeedingTranslation: englishIdenticalNeedingTranslation.length,
+    englishIdenticalNeedingTranslationKeys: englishIdenticalNeedingTranslation.slice(0, 25),
     fullyEnglishIdenticalNamespaces
   };
 });

@@ -42,6 +42,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const { buildNoTokenIndex, noTokenFinding } = require('./ledger-token-crosscheck');
 
 const API = process.env.WEBUK_CONTRACT_API_URL || 'http://127.0.0.1:8091';
 const TENANT = process.env.WEBUK_CONTRACT_TENANT || 'e2e-community';
@@ -71,6 +72,12 @@ const PUBLIC_BY_DESIGN = [
   // Checked, not assumed: the anonymous response carries no personal data, and the
   // public home page renders these figures for signed-out visitors.
   /\/platform\/stats/,
+  // Laravel declares this one public explicitly — `routes/api.php` carries
+  // `->withoutMiddleware('auth:sanctum')` on it, because a member has to be able to
+  // read what the paid tiers cost BEFORE deciding to become one. Verified against
+  // the live route, not assumed from the name; the anonymous body is the tier
+  // price list and nothing member-specific.
+  /\/member-premium\/tiers$/,
 ];
 
 // Endpoints that legitimately return something other than JSON: a CSV statement, an
@@ -89,11 +96,31 @@ function isNonJsonByDesign(p) {
   return NON_JSON_BY_DESIGN.some((re) => re.test(p));
 }
 
+// 🔴 The guard below must RUN everywhere this script runs — it is the thing standing
+// between a contract sweep and a database of real members. On a developer's machine
+// the database is a container, so `docker exec` reaches it. On a CI runner it is a
+// service container with a client on the PATH and no such name, and the original
+// invocation could only fail there. Rather than let CI skip the guard, CI supplies
+// the client command and the SAME two queries run through it. The escape hatch
+// changes HOW the database is reached, never WHETHER it is checked: there is
+// deliberately no flag that turns this off.
+function databaseQueryCommand() {
+  const override = (process.env.WEBUK_CONTRACT_MYSQL_CMD || '').trim();
+  if (override) {
+    const parts = override.split(/\s+/);
+    return { file: parts[0], args: parts.slice(1) };
+  }
+  return {
+    file: 'docker',
+    args: ['exec', DB_CONTAINER, 'mysql', '--skip-ssl', '-h', '127.0.0.1',
+      '-unexus', '-pnexus_secret', DB_NAME],
+  };
+}
+
 function assertDisposableDatabase() {
-  const query = (sql) => execFileSync('docker', [
-    'exec', DB_CONTAINER, 'mysql', '--skip-ssl', '-h', '127.0.0.1',
-    '-unexus', '-pnexus_secret', DB_NAME, '-N', '-e', sql,
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  const cmd = databaseQueryCommand();
+  const query = (sql) => execFileSync(cmd.file, [...cmd.args, '-N', '-e', sql],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 
   const total = Number(query('SELECT COUNT(*) FROM users;'));
   const real = Number(query(
@@ -101,9 +128,9 @@ function assertDisposableDatabase() {
   ));
   if (!total) throw new Error(`${DB_NAME} has no users — bring the environment up first.`);
   if (real > 0) {
-    throw new Error(`🔴 REFUSING: ${real} of ${total} accounts in ${DB_NAME} are not synthetic.`);
+    throw new Error(`🔴 REFUSING: ${real} of ${total} accounts are not synthetic.`);
   }
-  console.log(`guard ok: ${DB_NAME}, ${total} synthetic accounts, 0 real`);
+  console.log(`guard ok: ${total} synthetic accounts, 0 real`);
 }
 
 async function signIn() {
@@ -138,11 +165,20 @@ async function call(url, token) {
 async function main() {
   assertDisposableDatabase();
   const ledger = JSON.parse(await fs.readFile(LEDGER, 'utf8'));
-  const paths = [...new Set(
-    ledger.rows
-      .filter((r) => r.method === 'GET' && !/[:{]|\$/.test(r.path))
-      .map((r) => r.path)
-  )].sort();
+  const usable = ledger.rows.filter((r) => r.method === 'GET' && !/[:{]|\$/.test(r.path));
+  const paths = [...new Set(usable.map((r) => r.path))].sort();
+
+  // 🔴 The defect this exists for, stated plainly, because the ledger cannot see it.
+  // `/organisations` was broken for every member for as long as the page existed:
+  // `getVolunteerOrganisations` sent no bearer token to an endpoint that 401s
+  // anonymously. The ledger scored that page as fully covered, because it records
+  // that a test names the helper — not that the request would have worked. The
+  // ledger's own classifier already reads each helper's source and labels it
+  // `guest`, `optional` or `required`; this sweep already learns, from the live API,
+  // whether an anonymous call is refused. Crossing the two turns an invisible defect
+  // into a failing check: a helper that sends no token, calling an endpoint that
+  // demands one, is broken for every member no matter how many tests name it.
+  const sendsNoToken = buildNoTokenIndex(usable);
 
   console.log(`verifying ${paths.length} parameterless GET contracts against ${API}\n`);
   const token = await signIn();
@@ -159,6 +195,8 @@ async function main() {
     if (auth.status === 200 && anon.status === 200 && !isPublicByDesign(p)) {
       findings.push('served to an anonymous caller as well as a member');
     }
+    const noToken = noTokenFinding(p, anon.status, sendsNoToken);
+    if (noToken) findings.push(noToken);
     if (auth.status === 200 && !auth.isJson && !isNonJsonByDesign(p)) {
       findings.push('200 response is not JSON');
     }

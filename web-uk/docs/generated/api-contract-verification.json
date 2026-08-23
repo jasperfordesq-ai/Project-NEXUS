@@ -3,7 +3,7 @@
   "tenant": "e2e-community",
   "contractsVerified": 120,
   "contractsWithFindings": 0,
-  "contractsModuleGatedForThisCommunity": 22,
+  "contractsModuleGatedForThisCommunity": 20,
   "results": [
     {
       "path": "/api/achievements/progress",
@@ -651,21 +651,23 @@
     {
       "path": "/api/v2/member-premium/me",
       "anonymousStatus": 401,
-      "memberStatus": 403,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {
       "path": "/api/v2/member-premium/tiers",
-      "anonymousStatus": 403,
-      "memberStatus": 403,
+      "anonymousStatus": 200,
+      "memberStatus": 200,
       "responseKeys": [
-        "errors"
+        "data",
+        "meta"
       ],
-      "moduleGated": true,
+      "moduleGated": false,
       "findings": []
     },
     {

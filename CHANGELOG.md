@@ -27,6 +27,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **web-uk: the 120 recorded GET API contracts are now replayed against a live
+  Laravel on every push.** `npm run api:verify` runs as a step of the
+  `Web UK authenticated accessibility` job, which boots a real Laravel against a
+  synthetic-only database. Its synthetic-accounts guard reached the database
+  through `docker exec`, which cannot work on a CI runner; it now accepts the
+  client command via `WEBUK_CONTRACT_MYSQL_CMD` instead. There is deliberately no
+  flag that disables the guard, and it was verified to still refuse when fed a
+  client reporting non-synthetic accounts.
+- **web-uk: a missing bearer token on a helper is now a failing check.** The
+  consumer ledger classifies each helper `guest`/`optional`/`required`; the
+  contract sweep learns from the live API whether an anonymous call is refused.
+  Crossing the two detects the `/organisations` defect class. It has zero
+  subjects today, so `scripts/ledger-token-crosscheck.js` is pinned by tests
+  rather than trusted to be alive.
+- **web-uk: every literal translation key in a template is checked to resolve.**
+  `translate()` returns the key itself when nothing matches, so a mistyped key
+  renders as raw text to the member without any error. 7,839 complete keys
+  scanned, none unresolved; concatenated keys are explicitly out of scope.
+- **web-uk: the event moderation queue is pinned as a faithful window onto
+  Laravel** — it must not add its own filter, must send the moderator's token,
+  and must not re-sort, de-duplicate or drop rows. The order assertion was
+  mutation-checked against a deliberately sorting route.
+- **web-uk: `scripts/locale-invariants.js` classifies English-identical locale
+  values.** `npm run locales:audit` now reports the raw count and the count
+  actually needing a translator side by side.
+
 ### Changed
 
 - **The first screen-reader test the phone app has ever had — and it found three things.** Someone using the app by ear, with the screen reader turned on, was being read the raw symbol code of every little picture before the actual words: every tab, every filter button. It sounds like gibberish and it happened before every single label. Second, every small informational badge — "1 conversation", "0 unread", "3 results", "No pending credits" — was announced as a button they could press, which then does nothing; the message list alone went from claiming 17 buttons to 12 once that was corrected. Third, the "save this post" button on the feed had no name at all, which only became visible once the symbol noise stopped hiding it. All three fixed, and re-measured on the phone: every control now has a proper name and no symbols are read out.

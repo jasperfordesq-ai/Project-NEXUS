@@ -567,6 +567,38 @@ jobs:
           npm run build:css
           node scripts/accessibility-local-server.js --grep="authenticated-page|narrow reflow"
 
+      # The API contract ledger's 120 GET contracts were verified by hand, against a
+      # developer's disposable Laravel, whenever someone remembered. The score doc's
+      # stated reason for leaving it out of CI was "CI has no running Laravel" —
+      # this job now HAS one, so the verification runs on every push touching
+      # web-uk. It replays each recorded contract against the real API and fails on
+      # a status or shape mismatch, which is the difference between "we wrote down
+      # what we think the API returns" and "we checked".
+      #
+      # 🔴 GETs ONLY. Mutations, uploads and side effects are still unverified here,
+      # and a green run must never be read as covering them.
+      - name: Verify the recorded GET API contracts against the live API
+        working-directory: web-uk
+        env:
+          WEBUK_CONTRACT_API_URL: http://127.0.0.1:8099
+          WEBUK_CONTRACT_TENANT: ${{ env.A11Y_TENANT_SLUG }}
+          WEBUK_CONTRACT_EMAIL: ${{ env.A11Y_MEMBER_EMAIL }}
+          WEBUK_CONTRACT_PASSWORD: ${{ env.A11Y_MEMBER_PASSWORD }}
+          # Reaches the SAME synthetic-accounts guard the local run uses; the runner
+          # has a mysql client and no container of that name. Proven to still refuse:
+          # fed a fake client reporting real accounts, the sweep exits 2 and runs nothing.
+          WEBUK_CONTRACT_MYSQL_CMD: mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y
+        run: npm run api:verify
+
+      - name: Upload the contract verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-uk-api-contract-verification
+          path: web-uk/docs/generated/api-contract-verification.*
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Upload accessibility report on failure
         if: failure()
         uses: actions/upload-artifact@v4
