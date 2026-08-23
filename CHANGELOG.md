@@ -63,6 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The ASP.NET React journey smoke no longer mistakes its own selector and
+  confirmation failures for backend results.** Credit transfer now selects the
+  intended member inside the accessible search-results group, asserts both wallet
+  legs and records every method/path touched by each journey for the no-op gate.
+  RSVP accepts the product's real confirmation dialog, records its mutation, and
+  client-reported response-contract drift now fails the owning step. Registration
+  tokens are redacted from console evidence.
+
 - **web-uk tests: three poll fixtures posted a hardcoded `expires_at: 2026-08-01`,
   a date that had been in the past since 2026-08-02.** They encoded a stale literal
   as "a future closing date" and would have reddened the build for whoever added a

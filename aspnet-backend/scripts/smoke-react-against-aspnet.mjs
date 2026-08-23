@@ -203,14 +203,33 @@ async function runArm(arm) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
 
-  page.on('response', (r) => {
-    const u = r.url();
-    if (u.includes('/api/')) api.push({ url: u.replace(BASE, ''), absolute: u, status: r.status(), phase: current });
-  });
-  page.on('requestfailed', (r) => {
-    const u = r.url();
-    if (u.includes('/api/')) api.push({ url: u.replace(BASE, ''), absolute: u, status: 0, phase: current, failure: r.failure()?.errorText });
-  });
+  // Every actor contributes to a journey's consumed path. The primary page alone is
+  // insufficient for two-member transfers and exchanges, so attach the same recorder
+  // to each page/context the smoke creates.
+  const captureApiFrom = (observedPage) => {
+    observedPage.on('response', (r) => {
+      const u = r.url();
+      if (u.includes('/api/')) api.push({
+        method: r.request().method(),
+        url: u.replace(BASE, ''),
+        absolute: u,
+        status: r.status(),
+        phase: current,
+      });
+    });
+    observedPage.on('requestfailed', (r) => {
+      const u = r.url();
+      if (u.includes('/api/')) api.push({
+        method: r.method(),
+        url: u.replace(BASE, ''),
+        absolute: u,
+        status: 0,
+        phase: current,
+        failure: r.failure()?.errorText,
+      });
+    });
+  };
+  captureApiFrom(page);
   // 🔴 The app validates responses at runtime in dev and logs "contract drift" with a
   // structured list of what is wrong. That is the CLIENT'S OWN VERDICT on the contract —
   // better evidence than any external field diff, because it says what the app expected
@@ -235,17 +254,34 @@ async function runArm(arm) {
   async function step(name, fn) {
     current = name;
     const started = Date.now();
+    const driftAtStart = contractDrift.length;
+    const apiAtStart = api.length;
+    const apiRequests = () => [...new Set(api.slice(apiAtStart)
+      .filter((request) => request.status > 0)
+      .map((request) => `${request.method} ${new URL(request.absolute).pathname}`))].sort();
     try {
       await fn();
-      results.push({ name, ok: true, skipped: false, error: null, durationMs: Date.now() - started });
+      // The React app validates consumed response contracts at runtime. A step that
+      // reaches its visible effect while the client reports schema drift is not clean
+      // evidence: the next reader may depend on one of the rejected fields. This was
+      // exposed by RSVP, which persisted correctly while six response fields violated
+      // the client's schema and the smoke still printed `ok`. Fail the owning step so
+      // control mode can classify the drift instead of burying it in a footer.
+      await page.waitForTimeout(100);
+      const newDrift = contractDrift.slice(driftAtStart);
+      if (newDrift.length > 0) {
+        const summary = newDrift.map((d) => `${d.endpoint ?? 'unknown endpoint'} (${d.issues?.length ?? '?'} issue(s))`).join(', ');
+        throw new Error(`client-reported contract drift during ${name}: ${summary}`);
+      }
+      results.push({ name, ok: true, skipped: false, error: null, durationMs: Date.now() - started, apiRequests: apiRequests() });
       console.log(`  step ${name}: ok`);
     } catch (e) {
       const durationMs = Date.now() - started;
       if (e instanceof SkipStep) {
-        results.push({ name, ok: false, skipped: true, error: e.message, durationMs });
+        results.push({ name, ok: false, skipped: true, error: e.message, durationMs, apiRequests: apiRequests() });
         console.log(`  step ${name}: SKIPPED — ${e.message.slice(0, 160)}`);
       } else {
-        results.push({ name, ok: false, skipped: false, error: String(e).split('\n')[0].slice(0, 300), durationMs });
+        results.push({ name, ok: false, skipped: false, error: String(e).split('\n')[0].slice(0, 300), durationMs, apiRequests: apiRequests() });
         console.log(`  step ${name}: FAILED — ${String(e).split('\n')[0].slice(0, 160)}`);
       }
     }
@@ -454,6 +490,35 @@ async function runArm(arm) {
 
   // 🔴 TRANSFERRING credits — the highest-risk member action, because it moves value.
   await step('action-transfer-credits', async () => {
+    const balanceFrom = async (p) => {
+      const text = await p.locator('body').innerText();
+      const match = text.match(/(-|−|–)?\s*([\d,]+(?:\.\d+)?)\s*(?:hours|credits)/i);
+      if (!match) return null;
+      const magnitude = Number(match[2].replace(/,/g, ''));
+      if (Number.isNaN(magnitude)) return null;
+      return match[1] ? -magnitude : magnitude;
+    };
+
+    // Verify both legs. Checking only the sender can pass a one-sided write that
+    // destroys value. The existing provider fixture is a known second member on both
+    // arms, so read that member's wallet before and after the primary member sends.
+    const recipientCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const recipientPage = await recipientCtx.newPage();
+    captureApiFrom(recipientPage);
+    const recipientSignedIn = await signInAs(
+      recipientPage,
+      arm.providerEmail,
+      arm.providerPassword,
+      arm.communityLabel,
+    );
+    if (!recipientSignedIn.ok) {
+      await recipientCtx.close();
+      skip(`transfer recipient actor unavailable: ${recipientSignedIn.reason}`);
+    }
+    await recipientPage.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
+    await recipientPage.waitForTimeout(2500);
+    const recipientBalanceBefore = await balanceFrom(recipientPage);
+
     // 🔴 Close anything the PREVIOUS step left open. The feed composer is a modal, and a
     // lingering overlay intercepts the click on this page's own button — which made this
     // step report "transfer form did not open" while the form opened perfectly when the
@@ -466,21 +531,21 @@ async function runArm(arm) {
     await page.keyboard.press('Escape').catch(() => {});
     await page.waitForTimeout(400);
     await dismissConsent();
-    const balanceBefore = (await page.locator('body').innerText()).match(/([\d,]+\.?\d*)\s*(?:hours|credits)/i)?.[1] ?? null;
-    console.log(`    balance text before: ${balanceBefore ?? '(not found)'}`);
+    const balanceBefore = await balanceFrom(page);
+    console.log(`    balances before — sender: ${balanceBefore ?? '(not found)'}, recipient: ${recipientBalanceBefore ?? '(not found)'}`);
+    if (balanceBefore === null || recipientBalanceBefore === null) {
+      await recipientCtx.close();
+      skip('could not read both wallet balances before transfer — effect cannot be measured');
+    }
 
     const send = page.locator('button:has-text("Send Credits")').first();
     if (!(await send.count())) skip('no Send Credits control — selector needs updating, NOT a backend result');
     await send.click({ timeout: 10000 }).catch(() => {});
     await page.waitForTimeout(2500);
 
-    // Fields are unnamed (react-aria ids) but well aria-labelled — target the labels.
-    // 🔴 This is a TWO-STAGE form and the stages must be addressed in order. Measured:
-    // with the dialog freshly open, byLabel('Search recipient') = 1 but
-    // byLabel('Amount in hours') = 0 — the amount field does not exist until a recipient
-    // is chosen. Requiring both up front made the step report "form did not open" while
-    // the form was open and working, and cost two runs of guessing (overlay state, then
-    // selector spelling) before the counts were simply printed.
+    // Fields use react-aria generated ids. Select the intended recipient first, then
+    // fill the amount: the amount input is rendered from the start, but sending value
+    // before proving who will receive it is unsafe test behaviour.
     const recipient = page.getByLabel('Search recipient').first();
     if (!(await recipient.count())) {
       skip(`recipient field not addressable (visible inputs: ${await page.locator('input:visible').count()})`
@@ -490,19 +555,37 @@ async function runArm(arm) {
     // 🔴 Pick the recipient from the SEARCH RESULTS, never by typing a name and hoping.
     // A transfer moves value; sending to whoever happens to be first in an unfiltered list
     // is not a test, it is an accident waiting to be reported as a pass.
-    await recipient.fill('coordinator', { timeout: 10000 }).catch(() => {});
+    await recipient.fill(arm.transferSearch, { timeout: 10000 }).catch(() => {});
     await page.waitForTimeout(2500);
-    const option = page.locator('[role="option"], li[role="button"], button:has-text("coordinator")').first();
-    if (!(await option.count())) {
+    // The result rows are native buttons inside the named results group. The old
+    // selector ended with `button:has-text("coordinator")`, which could select a
+    // completely unrelated button elsewhere on the wallet page. The click then did
+    // nothing to the modal, the recipient stayed empty, and the amount field was
+    // falsely reported as absent even though it is always rendered. Anchor the click
+    // to the component's accessible group and prove selection by waiting for the
+    // search field to be replaced by the selected-recipient card.
+    const results = page.getByRole('group', { name: /search results/i }).first();
+    const option = results.getByRole('button').first();
+    if (!(await results.count()) || !(await option.count())) {
       skip('recipient search returned no selectable result — cannot complete safely; NOT a backend verdict');
     }
-    await option.click({ timeout: 8000 }).catch(() => {});
+    console.log(`    transfer recipient selected from results: ${JSON.stringify((await option.innerText()).replace(/\s+/g, ' ').trim())}`);
+    await option.click({ timeout: 8000 });
+    try {
+      await recipient.waitFor({ state: 'detached', timeout: 8000 });
+    } catch {
+      skip('recipient result click did not select a member — search field remained visible; NOT a backend verdict');
+    }
     await page.waitForTimeout(1200);
 
-    // Stage two: the amount field appears only now.
-    const amount = page.getByLabel('Amount in hours').first();
+    // Stage two: the recipient is now proved, so fill the amount.
+    // HeroUI v3 does not consistently expose Input's aria-label through the wrapper
+    // in the live browser. The input is still an unambiguous number field inside the
+    // transfer dialog, so anchor it to that dialog rather than relying on generated ids.
+    const transferDialog = page.locator('[role="dialog"]:visible').last();
+    const amount = transferDialog.locator('input[type="number"]:visible').first();
     if (!(await amount.count())) {
-      skip('amount field still absent after choosing a recipient — form flow changed; NOT a backend verdict');
+      skip('amount number field absent inside the transfer dialog after recipient selection — NOT a backend verdict');
     }
     await amount.fill('1', { timeout: 8000 }).catch(() => {});
     const note = page.locator('textarea:visible').first();
@@ -522,10 +605,20 @@ async function runArm(arm) {
     await page.waitForTimeout(2500);
     const after = await page.locator('body').innerText();
     const listed = after.includes(`Smoke transfer ${stamp}`);
-    const balanceAfter = after.match(/([\d,]+\.?\d*)\s*(?:hours|credits)/i)?.[1] ?? null;
-    console.log(`    balance text after : ${balanceAfter ?? '(not found)'}`);
+    const balanceAfter = await balanceFrom(page);
+    await recipientPage.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
+    await recipientPage.waitForTimeout(2500);
+    const recipientBalanceAfter = await balanceFrom(recipientPage);
+    await recipientCtx.close();
+    console.log(`    balances after  — sender: ${balanceAfter ?? '(not found)'}, recipient: ${recipientBalanceAfter ?? '(not found)'}`);
     console.log(`    transfer in the ledger afterwards: ${listed ? 'YES — transferring works' : 'no (unconfirmed)'}`);
     if (!listed) skip('transfer not visible in the ledger afterwards — effect unconfirmed, NOT a proven failure');
+    const senderDelta = balanceAfter === null ? null : balanceAfter - balanceBefore;
+    const recipientDelta = recipientBalanceAfter === null ? null : recipientBalanceAfter - recipientBalanceBefore;
+    console.log(`    credit movement — sender: ${senderDelta}, recipient: ${recipientDelta} (expected -1 / +1)`);
+    if (senderDelta !== -1 || recipientDelta !== 1) {
+      throw new Error(`transfer moved credits incorrectly: sender ${senderDelta}, recipient ${recipientDelta}; expected -1/+1`);
+    }
   });
 
   await step('action-rsvp-event', async () => {
@@ -603,8 +696,42 @@ async function runArm(arm) {
     const target = ['going', 'interested', 'not_going'].find((k) => offered.includes(k) && k !== before);
     if (!target) skip(`the only RSVP option offered (${offered.join(', ')}) is already selected — nothing to change`);
 
-    await opt(target).click({ timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(3000);
+    // Changing or clearing an existing RSVP is deliberately confirmation-gated. The
+    // previous probe ignored that dialog, waited on a page where no request had been
+    // sent, and reported BOTH backends as failing persistence. Start listening before
+    // the click so a fast response cannot race the probe, then accept the real dialog
+    // when the product requires it.
+    const mutationResponse = page.waitForResponse((response) => {
+      const request = response.request();
+      return /\/api\/v2\/events\/\d+\/rsvp(?:\?|$)/.test(response.url())
+        && ['POST', 'DELETE'].includes(request.method());
+    }, { timeout: 15000 }).catch(() => null);
+    await opt(target).click({ timeout: 8000 });
+    await page.waitForTimeout(500);
+
+    const confirmation = page.locator('[role="alertdialog"]:visible, [role="dialog"]:visible').last();
+    if (await confirmation.count()) {
+      const confirmButton = confirmation.getByRole('button')
+        .filter({ hasNotText: /cancel|close/i })
+        .last();
+      if (!(await confirmButton.count())) {
+        throw new Error('RSVP opened a confirmation dialog with no confirm action');
+      }
+      console.log(`    RSVP confirmation required; accepting ${JSON.stringify((await confirmButton.innerText()).trim())}`);
+      await confirmButton.click({ timeout: 8000 });
+    }
+
+    const response = await mutationResponse;
+    if (!response) {
+      throw new Error('RSVP control produced no POST/DELETE request within 15 seconds');
+    }
+    const method = response.request().method();
+    console.log(`    RSVP mutation: ${method} ${new URL(response.url()).pathname} -> ${response.status()}`);
+    if (!response.ok()) {
+      const detail = (await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
+      throw new Error(`RSVP mutation returned ${response.status()}${detail ? `: ${detail}` : ''}`);
+    }
+    await page.waitForTimeout(2500);
     console.log(`    RSVP ${before ?? '(none)'} -> clicked "${ARIA[target]}"; in-page selection now: ${await checkedKey() ?? '(none)'}`);
 
     // The assertion that matters: it must survive a reload, i.e. the backend stored it.
@@ -857,6 +984,7 @@ async function runArm(arm) {
     // -- the provider signs in and publishes a listing to be requested against --
     const providerCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const provider = await providerCtx.newPage();
+    captureApiFrom(provider);
     try {
       const signedIn = await signInAs(provider, arm.providerEmail, arm.providerPassword, arm.communityLabel);
       if (!signedIn.ok) skip(`provider actor unavailable: ${signedIn.reason}`);
@@ -1217,6 +1345,7 @@ async function runArm(arm) {
   await step('journey-sign-up', async () => {
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
+    captureApiFrom(page2);
     // 🔴 CAPTURE THE REGISTER CALL ITSELF. Added 2026-08-21 after this step failed
     // on BOTH arms with only "registration did not reach the success screen" — which
     // does not say whether the POST was refused, or was never made because the form
@@ -1328,7 +1457,11 @@ async function runArm(arm) {
       let success = /Registration Successful/i.test(bodyText);
       const verify = /verification link|verify your email/i.test(bodyText);
       console.log(`    registration successful screen: ${success} | verification-email flow: ${verify}`);
-      for (const c of registerCalls) console.log(`    POST register -> ${c.status} ${c.body.replace(/\s+/g, ' ')}`);
+      const redactedRegisterBody = (body) => body
+        .replace(/"(access_token|refresh_token|csrf_token)"\s*:\s*"[^"]*"/gi, '"$1":"[redacted]"')
+        .replace(/"(access_token|refresh_token|csrf_token)"\s*:\s*"[^"]*$/gi, '"$1":"[redacted]"')
+        .replace(/\s+/g, ' ');
+      for (const c of registerCalls) console.log(`    POST register -> ${c.status} ${redactedRegisterBody(c.body)}`);
 
       // 🔴 A 429 IS THE DEV RATE LIMIT, NOT A PRODUCT VERDICT - and it was being
       // reported as "registration did not reach the success screen", i.e. as a broken
@@ -1353,7 +1486,7 @@ async function runArm(arm) {
         await page2.waitForTimeout(waitMs);
         registerCalls.length = 0;
         await submitRegistration();
-        for (const c of registerCalls) console.log(`    POST register (retry) -> ${c.status} ${c.body.replace(/\s+/g, ' ')}`);
+        for (const c of registerCalls) console.log(`    POST register (retry) -> ${c.status} ${redactedRegisterBody(c.body)}`);
         success = /Registration Successful/i.test((await page2.locator('body').innerText()).trim());
         refusedByRateLimit = registerCalls.length > 0 && registerCalls[registerCalls.length - 1].status === 429;
         if (!success && refusedByRateLimit) {
@@ -1689,6 +1822,7 @@ const ASPNET_ARM = {
   // exactly as it is on the Laravel control.
   providerEmail: process.env.SMOKE_PROVIDER_EMAIL_ASPNET || 'coordinator@acme.test',
   providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
+  transferSearch: process.env.SMOKE_TRANSFER_SEARCH_ASPNET || 'Maya Coordinator',
 };
 
 // Each side signs in with its OWN fixture's member — the fixtures hold different users
@@ -1704,6 +1838,7 @@ const LARAVEL_ARM = {
   // the hash from user A rather than writing one out), so these cannot drift apart.
   providerEmail: process.env.SMOKE_PROVIDER_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
   providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_LARAVEL || 'TestPassword123!',
+  transferSearch: process.env.SMOKE_TRANSFER_SEARCH_LARAVEL || 'E2E UserB',
 };
 
 async function main() {
