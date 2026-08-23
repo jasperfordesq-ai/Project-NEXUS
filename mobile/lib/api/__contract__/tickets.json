@@ -1,0 +1,1 @@
+{"data":{"contract_version":1,"event_id":164,"currency":"time_credit","payment_gateway":{"free_supported":true,"time_credit_supported":false,"money_supported":false},"permissions":{"manage":true,"reconcile":true,"allocate_self":false},"ticket_types":[],"own_entitlements":[]},"meta":{"base_url":"http:\/\/127.0.0.1"}}
