@@ -26178,7 +26178,10 @@ describe('shared accessible frontend shell', () => {
       .mockResolvedValueOnce({ data: { settings: { revision: 3 }, forms: [] } });
     const replay = await agent.get(rejected.headers.location).set('Cookie', signedCookieHeader());
     expect(replay.status).toBe(200);
-    expect(replay.text).toContain('class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1"');
+    // role="alert" lives on a nested child, never on the focused root — the
+    // same race guard govuk-frontend's own component template documents.
+    expect(replay.text).toContain('class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"');
+    expect(replay.text).toMatch(/govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">\s*<div role="alert">/);
     expect(replay.text).toContain('value="Replay this form"');
     expect(replay.text).toContain('>Keep this description</textarea>');
     expect(replay.text).toContain('>Keep this prompt</textarea>');

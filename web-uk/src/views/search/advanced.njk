@@ -21,24 +21,28 @@
       </div>
     </div>
   {% elif status == 'search-save-failed' or status == 'search-delete-failed' %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
       <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
       <div class="govuk-error-summary__body">
         <ul class="govuk-list govuk-error-summary__list">
           <li>{% if status == 'search-save-failed' %}<a href="#saved-name">{{ t("govuk_alpha_search.saved.save_failed_banner") }}</a>{% else %}{{ t("govuk_alpha_search.saved.delete_failed_banner") }}{% endif %}</li>
         </ul>
       </div>
+      </div>
     </div>
   {% endif %}
 
   {% if hasSearched and searchError %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
       <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
       <div class="govuk-error-summary__body">
         <ul class="govuk-list govuk-error-summary__list">
           <li><a href="#q">{{ t("govuk_alpha_search.states.error") }}</a></li>
         </ul>
         <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ tryAgainHref }}">{{ t("govuk_alpha_search.states.try_again") }}</a></p>
+      </div>
       </div>
     </div>
   {% endif %}

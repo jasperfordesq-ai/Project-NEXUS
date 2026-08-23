@@ -252,14 +252,16 @@
     summary.className = 'govuk-error-summary';
     summary.setAttribute('data-module', 'govuk-error-summary');
     summary.setAttribute('tabindex', '-1');
-    summary.setAttribute('role', 'alert');
 
     const errorList = errors.map(err =>
       '<li><a href="' + escapeHtml(err.href) + '">' + escapeHtml(err.message) + '</a></li>'
     ).join('');
 
+    // role="alert" lives on the CHILD, never on the focused root: focusing and
+    // alerting the same element races, and screen readers drop the content
+    // (the same fix govuk-frontend made to its own component).
     summary.innerHTML = `
-      <div>
+      <div role="alert">
         <h2 class="govuk-error-summary__title">${escapeHtml(form.dataset.validationErrorTitle || 'There is a problem')}</h2>
         <div class="govuk-error-summary__body">
           <ul class="govuk-list govuk-error-summary__list">

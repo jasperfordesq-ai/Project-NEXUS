@@ -14,9 +14,11 @@
 <span class="govuk-caption-xl">{{ t("event_registration.title") }}</span><h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
 <p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
 {% if formErrors and (formErrors | length) %}
-<div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+<div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+  <div role="alert">
   <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
   <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list">{% for error in formErrors %}<li><a href="#form-name">{{ error }}</a></li>{% endfor %}</ul></div>
+  </div>
 </div>
 {% endif %}
 <div class="govuk-inset-text">{{ t("event_registration.accessible.form_slots_hint") }}</div>

@@ -33,9 +33,11 @@
   <p class="govuk-body-l">{{ t("govuk_alpha_connections.network.description") }}</p>
 
   {% if loadError %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+    <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
+      <div role="alert">
       <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
       <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+      </div>
     </div>
   {% endif %}
 
