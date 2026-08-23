@@ -113,10 +113,10 @@
     "141439346": {
       "title": "Error: Object of class App\\Enums\\EventPublicationState could not be converted to string",
       "culprit": "/app/Services/EventService.php in App\\Services\\EventService::canUpdateImage",
-      "decision": "needs-owner",
-      "note": "REAL AND USER-FACING: changing an event's cover image fails for any event that has a publication status set. EventService::canUpdateImage (app/Services/EventService.php:3292) does (string) on the value of publication_status, but the Event model casts that column to the EventPublicationState enum, so Builder::value() returns an enum object and the string cast is a fatal Error. Verified in the local container, not inferred: value() returned App\\Enums\\EventPublicationState and (string) threw the exact production message; 13 of 22 local events have the column populated. The fix is one line — compare against the enum directly (or use ->value) instead of casting to string, on both halves of that condition. NOT applied automatically because it sits inside the permission check that decides whether someone may change an event's image, and this automated run does not change authorisation code.",
-      "sha": null,
-      "decidedAt": "2026-08-23T08:16:50.824Z",
+      "decision": "fixed",
+      "note": "Owner authorised the fix after this was first recorded as needs-owner. EventService::canUpdateImage read the root event's publication_status via Builder::value(), which applies the Eloquent cast, so it received an EventPublicationState enum and the (string) cast on it was a fatal Error — every cover-image change on an event with a publication status set failed. Now normalises the enum to its value; the adjacent getRawOriginal() half was already safe and is untouched. Swept all 20 other publication_status reads in app/: this was the only affected site, the only ->value('publication_status') call, and there are no bare enum-vs-string comparisons — so the fix is complete rather than the first of a sweep. Regression tests cover both arms (published must be editable, pending_review must still be refused) and were confirmed to reproduce the production Error against the old code. Sibling suites run: EventsController, EventMutationSafety, EventLifecycleCompatibility, EventsPublicationTransitionCrossTenant — 64 tests green.",
+      "sha": "b9c0729dd",
+      "decidedAt": "2026-08-23T08:30:50.599Z",
       "decidedAtRelease": "nexus-php@4e8c77288fac"
     },
     "141530982": {
