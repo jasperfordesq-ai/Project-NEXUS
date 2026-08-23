@@ -36,6 +36,7 @@ const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/dat
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
 
@@ -284,9 +285,14 @@ function isOnboardingRequired(error) {
 }
 
 function eventFormErrors(error, fallbackMessage) {
+  // Date fields are GDS split inputs, so the error-summary link must target
+  // the first focusable input (#field-day) — the bare #field id sits on the
+  // wrapper div, which cannot take focus.
   const fieldAliases = {
-    starts_at: 'start_time',
-    ends_at: 'end_time'
+    starts_at: 'start_time-day',
+    ends_at: 'end_time-day',
+    start_time: 'start_time-day',
+    end_time: 'end_time-day'
   };
   const apiErrors = apiErrorsFrom(error);
   if (apiErrors.length === 0) {
@@ -2411,9 +2417,8 @@ router.get('/:id(\\d+)/analytics', requireAuth, asyncRoute(async (req, res) => {
   const summary = dataFrom(result) || {};
   const formatNumber = typeof res.locals.formatLocaleNumber === 'function'
     ? res.locals.formatLocaleNumber
-    : (input, options = {}) => (options.style === 'percent'
-      ? `${(Number(input) * 100).toFixed(1)}%`
-      : String(Number(input) || 0));
+    : (input, options = {}) => new Intl.NumberFormat(getRequestIntlLocale(), options)
+      .format(Number(input) || 0);
   // Intl's percent style multiplies by 100 itself, so basis points become a
   // fraction here rather than the already-multiplied number a manual "%" needed.
   const formatPercent = (basisPoints) => formatNumber(Number(basisPoints) / 10000, {
@@ -3411,7 +3416,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
   }
 
   if (values.start_time === '') {
-    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time-day' });
   }
 
   // Helper to render form with errors
@@ -3657,7 +3662,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
   }
 
   if (values.start_time === '') {
-    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time-day' });
   }
 
   // Helper to render form with errors

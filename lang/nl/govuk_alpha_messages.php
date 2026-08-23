@@ -11,6 +11,8 @@ return [
         'submit' => 'Spraakbericht verzenden',
         'no_audio_support' => 'Uw browser kan dit audiofragment niet afspelen.',
         'transcript_toggle' => 'Transcriptie tonen',
+
+        'player_label' => 'Spraakbericht',
         'error_required' => 'Kies een audiobestand om als spraakbericht te verzenden.',
         'error_failed' => 'Uw spraakbericht kon niet worden verzonden. Probeer het opnieuw.',
     ],

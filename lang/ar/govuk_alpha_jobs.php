@@ -240,6 +240,8 @@ return [
         'filter_all_jobs' => 'جميع الوظائف',
         'apply_filter' => 'تطبيق المرشحات',
         'period_label' => 'الفترة: :from إلى :to',
+        'period_from' => 'من :date',
+        'period_to' => 'حتى :date',
         'total_applications' => 'إجمالي الطلبات',
         'hiring_velocity' => 'متوسط وقت التوظيف',
         'days' => 'أيام',

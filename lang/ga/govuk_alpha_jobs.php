@@ -240,6 +240,8 @@ return [
         'filter_all_jobs' => 'Gach deis',
         'apply_filter' => 'Cuir scagairí i bhfeidhm',
         'period_label' => 'Tréimhse: :from go :to',
+        'period_from' => 'Ó :date',
+        'period_to' => 'Go dtí :date',
         'total_applications' => 'Iarratais iomlána',
         'hiring_velocity' => 'Am meánach le hearcú',
         'days' => 'laethanta',

@@ -11,6 +11,8 @@ return [
         'submit' => 'Wyślij wiadomość głosową',
         'no_audio_support' => 'Twoja przeglądarka nie może odtworzyć tego klipu audio.',
         'transcript_toggle' => 'Pokaż transkrypcję',
+
+        'player_label' => 'Wiadomość głosowa',
         'error_required' => 'Wybierz plik audio do wysłania jako wiadomość głosowa.',
         'error_failed' => 'Nie udało się wysłać wiadomości głosowej. Spróbuj ponownie.',
     ],

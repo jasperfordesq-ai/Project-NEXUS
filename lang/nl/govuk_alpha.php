@@ -244,7 +244,7 @@ return [
         'not_available' => 'Niet beschikbaar',
         'validation' => [
             'required' => 'Voer :field in',
-            'email' => 'Voer een e-mailadres in het juiste formaat in, zoals naam@voorbeeld.com',
+            'email' => 'Voer een e-mailadres in het juiste formaat in, zoals naam@example.com',
             'min_length' => ':field moet :min tekens of meer bevatten',
             'max_length' => ':field moet :max tekens of minder bevatten',
             'matches' => ':field moet overeenkomen met :other',
@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'Gemeenschapscode',
         'community_code_hint' => 'De code voor uw community, bijvoorbeeld \'acme\'.',
+        'community_code_required' => 'Voer uw gemeenschapscode in',
         'resend_email_label' => 'E-mailadres',
         'resend_verification_hint' => 'We sturen een nieuwe verificatielink naar dit adres als een account nog geverifieerd moet worden.',
         'resend_verification_button' => 'Verificatie-e-mail opnieuw sturen',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'Scoren',
         'insights_title' => 'Hoe u kunt verbeteren',
         'unavailable' => 'Uw score is nog niet beschikbaar. Neem deel aan de gemeenschap en kom binnenkort terug.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Betrokkenheid',
             'quality' => 'Kwaliteit',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'Privé — mensen vragen om lid te worden en een beheerder keurt hen goed',
             'tags_label' => 'Tags (optioneel)',
             'tags_hint' => 'Scheid tags met komma\'s, bijvoorbeeld tuinieren, koken.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Omslagafbeelding (optioneel)',
             'cover_hint' => 'Gebruik een JPG-, PNG-, GIF- of WEBP-afbeelding.',
             'submit' => 'Groep aanmaken',

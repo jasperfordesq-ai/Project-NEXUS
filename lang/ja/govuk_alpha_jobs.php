@@ -240,6 +240,8 @@ return [
         'filter_all_jobs' => 'すべての求人',
         'apply_filter' => 'フィルターを適用',
         'period_label' => '期間: :from から :to',
+        'period_from' => ':date から',
+        'period_to' => ':date まで',
         'total_applications' => '応募総数',
         'hiring_velocity' => '平均採用期間',
         'days' => '日',

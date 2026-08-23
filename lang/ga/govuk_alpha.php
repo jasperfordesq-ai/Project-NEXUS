@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'Cód pobail',
         'community_code_hint' => 'Cód do phobail, mar shampla \'acme\'.',
+        'community_code_required' => 'Cuir isteach cód do phobail',
         'resend_email_label' => 'Seoladh ríomhphoist',
         'resend_verification_hint' => 'Seolfaimid nasc fíoraithe nua chuig an seoladh seo má tá cuntas ag teastáil fíorú.',
         'resend_verification_button' => 'Athsheoladh ríomhphost fíoraithe',
@@ -1968,6 +1969,7 @@ return [
         'score_column' => 'Scór',
         'insights_title' => 'Conas feabhas a chur air',
         'unavailable' => 'Níl do scór ar fáil fós. Glac páirt sa phobal agus seiceáil arís go luath.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Rannpháirtíocht',
             'quality' => 'Cáilíocht',
@@ -2158,6 +2160,7 @@ return [
             'visibility_private_label' => 'Príobháideach — iarrann daoine teacht isteach agus ceadaíonn riarthóir iad',
             'tags_label' => 'Clibeanna (roghnach)',
             'tags_hint' => 'Deighil clibeanna le camóga, mar shampla garraíodóireacht, cócaireacht.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Íomhá chlúdaigh (roghnach)',
             'cover_hint' => 'Úsáid íomhá JPG, PNG, GIF nó WEBP.',
             'submit' => 'Cruthaigh grúpa',

@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Community code",
                 "community_code_hint": "The code for your community, for example 'acme'.",
+                "community_code_required": "Enter your community code",
                 "resend_email_label": "Email address",
                 "resend_verification_hint": "We will send a new verification link to this address if an account needs verifying.",
                 "resend_verification_button": "Resend verification email",
@@ -2974,6 +2975,7 @@
                 "score_column": "Score",
                 "insights_title": "How to improve",
                 "unavailable": "Your score is not available yet. Take part in the community and check back soon.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Engagement",
                     "quality": "Quality",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Private — people ask to join and an admin approves them",
                     "tags_label": "Tags (optional)",
                     "tags_hint": "Separate tags with commas, for example gardening, cookery.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Cover image (optional)",
                     "cover_hint": "Use a JPG, PNG, GIF or WEBP image.",
                     "submit": "Create group",
@@ -7807,6 +7810,38 @@
                     "legendary": "Legendary"
                 }
             },
+            "badge_rarity": {
+                "common": "Common",
+                "uncommon": "Uncommon",
+                "rare": "Rare",
+                "epic": "Epic",
+                "legendary": "Legendary"
+            },
+            "badge_types": {
+                "5star": "Five-star reviews",
+                "connection": "Connections",
+                "diversity": "Helping different people",
+                "earn": "Credits earned",
+                "event_attend": "Attending events",
+                "event_host": "Hosting events",
+                "group_create": "Founding groups",
+                "group_join": "Joining groups",
+                "level": "Levels",
+                "likes_received": "Likes received",
+                "membership": "Membership",
+                "message": "Messages",
+                "offer": "Offers",
+                "post": "Posts",
+                "profile": "Profile",
+                "request": "Requests",
+                "review_given": "Reviews given",
+                "special": "Special",
+                "spend": "Credits spent",
+                "streak": "Streaks",
+                "transaction": "Exchanges",
+                "vol": "Volunteering",
+                "vol_org": "Volunteering with organisations"
+            },
             "ranked": {
                 "title": "Ranked-choice poll",
                 "caption": "Polls at :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "All opportunities",
                 "apply_filter": "Apply filters",
                 "period_label": "Period: :from to :to",
+                "period_from": "From :date",
+                "period_to": "To :date",
                 "total_applications": "Total applications",
                 "hiring_velocity": "Average time to hire",
                 "days": "days",
@@ -9079,6 +9116,7 @@
                 "submit": "Send voice message",
                 "no_audio_support": "Your browser cannot play this audio clip.",
                 "transcript_toggle": "Show transcript",
+                "player_label": "Voice message",
                 "error_required": "Choose an audio file to send as a voice message.",
                 "error_failed": "Your voice message could not be sent. Please try again."
             },

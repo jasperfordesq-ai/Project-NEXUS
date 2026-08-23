@@ -390,6 +390,7 @@ return [
     'auth' => [
         'community_code_label' => 'Community code',
         'community_code_hint' => 'The code for your community, for example \'acme\'.',
+        'community_code_required' => 'Enter your community code',
         'resend_email_label' => 'Email address',
         'resend_verification_hint' => 'We will send a new verification link to this address if an account needs verifying.',
         'resend_verification_button' => 'Resend verification email',
@@ -1992,6 +1993,7 @@ return [
         'score_column' => 'Score',
         'insights_title' => 'How to improve',
         'unavailable' => 'Your score is not available yet. Take part in the community and check back soon.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Engagement',
             'quality' => 'Quality',
@@ -2182,6 +2184,7 @@ return [
             'visibility_private_label' => 'Private — people ask to join and an admin approves them',
             'tags_label' => 'Tags (optional)',
             'tags_hint' => 'Separate tags with commas, for example gardening, cookery.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Cover image (optional)',
             'cover_hint' => 'Use a JPG, PNG, GIF or WEBP image.',
             'submit' => 'Create group',

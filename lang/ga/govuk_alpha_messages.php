@@ -11,6 +11,8 @@ return [
         'submit' => 'Seol teachtaireacht ghutha',
         'no_audio_support' => 'Ní féidir le do bhrabhsálaí an ghearrthóg fhuaime seo a sheinm.',
         'transcript_toggle' => 'Taispeáin tras-scríbhinn',
+
+        'player_label' => 'Teachtaireacht ghutha',
         'error_required' => 'Roghnaigh comhad fuaime le seoladh mar theachtaireacht ghutha.',
         'error_failed' => 'Níorbh fhéidir do theachtaireacht ghutha a sheoladh. Bain triail eile as le do thoil.',
     ],

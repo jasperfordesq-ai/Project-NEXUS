@@ -14,6 +14,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { translateForRequest } = require('../lib/request-translator');
 
 const router = express.Router();
 
@@ -91,9 +92,39 @@ function formatInteger(value) {
   return intFrom(value).toLocaleString(getRequestIntlLocale());
 }
 
-function capitalizeLabel(value) {
-  const text = textFrom(value);
-  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : '';
+// 🔴 rarityLabel/tierLabel/typeLabel used to capitalise the raw English enum slug
+// ('rare' → 'Rare', 'review_given' → 'Review_given') in every language. Each enum
+// value now has a translated key; an unknown value falls back to the raw slug —
+// the same rule the shop decorator uses — never to a fake-English capitalisation.
+const BADGE_RARITY_KEYS = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+// The full 'type' vocabulary from Laravel's GamificationService::getBadgeDefinitions().
+const BADGE_TYPE_KEYS = [
+  '5star', 'connection', 'diversity', 'earn', 'event_attend', 'event_host',
+  'group_create', 'group_join', 'level', 'likes_received', 'membership',
+  'message', 'offer', 'post', 'profile', 'request', 'review_given', 'special',
+  'spend', 'streak', 'transaction', 'vol', 'vol_org'
+];
+const NEXUS_TIER_NAMES = [
+  'novice', 'beginner', 'developing', 'intermediate', 'proficient',
+  'advanced', 'expert', 'elite', 'legendary'
+];
+
+function badgeEnumLabel(value, known, keyPrefix) {
+  const slug = textFrom(value).toLowerCase();
+  if (!slug) return '';
+  return known.includes(slug) ? translateForRequest(`${keyPrefix}.${slug}`) : textFrom(value);
+}
+
+function badgeRarityLabel(value) {
+  return badgeEnumLabel(value, BADGE_RARITY_KEYS, 'govuk_alpha_gamification.badge_rarity');
+}
+
+function badgeTypeLabel(value) {
+  return badgeEnumLabel(value, BADGE_TYPE_KEYS, 'govuk_alpha_gamification.badge_types');
+}
+
+function badgeTierLabel(value) {
+  return badgeEnumLabel(value, NEXUS_TIER_NAMES, 'govuk_alpha_gamification.tiers.names');
 }
 
 function formatDateLabel(value) {
@@ -311,11 +342,11 @@ function normalizeBadgeDetail(result, key) {
     description: textFrom(badge.description ?? badge.msg),
     earned: boolFrom(badge.earned),
     earnedAtLabel: earnedAt ? formatDateLabel(earnedAt) : '',
-    rarityLabel: capitalizeLabel(badge.rarity),
+    rarityLabel: badgeRarityLabel(badge.rarity),
     xpValue,
     xpValueLabel: formatInteger(xpValue),
-    tierLabel: capitalizeLabel(tier.name ?? badge.tier),
-    typeLabel: capitalizeLabel(badge.type),
+    tierLabel: badgeTierLabel(tier.name ?? badge.tier),
+    typeLabel: badgeTypeLabel(badge.type),
     isShowcased: boolFrom(badge.is_showcased ?? badge.showcased)
   };
 }

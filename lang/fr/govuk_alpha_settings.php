@@ -90,7 +90,7 @@ return [
         'request_description' => 'Saisissez l\'adresse e-mail du membre que vous souhaitez associer. Ils doivent déjà avoir un compte dans cette communauté.',
         'request_max' => 'Vous pouvez gérer jusqu\'à :count comptes liés.',
         'email_label' => 'Adresse email',
-        'email_hint' => 'Par exemple, nom@exemple.com',
+        'email_hint' => 'Par exemple, nom@example.com',
         'request_button' => 'Envoyer une demande de lien',
     ],
     'appearance' => [

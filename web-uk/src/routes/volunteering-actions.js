@@ -14,6 +14,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, splitDate, dateParts } = require('../lib/date-input');
+const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
@@ -874,6 +875,9 @@ function moodLabel(value, t = null) {
     : (labels[mood] || trimmed(value));
 }
 
+// 🔴 Used to hardcode English 'am'/'pm' and a fixed day-month-year order. Intl
+// now owns the whole label; the locale decides field order and its own
+// 12/24-hour clock (en-GB renders '14:30').
 function bladeDateTimeLabel(value) {
   if (!value) return '';
   const text = String(value);
@@ -885,14 +889,11 @@ function bladeDateTimeLabel(value) {
   const day = isoParts ? Number(isoParts[3]) : date.getDate();
   const hours = isoParts ? Number(isoParts[4]) : date.getHours();
   const minutes = isoParts ? Number(isoParts[5]) : date.getMinutes();
-  const month = new Intl.DateTimeFormat(getRequestIntlLocale(), {
-    month: 'long',
+  return new Intl.DateTimeFormat(getRequestIntlLocale(), {
+    dateStyle: 'long',
+    timeStyle: 'short',
     timeZone: 'UTC'
-  }).format(new Date(Date.UTC(year, monthIndex, day)));
-  const hour = hours % 12 || 12;
-  const minute = String(minutes).padStart(2, '0');
-  const period = hours < 12 ? 'am' : 'pm';
-  return `${day} ${month} ${year}, ${hour}:${minute}${period}`;
+  }).format(new Date(Date.UTC(year, monthIndex, day, hours, minutes)));
 }
 
 function normalizeCheckin(row, t = null) {
@@ -1101,7 +1102,7 @@ function normalizeEmergencyAlert(row, t = null) {
     priority: alertPriorityPresentation(alert.priority, t),
     message: trimmed(alert.message),
     myResponse: trimmed(alert.my_response ?? alert.myResponse) || 'pending',
-    skills: stringArray(alert.required_skills ?? alert.requiredSkills).join(', '),
+    skills: formatRequestList(stringArray(alert.required_skills ?? alert.requiredSkills)),
     expiresAtLabel: dateTimeLabel(alert.expires_at ?? alert.expiresAt),
     opportunityTitle: trimmed(opportunity.title) || (typeof t === 'function' ? t('volunteering.detail_title') : 'Volunteering opportunity'),
     location: trimmed(opportunity.location),

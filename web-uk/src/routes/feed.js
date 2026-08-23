@@ -50,8 +50,7 @@ function hashtagRows(result) {
     const postCount = Number.isFinite(count) && count >= 0 ? count : 0;
     return {
       tag,
-      postCount,
-      postCountLabel: postCount === 0 ? 'No posts' : `${postCount} post${postCount === 1 ? '' : 's'}`
+      postCount
     };
   }).filter((row) => row.tag);
 }
@@ -64,12 +63,6 @@ function positiveInteger(value, fallback, min = 1, max = 1000) {
   const number = Number.parseInt(value, 10);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(Math.max(number, min), max);
-}
-
-function pluralLabel(count, singular, plural = `${singular}s`, zero = `0 ${plural}`) {
-  if (count === 0) return zero;
-  if (count === 1) return `1 ${singular}`;
-  return `${count} ${plural}`;
 }
 
 function plainParagraphs(value) {
@@ -167,8 +160,6 @@ function normalizeFeedPost(row) {
     isPinned: !!(row && (row.is_pinned || row.isPinned)),
     likeCount,
     commentCount,
-    likeLabel: pluralLabel(likeCount, 'like'),
-    commentLabel: pluralLabel(commentCount, 'comment'),
     isLiked: !!(row && (row.is_liked || row.isLiked)),
     reactionCounts,
     reactionTotal,

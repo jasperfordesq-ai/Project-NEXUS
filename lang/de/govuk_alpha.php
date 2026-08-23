@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'Gemeinschaftscode',
         'community_code_hint' => 'Der Code für Ihre Community, zum Beispiel „acme“.',
+        'community_code_required' => 'Geben Sie Ihren Gemeinschaftscode ein',
         'resend_email_label' => 'E-Mail-Adresse',
         'resend_verification_hint' => 'Wir senden einen neuen Bestätigungslink an diese Adresse, sofern ein Konto verifiziert werden muss.',
         'resend_verification_button' => 'Bestätigungs-E-Mail erneut senden',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'Punkte',
         'insights_title' => 'So können Sie sich verbessern',
         'unavailable' => 'Ihr Punktestand ist noch nicht verfügbar. Nehmen Sie an der Gemeinschaft teil und schauen Sie bald wieder vorbei.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Interaktion',
             'quality' => 'Qualität',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'Privat — Personen beantragen den Beitritt und ein Administrator genehmigt sie',
             'tags_label' => 'Stichwörter (optional)',
             'tags_hint' => 'Trennen Sie Tags mit Kommas, zum Beispiel Gartenarbeit, Kochen.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Titelbild (optional)',
             'cover_hint' => 'Verwenden Sie ein JPG-, PNG-, GIF- oder WEBP-Bild.',
             'submit' => 'Gruppe erstellen',

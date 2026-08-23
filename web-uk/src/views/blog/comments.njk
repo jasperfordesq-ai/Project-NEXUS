@@ -15,7 +15,7 @@
     <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
 
     <div class="nexus-alpha-reactions govuk-!-margin-bottom-2">
-      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("govuk_alpha_blogreviews.reactions.count", comment.reactionTotal, { count: comment.reactionTotal }) }}</p>
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ tc("govuk_alpha_blogreviews.reactions.count", comment.reactionTotal, { count: comment.reactionTotal }) }}</p>
       <fieldset class="govuk-fieldset">
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.reactions.comment_legend") }}</legend>
         <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">
@@ -76,7 +76,7 @@
             <div class="govuk-details__text">
               <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.states.error_prefix") }}</span>{{ t("govuk_alpha_blogreviews.comments.delete_warning") }}</strong>
+                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_blogreviews.comments.delete_warning") }}</strong>
               </div>
               <form method="post" action="{{ urlFor('/blog/comments/' + (comment.id | string) + '/delete') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -120,7 +120,7 @@
 
       <section id="post-reactions" class="govuk-!-margin-bottom-6">
         <h2 class="govuk-heading-m">{{ t("govuk_alpha_blogreviews.reactions.post_legend") }}</h2>
-        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
           {{ tc("govuk_alpha_blogreviews.reactions.count", reactions.total, { count: reactions.total }) }}
         </p>
         <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-2">

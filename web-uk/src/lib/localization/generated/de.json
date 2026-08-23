@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Gemeinschaftscode",
                 "community_code_hint": "Der Code für Ihre Community, zum Beispiel „acme“.",
+                "community_code_required": "Geben Sie Ihren Gemeinschaftscode ein",
                 "resend_email_label": "E-Mail-Adresse",
                 "resend_verification_hint": "Wir senden einen neuen Bestätigungslink an diese Adresse, sofern ein Konto verifiziert werden muss.",
                 "resend_verification_button": "Bestätigungs-E-Mail erneut senden",
@@ -2974,6 +2975,7 @@
                 "score_column": "Punkte",
                 "insights_title": "So können Sie sich verbessern",
                 "unavailable": "Ihr Punktestand ist noch nicht verfügbar. Nehmen Sie an der Gemeinschaft teil und schauen Sie bald wieder vorbei.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Interaktion",
                     "quality": "Qualität",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Privat — Personen beantragen den Beitritt und ein Administrator genehmigt sie",
                     "tags_label": "Stichwörter (optional)",
                     "tags_hint": "Trennen Sie Tags mit Kommas, zum Beispiel Gartenarbeit, Kochen.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Titelbild (optional)",
                     "cover_hint": "Verwenden Sie ein JPG-, PNG-, GIF- oder WEBP-Bild.",
                     "submit": "Gruppe erstellen",
@@ -7807,6 +7810,38 @@
                     "legendary": "Legendär"
                 }
             },
+            "badge_rarity": {
+                "common": "Gewöhnlich",
+                "uncommon": "Ungewöhnlich",
+                "rare": "Selten",
+                "epic": "Episch",
+                "legendary": "Legendär"
+            },
+            "badge_types": {
+                "5star": "Fünf-Sterne-Bewertungen",
+                "connection": "Verbindungen",
+                "diversity": "Verschiedenen Menschen helfen",
+                "earn": "Verdiente Zeitguthaben",
+                "event_attend": "Teilnahme an Veranstaltungen",
+                "event_host": "Veranstaltungen ausrichten",
+                "group_create": "Gruppen gründen",
+                "group_join": "Gruppen beitreten",
+                "level": "Stufen",
+                "likes_received": "Erhaltene „Gefällt mir“-Angaben",
+                "membership": "Mitgliedschaft",
+                "message": "Nachrichten",
+                "offer": "Angebote",
+                "post": "Beiträge",
+                "profile": "Profil",
+                "request": "Gesuche",
+                "review_given": "Abgegebene Bewertungen",
+                "special": "Besonders",
+                "spend": "Ausgegebene Zeitguthaben",
+                "streak": "Serien",
+                "transaction": "Austausch",
+                "vol": "Ehrenamtliche Arbeit",
+                "vol_org": "Ehrenamtliche Arbeit mit Organisationen"
+            },
             "ranked": {
                 "title": "Umfrage nach Rangfolge",
                 "caption": "Umfragen bei :community",
@@ -8318,7 +8353,7 @@
                 "type_label": "Anhangstyp",
                 "type_image": "Bild",
                 "type_video": "Video",
-                "type_document": "Dokumentieren",
+                "type_document": "Dokument",
                 "type_link": "Link",
                 "url_label": "Webadresse (URL)",
                 "url_hint": "Fügen Sie einen Link zu einem Bild, Video, Dokument oder einer Webseite ein.",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Alle Stellen",
                 "apply_filter": "Filter anwenden",
                 "period_label": "Zeitraum: :from bis :to",
+                "period_from": "Ab :date",
+                "period_to": "Bis :date",
                 "total_applications": "Bewerbungen gesamt",
                 "hiring_velocity": "Durchschnittliche Einstellungsdauer",
                 "days": "Tage",
@@ -9079,6 +9116,7 @@
                 "submit": "Sprachnachricht senden",
                 "no_audio_support": "Ihr Browser kann diesen Audioclip nicht abspielen.",
                 "transcript_toggle": "Transkript anzeigen",
+                "player_label": "Sprachnachricht",
                 "error_required": "Wählen Sie eine Audiodatei aus, die als Sprachnachricht gesendet werden soll.",
                 "error_failed": "Ihre Sprachnachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
             },

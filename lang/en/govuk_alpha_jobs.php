@@ -257,6 +257,8 @@ return [
         'filter_all_jobs'             => 'All opportunities',
         'apply_filter'                => 'Apply filters',
         'period_label'                => 'Period: :from to :to',
+        'period_from' => 'From :date',
+        'period_to' => 'To :date',
         'total_applications'          => 'Total applications',
         'hiring_velocity'             => 'Average time to hire',
         'days'                        => 'days',

@@ -1252,7 +1252,7 @@
                 "not_available": "No disponible",
                 "validation": {
                     "required": "Introduce :field",
-                    "email": "Ingrese una dirección de correo electrónico en el formato correcto, como nombre@ejemplo.com",
+                    "email": "Ingrese una dirección de correo electrónico en el formato correcto, como nombre@example.com",
                     "min_length": ":field debe tener :min caracteres o más",
                     "max_length": ":field debe tener :max caracteres o menos",
                     "matches": ":field debe coincidir con :other",
@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "codigo comunitario",
                 "community_code_hint": "El código de su comunidad, por ejemplo 'acme'.",
+                "community_code_required": "Introduzca su código comunitario",
                 "resend_email_label": "Dirección de correo electrónico",
                 "resend_verification_hint": "Le enviaremos un nuevo enlace de verificación a esta dirección si hay una cuenta pendiente de verificar.",
                 "resend_verification_button": "Reenviar correo de verificación",
@@ -2974,6 +2975,7 @@
                 "score_column": "Puntuación",
                 "insights_title": "Cómo mejorar",
                 "unavailable": "Tu puntuación aún no está disponible. Participa en la comunidad y vuelve pronto.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Participación",
                     "quality": "Calidad",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Privado — las personas solicitan unirse y un administrador las aprueba",
                     "tags_label": "Etiquetas (opcional)",
                     "tags_hint": "Separe las etiquetas con comas, por ejemplo jardinería, cocina.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Imagen de portada (opcional)",
                     "cover_hint": "Use una imagen JPG, PNG, GIF o WEBP.",
                     "submit": "Crear grupo",
@@ -7807,6 +7810,38 @@
                     "legendary": "Legendario"
                 }
             },
+            "badge_rarity": {
+                "common": "Común",
+                "uncommon": "Poco común",
+                "rare": "Raro",
+                "epic": "Épico",
+                "legendary": "Legendario"
+            },
+            "badge_types": {
+                "5star": "Reseñas de cinco estrellas",
+                "connection": "Conexiones",
+                "diversity": "Ayudar a personas diferentes",
+                "earn": "Créditos ganados",
+                "event_attend": "Asistencia a eventos",
+                "event_host": "Organización de eventos",
+                "group_create": "Creación de grupos",
+                "group_join": "Unirse a grupos",
+                "level": "Niveles",
+                "likes_received": "Me gusta recibidos",
+                "membership": "Membresía",
+                "message": "Mensajes",
+                "offer": "Ofertas",
+                "post": "Publicaciones",
+                "profile": "Perfil",
+                "request": "Solicitudes",
+                "review_given": "Reseñas realizadas",
+                "special": "Especial",
+                "spend": "Créditos gastados",
+                "streak": "Rachas",
+                "transaction": "Intercambios",
+                "vol": "Voluntariado",
+                "vol_org": "Voluntariado con organizaciones"
+            },
             "ranked": {
                 "title": "Encuesta de elección clasificada",
                 "caption": "Encuestas en :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Todas las vacantes",
                 "apply_filter": "Aplicar filtros",
                 "period_label": "Período: :from a :to",
+                "period_from": "Desde el :date",
+                "period_to": "Hasta el :date",
                 "total_applications": "Total de solicitudes",
                 "hiring_velocity": "Tiempo promedio de contratación",
                 "days": "días",
@@ -9079,6 +9116,7 @@
                 "submit": "Enviar mensaje de voz",
                 "no_audio_support": "Tu navegador no puede reproducir este clip de audio.",
                 "transcript_toggle": "Mostrar transcripción",
+                "player_label": "Mensaje de voz",
                 "error_required": "Elige un archivo de audio para enviar como mensaje de voz.",
                 "error_failed": "No se pudo enviar tu mensaje de voz. Inténtalo de nuevo."
             },
@@ -9801,7 +9839,7 @@
                 "request_description": "Ingrese la dirección de correo electrónico del miembro que desea vincular. Ya deben tener una cuenta en esta comunidad.",
                 "request_max": "Puede administrar hasta :count cuentas vinculadas.",
                 "email_label": "Dirección de correo electrónico",
-                "email_hint": "Por ejemplo, nombre@ejemplo.com",
+                "email_hint": "Por ejemplo, nombre@example.com",
                 "request_button": "Enviar solicitud de enlace"
             },
             "appearance": {
@@ -10160,9 +10198,9 @@
                 "description_label": "Descripción",
                 "description_hint": "Dígales a los voluntarios qué hace su organización.",
                 "contact_email_label": "Correo electrónico de contacto",
-                "contact_email_hint": "Por ejemplo, contacto@ejemplo.org",
+                "contact_email_hint": "Por ejemplo, contacto@example.org",
                 "website_label": "Sitio web",
-                "website_hint": "Por ejemplo, https://ejemplo.org",
+                "website_hint": "Por ejemplo, https://example.org",
                 "save_button": "Guardar configuración",
                 "saved": "La configuración de su organización se ha guardado.",
                 "save_failed": "No se pudo guardar su configuración. Por favor inténtalo de nuevo.",

@@ -265,6 +265,41 @@ return [
         ],
     ],
 
+    // Badge metadata vocabularies: rarity mirrors the badges table enum;
+    // types mirror GamificationService::getBadgeDefinitions()'s 'type' values.
+    'badge_rarity' => [
+        'common' => 'Common',
+        'uncommon' => 'Uncommon',
+        'rare' => 'Rare',
+        'epic' => 'Epic',
+        'legendary' => 'Legendary',
+    ],
+    'badge_types' => [
+        '5star' => 'Five-star reviews',
+        'connection' => 'Connections',
+        'diversity' => 'Helping different people',
+        'earn' => 'Credits earned',
+        'event_attend' => 'Attending events',
+        'event_host' => 'Hosting events',
+        'group_create' => 'Founding groups',
+        'group_join' => 'Joining groups',
+        'level' => 'Levels',
+        'likes_received' => 'Likes received',
+        'membership' => 'Membership',
+        'message' => 'Messages',
+        'offer' => 'Offers',
+        'post' => 'Posts',
+        'profile' => 'Profile',
+        'request' => 'Requests',
+        'review_given' => 'Reviews given',
+        'special' => 'Special',
+        'spend' => 'Credits spent',
+        'streak' => 'Streaks',
+        'transaction' => 'Exchanges',
+        'vol' => 'Volunteering',
+        'vol_org' => 'Volunteering with organisations',
+    ],
+
     // ---------------------------------------------------------------
     //  RANKED POLLS
     // ---------------------------------------------------------------

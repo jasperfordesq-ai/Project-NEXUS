@@ -30,26 +30,39 @@ const COURSE_LEVELS = ['beginner', 'intermediate', 'advanced'];
 const COURSE_VISIBILITIES = ['members', 'public'];
 const COURSE_ENROLLMENT_TYPES = ['self_paced', 'cohort'];
 const LESSON_CONTENT_TYPES = ['text', 'video', 'pdf', 'embed'];
-const COURSE_LEVEL_LABELS = {
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced'
+// 🔴 These four maps held English words ('Beginner', 'Members only', 'Self-paced',
+// 'Video lesson') and were rendered straight into the page in every language,
+// while their translated twins already existed unused. Keys only from here on;
+// an unknown enum value falls back to the raw slug rather than a fake-English
+// capitalisation.
+const COURSE_LEVEL_LABEL_KEYS = {
+  beginner: 'govuk_alpha.courses.levels.beginner',
+  intermediate: 'govuk_alpha.courses.levels.intermediate',
+  advanced: 'govuk_alpha.courses.levels.advanced'
 };
-const COURSE_VISIBILITY_LABELS = {
-  members: 'Members only',
-  public: 'Anyone'
+const COURSE_VISIBILITY_LABEL_KEYS = {
+  members: 'govuk_alpha_commerce.instructor.visibility_members',
+  public: 'govuk_alpha_commerce.instructor.visibility_public'
 };
-const COURSE_ENROLLMENT_LABELS = {
-  self_paced: 'Self-paced',
-  cohort: 'Scheduled cohort'
+const COURSE_ENROLLMENT_LABEL_KEYS = {
+  self_paced: 'govuk_alpha_commerce.instructor.enrollment_self_paced',
+  cohort: 'govuk_alpha_commerce.instructor.enrollment_cohort'
 };
-const LESSON_CONTENT_TYPE_LABELS = {
-  text: 'Reading',
-  video: 'Video lesson',
-  pdf: 'Document',
-  embed: 'Interactive content',
-  quiz: 'Quiz'
+// learn.content_type_* (not builder.*) because it carries the same English words
+// these labels used to hardcode ('Video lesson', not builder's 'Video') and it
+// includes 'quiz', which the builder set deliberately lacks.
+const LESSON_CONTENT_TYPE_LABEL_KEYS = {
+  text: 'govuk_alpha_commerce.learn.content_type_text',
+  video: 'govuk_alpha_commerce.learn.content_type_video',
+  pdf: 'govuk_alpha_commerce.learn.content_type_pdf',
+  embed: 'govuk_alpha_commerce.learn.content_type_embed',
+  quiz: 'govuk_alpha_commerce.learn.content_type_quiz'
 };
+
+function enumLabel(keys, value) {
+  if (!value) return '';
+  return keys[value] ? translateForRequest(keys[value]) : value;
+}
 // 🔴 These held the English words and were rendered straight into the page, so an
 // instructor saw "Published" / "Awaiting review" / "Draft" whatever language they had
 // chosen. The translated set was already written for exactly this list and simply never
@@ -259,9 +272,13 @@ function routeStatus(query, map, t) {
 function costMeta(course) {
   const cost = Number(course.credit_cost || 0);
   const normalized = Number.isFinite(cost) ? Math.max(0, cost) : 0;
+  // Same translated price string the marketplace uses; 'Free' comes from the
+  // courses catalogue's own translated key.
   const label = normalized > 0
-    ? `${normalized.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })} time credits`
-    : 'Free';
+    ? translateForRequest('govuk_alpha_commerce.common.credits_price', {
+      credits: normalized.toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 })
+    })
+    : translateForRequest('govuk_alpha.courses.free');
   return {
     creditCost: normalized,
     costLabel: label,
@@ -279,8 +296,9 @@ function limitText(value, limit = 160) {
   return `${text.slice(0, Math.max(0, limit - 3)).trimEnd()}...`;
 }
 
-function titleFrom(value, fallback = 'Courses') {
-  return trimmed(value) || fallback;
+function titleFrom(value, fallback = null) {
+  // The default fallback is the translated catalogue title, not English 'Courses'.
+  return trimmed(value) || (fallback === null ? translateForRequest('govuk_alpha.courses.title') : fallback);
 }
 
 function normalizeCourse(course) {
@@ -295,12 +313,12 @@ function normalizeCourse(course) {
     description: trimmed(stripHtml(course.description)),
     excerpt: limitText(course.description || course.summary, 160),
     level,
-    levelLabel: COURSE_LEVEL_LABELS[level] || (level ? `${level.charAt(0).toUpperCase()}${level.slice(1)}` : ''),
+    levelLabel: enumLabel(COURSE_LEVEL_LABEL_KEYS, level),
     categoryId: positiveInteger(course.category_id),
     visibility: allowed(course.visibility, COURSE_VISIBILITIES, 'members'),
-    visibilityLabel: COURSE_VISIBILITY_LABELS[allowed(course.visibility, COURSE_VISIBILITIES, 'members')],
+    visibilityLabel: enumLabel(COURSE_VISIBILITY_LABEL_KEYS, allowed(course.visibility, COURSE_VISIBILITIES, 'members')),
     enrollmentType: allowed(course.enrollment_type, COURSE_ENROLLMENT_TYPES, 'self_paced'),
-    enrollmentTypeLabel: COURSE_ENROLLMENT_LABELS[allowed(course.enrollment_type, COURSE_ENROLLMENT_TYPES, 'self_paced')],
+    enrollmentTypeLabel: enumLabel(COURSE_ENROLLMENT_LABEL_KEYS, allowed(course.enrollment_type, COURSE_ENROLLMENT_TYPES, 'self_paced')),
     authorName: trimmed(course.author && course.author.name) || trimmed(course.author_name),
     isEnrolled: !!course.is_enrolled,
     ratingAvg: Number(course.rating_avg || 0),
@@ -371,7 +389,7 @@ function normalizeLesson(lesson, progress = { completed: new Set(), available: n
     id,
     title: titleFrom(lesson.title, 'Lesson'),
     contentType,
-    contentTypeLabel: LESSON_CONTENT_TYPE_LABELS[contentType] || contentType,
+    contentTypeLabel: enumLabel(LESSON_CONTENT_TYPE_LABEL_KEYS, contentType),
     body: sanitizeCmsHtml(lesson.body),
     videoUrl: trimmed(lesson.video_url),
     embedUrl: trimmed(lesson.embed_url),
@@ -481,6 +499,17 @@ function normalizeInstructorCourse(course) {
   };
 }
 
+// Intl's percent style owns the digits AND the sign placement — the tiles
+// previously appended a literal '%', which is wrong for Arabic and Japanese
+// (mirrors the matches.js stats approach). Values arrive as 0–100 percentages.
+function percentTileLabel(value) {
+  const number = Number(value);
+  return new Intl.NumberFormat(getRequestIntlLocale(), {
+    style: 'percent',
+    maximumFractionDigits: 1
+  }).format((Number.isFinite(number) ? number : 0) / 100);
+}
+
 function normalizeAnalytics(result, t) {
   const data = objectFrom(result);
   const enrollments = data.enrollments && typeof data.enrollments === 'object' ? data.enrollments : {};
@@ -504,9 +533,9 @@ function normalizeAnalytics(result, t) {
       { label: t('govuk_alpha_courses.analytics.active'), value: analytics.active },
       { label: t('govuk_alpha_courses.analytics.completed'), value: analytics.completed },
       { label: t('govuk_alpha_courses.analytics.dropped'), value: analytics.dropped },
-      { label: t('govuk_alpha_courses.analytics.completion_rate'), value: `${analytics.completionRate}%` },
-      { label: t('govuk_alpha_courses.analytics.avg_progress'), value: `${analytics.avgProgress}%` },
-      { label: t('govuk_alpha_courses.analytics.avg_quiz_score'), value: `${analytics.avgQuizScore}%` },
+      { label: t('govuk_alpha_courses.analytics.completion_rate'), value: percentTileLabel(analytics.completionRate) },
+      { label: t('govuk_alpha_courses.analytics.avg_progress'), value: percentTileLabel(analytics.avgProgress) },
+      { label: t('govuk_alpha_courses.analytics.avg_quiz_score'), value: percentTileLabel(analytics.avgQuizScore) },
       { label: t('govuk_alpha_courses.analytics.quiz_attempts'), value: analytics.quizAttempts }
     ],
     perLesson: perLesson.map((row) => ({
@@ -693,7 +722,7 @@ router.get('/', asyncRoute(async (req, res) => {
       coursesQuery: query.q,
       courseCategoryId: query.categoryId,
       courseLevel: query.level,
-      levels: COURSE_LEVELS.map((level) => ({ value: level, label: COURSE_LEVEL_LABELS[level] }))
+      levels: COURSE_LEVELS.map((level) => ({ value: level, label: enumLabel(COURSE_LEVEL_LABEL_KEYS, level) }))
     });
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
@@ -767,10 +796,12 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
       course,
       formAction: '/courses/instructor/new',
       categories: await courseCategories(token),
-      levels: COURSE_LEVELS.map((level) => ({ value: level, label: COURSE_LEVEL_LABELS[level] })),
-      visibilities: COURSE_VISIBILITIES.map((value) => ({ value, label: COURSE_VISIBILITY_LABELS[value] })),
-      enrollmentTypes: COURSE_ENROLLMENT_TYPES.map((value) => ({ value, label: COURSE_ENROLLMENT_LABELS[value] })),
-      contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value, label: LESSON_CONTENT_TYPE_LABELS[value] })),
+      // The course form template translates each option label itself from the
+      // option's value; the English `label` fields it never read are gone.
+      levels: COURSE_LEVELS.map((value) => ({ value })),
+      visibilities: COURSE_VISIBILITIES.map((value) => ({ value })),
+      enrollmentTypes: COURSE_ENROLLMENT_TYPES.map((value) => ({ value })),
+      contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value })),
       builderSections: [],
       builderUnsectioned: [],
       status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)
@@ -807,10 +838,12 @@ router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
       course,
       formAction: `/courses/instructor/${req.params.id}/update`,
       categories,
-      levels: COURSE_LEVELS.map((level) => ({ value: level, label: COURSE_LEVEL_LABELS[level] })),
-      visibilities: COURSE_VISIBILITIES.map((value) => ({ value, label: COURSE_VISIBILITY_LABELS[value] })),
-      enrollmentTypes: COURSE_ENROLLMENT_TYPES.map((value) => ({ value, label: COURSE_ENROLLMENT_LABELS[value] })),
-      contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value, label: LESSON_CONTENT_TYPE_LABELS[value] })),
+      // The course form template translates each option label itself from the
+      // option's value; the English `label` fields it never read are gone.
+      levels: COURSE_LEVELS.map((value) => ({ value })),
+      visibilities: COURSE_VISIBILITIES.map((value) => ({ value })),
+      enrollmentTypes: COURSE_ENROLLMENT_TYPES.map((value) => ({ value })),
+      contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value })),
       builderSections: payload.sections,
       builderUnsectioned: [],
       status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)

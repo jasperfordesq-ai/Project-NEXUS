@@ -44,15 +44,17 @@
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.slots.window_label") }}</th>
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.slots.capacity_label") }}</th>
-          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.view") }}</span></th>
+          {# Header names the action (Edit), and the first cell is the row
+             header — see coupons.njk. #}
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.slots.action_edit") }}</span></th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
         {% for slot in slots %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <strong>{{ slot.slotStartLabel }}</strong><br>
-              <span class="govuk-body-s nexus-alpha-meta">{{ slot.slotEndLabel }}</span>
+            <th scope="row" class="govuk-table__header">
+              {{ slot.slotStartLabel }}<br>
+              <span class="govuk-body-s nexus-alpha-meta govuk-!-font-weight-regular">{{ slot.slotEndLabel }}</span>
               <div class="govuk-!-margin-top-1">
                 {% if slot.isRecurring %}
                   {{ govukTag({ text: t("govuk_alpha_commerce.slots.recurring"), classes: "govuk-tag--blue" }) }}
@@ -61,13 +63,13 @@
                   {{ govukTag({ text: t("govuk_alpha_commerce.slots.inactive"), classes: "govuk-tag--yellow" }) }}
                 {% endif %}
               </div>
-            </td>
+            </th>
             <td class="govuk-table__cell">
               {{ t("govuk_alpha_commerce.slots.capacity_value", { booked: slot.booked, capacity: slot.capacity }) }}<br>
               <span class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.slots.remaining_value", { count: slot.remaining }) }}</span>
             </td>
             <td class="govuk-table__cell">
-              <a class="govuk-link" href="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.slots.action_edit") }}</a>
+              <a class="govuk-link" href="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.slots.action_edit") }}<span class="govuk-visually-hidden"> — {{ slot.slotStartLabel }}</span></a>
             </td>
           </tr>
         {% endfor %}

@@ -11,7 +11,9 @@
       <h1 class="govuk-heading-xl">{{ t("legal.hub_title") if t else title }}</h1>
       <p class="govuk-body-l">{{ t("legal.hub_intro", { name: communityName }) }}</p>
 
-      <div class="nexus-alpha-card-list" aria-label="{{ t("polish_federation.legal_hub_list_label") }}">
+      {# section, not a bare div: aria-label is prohibited on role-less generic
+         elements and was silently ignored. #}
+      <section class="nexus-alpha-card-list" aria-label="{{ t("polish_federation.legal_hub_list_label") }}">
         {% for document in documents %}
           <article class="nexus-alpha-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
@@ -20,7 +22,7 @@
             <p class="govuk-body govuk-!-margin-bottom-0">{{ document.summary }}</p>
           </article>
         {% endfor %}
-      </div>
+      </section>
     </div>
   </div>
 {% endblock %}

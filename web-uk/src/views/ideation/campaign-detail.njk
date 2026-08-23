@@ -107,7 +107,7 @@
       <div class="govuk-details__text">
         <div class="govuk-warning-text">
           <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-          <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.common.error_prefix") }}</span>{{ t("govuk_alpha_ideation.campaigns.delete_warning") }}</strong>
+          <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_ideation.campaigns.delete_warning") }}</strong>
         </div>
         <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/delete') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">

@@ -90,7 +90,7 @@ return [
         'request_description' => 'Wpisz adres e-mail członka, którego chcesz połączyć. Muszą mieć już konto w tej społeczności.',
         'request_max' => 'Możesz zarządzać maksymalnie połączonymi kontami :count.',
         'email_label' => 'Adres e-mail',
-        'email_hint' => 'Na przykład nazwa@przykład.com',
+        'email_hint' => 'Na przykład nazwa@example.com',
         'request_button' => 'Wyślij prośbę o połączenie',
     ],
     'appearance' => [

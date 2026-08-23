@@ -90,7 +90,7 @@ return [
         'request_description' => 'Ingrese la dirección de correo electrónico del miembro que desea vincular. Ya deben tener una cuenta en esta comunidad.',
         'request_max' => 'Puede administrar hasta :count cuentas vinculadas.',
         'email_label' => 'Dirección de correo electrónico',
-        'email_hint' => 'Por ejemplo, nombre@ejemplo.com',
+        'email_hint' => 'Por ejemplo, nombre@example.com',
         'request_button' => 'Enviar solicitud de enlace',
     ],
     'appearance' => [

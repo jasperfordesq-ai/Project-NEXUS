@@ -1252,7 +1252,7 @@
                 "not_available": "Niet beschikbaar",
                 "validation": {
                     "required": "Voer :field in",
-                    "email": "Voer een e-mailadres in het juiste formaat in, zoals naam@voorbeeld.com",
+                    "email": "Voer een e-mailadres in het juiste formaat in, zoals naam@example.com",
                     "min_length": ":field moet :min tekens of meer bevatten",
                     "max_length": ":field moet :max tekens of minder bevatten",
                     "matches": ":field moet overeenkomen met :other",
@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Gemeenschapscode",
                 "community_code_hint": "De code voor uw community, bijvoorbeeld 'acme'.",
+                "community_code_required": "Voer uw gemeenschapscode in",
                 "resend_email_label": "E-mailadres",
                 "resend_verification_hint": "We sturen een nieuwe verificatielink naar dit adres als een account nog geverifieerd moet worden.",
                 "resend_verification_button": "Verificatie-e-mail opnieuw sturen",
@@ -2974,6 +2975,7 @@
                 "score_column": "Scoren",
                 "insights_title": "Hoe u kunt verbeteren",
                 "unavailable": "Uw score is nog niet beschikbaar. Neem deel aan de gemeenschap en kom binnenkort terug.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Betrokkenheid",
                     "quality": "Kwaliteit",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Privé — mensen vragen om lid te worden en een beheerder keurt hen goed",
                     "tags_label": "Tags (optioneel)",
                     "tags_hint": "Scheid tags met komma's, bijvoorbeeld tuinieren, koken.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Omslagafbeelding (optioneel)",
                     "cover_hint": "Gebruik een JPG-, PNG-, GIF- of WEBP-afbeelding.",
                     "submit": "Groep aanmaken",
@@ -7807,6 +7810,38 @@
                     "legendary": "Legendarisch"
                 }
             },
+            "badge_rarity": {
+                "common": "Gewoon",
+                "uncommon": "Ongewoon",
+                "rare": "Zeldzaam",
+                "epic": "Episch",
+                "legendary": "Legendarisch"
+            },
+            "badge_types": {
+                "5star": "Vijfsterrenbeoordelingen",
+                "connection": "Connecties",
+                "diversity": "Verschillende mensen helpen",
+                "earn": "Verdiende tijdtegoeden",
+                "event_attend": "Deelname aan evenementen",
+                "event_host": "Evenementen organiseren",
+                "group_create": "Groepen oprichten",
+                "group_join": "Lid worden van groepen",
+                "level": "Niveaus",
+                "likes_received": "Ontvangen likes",
+                "membership": "Lidmaatschap",
+                "message": "Berichten",
+                "offer": "Aanbiedingen",
+                "post": "Geplaatste berichten",
+                "profile": "Profiel",
+                "request": "Verzoeken",
+                "review_given": "Gegeven beoordelingen",
+                "special": "Speciaal",
+                "spend": "Uitgegeven tijdtegoeden",
+                "streak": "Reeksen",
+                "transaction": "Uitwisselingen",
+                "vol": "Vrijwilligerswerk",
+                "vol_org": "Vrijwilligerswerk bij organisaties"
+            },
             "ranked": {
                 "title": "Poll met gerangschikte keuze",
                 "caption": "Peilingen op :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Alle vacatures",
                 "apply_filter": "Filters toepassen",
                 "period_label": "Periode: :from tot :to",
+                "period_from": "Vanaf :date",
+                "period_to": "Tot :date",
                 "total_applications": "Totaal sollicitaties",
                 "hiring_velocity": "Gemiddelde aanwervingstijd",
                 "days": "dagen",
@@ -9079,6 +9116,7 @@
                 "submit": "Spraakbericht verzenden",
                 "no_audio_support": "Uw browser kan dit audiofragment niet afspelen.",
                 "transcript_toggle": "Transcriptie tonen",
+                "player_label": "Spraakbericht",
                 "error_required": "Kies een audiobestand om als spraakbericht te verzenden.",
                 "error_failed": "Uw spraakbericht kon niet worden verzonden. Probeer het opnieuw."
             },
@@ -9801,7 +9839,7 @@
                 "request_description": "Voer het e-mailadres in van het lid dat u wilt koppelen. Ze moeten al een account hebben in deze community.",
                 "request_max": "U kunt maximaal :count gekoppelde accounts beheren.",
                 "email_label": "E-mailadres",
-                "email_hint": "Bijvoorbeeld naam@voorbeeld.com",
+                "email_hint": "Bijvoorbeeld naam@example.com",
                 "request_button": "Linkverzoek verzenden"
             },
             "appearance": {
@@ -10160,7 +10198,7 @@
                 "description_label": "Beschrijving",
                 "description_hint": "Vertel vrijwilligers wat uw organisatie doet.",
                 "contact_email_label": "E-mailadres voor contact",
-                "contact_email_hint": "Bijvoorbeeld contact@voorbeeld.org",
+                "contact_email_hint": "Bijvoorbeeld contact@example.org",
                 "website_label": "Website",
                 "website_hint": "Bijvoorbeeld https://example.org",
                 "save_button": "Instellingen opslaan",

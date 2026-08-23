@@ -1252,7 +1252,7 @@
                 "not_available": "Non disponible",
                 "validation": {
                     "required": "Saisissez :field",
-                    "email": "Saisissez une adresse e-mail au format correct, comme nom@exemple.com",
+                    "email": "Saisissez une adresse e-mail au format correct, comme nom@example.com",
                     "min_length": ":field doit contenir :min caractères ou plus",
                     "max_length": ":field doit contenir :max caractères ou moins",
                     "matches": ":field doit correspondre à :other",
@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Code communautaire",
                 "community_code_hint": "Le code de votre communauté, par exemple « acme ».",
+                "community_code_required": "Saisissez votre code communautaire",
                 "resend_email_label": "Adresse e-mail",
                 "resend_verification_hint": "Nous enverrons un nouveau lien de vérification à cette adresse si un compte doit être vérifié.",
                 "resend_verification_button": "Renvoyer l'e-mail de vérification",
@@ -2974,6 +2975,7 @@
                 "score_column": "Score",
                 "insights_title": "Comment s'améliorer",
                 "unavailable": "Votre score n'est pas encore disponible. Participez à la communauté et revenez bientôt.",
+                "progress_label": ":category : :percent",
                 "categories": {
                     "engagement": "Participation",
                     "quality": "Qualité",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Privé — les personnes demandent à rejoindre et un administrateur les approuve",
                     "tags_label": "Tags (facultatif)",
                     "tags_hint": "Séparez les tags par des virgules, par exemple jardinage, cuisine.",
+                    "tags_line": ":label : :tags",
                     "cover_label": "Image de couverture (facultatif)",
                     "cover_hint": "Utilisez une image JPG, PNG, GIF ou WEBP.",
                     "submit": "Créer le groupe",
@@ -7807,6 +7810,38 @@
                     "legendary": "Légendaire"
                 }
             },
+            "badge_rarity": {
+                "common": "Courant",
+                "uncommon": "Peu courant",
+                "rare": "Rare",
+                "epic": "Épique",
+                "legendary": "Légendaire"
+            },
+            "badge_types": {
+                "5star": "Avis cinq étoiles",
+                "connection": "Connexions",
+                "diversity": "Aider des personnes différentes",
+                "earn": "Crédits gagnés",
+                "event_attend": "Participation aux événements",
+                "event_host": "Organisation d'événements",
+                "group_create": "Création de groupes",
+                "group_join": "Adhésion à des groupes",
+                "level": "Niveaux",
+                "likes_received": "Mentions « J’aime » reçues",
+                "membership": "Adhésion",
+                "message": "Messages envoyés",
+                "offer": "Offres",
+                "post": "Publications",
+                "profile": "Profil",
+                "request": "Demandes",
+                "review_given": "Avis donnés",
+                "special": "Spécial",
+                "spend": "Crédits dépensés",
+                "streak": "Séries",
+                "transaction": "Échanges",
+                "vol": "Bénévolat",
+                "vol_org": "Bénévolat avec des organisations"
+            },
             "ranked": {
                 "title": "Sondage à choix classé",
                 "caption": "Sondages à :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Toutes les offres",
                 "apply_filter": "Appliquer les filtres",
                 "period_label": "Période : :from au :to",
+                "period_from": "À partir du :date",
+                "period_to": "Jusqu'au :date",
                 "total_applications": "Total des candidatures",
                 "hiring_velocity": "Délai moyen d'embauche",
                 "days": "jours",
@@ -9079,6 +9116,7 @@
                 "submit": "Envoyer le message vocal",
                 "no_audio_support": "Votre navigateur ne peut pas lire cet extrait audio.",
                 "transcript_toggle": "Afficher la transcription",
+                "player_label": "Message vocal",
                 "error_required": "Choisissez un fichier audio à envoyer comme message vocal.",
                 "error_failed": "Votre message vocal n'a pas pu être envoyé. Veuillez réessayer."
             },
@@ -9801,7 +9839,7 @@
                 "request_description": "Saisissez l'adresse e-mail du membre que vous souhaitez associer. Ils doivent déjà avoir un compte dans cette communauté.",
                 "request_max": "Vous pouvez gérer jusqu'à :count comptes liés.",
                 "email_label": "Adresse email",
-                "email_hint": "Par exemple, nom@exemple.com",
+                "email_hint": "Par exemple, nom@example.com",
                 "request_button": "Envoyer une demande de lien"
             },
             "appearance": {

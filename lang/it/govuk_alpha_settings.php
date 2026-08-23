@@ -90,7 +90,7 @@ return [
         'request_description' => 'Inserisci l\'indirizzo email del membro che desideri collegare. Devono già avere un account in questa comunità.',
         'request_max' => 'Puoi gestire fino a :count account collegati.',
         'email_label' => 'Indirizzo e-mail',
-        'email_hint' => 'Ad esempio, nome@esempio.com',
+        'email_hint' => 'Ad esempio, nome@example.com',
         'request_button' => 'Invia richiesta di collegamento',
     ],
     'appearance' => [

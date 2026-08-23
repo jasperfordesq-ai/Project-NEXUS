@@ -58,7 +58,7 @@ return [
         'type_label' => 'Anhangstyp',
         'type_image' => 'Bild',
         'type_video' => 'Video',
-        'type_document' => 'Dokumentieren',
+        'type_document' => 'Dokument',
         'type_link' => 'Link',
         'url_label' => 'Webadresse (URL)',
         'url_hint' => 'Fügen Sie einen Link zu einem Bild, Video, Dokument oder einer Webseite ein.',

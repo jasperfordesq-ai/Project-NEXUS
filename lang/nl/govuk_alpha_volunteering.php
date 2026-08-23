@@ -81,7 +81,7 @@ return [
         'description_label' => 'Beschrijving',
         'description_hint' => 'Vertel vrijwilligers wat uw organisatie doet.',
         'contact_email_label' => 'E-mailadres voor contact',
-        'contact_email_hint' => 'Bijvoorbeeld contact@voorbeeld.org',
+        'contact_email_hint' => 'Bijvoorbeeld contact@example.org',
         'website_label' => 'Website',
         'website_hint' => 'Bijvoorbeeld https://example.org',
         'save_button' => 'Instellingen opslaan',

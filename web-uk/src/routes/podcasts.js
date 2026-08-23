@@ -243,13 +243,6 @@ function limitedText(value, limit) {
   return text.length > limit ? `${text.slice(0, Math.max(0, limit - 3)).trimEnd()}...` : text;
 }
 
-function episodeCountLabel(count) {
-  const number = Number.isFinite(Number(count)) ? Number(count) : 0;
-  if (number === 0) return 'No episodes';
-  if (number === 1) return '1 episode';
-  return `${number} episodes`;
-}
-
 function decorateShow(show) {
   const row = show && typeof show === 'object' ? show : {};
   const id = positiveInteger(row.id);
@@ -274,7 +267,6 @@ function decorateShow(show) {
     rssUrl: backendRelativeUrl(row.rss_url),
     rssEnabled: Boolean(row.rss_enabled) && backendRelativeUrl(row.rss_url),
     episodeCount: Number.isFinite(Number(episodeCount)) ? Number(episodeCount) : 0,
-    episodeCountLabel: episodeCountLabel(episodeCount),
     status,
     statusLabel: SHOW_STATUS_KEYS[status] ? translateForRequest(SHOW_STATUS_KEYS[status]) : status,
     statusTag: SHOW_STATUS_TAGS[status] || 'govuk-tag--grey',

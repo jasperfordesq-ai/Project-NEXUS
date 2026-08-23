@@ -408,10 +408,27 @@ function safeRelativeOrAbsoluteUrl(value) {
   return resolveBackendMediaUrl(value);
 }
 
+// Intl's currency style owns the code placement, digits and separators — the
+// old `${code} ${formatted}` put the code before the amount in every language,
+// which is wrong for locales that write it after (German '15,50 GBP'). It also
+// knows each currency's minor units, so the zero-decimal list is only a
+// fallback for a code Intl rejects. NOTE: Intl separates code and amount with a
+// non-breaking space (U+00A0).
 function formatMoney(amount, currency = '') {
   const number = Number(amount);
   if (!Number.isFinite(number)) return '';
   const code = trimmed(currency, 3).toUpperCase();
+  if (code) {
+    try {
+      return new Intl.NumberFormat(getRequestIntlLocale(), {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'code'
+      }).format(number);
+    } catch {
+      // Not a currency code Intl recognises — fall through to the plain shape.
+    }
+  }
   const precision = ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 2;
   const formatted = new Intl.NumberFormat(getRequestIntlLocale(), {
     minimumFractionDigits: precision,
@@ -943,8 +960,6 @@ function decoratePickupSlot(slot) {
     capacity,
     booked,
     remaining,
-    capacityLabel: `${booked} of ${capacity} booked`,
-    remainingLabel: `${remaining} remaining`,
     isRecurring: booleanValue(row.is_recurring),
     isActive
   };
@@ -955,7 +970,13 @@ function discountLabel(coupon, req) {
   const value = Number(coupon.discount_value);
   const safeValue = Number.isFinite(value) ? value : 0;
   if (type === 'percent') {
-    return `${formatLocaleNumber(safeValue, req?.locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}%`;
+    // Intl's percent style owns the digits AND the sign placement — a literal
+    // '%' appended in code is wrong for Arabic and Japanese. Value is 0–100.
+    return formatLocaleNumber(safeValue / 100, req?.locale, {
+      style: 'percent',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
   }
   if (type === 'bogo') {
     return translateMarketplaceMessage(

@@ -244,7 +244,7 @@ return [
         'not_available' => 'Non disponibile',
         'validation' => [
             'required' => 'Inserisci :field',
-            'email' => 'Inserisci un indirizzo email nel formato corretto, ad esempio nome@esempio.com',
+            'email' => 'Inserisci un indirizzo email nel formato corretto, ad esempio nome@example.com',
             'min_length' => ':field deve contenere :min caratteri o più',
             'max_length' => ':field deve contenere :max caratteri o meno',
             'matches' => ':field deve corrispondere a :other',
@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'Codice comunitario',
         'community_code_hint' => 'Il codice per la tua comunità, ad esempio "acme".',
+        'community_code_required' => 'Inserisci il tuo codice comunitario',
         'resend_email_label' => 'Indirizzo email',
         'resend_verification_hint' => 'Invieremo un nuovo link di verifica a questo indirizzo se un account necessita di essere verificato.',
         'resend_verification_button' => 'Invia di nuovo l\'email di verifica',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'Punteggio',
         'insights_title' => 'Come migliorare',
         'unavailable' => 'Il tuo punteggio non è ancora disponibile. Partecipa alla comunità e ricontrolla presto.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Partecipazione',
             'quality' => 'Qualità',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'Privato — le persone chiedono di iscriversi e un amministratore le approva',
             'tags_label' => 'Tag (facoltativi)',
             'tags_hint' => 'Separa i tag con delle virgole, ad esempio giardinaggio, cucina.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Immagine di copertina (facoltativa)',
             'cover_hint' => 'Utilizza un\'immagine JPG, PNG, GIF o WEBP.',
             'submit' => 'Crea gruppo',

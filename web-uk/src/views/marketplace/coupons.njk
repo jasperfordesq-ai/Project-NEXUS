@@ -47,20 +47,24 @@
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.coupons.code_label") }}</th>
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.coupons.discount_label") }}</th>
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.coupons.status_label") }}</th>
-          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.view") }}</span></th>
+          {# The hidden column header must name what the cell DOES (Edit) —
+             it said "View" while the link said "Edit". #}
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.coupons.action_edit") }}</span></th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
         {% for coupon in coupons %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <strong>{{ coupon.title }}</strong><br>
-              <span class="govuk-body-s nexus-alpha-meta">{{ coupon.code }}</span>
-            </td>
+            {# Row header, not a bold cell: without it the row's Edit link has
+               no programmatically determined context (WCAG 2.4.4). #}
+            <th scope="row" class="govuk-table__header">
+              {{ coupon.title }}<br>
+              <span class="govuk-body-s nexus-alpha-meta govuk-!-font-weight-regular">{{ coupon.code }}</span>
+            </th>
             <td class="govuk-table__cell">{{ coupon.discountLabel }}</td>
             <td class="govuk-table__cell">{{ govukTag({ text: coupon.statusLabel, classes: (coupon.statusTagClass) }) }}</td>
             <td class="govuk-table__cell">
-              <a class="govuk-link" href="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.coupons.action_edit") }}</a>
+              <a class="govuk-link" href="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.coupons.action_edit") }}<span class="govuk-visually-hidden"> — {{ coupon.title }}</span></a>
             </td>
           </tr>
         {% endfor %}

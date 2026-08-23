@@ -11,6 +11,8 @@ return [
         'submit' => 'Enviar mensagem de voz',
         'no_audio_support' => 'O seu navegador não consegue reproduzir este clipe de áudio.',
         'transcript_toggle' => 'Mostrar transcrição',
+
+        'player_label' => 'Mensagem de voz',
         'error_required' => 'Escolha um ficheiro de áudio para enviar como mensagem de voz.',
         'error_failed' => 'Não foi possível enviar a sua mensagem de voz. Tente novamente.',
     ],

@@ -40,7 +40,7 @@
   </ul>
 
   <h2 class="govuk-heading-l">{{ t("event_templates.checklist_title") }}</h2>
-  <ul class="govuk-list govuk-list--tick">
+  <ul class="govuk-list govuk-list--bullet">
     {% for check in (preview.checklist or []) %}<li>{{ t("event_templates.checks." + check.code) }}</li>{% endfor %}
   </ul>
 

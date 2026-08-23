@@ -55,7 +55,7 @@
               <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">
-                  <span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span>
+                  <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
                   {{ t("govuk_alpha_goals.social.delete_comment_warning") }}
                 </strong>
               </div>
@@ -76,7 +76,7 @@
           <div class="govuk-warning-text">
             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
             <strong class="govuk-warning-text__text">
-              <span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span>
+              <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
               {{ t("govuk_alpha_goals.social.delete_comment_warning") }}
             </strong>
           </div>
@@ -130,7 +130,7 @@
 
   <section id="likes" class="govuk-!-margin-bottom-6">
     <h2 class="govuk-heading-l">{{ t("govuk_alpha_goals.social.likes_heading") }}</h2>
-    <p class="govuk-body nexus-alpha-meta govuk-!-margin-bottom-2" aria-live="polite">{{ likeCountLabel }}</p>
+    <p class="govuk-body nexus-alpha-meta govuk-!-margin-bottom-2">{{ likeCountLabel }}</p>
     <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/like') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button{% if not liked %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{% if liked %}true{% else %}false{% endif %}">
@@ -147,7 +147,7 @@
       {{ t("govuk_alpha_goals.social.comments_heading") }}
       <span class="govuk-!-font-weight-regular">({{ commentsTotal }})</span>
     </h2>
-    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3" aria-live="polite">{{ commentsTotalLabel }}</p>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">{{ commentsTotalLabel }}</p>
 
     {% if not comments.length %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_goals.social.comments_empty") }}</p></div>

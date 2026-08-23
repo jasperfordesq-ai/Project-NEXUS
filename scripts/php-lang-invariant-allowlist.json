@@ -59,7 +59,9 @@
     ":xp XP",
     "العربية",
     "日本語",
-    "⌘K"
+    "⌘K",
+    ":category: :percent",
+    ":label: :tags"
   ],
   "byLocale": {
     "de": [
@@ -96,6 +98,10 @@
       "Total"
     ],
     "fr": [
+      ":count minute",
+      ":count minutes",
+      ":count votes",
+      ":frequency cadence",
       "Article",
       "Article 9.",
       "Assistant",
@@ -127,6 +133,7 @@
       "Proportion",
       "Publication",
       "Question",
+      "Rare",
       "Respect",
       "Score",
       "Score (%)",
@@ -135,10 +142,6 @@
       "Total",
       "Urgent",
       "Version :version",
-      ":count minute",
-      ":count minutes",
-      ":count votes",
-      ":frequency cadence",
       "discussion",
       "option #:id",
       "page.",
@@ -153,6 +156,8 @@
       "Video"
     ],
     "nl": [
+      ":amount :currency per :period",
+      ":type interview",
       "Beginner",
       "Clubs",
       "Code",
@@ -179,8 +184,6 @@
       "Tip:",
       "Type",
       "Video",
-      ":amount :currency per :period",
-      ":type interview",
       "platform super-admin"
     ],
     "pl": [

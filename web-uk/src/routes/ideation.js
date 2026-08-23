@@ -6,6 +6,7 @@
 const express = require('express');
 const { callIdeationApi } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
+const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -404,18 +405,15 @@ function normalizeComment(item) {
 function normalizeMedia(item) {
   const row = item && typeof item === 'object' ? item : {};
   const type = trimmed(row.media_type ?? row.mediaType ?? row.type).toLowerCase();
-  const typeLabels = {
-    image: 'Image',
-    video: 'Video',
-    document: 'Document',
-    link: 'Link'
-  };
+  // The add-attachment form in this module already uses these translated keys;
+  // the display labels used to hardcode their English values.
+  const safeType = ['image', 'video', 'document', 'link'].includes(type) ? type : 'link';
   return {
     id: positiveInteger(row.id),
     url: trimmed(row.url),
     caption: trimmed(row.caption),
-    type: ['image', 'video', 'document', 'link'].includes(type) ? type : 'link',
-    typeLabel: typeLabels[type] || 'Link'
+    type: safeType,
+    typeLabel: translateForRequest(`govuk_alpha_ideation.media.type_${safeType}`)
   };
 }
 

@@ -162,7 +162,8 @@ describe("What's On index contract", () => {
     const response = await request(testApp()).get('/whats-on');
     const [timed, allDay] = response.body.locals.events;
 
-    expect(timed.whenLabel).toBe('4 September 2026, 6:30pm');
+    // Finding 17 (i18n audit): hour12 is no longer forced — en-GB renders its own 24-hour clock.
+    expect(timed.whenLabel).toBe('4 September 2026, 18:30');
     expect(allDay.whenLabel).toBe('4 September 2026');
   });
 });
@@ -200,8 +201,9 @@ describe("What's On detail contract", () => {
 
     expect(response.body.view).toBe('whats-on/detail');
     expect(response.body.locals.event.title).toBe('Community lunch');
-    expect(response.body.locals.startsAt).toBe('4 September 2026, 12:00pm');
-    expect(response.body.locals.endsAt).toBe('4 September 2026, 2:00pm');
+    // Finding 17 (i18n audit): en-GB renders its own 24-hour clock now that hour12 is not forced.
+    expect(response.body.locals.startsAt).toBe('4 September 2026, 12:00');
+    expect(response.body.locals.endsAt).toBe('4 September 2026, 14:00');
   });
 });
 

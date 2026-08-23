@@ -50,7 +50,7 @@
     </fieldset>
   </form>
 
-  <p class="govuk-body" aria-live="polite">{{ tc("govuk_alpha.events.people_result_count", total, { count: total }) }}</p>
+  <p class="govuk-body">{{ tc("govuk_alpha.events.people_result_count", total, { count: total }) }}</p>
   {% if people.length == 0 %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("govuk_alpha.events.people_empty") }}</div>
   {% else %}

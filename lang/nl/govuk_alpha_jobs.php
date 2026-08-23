@@ -240,6 +240,8 @@ return [
         'filter_all_jobs' => 'Alle vacatures',
         'apply_filter' => 'Filters toepassen',
         'period_label' => 'Periode: :from tot :to',
+        'period_from' => 'Vanaf :date',
+        'period_to' => 'Tot :date',
         'total_applications' => 'Totaal sollicitaties',
         'hiring_velocity' => 'Gemiddelde aanwervingstijd',
         'days' => 'dagen',

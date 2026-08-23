@@ -84,7 +84,7 @@
       <div class="nexus-alpha-stat"><dt>{{ t("volunteering.this_month_hours") }}</dt><dd>{{ hoursSummaryLabels.thisMonth }}</dd></div>
     </dl>
     <h2 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-2">{{ t("vol_org.tools_title") }}</h2>
-    <ul class="govuk-list govuk-list--inline govuk-!-margin-bottom-4">
+    <ul class="govuk-list nexus-alpha-filter-nav govuk-!-margin-bottom-4">
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/hours') }}">{{ t("volunteering.log_hours_title") }}</a></li>
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/accessibility') }}">{{ t("volunteering.accessibility_link") }}</a></li>
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/certificates') }}">{{ t("vol_depth.certificates_link") }}</a></li>
@@ -95,7 +95,7 @@
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/donations') }}">{{ t("govuk_alpha_volunteering.donations.nav_link") }}</a></li>
     </ul>
     <nav class="govuk-!-margin-top-6 govuk-!-margin-bottom-4" aria-label="{{ t('volunteering.tabs_title') }}">
-      <ul class="govuk-list govuk-list--inline">
+      <ul class="govuk-list nexus-alpha-filter-nav">
         <li><a class="govuk-link{% if selectedTab == 'opportunities' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering') }}"{% if selectedTab == 'opportunities' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.opportunities") }}</a></li>
         <li><a class="govuk-link{% if selectedTab == 'applications' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=applications') }}"{% if selectedTab == 'applications' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.applications") }}</a></li>
         <li><a class="govuk-link{% if selectedTab == 'recommended' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=recommended') }}"{% if selectedTab == 'recommended' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.recommended") }}</a></li>
@@ -258,7 +258,7 @@
   </form>
 
   <h2 class="govuk-heading-l">{{ t("volunteering.results_title") }}</h2>
-  <p class="govuk-body nexus-alpha-result-count" aria-live="polite">
+  <p class="govuk-body nexus-alpha-result-count">
     {{ tc("volunteering.result_count", opportunities.length, { count: opportunities.length }) }}
   </p>
 

@@ -76,7 +76,7 @@
         {% endif %}
 
         <p class="govuk-body-s nexus-alpha-meta">
-          {{ item.likeLabel }} &middot; {{ item.commentLabel }}
+          {{ tc("govuk_alpha_feed.engagement.likes", item.likeCount, { count: item.likeCount }) }} &middot; {{ tc("govuk_alpha_feed.engagement.comments", item.commentCount, { count: item.commentCount }) }}
         </p>
 
         {% if not requiresAuth %}

@@ -21,12 +21,22 @@
       </div>
     </div>
   {% elif status %}
-    <div class="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner govuk-notification-banner--success{% endif %}" data-module="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner{% endif %}"{% if status.type != 'error' %} role="alert" aria-labelledby="commerce-buy-status-title"{% endif %} tabindex="-1">
-      <div{% if status.type == 'error' %} role="alert"{% endif %}>
-        <h2 class="{% if status.type == 'error' %}govuk-error-summary__title{% else %}govuk-notification-banner__title{% endif %}"{% if status.type != 'error' %} id="commerce-buy-status-title"{% endif %}>{{ t("govuk_alpha_commerce.common.error_title") if status.type == 'error' else t("govuk_alpha.states.success_title") }}</h2>
-        <div class="{% if status.type == 'error' %}govuk-error-summary__body{% else %}govuk-notification-banner__content{% endif %}"><p class="govuk-body">{{ status.message }}</p></div>
+    {% if status.type == 'error' %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ status.message }}</p></div>
+        </div>
       </div>
-    </div>
+    {% else %}
+      {# __header carries the green band — see marketplace/_status-banner.njk. #}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="commerce-buy-status-title" tabindex="-1">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="commerce-buy-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ status.message }}</p></div>
+      </div>
+    {% endif %}
   {% endif %}
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.buy.caption", { community: tenantName or serviceName }) }}</span>
@@ -64,7 +74,7 @@
 
   {% set selectedPayment = oldInput.payment_method or ('' if item.price > 0 and item.timeCreditPrice > 0 else ('cash' if item.price > 0 else ('time_credits' if item.timeCreditPrice > 0 else 'free'))) %}
   {% if selectedPayment == 'cash' %}
-    <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>{{ t("govuk_alpha_commerce.buy.warning") }}</strong></div>
+    <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_commerce.buy.warning") }}</strong></div>
   {% endif %}
 
   <form method="post" action="{{ urlFor(formAction or ('/marketplace/' + (item.id | string) + '/buy')) }}" novalidate>

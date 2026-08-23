@@ -123,7 +123,9 @@
                   {% endif %}
 
                   {% if (message.is_voice or message.isVoice) and message.audioAssetUrl %}
-                    <audio controls preload="none" src="{{ message.audioAssetUrl }}">
+                    {# The player needs an accessible name like the podcast
+                       players already have. #}
+                    <audio controls preload="none" src="{{ message.audioAssetUrl }}" aria-label="{{ t('govuk_alpha_messages.voice.player_label') }}">
                       {{ t("govuk_alpha_messages.voice.no_audio_support") }}
                     </audio>
                     {% if message.transcript %}

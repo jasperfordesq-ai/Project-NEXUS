@@ -1017,7 +1017,7 @@
             "service_name": "Project NEXUS Accessible",
             "phase": "ベータ版",
             "feedback": "フィードバックを送信する",
-            "feedback_url": "mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20フィードバック",
+            "feedback_url": "mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback",
             "cookie_banner": {
                 "aria_label": ":service のクッキー",
                 "heading": ":service のクッキー",
@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "コミュニティコード",
                 "community_code_hint": "コミュニティのコード (例: 「acme」)。",
+                "community_code_required": "コミュニティコードを入力してください",
                 "resend_email_label": "メールアドレス",
                 "resend_verification_hint": "確認が必要なアカウントがある場合、このアドレスに新しい確認リンクを送信します。",
                 "resend_verification_button": "確認メールを再送する",
@@ -2974,6 +2975,7 @@
                 "score_column": "スコア",
                 "insights_title": "改善するには",
                 "unavailable": "まだスコアはありません。コミュニティに参加して、後でまた確認してください。",
+                "progress_label": ":category：:percent",
                 "categories": {
                     "engagement": "参加度",
                     "quality": "クオリティ",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "非公開 — 参加申請を行い、管理者が承認します",
                     "tags_label": "タグ（任意）",
                     "tags_hint": "タグをカンマで区切って入力してください（例：ガーデニング、料理）。",
+                    "tags_line": ":label：:tags",
                     "cover_label": "カバー画像（任意）",
                     "cover_hint": "JPG、PNG、GIF、またはWEBP形式の画像を使用してください。",
                     "submit": "グループを作成する",
@@ -7807,6 +7810,38 @@
                     "legendary": "伝説の"
                 }
             },
+            "badge_rarity": {
+                "common": "コモン",
+                "uncommon": "アンコモン",
+                "rare": "レア",
+                "epic": "エピック",
+                "legendary": "レジェンダリー"
+            },
+            "badge_types": {
+                "5star": "5つ星レビュー",
+                "connection": "つながり",
+                "diversity": "さまざまな人への支援",
+                "earn": "獲得クレジット",
+                "event_attend": "イベント参加",
+                "event_host": "イベント主催",
+                "group_create": "グループ作成",
+                "group_join": "グループ参加",
+                "level": "レベル",
+                "likes_received": "受け取ったいいね",
+                "membership": "メンバーシップ",
+                "message": "メッセージ",
+                "offer": "提供",
+                "post": "投稿",
+                "profile": "プロフィール",
+                "request": "依頼",
+                "review_given": "投稿したレビュー",
+                "special": "特別",
+                "spend": "使用クレジット",
+                "streak": "連続記録",
+                "transaction": "交換",
+                "vol": "ボランティア活動",
+                "vol_org": "団体でのボランティア活動"
+            },
             "ranked": {
                 "title": "ランク付き投票",
                 "caption": ":community での投票",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "すべての求人",
                 "apply_filter": "フィルターを適用",
                 "period_label": "期間: :from から :to",
+                "period_from": ":date から",
+                "period_to": ":date まで",
                 "total_applications": "応募総数",
                 "hiring_velocity": "平均採用期間",
                 "days": "日",
@@ -9079,6 +9116,7 @@
                 "submit": "音声メッセージを送信する",
                 "no_audio_support": "お使いのブラウザはこの音声クリップを再生できません。",
                 "transcript_toggle": "文字起こしを表示",
+                "player_label": "音声メッセージ",
                 "error_required": "音声メッセージとして送信する音声ファイルを選択してください。",
                 "error_failed": "音声メッセージを送信できませんでした。もう一度お試しください。"
             },

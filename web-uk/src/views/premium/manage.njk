@@ -67,7 +67,7 @@
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.premium_manage.cancel_heading") }}</h2>
     <div class="govuk-warning-text">
       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span> {{ t("govuk_alpha_commerce.premium_manage.cancel_warning") }}</strong>
+      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span> {{ t("govuk_alpha_commerce.premium_manage.cancel_warning") }}</strong>
     </div>
     <form method="post" action="{{ urlFor('/premium/cancel') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">

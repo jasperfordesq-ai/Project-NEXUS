@@ -90,7 +90,7 @@ return [
         'request_description' => 'Voer het e-mailadres in van het lid dat u wilt koppelen. Ze moeten al een account hebben in deze community.',
         'request_max' => 'U kunt maximaal :count gekoppelde accounts beheren.',
         'email_label' => 'E-mailadres',
-        'email_hint' => 'Bijvoorbeeld naam@voorbeeld.com',
+        'email_hint' => 'Bijvoorbeeld naam@example.com',
         'request_button' => 'Linkverzoek verzenden',
     ],
     'appearance' => [

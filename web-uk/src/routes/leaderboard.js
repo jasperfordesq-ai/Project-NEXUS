@@ -6,6 +6,7 @@
 const express = require('express');
 const { callGamificationApi, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
@@ -177,12 +178,13 @@ function dateRangeLabel(startDate, endDate, t) {
 }
 
 function rewardValueLabel(value) {
+  // Display-only lists: locale list punctuation, not a hardcoded English ', '.
   if (Array.isArray(value)) {
-    return value.map(rewardValueLabel).filter(Boolean).join(', ');
+    return formatRequestList(value.map(rewardValueLabel));
   }
 
   if (value && typeof value === 'object') {
-    return Object.values(value).map(rewardValueLabel).filter(Boolean).join(', ');
+    return formatRequestList(Object.values(value).map(rewardValueLabel));
   }
 
   if (value === null || value === undefined) {

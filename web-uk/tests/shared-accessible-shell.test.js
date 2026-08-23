@@ -3520,8 +3520,8 @@ describe('shared accessible frontend shell', () => {
             earned_at: '2026-06-15T00:00:00Z',
             rarity: 'rare',
             xp_value: 250,
-            tier: { name: 'gold' },
-            type: 'impact',
+            tier: { name: 'expert' },
+            type: 'event_host',
             is_showcased: true
           }
         };
@@ -3552,9 +3552,9 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('XP value');
     expect(signed.text).toContain('250');
     expect(signed.text).toContain('Tier');
-    expect(signed.text).toContain('Gold');
+    expect(signed.text).toContain('Expert');
     expect(signed.text).toContain('Category');
-    expect(signed.text).toContain('Impact');
+    expect(signed.text).toContain('Hosting events');
     expect(signed.text).toContain('Showcased on your profile');
     expect(signed.text).toContain('View all achievements');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
@@ -7436,7 +7436,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Conversation with Avery Stone');
     expect(response.text).toContain('<strong>Last message:</strong>');
     expect(response.text).toContain('You:');
-    expect(response.text).toContain('9 July 2026, 10:00am');
+    expect(response.text).toContain('9 July 2026, 10:00');
     expect(response.text).not.toContain('[object Object]');
     expect(response.text).toContain('3 unread');
     expect(response.text).toContain('2 unread messages');
@@ -7497,7 +7497,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('Community member');
     expect(response.text).toContain('<strong>Last message:</strong>');
-    expect(response.text).toContain('8 July 2026, 9:15am');
+    expect(response.text).toContain('8 July 2026, 9:15');
     expect(response.text).not.toContain('No messages yet');
     expect(response.text).toContain('href="/messages/78"');
   });
@@ -10499,9 +10499,9 @@ describe('shared accessible frontend shell', () => {
     expect(pricing.text).toContain(t('premium.description'));
     expect(pricing.text).toContain('Community Champion');
     expect(pricing.text).toContain('Support local projects every month.');
-    expect(pricing.text).toContain(`€5.00</strong> ${t('premium.per_month')}`);
-    expect(pricing.text).toContain(`€50.00</strong> ${t('premium.per_year')}`);
-    expect(pricing.text.replace(/\s+/g, ' ')).toContain(`${t('premium.per_month')} · <strong>€50.00`);
+    expect(pricing.text).toContain(`5.00 €</strong> ${t('premium.per_month')}`);
+    expect(pricing.text).toContain(`50.00 €</strong> ${t('premium.per_year')}`);
+    expect(pricing.text.replace(/\s+/g, ' ')).toContain(`${t('premium.per_month')} · <strong>‏50.00 €`);
     expect(pricing.text).toContain('Supporter badge');
     expect(pricing.text).toContain(t('premium.states.subscribe-failed'));
 
@@ -11182,7 +11182,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain(t('govuk_alpha_search.saved.delete_summary'));
     expect(signed.text).toContain('Garden helpers');
     expect(signed.text).toContain('gardening');
-    expect(signed.text).toContain(t('govuk_alpha_search.states.error_title'));
+    expect(signed.text).toContain(t('states.warning'));
     expect(signed.text).toContain(t('govuk_alpha_search.saved.delete_warning'));
     expect(signed.text).toContain('action="/search/saved/12/delete"');
     expect(signed.text).toContain(t('govuk_alpha_search.saved.delete_confirm'));
@@ -13069,7 +13069,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community handbook');
     expect(response.text).toContain('PDF');
     expect(response.text).toContain('Avery Stone');
-    expect(response.text).toContain('1.5 KB');
+    expect(response.text).toContain('1.5 kB');
     expect(response.text).toContain('Downloads');
     expect(response.text).toContain('href="/resources/42/download"');
     // The delete link carries the active filters so the post-delete redirect
@@ -19951,7 +19951,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Application timeline');
     expect(response.text).toContain('Interview');
     expect(response.text).toContain('from Applied');
-    expect(response.text).toContain('2 July 2099, 10:30am');
+    expect(response.text).toContain('2 July 2099 at 10:30');
     expect(response.text).toContain('by Riley Casey');
     expect(response.text).toContain('Strong rota experience.');
     expect(response.text).not.toContain('Laravel Blade route');
@@ -25437,10 +25437,44 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('Enter an event description');
     expect(response.text).toContain('href="#description"');
+    // Each error belongs to ITS field only. selectattr's three-argument form
+    // silently filters on truthiness, so every field used to show the first
+    // error in the list — a good title was marked "Enter a title".
+    const titleGroup = response.text.match(/<div class="govuk-form-group[^"]*">\s*<label[^>]*for="title"[\s\S]*?<\/div>/)[0];
+    expect(titleGroup).not.toContain('govuk-form-group--error');
+    expect(titleGroup).not.toContain('Enter an event description');
     // datetime preserved across the error re-render, now as the GOV.UK date + time fields.
     expect(response.text).toMatch(/name="start_time-time"[^>]*value="10:00"/);
     expect(response.text).toMatch(/name="start_time-year"[^>]*value="2026"/);
     expect(response.text).toMatch(/name="end_time-time"[^>]*value="12:00"/);
+    expect(api.createEvent).not.toHaveBeenCalled();
+  });
+
+  it('links a missing start time to the focusable day input, and marks only that field', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const cookie = signedCookieHeader();
+    const csrfToken = await csrfTokenFor(agent, '/events/new', cookie);
+
+    const response = await agent
+      .post('/events/new')
+      .set('Cookie', cookie)
+      .type('form')
+      .send({
+        _csrf: csrfToken,
+        title: 'Community garden day',
+        description: 'Planting and tea',
+        start_time: ''
+      });
+
+    expect(response.status).toBe(200);
+    // The bare #start_time id sits on a wrapper div that cannot take focus;
+    // the summary link must target the first input of the split date field.
+    expect(response.text).toContain('href="#start_time-day"');
+    expect(response.text).not.toContain('href="#start_time"');
+    // Only the start-time group is in error — not title, not description.
+    expect(response.text).toMatch(/Enter a start date and time/);
+    expect(response.text.match(/govuk-form-group--error/g).length).toBe(1);
     expect(api.createEvent).not.toHaveBeenCalled();
   });
 
@@ -25471,7 +25505,11 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('The end time must be after the start time.');
-    expect(response.text).toContain('href="#end_time"');
+    // -day: the summary link targets the split date field's first input, which
+    // can take focus — the bare #end_time id is on a wrapper div.
+    expect(response.text).toContain('href="#end_time-day"');
+    // And the message renders on the END time group, not on every field.
+    expect(response.text.match(/The end time must be after the start time./g).length).toBe(2);
     // Both datetimes replayed across the re-render, as the GOV.UK date + time fields.
     expect(response.text).toMatch(/name="start_time-time"[^>]*value="12:00"/);
     expect(response.text).toMatch(/name="end_time-time"[^>]*value="10:00"/);
@@ -25504,7 +25542,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('Choose a future start time.');
-    expect(response.text).toContain('href="#start_time"');
+    expect(response.text).toContain('href="#start_time-day"');
     expect(response.text).toMatch(/name="start_time-time"[^>]*value="10:00"/);
     expect(api.updateEvent).toHaveBeenCalledWith('test-token', '42', expect.objectContaining({
       start_time: '2026-08-01T10:00'
@@ -28106,7 +28144,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Hub for Dunmanway neighbours');
     expect(response.text).toContain('Ada Member');
     expect(response.text).toContain('Community repair morning');
-    expect(response.text).toContain('1 August 2026, 10:00am');
+    expect(response.text).toContain('1 August 2026, 10:00');
     expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/events/repair-morning.png" alt=""`);
     expect(response.text).toContain('>Online</dd>');
     expect(api.getGroupMembers).toHaveBeenCalledWith('test-token', '484', { per_page: 100 });
@@ -30347,10 +30385,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Latest');
     expect(response.text).toContain('Avery Stone');
     expect(response.text).toContain('Bring the spare keys');
-    expect(response.text).toContain('6 July 2026, 10:30am');
+    expect(response.text).toContain('6 July 2026, 10:30');
     expect(response.text).toContain('Garden rota');
     expect(response.text).toContain('No messages yet');
-    expect(response.text).toContain('5 July 2026, 9:15am');
+    expect(response.text).toContain('5 July 2026, 9:15');
     expect(response.text).toContain('You have left the group.');
     expect(response.text).toContain('data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-groups-status-title"');
   });
@@ -33255,7 +33293,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Filter listings');
     expect(response.text).toContain('Community bike');
     expect(response.text).toContain('Freshly serviced');
-    expect(response.text).toContain('GBP 15.50');
+    expect(response.text).toContain('GBP 15.50');
     expect(response.text).toContain(`src="${getApiBaseUrl()}/uploads/bike-thumb.jpg"`);
     expect(response.text).not.toContain(`src="${getApiBaseUrl()}/uploads/bike-full.jpg"`);
     expect(response.text).toContain('Hybrid tool kit');
@@ -33264,7 +33302,7 @@ describe('shared accessible frontend shell', () => {
     // offer both on the card, because the buyer chooses which to pay and showing only the
     // credits hid the cash option from anyone browsing. It also disagreed with the detail
     // page, which already showed both.
-    expect(response.text).toContain('GBP 12.50 or 3 time credits');
+    expect(response.text).toContain('GBP 12.50 or 3 time credits');
     expect(response.text).toContain('govuk-tag--purple');
     expect(response.text).not.toContain('Your listing was deleted.');
     expect(response.text).toContain('Belfast');
@@ -33315,7 +33353,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('This item has been saved.');
     expect(response.text).toContain('Community bike');
     expect(response.text).toContain('A road-ready bicycle for local trips.');
-    expect(response.text).toContain('GBP 15.50');
+    expect(response.text).toContain('GBP 15.50');
     expect(response.text).toContain('Condition');
     // The translated label, not the raw database enum. This previously asserted
     // 'good' and so agreed with a page that showed members "like_new" and
@@ -33357,8 +33395,8 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     // The money formatter now follows the request locale: German uses a comma
     // decimal separator, not the previous hardcoded en-US full stop.
-    expect(response.text).toContain('GBP 15,50');
-    expect(response.text).not.toContain('GBP 15.50');
+    expect(response.text).toContain('15,50 GBP');
+    expect(response.text).not.toContain('15.50');
   });
 
   it('shows an "are you sure?" confirmation before deleting a marketplace listing', async () => {
@@ -33453,15 +33491,15 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(hybrid.status).toBe(200);
-    expect(hybrid.text).toContain('GBP 12.50 or 3 time credits');
+    expect(hybrid.text).toContain('GBP 12.50 or 3 time credits');
     expect(hybrid.text).toContain('govuk-tag--purple');
     expect(hybrid.text).toContain('href="/marketplace/43/buy"');
     expect(negotiable.status).toBe(200);
     expect(negotiable.text).not.toContain('href="/marketplace/44/buy"');
     expect(negotiable.text).toContain('href="/marketplace/44/offer"');
     expect(zeroDecimal.status).toBe(200);
-    expect(zeroDecimal.text).toContain('JPY 1,200');
-    expect(zeroDecimal.text).not.toContain('JPY 1,200.00');
+    expect(zeroDecimal.text).toContain('JPY 1,200');
+    expect(zeroDecimal.text).not.toContain('1,200.00');
   });
 
   it('renders the Laravel-backed marketplace create form', async () => {
@@ -33556,7 +33594,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Confirm your purchase');
     expect(response.text).toContain('Sorry, your order could not be placed. Please try again.');
     expect(response.text).toContain('Community bike');
-    expect(response.text).toContain('GBP 15.50');
+    expect(response.text).toContain('GBP 15.50');
     expect(response.text).toContain('Quantity');
     expect(response.text).toContain('Delivery notes');
     expect(response.text).toMatch(/name="idempotency_key" value="accessible-marketplace-[^"]+"/);
@@ -33595,7 +33633,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Enter an offer amount greater than zero');
     expect(response.text).toContain('Community bike');
     expect(response.text).toContain('Asking price');
-    expect(response.text).toContain('GBP 15.50');
+    expect(response.text).toContain('GBP 15.50');
     expect(response.text).toContain('Your offer');
     expect(response.text).toContain('Message to the seller');
     expect(response.text).toContain('Send offer');
@@ -34017,7 +34055,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="commerce-offers-status"');
     expect(response.text).toContain('govuk-notification-banner--success');
     expect(response.text).toContain('Community bike');
-    expect(response.text).toContain('GBP 13.25');
+    expect(response.text).toContain('GBP 13.25');
     expect(response.text).toContain('From: Sam Buyer');
     expect(response.text).toContain('Accept');
     expect(response.text).toContain('action="/marketplace/offers/12/decline"');
@@ -34083,9 +34121,9 @@ describe('shared accessible frontend shell', () => {
     const page = await agent.get('/marketplace/42/buy').set('Cookie', signedCookieHeader());
     expect(page.status).toBe(200);
     expect(page.text).toContain('How would you like to pay?');
-    expect(page.text).toContain('Pay GBP 12.50');
+    expect(page.text).toContain('Pay GBP 12.50');
     expect(page.text).toContain('Pay with 3 time credits');
-    expect(page.text).toContain('Community courier — GBP 2.50');
+    expect(page.text).toContain('Community courier — GBP 2.50');
     expect(page.text).toContain('2 places remaining');
     const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];
     const key = page.text.match(/name="idempotency_key" value="([^"]+)"/)[1];
@@ -34135,7 +34173,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/listings/42?offer_id=12');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(5, 'test-token', 'GET', '/listings/42/pickup-slots?offer_id=12');
     expect(checkout.text).toContain(createTranslator('en')('govuk_alpha_commerce.buy.accepted_offer_title'));
-    expect(checkout.text).toContain('GBP 13.25');
+    expect(checkout.text).toContain('GBP 13.25');
     expect(checkout.text).toContain('action="/marketplace/offers/12/buy"');
     expect(checkout.text).toContain('name="listing_id" value="42"');
     expect(checkout.text).toContain('name="pickup_slot_id"');
@@ -36557,7 +36595,7 @@ describe('shared accessible frontend shell', () => {
     expect(recommended.text).toContain('91% match');
     expect(recommended.text).toContain('Food Share');
     expect(recommended.text).toContain('Town kitchen');
-    expect(recommended.text).toContain('20 July 2026, 10:00am');
+    expect(recommended.text).toContain('20 July 2026 at 10:00');
     expect(recommended.text).toContain('3');
 
     const projects = await request(app)
@@ -36779,7 +36817,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="note" name="note" rows="3" maxlength="500"');
     expect(response.text).toContain('Save check-in');
     expect(response.text).toContain('Recent check-ins');
-    expect(response.text).toContain('6 July 2026, 4:15pm');
+    expect(response.text).toContain('6 July 2026 at 16:15');
     expect(response.text).toContain('5 — Great');
     expect(response.text).toContain('Feeling steady after a quieter week');
     expect(response.text).toContain('1 July 2026');
@@ -37695,7 +37733,7 @@ describe('shared accessible frontend shell', () => {
     expect(recommendedResponse.text).toContain('value="91"');
     expect(recommendedResponse.text).toContain('Food Share');
     expect(recommendedResponse.text).toContain('Town kitchen');
-    expect(recommendedResponse.text).toContain('20 July 2026, 10:00am');
+    expect(recommendedResponse.text).toContain('20 July 2026 at 10:00');
     expect(recommendedResponse.text).toContain('Spots remaining');
     expect(recommendedResponse.text).toContain('3');
     expect(recommendedResponse.text).toContain('Garden tidy');

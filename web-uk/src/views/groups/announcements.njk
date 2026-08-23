@@ -84,7 +84,7 @@
         <div class="govuk-summary-card__content">
           <p class="govuk-body">{{ announcement.content }}</p>
           {% if announcement.authorName or announcement.postedAtLabel %}
-            <p class="govuk-body-s govuk-!-colour-secondary">{{ t("govuk_alpha_groups.announcements.by_line", { name: announcement.authorName, date: announcement.postedAtLabel }) }}</p>
+            <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_groups.announcements.by_line", { name: announcement.authorName, date: announcement.postedAtLabel }) }}</p>
           {% endif %}
         </div>
       </div>

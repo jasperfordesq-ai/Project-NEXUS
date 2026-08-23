@@ -244,7 +244,7 @@ return [
         'not_available' => 'No disponible',
         'validation' => [
             'required' => 'Introduce :field',
-            'email' => 'Ingrese una dirección de correo electrónico en el formato correcto, como nombre@ejemplo.com',
+            'email' => 'Ingrese una dirección de correo electrónico en el formato correcto, como nombre@example.com',
             'min_length' => ':field debe tener :min caracteres o más',
             'max_length' => ':field debe tener :max caracteres o menos',
             'matches' => ':field debe coincidir con :other',
@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'codigo comunitario',
         'community_code_hint' => 'El código de su comunidad, por ejemplo \'acme\'.',
+        'community_code_required' => 'Introduzca su código comunitario',
         'resend_email_label' => 'Dirección de correo electrónico',
         'resend_verification_hint' => 'Le enviaremos un nuevo enlace de verificación a esta dirección si hay una cuenta pendiente de verificar.',
         'resend_verification_button' => 'Reenviar correo de verificación',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'Puntuación',
         'insights_title' => 'Cómo mejorar',
         'unavailable' => 'Tu puntuación aún no está disponible. Participa en la comunidad y vuelve pronto.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Participación',
             'quality' => 'Calidad',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'Privado — las personas solicitan unirse y un administrador las aprueba',
             'tags_label' => 'Etiquetas (opcional)',
             'tags_hint' => 'Separe las etiquetas con comas, por ejemplo jardinería, cocina.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Imagen de portada (opcional)',
             'cover_hint' => 'Use una imagen JPG, PNG, GIF o WEBP.',
             'submit' => 'Crear grupo',

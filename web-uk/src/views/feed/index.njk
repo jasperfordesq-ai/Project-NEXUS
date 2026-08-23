@@ -159,7 +159,7 @@
         </div>
       {% else %}
         <h2 class="govuk-heading-l">{{ t("feed.results_title") }}</h2>
-        <p class="govuk-body nexus-alpha-result-count" aria-live="polite">
+        <p class="govuk-body nexus-alpha-result-count">
           {{ tc("feed.result_count", posts.length, { count: posts.length }) }}
         </p>
 
@@ -301,7 +301,7 @@
               {% if post.type == "post" %}
                 <div class="nexus-alpha-reactions govuk-!-margin-bottom-3">
                   {{ likeForm | safe }}
-                  {% if post.reactionTotal > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>{% endif %}
+                  {% if post.reactionTotal > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>{% endif %}
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("feed_t1.reactions_legend") }}</legend>
                     <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">

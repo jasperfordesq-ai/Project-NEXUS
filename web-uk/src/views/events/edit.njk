@@ -44,8 +44,24 @@
             <h2 class="govuk-fieldset__heading">{{ t("events.create_details_title") }}</h2>
           </legend>
 
-          {% set titleError = errors | selectattr("href", "equalto", "#title") | first if errors else undefined %}
-          {{ govukInput({
+          {# Nunjucks selectattr has NO three-argument test form — it filters on
+             attribute truthiness only, so every field showed the FIRST error in
+             the list. Partition with a plain loop (arrays escape for-loop scope;
+             a bare set does not). #}
+          {% set titleErrors = [] %}{% set descriptionErrors = [] %}{% set startTimeErrors = [] %}{% set endTimeErrors = [] %}
+          {% for error in errors %}
+            {% if error.href == "#title" %}{% set _ = titleErrors.push(error) %}
+            {% elif error.href == "#description" %}{% set _ = descriptionErrors.push(error) %}
+            {% elif error.href == "#start_time-day" %}{% set _ = startTimeErrors.push(error) %}
+            {% elif error.href == "#end_time-day" %}{% set _ = endTimeErrors.push(error) %}
+            {% endif %}
+          {% endfor %}
+          {% set titleError = titleErrors | first %}
+          {% set descriptionError = descriptionErrors | first %}
+          {% set startTimeError = startTimeErrors | first %}
+          {% set endTimeError = endTimeErrors | first %}
+
+                    {{ govukInput({
             id: "title",
             name: "title",
             value: event.title,
@@ -60,8 +76,7 @@
             }
           }) }}
 
-          {% set descriptionError = errors | selectattr("href", "equalto", "#description") | first if errors else undefined %}
-          {{ govukTextarea({
+                    {{ govukTextarea({
             id: "description",
             name: "description",
             value: event.description,
@@ -111,8 +126,7 @@
             <h2 class="govuk-fieldset__heading">{{ t("events.create_time_title") }}</h2>
           </legend>
 
-          {% set startTimeError = errors | selectattr('href', 'equalto', '#start_time') | first if errors else undefined %}
-          {{ nexusDateTimeInput({
+                    {{ nexusDateTimeInput({
             name: "start_time",
             legend: t("events.start_time_label"),
             hint: t("events.datetime_hint"),
@@ -120,8 +134,7 @@
             errorMessage: startTimeError.text if startTimeError else undefined
           }, t) }}
 
-          {% set endTimeError = errors | selectattr('href', 'equalto', '#end_time') | first if errors else undefined %}
-          {{ nexusDateTimeInput({
+                    {{ nexusDateTimeInput({
             name: "end_time",
             legend: t("events.end_time_label"),
             hint: t("events.end_time_hint"),

@@ -19,7 +19,9 @@ const {
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
+const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { translateForRequest } = require('../lib/request-translator');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
@@ -40,17 +42,6 @@ const JOB_FORM_FIELDS = new Set([
   'skills_required', 'deadline', 'salary_min', 'salary_max', 'salary_currency',
   'salary_type', 'salary_negotiable', 'hours_per_week', 'time_credits', 'contact_email', 'status'
 ]);
-const JOB_TYPE_LABELS = {
-  paid: 'Paid',
-  volunteer: 'Volunteer',
-  timebank: 'Time credits'
-};
-const JOB_COMMITMENT_LABELS = {
-  full_time: 'Full time',
-  part_time: 'Part time',
-  flexible: 'Flexible',
-  one_off: 'One-off'
-};
 const APPLICATION_STATUSES = [
   'applied',
   'pending',
@@ -605,20 +596,26 @@ function formatDateTimeLong(value) {
   });
 }
 
+// 🔴 Used to hardcode English 'am'/'pm' and a fixed day-month-year order. Intl
+// now owns the whole label; the locale decides 12/24-hour form and field order
+// (en-GB renders 24-hour '14:30', Arabic keeps its own day-period marker).
 function formatDateTimeMeridiem(value) {
   if (!value) return '';
   const text = trimmed(value);
   const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
   if (!match) return formatDateTimeLong(text);
 
-  const dateLabel = formatUtcDateParts(Number(match[1]), Number(match[2]), Number(match[3]));
-  if (!dateLabel) return text;
+  const date = new Date(Date.UTC(
+    Number(match[1]), Number(match[2]) - 1, Number(match[3]),
+    Number(match[4]), Number(match[5])
+  ));
+  if (Number.isNaN(date.getTime())) return text;
 
-  const hour = Number(match[4]);
-  const displayHour = hour % 12 || 12;
-  const suffix = hour < 12 ? 'am' : 'pm';
-
-  return `${dateLabel}, ${displayHour}:${match[5]}${suffix}`;
+  return new Intl.DateTimeFormat(getRequestIntlLocale(), {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'UTC'
+  }).format(date);
 }
 
 function timestampForFilename(date = new Date()) {
@@ -660,7 +657,8 @@ function personName(value) {
 
 function listText(value) {
   if (Array.isArray(value)) {
-    return value.map((item) => personName(item) || trimmed(item)).filter(Boolean).join(', ');
+    // Display-only list: locale list punctuation, not a hardcoded English ', '.
+    return formatRequestList(value.map((item) => personName(item) || trimmed(item)));
   }
 
   return trimmed(value, 1000);
@@ -677,12 +675,6 @@ function skillsFrom(job) {
     .filter(Boolean);
 }
 
-function countLabel(count, singular, plural, zero) {
-  if (count === 0 && zero) return zero;
-  if (count === 1) return `1 ${singular}`;
-  return `${count} ${plural}`;
-}
-
 function decorateJob(job) {
   const organizationName = personName(job.organization);
   const posterName = organizationName || personName(job.creator);
@@ -694,22 +686,24 @@ function decorateJob(job) {
     id: positiveInteger(job.id) || 0,
     title: trimmed(job.title, 255) || 'Jobs',
     description: trimmed(job.description, 20000),
-    typeLabel: JOB_TYPE_LABELS[job.type] || JOB_TYPE_LABELS.volunteer,
+    typeLabel: translateForRequest(JOB_TYPES.includes(job.type) ? `jobs.type_${job.type}` : 'jobs.type_volunteer'),
     typeTranslationKey: JOB_TYPES.includes(job.type) ? `jobs.type_${job.type}` : 'jobs.type_volunteer',
-    commitmentLabel: JOB_COMMITMENT_LABELS[job.commitment] || '',
+    commitmentLabel: JOB_COMMITMENTS.includes(job.commitment)
+      ? translateForRequest(`jobs_t2.commitment_${job.commitment}`)
+      : '',
     commitmentTranslationKey: JOB_COMMITMENTS.includes(job.commitment)
       ? `jobs_t2.commitment_${job.commitment}`
       : '',
     organizationName,
     posterName,
-    locationLabel: checked(job.is_remote) ? 'Remote' : trimmed(job.location, 255),
+    // Translated at the decorate site so index/saved/employer-brand render the
+    // member's language, not only the detail page (which branches on isRemote).
+    locationLabel: checked(job.is_remote) ? translateForRequest('jobs.remote') : trimmed(job.location, 255),
     salaryLabel: salaryLabel(job),
     deadlineLabel: formatDateLong(job.deadline),
     skillsList: skillsFrom(job),
     viewsCount,
     applicationsCount,
-    viewsLabel: countLabel(viewsCount, 'view', 'views', 'No views'),
-    applicationsLabel: countLabel(applicationsCount, 'application', 'applications', 'No applications'),
     isFeatured: checked(job.is_featured),
     hasApplied: checked(job.has_applied),
     isSaved: checked(job.is_saved),
@@ -743,22 +737,27 @@ function decorateApplication(application) {
 }
 
 function decorateAlert(alert) {
+  // 🔴 These lines were English concatenation ('Keywords: X'). Every line is now a
+  // translated string with the ':' glue INSIDE it, so Japanese/French punctuation
+  // is translatable, and the type/commitment values reuse their translated keys.
   const keywords = trimmed(alert.keywords, 255);
   const categories = listText(alert.categories || alert.category);
-  const typeLabel = JOB_TYPE_LABELS[alert.type] || '';
-  const commitmentLabel = JOB_COMMITMENT_LABELS[alert.commitment] || '';
+  const typeLabel = JOB_TYPES.includes(alert.type) ? translateForRequest(`jobs.type_${alert.type}`) : '';
+  const commitmentLabel = JOB_COMMITMENTS.includes(alert.commitment)
+    ? translateForRequest(`jobs_t2.commitment_${alert.commitment}`)
+    : '';
   const location = trimmed(alert.location, 255);
   const isRemoteOnly = checked(alert.is_remote_only || alert.isRemoteOnly);
   const activeValue = alert.is_active !== undefined ? alert.is_active : alert.isActive;
   const criteria = [];
 
-  if (keywords) criteria.push(`Keywords: ${keywords}`);
-  if (categories) criteria.push(`Categories: ${categories}`);
-  if (typeLabel) criteria.push(`Type: ${typeLabel}`);
-  if (commitmentLabel) criteria.push(`Commitment: ${commitmentLabel}`);
-  if (location) criteria.push(`Location: ${location}`);
-  if (isRemoteOnly) criteria.push('Remote opportunities only');
-  if (criteria.length === 0) criteria.push('Any opportunity');
+  if (keywords) criteria.push(translateForRequest('jobs_t4.criteria_keywords', { value: keywords }));
+  if (categories) criteria.push(translateForRequest('jobs_t4.criteria_categories', { value: categories }));
+  if (typeLabel) criteria.push(translateForRequest('jobs_t4.criteria_type', { value: typeLabel }));
+  if (commitmentLabel) criteria.push(translateForRequest('jobs_t4.criteria_commitment', { value: commitmentLabel }));
+  if (location) criteria.push(translateForRequest('jobs_t4.criteria_location', { value: location }));
+  if (isRemoteOnly) criteria.push(translateForRequest('jobs_t4.criteria_remote'));
+  if (criteria.length === 0) criteria.push(translateForRequest('jobs_t4.criteria_any'));
 
   return {
     ...alert,
@@ -1128,7 +1127,6 @@ function decorateQualification(result, req) {
           : 'govuk-tag--grey',
     totalRequired,
     totalMatched,
-    skillsMatchedLabel: `${totalMatched} of ${totalRequired} skills matched`,
     breakdown: (Array.isArray(qualification.breakdown) ? qualification.breakdown : []).map((row) => ({
       skill: trimmed(row.skill, 255),
       matched: checked(row.matched)
@@ -1194,7 +1192,6 @@ function talentSearchMeta(result, filters, itemCount) {
     perPage,
     offset,
     hasMore,
-    resultsLabel: countLabel(total, 'candidate found', 'candidates found', 'No candidates found'),
     nextHref: hasMore ? talentSearchHref(filters, offset + perPage) : ''
   };
 }
@@ -1267,7 +1264,6 @@ function decorateReviewStats(result, reviews) {
   return {
     averageRating: average === null || average === undefined ? null : finiteNumber(average, 0),
     totalReviews: total,
-    reviewsLabel: countLabel(total, 'review', 'reviews', 'No reviews yet'),
     dimensionRows: Object.entries(dimensions).map(([key, value]) => ({
       key,
       label: JOB_REVIEW_DIMENSION_LABELS[key] || statusTitle(key),
@@ -1282,8 +1278,7 @@ function employerOpenJobsMeta(result, openJobs) {
   const total = finiteNumber(meta.total, openJobs.length);
 
   return {
-    total,
-    countLabel: countLabel(total, 'open opportunity', 'open opportunities', 'No open opportunities')
+    total
   };
 }
 
@@ -1321,8 +1316,16 @@ function formatDecimal(value, maximumFractionDigits = 1) {
   });
 }
 
+// Intl's percent style owns the digits AND the sign placement — a literal '%'
+// appended in code is wrong for Arabic and Japanese (mirrors matches.js).
+// Values arrive as 0–100 percentages.
 function percentLabel(value) {
-  return `${formatDecimal(value, 1)}%`;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return trimmed(value);
+  return new Intl.NumberFormat(getRequestIntlLocale(), {
+    style: 'percent',
+    maximumFractionDigits: 1
+  }).format(number / 100);
 }
 
 function dateRangeLabel(req, from, to) {
@@ -1335,8 +1338,15 @@ function dateRangeLabel(req, from, to) {
       `Period: ${fromLabel} to ${toLabel}`
     ).replace(':from', fromLabel).replace(':to', toLabel);
   }
-  if (fromLabel) return `From ${fromLabel}`;
-  if (toLabel) return `To ${toLabel}`;
+  // Single-bound ranges were English concatenation ('From 5 June 2026').
+  if (fromLabel) {
+    return translateStatusMessage(req, 'govuk_alpha_jobs.bias_audit.period_from', `From ${fromLabel}`)
+      .replace(':date', fromLabel);
+  }
+  if (toLabel) {
+    return translateStatusMessage(req, 'govuk_alpha_jobs.bias_audit.period_to', `To ${toLabel}`)
+      .replace(':date', toLabel);
+  }
   return '';
 }
 

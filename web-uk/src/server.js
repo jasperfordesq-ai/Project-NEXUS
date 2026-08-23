@@ -96,6 +96,7 @@ const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
+const { getRequestIntlLocale } = require('./lib/request-intl-locale');
 const { nl2br } = require('./lib/nl2br');
 const { humanizeLabel } = require('./lib/humanize-label');
 const { parseMultipartForm } = require('./middleware/multipart');
@@ -210,16 +211,18 @@ nunjucksEnv.addFilter('formatBladeDateTime', (dateStr) => {
   try {
     const date = new Date(dateStr);
     const locale = getRequestLocale() || 'en';
-    const parts = new Intl.DateTimeFormat(locale, {
+    // hour12 is NOT forced: the locale decides its own clock (en-GB/ga-IE render
+    // 24-hour '14:30'; locales that use a day period keep it — dayPeriod is
+    // simply empty for 24-hour locales).
+    const parts = new Intl.DateTimeFormat(localeForIntl(locale), {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
       hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+      minute: '2-digit'
     }).formatToParts(date);
     const value = (type) => parts.find((part) => part.type === type)?.value || '';
-    const dayPeriod = value('dayPeriod').replace(/\s+/g, '').toLocaleLowerCase(locale);
+    const dayPeriod = value('dayPeriod').replace(/\s+/g, '').toLocaleLowerCase(localeForIntl(locale));
     return `${value('day')} ${value('month')} ${value('year')}, ${value('hour')}:${value('minute')}${dayPeriod}`;
   } catch {
     return dateStr;
@@ -657,13 +660,26 @@ function dataFrom(result) {
   return result?.data || result?.tenant || result || {};
 }
 
+// Volunteer hour totals: one decimal by default, two only when the value needs
+// them — the same min-1/max-2 shape as the wallet's hoursValue, in the
+// request's locale.
+function volunteerHoursLabel(value) {
+  const number = Number(value ?? 0);
+  return new Intl.NumberFormat(getRequestIntlLocale(), {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 2
+  }).format(Number.isFinite(number) ? number : 0);
+}
+
 function numberLabel(value, formatNumber) {
   const number = Number(value || 0);
   if (!Number.isFinite(number)) return '0';
   if (typeof formatNumber === 'function') {
     return formatNumber(number, { maximumFractionDigits: 0 });
   }
-  return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(number);
+  // Fallback follows the request locale, matching what the middleware-provided
+  // formatNumber would do — never a hardcoded 'en-GB'.
+  return new Intl.NumberFormat(getRequestIntlLocale(), { maximumFractionDigits: 0 }).format(number);
 }
 
 function inlineScriptJson(value) {
@@ -1153,17 +1169,21 @@ app.get('/volunteering', requireAuth, (req, res) => {
       const hoursSummary = hoursSummaryResult?.data && typeof hoursSummaryResult.data === 'object'
         ? hoursSummaryResult.data
         : {};
+      // Same min-1/max-2 Intl shape the wallet uses — toFixed(1) hardcoded the
+      // '.' decimal separator into every language.
       const hoursSummaryLabels = {
-        approved: Number(hoursSummary.total_approved_hours ?? hoursSummary.approved_hours ?? 0).toFixed(1),
-        pending: Number(hoursSummary.pending_hours ?? 0).toFixed(1),
-        thisMonth: Number(hoursSummary.this_month_hours ?? 0).toFixed(1)
+        approved: volunteerHoursLabel(hoursSummary.total_approved_hours ?? hoursSummary.approved_hours),
+        pending: volunteerHoursLabel(hoursSummary.pending_hours),
+        thisMonth: volunteerHoursLabel(hoursSummary.this_month_hours)
       };
       const organisations = Array.isArray(organisationsResult?.data) ? organisationsResult.data : [];
       const categories = Array.isArray(categoriesResult?.data) ? categoriesResult.data : [];
       const recommendedShifts = (Array.isArray(recommendedResult?.data) ? recommendedResult.data : []).map((shift) => {
+        // 🔴 Used to hardcode English 'am'/'pm' and a fixed day-month-year
+        // order. Intl now owns the whole label; the locale decides field order
+        // and its own 12/24-hour clock (en-GB renders '14:30').
         const startText = String(shift?.start_time || '');
         const startParts = startText.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
-        const locale = getRequestLocale() || 'en';
         const year = startParts ? Number(startParts[1]) : 0;
         const monthIndex = startParts ? Number(startParts[2]) - 1 : -1;
         const day = startParts ? Number(startParts[3]) : 0;
@@ -1174,13 +1194,12 @@ app.get('/volunteering', requireAuth, (req, res) => {
           && day >= 1 && day <= 31
           && hours >= 0 && hours <= 23
           && minutes >= 0 && minutes <= 59;
-        const month = validStart
-          ? new Intl.DateTimeFormat(localeForIntl(locale), { month: 'long', timeZone: 'UTC' })
-            .format(new Date(Date.UTC(year, monthIndex, day)))
-          : '';
-        const hour = hours % 12 || 12;
         const startTimeLabel = validStart
-          ? `${day} ${month} ${year}, ${hour}:${String(minutes).padStart(2, '0')}${hours < 12 ? 'am' : 'pm'}`
+          ? new Intl.DateTimeFormat(getRequestIntlLocale(), {
+            dateStyle: 'long',
+            timeStyle: 'short',
+            timeZone: 'UTC'
+          }).format(new Date(Date.UTC(year, monthIndex, day, hours, minutes)))
           : '';
         return {
           ...shift,
@@ -1243,7 +1262,11 @@ app.get('/volunteering', requireAuth, (req, res) => {
         applicationsLoadMoreHref: '',
         applicationStatus,
         hoursSummary: {},
-        hoursSummaryLabels: { approved: '0.0', pending: '0.0', thisMonth: '0.0' },
+        hoursSummaryLabels: {
+          approved: volunteerHoursLabel(0),
+          pending: volunteerHoursLabel(0),
+          thisMonth: volunteerHoursLabel(0)
+        },
         manageableOrganisations: [],
         pendingOwnedOrganisations: [],
         categories: [],

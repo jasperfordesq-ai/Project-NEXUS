@@ -82,4 +82,27 @@ describe('localised client-side validation messages', () => {
       expect(maxLen).not.toContain(':field');
     }
   });
+
+  // login.njk wires its own auth.* messages rather than states.validation.*,
+  // so it gets a targeted check: every data-validate field must carry a
+  // translated data-required-message, or validation.js falls back to English
+  // "Enter <label>" in every locale (the community-code field shipped without one).
+  it('login.njk supplies a translated required message on every validated field', () => {
+    const src = fs.readFileSync(path.join(viewsDir, 'login.njk'), 'utf8');
+    const validateDecls = [...src.matchAll(/"data-validate":\s*"([^"]+)"/g)];
+    expect(validateDecls.length).toBeGreaterThanOrEqual(3); // email, password, community code
+
+    for (const decl of validateDecls) {
+      const slice = src.slice(decl.index, decl.index + 600);
+      expect(slice).toContain('data-required-message');
+    }
+
+    expect(src).toContain('t("auth.community_code_required")');
+    for (const loc of ['en', 'de', 'ja', 'ar']) {
+      const t = createTranslator(loc);
+      const message = t('auth.community_code_required');
+      expect(message).not.toBe('auth.community_code_required');
+      if (loc !== 'en') expect(message).not.toBe('Enter your community code');
+    }
+  });
 });

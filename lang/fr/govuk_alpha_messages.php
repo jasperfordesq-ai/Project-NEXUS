@@ -11,6 +11,8 @@ return [
         'submit' => 'Envoyer le message vocal',
         'no_audio_support' => 'Votre navigateur ne peut pas lire cet extrait audio.',
         'transcript_toggle' => 'Afficher la transcription',
+
+        'player_label' => 'Message vocal',
         'error_required' => 'Choisissez un fichier audio à envoyer comme message vocal.',
         'error_failed' => 'Votre message vocal n\'a pas pu être envoyé. Veuillez réessayer.',
     ],

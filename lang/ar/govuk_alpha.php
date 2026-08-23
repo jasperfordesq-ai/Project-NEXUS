@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'رمز المجتمع',
         'community_code_hint' => 'رمز مجتمعك، على سبيل المثال "acme".',
+        'community_code_required' => 'أدخل رمز مجتمعك',
         'resend_email_label' => 'عنوان البريد الإلكتروني',
         'resend_verification_hint' => 'سنرسل رابط تحقق جديدًا إلى هذا العنوان إذا كان الحساب يحتاج إلى تحقق.',
         'resend_verification_button' => 'إعادة إرسال بريد التحقق',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'النقاط',
         'insights_title' => 'كيفية التحسين',
         'unavailable' => 'نقاطك غير متاحة بعد. شارك في المجتمع وعد للتحقق قريباً.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'التفاعل',
             'quality' => 'الجودة',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'خاصة — يطلب الأشخاص الانضمام ويوافق عليهم مسؤول',
             'tags_label' => 'الوسوم (اختياري)',
             'tags_hint' => 'افصل الوسوم بفواصل، مثل: البستنة، الطهي.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'صورة الغلاف (اختياري)',
             'cover_hint' => 'استخدم صورة بصيغة JPG أو PNG أو GIF أو WEBP.',
             'submit' => 'إنشاء المجموعة',

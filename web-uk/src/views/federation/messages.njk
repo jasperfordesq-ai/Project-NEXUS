@@ -78,7 +78,9 @@
 
   <div id="messages-list">
     {% if loadError %}
-      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2></div></div>
+      {# A body sentence, not a bare title — the box used to say only "There is
+         a problem" and auto-steal focus while explaining nothing. #}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><p class="govuk-body">{{ t("states.load_error") }}</p></div></div></div>
     {% elif threads.length == 0 %}
       {% if query %}
         <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.messages.no_conversations_match") }}</p></div>

@@ -240,6 +240,8 @@ return [
         'filter_all_jobs' => 'Todas las vacantes',
         'apply_filter' => 'Aplicar filtros',
         'period_label' => 'Período: :from a :to',
+        'period_from' => 'Desde el :date',
+        'period_to' => 'Hasta el :date',
         'total_applications' => 'Total de solicitudes',
         'hiring_velocity' => 'Tiempo promedio de contratación',
         'days' => 'días',

@@ -244,7 +244,7 @@ return [
         'not_available' => 'Niedostępne',
         'validation' => [
             'required' => 'Wpisz :field',
-            'email' => 'Wpisz adres e-mail w poprawnym formacie, np. nazwa@przyklad.com',
+            'email' => 'Wpisz adres e-mail w poprawnym formacie, np. nazwa@example.com',
             'min_length' => ':field musi mieć :min znaków lub więcej',
             'max_length' => ':field musi mieć maksymalnie :max znaków',
             'matches' => ':field musi pasować do :other',
@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'Kod społeczności',
         'community_code_hint' => 'Kod Twojej społeczności, na przykład „acme”.',
+        'community_code_required' => 'Wpisz kod swojej społeczności',
         'resend_email_label' => 'Adres e-mail',
         'resend_verification_hint' => 'Wyślemy nowy link weryfikacyjny na ten adres, jeśli konto wymaga weryfikacji.',
         'resend_verification_button' => 'Wyślij ponownie e-mail weryfikacyjny',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'Wynik',
         'insights_title' => 'Jak się poprawić',
         'unavailable' => 'Twój wynik nie jest jeszcze dostępny. Weź udział w życiu społeczności i wróć wkrótce.',
+        'progress_label' => ':category: :percent',
         'categories' => [
             'engagement' => 'Zaangażowanie',
             'quality' => 'Jakość',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => 'Prywatna — osoby proszą o dołączenie, a administrator je zatwierdza',
             'tags_label' => 'Tagi (opcjonalnie)',
             'tags_hint' => 'Oddziel tagi przecinkami, na przykład ogrodnictwo, gotowanie.',
+            'tags_line' => ':label: :tags',
             'cover_label' => 'Obraz okładki (opcjonalnie)',
             'cover_hint' => 'Użyj obrazu w formacie JPG, PNG, GIF lub WEBP.',
             'submit' => 'Utwórz grupę',

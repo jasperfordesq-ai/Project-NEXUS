@@ -70,11 +70,12 @@ function formatEventMoment(value, locale, timezone, allDay) {
       return formatLocaleDate(date, locale, dateOptions);
     }
 
+    // hour12 is NOT forced: the locale decides its own clock (en-GB renders
+    // 24-hour '14:30'; dayPeriod below is simply empty for 24-hour locales).
     const parts = new Intl.DateTimeFormat(localeForIntl(locale), {
       ...dateOptions,
       hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+      minute: '2-digit'
     }).formatToParts(date);
     const value_ = (type) => parts.find((part) => part.type === type)?.value || '';
     const dayPeriod = value_('dayPeriod').replace(/\s+/g, '').toLocaleLowerCase(localeForIntl(locale));

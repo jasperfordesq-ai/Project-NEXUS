@@ -105,12 +105,18 @@ function tenantCurrency(req) {
 function priceFromCents(value, currency) {
   const cents = Number(value || 0);
   if (!Number.isFinite(cents) || cents <= 0) return '';
-  const prefix = {
-    EUR: '\u20ac',
-    USD: '$',
-    GBP: '\u00a3'
-  }[currency] || `${currency} `;
-  return `${prefix}${(cents / 100).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // Intl owns the symbol AND its placement \u2014 the hand-rolled symbol-prefix map
+  // put '\u20ac' before the amount in every language, which is wrong for locales
+  // that write the symbol after (e.g. German '12,00 \u20ac').
+  try {
+    return new Intl.NumberFormat(getRequestIntlLocale(), {
+      style: 'currency',
+      currency
+    }).format(cents / 100);
+  } catch {
+    // An unrecognised ISO code must not take the donations page down.
+    return `${currency} ${(cents / 100).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
 }
 
 function normalizeTier(tier, t, currency) {

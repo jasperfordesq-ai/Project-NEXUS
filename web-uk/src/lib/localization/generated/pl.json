@@ -1252,7 +1252,7 @@
                 "not_available": "Niedostępne",
                 "validation": {
                     "required": "Wpisz :field",
-                    "email": "Wpisz adres e-mail w poprawnym formacie, np. nazwa@przyklad.com",
+                    "email": "Wpisz adres e-mail w poprawnym formacie, np. nazwa@example.com",
                     "min_length": ":field musi mieć :min znaków lub więcej",
                     "max_length": ":field musi mieć maksymalnie :max znaków",
                     "matches": ":field musi pasować do :other",
@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Kod społeczności",
                 "community_code_hint": "Kod Twojej społeczności, na przykład „acme”.",
+                "community_code_required": "Wpisz kod swojej społeczności",
                 "resend_email_label": "Adres e-mail",
                 "resend_verification_hint": "Wyślemy nowy link weryfikacyjny na ten adres, jeśli konto wymaga weryfikacji.",
                 "resend_verification_button": "Wyślij ponownie e-mail weryfikacyjny",
@@ -2974,6 +2975,7 @@
                 "score_column": "Wynik",
                 "insights_title": "Jak się poprawić",
                 "unavailable": "Twój wynik nie jest jeszcze dostępny. Weź udział w życiu społeczności i wróć wkrótce.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Zaangażowanie",
                     "quality": "Jakość",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Prywatna — osoby proszą o dołączenie, a administrator je zatwierdza",
                     "tags_label": "Tagi (opcjonalnie)",
                     "tags_hint": "Oddziel tagi przecinkami, na przykład ogrodnictwo, gotowanie.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Obraz okładki (opcjonalnie)",
                     "cover_hint": "Użyj obrazu w formacie JPG, PNG, GIF lub WEBP.",
                     "submit": "Utwórz grupę",
@@ -7807,6 +7810,38 @@
                     "legendary": "Legendarny"
                 }
             },
+            "badge_rarity": {
+                "common": "Pospolita",
+                "uncommon": "Niepospolita",
+                "rare": "Rzadka",
+                "epic": "Epicka",
+                "legendary": "Legendarna"
+            },
+            "badge_types": {
+                "5star": "Recenzje pięciogwiazdkowe",
+                "connection": "Połączenia",
+                "diversity": "Pomaganie różnym osobom",
+                "earn": "Zdobyte kredyty czasu",
+                "event_attend": "Udział w wydarzeniach",
+                "event_host": "Organizowanie wydarzeń",
+                "group_create": "Zakładanie grup",
+                "group_join": "Dołączanie do grup",
+                "level": "Poziomy",
+                "likes_received": "Otrzymane polubienia",
+                "membership": "Członkostwo",
+                "message": "Wiadomości",
+                "offer": "Oferty",
+                "post": "Wpisy",
+                "profile": "Profil",
+                "request": "Prośby",
+                "review_given": "Wystawione recenzje",
+                "special": "Specjalne",
+                "spend": "Wydane kredyty czasu",
+                "streak": "Serie",
+                "transaction": "Wymiany",
+                "vol": "Wolontariat",
+                "vol_org": "Wolontariat z organizacjami"
+            },
             "ranked": {
                 "title": "Ankieta rankingowa",
                 "caption": "Ankiety na :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Wszystkie oferty",
                 "apply_filter": "Zastosuj filtry",
                 "period_label": "Okres: :from do :to",
+                "period_from": "Od :date",
+                "period_to": "Do :date",
                 "total_applications": "Łączna liczba aplikacji",
                 "hiring_velocity": "Średni czas rekrutacji",
                 "days": "dni",
@@ -9079,6 +9116,7 @@
                 "submit": "Wyślij wiadomość głosową",
                 "no_audio_support": "Twoja przeglądarka nie może odtworzyć tego klipu audio.",
                 "transcript_toggle": "Pokaż transkrypcję",
+                "player_label": "Wiadomość głosowa",
                 "error_required": "Wybierz plik audio do wysłania jako wiadomość głosowa.",
                 "error_failed": "Nie udało się wysłać wiadomości głosowej. Spróbuj ponownie."
             },
@@ -9801,7 +9839,7 @@
                 "request_description": "Wpisz adres e-mail członka, którego chcesz połączyć. Muszą mieć już konto w tej społeczności.",
                 "request_max": "Możesz zarządzać maksymalnie połączonymi kontami :count.",
                 "email_label": "Adres e-mail",
-                "email_hint": "Na przykład nazwa@przykład.com",
+                "email_hint": "Na przykład nazwa@example.com",
                 "request_button": "Wyślij prośbę o połączenie"
             },
             "appearance": {

@@ -101,7 +101,7 @@
         </div>
       </form>
 
-      <p class="govuk-body nexus-alpha-result-count" aria-live="polite">{{ resourceCountText }}</p>
+      <p class="govuk-body nexus-alpha-result-count">{{ resourceCountText }}</p>
 
       {% if not resources.length %}
         <div class="govuk-inset-text">
@@ -165,7 +165,9 @@
                 {% endif %}
               </div>
 
-              <div class="nexus-alpha-actions govuk-!-margin-top-2" aria-label="{{ t('govuk_alpha_resources.social.panel_label') }}">
+              {# aria-label on a role-less div is prohibited ARIA and was
+                 silently ignored; the buttons inside carry their own names. #}
+              <div class="nexus-alpha-actions govuk-!-margin-top-2">
                 <form method="post" action="{{ urlFor('/resources/' + (resource.id | string) + '/react') }}" class="nexus-alpha-reaction-form govuk-!-display-inline">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="emoji" value="like">

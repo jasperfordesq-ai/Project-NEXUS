@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "رمز المجتمع",
                 "community_code_hint": "رمز مجتمعك، على سبيل المثال \"acme\".",
+                "community_code_required": "أدخل رمز مجتمعك",
                 "resend_email_label": "عنوان البريد الإلكتروني",
                 "resend_verification_hint": "سنرسل رابط تحقق جديدًا إلى هذا العنوان إذا كان الحساب يحتاج إلى تحقق.",
                 "resend_verification_button": "إعادة إرسال بريد التحقق",
@@ -2974,6 +2975,7 @@
                 "score_column": "النقاط",
                 "insights_title": "كيفية التحسين",
                 "unavailable": "نقاطك غير متاحة بعد. شارك في المجتمع وعد للتحقق قريباً.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "التفاعل",
                     "quality": "الجودة",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "خاصة — يطلب الأشخاص الانضمام ويوافق عليهم مسؤول",
                     "tags_label": "الوسوم (اختياري)",
                     "tags_hint": "افصل الوسوم بفواصل، مثل: البستنة، الطهي.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "صورة الغلاف (اختياري)",
                     "cover_hint": "استخدم صورة بصيغة JPG أو PNG أو GIF أو WEBP.",
                     "submit": "إنشاء المجموعة",
@@ -7807,6 +7810,38 @@
                     "legendary": "الأسطوري"
                 }
             },
+            "badge_rarity": {
+                "common": "شائع",
+                "uncommon": "غير شائع",
+                "rare": "نادر",
+                "epic": "ملحمي",
+                "legendary": "أسطوري"
+            },
+            "badge_types": {
+                "5star": "تقييمات الخمس نجوم",
+                "connection": "الاتصالات",
+                "diversity": "مساعدة أشخاص مختلفين",
+                "earn": "الأرصدة المكتسبة",
+                "event_attend": "حضور الفعاليات",
+                "event_host": "استضافة الفعاليات",
+                "group_create": "إنشاء المجموعات",
+                "group_join": "الانضمام إلى المجموعات",
+                "level": "المستويات",
+                "likes_received": "الإعجابات المستلمة",
+                "membership": "العضوية",
+                "message": "الرسائل",
+                "offer": "العروض",
+                "post": "المنشورات",
+                "profile": "الملف الشخصي",
+                "request": "الطلبات",
+                "review_given": "التقييمات الممنوحة",
+                "special": "خاص",
+                "spend": "الأرصدة المنفقة",
+                "streak": "السلاسل",
+                "transaction": "التبادلات",
+                "vol": "التطوع",
+                "vol_org": "التطوع مع المنظمات"
+            },
             "ranked": {
                 "title": "استطلاع الاختيار المرتبة",
                 "caption": "استطلاعات الرأي في :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "جميع الوظائف",
                 "apply_filter": "تطبيق المرشحات",
                 "period_label": "الفترة: :from إلى :to",
+                "period_from": "من :date",
+                "period_to": "حتى :date",
                 "total_applications": "إجمالي الطلبات",
                 "hiring_velocity": "متوسط وقت التوظيف",
                 "days": "أيام",
@@ -9079,6 +9116,7 @@
                 "submit": "إرسال الرسالة الصوتية",
                 "no_audio_support": "متصفحك لا يستطيع تشغيل هذا المقطع الصوتي.",
                 "transcript_toggle": "إظهار النص",
+                "player_label": "رسالة صوتية",
                 "error_required": "اختر ملفًا صوتيًا لإرساله كرسالة صوتية.",
                 "error_failed": "تعذّر إرسال رسالتك الصوتية. يرجى المحاولة مرة أخرى."
             },

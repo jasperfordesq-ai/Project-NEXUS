@@ -95,11 +95,19 @@ function normalizeBreakdownRows(breakdown, t) {
     const percentage = clampPercentage(row.percentage);
 
     const label = t(`nexus_score.categories.${key}`);
+    // Intl's percent style owns the digits and the sign placement, and the
+    // ':' glue lives inside the translated string (Japanese/French punctuate
+    // it differently). This label is read out by screen readers via aria-label.
+    const percentLabel = new Intl.NumberFormat(getRequestIntlLocale(), {
+      style: 'percent',
+      maximumFractionDigits: 0
+    }).format(percentage / 100);
     return {
       label,
       scoreLabel: `${formatInteger(score)} / ${formatInteger(max)}`,
       percentage,
-      progressLabel: `${label}: ${percentage}%`
+      percentLabel,
+      progressLabel: t('nexus_score.progress_label', { category: label, percent: percentLabel })
     };
   }).filter(Boolean);
 }

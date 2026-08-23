@@ -11,6 +11,8 @@ return [
         'submit' => 'Invia il messaggio vocale',
         'no_audio_support' => 'Il tuo browser non può riprodurre questa clip audio.',
         'transcript_toggle' => 'Mostra trascrizione',
+
+        'player_label' => 'Messaggio vocale',
         'error_required' => 'Scegli un file audio da inviare come messaggio vocale.',
         'error_failed' => 'Impossibile inviare il tuo messaggio vocale. Riprova.',
     ],

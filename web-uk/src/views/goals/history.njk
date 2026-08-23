@@ -27,8 +27,8 @@
           <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
             {{ govukTag({ text: item.label, classes: (item.tagClass) }) }}
             {% if item.createdAtLabel %}
-              <span class="govuk-body-s nexus-alpha-meta" aria-label="{{ item.createdAtLabel }}">
-                <time datetime="{{ item.createdAt }}" title="{{ item.createdAtLabel }}">{{ item.createdAtLabel }}</time>
+              <span class="govuk-body-s nexus-alpha-meta">
+                <time datetime="{{ item.createdAt }}">{{ item.createdAtLabel }}</time>
               </span>
             {% endif %}
           </div>

@@ -21,7 +21,9 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { translateForRequest } = require('../lib/request-translator');
 
 const router = express.Router();
 const RESOURCE_REACTIONS = new Set(['like', 'love', 'laugh', 'wow', 'sad', 'celebrate']);
@@ -248,19 +250,28 @@ function fileExtension(resource) {
   if (match) return match[1].toUpperCase();
 
   const type = trimmed(resource.file_type);
+  const genericFile = translateForRequest('govuk_alpha_resources.file_types.file');
   if (type.includes('/')) {
     const [, subtype] = type.split('/');
-    return trimmed(subtype).toUpperCase() || 'FILE';
+    return trimmed(subtype).toUpperCase() || genericFile;
   }
-  return type.toUpperCase() || 'FILE';
+  return type.toUpperCase() || genericFile;
 }
 
+// Intl's unit style owns the unit symbol, its placement and the decimal
+// separator — toFixed(1) hardcoded '.' and English 'KB'/'MB' in every language.
 function formatFileSize(bytes) {
   const size = Number(bytes);
   if (!Number.isFinite(size) || size <= 0) return '';
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  const format = (value, unit) => new Intl.NumberFormat(getRequestIntlLocale(), {
+    style: 'unit',
+    unit,
+    unitDisplay: 'short',
+    maximumFractionDigits: 1
+  }).format(value);
+  if (size < 1024) return format(size, 'byte');
+  if (size < 1024 * 1024) return format(size / 1024, 'kilobyte');
+  return format(size / (1024 * 1024), 'megabyte');
 }
 
 function resourceCategory(resource) {

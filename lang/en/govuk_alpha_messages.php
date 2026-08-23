@@ -12,6 +12,8 @@ return [
         'submit' => 'Send voice message',
         'no_audio_support' => 'Your browser cannot play this audio clip.',
         'transcript_toggle' => 'Show transcript',
+
+        'player_label' => 'Voice message',
         'error_required' => 'Choose an audio file to send as a voice message.',
         'error_failed' => 'Your voice message could not be sent. Please try again.',
     ],

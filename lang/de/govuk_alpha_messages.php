@@ -11,6 +11,8 @@ return [
         'submit' => 'Sprachnachricht senden',
         'no_audio_support' => 'Ihr Browser kann diesen Audioclip nicht abspielen.',
         'transcript_toggle' => 'Transkript anzeigen',
+
+        'player_label' => 'Sprachnachricht',
         'error_required' => 'Wählen Sie eine Audiodatei aus, die als Sprachnachricht gesendet werden soll.',
         'error_failed' => 'Ihre Sprachnachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
     ],

@@ -29,6 +29,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, splitDate } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 
@@ -401,11 +402,20 @@ function normalizeInvite(item) {
   };
 }
 
+// Intl's unit style owns the unit symbol, its placement and the decimal
+// separator — the old template literal hardcoded English 'KB'/'MB' and a '.'
+// decimal in every language.
 function formatBytes(value) {
   const bytes = Number(value) || 0;
-  if (bytes >= 1048576) return `${Math.round((bytes / 1048576) * 10) / 10} MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${bytes} B`;
+  const format = (amount, unit) => new Intl.NumberFormat(getRequestIntlLocale(), {
+    style: 'unit',
+    unit,
+    unitDisplay: 'short',
+    maximumFractionDigits: 1
+  }).format(amount);
+  if (bytes >= 1048576) return format(Math.round((bytes / 1048576) * 10) / 10, 'megabyte');
+  if (bytes >= 1024) return format(Math.round(bytes / 1024), 'kilobyte');
+  return format(bytes, 'byte');
 }
 
 function normalizeGroupFile(item) {
@@ -1017,10 +1027,15 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
 
   try {
     const tagList = groupTags(tags);
-    const tagLabel = res.locals.t('groups.create.tags_label');
+    // The ': ' glue and list punctuation live in the translated string / Intl,
+    // not in code — Japanese and French punctuate both differently.
+    const tagsLine = res.locals.t('groups.create.tags_line', {
+      label: res.locals.t('groups.create.tags_label'),
+      tags: formatRequestList(tagList)
+    });
     const descriptionText = trimmed(description);
     const descriptionWithTags = tagList.length > 0
-      ? trimmed(`${descriptionText}\n\n${tagLabel}: ${tagList.join(', ')}`)
+      ? trimmed(`${descriptionText}\n\n${tagsLine}`)
       : descriptionText;
     const result = await createGroup(req.token, {
       name: name.trim(),

@@ -158,7 +158,7 @@
                   <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_commerce.builder.content_type_" + lesson.contentType) }}</span></span>
                   <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/delete') }}" class="govuk-!-display-inline">
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                    <button class="govuk-button govuk-button--warning govuk-button--small" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_lesson_button") }}</button>
+                    <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_lesson_button") }}</button>
                   </form>
                 </li>
               {% endfor %}
@@ -178,7 +178,7 @@
               </form>
               <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>{{ t("govuk_alpha_commerce.builder.delete_section_warning") }}</strong>
+                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_commerce.builder.delete_section_warning") }}</strong>
               </div>
               <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/delete') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -263,7 +263,7 @@
     <div class="govuk-warning-text">
       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
       <strong class="govuk-warning-text__text">
-        <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+        <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
         {{ t("govuk_alpha_commerce.instructor.delete_warning") }}
       </strong>
     </div>

@@ -1389,6 +1389,7 @@
             "auth": {
                 "community_code_label": "Cód pobail",
                 "community_code_hint": "Cód do phobail, mar shampla 'acme'.",
+                "community_code_required": "Cuir isteach cód do phobail",
                 "resend_email_label": "Seoladh ríomhphoist",
                 "resend_verification_hint": "Seolfaimid nasc fíoraithe nua chuig an seoladh seo má tá cuntas ag teastáil fíorú.",
                 "resend_verification_button": "Athsheoladh ríomhphost fíoraithe",
@@ -2974,6 +2975,7 @@
                 "score_column": "Scór",
                 "insights_title": "Conas feabhas a chur air",
                 "unavailable": "Níl do scór ar fáil fós. Glac páirt sa phobal agus seiceáil arís go luath.",
+                "progress_label": ":category: :percent",
                 "categories": {
                     "engagement": "Rannpháirtíocht",
                     "quality": "Cáilíocht",
@@ -3164,6 +3166,7 @@
                     "visibility_private_label": "Príobháideach — iarrann daoine teacht isteach agus ceadaíonn riarthóir iad",
                     "tags_label": "Clibeanna (roghnach)",
                     "tags_hint": "Deighil clibeanna le camóga, mar shampla garraíodóireacht, cócaireacht.",
+                    "tags_line": ":label: :tags",
                     "cover_label": "Íomhá chlúdaigh (roghnach)",
                     "cover_hint": "Úsáid íomhá JPG, PNG, GIF nó WEBP.",
                     "submit": "Cruthaigh grúpa",
@@ -7807,6 +7810,38 @@
                     "legendary": "Finscéalach"
                 }
             },
+            "badge_rarity": {
+                "common": "Coitianta",
+                "uncommon": "Neamhchoitianta",
+                "rare": "Annamh",
+                "epic": "Eipiciúil",
+                "legendary": "Finscéalach"
+            },
+            "badge_types": {
+                "5star": "Léirmheasanna cúig réalta",
+                "connection": "Naisc",
+                "diversity": "Ag cabhrú le daoine éagsúla",
+                "earn": "Creidmheasanna tuillte",
+                "event_attend": "Freastal ar imeachtaí",
+                "event_host": "Óstáil imeachtaí",
+                "group_create": "Grúpaí a bhunú",
+                "group_join": "Dul isteach i ngrúpaí",
+                "level": "Leibhéil",
+                "likes_received": "Moltaí faighte",
+                "membership": "Ballraíocht",
+                "message": "Teachtaireachtaí",
+                "offer": "Tairiscintí",
+                "post": "Postálacha",
+                "profile": "Próifíl",
+                "request": "Iarratais",
+                "review_given": "Léirmheasanna tugtha",
+                "special": "Speisialta",
+                "spend": "Creidmheasanna caite",
+                "streak": "Sraitheanna",
+                "transaction": "Malartuithe",
+                "vol": "Obair dheonach",
+                "vol_org": "Obair dheonach le heagraíochtaí"
+            },
             "ranked": {
                 "title": "Pobalbhreith rogha rangaithe",
                 "caption": "Pobalbhreith ag :community",
@@ -8825,6 +8860,8 @@
                 "filter_all_jobs": "Gach deis",
                 "apply_filter": "Cuir scagairí i bhfeidhm",
                 "period_label": "Tréimhse: :from go :to",
+                "period_from": "Ó :date",
+                "period_to": "Go dtí :date",
                 "total_applications": "Iarratais iomlána",
                 "hiring_velocity": "Am meánach le hearcú",
                 "days": "laethanta",
@@ -9079,6 +9116,7 @@
                 "submit": "Seol teachtaireacht ghutha",
                 "no_audio_support": "Ní féidir le do bhrabhsálaí an ghearrthóg fhuaime seo a sheinm.",
                 "transcript_toggle": "Taispeáin tras-scríbhinn",
+                "player_label": "Teachtaireacht ghutha",
                 "error_required": "Roghnaigh comhad fuaime le seoladh mar theachtaireacht ghutha.",
                 "error_failed": "Níorbh fhéidir do theachtaireacht ghutha a sheoladh. Bain triail eile as le do thoil."
             },

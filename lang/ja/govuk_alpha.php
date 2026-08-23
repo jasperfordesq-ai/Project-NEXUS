@@ -9,7 +9,7 @@ return [
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'ベータ版',
     'feedback' => 'フィードバックを送信する',
-    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20フィードバック',
+    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
     'cookie_banner' => [
         'aria_label' => ':service のクッキー',
         'heading' => ':service のクッキー',
@@ -381,6 +381,7 @@ return [
     'auth' => [
         'community_code_label' => 'コミュニティコード',
         'community_code_hint' => 'コミュニティのコード (例: 「acme」)。',
+        'community_code_required' => 'コミュニティコードを入力してください',
         'resend_email_label' => 'メールアドレス',
         'resend_verification_hint' => '確認が必要なアカウントがある場合、このアドレスに新しい確認リンクを送信します。',
         'resend_verification_button' => '確認メールを再送する',
@@ -1966,6 +1967,7 @@ return [
         'score_column' => 'スコア',
         'insights_title' => '改善するには',
         'unavailable' => 'まだスコアはありません。コミュニティに参加して、後でまた確認してください。',
+        'progress_label' => ':category：:percent',
         'categories' => [
             'engagement' => '参加度',
             'quality' => 'クオリティ',
@@ -2156,6 +2158,7 @@ return [
             'visibility_private_label' => '非公開 — 参加申請を行い、管理者が承認します',
             'tags_label' => 'タグ（任意）',
             'tags_hint' => 'タグをカンマで区切って入力してください（例：ガーデニング、料理）。',
+            'tags_line' => ':label：:tags',
             'cover_label' => 'カバー画像（任意）',
             'cover_hint' => 'JPG、PNG、GIF、またはWEBP形式の画像を使用してください。',
             'submit' => 'グループを作成する',
