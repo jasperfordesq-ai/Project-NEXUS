@@ -98,9 +98,16 @@ accessible:
 # ---------------------------------------------------------------------------
 # Monorepo siblings (development-only tracks, see docs/PLATFORM-MONOREPO.md).
 #
-# These wake .github/workflows/platform-contracts.yml, NOT ci.yml, and neither
-# appears in scripts/predeploy-ci-verify.mjs REQUIRED_JOBS — the ASP.NET
-# backend and Web UK frontend are not in any production deploy path.
+# These wake .github/workflows/platform-contracts.yml, NOT ci.yml.
+#
+# 🔴 These three lines used to read "and neither appears in
+# scripts/predeploy-ci-verify.mjs REQUIRED_JOBS — the ASP.NET backend and Web
+# UK frontend are not in any production deploy path." Half of that is now
+# wrong and the half that is wrong is the load-bearing half: `web-uk` IS the
+# production accessible frontend, it serves three live hostnames, it deploys
+# via `scripts/deploy.sh --with-webuk`, and its three `Web UK …` jobs ARE in
+# REQUIRED_JOBS as of 2026-08-17. Only `aspnet` is outside the deploy path.
+# See the webuk exception below before assuming the two behave alike.
 #
 # They are listed here anyway so that this file stays the single place where
 # "which paths wake which job" is written down, per the rule at the top.
@@ -111,18 +118,31 @@ accessible:
 # that could not possibly be affected by the change. Do not re-add Laravel or
 # React paths here: nothing in aspnet-backend/ is built from them.
 #
-# 🔴 The four sibling filters below deliberately do NOT list this file or
+# 🔴 Most sibling filters below do NOT list this file or
 # platform-contracts.yml, unlike every filter above them. The self-reference in
 # the php/frontend/mobile/accessible/i18n filters is a SAFETY PROPERTY — if the
 # watch-lists themselves change between an ancestor commit and a deploy commit,
 # evidence inherited under the old lists must be invalidated, and
-# scripts/predeploy-ci-verify.mjs depends on that. None of that applies here:
-# these four are read only by platform-contracts.yml and appear in no
-# REQUIRED_JOBS entry, so a self-reference bought nothing and cost a full
+# scripts/predeploy-ci-verify.mjs depends on that. For `aspnet` none of that
+# applies: it is read only by platform-contracts.yml and appears in no
+# REQUIRED_JOBS entry, so a self-reference buys nothing and costs a full
 # ~92-runner-minute ASP.NET run on every CI-config edit. The compensating
-# control is the weekly scheduled sweep in platform-contracts.yml plus
+# control there is the weekly scheduled sweep in platform-contracts.yml plus
 # workflow_dispatch; the workflow's own `on: paths:` still lists itself, so a
 # YAML error in it still surfaces at trigger time.
+#
+# 🔴 `webuk` IS the exception, corrected 2026-08-23. This block used to say
+# "the four sibling filters" and that none of them appear in any REQUIRED_JOBS
+# entry. That stopped being true on 2026-08-17, when the three `Web UK …` jobs
+# were added to REQUIRED_JOBS because web-uk is the production accessible
+# frontend serving three live hostnames. The safety property therefore now DOES
+# apply to webuk, and its absence had a measured cost the same day this was
+# corrected: a commit that changed the `Web UK authenticated accessibility` job
+# definition — adding the poll fixture its gates walk through — woke no Web UK
+# job at all, so Platform contracts reported success with all three Web UK jobs
+# SKIPPED and the fix unverified. Result inheritance could likewise hand a
+# deploy a `Web UK …` pass earned under a different job definition. The cost is
+# bounded: this wakes the Web UK jobs, not the ASP.NET suite.
 aspnet:
   - 'aspnet-backend/**'
   # Shared payload shapes the ASP.NET contract tests assert against. Same
@@ -133,6 +153,12 @@ aspnet:
 webuk:
   - 'web-uk/**'
   - 'contracts/**'
+  # Self-reference, unlike the aspnet filter above — see the webuk exception in
+  # the note above this block. These two define and schedule the deploy-gating
+  # `Web UK …` jobs, so a change to either must re-run them rather than let a
+  # deploy inherit a pass earned under the old job definition.
+  - '.github/workflows/platform-contracts.yml'
+  - '.github/ci-paths.yml'
   # 🔴 The Laravel Blade accessible frontend is Web UK's SOURCE OF TRUTH — Web UK
   # exists to reproduce its observable behaviour. A change to Blade is therefore
   # a change to Web UK's specification, and until 2026-08-10 it woke no Web UK

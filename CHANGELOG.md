@@ -85,6 +85,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   go red when the old form is reintroduced), and the job now seeds the polls the
   gates need as an explicit precondition.
 
+- **Changing how the Web UK jobs are set up now re-runs them.** The `webuk`
+  filter in `.github/ci-paths.yml` watched `web-uk/**` but not
+  `platform-contracts.yml` — the file that *defines* the Web UK jobs — so the
+  commit that added the poll fixture woke no Web UK job at all and Platform
+  contracts reported success with all three SKIPPED. The omission was deliberate
+  and documented, on the stated grounds that these filters "appear in no
+  REQUIRED_JOBS entry"; that ceased to be true on 2026-08-17, when the three
+  `Web UK …` jobs were added to REQUIRED_JOBS because web-uk is the production
+  accessible frontend serving three live hostnames. `webuk` now watches the
+  workflow and `ci-paths.yml` itself, both workflow triggers accept
+  `ci-paths.yml`, and the stale reasoning is corrected in place rather than
+  silently contradicted. `aspnet` is deliberately unchanged — it is genuinely
+  outside the deploy path, so the original cost argument still holds there, and
+  a CI-config edit wakes the Web UK jobs, not the ~92-runner-minute .NET suite.
+
 - **That poll gate then proved nothing, and now runs.** Seeding one standard poll
   cleared the failure but the gate walks on to a RANKED ballot, and its
   `test.skip` for "no ranked-choice poll" marks the whole test skipped

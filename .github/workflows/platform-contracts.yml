@@ -22,6 +22,12 @@ on:
       - 'contracts/**'
       - 'scripts/verify-platform-contracts.ps1'
       - '.github/workflows/platform-contracts.yml'
+      # The webuk filter in .github/ci-paths.yml now watches THIS file and
+      # ci-paths.yml itself, because the `Web UK …` jobs are deploy-gating. An
+      # edit to either must therefore be able to trigger this workflow at all.
+      # Bounded cost: the changes job still leaves aspnet asleep, so a CI-config
+      # edit runs the Web UK jobs, not the ASP.NET suite.
+      - '.github/ci-paths.yml'
   push:
     branches: [main]
     paths:
@@ -36,6 +42,8 @@ on:
       - 'contracts/**'
       - 'scripts/verify-platform-contracts.ps1'
       - '.github/workflows/platform-contracts.yml'
+      # Same reason as the pull_request list above.
+      - '.github/ci-paths.yml'
   # Forces every job on regardless of what changed — the escape hatch for
   # "check the whole platform", matching the same convention in ci.yml.
   workflow_dispatch:
