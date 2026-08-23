@@ -68,6 +68,85 @@ class SmartMatchingEngineTest extends TestCase
 
     // ── getConfig ──
 
+    /**
+     * 🔴 A member's skills were almost entirely invisible to matching, and matching is the
+     * whole point of a timebank.
+     *
+     * `SkillTaxonomyService::getProficiencyWeightedSkills()` keys skills by the raw
+     * lowercased name; listing text goes through `KeywordExtractor::extract()`, which
+     * splits AND stems. `calculateSkillScore()` compared the two with `array_intersect`, so
+     * they agreed only when a skill name already equalled its own stem. Measured with the
+     * real stemmer on 2026-08-23:
+     *
+     *   gardening -> 'garden' | cleaning -> 'clean' | plumbing -> 'plumb'
+     *   tutoring  -> 'tutor'  | "dog walking" -> 'dog','walk'
+     *
+     * Every one of those failed to match a listing about the same thing. Multi-word skills
+     * could never match at all, being held as a single key with a space in it.
+     *
+     * These tests drive the private scorer directly through reflection, deliberately: the
+     * effect could not be shown end to end because a member's OWN listing text usually
+     * already supplies the overlapping token, which masks the fault in exactly the cases
+     * that are easiest to construct.
+     */
+    private function skillScore(array $userData, array $myListing, array $candidate): float
+    {
+        $method = new \ReflectionMethod(SmartMatchingEngine::class, 'calculateSkillScore');
+        $method->setAccessible(true);
+
+        return (float) $method->invoke($this->engine, $userData, $myListing, $candidate);
+    }
+
+    public function test_a_skill_matches_a_listing_about_the_same_thing_despite_stemming(): void
+    {
+        // The member's own listing deliberately shares no word with the candidate, so the
+        // only thing that can produce a match is the skill itself.
+        $myListing = ['title' => 'Bicycle repairs', 'description' => 'I fix bikes.'];
+        $candidate = ['title' => 'Gardening help wanted', 'description' => 'Weeding and planting.'];
+
+        $withSkill = $this->skillScore(
+            ['skills_weighted' => ['gardening' => 1.3]],
+            $myListing,
+            $candidate,
+        );
+        $withoutSkill = $this->skillScore([], $myListing, $candidate);
+
+        $this->assertGreaterThan(
+            $withoutSkill,
+            $withSkill,
+            'a "gardening" skill must score higher against a gardening listing than no skill at all',
+        );
+    }
+
+    public function test_a_multi_word_skill_is_split_into_matchable_words(): void
+    {
+        $myListing = ['title' => 'Bicycle repairs', 'description' => 'I fix bikes.'];
+        $candidate = ['title' => 'Dog walker needed', 'description' => 'Two short walks a day.'];
+
+        $withSkill = $this->skillScore(
+            ['skills_weighted' => ['dog walking' => 1.6]],
+            $myListing,
+            $candidate,
+        );
+
+        $this->assertGreaterThan(
+            0.0,
+            $withSkill,
+            '"dog walking" must be split into words; as one key with a space it can never match',
+        );
+    }
+
+    public function test_a_higher_proficiency_scores_at_least_as_well_as_a_lower_one(): void
+    {
+        $myListing = ['title' => 'Bicycle repairs', 'description' => 'I fix bikes.'];
+        $candidate = ['title' => 'Gardening help wanted', 'description' => 'Weeding and planting.'];
+
+        $expert = $this->skillScore(['skills_weighted' => ['gardening' => 1.6]], $myListing, $candidate);
+        $beginner = $this->skillScore(['skills_weighted' => ['gardening' => 0.6]], $myListing, $candidate);
+
+        $this->assertGreaterThanOrEqual($beginner, $expert);
+    }
+
     public function test_getConfig_returns_defaults(): void
     {
         DB::shouldReceive('table->where->value')->andReturnNull();

@@ -954,10 +954,38 @@ class SmartMatchingEngine
 
     private function calculateSkillScore(array $userData, array $myListing, array $candidate): float
     {
-        $proficiencyKeys = $userData['skills_proficiency_keys'] ?? null;
-        $userSkills = $proficiencyKeys !== null
-            ? $proficiencyKeys
-            : $this->extractKeywords($userData['skills'] ?? '');
+        // 🔴 A member's skills were almost entirely invisible here, and this is the core of
+        // what a timebank does.
+        //
+        // `SkillTaxonomyService::getProficiencyWeightedSkills()` keys skills by
+        // `strtolower(trim($name))` — the raw name. Listing text, however, goes through
+        // `KeywordExtractor::extract()`, which splits on words AND stems. The two sides were
+        // then compared with `array_intersect`, so they could only ever agree when a skill's
+        // raw name already equalled its own stem. Measured 2026-08-23:
+        //
+        //   skill "gardening" -> key 'gardening'  |  listing text -> token 'garden'   no match
+        //   skill "cleaning"  -> key 'cleaning'   |  listing text -> token 'clean'    no match
+        //   skill "plumbing"  -> key 'plumbing'   |  listing text -> token 'plumb'    no match
+        //   skill "tutoring"  -> key 'tutoring'   |  listing text -> token 'tutor'    no match
+        //   skill "dog walking" -> key 'dog walking' | tokens 'dog','walk'            no match
+        //
+        // Only a handful of skills — ones already in stem form, like 'garden' or 'childcare'
+        // — could contribute anything at all. Running the skill names through the SAME
+        // extractor puts both sides in one token space and fixes multi-word skills at the
+        // same time.
+        $skillsWeighted = $userData['skills_weighted'] ?? [];
+        $skillTokenWeights = [];
+        foreach ($skillsWeighted as $skillName => $weight) {
+            foreach ($this->extractKeywords((string) $skillName) as $token) {
+                // A token shared by two skills takes the higher proficiency, so naming a
+                // skill twice at different levels cannot dilute it.
+                $skillTokenWeights[$token] = max($skillTokenWeights[$token] ?? 0.0, (float) $weight);
+            }
+        }
+
+        $userSkills = !empty($skillTokenWeights)
+            ? array_keys($skillTokenWeights)
+            : $this->extractKeywords((string) ($userData['skills'] ?? ''));
 
         $myKeywords = $this->extractKeywords($myListing['title'] . ' ' . ($myListing['description'] ?? ''));
         $candidateKeywords = $this->extractKeywords($candidate['title'] . ' ' . ($candidate['description'] ?? ''));
@@ -972,14 +1000,18 @@ class SmartMatchingEngine
         $union = count(array_unique(array_merge($allUserKeywords, $candidateKeywords)));
         $jaccard = $union > 0 ? count($matches) / $union : 0;
 
-        $skillsWeighted = $userData['skills_weighted'] ?? [];
-        if (!empty($skillsWeighted) && !empty($matches)) {
+        if (!empty($skillTokenWeights) && !empty($matches)) {
             $totalWeight = 0.0;
+            $weighted = 0;
             foreach ($matches as $m) {
-                $totalWeight += $skillsWeighted[$m] ?? 1.0;
+                if (isset($skillTokenWeights[$m])) {
+                    $totalWeight += $skillTokenWeights[$m];
+                    $weighted++;
+                }
             }
-            $avgWeight = $totalWeight / count($matches);
-            $jaccard *= min(1.4, $avgWeight);
+            if ($weighted > 0) {
+                $jaccard *= min(1.4, $totalWeight / $weighted);
+            }
         }
 
         return min(1.0, $jaccard * 1.5);
