@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
-| 5 — Community modules | 34 | 15 | 6 | 11 | 0 | 2 | 0 | 0.628 |
+| 5 — Community modules | 34 | 16 | 6 | 11 | 0 | 1 | 0 | 0.657 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **41** | **41** | **24** | **5** | **27** | **2** | — |
+| **Total** | **140** | **42** | **41** | **24** | **5** | **26** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(41 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 73.10`, over `140 − 2 excluded = 138`
-rows → **0.530**.
+`(42 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 74.10`, over `140 − 2 excluded = 138`
+rows → **0.537**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.530**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
-| 5 | (15 × 1.0) + (6 × 0.6) + (11 × 0.25) = 21.35 | ÷ 34 | **0.628** |
+| 5 | (16 × 1.0) + (6 × 0.6) + (11 × 0.25) = 22.35 | ÷ 34 | **0.657** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -210,7 +210,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.1 | Events list | RENDERS | Photographed, clean at 360dp |
 | 5.2 | Create an event | PROVEN | 2026-08-22: created "WalkEvent" and then PUBLISHED it — `events` row 162, draft → `active`, behind a confirmation naming what publishing triggers. 🔴 The date is in `start_time`; `events.start_date` exists, is always NULL, and reading it first nearly produced a false "the date was not saved" finding |
 | 5.3 | RSVP to an event | PROVEN | 2026-08-22: the second member tapped Going on the published event — `event_rsvps` row 1009 (`going`), and the card moved to "1 going" with the button in its selected state. 🔴 The table is `event_rsvps`; `event_attendance` is a different thing and `event_attendees` does not exist |
-| 5.4 | Event attendance / check-in | OPEN | Never walked |
+| 5.4 | Event attendance / check-in | CERTIFIED | 2026-08-23: on event 163 the organiser checked a member in and then out — `event_attendance` row 12 `checked_in` v1 → `checked_out` v2, and the RSVP moved to `attended`. 🔴 **The walk found that every manual check-in reported failure while succeeding.** `EventAttendanceTransitionResult::toArray()` has always returned `credit_status`; the mobile `mutation` schema is `.strict()` and did not declare it, so `parseContract` threw `EVENTS_CONTRACT_DRIFT` (422) **after** the server committed the transition. The organiser saw "Attendance not updated" over a roster still reading "Not checked in", and their only reasonable next move — tapping again — then really did fail, because the member was already `attended`. 🔴 **The existing test suite stayed green through this**, because its fixture was written from the schema instead of from the server and omitted the very field the server always sends. Both new guards now use the real payload; the error path also refreshes the roster, so a failure can never leave an organiser looking at a state that is not the server's. Three tests, all mutation-verified. 🔴 Systemic risk recorded, not fixed: **141 `.strict()` schemas across the events API layer**, each of which turns an undeclared server field into a member-facing failure. Nothing checks them against the PHP DTOs |
 | 5.5 | Event detail | RENDERS | Screen exists |
 | 5.6 | Groups list | RENDERS | Photographed, stat tiles wrap correctly |
 | 5.7 | Create a group | PROVEN | 2026-08-22: created "WalkGroup" from the device — `groups` row 974 (owner 674, public, active). 🔴 Tenant 2 had **zero** groups before this, so 5.8 and 5.9 could not have been walked at all without it. The form refused an 11-character description and said why ("Use 20 to 2000 characters") |

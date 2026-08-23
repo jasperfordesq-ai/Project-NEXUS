@@ -40,7 +40,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 552 or 700 is not the point.
+Nothing in that list is a score. A total of 554 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -80,8 +80,8 @@ guards it. Three standards that came out of getting this wrong:
 
 ## Where it stands, 2026-08-23
 
-**552 / 1000 on rubric M1.** Of 140 journeys: 41 CERTIFIED, 41 PROVEN, 24 RENDERS, 5 PARTIAL,
-3 BROKEN, 24 never attempted, 2 not applicable.
+**554 / 1000 on rubric M1.** Of 140 journeys: 42 CERTIFIED, 41 PROVEN, 24 RENDERS, 5 PARTIAL,
+3 BROKEN, 23 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
