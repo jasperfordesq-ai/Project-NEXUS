@@ -16,8 +16,34 @@ import {
 } from '@/lib/api/eventOfflineCheckin';
 import { storage } from '@/lib/storage';
 
-const KEY_STORAGE_KEY = 'nexus:event-checkin:encryption-key:v1';
-const INDEX_STORAGE_KEY = 'nexus:event-checkin:session-index:v1';
+/**
+ * 🔴 Underscores, not colons — `expo-secure-store` REFUSES a key containing anything
+ * outside `[A-Za-z0-9._-]`.
+ *
+ * This was `nexus:event-checkin:encryption-key:v1`. On Android SecureStore threw on every
+ * write, `lib/storage.ts` swallows write errors by design, `storage.get` then returned
+ * null, and `encryptionKey()`'s read-back check threw `offline_encryption_key_unavailable`
+ * — so **offline check-in could never be activated on any device**. Measured on
+ * 2026-08-23: authorising a staff device created the device server-side (201), downloaded
+ * the manifest (200) and refreshed the workspace (200), and the organiser still saw "That
+ * offline check-in action could not be completed" over "No devices are authorized for this
+ * event".
+ *
+ * Every other key in the app uses underscores (`STORAGE_KEYS` in `lib/constants.ts`),
+ * which is why nothing else was affected. Guarded by `lib/secureStoreKeys.test.ts`.
+ */
+const KEY_STORAGE_KEY = 'nexus_event_checkin_encryption_key_v1';
+/**
+ * 🔴 Same fault as the key above, found by the guard the moment it was written. This one
+ * goes through `storage.setJson`/`getJson` on native, so the session index could never be
+ * written either — every session was invisible to `purgeRevokedOrExpiredMobileSessions`
+ * and to the bookkeeping that depends on it.
+ */
+const INDEX_STORAGE_KEY = 'nexus_event_checkin_session_index_v1';
+/**
+ * Colons are fine here: this prefix is only used when `Platform.OS === 'web'`, where
+ * `lib/storage.ts` falls back to `localStorage` and SecureStore's key rules do not apply.
+ */
 const WEB_RECORD_PREFIX = 'nexus:event-checkin:ciphertext:v1:';
 const DIRECTORY_NAME = 'event-offline-checkin-v1';
 const MAX_LOCAL_ITEMS = 500;

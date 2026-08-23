@@ -99,6 +99,19 @@ function session(expiresAt: string): MobileOfflineSession {
   };
 }
 
+/**
+ * 🔴 These two were inline string literals holding `nexus:event-checkin:...` — the exact
+ * keys `expo-secure-store` REFUSES, because colons are outside its allowed
+ * `[A-Za-z0-9._-]`. The tests passed anyway: they asserted the same wrong literal the
+ * source used, so they pinned the bug rather than catching it. Offline check-in could
+ * never be activated on any Android device as a result (measured 2026-08-23).
+ *
+ * Named constants here so the two places agree, and `lib/secureStoreKeys.test.ts` is the
+ * guard that a key of this shape cannot be declared anywhere again.
+ */
+const ENCRYPTION_KEY = 'nexus_event_checkin_encryption_key_v1';
+const SESSION_INDEX_KEY = 'nexus_event_checkin_session_index_v1';
+
 describe('mobile Event offline check-in secure store', () => {
   beforeEach(() => {
     mockStorageMap.clear();
@@ -132,7 +145,7 @@ describe('mobile Event offline check-in secure store', () => {
   });
 
   it('purges a locally stored session when its staff device is revoked', async () => {
-    mockStorageMap.set('nexus:event-checkin:session-index:v1', JSON.stringify([
+    mockStorageMap.set(SESSION_INDEX_KEY, JSON.stringify([
       { eventId: 91, deviceId: 22 },
       { eventId: 91, deviceId: 23 },
     ]));
@@ -148,13 +161,13 @@ describe('mobile Event offline check-in secure store', () => {
 
     expect(mockDeleteAsync).toHaveBeenCalledTimes(1);
     expect(mockDeleteAsync.mock.calls[0]?.[0]).toContain('event-91-device-23.nqx');
-    expect(JSON.parse(mockStorageMap.get('nexus:event-checkin:session-index:v1') ?? '[]'))
+    expect(JSON.parse(mockStorageMap.get(SESSION_INDEX_KEY) ?? '[]'))
       .toEqual([{ eventId: 91, deviceId: 22 }]);
   });
 
   it('purges every encrypted record and the keystore key on logout', async () => {
-    mockStorageMap.set('nexus:event-checkin:encryption-key:v1', 'secret-key');
-    mockStorageMap.set('nexus:event-checkin:session-index:v1', JSON.stringify([{ eventId: 91, deviceId: 22 }]));
+    mockStorageMap.set(ENCRYPTION_KEY, 'secret-key');
+    mockStorageMap.set(SESSION_INDEX_KEY, JSON.stringify([{ eventId: 91, deviceId: 22 }]));
 
     await purgeAllMobileOfflineCheckinData();
 
@@ -162,7 +175,7 @@ describe('mobile Event offline check-in secure store', () => {
       'file:///documents/event-offline-checkin-v1',
       { idempotent: true },
     );
-    expect(mockStorageMap.has('nexus:event-checkin:encryption-key:v1')).toBe(false);
-    expect(mockStorageMap.has('nexus:event-checkin:session-index:v1')).toBe(false);
+    expect(mockStorageMap.has(ENCRYPTION_KEY)).toBe(false);
+    expect(mockStorageMap.has(SESSION_INDEX_KEY)).toBe(false);
   });
 });
