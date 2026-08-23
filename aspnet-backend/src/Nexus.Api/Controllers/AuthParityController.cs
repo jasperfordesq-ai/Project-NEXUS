@@ -220,10 +220,39 @@ public class AuthParityController : ControllerBase
     [HttpGet("oauth/enabled-providers")]
     [HttpGet("~/api/v2/auth/oauth/enabled-providers")]
     [AllowAnonymous]
-    public IActionResult EnabledProviders()
+    public async Task<IActionResult> EnabledProviders()
     {
-        var providers = OAuthEnabled() && ResolveOAuthTenantId() > 0 ? SupportedOAuthProviders : [];
+        var tenantId = ResolveOAuthTenantId();
+        var raw = tenantId > 0
+            ? await _db.TenantConfigs
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(config => config.TenantId == tenantId && config.Key == "auth.oauth.enabled_providers")
+                .Select(config => config.Value)
+                .FirstOrDefaultAsync()
+            : null;
+        var providers = OAuthEnabled() ? ParseEnabledOAuthProviders(raw) : [];
         return Ok(new { success = true, providers });
+    }
+
+    private static string[] ParseEnabledOAuthProviders(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return [];
+
+        try
+        {
+            var configured = JsonSerializer.Deserialize<string[]>(raw) ?? [];
+            return configured
+                .Select(NormalizeOAuthProvider)
+                .Where(provider => provider is "google" or "facebook")
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 
     [HttpGet("oauth/{provider}/redirect")]

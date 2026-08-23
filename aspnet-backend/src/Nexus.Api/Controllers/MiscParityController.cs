@@ -1401,7 +1401,55 @@ public class MiscParityController : ControllerBase
 
     [HttpGet("identity/status")]
     [Authorize]
-    public IActionResult IdentityStatus() => Ok(new { data = new { status = "not_started" } });
+    public async Task<IActionResult> IdentityStatus()
+    {
+        var userId = User.GetUserId();
+        if (!userId.HasValue)
+            return Unauthorized(new { error = "Invalid token" });
+
+        var latestSession = await _db.IdentityVerificationSessions
+            .AsNoTracking()
+            .Where(session => session.UserId == userId.Value)
+            .OrderByDescending(session => session.CreatedAt)
+            .ThenByDescending(session => session.Id)
+            .FirstOrDefaultAsync();
+
+        var hasVerifiedBadge = await _db.UserVerificationBadges
+            .AsNoTracking()
+            .AnyAsync(userBadge => userBadge.UserId == userId.Value
+                && (userBadge.ExpiresAt == null || userBadge.ExpiresAt > DateTime.UtcNow)
+                && userBadge.BadgeType != null
+                && userBadge.BadgeType.Key == "id_verified");
+
+        var feeRaw = await _db.TenantConfigs
+            .AsNoTracking()
+            .Where(config => config.Key == "identity_verification_fee_cents")
+            .Select(config => config.Value)
+            .FirstOrDefaultAsync();
+        var feeCents = int.TryParse(feeRaw, out var configuredFee) && configuredFee >= 0 ? configuredFee : 500;
+        var status = IdentityVerificationStatus(latestSession?.Status);
+
+        return Ok(new
+        {
+            data = new
+            {
+                has_id_verified_badge = hasVerifiedBadge,
+                user_has_dob = false,
+                fee_cents = feeCents,
+                fee_currency = "eur",
+                payment_completed = feeCents == 0,
+                verification_status = latestSession == null ? null : status,
+                latest_session = latestSession == null ? null : new
+                {
+                    id = latestSession.Id,
+                    status,
+                    provider = IdentityVerificationProvider(latestSession.Provider),
+                    created_at = latestSession.CreatedAt,
+                    failure_reason = latestSession.DecisionReason
+                }
+            }
+        });
+    }
 
     [HttpPost("identity/start")]
     [Authorize]
@@ -1877,6 +1925,24 @@ public class MiscParityController : ControllerBase
     private int TenantId() => _tenantContext.TenantId ?? 0;
     private int UserId() => User.GetUserId() ?? 0;
     private static string Token() => Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+
+    private static string IdentityVerificationStatus(VerificationSessionStatus? status) => status switch
+    {
+        VerificationSessionStatus.Created => "created",
+        VerificationSessionStatus.InProgress => "processing",
+        VerificationSessionStatus.Completed => "passed",
+        VerificationSessionStatus.Failed => "failed",
+        VerificationSessionStatus.Expired => "expired",
+        VerificationSessionStatus.Cancelled => "cancelled",
+        _ => "not_started"
+    };
+
+    private static string? IdentityVerificationProvider(VerificationProvider provider) => provider switch
+    {
+        VerificationProvider.None => null,
+        VerificationProvider.StripeIdentity => "stripe_identity",
+        _ => provider.ToString().ToLowerInvariant()
+    };
     private static string? Str(JsonElement e, string name) => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind != JsonValueKind.Null ? v.ToString() : null;
     private static int? Int(JsonElement e, string name) => int.TryParse(Str(e, name), out var value) ? value : null;
     private static decimal? Decimal(JsonElement e, string name) => decimal.TryParse(Str(e, name), out var value) ? value : null;

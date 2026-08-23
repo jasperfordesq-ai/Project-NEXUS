@@ -184,9 +184,55 @@ public class ReactFrontendCompatibilityController : ControllerBase
 
     [HttpGet("api/menus")]
     [AllowAnonymous]
-    public IActionResult Menus([FromQuery] string? location = null)
+    public async Task<IActionResult> Menus([FromQuery] string? location = null)
     {
         var menusByLocation = BuildDefaultMenusByLocation();
+        var pages = await _db.Pages
+            .AsNoTracking()
+            .Where(page => page.ShowInMenu && page.IsPublished)
+            .OrderBy(page => page.SortOrder)
+            .ThenBy(page => page.Title)
+            .Select(page => new
+            {
+                page.Id,
+                page.ParentId,
+                page.Title,
+                page.Slug,
+                page.SortOrder,
+                Location = page.MenuLocation ?? "header-main"
+            })
+            .ToListAsync();
+
+        foreach (var locationGroup in pages.GroupBy(page => NormalizePublicMenuLocation(page.Location)))
+        {
+            if (!menusByLocation.TryGetValue(locationGroup.Key, out var locationMenus) || locationMenus.Length == 0)
+                continue;
+
+            var items = locationGroup.Select(page => (object)new
+            {
+                id = page.Id,
+                menu_id = (int?)null,
+                parent_id = page.ParentId,
+                type = "page",
+                label = page.Title,
+                url = "/" + page.Slug.TrimStart('/'),
+                route_name = (string?)null,
+                page_id = page.Id,
+                icon = (string?)null,
+                css_class = (string?)null,
+                target = "_self",
+                sort_order = page.SortOrder,
+                visibility_rules = (object?)null,
+                is_active = 1,
+                children = Array.Empty<object>()
+            }).ToArray();
+
+            menusByLocation[locationGroup.Key] = BuildDefaultMenus(
+                locationGroup.Key,
+                PublicMenuName(locationGroup.Key),
+                PublicMenuSlug(locationGroup.Key),
+                items);
+        }
 
         if (!string.IsNullOrWhiteSpace(location))
         {
@@ -2028,16 +2074,43 @@ public class ReactFrontendCompatibilityController : ControllerBase
 
     [HttpGet("api/config/algorithms")]
     [Authorize]
-    public IActionResult AlgorithmConfig()
+    public async Task<IActionResult> AlgorithmConfig()
     {
+        var configs = await _db.TenantConfigs
+            .AsNoTracking()
+            .Where(config => config.Key == "config.feed_algorithm"
+                || config.Key == "config.algorithm.listings"
+                || config.Key == "config.algorithm.members"
+                || config.Key == "config.algorithm.matching"
+                || config.Key == "matching.config")
+            .ToDictionaryAsync(config => config.Key, config => config.Value);
+
+        var feedEnabled = AlgorithmEnabled(configs.GetValueOrDefault("config.feed_algorithm"), "algorithm", "ranked");
+        var listingsEnabled = AlgorithmEnabled(configs.GetValueOrDefault("config.algorithm.listings"));
+        var membersEnabled = AlgorithmEnabled(configs.GetValueOrDefault("config.algorithm.members"));
+        var matchingEnabled = AlgorithmEnabled(
+            configs.GetValueOrDefault("matching.config") ?? configs.GetValueOrDefault("config.algorithm.matching"));
+
         return Ok(new
         {
             data = new
             {
-                feed_ranking = "recent_with_engagement",
-                matching = "skills_location_availability",
-                search = "postgres_text",
-                moderation = "admin_review"
+                feed = AlgorithmInfo(
+                    feedEnabled,
+                    "EdgeRank", "edgerank", "Ranked by engagement, freshness, social connections, and content quality",
+                    "Chronological", "chronological", "Showing newest posts first"),
+                listings = AlgorithmInfo(
+                    listingsEnabled,
+                    "MatchRank", "matchrank", "Ranked by relevance, proximity, engagement, and reciprocity",
+                    "Newest First", "newest", "Showing newest listings first"),
+                members = AlgorithmInfo(
+                    membersEnabled,
+                    "CommunityRank", "communityrank", "Ranked by Bayesian reputation confidence, Wilson review certainty, activity, contributions, connectivity, and proximity",
+                    "Alphabetical", "alphabetical", "Sorted alphabetically by name"),
+                matching = AlgorithmInfo(
+                    matchingEnabled,
+                    "SmartMatch", "smartmatch", "AI-powered matching based on skills, proximity, and reciprocity",
+                    "Disabled", "disabled", "Smart matching is not active")
             }
         });
     }
@@ -5765,7 +5838,7 @@ public class ReactFrontendCompatibilityController : ControllerBase
         ["mobile"] = BuildDefaultMenus("mobile", "Mobile navigation", "default-mobile-nav")
     };
 
-    private static object[] BuildDefaultMenus(string location, string name, string slug) =>
+    private static object[] BuildDefaultMenus(string location, string name, string slug, object[]? items = null) =>
     [
         new
         {
@@ -5774,9 +5847,72 @@ public class ReactFrontendCompatibilityController : ControllerBase
             slug,
             location,
             is_active = 1,
-            items = Array.Empty<object>()
+            items = items ?? Array.Empty<object>()
         }
     ];
+
+    private static string NormalizePublicMenuLocation(string location) => location.Trim().ToLowerInvariant() switch
+    {
+        "header" => "header-main",
+        "secondary" => "header-secondary",
+        var normalized => normalized
+    };
+
+    private static string PublicMenuName(string location) => location switch
+    {
+        "header-main" => "Main navigation",
+        "header-secondary" => "Secondary navigation",
+        "footer" => "Footer navigation",
+        "sidebar" => "Sidebar navigation",
+        "mobile" => "Mobile navigation",
+        _ => location
+    };
+
+    private static string PublicMenuSlug(string location) => location switch
+    {
+        "header-main" => "default-main-nav",
+        "header-secondary" => "default-secondary-nav",
+        "footer" => "default-footer-nav",
+        "sidebar" => "default-sidebar-nav",
+        "mobile" => "default-mobile-nav",
+        _ => $"default-{location}-nav"
+    };
+
+    private static bool AlgorithmEnabled(string? raw, string preferredProperty = "enabled", string enabledValue = "true")
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(raw);
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty(preferredProperty, out var value))
+                return false;
+
+            return value.ValueKind == JsonValueKind.True
+                || (value.ValueKind == JsonValueKind.String
+                    && string.Equals(value.GetString(), enabledValue, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static object AlgorithmInfo(
+        bool enabled,
+        string enabledName,
+        string enabledKey,
+        string enabledDescription,
+        string disabledName,
+        string disabledKey,
+        string disabledDescription) => new
+        {
+            name = enabled ? enabledName : disabledName,
+            key = enabled ? enabledKey : disabledKey,
+            description = enabled ? enabledDescription : disabledDescription
+        };
 
     private static string? ReadString(JsonElement body, string propertyName)
     {

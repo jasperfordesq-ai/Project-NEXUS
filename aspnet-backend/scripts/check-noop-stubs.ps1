@@ -186,10 +186,10 @@ $hardcodedPayload = @(
 # !! This list is deliberately SHORT, and the short version is the point. The
 # temptation with an exclusion list is to sweep in everything that looks
 # awkward, which converts an honest count into a flattering one. The only shape
-# admitted here is: the ASP.NET filter pipeline performs the entire contract
-# before the body runs, and the body only projects the authenticated principal.
-# A wrong token never reaches these bodies - [Authorize] answers 401 first - so
-# there is nothing for the body to do.
+# admitted here is either: (a) the ASP.NET filter pipeline performs the entire
+# contract before the body runs, or (b) the body performs independently
+# verifiable local work that this deliberately narrow data/delegation heuristic
+# cannot recognise, such as cryptographic entropy or configuration resolution.
 #
 # !! What was CONSIDERED and REFUSED, so nobody has to re-derive it:
 #   AuthParityController.Heartbeat        Laravel's counterpart validates the
@@ -231,6 +231,10 @@ $defensible = @(
        reason = '[Authorize] IS the validation. Documented in the source at AuthParityController.cs:212 - the previous anonymous version returned {valid:true} without checking anything and was retired 2026-05-11 for exactly that.' }
     @{ file = 'AuthParityController.cs'; method = 'ValidateTokenPost';
        reason = 'Same as ValidateTokenGet; the POST spelling exists for clients that send the token in a body and is now routed through the same [Authorize] filter.' }
+    @{ file = 'MiscParityController.cs'; method = 'RootCsrfToken';
+       reason = 'Generates a fresh 128-bit token with RandomNumberGenerator on every request. The scanner intentionally does not treat all random output as endpoint work because OAuthRedirect also generates unpersisted random state; this exact token-generation contract is covered as a named exception.' }
+    @{ file = 'NotificationPollingController.cs'; method = 'GetRealtimeConfig';
+       reason = 'Projects the live Pusher environment/IConfiguration values and derives enabled from the required key, secret, and app ID. No database access is expected for a deployment configuration endpoint; Laravel reads the same values from config().' }
 )
 
 $hardcodedKeys = @{}

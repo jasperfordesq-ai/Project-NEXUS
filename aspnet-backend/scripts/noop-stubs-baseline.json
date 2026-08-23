@@ -1,217 +1,200 @@
-﻿{
-    "_comment": "Shrink-only, PER METRIC, enforced in both directions. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower a number in the SAME commit that fixes endpoints; never raise one without -AcceptWidenedDefinition.",
-    "_unit": "routes. `total` is DISTINCT verb+path across all defect categories. Method counts are kept because the historical figure (316) was in methods.",
-    "generated_at": "2026-08-22",
-    "total": 561,
-    "total_methods": 325,
-    "overlap_routes": 2,
-    "categories": {
-        "noop_method": {
-            "routes": 376,
-            "methods": 314
-        },
-        "echo_store": {
-            "routes": 177,
-            "methods": 5
-        },
-        "hardcoded_payload": {
-            "routes": 10,
-            "methods": 6
-        }
+{
+  "_comment": "Shrink-only, PER METRIC, enforced in both directions. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower a number in the SAME commit that fixes endpoints; never raise one without -AcceptWidenedDefinition.",
+  "_unit": "routes. `total` is DISTINCT verb+path across all defect categories. Method counts are kept because the historical figure (316) was in methods.",
+  "generated_at": "2026-08-23",
+  "total": 553,
+  "total_methods": 319,
+  "overlap_routes": 2,
+  "categories": {
+    "noop_method": {
+      "routes": 368,
+      "methods": 308
     },
-    "defensible": {
-        "routes": 4,
-        "methods": 4
+    "echo_store": {
+      "routes": 177,
+      "methods": 5
     },
-    "dispatchers": [
-        {
-            "dispatcher": "Delete",
-            "routes": 18,
-            "explicit_branch": 6,
-            "fell_through": 12
-        },
-        {
-            "dispatcher": "Get",
-            "routes": 151,
-            "explicit_branch": 87,
-            "fell_through": 64
-        },
-        {
-            "dispatcher": "Patch",
-            "routes": 3,
-            "explicit_branch": 1,
-            "fell_through": 2
-        },
-        {
-            "dispatcher": "Post",
-            "routes": 101,
-            "explicit_branch": 30,
-            "fell_through": 71
-        },
-        {
-            "dispatcher": "Put",
-            "routes": 48,
-            "explicit_branch": 20,
-            "fell_through": 28
-        }
-    ],
-    "by_file": [
-        {
-            "file": "AdminExplicitParityController.cs",
-            "count": 177
-        },
-        {
-            "file": "MiscParityController.cs",
-            "count": 85
-        },
-        {
-            "file": "ReactFrontendCompatibilityController.cs",
-            "count": 68
-        },
-        {
-            "file": "AdminCompatibility2Controller.cs",
-            "count": 53
-        },
-        {
-            "file": "AdminCompatibility3Controller.cs",
-            "count": 33
-        },
-        {
-            "file": "FrontendApiParityController.cs",
-            "count": 20
-        },
-        {
-            "file": "V15MemberParityController.cs",
-            "count": 19
-        },
-        {
-            "file": "MemberParityController.cs",
-            "count": 16
-        },
-        {
-            "file": "AuthParityController.cs",
-            "count": 12
-        },
-        {
-            "file": "AdminCompatibilityController.cs",
-            "count": 11
-        },
-        {
-            "file": "V15SocialCompatibilityController.cs",
-            "count": 10
-        },
-        {
-            "file": "CompatibilityAliasController.cs",
-            "count": 10
-        },
-        {
-            "file": "AdminPrerenderCompatibilityController.cs",
-            "count": 8
-        },
-        {
-            "file": "VolunteeringParityController.cs",
-            "count": 7
-        },
-        {
-            "file": "MarketplaceController.cs",
-            "count": 3
-        },
-        {
-            "file": "FederationExternalApiController.cs",
-            "count": 3
-        },
-        {
-            "file": "UsersParityController.cs",
-            "count": 3
-        },
-        {
-            "file": "StoriesController.cs",
-            "count": 3
-        },
-        {
-            "file": "LaravelReactUtilityCompatibilityController.cs",
-            "count": 2
-        },
-        {
-            "file": "NotificationPollingController.cs",
-            "count": 2
-        },
-        {
-            "file": "FederationParityController.cs",
-            "count": 2
-        },
-        {
-            "file": "EventRecurrenceController.cs",
-            "count": 2
-        },
-        {
-            "file": "AiController.cs",
-            "count": 2
-        },
-        {
-            "file": "HealthController.cs",
-            "count": 2
-        },
-        {
-            "file": "AdminToolsController.cs",
-            "count": 1
-        },
-        {
-            "file": "AdminAiProvidersController.cs",
-            "count": 1
-        },
-        {
-            "file": "AdminPerformanceSummaryController.cs",
-            "count": 1
-        },
-        {
-            "file": "AdminDiagnosticsController.cs",
-            "count": 1
-        },
-        {
-            "file": "AdminEmailDeliverabilityController.cs",
-            "count": 1
-        },
-        {
-            "file": "CompatibilityController.cs",
-            "count": 1
-        },
-        {
-            "file": "JobsParityController.cs",
-            "count": 1
-        },
-        {
-            "file": "PerformanceMonitorController.cs",
-            "count": 1
-        },
-        {
-            "file": "RegistrationPolicyController.cs",
-            "count": 1
-        },
-        {
-            "file": "AuthController.cs",
-            "count": 1
-        }
-    ],
-    "_raised": {
-        "on": "2026-08-21",
-        "reason": "Counting model widened 2026-08-21: the old baseline saw ONE of three do-nothing kinds and counted methods, not routes. It now counts routes in four categories - noop_method, echo_store (177 AdminExplicitParityController dispatcher fall-throughs to the generic echo store, invisible before because the echo store touches the database), hardcoded_payload (6 hand-read), and defensible (4, reported not counted). Route-per-method undercount fixed: 316 methods carry 375+ routes. Work tokens anchored, which revealed 3 no-ops excused by their own response field names.",
-        "changes": [
-            "counting model replaced: old baseline recorded total=316 METHODS in one category; the new model counts ROUTES in four"
-        ]
+    "hardcoded_payload": {
+      "routes": 10,
+      "methods": 6
+    }
+  },
+  "defensible": {
+    "routes": 7,
+    "methods": 6
+  },
+  "dispatchers": [
+    {
+      "dispatcher": "Delete",
+      "routes": 18,
+      "explicit_branch": 6,
+      "fell_through": 12
     },
-    "_lowered": [
-        {
-            "on": "2026-08-22",
-            "from": {
-                "total": 562,
-                "total_methods": 326
-            },
-            "to": {
-                "total": 561,
-                "total_methods": 325
-            },
-            "reason": "POST api/reviews stopped being a do-nothing endpoint. MiscParityController.CreateReviewCompat answered 200 with an invented id and wrote nothing, so web-uk told the member their review had been left over a reviews page that stayed empty. Replaced by ReviewsController.CreateReview, which persists the review, enforces Laravel's transaction-party and duplicate rules, and is covered by ReviewJourneyTests. Ledger row 4.29."
-        }
+    {
+      "dispatcher": "Get",
+      "routes": 151,
+      "explicit_branch": 87,
+      "fell_through": 64
+    },
+    {
+      "dispatcher": "Patch",
+      "routes": 3,
+      "explicit_branch": 1,
+      "fell_through": 2
+    },
+    {
+      "dispatcher": "Post",
+      "routes": 101,
+      "explicit_branch": 30,
+      "fell_through": 71
+    },
+    {
+      "dispatcher": "Put",
+      "routes": 48,
+      "explicit_branch": 20,
+      "fell_through": 28
+    }
+  ],
+  "by_file": [
+    {
+      "file": "AdminExplicitParityController.cs",
+      "count": 177
+    },
+    {
+      "file": "MiscParityController.cs",
+      "count": 83
+    },
+    {
+      "file": "ReactFrontendCompatibilityController.cs",
+      "count": 66
+    },
+    {
+      "file": "AdminCompatibility2Controller.cs",
+      "count": 53
+    },
+    {
+      "file": "AdminCompatibility3Controller.cs",
+      "count": 33
+    },
+    {
+      "file": "FrontendApiParityController.cs",
+      "count": 20
+    },
+    {
+      "file": "V15MemberParityController.cs",
+      "count": 19
+    },
+    {
+      "file": "MemberParityController.cs",
+      "count": 16
+    },
+    {
+      "file": "AdminCompatibilityController.cs",
+      "count": 11
+    },
+    {
+      "file": "V15SocialCompatibilityController.cs",
+      "count": 10
+    },
+    {
+      "file": "CompatibilityAliasController.cs",
+      "count": 10
+    },
+    {
+      "file": "AuthParityController.cs",
+      "count": 10
+    },
+    {
+      "file": "AdminPrerenderCompatibilityController.cs",
+      "count": 8
+    },
+    {
+      "file": "VolunteeringParityController.cs",
+      "count": 7
+    },
+    {
+      "file": "UsersParityController.cs",
+      "count": 3
+    },
+    {
+      "file": "MarketplaceController.cs",
+      "count": 3
+    },
+    {
+      "file": "StoriesController.cs",
+      "count": 3
+    },
+    {
+      "file": "FederationExternalApiController.cs",
+      "count": 3
+    },
+    {
+      "file": "EventRecurrenceController.cs",
+      "count": 2
+    },
+    {
+      "file": "HealthController.cs",
+      "count": 2
+    },
+    {
+      "file": "LaravelReactUtilityCompatibilityController.cs",
+      "count": 2
+    },
+    {
+      "file": "AiController.cs",
+      "count": 2
+    },
+    {
+      "file": "FederationParityController.cs",
+      "count": 2
+    },
+    {
+      "file": "JobsParityController.cs",
+      "count": 1
+    },
+    {
+      "file": "CompatibilityController.cs",
+      "count": 1
+    },
+    {
+      "file": "AuthController.cs",
+      "count": 1
+    },
+    {
+      "file": "PerformanceMonitorController.cs",
+      "count": 1
+    },
+    {
+      "file": "AdminToolsController.cs",
+      "count": 1
+    },
+    {
+      "file": "RegistrationPolicyController.cs",
+      "count": 1
+    },
+    {
+      "file": "AdminPerformanceSummaryController.cs",
+      "count": 1
+    },
+    {
+      "file": "AdminEmailDeliverabilityController.cs",
+      "count": 1
+    },
+    {
+      "file": "AdminDiagnosticsController.cs",
+      "count": 1
+    },
+    {
+      "file": "AdminAiProvidersController.cs",
+      "count": 1
+    }
+  ],
+  "_raised": {
+    "on": "2026-08-23",
+    "reason": "Classify cryptographic CSRF generation and live realtime configuration projection as explicit defensible work while implementing four database-backed bootstrap methods.",
+    "changes": [
+      "defensible (routes): 4 -> 7",
+      "defensible (methods): 4 -> 6"
     ]
+  }
 }
