@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=554/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=554 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=556/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=556 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,7 +22,7 @@ competing score anywhere.
 
 ## The headline
 
-**554 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**556 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
@@ -52,7 +52,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 161 | 300 | Ledger overall credit **0.537** × 300 = 161.1. 42 CERTIFIED, 41 PROVEN, 24 RENDERS, 5 PARTIAL of 138 scoring rows. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row |
+| Journey certification | 300 | 163 | 300 | Ledger overall credit **0.544** × 300 = 163.3. 43 CERTIFIED, 41 PROVEN, 24 RENDERS, 5 PARTIAL of 138 scoring rows. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row |
 | Capability parity with the website | 120 | 68 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds; the figure stays well short of full because the comparison itself is still ten capabilities deep and has now twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away — a sheet renders through a portal, so one was found sitting on top of an unrelated screen after a deep link. Walked on four sheet families plus swipe-to-dismiss. Deep links fixed three times over: parameter names, `?tab=`, and `/exchanges/:id`, which answered "Listing not found". Still unmeasured: 186 error-message sites and touch-target sizes |
 | Layout across device sizes | 80 | 52 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and guarded on 2026-08-20, and on 2026-08-22 **every text field in the app** was found sized to its own content rather than its container — the wallet's recipient search and the group discussion title shipped as pills. Fixed once in `components/ui/Input.tsx`; guarded. Still only two widths, still no tablet |
@@ -62,7 +62,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **554** | **1000** | — |
+| **Total** | **1000** | **556** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -70,7 +70,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 554 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 556 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 

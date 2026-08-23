@@ -213,152 +213,152 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:920",
+      "at": "events.ts:940",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1095",
+      "at": "events.ts:1115",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1108",
+      "at": "events.ts:1128",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1120",
+      "at": "events.ts:1140",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1132",
+      "at": "events.ts:1152",
       "http": "DELETE",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1146",
+      "at": "events.ts:1166",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1168",
+      "at": "events.ts:1188",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1187",
+      "at": "events.ts:1207",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1198",
+      "at": "events.ts:1218",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1212",
+      "at": "events.ts:1232",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1225",
+      "at": "events.ts:1245",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1248",
+      "at": "events.ts:1268",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1254",
+      "at": "events.ts:1274",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1270",
+      "at": "events.ts:1290",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1286",
+      "at": "events.ts:1306",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1297",
+      "at": "events.ts:1317",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1303",
+      "at": "events.ts:1323",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1309",
+      "at": "events.ts:1329",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1315",
+      "at": "events.ts:1335",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1327",
+      "at": "events.ts:1347",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1337",
+      "at": "events.ts:1357",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1352",
+      "at": "events.ts:1372",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1369",
+      "at": "events.ts:1389",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1375",
+      "at": "events.ts:1395",
       "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1384",
-      "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1393",
-      "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "events.ts:1404",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1413",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1415",
+      "at": "events.ts:1424",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1421",
+      "at": "events.ts:1435",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1472",
+      "at": "events.ts:1441",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1492",
       "http": "POST",
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
@@ -695,7 +695,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1100"
+        "events.ts:1120"
       ]
     },
     {
@@ -704,7 +704,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1217"
+        "events.ts:1237"
       ]
     },
     {
@@ -713,7 +713,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1203"
+        "events.ts:1223"
       ]
     },
     {
@@ -1962,7 +1962,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:314"
+        "jobs.ts:317"
       ]
     },
     {
@@ -1971,7 +1971,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:396"
+        "jobs.ts:401"
       ]
     },
     {
@@ -1989,7 +1989,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:328"
+        "jobs.ts:333"
       ]
     },
     {
@@ -1998,7 +1998,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:321"
+        "jobs.ts:326"
       ]
     },
     {
@@ -2007,7 +2007,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:359"
+        "jobs.ts:364"
       ]
     },
     {
@@ -2016,7 +2016,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:366"
+        "jobs.ts:371"
       ]
     },
     {
@@ -2025,7 +2025,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:373"
+        "jobs.ts:378"
       ]
     },
     {
@@ -2034,7 +2034,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:387"
+        "jobs.ts:392"
       ]
     },
     {
@@ -2043,7 +2043,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:380"
+        "jobs.ts:385"
       ]
     },
     {
@@ -2080,7 +2080,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:412"
+        "jobs.ts:417"
       ]
     },
     {
@@ -2089,7 +2089,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:424"
+        "jobs.ts:429"
       ]
     },
     {
@@ -2098,7 +2098,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:341"
+        "jobs.ts:346"
       ]
     },
     {
@@ -2107,7 +2107,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:403"
+        "jobs.ts:408"
       ]
     },
     {
@@ -2116,7 +2116,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:435"
+        "jobs.ts:440"
       ]
     },
     {
@@ -2125,7 +2125,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:352"
+        "jobs.ts:357"
       ]
     },
     {
@@ -2134,7 +2134,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:444"
+        "jobs.ts:449"
       ]
     },
     {
@@ -2143,7 +2143,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:456"
+        "jobs.ts:461"
       ]
     },
     {
@@ -2161,7 +2161,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:468"
+        "jobs.ts:473"
       ]
     },
     {
@@ -3323,7 +3323,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1235"
+        "events.ts:1255"
       ]
     },
     {
@@ -3341,7 +3341,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1243"
+        "events.ts:1263"
       ]
     },
     {

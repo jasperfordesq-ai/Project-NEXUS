@@ -67,17 +67,17 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
-| 5 — Community modules | 34 | 16 | 6 | 11 | 0 | 1 | 0 | 0.657 |
+| 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **42** | **41** | **24** | **5** | **26** | **2** | — |
+| **Total** | **140** | **43** | **41** | **24** | **5** | **25** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(42 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 74.10`, over `140 − 2 excluded = 138`
-rows → **0.537**.
+`(43 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 75.10`, over `140 − 2 excluded = 138`
+rows → **0.544**.
 
 ### Credit recomputation
 
@@ -87,7 +87,7 @@ rows → **0.537**.
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
-| 5 | (16 × 1.0) + (6 × 0.6) + (11 × 0.25) = 22.35 | ÷ 34 | **0.657** |
+| 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
 | 8 | 0 | ÷ 10 | **0.000** |
@@ -233,7 +233,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 5.24 | Submit an idea | CERTIFIED | Walked on both devices 2026-08-22. challenge_ideas rows 35 (user 674) and 36 (user 675), both `submitted`; the challenge header moved 0 -> 1 -> 2 ideas and the idea's own count read "1 vote" after the second member voted. |
 | 5.25 | Jobs list | RENDERS | Photographed |
 | 5.26 | Jobs tabs readable on a narrow phone | CERTIFIED | Truncated to "My A…" until `ec0df3366`; guarded by `app/deepLinkTabs.test.ts` sibling |
-| 5.27 | Apply for a job | OPEN | Never walked |
+| 5.27 | Apply for a job | CERTIFIED | 2026-08-23: applied from the device — `job_vacancy_applications` row 12, `pending`/`applied`, cover message stored in full, and the "Application submitted!" confirmation shown. Two defects found and fixed. 🔴 **The "Posted by" card was a heading with nothing under it.** `legacyGetById()` — the method `GET /v2/jobs/{id}` actually calls — joined `organizations` but never `users`, so `enrichVacancy()` built `creator.name` from absent aliases and returned `''`. A shared API fault, so the website's job page had it too; the list queries have always joined `users`, which is why the cards looked right and only the detail screen was blank. 🔴 **The fix first went to the wrong method**: `getById()` and `legacyGetById()` have byte-identical query bodies and a plain search-and-replace hit the one the route does not use. The guard test asserts both. 🔴 **Applying takes 9.5 seconds against a 15-second timeout**, because the endpoint sends two emails inside the request. The application row is written in the first second, so a timeout does not undo it: the member is told it failed while the employer already has it, and applying again is refused as a duplicate. Same shape as registration (1.9). Given its own 45s timeout and an honest message; the durable fix is to move those emails off the request, which is **not done**. 🔴 One walk artefact worth recording so it is not re-filed as a defect: `adb shell input text` breaks on spaces, which truncated a cover message to "I" and looked exactly like a broken field |
 | 5.28 | Job alerts | CERTIFIED | 2026-08-22: `nexus://jobs/alerts` now opens the Alerts tab and an alert was created and read back (`job_alerts` row 1, user 674, keywords "gardening", active). Two defects fixed on the way: the screen never read its own `view` parameter, so every alerts link landed on Browse; and the alert list was **unreachable** — the root SafeAreaView relied on an inert `className` for flex, so the list rendered below the bottom of the screen with nothing to scroll. Guarded by `lib/hooks/useParamTab.test.ts` and the tightened `components/safeAreaFlex.test.ts` |
 | 5.29 | Marketplace browse | RENDERS | Feature disabled for the test community until enabled locally 2026-08-20 |
 | 5.30 | Marketplace category by slug | CERTIFIED | Deep link said "not found" until `673743f16`; guarded by `app/deepLinkParams.test.ts` |
