@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 49,
-    "call_sites": 505,
-    "distinct_endpoints": 416,
-    "verified": 416,
+    "call_sites": 506,
+    "distinct_endpoints": 417,
+    "verified": 417,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -363,7 +363,7 @@
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
     {
-      "at": "feed.ts:230",
+      "at": "feed.ts:235",
       "http": "GET",
       "reason": "variable \"path\" is not a literal endpoint in this module"
     },
@@ -522,7 +522,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:341"
+        "feed.ts:346"
       ]
     },
     {
@@ -1084,7 +1084,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:221"
+        "feed.ts:226"
       ]
     },
     {
@@ -1093,7 +1093,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:252"
+        "feed.ts:257"
       ]
     },
     {
@@ -1102,7 +1102,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:240"
+        "feed.ts:245"
       ]
     },
     {
@@ -1111,7 +1111,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:234"
+        "feed.ts:239"
       ]
     },
     {
@@ -1121,7 +1121,7 @@
       "matched_via": "exact",
       "sites": [
         "exchanges.ts:221",
-        "feed.ts:327"
+        "feed.ts:332"
       ]
     },
     {
@@ -1130,7 +1130,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:351"
+        "feed.ts:356"
       ]
     },
     {
@@ -1139,7 +1139,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:358"
+        "feed.ts:363"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/posts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feed.ts:424"
       ]
     },
     {
@@ -3350,7 +3359,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:282"
+        "feed.ts:287"
       ]
     },
     {
@@ -3359,7 +3368,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:307"
+        "feed.ts:312"
       ]
     },
     {

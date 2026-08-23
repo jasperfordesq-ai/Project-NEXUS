@@ -214,6 +214,7 @@ function RootNavigator() {
     'gamification',
     'goals',
     'groups',
+    'home',
     'ideation',
     'jobs',
     'legal',
@@ -381,6 +382,10 @@ function RootNavigator() {
       <Stack.Screen
         name="(modals)/new-message"
         options={{ ...modalOptions, headerShown: false, title: t('messages:newMessage') }}
+      />
+      <Stack.Screen
+        name="(modals)/new-post"
+        options={{ ...modalOptions, headerShown: false, title: t('home:newPost.title') }}
       />
       <Stack.Screen
         name="(modals)/member-profile"

@@ -64,27 +64,27 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 6 | 3 | 3 | 0 | 2 | 0 | 0.611 |
-| 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
+| 2 — Feed and social | 14 | 7 | 4 | 2 | 0 | 1 | 0 | 0.707 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 1 | 1 | 1 | 0.587 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
 | 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 6 | 4 | 0 | 0.522 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
-| **Total** | **140** | **46** | **41** | **24** | **9** | **18** | **2** | — |
+| **Total** | **140** | **47** | **41** | **24** | **9** | **17** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(46 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 79.30`, over `140 − 2 excluded = 138`
-rows → **0.575**.
+`(47 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 80.30`, over `140 − 2 excluded = 138`
+rows → **0.582**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
 | 1 | (6 × 1.0) + (3 × 0.6) + (3 × 0.25) = 8.55 | ÷ 14 | **0.611** |
-| 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
+| 2 | (7 × 1.0) + (4 × 0.6) + (2 × 0.25) = 9.90 | ÷ 14 | **0.707** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 11.15 | ÷ 19 † | **0.587** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
@@ -132,7 +132,7 @@ uninterpretable.
 | 2.6 | Reply to a comment | CERTIFIED | 2026-08-21: replied to comment 168 from the sheet — the "Replying to E2E UserA" pill appeared and `comments` row 169 was written with `parent_id = 168`. Guarded by `components/comments/CommentSheet.test.tsx` ("submits a reply with the parent comment id") |
 | 2.7 | Open the card overflow menu ("…") | PROVEN | 2026-08-21: opened from a feed card on the emulator, sheet rendered with its action list. No action selected, so no effect asserted beyond the menu itself |
 | 2.8 | See who reacted to something | PROVEN | 2026-08-21: reacted to post 183, tapped the reaction summary, `ReactorsSheet` opened listing the correct reactor with `GET /api/v2/reactions/post/183/users/like`. **No guard** — `ReactorsSheet` is only ever mocked in tests, never rendered |
-| 2.9 | Write a post to the community feed | BROKEN | **No capability exists**: no `createPost` in the client, no composer screen, no Create entry. The server has `POST /v2/feed/posts` and the website has a composer |
+| 2.9 | Write a post to the community feed | CERTIFIED | 🔴 **No capability existed** — no `createPost`, no composer, no way in — while the server had `POST /v2/feed/posts` throughout and the website had a composer. Built and walked 2026-08-23: composer opened from the feed's own prompt row, text typed on the emulator, `POST /api/v2/feed/posts` returned **201**, post 185 rendered on its own detail screen, and going back re-read the feed with the member's post at the top. Empty submit answered "Post content cannot be empty." and issued no request. Deliberately narrower than the website: no visibility picker (the website's post tab sends none either), no image, no poll. Guarded by `app/(modals)/new-post.test.tsx` (7 cases, fixture copied from the real 201 body) plus three cases in `app/(tabs)/home.test.tsx` and two in `app/(modals)/quick-create.test.tsx`; the trim, the staleness marker and the focus re-read were each mutation-verified |
 | 2.10 | Share a post out of the app | PROVEN | Android share sheet opened from a card, 2026-08-20 |
 | 2.11 | Save / bookmark a post | PROVEN | Bookmark control present and reachable after `294586010`; toggle observed |
 | 2.12 | Feed filters (All / Following / Saved / Posts / Exchanges) | RENDERS | Chips visible; none exercised |
@@ -308,7 +308,7 @@ to it — which is exactly how "write a post" went unnoticed. Keep this table by
 
 | Capability | Website | Mobile | Decision |
 | --- | --- | --- | --- |
-| Write a feed post | `components/compose/tabs/PostTab.tsx` → `POST /v2/feed/posts` | **absent** | Owner decision needed. Row 2.9 |
+| Write a feed post | `components/compose/tabs/PostTab.tsx` → `POST /v2/feed/posts` | present (`new-post`) | Built 2026-08-23. Narrower on purpose: no image, no poll. Row 2.9 |
 | Compose an event | `EventTab.tsx` | present (`new-event`) | — |
 | Compose a goal | `GoalTab.tsx` | present (`goals`) | — |
 | Compose a listing | `ListingTab.tsx` | present (`new-exchange`) | — |

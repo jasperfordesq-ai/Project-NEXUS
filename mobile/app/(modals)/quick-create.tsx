@@ -31,6 +31,19 @@ interface QuickCreateOption {
 
 const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
   {
+    /*
+      🔴 Namespaced keys, deliberately. This screen loads the `common` namespace, and the
+      composer's copy lives in `home` beside the rest of the feed's wording rather than
+      being duplicated here. An explicit `ns:key` resolves against any bundled namespace.
+    */
+    labelKey: 'home:newPost.title',
+    descriptionKey: 'home:composer.title',
+    icon: 'create-outline',
+    route: '/(modals)/new-post',
+    tone: '#0284c7',
+    moduleGate: 'feed',
+  },
+  {
     labelKey: 'quickCreate.newTimebankListing',
     descriptionKey: 'quickCreate.newTimebankListingDescription',
     icon: 'storefront-outline',

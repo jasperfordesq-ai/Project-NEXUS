@@ -49,6 +49,14 @@
     "polls": "Polls",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Create post",
+    "placeholder": "What's on your mind?",
+    "submit": "Post",
+    "created": "Post created!",
+    "failed": "Failed to create post.",
+    "empty": "Post content cannot be empty."
+  },
   "dashboard": {
     "balance": "Balance",
     "hours": "{{count}} hours",

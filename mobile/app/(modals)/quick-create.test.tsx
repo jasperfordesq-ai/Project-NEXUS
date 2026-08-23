@@ -21,11 +21,13 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
 }));
 
+const mockModules = { current: ['listings'] as string[] };
+
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
   useTenant: () => ({
     hasFeature: (feature: string) => ['events', 'groups', 'goals', 'marketplace', 'polls'].includes(feature),
-    hasModule: (module: string) => module === 'listings',
+    hasModule: (module: string) => mockModules.current.includes(module),
   }),
 }));
 
@@ -43,6 +45,30 @@ import QuickCreateRoute from './quick-create';
 describe('QuickCreateRoute', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockModules.current = ['listings'];
+  });
+
+  /*
+    🔴 This screen loads only the `common` namespace, and the composer's label lives in
+    `home`. The assertion on the rendered English is therefore load-bearing: it proves the
+    explicit `home:newPost.title` key resolves here rather than rendering the key itself,
+    which is what a missing namespace looks like on screen.
+  */
+  it('offers writing a post when the community has a feed, and opens the composer', () => {
+    mockModules.current = ['listings', 'feed'];
+
+    const { getByText } = render(<QuickCreateRoute />);
+    const option = getByText('Create post');
+    expect(option).toBeTruthy();
+
+    fireEvent.press(option);
+    expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/new-post');
+  });
+
+  it('leaves the post option out when the community has no feed', () => {
+    const { queryByText } = render(<QuickCreateRoute />);
+
+    expect(queryByText('Create post')).toBeNull();
   });
 
   it('renders source-of-truth quick-create options without caring community', () => {

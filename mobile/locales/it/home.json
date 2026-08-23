@@ -49,6 +49,14 @@
     "polls": "Sondaggi",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Crea post",
+    "placeholder": "Cosa Le passa per la mente?",
+    "submit": "Pubblica",
+    "created": "Post creato!",
+    "failed": "Impossibile creare il post.",
+    "empty": "Il contenuto del post non può essere vuoto."
+  },
   "dashboard": {
     "balance": "Saldo",
     "hours": "{{count}} ore",

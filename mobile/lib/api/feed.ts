@@ -74,7 +74,12 @@ export interface PollData {
 export interface FeedItem {
   id: number;
   type: FeedItemType;
-  title: string;
+  /**
+   * 🔴 Genuinely null for a post — the server sends `title: null` on both the feed list
+   * and the single-post endpoint. This was declared a required `string` until 2026-08-23,
+   * which is a lie every consumer had already worked around with `item.title ?? ''`.
+   */
+  title: string | null;
   content: string | null;
   image_url: string | null;
   user_id?: number;
@@ -356,4 +361,65 @@ export function getFeedPoll(pollId: number): Promise<{ data: PollData }> {
  */
 export function voteFeedPoll(pollId: number, optionId: number): Promise<{ data: PollData }> {
   return api.post<{ data: PollData }>(`${API_V2}/feed/polls/${pollId}/vote`, { option_id: optionId });
+}
+
+/**
+ * The longest post the server will accept — `FeedService::MAX_POST_LENGTH`.
+ * Read from the server rather than guessed: a client limit below the server's
+ * would silently truncate a member's words, and one above it would let them
+ * write a long post and lose it to a 422 on submit.
+ */
+export const MAX_POST_LENGTH = 50000;
+
+export interface CreatePostInput {
+  content: string;
+  /**
+   * `FeedService::createPost` accepts `public`, `private` and `friends`, and maps the
+   * client word `connections` onto `friends`. Anything else falls back to `public`.
+   * The website's composer sends no visibility at all, so the mobile composer matches it
+   * and posts to the community; the field stays here for the group case below.
+   */
+  visibility?: 'public' | 'private' | 'connections';
+  /** Posting into a group requires membership — the server returns 422 otherwise. */
+  group_id?: number | null;
+}
+
+/**
+ * 🔴 Shaped from the real `POST /api/v2/feed/posts` 201 body captured 2026-08-23, NOT
+ * from `FeedItem`. The two disagree: this response carries only the post's own fields,
+ * and it sends `title: null` for a post — which `FeedItem` declared as a required
+ * `string` until this change. Restating a neighbouring type is how the Matches screen
+ * came to read four fields the server never sends.
+ */
+export interface CreatedPost {
+  id: number;
+  type: string;
+  title: string | null;
+  content: string | null;
+  content_truncated?: boolean;
+  image_url: string | null;
+  author: { id: number; name: string; avatar_url?: string | null } | null;
+  likes_count: number;
+  comments_count: number;
+  is_liked?: boolean;
+  created_at: string;
+  reactions?: ReactionsSummary;
+  media?: FeedItem['media'];
+}
+
+/**
+ * POST /api/v2/feed/posts — write a post to the community feed.
+ *
+ * 🔴 Nothing in this app called this endpoint until 2026-08-23 (journey 2.9): a member
+ * could read their community's feed on the phone and never contribute to it.
+ *
+ * A plain post is published immediately and appears at the top of the chronological
+ * feed. It is only withheld when the server's spam check flags it, in which case it goes
+ * to the moderation queue — so a caller must not promise the member it is visible.
+ */
+export function createPost(input: CreatePostInput): Promise<{ data: CreatedPost }> {
+  const body: Record<string, unknown> = { content: input.content };
+  if (input.visibility) body['visibility'] = input.visibility;
+  if (input.group_id) body['group_id'] = input.group_id;
+  return api.post<{ data: CreatedPost }>(`${API_V2}/feed/posts`, body);
 }

@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 49 |
-| Call sites | 505 |
-| Distinct method + endpoint pairs | 416 |
-| Verified against openapi.json | 416 |
+| Call sites | 506 |
+| Distinct method + endpoint pairs | 417 |
+| Verified against openapi.json | 417 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -106,7 +106,7 @@ and the places a contract test earns the most.
 | events.ts:1435 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1441 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1492 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
-| feed.ts:230 | GET | variable "path" is not a literal endpoint in this module |
+| feed.ts:235 | GET | variable "path" is not a literal endpoint in this module |
 | marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:835 | GET | variable "endpoint" is assigned more than one endpoint in this module |
@@ -130,7 +130,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/auth/register` | auth.ts:152 |
 | GET | `/api/v2/blog` | blog.ts:45 |
 | GET | `/api/v2/blog/{param}` | blog.ts:56 |
-| POST | `/api/v2/bookmarks` | feed.ts:341 |
+| POST | `/api/v2/bookmarks` | feed.ts:346 |
 | GET | `/api/v2/categories` | exchanges.ts:180 |
 | GET | `/api/v2/comments` | comments.ts:74, exchanges.ts:228 |
 | POST | `/api/v2/comments` | comments.ts:86, exchanges.ts:235 |
@@ -192,13 +192,14 @@ and the places a contract test earns the most.
 | POST | `/api/v2/federation/setup` | federation.ts:367 |
 | GET | `/api/v2/federation/status` | federation.ts:257, federation.ts:272 |
 | POST | `/api/v2/federation/transactions` | federation.ts:333 |
-| GET | `/api/v2/feed` | feed.ts:221 |
-| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:252 |
-| GET | `/api/v2/feed/hashtags/search` | feed.ts:240 |
-| GET | `/api/v2/feed/hashtags/trending` | feed.ts:234 |
-| POST | `/api/v2/feed/like` | exchanges.ts:221, feed.ts:327 |
-| GET | `/api/v2/feed/polls/{param}` | feed.ts:351 |
-| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:358 |
+| GET | `/api/v2/feed` | feed.ts:226 |
+| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:257 |
+| GET | `/api/v2/feed/hashtags/search` | feed.ts:245 |
+| GET | `/api/v2/feed/hashtags/trending` | feed.ts:239 |
+| POST | `/api/v2/feed/like` | exchanges.ts:221, feed.ts:332 |
+| GET | `/api/v2/feed/polls/{param}` | feed.ts:356 |
+| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:363 |
+| POST | `/api/v2/feed/posts` | feed.ts:424 |
 | POST | `/api/v2/feed/posts/{param}/hide` | feedModeration.ts:42 |
 | POST | `/api/v2/feed/posts/{param}/not-interested` | feedModeration.ts:53 |
 | POST | `/api/v2/feed/posts/{param}/report` | feedModeration.ts:69 |
@@ -443,8 +444,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/polls` | events.ts:1255 |
 | POST | `/api/v2/polls` | polls.ts:20 |
 | POST | `/api/v2/polls/{param}/vote` | events.ts:1263 |
-| POST | `/api/v2/reactions` | feed.ts:282 |
-| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:307 |
+| POST | `/api/v2/reactions` | feed.ts:287 |
+| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:312 |
 | GET | `/api/v2/resources` | resources.ts:90 |
 | GET | `/api/v2/resources/categories` | resources.ts:95 |
 | POST | `/api/v2/reviews` | reviews.ts:98 |

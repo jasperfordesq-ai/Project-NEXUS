@@ -49,6 +49,14 @@
     "polls": "Enquetes",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Criar publicação",
+    "placeholder": "Em que está a pensar?",
+    "submit": "Publicar",
+    "created": "Publicação criada!",
+    "failed": "Falha ao criar publicação.",
+    "empty": "O conteúdo da publicação não pode estar vazio."
+  },
   "dashboard": {
     "balance": "Saldo",
     "hours": "{{count}} horas",

@@ -6,9 +6,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Spinner, Surface, Tabs } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { reportException } from '@/lib/observability/report';
@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { getFeed, type FeedFilter, type FeedItem as FeedItemType, type FeedMode, type FeedResponse } from '@/lib/api/feed';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import FeedItem, { type FeedCommentTarget, type FeedReactorsTarget } from '@/components/FeedItem';
@@ -27,6 +27,8 @@ import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
 import FAB from '@/components/ui/FAB';
 import * as Haptics from '@/lib/haptics';
+import { feedVersion } from '@/lib/feedRefreshSignal';
+import NativePressable from '@/components/ui/NativePressable';
 import { withAlpha } from '@/lib/utils/color';
 
 function extractFeedPage(response: FeedResponse) {
@@ -66,6 +68,7 @@ const LISTING_SUBFILTERS = ['offer', 'request'] as const;
 export default function HomeScreen() {
   const { t } = useTranslation(['home', 'common', 'exchanges']);
   const { displayName } = useAuth();
+  const { hasModule } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [feedMode, setFeedMode] = useState<FeedMode>('ranking');
@@ -95,6 +98,25 @@ export default function HomeScreen() {
     wasRefreshingRef.current = true;
     refresh();
   }, [refresh]);
+
+  /*
+    🔴 Re-read on focus ONLY when a writer says the feed moved on.
+    This screen deliberately does not refetch on every focus — it is the app's busiest
+    list and a request per tab switch is real cost. But a member who writes a post and
+    comes back to a list without it in reads that as a post that was not saved. The
+    marker in lib/feedRefreshSignal.ts is the narrow fix: one comparison, no extra fetch
+    unless something was written.
+  */
+  const seenFeedVersion = useRef(feedVersion());
+  useFocusEffect(
+    useCallback(() => {
+      const current = feedVersion();
+      if (current !== seenFeedVersion.current) {
+        seenFeedVersion.current = current;
+        refresh();
+      }
+    }, [refresh]),
+  );
 
   useEffect(() => {
     if (wasRefreshingRef.current && !isLoading) {
@@ -318,6 +340,44 @@ export default function HomeScreen() {
                 </View>
               ) : null}
             </Surface>
+
+            {/*
+              🔴 The way in to writing a post. There was none at all until 2026-08-23 —
+              this app could read a community's feed and never add to it (journey 2.9).
+              A NativePressable rather than a HeroButton because a button caps its own
+              height and crops row-shaped content, which cost two other screens their
+              contents in the same week.
+            */}
+            {hasModule('feed') ? (
+              <NativePressable
+                feedback="scale"
+                testID="feed-composer-trigger"
+                className="mx-3 mt-2"
+                accessibilityRole="button"
+                accessibilityLabel={t('newPost.title')}
+                onPress={() => {
+                  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/(modals)/new-post');
+                }}
+              >
+                <Surface
+                  variant="default"
+                  className="flex-row items-center gap-3 overflow-hidden rounded-panel px-3 py-2.5"
+                  style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
+                >
+                  <View
+                    className="h-9 w-9 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: withAlpha(primary, 0.14) }}
+                  >
+                    <Ionicons name="create-outline" size={18} color={primary} />
+                  </View>
+                  <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                    {t('newPost.placeholder')}
+                  </Text>
+                  <Ionicons name="chevron-forward-outline" size={18} color={theme.textSecondary} />
+                </Surface>
+              </NativePressable>
+            ) : null}
           </View>
         }
         ListEmptyComponent={

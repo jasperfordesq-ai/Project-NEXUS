@@ -9,12 +9,18 @@ import { render, fireEvent } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('@/components/reactions/ReactorsSheet', () => 'View');
+const mockRouterPush = jest.fn();
+const mockHasModule = jest.fn(() => true);
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useSegments: () => ['(tabs)'],
-  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
   useNavigation: () => ({ setOptions: jest.fn() }),
+  // The feed re-reads on focus only when a writer marked it stale, so the effect runs
+  // its callback once here — the same as arriving on the screen.
+  useFocusEffect: (callback: () => void) => callback(),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -32,6 +38,8 @@ jest.mock('react-i18next', () => ({
         'dashboard.notifications': 'Notifications',
         'dashboard.unavailable': '-',
         'dashboard.openCard': `Open ${String(opts?.label ?? '')}`,
+        'newPost.title': 'Create post',
+        'newPost.placeholder': "What's on your mind?",
         'common:labels.friend': 'Friend',
         'common:buttons.retry': 'Retry',
       };
@@ -51,7 +59,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, hasModule: () => mockHasModule() }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -179,6 +187,7 @@ jest.mock('@/components/ui/Skeleton', () => ({
 // --- Tests ---
 
 import HomeScreen from './home';
+import { markFeedStale } from '@/lib/feedRefreshSignal';
 import { getEvents } from '@/lib/api/events';
 import { getExchanges } from '@/lib/api/exchanges';
 import { getWalletBalance } from '@/lib/api/wallet';
@@ -341,5 +350,42 @@ describe('HomeScreen', () => {
 
     const { getAllByText } = render(<HomeScreen />);
     expect(getAllByText('99+').length).toBeGreaterThan(0);
+  });
+
+  /*
+    🔴 Journey 2.9. This app could read a community's feed and never write to it — there
+    was no composer, no client call and no way in. The row below is the way in, so its
+    absence is a regression worth a test of its own.
+  */
+  it('offers a way to write a post, and opens the composer', () => {
+    const { getByTestId } = render(<HomeScreen />);
+
+    fireEvent.press(getByTestId('feed-composer-trigger'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/new-post');
+  });
+
+  it('hides the composer when the community has its feed switched off', () => {
+    mockHasModule.mockReturnValue(false);
+
+    const { queryByTestId } = render(<HomeScreen />);
+
+    expect(queryByTestId('feed-composer-trigger')).toBeNull();
+  });
+
+  it('re-reads the feed on focus only after something was written', () => {
+    // Arriving on the screen must not cost a second request…
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, refresh });
+
+    const view = render(<HomeScreen />);
+    expect(refresh).not.toHaveBeenCalled();
+
+    // …but a post written elsewhere must not leave the member looking at a list
+    // without their own post in it.
+    markFeedStale();
+    view.rerender(<HomeScreen />);
+
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 });

@@ -49,6 +49,14 @@
     "polls": " Pobalbhreitheanna",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Cruthaigh postáil",
+    "placeholder": "Cad atá ar d'intinn?",
+    "submit": "Postáil",
+    "created": "Cruthaíodh an phostáil!",
+    "failed": "Níorbh fhéidir an phostáil a chruthú.",
+    "empty": "Ní féidir ábhar na postála a bheith folamh."
+  },
   "dashboard": {
     "balance": "Iarmheid",
     "hours": "{{count}} uair",

@@ -49,6 +49,14 @@
     "polls": "Sondages",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Créer un post",
+    "placeholder": "Qu'avez-vous en tête ?",
+    "submit": "Publier",
+    "created": "Publication créée !",
+    "failed": "Impossible de créer la publication.",
+    "empty": "Le contenu de la publication ne peut pas être vide."
+  },
   "dashboard": {
     "balance": "Solde",
     "hours": "{{count}} heures",

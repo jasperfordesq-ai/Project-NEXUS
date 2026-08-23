@@ -49,6 +49,14 @@
     "polls": "Umfragen",
     "hashtags": "Hashtags"
   },
+  "newPost": {
+    "title": "Beitrag erstellen",
+    "placeholder": "Was beschäftigt Sie?",
+    "submit": "Posten",
+    "created": "Beitrag erstellt!",
+    "failed": "Beitrag konnte nicht erstellt werden.",
+    "empty": "Der Beitragsinhalt darf nicht leer sein."
+  },
   "dashboard": {
     "balance": "Saldo",
     "hours": "{{count}} Stunden",
