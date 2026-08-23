@@ -4,10 +4,10 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 47,
-    "call_sites": 491,
-    "distinct_endpoints": 402,
-    "verified": 402,
+    "api_modules": 49,
+    "call_sites": 504,
+    "distinct_endpoints": 415,
+    "verified": 415,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -363,7 +363,7 @@
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
     {
-      "at": "feed.ts:214",
+      "at": "feed.ts:230",
       "http": "GET",
       "reason": "variable \"path\" is not a literal endpoint in this module"
     },
@@ -432,7 +432,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:158"
+        "auth.ts:163"
       ]
     },
     {
@@ -450,7 +450,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:173"
+        "auth.ts:178"
       ]
     },
     {
@@ -459,7 +459,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:183"
+        "auth.ts:188"
       ]
     },
     {
@@ -468,7 +468,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:163"
+        "auth.ts:168"
       ]
     },
     {
@@ -477,7 +477,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:168"
+        "auth.ts:173"
       ]
     },
     {
@@ -495,7 +495,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:149"
+        "auth.ts:152"
       ]
     },
     {
@@ -522,7 +522,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:325"
+        "feed.ts:341"
       ]
     },
     {
@@ -717,6 +717,15 @@
       ]
     },
     {
+      "http": "GET",
+      "endpoint": "/api/v2/exchanges",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:114"
+      ]
+    },
+    {
       "http": "POST",
       "endpoint": "/api/v2/exchanges",
       "status": "verified",
@@ -724,6 +733,69 @@
       "sites": [
         "client.ts:479",
         "exchanges.ts:205"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/exchanges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:196"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/exchanges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:122"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:141"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/complete",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:161"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:177"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/decline",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:149"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/exchanges/{param}/start",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:156"
       ]
     },
     {
@@ -742,6 +814,15 @@
       "matched_via": "exact",
       "sites": [
         "exchanges.ts:195"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/exchanges/needs-attention-count",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "exchangeRequests.ts:134"
       ]
     },
     {
@@ -1003,7 +1084,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:205"
+        "feed.ts:221"
       ]
     },
     {
@@ -1012,7 +1093,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:236"
+        "feed.ts:252"
       ]
     },
     {
@@ -1021,7 +1102,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:224"
+        "feed.ts:240"
       ]
     },
     {
@@ -1030,7 +1111,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:218"
+        "feed.ts:234"
       ]
     },
     {
@@ -1040,7 +1121,7 @@
       "matched_via": "exact",
       "sites": [
         "exchanges.ts:221",
-        "feed.ts:311"
+        "feed.ts:327"
       ]
     },
     {
@@ -1049,7 +1130,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:335"
+        "feed.ts:351"
       ]
     },
     {
@@ -1058,7 +1139,43 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:342"
+        "feed.ts:358"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/posts/{param}/hide",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feedModeration.ts:42"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/posts/{param}/not-interested",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feedModeration.ts:53"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/posts/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feedModeration.ts:69"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/feed/users/{param}/mute",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "feedModeration.ts:77"
       ]
     },
     {
@@ -3143,7 +3260,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:247"
+        "messages.ts:262"
       ]
     },
     {
@@ -3233,7 +3350,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:266"
+        "feed.ts:282"
       ]
     },
     {
@@ -3242,7 +3359,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "feed.ts:291"
+        "feed.ts:307"
       ]
     },
     {
@@ -3487,7 +3604,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:178"
+        "auth.ts:183"
       ]
     },
     {

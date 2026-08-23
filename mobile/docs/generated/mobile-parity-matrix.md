@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-08-20
+Last reviewed: 2026-08-23
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -18,13 +18,13 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 254 |
-| Mobile routes (Expo Router screens) | 137 |
+| Mobile routes (Expo Router screens) | 139 |
 | Covered natively | 125 |
 | Deliberately out of scope | 65 |
 | **Known gaps** | **33** |
 | Awaiting review (shrink-only, budget 31) | 31 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 23 |
+| Mobile routes not claimed by a React route | 25 |
 | Broken declarations | 0 |
 
 ## Awaiting review
@@ -379,6 +379,8 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `event-recurrence-blueprints`
 - `event-templates`
 - `event-tickets`
+- `exchange-request-detail`
+- `exchange-requests`
 - `gamification`
 - `image-viewer`
 - `legal-acceptance`

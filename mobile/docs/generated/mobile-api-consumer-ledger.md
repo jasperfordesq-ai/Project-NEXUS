@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-08-23
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -21,10 +21,10 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 47 |
-| Call sites | 491 |
-| Distinct method + endpoint pairs | 402 |
-| Verified against openapi.json | 402 |
+| API modules read | 49 |
+| Call sites | 504 |
+| Distinct method + endpoint pairs | 415 |
+| Verified against openapi.json | 415 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -106,7 +106,7 @@ and the places a contract test earns the most.
 | events.ts:1415 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1421 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1472 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
-| feed.ts:214 | GET | variable "path" is not a literal endpoint in this module |
+| feed.ts:230 | GET | variable "path" is not a literal endpoint in this module |
 | marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:835 | GET | variable "endpoint" is assigned more than one endpoint in this module |
@@ -120,17 +120,17 @@ and the places a contract test earns the most.
 | POST | `/api/ai/chat/feedback` | chat.ts:130 |
 | GET | `/api/ai/chat/starters` | chat.ts:120 |
 | GET | `/api/ai/conversations/{param}` | chat.ts:116 |
-| POST | `/api/auth/forgot-password` | auth.ts:158 |
+| POST | `/api/auth/forgot-password` | auth.ts:163 |
 | POST | `/api/auth/login` | auth.ts:140 |
-| POST | `/api/auth/logout` | auth.ts:173 |
-| POST | `/api/auth/refresh-token` | auth.ts:183 |
-| POST | `/api/auth/reset-password` | auth.ts:163 |
-| POST | `/api/auth/verify-email` | auth.ts:168 |
+| POST | `/api/auth/logout` | auth.ts:178 |
+| POST | `/api/auth/refresh-token` | auth.ts:188 |
+| POST | `/api/auth/reset-password` | auth.ts:168 |
+| POST | `/api/auth/verify-email` | auth.ts:173 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:53 |
-| POST | `/api/v2/auth/register` | auth.ts:149 |
+| POST | `/api/v2/auth/register` | auth.ts:152 |
 | GET | `/api/v2/blog` | blog.ts:45 |
 | GET | `/api/v2/blog/{param}` | blog.ts:56 |
-| POST | `/api/v2/bookmarks` | feed.ts:325 |
+| POST | `/api/v2/bookmarks` | feed.ts:341 |
 | GET | `/api/v2/categories` | exchanges.ts:180 |
 | GET | `/api/v2/comments` | comments.ts:74, exchanges.ts:228 |
 | POST | `/api/v2/comments` | comments.ts:86, exchanges.ts:235 |
@@ -152,9 +152,18 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1100 |
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1217 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1203 |
+| GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
 | POST | `/api/v2/exchanges` | client.ts:479, exchanges.ts:205 |
+| DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:196 |
+| GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
+| POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
+| POST | `/api/v2/exchanges/{param}/complete` | exchangeRequests.ts:161 |
+| POST | `/api/v2/exchanges/{param}/confirm` | exchangeRequests.ts:177 |
+| POST | `/api/v2/exchanges/{param}/decline` | exchangeRequests.ts:149 |
+| POST | `/api/v2/exchanges/{param}/start` | exchangeRequests.ts:156 |
 | GET | `/api/v2/exchanges/check` | exchanges.ts:200 |
 | GET | `/api/v2/exchanges/config` | exchanges.ts:195 |
+| GET | `/api/v2/exchanges/needs-attention-count` | exchangeRequests.ts:134 |
 | GET | `/api/v2/explore` | explore.ts:184 |
 | GET | `/api/v2/federation/activity` | federation.ts:276 |
 | GET | `/api/v2/federation/connections` | federation.ts:390 |
@@ -183,13 +192,17 @@ and the places a contract test earns the most.
 | POST | `/api/v2/federation/setup` | federation.ts:367 |
 | GET | `/api/v2/federation/status` | federation.ts:257, federation.ts:272 |
 | POST | `/api/v2/federation/transactions` | federation.ts:333 |
-| GET | `/api/v2/feed` | feed.ts:205 |
-| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:236 |
-| GET | `/api/v2/feed/hashtags/search` | feed.ts:224 |
-| GET | `/api/v2/feed/hashtags/trending` | feed.ts:218 |
-| POST | `/api/v2/feed/like` | exchanges.ts:221, feed.ts:311 |
-| GET | `/api/v2/feed/polls/{param}` | feed.ts:335 |
-| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:342 |
+| GET | `/api/v2/feed` | feed.ts:221 |
+| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:252 |
+| GET | `/api/v2/feed/hashtags/search` | feed.ts:240 |
+| GET | `/api/v2/feed/hashtags/trending` | feed.ts:234 |
+| POST | `/api/v2/feed/like` | exchanges.ts:221, feed.ts:327 |
+| GET | `/api/v2/feed/polls/{param}` | feed.ts:351 |
+| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:358 |
+| POST | `/api/v2/feed/posts/{param}/hide` | feedModeration.ts:42 |
+| POST | `/api/v2/feed/posts/{param}/not-interested` | feedModeration.ts:53 |
+| POST | `/api/v2/feed/posts/{param}/report` | feedModeration.ts:69 |
+| POST | `/api/v2/feed/users/{param}/mute` | feedModeration.ts:77 |
 | GET | `/api/v2/gamification/badges` | gamification.ts:166, gamification.ts:168 |
 | GET | `/api/v2/gamification/challenges` | gamification.ts:216 |
 | POST | `/api/v2/gamification/challenges/{param}/claim` | gamification.ts:224 |
@@ -420,7 +433,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:175 |
 | POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:179 |
 | GET | `/api/v2/messages/restriction-status` | messages.ts:187 |
-| POST | `/api/v2/messages/voice` | messages.ts:247 |
+| POST | `/api/v2/messages/voice` | messages.ts:262 |
 | DELETE | `/api/v2/notifications/{param}` | notifications.ts:83 |
 | POST | `/api/v2/notifications/{param}/read` | notifications.ts:69 |
 | GET | `/api/v2/notifications/counts` | notifications.ts:64 |
@@ -430,8 +443,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/polls` | events.ts:1235 |
 | POST | `/api/v2/polls` | polls.ts:20 |
 | POST | `/api/v2/polls/{param}/vote` | events.ts:1243 |
-| POST | `/api/v2/reactions` | feed.ts:266 |
-| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:291 |
+| POST | `/api/v2/reactions` | feed.ts:282 |
+| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:307 |
 | GET | `/api/v2/resources` | resources.ts:90 |
 | GET | `/api/v2/resources/categories` | resources.ts:95 |
 | POST | `/api/v2/reviews` | reviews.ts:98 |
@@ -458,7 +471,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/{param}/listings` | members.ts:80 |
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
 | GET | `/api/v2/users/blocked` | settings.ts:95 |
-| GET | `/api/v2/users/me` | auth.ts:178 |
+| GET | `/api/v2/users/me` | auth.ts:183 |
 | PUT | `/api/v2/users/me` | profile.ts:24 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:94 |

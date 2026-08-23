@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Journey Certification Ledger
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-08-23
 
 Status: **Maintained — the mobile work list and the completion denominator**
 
@@ -66,18 +66,18 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 1 — Onboarding and access | 14 | 6 | 3 | 3 | 0 | 2 | 0 | 0.611 |
 | 2 — Feed and social | 14 | 6 | 4 | 2 | 0 | 2 | 0 | 0.636 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
-| 4 — Volunteering | 18 | 1 | 14 | 1 | 0 | 2 | 0 | 0.536 |
+| 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 15 | 6 | 11 | 0 | 2 | 0 | 0.628 |
 | 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **40** | **41** | **24** | **4** | **29** | **2** | — |
+| **Total** | **140** | **41** | **41** | **24** | **5** | **27** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(23 × 1.0) + (41 × 0.6) + (26 × 0.25) + (4 × 0.30) = 55.30`, over `140 − 2 excluded = 138`
-rows → **0.520**.
+`(41 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 73.10`, over `140 − 2 excluded = 138`
+rows → **0.530**.
 
 ### Credit recomputation
 
@@ -86,7 +86,7 @@ rows → **0.520**.
 | 1 | (6 × 1.0) + (3 × 0.6) + (3 × 0.25) = 8.55 | ÷ 14 | **0.611** |
 | 2 | (6 × 1.0) + (4 × 0.6) + (2 × 0.25) = 8.90 | ÷ 14 | **0.636** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
-| 4 | (1 × 1.0) + (14 × 0.6) + (1 × 0.25) = 9.65 | ÷ 18 | **0.536** |
+| 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (15 × 1.0) + (6 × 0.6) + (11 × 0.25) = 21.35 | ÷ 34 | **0.628** |
 | 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
 | 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
@@ -196,8 +196,8 @@ template for every other tier.
 | 4.13 | Generate a volunteer certificate | PROVEN | Verification code, hours, organisation breakdown |
 | 4.14 | Submit an expense | PROVEN | €12.50 travel, `vol_expenses` row |
 | 4.15 | Admin approves an expense | PROVEN | Reviewer recorded; member's app showed €12.50 claimed/approved |
-| 4.16 | Shift sign-up | OPEN | Never walked |
-| 4.17 | Shift swap request and response | OPEN | Never walked |
+| 4.16 | Shift sign-up | CERTIFIED | 2026-08-23: joined, moved and cancelled a shift on the device — `vol_applications.shift_id` 65 → 66 → NULL, and the shift list's spot counts followed. 🔴 **The walk found a real defect and it is now fixed.** A volunteer can hold exactly ONE shift per opportunity, because the server stores the sign-up as `vol_applications.shift_id` — a single column on the application, not a row per shift. Every card looked identical, including the one they had just joined, so signing up for a second shift silently dropped them from the first while the toast said "Shift joined — You have signed up for this shift". The held shift now carries a Confirmed chip and a Cancel action, and joining another asks first, naming the shift that would be lost. Guarded by three tests in `volunteering-detail.test.tsx`, each mutation-verified. 🔴 Two things the walk also established: **nothing on the platform can create a shift** — no route, no screen, in either frontend — they exist only where `RecurringShiftService` materialises a recurring pattern, and `createPattern()` generates none, so a coordinator sees nothing until the nightly cron runs; and `vol_shift_signups` is a **dead table** on this path, which made a successful sign-up look like a failed one until the code was read |
+| 4.17 | Shift swap request and response | PARTIAL | **The response half works and is now guarded; the request half does not exist anywhere on the platform.** 2026-08-23: UserB asked UserA to swap, UserA accepted on the device, and both applications moved — 675 went 66 → 67 and 674 went 67 → 66, request row `accepted`. 🔴 The walk found a real defect in both frontends and both are fixed. The payload is **requester-relative** — `original_shift` is always the requester's own shift — but each card labelled `original_shift` "Your shift" unconditionally, so on a **received** request, the only kind carrying Accept and Reject, the two shifts were named the wrong way round: UserA's card read "YOUR SHIFT — Aug 26" for UserB's shift and "PROPOSED SHIFT — Aug 29" for their own. A volunteer checking their diary would decline a swap that suited them. Both are now viewer-relative, with a "Their shift" label, guarded by two tests each side (`volunteering.test.tsx`, `ShiftSwapsTab.test.tsx`), all mutation-verified. 🔴 **PARTIAL, not CERTIFIED, because nothing can create a swap request.** `POST /v2/volunteering/swaps` works — probed directly, and it is what seeded this walk — but **no client calls it**: not mobile, not the website. Building it needs a roster showing which volunteer is on which shift, which is a privacy and safeguarding decision, not a screen. Same family as 3.20 and 6.12. The website's own empty state already tells members "you can request a swap from the shift details page", which does not exist — **owner decision** |
 | 4.18 | Volunteer donations / giving days | RENDERS | Tabs exist; never exercised |
 
 🔴 Rows 4.1–4.15 are PROVEN, not CERTIFIED, for one reason: **no automated test drives

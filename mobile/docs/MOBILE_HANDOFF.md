@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Hand-off — start here
 
-Last reviewed: 2026-08-22
+Last reviewed: 2026-08-23
 
 Status: **Maintained — the first document a new session on the mobile app should read.**
 
@@ -40,7 +40,7 @@ ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
    GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
    the platform's own values.
 
-Nothing in that list is a score. A total of 549 or 700 is not the point.
+Nothing in that list is a score. A total of 552 or 700 is not the point.
 
 ## Where the truth lives, and the rule about keeping it there
 
@@ -78,10 +78,10 @@ guards it. Three standards that came out of getting this wrong:
   correct. The actual cause was `sendVoice()` passing a literal `0`. Fixing the first plausible
   layer would have shipped a client change that did nothing.
 
-## Where it stands, 2026-08-22
+## Where it stands, 2026-08-23
 
-**549 / 1000 on rubric M1.** Of 140 journeys: 40 CERTIFIED, 41 PROVEN, 24 RENDERS, 4 PARTIAL,
-3 BROKEN, 26 never attempted, 2 not applicable.
+**552 / 1000 on rubric M1.** Of 140 journeys: 41 CERTIFIED, 41 PROVEN, 24 RENDERS, 5 PARTIAL,
+3 BROKEN, 24 never attempted, 2 not applicable.
 
 Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
 source-scan guard per failure family that has actually happened here, translations in seven
