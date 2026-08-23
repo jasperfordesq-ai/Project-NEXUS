@@ -99,5 +99,16 @@
   "federation": {
     "credit": "Crédito de federación",
     "partnerCredit": "{{partner}} crédito"
+  },
+  "transactionDetail": {
+    "title": "Transacción",
+    "notFound": "No se pudo encontrar esa transacción.",
+    "from": "De",
+    "to": "Para",
+    "when": "Cuándo",
+    "kind": "Tipo",
+    "balanceAfter": "Saldo posterior",
+    "reference": "Referencia",
+    "footnote": "Los créditos de tiempo son un registro de la ayuda dada y recibida. No son dinero y no pueden canjearse por dinero."
   }
 }

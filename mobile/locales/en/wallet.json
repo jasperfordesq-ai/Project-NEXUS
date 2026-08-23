@@ -99,5 +99,16 @@
   "federation": {
     "credit": "Federation credit",
     "partnerCredit": "{{partner}} credit"
+  },
+  "transactionDetail": {
+    "title": "Transaction",
+    "notFound": "That transaction could not be found.",
+    "from": "From",
+    "to": "To",
+    "when": "When",
+    "kind": "Kind",
+    "balanceAfter": "Balance afterwards",
+    "reference": "Reference",
+    "footnote": "Time credits are a record of help given and received. They are not money and cannot be exchanged for it."
   }
 }

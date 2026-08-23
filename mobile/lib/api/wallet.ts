@@ -43,6 +43,51 @@ export interface TransactionItem {
   } | null;
 }
 
+/**
+ * A single transaction, from `GET /v2/wallet/transactions/{id}`.
+ *
+ * 🔴 This endpoint existed and NOTHING called it — not the app and not the website — so a
+ * member could see a list of their time credits and never open one. Recorded as journey
+ * 6.12 on 2026-08-22 and built on 2026-08-23.
+ *
+ * Fields copied from the live response, not from what a screen would like: it carries both
+ * `sender` and `receiver` as well as the viewer-relative `other_user`, and `balance_after`
+ * is genuinely null for older rows. A negative id addresses a `federation_transactions`
+ * row (see `WalletController::showTransaction`), which is why the id is a number here and
+ * may be negative.
+ */
+/**
+ * 🔴 `avatar`, not `avatar_url`. The list endpoint sends `avatar_url`; this one sends
+ * `avatar`. Typing the parties as `TransactionOtherUser` — which requires `avatar_url` —
+ * would have declared a field the server never sends on this route, which is the exact
+ * fault that crashed the Matches screen. Caught while writing this by reading the live
+ * response instead of the neighbouring type.
+ */
+export interface WalletTransactionParty {
+  id: number | string;
+  name: string;
+  avatar?: string | null;
+  avatar_url?: string | null;
+}
+
+export interface WalletTransactionDetail {
+  id: number;
+  type: 'credit' | 'debit';
+  status: string;
+  amount: number;
+  description: string | null;
+  transaction_type: string;
+  sender?: WalletTransactionParty | null;
+  receiver?: WalletTransactionParty | null;
+  other_user?: WalletTransactionParty | null;
+  balance_after?: number | null;
+  created_at: string;
+  federation?: {
+    partner_id?: number;
+    partner_name?: string | null;
+  } | null;
+}
+
 export interface WalletTransactionsResponse {
   data: TransactionItem[];
   meta: {
@@ -133,6 +178,11 @@ export function getWalletBalance(): Promise<WalletBalanceResponse> {
  * @param perPage Number of items per page (default 20, max 100)
  * @param type    Filter: 'all' | 'sent' | 'received'
  */
+/** GET /api/v2/wallet/transactions/{id} — one transaction, for the detail screen. */
+export function getWalletTransaction(id: number): Promise<{ data: WalletTransactionDetail }> {
+  return api.get<{ data: WalletTransactionDetail }>(`${API_V2}/wallet/transactions/${id}`);
+}
+
 export function getWalletTransactions(
   cursor?: string,
   perPage = 20,

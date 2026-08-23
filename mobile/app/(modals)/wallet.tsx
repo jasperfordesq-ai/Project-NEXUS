@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
@@ -797,7 +797,16 @@ function TransactionCard({
       className="w-full"
       accessibilityRole="button"
       accessibilityLabel={t('transactionLabel', { name, amount })}
-      onPress={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+      onPress={() => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        // 🔴 Until 2026-08-23 this row did nothing at all: `GET /v2/wallet/transactions/{id}`
+        // existed and no client called it, so a member could see a list of their time
+        // credits and never open one (journey 6.12).
+        router.push({
+          pathname: '/(modals)/wallet-transaction',
+          params: { id: String(transaction.id) },
+        } as never);
+      }}
     >
       <Surface variant="secondary" className="flex-row items-start gap-3 rounded-panel-inner p-3">
         <Avatar uri={transaction.other_user?.avatar_url ?? null} name={name} size={44} />

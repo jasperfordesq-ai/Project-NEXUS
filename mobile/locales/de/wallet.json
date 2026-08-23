@@ -99,5 +99,16 @@
   "federation": {
     "credit": "Föderation Kredit",
     "partnerCredit": "{{partner}} Kredit"
+  },
+  "transactionDetail": {
+    "title": "Transaktion",
+    "notFound": "Diese Transaktion wurde nicht gefunden.",
+    "from": "Von",
+    "to": "An",
+    "when": "Wann",
+    "kind": "Art",
+    "balanceAfter": "Guthaben danach",
+    "reference": "Referenz",
+    "footnote": "Zeitguthaben sind eine Aufzeichnung geleisteter und erhaltener Hilfe. Sie sind kein Geld und können nicht dagegen getauscht werden."
   }
 }

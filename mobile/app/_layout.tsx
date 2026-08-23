@@ -403,6 +403,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('wallet:title') }}
       />
       <Stack.Screen
+        name="(modals)/wallet-transaction"
+        options={{ ...modalOptions, headerShown: false, title: t('wallet:transactionDetail.title') }}
+      />
+      <Stack.Screen
         name="(modals)/settings"
         options={{ ...modalOptions, headerShown: false, title: t('settings:title') }}
       />

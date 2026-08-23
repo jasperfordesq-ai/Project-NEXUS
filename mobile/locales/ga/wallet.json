@@ -99,5 +99,16 @@
   "federation": {
     "credit": "Creidmheas Cónaidhme",
     "partnerCredit": "{{partner}} creidmheas"
+  },
+  "transactionDetail": {
+    "title": "Idirbheart",
+    "notFound": "Níorbh fhéidir an idirbheart sin a aimsiú.",
+    "from": "Ó",
+    "to": "Chuig",
+    "when": "Cathain",
+    "kind": "Cineál",
+    "balanceAfter": "Iarmhéid ina dhiaidh",
+    "reference": "Tagairt",
+    "footnote": "Is taifead ar chabhair a tugadh agus a fuarthas atá i gcreidmheasanna ama. Ní airgead iad agus ní féidir iad a mhalartú ar airgead."
   }
 }

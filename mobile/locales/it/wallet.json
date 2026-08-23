@@ -99,5 +99,16 @@
   "federation": {
     "credit": "Credito federativo",
     "partnerCredit": "Credito {{partner}}"
+  },
+  "transactionDetail": {
+    "title": "Transazione",
+    "notFound": "Impossibile trovare questa transazione.",
+    "from": "Da",
+    "to": "A",
+    "when": "Quando",
+    "kind": "Tipo",
+    "balanceAfter": "Saldo successivo",
+    "reference": "Riferimento",
+    "footnote": "I crediti di tempo registrano l’aiuto dato e ricevuto. Non sono denaro e non possono essere scambiati con denaro."
   }
 }
