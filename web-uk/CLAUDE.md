@@ -217,6 +217,8 @@ Route and backend preparation docs live beside this app:
 - `docs/TENANT_ROUTING_PARITY.md`
 - `docs/BACKEND_SWITCHING_CONTRACT.md`
 - `docs/MANUAL_ACCESSIBILITY_EVIDENCE.md` (an entry is evidence for exactly the
+- `docs/SCREEN_READER_TEST_PACK.md` (the instrument for the -30 screen-reader
+  deduction — a human runs it; nothing in this repository can close that row)
   page, browser, input method and viewport it names — never a conformance claim)
 - `../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (a **different**
   rubric for the ASP.NET edition; never a `web-uk` score source, and never added

@@ -417,3 +417,160 @@ jobs:
       - name: Documentation score markers agree with their own tables and artefacts
         working-directory: .
         run: node scripts/check-doc-scores.mjs
+
+  # ---------------------------------------------------------------------------
+  # 🔴 The accessibility gates that had never run.
+  #
+  # `Web UK checks` above runs the ISOLATED accessibility variant, whose runner
+  # greps three describes only (scripts/accessibility-isolated-selection.js),
+  # because its mock backend serves four endpoints and 404s everything else. The
+  # authenticated, Irish and Arabic RTL gates — 72 checks over the pages members
+  # actually use — were therefore in the repository but executed nowhere. They
+  # were run by hand for the first time on 2026-08-19 (52 + 13 passing, evidence
+  # in web-uk/docs/MANUAL_ACCESSIBILITY_EVIDENCE.md); this job is what stops that
+  # becoming a dated snapshot that silently rots again.
+  #
+  # It stands up a real Laravel against a throwaway MariaDB and seeds SYNTHETIC
+  # accounts only, using the same seeder the disposable local environment uses.
+  # No production or production-derived data is involved at any point.
+  # ---------------------------------------------------------------------------
+  web-uk-accessibility:
+    name: Web UK authenticated accessibility
+    needs: changes
+    if: >-
+      needs.changes.outputs.webuk == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: testing
+          MARIADB_DATABASE: nexus_a11y
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: nexus_a11y
+      DB_USER: root
+      DB_PASS: testing
+      APP_ENV: local
+      APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
+      # No Redis in this job, so the same driver set the PHP test jobs use.
+      # APP_ENV is `local`, NOT `testing`: `testing` makes Laravel load the repo's
+      # .env.testing, which points DB_DATABASE at PHPUnit's own database.
+      CACHE_DRIVER: array
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      BROADCAST_CONNECTION: "null"
+      BROADCAST_DRIVER: "null"
+      MAIL_MAILER: array
+      A11Y_TENANT_SLUG: a11y-community
+      A11Y_MEMBER_EMAIL: e2e.user.a@project-nexus.local
+      A11Y_MEMBER_PASSWORD: TestPassword123!
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_mysql, gmp, bcmath, intl, zip
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Create the schema
+        run: php artisan migrate --force
+
+      - name: Seed SYNTHETIC accounts only
+        run: |
+          set -euo pipefail
+          php artisan db:seed --class=TenantSeeder --force
+          mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -e "
+            INSERT INTO tenants (name, slug, tenant_category, is_active, parent_id, depth, allows_subtenants, max_depth, created_at, updated_at)
+            SELECT 'A11y Community', '${A11Y_TENANT_SLUG}', 'community', 1, NULL, 0, 1, 3, NOW(), NOW()
+            WHERE NOT EXISTS (SELECT 1 FROM tenants WHERE slug = '${A11Y_TENANT_SLUG}');
+            UPDATE tenants SET path = CONCAT('/', id, '/')
+              WHERE slug = '${A11Y_TENANT_SLUG}' AND (path IS NULL OR path = '');"
+          TENANT_ID=$(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e \
+            "SELECT id FROM tenants WHERE slug='${A11Y_TENANT_SLUG}' LIMIT 1;")
+          echo "TENANT_ID=$TENANT_ID" >> "$GITHUB_ENV"
+          E2E_TENANT_ID="$TENANT_ID" php artisan db:seed --class=E2ETestDataSeeder --force
+
+      # 🔴 The same invariant the local disposable environment enforces: this job
+      # must never be pointed at anything holding real members. Assert it rather
+      # than trust it — a non-synthetic address here is a hard stop.
+      - name: Refuse to continue unless every account is synthetic
+        run: |
+          set -euo pipefail
+          REAL=$(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e \
+            "SELECT COUNT(*) FROM users WHERE email NOT LIKE '%.local';")
+          echo "non-synthetic accounts: $REAL"
+          test "$REAL" -eq 0
+
+      - name: Resolve the fixture ids the gate needs
+        run: |
+          set -euo pipefail
+          # 🔴 Must NOT be the member the gate signs in as: the appreciation wall
+          # renders its form only `{% if not isSelf %}`.
+          OTHER=$(mysql -h 127.0.0.1 -uroot -ptesting nexus_a11y -N -e \
+            "SELECT id FROM users WHERE tenant_id=${TENANT_ID} AND email <> '${A11Y_MEMBER_EMAIL}' LIMIT 1;")
+          echo "ACCESSIBILITY_MEMBER_ID=$OTHER" >> "$GITHUB_ENV"
+
+      - name: Start Laravel
+        run: |
+          php -S 127.0.0.1:8099 -t httpdocs httpdocs/index.php &
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null "http://127.0.0.1:8099/api/v2/tenant/bootstrap?slug=${A11Y_TENANT_SLUG}"; then
+              echo "laravel up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Laravel did not come up"; exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web-uk/package-lock.json
+
+      - name: Install web-uk dependencies
+        working-directory: web-uk
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: web-uk
+        run: npx playwright install --with-deps chromium
+
+      # The authenticated gate plus the Irish and Arabic RTL gates. Organisation,
+      # goal and ranked-poll fixtures are not seeded here, so those checks declare
+      # themselves skipped rather than failing on a 404 — a declaration this job
+      # makes explicitly, never a silent pass.
+      - name: Authenticated, Irish and Arabic RTL accessibility gates
+        working-directory: web-uk
+        env:
+          LARAVEL_BASE_URL: http://127.0.0.1:8099
+          SMOKE_EMAIL: ${{ env.A11Y_MEMBER_EMAIL }}
+          SMOKE_PASSWORD: ${{ env.A11Y_MEMBER_PASSWORD }}
+          SMOKE_TENANT: ${{ env.A11Y_TENANT_SLUG }}
+          ACCESSIBILITY_TENANT_SLUG: ${{ env.A11Y_TENANT_SLUG }}
+          ACCESSIBILITY_ORG_ID: none
+          ACCESSIBILITY_GOAL_ID: none
+        run: |
+          npm run build:css
+          node scripts/accessibility-local-server.js --grep="authenticated-page|narrow reflow"
+
+      - name: Upload accessibility report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-uk-authenticated-accessibility
+          path: web-uk/artifacts/accessibility
+          retention-days: 7

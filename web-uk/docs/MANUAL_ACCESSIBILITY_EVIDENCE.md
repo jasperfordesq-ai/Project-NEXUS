@@ -167,3 +167,14 @@ into the workflow is a separate piece of infrastructure work. What has changed i
 that they are now known to pass, the fixture assumptions that made them
 unrunnable are gone, and there is a documented command that works. Treat this as
 evidence for the date and environment named, not as continuous coverage.
+
+## The one thing none of this can do
+
+Everything above is a machine checking a machine. The largest single deduction
+in the score — **-30, no screen-reader speech-output sign-off** — cannot be
+closed from this repository at all, because axe and reflow checks catch roughly
+a third of real barriers and none of them can tell you whether a blind member
+can finish a task. [SCREEN_READER_TEST_PACK.md](SCREEN_READER_TEST_PACK.md) is
+the instrument for closing it: seven journeys, about an hour, written for
+somebody who has never used a screen reader, with the machine-checked ground
+deliberately excluded so the human effort goes where it counts.

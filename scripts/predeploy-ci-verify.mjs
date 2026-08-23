@@ -138,6 +138,10 @@ const REQUIRED_JOBS = [
   // live on three hostnames, so a deploy must not proceed without them.
   { prefix: 'Web UK checks',                                filters: ['webuk'], workflow: 'platform-contracts.yml' },
   { prefix: 'Web UK image builds',                          filters: ['webuk'], workflow: 'platform-contracts.yml' },
+  // The authenticated, Irish and Arabic RTL accessibility gates. They cover the
+  // signed-in pages and had never executed anywhere until 2026-08-19; a deploy of
+  // an accessibility-first frontend must not proceed without them.
+  { prefix: 'Web UK authenticated accessibility',           filters: ['webuk'], workflow: 'platform-contracts.yml' },
   { prefix: 'Translation Drift Detection',                  filters: ['i18n'] },
   { prefix: 'Dockerfile Drift Detection',                   filters: 'always' },
   { prefix: 'Migration Safety Gate',                        filters: 'always' },
