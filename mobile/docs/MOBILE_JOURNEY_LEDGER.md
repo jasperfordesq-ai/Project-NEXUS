@@ -68,16 +68,16 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 0 | 2 | 1 | 0.571 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
-| 6 — Money and wallet | 12 | 0 | 7 | 2 | 0 | 2 | 1 | 0.427 |
+| 6 — Money and wallet | 12 | 0 | 7 | 2 | 1 | 1 | 1 | 0.455 |
 | 7 — Cross-cutting behaviour | 18 | 6 | 1 | 0 | 4 | 7 | 0 | 0.433 |
 | 8 — RESERVE (pre-counted scope) | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0.000 |
-| **Total** | **140** | **43** | **41** | **24** | **5** | **25** | **2** | — |
+| **Total** | **140** | **43** | **41** | **24** | **6** | **24** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(43 × 1.0) + (41 × 0.6) + (24 × 0.25) + (5 × 0.30) = 75.10`, over `140 − 2 excluded = 138`
-rows → **0.544**.
+`(43 × 1.0) + (41 × 0.6) + (24 × 0.25) + (6 × 0.30) = 75.40`, over `140 − 2 excluded = 138`
+rows → **0.546**.
 
 ### Credit recomputation
 
@@ -88,7 +88,7 @@ rows → **0.544**.
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) = 10.85 | ÷ 19 † | **0.571** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
-| 6 | (7 × 0.6) + (2 × 0.25) = 4.70 | ÷ 11 † | **0.427** |
+| 6 | (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 5.00 | ÷ 11 † | **0.455** |
 | 7 | (6 × 1.0) + (1 × 0.6) + (4 × 0.30) = 7.80 | ÷ 18 | **0.433** |
 | 8 | 0 | ÷ 10 | **0.000** |
 
@@ -247,13 +247,13 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | # | Journey | Status | Evidence / cause |
 | --- | --- | --- | --- |
 | 6.1 | See your balance | RENDERS | Wallet screen photographed; balance correct |
-| 6.2 | See your transaction history | PROVEN | 2026-08-22: walked on the device — rows for the transfer, the exchange and the volunteering auto-payment, each with an earned/spent tag and date, All/Earned/Spent/Pending filters, an Export action and EARNED/SPENT/PENDING aggregates that matched the ledger. 🔴 Each row's meta line is clipped by the bottom of its card. PARTIAL until now |
+| 6.2 | See your transaction history | PROVEN | 2026-08-22: walked on the device — rows for the transfer, the exchange and the volunteering auto-payment, each with an earned/spent tag and date, All/Earned/Spent/Pending filters, an Export action and EARNED/SPENT/PENDING aggregates that matched the ledger. 🔴 Each row's meta line was clipped by the bottom of its card — **fixed 2026-08-23**: the whole row sat inside a `HeroButton`, which caps its own height, so the description and the amount were not rendered at all. The same fault as the notification cards, in a second place; swapped to `NativePressable` and now covered by a shrink-only guard (`components/cardInsideButton.test.ts`, 8 sites left). PARTIAL until 6.2 was walked |
 | 6.3 | Send credits to another member | PROVEN | 2026-08-22: sent 1 hour from the wallet — UserA 86.00 → 85.00, UserB 26.00 → 27.00, `transactions` row 270 ("Time credit transfer"). 🔴 The recipient search field was a narrow pill, hard to hit and showing almost no text; fixed in `components/ui/Input.tsx` for every field in the app |
 | 6.4 | Receive credits and see them | PROVEN | Volunteering credit landed and showed (Tier 4) |
 | 6.5 | Organisation wallet balance | PROVEN | −2.00 → 8.00 → 13.00 across two deposits, with ledger rows |
 | 6.6 | Deposit credits into an organisation wallet | PROVEN | Device + API; organiser correctly debited |
 | 6.7 | Community fund | PROVEN | 2026-08-22: donated 1 credit from the wallet — member 85.00 → 84.00, `community_fund_accounts` balance 1.00 / total_donated 1.00, `community_fund_transactions` row 8. 🔴 This walk uncovered a platform-wide backend defect: the fund's own endpoints were gated on `hasFeature('wallet')` when `wallet` is a MODULE, so the fund reported `{balance: 0, enabled: false}` for every tenant, always. Fixed and guarded in `WalletFeaturesControllerTest` |
-| 6.8 | Pending in / out | OPEN | Never walked |
+| 6.8 | Pending in / out | PARTIAL | **Walked with a seeded fixture, because no member can reach this screen state.** 🔴 The only code path that writes `transactions.status = 'pending'` is external federation (`FederationController`), which is off by default and has never had a partner connected — `WalletService` writes `completed` on both of its insert paths. So in every real community these figures are permanently 0.00, while the wallet devotes a chip, a stat tile and a filter tab to them. 🔴 **Two defects found and fixed.** The app **added pending-in to pending-out** and printed the sum: with 7 in and 4 out it read "11 pending" in the chip and "PENDING 11h" in the tile, beside EARNED "+3h" and SPENT "−5h" which do carry a direction. 11 was a figure the member had nowhere. And the **Pending filter could only ever answer "No matching transactions"**, because `getTransactions()` was hard-scoped to `completed()` — so the tile claimed hours were pending and tapping Pending showed none of them. Both faults existed on the **website** too and both are fixed there. The server now honours `type=pending` and is deliberately additive: every other filter stays completed-only, because clients derive earned/spent from that list and a pending amount must never count as settled. Guarded by two tests each side plus a feature test pinning both halves of the server rule; all mutation-verified |
 | 6.9 | Wallet limits and refusals | PROVEN | 2026-08-22: tried to send 999 credits on an 85-credit balance — refused before any request with "Check the details / You do not have enough time credits for this amount." Balances untouched, no transaction row |
 | 6.10 | Donations | RENDERS | Tab exists |
 | 6.11 | Auto-pay control on an organisation wallet | N/A | Removed `df0d4085c`: the endpoint returned 404 and the flag governed nothing. React had already removed it |
