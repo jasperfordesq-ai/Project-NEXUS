@@ -30,8 +30,25 @@ const FALLBACK_PRIMARY = '#006FEE';
 /** SecureStore key for cached tenant config — mirrors AuthContext's cache-first pattern. */
 const TENANT_CONFIG_CACHE_PREFIX = 'nexus_tenant_config';
 
+/**
+ * 🔴 Expo SecureStore REJECTS a key containing anything outside
+ * `[A-Za-z0-9._-]`, and this key used to be joined with a colon
+ * (`nexus_tenant_config:hour-timebank`). Every read and every write therefore
+ * threw on a real device — and because `lib/storage.ts` swallows both (returning
+ * `null` from `get`, reporting and continuing from `set`), the failure looked
+ * exactly like "no cache yet" instead of "this cache can never work".
+ *
+ * The visible cost was not an error screen. It was that the tenant config cache
+ * was dead: the app had to reach the network on every single launch, and a cold
+ * start with no connection fell through to `tenant === null`, which renders with
+ * no community branding and every module gated off.
+ *
+ * Sanitising the slug as well as the separator, because the slug is read back
+ * out of storage and is not guaranteed by this module to be well-formed. No
+ * migration is needed: the old key never successfully stored anything.
+ */
 function tenantConfigCacheKey(slug: string): string {
-  return `${TENANT_CONFIG_CACHE_PREFIX}:${slug}`;
+  return `${TENANT_CONFIG_CACHE_PREFIX}_${slug.replace(/[^A-Za-z0-9._-]/g, '_')}`;
 }
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {

@@ -103,10 +103,33 @@ describe('TenantContext', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockStorageGetJson).toHaveBeenCalledWith('nexus_tenant_config:hour-timebank');
-    expect(mockStorageRemove).toHaveBeenCalledWith('nexus_tenant_config:hour-timebank');
+    expect(mockStorageGetJson).toHaveBeenCalledWith('nexus_tenant_config_hour-timebank');
+    expect(mockStorageRemove).toHaveBeenCalledWith('nexus_tenant_config_hour-timebank');
     expect(result.current.tenant?.slug).toBe('hour-timebank');
     expect(result.current.hasFeature('events')).toBe(true);
+  });
+
+  // 🔴 Expo SecureStore throws on any key outside [A-Za-z0-9._-], and this key was
+  // built with a colon, so the cache silently never worked on a real device.
+  // storage.ts swallows the throw, so nothing but this assertion can catch it.
+  it('only ever uses SecureStore-legal characters in the tenant config cache key', async () => {
+    // A slug carrying characters SecureStore rejects. It is read back out of
+    // storage, so this module cannot assume it is well-formed.
+    mockStorageGet.mockResolvedValue('café:tea/2 timebank');
+
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const keys = [
+      ...mockStorageGetJson.mock.calls.map((call) => call[0]),
+      ...mockStorageSetJson.mock.calls.map((call) => call[0]),
+      ...mockStorageRemove.mock.calls.map((call) => call[0]),
+    ].filter((key): key is string => typeof key === 'string');
+
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) {
+      expect(key).toMatch(/^[A-Za-z0-9._-]+$/);
+    }
   });
 
   it('hasFeature returns true for an enabled feature', async () => {
