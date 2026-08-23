@@ -97,7 +97,7 @@
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="reaction_type" value="{{ reaction.value }}">
                   <input type="hidden" name="owner_id" value="{{ owner.id }}">
-                  <button type="submit" class="govuk-button{% if not isMine %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{% if isMine %}{{ t('govuk_alpha_saved.react.remove_label', { reaction: reactionLabel }) }}{% else %}{{ t('govuk_alpha_saved.react.react_label', { reaction: reactionLabel }) }}{% endif %}"{% if isMine %} aria-pressed="true"{% endif %}>{{ reactionLabel }}{% if isMine %} <span aria-hidden="true">&check;</span>{% endif %}</button>
+                  <button type="submit" class="govuk-button{% if not isMine %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{% if isMine %}{{ t('govuk_alpha_saved.react.remove_label', { reaction: reactionLabel }) }}{% else %}{{ t('govuk_alpha_saved.react.react_label', { reaction: reactionLabel }) }}{% endif %}" aria-pressed="{{ "true" if isMine else "false" }}">{{ reactionLabel }}{% if isMine %} <span aria-hidden="true">&check;</span>{% endif %}</button>
                 </form>
               {% endfor %}
             </div>

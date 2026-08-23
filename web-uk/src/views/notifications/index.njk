@@ -14,7 +14,7 @@
     {% include "partials/notification-banner.njk" %}
   {% endif %}
 
-  {% if status == "marked-read" or status == "notification-deleted" or status == "notification-marked-read" or status == "all-notifications-deleted" %}
+  {% if status == "marked-read" or status == "group-marked-read" or status == "notification-deleted" or status == "notification-marked-read" or status == "all-notifications-deleted" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="notification-status-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="notification-status-title">{{ t("states.success_title") }}</h2>

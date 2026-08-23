@@ -379,6 +379,11 @@ function couponValidationErrors(body) {
   if (discountType !== 'bogo' && (rawValue === '' || !Number.isFinite(Number(rawValue)) || Number(rawValue) <= 0)) {
     errors.push({ key: 'govuk_alpha_commerce.coupons.error_discount_value' });
   }
+  // A typed-but-unreal expiry date must fail validation rather than silently
+  // become a coupon that never expires.
+  if (readDate(body, 'valid_until').error) {
+    errors.push({ key: 'web_uk.date_input.date_invalid' });
+  }
   return errors;
 }
 

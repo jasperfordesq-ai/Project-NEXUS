@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Maak een evenement op basis van deze sjabloon',
     'captured' => 'Evenementsjabloon opgeslagen.',
     'revised' => 'Gebeurtenissjabloon vernieuwd vanaf de bron.',
+    'materialized' => 'Er is een conceptevenement gemaakt op basis van deze sjabloon.',
     'back_to_events' => 'Terug naar evenementen',
     'intro' => 'Hergebruik goedgekeurde gebeurtenisconfiguratie via een beoordeelde, alleen concept-workflow.',
     'safety_title' => 'Sjablonen kopiëren alleen de configuratie',

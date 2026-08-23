@@ -53,7 +53,8 @@
             <div id="target-locale-hint" class="govuk-hint">{{ t("govuk_alpha_events.translate.language_hint") }}</div>
             <select class="govuk-select" id="target_locale" name="target_locale" aria-describedby="target-locale-hint">
               {% for language in languages %}
-                <option value="{{ language.code }}"{% if language.selected %} selected{% endif %}>{{ language.name }}</option>
+                {# lang: endonyms must be pronounced in their own language (WCAG 3.1.2). #}
+                <option value="{{ language.code }}" lang="{{ language.code }}"{% if language.code == 'ar' %} dir="rtl"{% endif %}{% if language.selected %} selected{% endif %}>{{ language.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -62,7 +63,12 @@
 
         {% if translated and status == "translate-done" %}
           <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_events.translate.translated_heading") }}</h2>
-          <div class="govuk-inset-text"><div class="govuk-body">{{ translated }}</div></div>
+          {# The output is by definition in the TARGET language, not the page
+             language — mark it so screen readers switch pronunciation
+             (WCAG 3.1.2). The single-argument selectattr (truthiness) is the
+             supported Nunjucks form. #}
+          {% set targetLanguage = languages | selectattr("selected") | first %}
+          <div class="govuk-inset-text"><div class="govuk-body"{% if targetLanguage %} lang="{{ targetLanguage.code }}"{% if targetLanguage.code == 'ar' %} dir="rtl"{% endif %}{% endif %}>{{ translated }}</div></div>
           <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_events.translate.machine_note") }}</p>
         {% endif %}
 

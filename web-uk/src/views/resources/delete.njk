@@ -6,7 +6,7 @@
 {% extends "layouts/base.njk" %}
 
 {% block beforeContent %}
-  <a class="govuk-back-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.actions.back_to_library") }}</a>
+  <a class="govuk-back-link" href="{{ urlFor(libraryHref or '/resources/library') }}">{{ t("govuk_alpha_resources.actions.back_to_library") }}</a>
 {% endblock %}
 
 {% block mainContent %}
@@ -27,9 +27,11 @@
 
       <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/delete') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="q" value="{{ searchQuery or '' }}">
+        <input type="hidden" name="category_id" value="{{ selectedCategory or '' }}">
         <div class="govuk-button-group">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("govuk_alpha_resources.delete.submit") }}</button>
-          <a class="govuk-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.delete.cancel") }}</a>
+          <a class="govuk-link" href="{{ urlFor(libraryHref or '/resources/library') }}">{{ t("govuk_alpha_resources.delete.cancel") }}</a>
         </div>
       </form>
     </div>

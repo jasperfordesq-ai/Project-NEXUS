@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Créer un événement à partir de ce modèle',
     'captured' => 'Modèle d\'événement enregistré.',
     'revised' => 'Modèle d\'événement actualisé à partir de sa source.',
+    'materialized' => 'Un brouillon d\'événement a été créé à partir de ce modèle.',
     'back_to_events' => 'Retour aux événements',
     'intro' => 'Réutilisez la configuration d’événement approuvée via un flux de travail révisé et en version brouillon uniquement.',
     'safety_title' => 'Configuration de copie de modèles uniquement',

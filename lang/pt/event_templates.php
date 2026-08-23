@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Crie um evento a partir deste modelo',
     'captured' => 'Modelo de evento salvo.',
     'revised' => 'Modelo de evento atualizado de sua origem.',
+    'materialized' => 'Um rascunho de evento foi criado a partir deste modelo.',
     'back_to_events' => 'Voltar aos eventos',
     'intro' => 'Reutilize a configuração de eventos aprovada por meio de um fluxo de trabalho revisado somente como rascunho.',
     'safety_title' => 'Somente configuração de cópia de modelos',

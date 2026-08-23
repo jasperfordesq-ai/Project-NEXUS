@@ -172,6 +172,11 @@
             <input type="hidden" name="tenant_slug" value="{{ tenantSlug }}">
           {% endif %}
 
+          {# describedBy, not an attributes override: the macro emits its own
+             computed aria-describedby, so passing a second one via attributes
+             duplicated the attribute and browsers kept only the first —
+             silently detaching the strength live region password-strength.js
+             depends on. #}
           {{ govukInput({
             label: { text: t("auth.password_label"), classes: "govuk-label--m" },
             hint: { text: t("auth.password_hint") },
@@ -180,10 +185,10 @@
             type: "password",
             autocomplete: "new-password",
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.password } if fieldErrors.password else undefined,
+            describedBy: "password-strength-msg",
             attributes: {
               required: "required",
-              minlength: "12",
-              "aria-describedby": "password-hint password-strength-msg"
+              minlength: "12"
             }
           }) }}
           <p id="password-strength-msg" class="govuk-body-s govuk-!-margin-top-2" aria-live="polite"

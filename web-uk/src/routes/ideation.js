@@ -420,7 +420,11 @@ function normalizeMedia(item) {
 }
 
 function statusMessage(status, t) {
-  return ['idea-submitted', 'idea-voted'].includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
+  return ['idea-submitted', 'idea-voted', 'challenge-created', 'challenge-duplicated'].includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
+}
+
+function indexStatusMessage(status, t) {
+  return trimmed(status) === 'challenge-deleted' ? ideationStateMessage(status, t) : '';
 }
 
 function errorMessage(status, t) {
@@ -447,7 +451,7 @@ function draftErrorMessage(status, t) {
 }
 
 function manageStatusMessage(status, t) {
-  const allowed = ['challenge-status-updated', 'campaign-linked', 'favorited', 'unfavorited'];
+  const allowed = ['challenge-updated', 'challenge-status-updated', 'campaign-linked', 'favorited', 'unfavorited'];
   return allowed.includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
 }
 
@@ -483,11 +487,17 @@ function consumeCampaignForm(req, formKey) {
 
 const CAMPAIGN_STATUS_VALUES = ['draft', 'active', 'completed', 'archived'];
 
+// The index filter radios offer exactly these values (ideation/index.njk).
+const IDEATION_FILTER_STATUSES = ['open', 'voting', 'closed'];
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  const status = trimmed(req.query.status);
+  // Only real challenge filters may reach Laravel's status WHERE clause; any
+  // other value (e.g. the challenge-deleted confirmation) is a page message.
+  const rawStatus = trimmed(req.query.status);
+  const status = IDEATION_FILTER_STATUSES.includes(rawStatus) ? rawStatus : '';
   const query = trimmed(req.query.q);
   const queryString = compactQuery({
     limit: 30,
@@ -504,7 +514,8 @@ router.get('/', asyncRoute(async (req, res) => {
     activeNav: 'explore',
     challenges,
     activeStatus: status,
-    activeQuery: query
+    activeQuery: query,
+    successMessage: status ? '' : indexStatusMessage(rawStatus, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));
 

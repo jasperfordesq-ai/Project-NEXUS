@@ -111,6 +111,20 @@ async function removeUploadedFiles(files) {
   await Promise.all(files.map(removeUploadedFile));
 }
 
+// Laravel's contract for message attachments (app/Core/MessageAttachmentUploader):
+// MAX_FILES = 5 and this exact extension allow-list. Laravel remains the authority —
+// it also sniffs the real MIME type — this is the same limits enforced before upload.
+const MESSAGE_ATTACHMENT_MAX_FILES = 5;
+const MESSAGE_ATTACHMENT_EXTENSIONS = new Set([
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'doc', 'docx', 'xls', 'xlsx'
+]);
+
+function fileExtension(filename) {
+  const name = trimmed(filename).toLowerCase();
+  const dot = name.lastIndexOf('.');
+  return dot > 0 ? name.slice(dot + 1) : '';
+}
+
 function dataFrom(result) {
   return result && typeof result === 'object' && result.data !== undefined
     ? result.data
@@ -1132,6 +1146,18 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
 
   if (!content && attachments.length === 0) {
     return redirectTo(res, messageRedirect(recipientId, 'message-empty'));
+  }
+
+  // Mirror Laravel's MessageAttachmentUploader limits (MAX_FILES and the allowed
+  // extension list) so the specific, already-translated statuses are reachable
+  // instead of every problem collapsing into the generic attachment-failed.
+  if (attachments.length > MESSAGE_ATTACHMENT_MAX_FILES) {
+    await removeUploadedFiles(attachments);
+    return redirectTo(res, messageRedirect(recipientId, 'attachment-too-many'));
+  }
+  if (attachments.some((file) => !MESSAGE_ATTACHMENT_EXTENSIONS.has(fileExtension(file.originalFilename)))) {
+    await removeUploadedFiles(attachments);
+    return redirectTo(res, messageRedirect(recipientId, 'attachment-invalid'));
   }
 
   try {

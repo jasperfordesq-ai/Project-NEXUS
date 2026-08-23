@@ -150,7 +150,10 @@
                 <label class="govuk-visually-hidden" for="alpha-locale-select">{{ shellLanguageLabel }}</label>
                 <select class="govuk-select nexus-alpha-lang__select" id="alpha-locale-select" name="locale">
                   {% for locale in alphaLocaleOptions %}
-                    <option value="{{ locale[0] }}" {% if locale[0] == alphaCurrentLocale %}selected{% endif %}>{{ locale[1] }}</option>
+                    {# lang tells a screen reader to pronounce each endonym in its own
+                       language (WCAG 3.1.2) — without it 日本語 and العربية are read
+                       with the page language's phonetics or skipped. #}
+                    <option value="{{ locale[0] }}" lang="{{ locale[0] }}"{% if locale[0] == 'ar' %} dir="rtl"{% endif %} {% if locale[0] == alphaCurrentLocale %}selected{% endif %}>{{ locale[1] }}</option>
                   {% endfor %}
                 </select>
                 <button type="submit" class="govuk-button govuk-button--secondary nexus-alpha-lang__submit govuk-!-margin-bottom-0" data-module="govuk-button">{{ shellLanguageSubmit }}</button>

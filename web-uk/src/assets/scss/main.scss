@@ -837,11 +837,13 @@ body.app-timeout-modal--open {
   }
 }
 
-// Star rating input component
+// Star rating input component.
+// 🔴 No row-reverse: it made arrow keys move focus visually backwards (radio
+// groups follow DOM order, so Right Arrow walked leftwards). DOM order and
+// visual order now agree; the cumulative fill uses :has() below instead of
+// the old reversed general-sibling trick.
 .app-star-rating {
   display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
   gap: 4px;
 }
 
@@ -872,11 +874,20 @@ body.app-timeout-modal--open {
   transition: fill 0.15s ease;
 }
 
-// Highlight stars on hover and when selected (using reverse order trick)
-.app-star-rating__input:checked ~ .app-star-rating__label .app-star-rating__star,
-.app-star-rating__label:hover .app-star-rating__star,
-.app-star-rating__label:hover ~ .app-star-rating__label .app-star-rating__star {
+// The chosen star always fills — works in every browser and keeps the checked
+// state visible even where :has() is unsupported.
+.app-star-rating__input:checked + .app-star-rating__label .app-star-rating__star {
   fill: govuk-colour("black");
+}
+
+// Cumulative fill (stars 1..n light up to the checked or hovered star). CSS has
+// no previous-sibling selector, so this enumerates the five stars with :has();
+// without :has() support only the single-star fill above applies.
+@for $star from 1 through 5 {
+  .app-star-rating:has(.app-star-rating__input[value="#{$star}"]:checked) .app-star-rating__label:nth-of-type(-n + #{$star}) .app-star-rating__star,
+  .app-star-rating:has(.app-star-rating__label:nth-of-type(#{$star}):hover) .app-star-rating__label:nth-of-type(-n + #{$star}) .app-star-rating__star {
+    fill: govuk-colour("black");
+  }
 }
 
 .app-star-rating__input:focus + .app-star-rating__label {

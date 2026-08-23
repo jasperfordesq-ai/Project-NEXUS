@@ -116,4 +116,30 @@ describe('a poll cannot be created already closed', () => {
     const source = require('node:fs').readFileSync(require.resolve('../src/routes/poll-actions'), 'utf8');
     expect(source.match(/'poll-expires-past':/g) || []).toHaveLength(2);
   });
+
+  it('refuses an unreal typed closing date (day 45) instead of silently creating a never-closing poll', async () => {
+    for (const path of ['/parity/create', '/']) {
+      const res = await request(app).post(path).type('form').send(form({
+        'expires_at-day': '45', 'expires_at-month': '1', 'expires_at-year': '2030',
+      }));
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toContain('poll-expires-invalid');
+    }
+    expect(api.createPoll).not.toHaveBeenCalled();
+  });
+
+  it('rejects a partly typed closing date rather than discarding the typed part', async () => {
+    const res = await request(app).post('/parity/create').type('form').send(form({
+      'expires_at-day': '12', 'expires_at-month': '', 'expires_at-year': '',
+    }));
+    expect(res.headers.location).toContain('poll-expires-invalid');
+    expect(api.createPoll).not.toHaveBeenCalled();
+  });
+
+  it('maps poll-expires-invalid on BOTH create banners to the shared translated date wording', () => {
+    const t = createTranslator('en');
+    expect(t('web_uk.date_input.date_invalid')).toBe('Enter a real date');
+    const source = require('node:fs').readFileSync(require.resolve('../src/routes/poll-actions'), 'utf8');
+    expect(source.match(/'poll-expires-invalid':/g) || []).toHaveLength(2);
+  });
 });

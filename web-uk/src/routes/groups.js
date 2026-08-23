@@ -63,7 +63,8 @@ const GROUP_ANNOUNCEMENT_SUCCESS_STATES = new Set([
 ]);
 const GROUP_ANNOUNCEMENT_ERROR_STATES = new Set([
   'ann-create-failed', 'ann-update-failed', 'ann-delete-failed', 'ann-pin-failed',
-  'ann-forbidden', 'ann-not-found', 'ann-title-required', 'ann-content-required'
+  'ann-forbidden', 'ann-not-found', 'ann-title-required', 'ann-content-required',
+  'ann-expires-invalid'
 ]);
 const GROUP_DISCUSSION_SUCCESS_MESSAGES = {
   'discussion-created': 'Your discussion has been posted.',
@@ -729,12 +730,17 @@ function announcementStatus(status, t = (key) => key) {
       ? '#ann-title'
       : value === 'ann-content-required'
         ? '#ann-content'
-        : null;
+        : value === 'ann-expires-invalid'
+          ? '#expires_at-day'
+          : null;
     return {
       statusBanner: {
         type: 'error',
         title: t('govuk_alpha_groups.common.error_title'),
-        message: t(`govuk_alpha_groups.states.${value}`),
+        // The expiry message reuses the shared, already-translated date wording.
+        message: value === 'ann-expires-invalid'
+          ? t('web_uk.date_input.date_invalid')
+          : t(`govuk_alpha_groups.states.${value}`),
         href
       }
     };
@@ -864,6 +870,13 @@ function announcementPayload(body) {
     return { error: 'ann-content-required' };
   }
 
+  const expiresAt = readDate(body, 'expires_at');
+  // A typed-but-unreal expiry is an error, not "no expiry" — dropping it would
+  // silently create a never-expiring announcement.
+  if (expiresAt.error) {
+    return { error: 'ann-expires-invalid' };
+  }
+
   return {
     title,
     content,
@@ -871,7 +884,7 @@ function announcementPayload(body) {
     // 🔴 NOT `|| ''`. The previous `optionalText()` returned NULL for an absent expiry and
     // the API distinguishes the two — an empty string is a value, null clears the field.
     // `readDate().value` is already null when nothing was entered, so pass it through.
-    expires_at: readDate(body, 'expires_at').value
+    expires_at: expiresAt.value
   };
 }
 

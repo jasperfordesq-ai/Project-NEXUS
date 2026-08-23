@@ -834,7 +834,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('<input type="hidden" name="status" value="auth-required">');
     expect(response.text).toContain('<input type="hidden" name="return" value="/explore">');
     expect(response.text).not.toContain('<input type="hidden" name="locale"');
-    expect(response.text).toContain('<option value="ga" selected>Gaeilge</option>');
+    expect(response.text).toContain('<option value="ga" lang="ga" selected>Gaeilge</option>');
   });
 
   it('exposes Blade-equivalent native required states on login controls', async () => {
@@ -6311,7 +6311,10 @@ describe('shared accessible frontend shell', () => {
     expect(complete.text).toContain('Added');
     expect(complete.text).toContain('I can help with gardening and repairs.');
     expect(complete.text).toContain('0 selected');
-    expect(complete.text).toContain('>Change</a>');
+    // Each Change link carries hidden row context — five bare "Change" links
+    // are indistinguishable to a screen-reader user (WCAG 2.4.4).
+    expect(complete.text).toContain('Change<span class="govuk-visually-hidden"> — Profile photo</span></a>');
+    expect(complete.text).not.toContain('>Change</a>');
     expect(complete.text).toContain('Finish and go to my dashboard');
     expect(complete.text).not.toContain('Laravel Blade route');
   });
@@ -13069,7 +13072,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('1.5 KB');
     expect(response.text).toContain('Downloads');
     expect(response.text).toContain('href="/resources/42/download"');
-    expect(response.text).toContain('href="/resources/42/delete"');
+    // The delete link carries the active filters so the post-delete redirect
+    // returns the member to the same filtered view.
+    expect(response.text).toContain('href="/resources/42/delete?q=handbook&amp;category_id=7"');
     expect(response.text).toContain('href="/resources/42/comments"');
     expect(response.text).toContain('Load more resources');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
@@ -13562,6 +13567,44 @@ describe('shared accessible frontend shell', () => {
     expect(mountedResponse.status).toBe(302);
     expect(mountedResponse.headers.location).toBe('/acme/accessible/resources/library?status=resource-deleted');
     expect(api.deleteResource).toHaveBeenCalledWith('test-token', 42);
+  });
+
+  it('keeps the library search and category filters through a resource delete', async () => {
+    const api = require('../src/lib/api');
+    api.getProfile.mockResolvedValue({ data: { id: 101, role: 'tenant_admin' } });
+    api.getResources.mockResolvedValue({
+      data: [{ id: 42, title: 'Filtered handbook', uploader: { id: 202 } }],
+      meta: { has_more: false }
+    });
+    const agent = request.agent(app);
+
+    // The library delete link carries the active filters into the confirmation.
+    const library = await agent.get('/resources/library?q=handbook&category_id=3').set('Cookie', signedCookieHeader());
+    expect(library.status).toBe(200);
+    expect(library.text).toContain('href="/resources/42/delete?q=handbook&amp;category_id=3"');
+
+    const confirm = await agent.get('/resources/42/delete?q=handbook&category_id=3').set('Cookie', signedCookieHeader());
+    expect(confirm.status).toBe(200);
+    expect(confirm.text).toContain('name="q" value="handbook"');
+    expect(confirm.text).toContain('name="category_id" value="3"');
+    expect(confirm.text).toContain('href="/resources/library?q=handbook&amp;category_id=3"');
+    const csrf = confirm.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    const deleted = await agent
+      .post('/resources/42/delete')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, q: 'handbook', category_id: '3' });
+    expect(deleted.status).toBe(302);
+    expect(deleted.headers.location).toBe('/resources/library?q=handbook&category_id=3&status=resource-deleted');
+
+    api.deleteResource.mockRejectedValueOnce(new api.ApiError('Delete failed', 422));
+    const failed = await agent
+      .post('/resources/42/delete')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, q: 'handbook', category_id: '3' });
+    expect(failed.headers.location).toBe('/resources/library?q=handbook&category_id=3&status=resource-delete-failed');
   });
 
   it('submits the Laravel resource reorder route through the reorder API helper', async () => {
@@ -15467,6 +15510,18 @@ describe('shared accessible frontend shell', () => {
     expect(api.shareFeedItem).not.toHaveBeenCalled();
   });
 
+  it('shows the invalid-closing-date rejection as a translated banner on the polls page', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    api.getPolls.mockResolvedValueOnce({ data: [] });
+    const response = await request(app)
+      .get('/polls?status=poll-expires-invalid')
+      .set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toContain(translate('en', 'web_uk.date_input.date_invalid'));
+    expect(response.text).not.toContain('poll_create.states.poll-expires-invalid');
+  });
+
   it('renders Laravel-backed poll list, detail, ranked, create, manage and export pages', async () => {
     const api = require('../src/lib/api');
 
@@ -17055,6 +17110,21 @@ describe('shared accessible frontend shell', () => {
     expect(api.markNotificationGroupRead).toHaveBeenCalledWith('test-token', 'post_like:/feed/posts/7');
   });
 
+  it('confirms a grouped mark-as-read with a success banner on the inbox', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    api.getGroupedNotifications.mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
+    api.getNotificationUnreadCount.mockResolvedValue({ data: { total: 0 } });
+
+    const response = await request(app)
+      .get('/notifications?status=group-marked-read')
+      .set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-notification-banner--success');
+    expect(response.text).toContain(translate('en', 'notifications.states.group-marked-read'));
+  });
+
   it('submits a single notification read through the Laravel v2 API helper', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
@@ -18221,17 +18291,17 @@ describe('shared accessible frontend shell', () => {
           is_saved: true
         }
       ],
-      meta: { total: 1, has_more: true, offset: 12, per_page: 12 }
+      meta: { total: 1, has_more: true, cursor: 'jobs-page-2', per_page: 12 }
     });
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
 
     const response = await request(app)
-      .get('/jobs?q=coordinator&type=paid&commitment=part_time&sort=deadline&remote=1&offset=12')
+      .get('/jobs?q=coordinator&type=paid&commitment=part_time&sort=deadline&remote=1&cursor=jobs-cursor-1')
       .set('Cookie', [`token=${encodeURIComponent(signedToken)}`]);
 
     expect(api.getJobs).toHaveBeenCalledWith('test-token', {
-      limit: 12,
-      offset: 12,
+      per_page: 12,
+      cursor: 'jobs-cursor-1',
       status: 'open',
       sort: 'deadline',
       search: 'coordinator',
@@ -18268,6 +18338,28 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('govuk-pagination__icon--next');
     expect(response.text).not.toContain('Job pages will follow the Laravel accessible frontend contract');
     expect(response.text).not.toContain('Laravel Blade route');
+  });
+
+  it('pages the jobs browse list by Laravel cursor so "Next" serves the second page', async () => {
+    const api = require('../src/lib/api');
+    const pageJob = (id, title) => ({ id, title, type: 'paid', status: 'open', organization: { name: 'Community Club' } });
+    api.getJobs
+      .mockResolvedValueOnce({ items: [pageJob(501, 'First page role')], meta: { total: 2, has_more: true, cursor: 'jobs-page-2', per_page: 12 } })
+      .mockResolvedValueOnce({ items: [pageJob(502, 'Second page role')], meta: { total: 2, has_more: false, cursor: '', per_page: 12 } });
+
+    const first = await request(app).get('/jobs').set('Cookie', signedCookieHeader());
+    expect(first.status).toBe(200);
+    expect(api.getJobs).toHaveBeenLastCalledWith('test-token', { per_page: 12, status: 'open', sort: 'newest' });
+    expect(first.text).toContain('First page role');
+    // The next link must carry the API's cursor, not an offset Laravel ignores.
+    expect(first.text).toContain('href="/jobs?cursor=jobs-page-2"');
+    expect(first.text).not.toContain('offset=');
+
+    const second = await request(app).get('/jobs?cursor=jobs-page-2').set('Cookie', signedCookieHeader());
+    expect(second.status).toBe(200);
+    expect(api.getJobs).toHaveBeenLastCalledWith('test-token', { per_page: 12, cursor: 'jobs-page-2', status: 'open', sort: 'newest' });
+    expect(second.text).toContain('Second page role');
+    expect(second.text).not.toContain('href="/jobs?cursor=');
   });
 
   it('redirects signed-out visitors away from the jobs browse page before calling Laravel', async () => {
@@ -18899,6 +18991,39 @@ describe('shared accessible frontend shell', () => {
     expect(replay.text).toMatch(/name="deadline-year"[^>]*value="2099"|value="2099"[^>]*name="deadline-year"/);
     expect(replay.text).toContain('value="jobs@example.org"');
     expect(replay.text).toContain('value="draft" checked');
+  });
+
+  it('rejects an unreal job deadline instead of silently posting a vacancy without one', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    api.callJobApi.mockClear();
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const post = (extra) => agent
+      .post('/jobs')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrf, title: 'Community organiser', description: 'Coordinate the rota.', ...extra });
+
+    const rejected = await post({ 'deadline-day': '45', 'deadline-month': '2', 'deadline-year': '2030' });
+    expect(rejected.status).toBe(302);
+    expect(rejected.headers.location).toBe('/jobs/create');
+    expect(api.callJobApi).not.toHaveBeenCalled();
+
+    const replay = await agent.get('/jobs/create').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(replay.status).toBe(200);
+    expect(replay.text).toContain('Enter a real date');
+    expect(replay.text).toContain('href="#deadline-day"');
+    // The typed parts survive the round trip, so the member can correct one box.
+    expect(replay.text).toMatch(/name="deadline-day"[^>]*value="45"|value="45"[^>]*name="deadline-day"/);
+
+    // All-blank date parts still mean "no deadline" — unchanged behaviour.
+    api.callJobApi.mockResolvedValueOnce({ data: { id: 91 } });
+    const created = await post({ 'deadline-day': '', 'deadline-month': '', 'deadline-year': '' });
+    expect(created.headers.location).toBe('/jobs/91?status=created');
+    expect(api.callJobApi.mock.calls.at(-1)[3]).toMatchObject({ deadline: '' });
   });
 
   it('replays Laravel field validation errors on the create job form', async () => {
@@ -21143,7 +21268,7 @@ describe('shared accessible frontend shell', () => {
 
     api.callIdeationApi.mockResolvedValueOnce({ data: { favorited: false } });
     const favoriteResponse = await post('/ideation/7/favorite');
-    expect(favoriteResponse.headers.location).toBe('/ideation/7?status=unfavorited');
+    expect(favoriteResponse.headers.location).toBe('/ideation/7/manage?status=unfavorited');
     expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'POST', '/ideation-challenges/7/favorite');
 
     const duplicateResponse = await post('/ideation/7/duplicate');
@@ -21182,6 +21307,64 @@ describe('shared accessible frontend shell', () => {
     const deleteResponse = await post('/ideation/7/delete');
     expect(deleteResponse.headers.location).toBe('/ideation?status=challenge-deleted');
     expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/ideation-challenges/7');
+  });
+
+  it('treats challenge-deleted as a confirmation message, never a Laravel status filter', async () => {
+    const api = require('../src/lib/api');
+    api.callIdeationApi.mockResolvedValueOnce({ data: [{ id: 7, title: 'Better local parks', status: 'open' }] });
+    const response = await request(app).get('/ideation?status=challenge-deleted').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    // No status param may reach the API: WHERE status='challenge-deleted' empties the list.
+    expect(api.callIdeationApi).toHaveBeenLastCalledWith('test-token', 'GET', '/ideation-challenges?limit=30');
+    expect(response.text).toContain('The challenge has been deleted.');
+    expect(response.text).toContain('Better local parks');
+  });
+
+  it('shows create and duplicate confirmations on the ideation challenge detail page', async () => {
+    const api = require('../src/lib/api');
+    for (const [status, message] of [['challenge-created', 'The challenge has been created.'], ['challenge-duplicated', 'A draft copy of the challenge has been created.']]) {
+      api.callIdeationApi
+        .mockResolvedValueOnce({ data: { id: 7, title: 'Better local parks', status: 'open' } })
+        .mockResolvedValueOnce({ data: { items: [] } });
+      const response = await request(app).get(`/ideation/7?status=${status}`).set('Cookie', signedCookieHeader());
+      expect(response.status).toBe(200);
+      expect(response.text).toContain(message);
+    }
+  });
+
+  it('shows the edit confirmation on the ideation manage page', async () => {
+    const api = require('../src/lib/api');
+    api.callIdeationApi
+      .mockResolvedValueOnce({ data: { data: { id: 7, title: 'Improve park lighting', status: 'open' } } })
+      .mockResolvedValueOnce({ data: { data: [] } });
+    const response = await request(app).get('/ideation/7/manage?status=challenge-updated').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('The challenge has been updated.');
+  });
+
+  it('returns favourite outcomes to the manage page where their messages are mapped', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const post = () => agent.post('/ideation/7/favorite').set('Cookie', `token=${encodeURIComponent(signedToken)}`).type('form').send({ _csrf: csrf });
+
+    api.callIdeationApi.mockResolvedValueOnce({ data: { favorited: true } });
+    const favourited = await post();
+    expect(favourited.headers.location).toBe('/ideation/7/manage?status=favorited');
+
+    api.callIdeationApi.mockRejectedValueOnce(new api.ApiError('Favourite failed', 422));
+    const failed = await post();
+    expect(failed.headers.location).toBe('/ideation/7/manage?status=challenge-failed');
+
+    api.callIdeationApi
+      .mockResolvedValueOnce({ data: { data: { id: 7, title: 'Improve park lighting', status: 'open' } } })
+      .mockResolvedValueOnce({ data: { data: [] } });
+    const manage = await agent.get(failed.headers.location).set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(manage.status).toBe(200);
+    expect(manage.text).toContain('Sorry, that action could not be completed. Please try again.');
   });
 
   it('submits Laravel ideation idea action aliases', async () => {
@@ -22449,7 +22632,10 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Please confirm your October availability.');
     expect(signed.text).toContain('Posted by Avery Green on 14 September 2026');
     expect(signed.text).toContain('href="/groups/42/announcements/9/edit"');
-    expect(signed.text).toContain('Save changes');
+    // The edit LINK reads "Edit this announcement" (it navigates to the form);
+    // "Save changes" is the form's submit label, not a link name. The hidden
+    // suffix names which card the action belongs to (WCAG 2.4.4 / 2.5.3).
+    expect(signed.text).toContain('Edit this announcement<span class="govuk-visually-hidden"> — Autumn rota</span></a>');
     expect(signed.text).toContain('method="post" action="/groups/42/announcements/9/pin"');
     expect(signed.text).toContain('name="is_pinned" value="0"');
     expect(signed.text).toContain('Unpin');
@@ -22506,6 +22692,44 @@ describe('shared accessible frontend shell', () => {
     expect(outsider.status).toBe(403);
     expect(outsider.text).toContain(englishForbiddenTitle);
     expect(api.callGroupApi).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unreal announcement expiry date instead of posting a never-expiring announcement', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const post = (extra) => agent
+      .post('/groups/42/announcements')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, title: 'AGM', content: 'Bring reports', ...extra });
+
+    api.callGroupApi.mockClear();
+    const rejected = await post({ 'expires_at-day': '45', 'expires_at-month': '2', 'expires_at-year': '2030' });
+    expect(rejected.status).toBe(302);
+    expect(rejected.headers.location).toBe('/groups/42/announcements?status=ann-expires-invalid');
+    expect(api.callGroupApi).not.toHaveBeenCalled();
+
+    api.getGroup.mockResolvedValueOnce({ data: { id: 42, name: 'Garden Helpers', owner_id: 101, my_membership: null } });
+    api.callGroupApi.mockResolvedValueOnce({ data: { items: [] } });
+    const page = await agent.get(rejected.headers.location).set('Cookie', signedCookieHeader());
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('Enter a real date');
+    // The date fields themselves carry the error state, not just the summary box.
+    expect(page.text).toMatch(/name="expires_at-day"[^>]*class="[^"]*govuk-input--error|govuk-input--error[^>]*name="expires_at-day"/);
+
+    // All-blank date parts still mean "no expiry" — unchanged behaviour.
+    api.callGroupApi.mockClear();
+    api.callGroupApi.mockResolvedValueOnce({ data: { id: 9 } });
+    const created = await post({ 'expires_at-day': '', 'expires_at-month': '', 'expires_at-year': '' });
+    expect(created.headers.location).toBe('/groups/42/announcements?status=ann-created');
+    expect(api.callGroupApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/announcements', {
+      title: 'AGM',
+      content: 'Bring reports',
+      is_pinned: false,
+      expires_at: null
+    });
   });
 
   it('renders the Laravel group announcement edit page for the signed-in group owner', async () => {
@@ -24092,7 +24316,9 @@ describe('shared accessible frontend shell', () => {
     expect(translated.text).toContain('Translated description');
     expect(translated.text).toContain('Dia duit');
     expect(translated.text).toContain('This translation was produced automatically.');
-    expect(translated.text).toContain('<option value="ga" selected>Gaeilge</option>');
+    // Options and the translated output both carry lang (WCAG 3.1.2).
+    expect(translated.text).toContain('<option value="ga" lang="ga" selected>Gaeilge</option>');
+    expect(translated.text).toMatch(/<div class="govuk-body" lang="ga">\s*Dia duit/);
 
     api.callEventApi.mockResolvedValueOnce({
       data: { id: 7, title: 'Repair cafe planning', description: 'Hello neighbours' }
@@ -26060,6 +26286,9 @@ describe('shared accessible frontend shell', () => {
     expect(replay.text).toMatch(/<textarea[^>]*id="answer-long_notes"[^>]*>Keep this answer<\/textarea>/);
     expect(replay.text).toMatch(/value="Morning"[^>]*checked/);
     expect(replay.text).toMatch(/value="Step-free"[^>]*checked/);
+    // Field-level errors own the invalid status: the generic invalid box must not double-render.
+    const { translate } = require('../src/lib/localization');
+    expect(replay.text).not.toContain(translate('en', 'event_registration.accessible.validation_error'));
   });
 
   it('reviews and exports Laravel Event Registration answers with explicit audit evidence', async () => {
@@ -26174,6 +26403,49 @@ describe('shared accessible frontend shell', () => {
       expect(response.headers.location).toBe(`/events/42/registration?status=${status}`);
       expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', `/42/registration-product/campaigns/61/${action}`, { expected_revision: 2, ...extra }, { headers: { 'Idempotency-Key': `campaign-${action}-123` } });
     }
+  });
+
+  it('renders campaign lifecycle statuses as success banners, never inside an error box', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    for (const [status, messageKey] of [['campaign-issued', 'campaign_issued'], ['campaign-scheduled', 'campaign_scheduled'], ['campaign-cancelled', 'campaign_cancelled']]) {
+      api.callEventApi
+        .mockResolvedValueOnce({ data: { id: 42, title: 'Community garden day' } })
+        .mockResolvedValueOnce({ data: { registrations: [], invitations: [], guests: [], settings: {} } })
+        .mockResolvedValueOnce({ data: {} });
+      const response = await request(app).get(`/events/42/registration?status=${status}`).set('Cookie', signedCookieHeader());
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('govuk-notification-banner--success');
+      expect(response.text).not.toContain('govuk-error-summary');
+      expect(response.text).toContain(translate('en', `event_registration.messages.${messageKey}`));
+    }
+  });
+
+  it('renders the shared failed status as a translated sentence, not a raw message key', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    api.callEventApi
+      .mockResolvedValueOnce({ data: { id: 42, title: 'Community garden day' } })
+      .mockResolvedValueOnce({ data: { registrations: [], invitations: [], guests: [], settings: {} } })
+      .mockResolvedValueOnce({ data: {} });
+    const response = await request(app).get('/events/42/registration?status=failed').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(translate('en', 'event_registration.server_error'));
+    expect(response.text).not.toContain('event_registration.messages.failed');
+  });
+
+  it('renders a generic error box for the invalid status when no field errors were stashed', async () => {
+    const api = require('../src/lib/api');
+    const { translate } = require('../src/lib/localization');
+    api.callEventApi
+      .mockResolvedValueOnce({ data: { id: 42, title: 'Community garden day' } })
+      .mockResolvedValueOnce({ data: { registrations: [], invitations: [], guests: [], settings: {} } })
+      .mockResolvedValueOnce({ data: {} });
+    const response = await request(app).get('/events/42/registration?status=invalid').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(translate('en', 'event_registration.accessible.validation_error'));
   });
 
   it('recombines the GOV.UK date+time campaign fields into the same expires_at payload', async () => {
@@ -27635,6 +27907,21 @@ describe('shared accessible frontend shell', () => {
     const created = await agent.post('/event-templates/7/materialize').set('Cookie', signedCookieHeader()).type('form').send({ ...fields, idempotency_key: 'materialize-123' });
     expect(created.headers.location).toBe('/events/99/edit');
     expect(api.callEventTemplateApi).toHaveBeenLastCalledWith('test-token', 'POST', '/7/materializations', { template_version: 2, start_time: '2026-09-01T10:00', end_time: '2026-09-01T12:00', overrides: { title: 'Autumn garden', location: 'Village hall', max_attendees: 20, timezone: 'Europe/Dublin', all_day: false } }, { headers: { 'Idempotency-Key': 'materialize-123' } });
+  });
+
+  it('confirms a materialization without an event id as a translated library banner', async () => {
+    const api = require('../src/lib/api'); const agent = request.agent(app); const shell = await agent.get('/contact').set('Cookie', signedCookieHeader()); const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    // The API succeeded but returned no event id: the fallback redirect must land
+    // on a mapped, translated confirmation rather than a silent library reload.
+    api.callEventTemplateApi.mockResolvedValueOnce({ data: { created: true } });
+    const created = await agent.post('/event-templates/7/materialize').set('Cookie', signedCookieHeader()).type('form').send({ _csrf: csrf, idempotency_key: 'materialize-456', template_version: '2', title: 'Autumn garden', start_time: '2026-09-01T10:00', timezone: 'Europe/Dublin' });
+    expect(created.headers.location).toBe('/events/templates?status=materialized');
+    api.callEventTemplateApi.mockResolvedValueOnce({ data: [], meta: {} });
+    const library = await agent.get(created.headers.location).set('Cookie', signedCookieHeader());
+    expect(library.status).toBe(200);
+    expect(library.text).toContain('govuk-notification-banner--success');
+    expect(library.text).toContain(createTranslator('en')('event_templates.materialized'));
+    expect(library.text).not.toContain('event_templates.materialized');
   });
 
   it('hides registration mutations from attendance-only Event People staff', async () => {
@@ -30092,7 +30379,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Morgan Lee');
     expect(response.text).toContain('name="members[]" value="44"');
     expect(response.text).toContain('Remove<span class="govuk-visually-hidden"> Remove Casey Quinn from the group</span>');
-    expect(response.text).toMatch(/<form method="get" action="\/acme\/accessible\/messages\/groups\/new" style="display:inline">\s*<input type="hidden" name="name" value="Local helpers">\s*<button type="submit" class="govuk-link"/);
+    // app-link-button, not an inline-styled govuk-link: the inline color beat
+    // the focus state and failed contrast on keyboard focus.
+    expect(response.text).toMatch(/<form method="get" action="\/acme\/accessible\/messages\/groups\/new" style="display:inline">\s*<input type="hidden" name="name" value="Local helpers">\s*<button type="submit" class="app-link-button"/);
     expect(response.text).toContain('id="group-name" name="name"');
     expect(response.text).toContain('Local helpers');
     expect(response.text).toContain('Create group conversation');
@@ -30492,6 +30781,82 @@ describe('shared accessible frontend shell', () => {
       })]
     }));
     expect(api.replyToConversation).not.toHaveBeenCalled();
+  });
+
+  it('rejects attachment count and type against Laravel\'s limits with their specific statuses', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent
+      .get('/contact')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // Laravel's MessageAttachmentUploader::MAX_FILES is 5: a sixth file must be
+    // refused as attachment-too-many, before anything is uploaded.
+    let tooManyPost = agent
+      .post('/messages/77')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .field('_csrf', csrf)
+      .field('content', 'Too many files');
+    for (let index = 0; index < 6; index += 1) {
+      tooManyPost = tooManyPost.attach('attachments', Buffer.from('%PDF attachment', 'utf8'), {
+        filename: `file-${index}.pdf`,
+        contentType: 'application/pdf'
+      });
+    }
+    const tooMany = await tooManyPost;
+    expect(tooMany.status).toBe(302);
+    expect(tooMany.headers.location).toBe('/messages/77?status=attachment-too-many');
+    expect(api.uploadMessageAttachments).not.toHaveBeenCalled();
+
+    // An extension outside Laravel's allow-list is attachment-invalid, not the
+    // generic attachment-failed.
+    const invalid = await agent
+      .post('/messages/77')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .field('_csrf', csrf)
+      .field('content', 'Wrong type')
+      .attach('attachments', Buffer.from('MZ executable bytes', 'utf8'), {
+        filename: 'tool.exe',
+        contentType: 'application/octet-stream'
+      });
+    expect(invalid.status).toBe(302);
+    expect(invalid.headers.location).toBe('/messages/77?status=attachment-invalid');
+    expect(api.uploadMessageAttachments).not.toHaveBeenCalled();
+
+    // Exactly five allowed files still upload — the limit is Laravel's, not stricter.
+    let maxPost = agent
+      .post('/messages/77')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .field('_csrf', csrf)
+      .field('content', 'Five files');
+    for (let index = 0; index < 5; index += 1) {
+      maxPost = maxPost.attach('attachments', Buffer.from('%PDF attachment', 'utf8'), {
+        filename: `file-${index}.pdf`,
+        contentType: 'application/pdf'
+      });
+    }
+    const atLimit = await maxPost;
+    expect(atLimit.headers.location).toBe('/messages/77?status=message-sent');
+    expect(api.uploadMessageAttachments).toHaveBeenCalledTimes(1);
+
+    // The member sees the translated sentences, not raw keys.
+    const { translate } = require('../src/lib/localization');
+    api.callMessageApi.mockImplementation(async (token, method, pathName) => {
+      if (method === 'GET' && pathName === '/restriction-status') {
+        return { data: { direct_messaging_enabled: true, restricted: false } };
+      }
+      return { data: [], meta: { conversation: { id: 77, other_user: { id: 77, name: 'Avery Stone' } }, has_more: false, cursor: null } };
+    });
+    for (const [status, key] of [['attachment-too-many', 'error_too_many'], ['attachment-invalid', 'error_invalid']]) {
+      const page = await agent
+        .get(`/messages/77?status=${status}`)
+        .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+      expect(page.status).toBe(200);
+      expect(page.text).toContain(translate('en', `govuk_alpha_messages.attachments.${key}`));
+    }
   });
 
   it('submits text-only direct messages to the canonical Laravel v2 endpoint with context', async () => {
@@ -34376,6 +34741,40 @@ describe('shared accessible frontend shell', () => {
     expect(rejectedEditForm.text).toContain('Replayed edit');
     expect(rejectedEditForm.text).toContain('value="4.50"');
     expect(rejectedEditForm.text).toContain('value="0"');
+  });
+
+  it('rejects an unreal coupon expiry date instead of creating a coupon that never expires', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const first = await agent
+      .get('/contact')
+      .set('Cookie', signedAuthCookieHeader());
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const post = (extra) => agent
+      .post('/marketplace/coupons/new')
+      .set('Cookie', signedAuthCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, title: 'Autumn offer', discount_type: 'percent', discount_value: '15', status: 'active', ...extra });
+
+    api.callMarketplaceApi.mockClear();
+    const rejected = await post({ 'valid_until-day': '45', 'valid_until-month': '2', 'valid_until-year': '2030' });
+    expect(rejected.status).toBe(302);
+    expect(rejected.headers.location).toBe('/marketplace/coupons/new');
+    expect(api.callMarketplaceApi).not.toHaveBeenCalled();
+
+    const replay = await agent
+      .get('/marketplace/coupons/new')
+      .set('Cookie', signedAuthCookieHeader());
+    expect(replay.status).toBe(200);
+    expect(replay.text).toContain('Enter a real date');
+    // The typed parts survive so the seller can correct one box.
+    expect(replay.text).toMatch(/name="valid_until-day"[^>]*value="45"|value="45"[^>]*name="valid_until-day"/);
+
+    // All-blank date parts still mean "no expiry" — unchanged behaviour.
+    api.callMarketplaceApi.mockResolvedValueOnce({ data: { id: 6 } });
+    const created = await post({ 'valid_until-day': '', 'valid_until-month': '', 'valid_until-year': '' });
+    expect(created.headers.location).toBe('/marketplace/coupons?status=coupon-created');
+    expect(api.callMarketplaceApi.mock.calls.at(-1)[3]).not.toHaveProperty('valid_until');
   });
 
   it('tells a seller their new listing is awaiting moderation, on create and on the detail page', async () => {

@@ -546,6 +546,7 @@ router.get('/library', asyncRoute(async (req, res) => {
     reorderMode: reorderMode && isAdmin,
     reorderOnHref: libraryHref({ q: searchQuery, category_id: selectedCategory, reorder: '1' }),
     reorderOffHref: libraryHref({ q: searchQuery, category_id: selectedCategory }),
+    filterQuerySuffix: libraryQuery({ q: searchQuery, category_id: selectedCategory }),
     resourceCountText: res.locals.tc('govuk_alpha_resources.library.count', resources.length, {
       count: res.locals.formatLocaleNumber(resources.length)
     }),
@@ -606,11 +607,18 @@ router.get('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
     throw new ApiError('Resource forbidden', 403);
   }
 
+  // Carry the library's active filters through the confirmation so the
+  // post-delete redirect returns the member to the same filtered view.
+  const searchQuery = trimmed(req.query && req.query.q);
+  const selectedCategory = positiveInteger(req.query && req.query.category_id);
   return res.render('resources/delete', {
     title: res.locals.t('govuk_alpha_resources.delete.title'),
     activeNav: 'explore',
     resourceId,
-    resourceTitle: trimmed(resource.title) || res.locals.t('govuk_alpha_resources.file_types.file')
+    resourceTitle: trimmed(resource.title) || res.locals.t('govuk_alpha_resources.file_types.file'),
+    searchQuery,
+    selectedCategory,
+    libraryHref: libraryHref({ q: searchQuery, category_id: selectedCategory })
   });
 }, { redirectOn401: '/login?status=auth-required', notFoundTitle: 'Delete resource' }));
 
@@ -866,10 +874,10 @@ router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectAuthIfNeeded(error, req, res)) return undefined;
     if (isNotFound(error) || isForbidden(error)) throw error;
-    return redirectTo(res, '/resources/library?status=resource-delete-failed');
+    return redirectTo(res, libraryRedirect(req, 'resource-delete-failed'));
   }
 
-  return redirectTo(res, '/resources/library?status=resource-deleted');
+  return redirectTo(res, libraryRedirect(req, 'resource-deleted'));
 }));
 
 router.post('/:id(\\d+)/react', asyncRoute(async (req, res) => {

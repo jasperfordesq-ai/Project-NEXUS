@@ -21,7 +21,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate } = require('../lib/date-input');
+const { readDate, splitDate, dateParts } = require('../lib/date-input');
 
 const router = express.Router();
 const POLLS_PATH = '/polls';
@@ -189,6 +189,7 @@ function pollStatusBanner(status, t) {
     'poll-created': { type: 'success', message: t('polish_discovery.polls_create_success') },
     'poll-create-failed': { type: 'error', message: t('polish_discovery.polls_create_failed') },
     'poll-expires-past': { type: 'error', message: t('govuk_alpha_gamification.poll_create.expires_past_error') },
+    'poll-expires-invalid': { type: 'error', message: t('web_uk.date_input.date_invalid') },
     'poll-deleted': { type: 'success', message: t('polls.states.deleted') },
     'poll-delete-failed': { type: 'error', message: t('polls.states.delete-failed') },
     ranked: { type: 'success', message: t('govuk_alpha_gamification.ranked.states.ranked') },
@@ -213,7 +214,8 @@ function pollCreateStatusBanner(status, t) {
   const banners = {
     'poll-created': { type: 'success', message: t('govuk_alpha_gamification.poll_create.states.poll-created') },
     'poll-create-failed': { type: 'error', message: t('govuk_alpha_gamification.poll_create.states.poll-create-failed') },
-    'poll-expires-past': { type: 'error', message: t('govuk_alpha_gamification.poll_create.expires_past_error') }
+    'poll-expires-past': { type: 'error', message: t('govuk_alpha_gamification.poll_create.expires_past_error') },
+    'poll-expires-invalid': { type: 'error', message: t('web_uk.date_input.date_invalid') }
   };
   return banners[trimmed(status)] || null;
 }
@@ -307,6 +309,9 @@ function storePollForm(req, parity) {
       category: String(body.category || ''),
       poll_type: String(body.poll_type || ''),
       expires_at: String(readDate(body, 'expires_at').value || ''),
+      // Raw parts survive even when the composed date is invalid, so the
+      // replayed form keeps exactly what the member typed.
+      expires_at_parts: dateParts(body, 'expires_at'),
       is_anonymous: booleanFrom(body.is_anonymous),
       options: rawPollOptions(body)
     }
@@ -328,7 +333,7 @@ function consumePollForm(req, parity) {
     category: values.category || '',
     pollType: values.poll_type || 'standard',
     expiresAt: values.expires_at || '',
-    expiresAtParts: splitDate(values.expires_at || ''),
+    expiresAtParts: values.expires_at_parts || splitDate(values.expires_at || ''),
     isAnonymous: Boolean(values.is_anonymous),
     options: Array.isArray(values.options) ? values.options : []
   };
@@ -538,6 +543,12 @@ async function storePoll(req, res, { parity = false } = {}) {
   if (!isValidPollPayload(payload)) {
     storePollForm(req, parity);
     return redirectTo(res, createPollRedirect('poll-create-failed', parity));
+  }
+  // A typed-but-unreal close date must be rejected, not silently dropped —
+  // dropping it would create a never-closing poll without telling the member.
+  if (readDate(req.body, 'expires_at').error) {
+    storePollForm(req, parity);
+    return redirectTo(res, createPollRedirect('poll-expires-invalid', parity));
   }
   if (payload.expires_at && payload.expires_at < tomorrowDate()) {
     storePollForm(req, parity);

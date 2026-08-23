@@ -399,18 +399,21 @@ function jobFilters(query) {
     commitment: allowed(query.commitment, JOB_COMMITMENTS, ''),
     sort: allowed(query.sort, JOB_SORTS, 'newest'),
     remote: checkedOne(query.remote),
-    offset: nonNegativeInteger(query.offset)
+    cursor: trimmed(query.cursor, 500)
   };
 }
 
+// Laravel's JobVacanciesController::index paginates by per_page + cursor and
+// ignores offset, so the browse page pages the same way as /saved and
+// /applications rather than sending a no-op offset.
 function jobsApiParams(filters) {
   const params = {
-    limit: JOBS_PER_PAGE,
-    offset: filters.offset,
+    per_page: JOBS_PER_PAGE,
     status: 'open',
     sort: filters.sort
   };
 
+  if (filters.cursor !== '') params.cursor = filters.cursor;
   if (filters.q !== '') params.search = filters.q;
   if (filters.type !== '') params.type = filters.type;
   if (filters.commitment !== '') params.commitment = filters.commitment;
@@ -419,14 +422,14 @@ function jobsApiParams(filters) {
   return params;
 }
 
-function jobsHref(filters, offset = null) {
+function jobsHref(filters, cursor = null) {
   const query = new URLSearchParams();
   if (filters.q !== '') query.set('q', filters.q);
   if (filters.type !== '') query.set('type', filters.type);
   if (filters.commitment !== '') query.set('commitment', filters.commitment);
   if (filters.sort !== 'newest') query.set('sort', filters.sort);
   if (filters.remote) query.set('remote', '1');
-  if (offset !== null && offset > 0) query.set('offset', offset);
+  if (cursor) query.set('cursor', cursor);
 
   const queryString = query.toString();
   return `/jobs${queryString ? `?${queryString}` : ''}`;
@@ -1521,6 +1524,15 @@ function formErrors(req, status) {
   return message ? [{ text: message, href: '#title' }] : [];
 }
 
+// A typed-but-unreal closing date is rejected rather than silently posting a
+// vacancy without a deadline; the message reuses the shared date wording.
+function jobDeadlineInvalidError(req) {
+  return {
+    text: translateStatusMessage(req, 'web_uk.date_input.date_invalid', 'Enter a real date'),
+    href: '#deadline-day'
+  };
+}
+
 function apiJobFormErrors(error, fallback) {
   if (!(error instanceof ApiError) || !Array.isArray(error.data?.errors)) {
     return [];
@@ -1708,8 +1720,7 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 
   const jobs = collectionItems(result).map(decorateJob);
-  const jobsMeta = collectionMeta(result, filters);
-  const nextOffset = jobsMeta.offset + jobsMeta.per_page;
+  const jobsMeta = collectionMeta(result, { offset: 0 });
 
   return res.render('jobs/index', {
     title: 'Jobs',
@@ -1719,7 +1730,7 @@ router.get('/', asyncRoute(async (req, res) => {
     jobs,
     filters,
     jobsMeta,
-    nextHref: jobsMeta.has_more ? jobsHref(filters, nextOffset) : '',
+    nextHref: jobsMeta.has_more && jobsMeta.cursor ? jobsHref(filters, jobsMeta.cursor) : '',
     status: req.query.status || '',
     successMessage: statusMessage(req, req.query.status)
   });
@@ -2533,6 +2544,10 @@ router.post('/', asyncRoute(async (req, res) => {
     rememberJobForm(req, req.body);
     return redirectTo(res, statusRedirect('/jobs/create', 'title-required'));
   }
+  if (readDate(req.body, 'deadline').error) {
+    rememberJobForm(req, req.body, [jobDeadlineInvalidError(req)]);
+    return redirectTo(res, '/jobs/create');
+  }
 
   let result;
   try {
@@ -2557,6 +2572,10 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   if (payload === null) {
     rememberJobForm(req, req.body);
     return redirectTo(res, statusRedirect(`/jobs/${id}/edit`, 'title-required'));
+  }
+  if (readDate(req.body, 'deadline').error) {
+    rememberJobForm(req, req.body, [jobDeadlineInvalidError(req)]);
+    return redirectTo(res, `/jobs/${id}/edit`);
   }
 
   try {

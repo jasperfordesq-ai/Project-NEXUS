@@ -55,7 +55,10 @@
                   {% for remainingId in member.remainingIds %}
                     <input type="hidden" name="members[]" value="{{ remainingId }}">
                   {% endfor %}
-                  <button type="submit" class="govuk-link" style="background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;color:#1d70b8">{{ t("govuk_alpha_messages.create.remove_member") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_messages.create.remove_member_hidden", { name: member.displayName }) }}</span></button>
+                  {# app-link-button, not an inline style: the inline color won
+                     over .govuk-link:focus, leaving blue-on-yellow at ~3.8:1
+                     on keyboard focus. The shared class handles focus states. #}
+                  <button type="submit" class="app-link-button">{{ t("govuk_alpha_messages.create.remove_member") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_messages.create.remove_member_hidden", { name: member.displayName }) }}</span></button>
                 </form>
               </li>
             {% endfor %}

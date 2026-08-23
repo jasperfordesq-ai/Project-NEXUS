@@ -854,6 +854,7 @@
             "materialize_title": "Crea un evento da questo modello",
             "captured": "Modello evento salvato.",
             "revised": "Modello evento aggiornato dall'origine.",
+            "materialized": "Una bozza di evento è stata creata da questo modello.",
             "back_to_events": "Torniamo agli eventi",
             "intro": "Riutilizza la configurazione dell'evento approvata attraverso un flusso di lavoro rivisto e di sola bozza.",
             "safety_title": "I modelli copiano solo la configurazione",

@@ -854,6 +854,7 @@
             "materialize_title": "Crear un evento a partir de esta plantilla",
             "captured": "Plantilla de evento guardada.",
             "revised": "Plantilla de evento actualizada desde su origen.",
+            "materialized": "Se ha creado un borrador de evento a partir de esta plantilla.",
             "back_to_events": "Volver a eventos",
             "intro": "Reutilice la configuración de eventos aprobada a través de un flujo de trabajo revisado y solo en borrador.",
             "safety_title": "Las plantillas copian solo la configuración",

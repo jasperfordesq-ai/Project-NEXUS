@@ -456,14 +456,16 @@ router.post('/:id(\\d+)/status', asyncRoute(async (req, res) => {
 
 router.post('/:id(\\d+)/favorite', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
+  // The favourite forms live on the manage page, whose whitelist maps
+  // favorited/unfavorited/challenge-failed — return the member there.
   return runAction(
     req,
     res,
     'POST',
     `/ideation-challenges/${id}/favorite`,
     undefined,
-    (result) => challengeRedirect(id, favoriteStatus(result)),
-    challengeRedirect(id, 'challenge-failed')
+    (result) => challengeManageRedirect(id, favoriteStatus(result)),
+    challengeManageRedirect(id, 'challenge-failed')
   );
 }));
 

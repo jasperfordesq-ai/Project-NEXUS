@@ -236,7 +236,9 @@
     modal.className = 'app-timeout-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-labelledby', 'timeout-warning-title');
-    modal.setAttribute('aria-describedby', 'timeout-warning-description');
+    // Both sentences describe the dialog — leaving the unsaved-changes warning
+    // out of describedby meant a screen reader never heard it.
+    modal.setAttribute('aria-describedby', 'timeout-warning-description timeout-warning-unsaved');
     modal.setAttribute('aria-modal', 'true');
     modal.hidden = true;
 
@@ -499,6 +501,11 @@
     // Only run for authenticated users
     var isAuthenticated = document.querySelector('[data-authenticated="true"]');
     if (!isAuthenticated) return;
+
+    // The live region must EXIST well before anything writes to it: a region
+    // inserted and filled in the same task is generally not announced, which
+    // silently dropped the first countdown warning.
+    announceToScreenReader('');
 
     // Page load is real server contact (the rolling session cookie was just
     // re-issued), so it both starts the local window and counts as activity

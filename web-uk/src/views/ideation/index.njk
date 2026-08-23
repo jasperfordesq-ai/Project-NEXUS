@@ -11,6 +11,12 @@
   <h1 class="govuk-heading-xl">{{ t("ideation.ideas_title") }}</h1>
   <p class="govuk-body-l">{{ t("ideation.description") }}</p>
 
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
   <form method="get" action="{{ urlFor('/ideation') }}" class="govuk-!-margin-bottom-6">
     <div class="govuk-form-group govuk-!-margin-bottom-4">
       <label class="govuk-label" for="ideation-q">{{ t("polish_discovery.ideation_search_label") }}</label>

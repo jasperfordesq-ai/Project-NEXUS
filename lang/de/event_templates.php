@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Erstellen Sie eine Veranstaltung aus dieser Vorlage',
     'captured' => 'Veranstaltungsvorlage gespeichert.',
     'revised' => 'Die Ereignisvorlage wurde von ihrer Quelle aktualisiert.',
+    'materialized' => 'Aus dieser Vorlage wurde ein Veranstaltungsentwurf erstellt.',
     'back_to_events' => 'Zurück zu den Ereignissen',
     'intro' => 'Wiederverwendung genehmigter Ereigniskonfigurationen durch einen überprüften, reinen Entwurfs-Workflow.',
     'safety_title' => 'Vorlagen kopieren nur die Konfiguration',

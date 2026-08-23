@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Utwórz wydarzenie na podstawie tego szablonu',
     'captured' => 'Szablon wydarzenia został zapisany.',
     'revised' => 'Szablon wydarzenia odświeżony ze źródła.',
+    'materialized' => 'Na podstawie tego szablonu utworzono wersję roboczą wydarzenia.',
     'back_to_events' => 'Wracając do wydarzeń',
     'intro' => 'Wykorzystuj ponownie zatwierdzoną konfigurację wydarzenia w ramach sprawdzonego przepływu pracy w wersji roboczej.',
     'safety_title' => 'Szablony kopiują tylko konfigurację',

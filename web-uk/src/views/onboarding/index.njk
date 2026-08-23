@@ -216,27 +216,29 @@
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("govuk_alpha.onboarding.confirm.photo_row") }}</dt>
             <dd class="govuk-summary-list__value">{% if onboardingUser.avatar_url %}{{ t("govuk_alpha.onboarding.confirm.photo_added") }}{% else %}{{ t("govuk_alpha.onboarding.confirm.photo_missing") }}{% endif %}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/profile') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}</a></dd>
+            {# Five "Change" links share one accessible name without the hidden
+               row context (GDS check-your-answers pattern; WCAG 2.4.4). #}
+            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/profile') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("govuk_alpha.onboarding.confirm.photo_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.bio_row") }}</dt>
             <dd class="govuk-summary-list__value">{{ (onboardingUser.bio or "") | truncate(120, true, '...') }}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/profile') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}</a></dd>
+            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/profile') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.bio_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.interests_row") }}</dt>
             <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagInterests.length }) }}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/interests') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}</a></dd>
+            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/interests') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.interests_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.skills_offers_row") }}</dt>
             <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagOffers.length }) }}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}</a></dd>
+            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.skills_offers_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.skills_needs_row") }}</dt>
             <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagNeeds.length }) }}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}</a></dd>
+            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.skills_needs_row") }}</span></a></dd>
           </div>
         </dl>
         <p class="govuk-body">{{ t("onboarding.confirm.finish_note") }}</p>

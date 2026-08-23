@@ -60,11 +60,14 @@
       </div>
     </div>
 
+    {% set expiryInvalid = statusBanner and statusBanner.href == '#expires_at-day' %}
     {{ nexusDateInput({
   name: "expires_at",
   legend: t("govuk_alpha_groups.announcements.expires_at_label"),
   hint: t("govuk_alpha_groups.announcements.expires_at_hint"),
-  value: announcement.expiresAtParts
+  value: announcement.expiresAtParts,
+  errorMessage: statusBanner.message if expiryInvalid else undefined,
+  errorFields: ["day", "month", "year"] if expiryInvalid else undefined
 }, t) }}
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.submit_edit") }}</button>

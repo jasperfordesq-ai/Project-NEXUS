@@ -15,6 +15,7 @@ return [
     'materialize_title' => 'Create an event from this template',
     'captured' => 'Event template saved.',
     'revised' => 'Event template refreshed from its source.',
+    'materialized' => 'A draft event has been created from this template.',
     'back_to_events' => 'Back to events',
     'intro' => 'Reuse approved event configuration through a reviewed, draft-only workflow.',
     'safety_title' => 'Templates copy configuration only',

@@ -916,6 +916,14 @@ describe('Public Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.text).toContain('<h1 class="govuk-heading-xl">Register</h1>');
+      // ONE merged aria-describedby wiring the password field to both its hint
+      // and the strength live region. Passing it via attributes emitted a
+      // duplicate attribute, and browsers keep only the first — which silently
+      // detached the live region password-strength.js writes to.
+      const passwordInput = response.text.match(/<input[^>]*id="password"[^>]*>/)[0];
+      expect(passwordInput.match(/aria-describedby/g)).toHaveLength(1);
+      expect(passwordInput).toContain('password-strength-msg');
+      expect(passwordInput).toContain('password-hint');
     });
   });
 

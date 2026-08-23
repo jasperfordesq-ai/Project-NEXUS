@@ -161,7 +161,7 @@
                   <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(resource.downloadHref) }}" aria-label="{{ t('govuk_alpha_resources.actions.download_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.download") }}</a>
                 {% endif %}
                 {% if resource.canManage %}
-                  <a class="govuk-link" href="{{ urlFor('/resources/' + (resource.id | string) + '/delete') }}" aria-label="{{ t('govuk_alpha_resources.actions.delete_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.delete") }}</a>
+                  <a class="govuk-link" href="{{ urlFor('/resources/' + (resource.id | string) + '/delete' + (filterQuerySuffix or '')) }}" aria-label="{{ t('govuk_alpha_resources.actions.delete_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.delete") }}</a>
                 {% endif %}
               </div>
 

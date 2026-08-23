@@ -56,7 +56,12 @@
           {% if isAdmin %}
             <ul class="govuk-summary-card__actions">
               <li class="govuk-summary-card__action">
-                <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/edit') }}" aria-label="{{ t('govuk_alpha_groups.announcements.edit_aria') }}">{{ t("govuk_alpha_groups.announcements.submit_edit") }}</a>
+                {# The visible text said "Save changes" on a link that NAVIGATES
+                   to the edit form, while an aria-label said "Edit this
+                   announcement" — a WCAG 2.5.3 label-in-name failure and the
+                   wrong word for sighted members too. The visible text is now
+                   the accessible name; the hidden suffix names which card. #}
+                <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/edit') }}">{{ t("govuk_alpha_groups.announcements.edit_aria") }}<span class="govuk-visually-hidden"> — {{ announcement.title }}</span></a>
               </li>
               <li class="govuk-summary-card__action">
                 <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/pin') }}" style="display:inline">
@@ -70,7 +75,7 @@
               <li class="govuk-summary-card__action">
                 <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/delete') }}" style="display:inline">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                  <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_groups.announcements.delete_aria') }}">{{ t("govuk_alpha_groups.announcements.delete_confirm") }}</button>
+                  <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.delete_confirm") }}<span class="govuk-visually-hidden"> — {{ announcement.title }}</span></button>
                 </form>
               </li>
             </ul>
@@ -123,10 +128,13 @@
         </div>
       </div>
 
+      {% set expiryInvalid = statusBanner and statusBanner.href == '#expires_at-day' %}
       {{ nexusDateInput({
   name: "expires_at",
   legend: t("govuk_alpha_groups.announcements.expires_at_label"),
-  hint: t("govuk_alpha_groups.announcements.expires_at_hint")
+  hint: t("govuk_alpha_groups.announcements.expires_at_hint"),
+  errorMessage: statusBanner.message if expiryInvalid else undefined,
+  errorFields: ["day", "month", "year"] if expiryInvalid else undefined
 }, t) }}
 
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.submit_create") }}</button>
