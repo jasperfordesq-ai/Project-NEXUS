@@ -153,3 +153,17 @@ npm --prefix web-uk run test:accessibility:authenticated
 
 🔴 `ACCESSIBILITY_MEMBER_ID` must not be the signed-in member: the appreciation
 wall renders its form only `{% if not isSelf %}`.
+
+### Irish and Arabic RTL gates — also first execution, same date
+
+The same CI selection excludes `Irish narrow reflow and catalogue gate` and
+`Arabic RTL and narrow reflow gate`. Both were run against the same disposable
+environment on 2026-08-19: **13 passed, 0 failed**, no changes needed. Repeat
+with `--grep="narrow reflow"` in place of the authenticated grep above.
+
+🔴 **CI still does not run any of these three gates.** The isolated fixture
+cannot serve them — they need a real backend — and wiring the disposable Laravel
+into the workflow is a separate piece of infrastructure work. What has changed is
+that they are now known to pass, the fixture assumptions that made them
+unrunnable are gone, and there is a documented command that works. Treat this as
+evidence for the date and environment named, not as continuous coverage.
