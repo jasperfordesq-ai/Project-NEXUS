@@ -25,6 +25,10 @@ return [
         'earned_value' => '+:value ساعة',
         'spent_value' => '-:value ساعة',
         'pending_value' => ':value ساعة',
+
+        'pending_in' => 'قيد الانتظار — واردة',
+
+        'pending_out' => 'قيد الانتظار — صادرة',
         'pending_hint' => 'الاعتمادات الواردة والصادرة التي لم تكتمل بعد.',
     ],
     'hours_value' => ':value ساعة',

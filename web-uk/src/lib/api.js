@@ -2187,6 +2187,11 @@ async function uploadVoiceMessage(token, data) {
   const form = new globalThis.FormData();
   form.append('recipient_id', String(data.recipient_id || data.recipientId || ''));
 
+  const duration = Number(data.duration);
+  if (Number.isFinite(duration) && duration > 0) {
+    form.append('duration', String(Math.round(duration)));
+  }
+
   if (data.file && data.file.buffer) {
     const blob = new globalThis.Blob([data.file.buffer], {
       type: data.file.contentType || 'application/octet-stream'

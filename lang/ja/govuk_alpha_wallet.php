@@ -25,6 +25,10 @@ return [
         'earned_value' => '+:value 時間',
         'spent_value' => '-:value 時間',
         'pending_value' => ':value 時間',
+
+        'pending_in' => '保留中 — 受信',
+
+        'pending_out' => '保留中 — 送信',
         'pending_hint' => 'まだ完了していない受信クレジットと送信クレジット。',
     ],
     'hours_value' => ':value 時間',

@@ -2206,6 +2206,8 @@
                 "archived": "Ihre Veranstaltung wurde archiviert.",
                 "archived_notice": "Diese Veranstaltung ist archiviert. Ihr Verlauf bleibt erhalten, sie ist jedoch nicht mehr für Mitgliederaktivitäten geöffnet.",
                 "archive_failed": "Ihre Veranstaltung konnte nicht archiviert werden. Versuchen Sie es erneut.",
+                "created_image_failed": "Ihre Veranstaltung wurde erstellt. Das Titelbild konnte nicht hochgeladen werden — Sie können es über „Veranstaltung bearbeiten“ erneut versuchen.",
+                "updated_image_failed": "Ihre Veranstaltung wurde aktualisiert. Das Titelbild konnte nicht hochgeladen werden — Sie können es über „Veranstaltung bearbeiten“ erneut versuchen.",
                 "attendees_title": "Wer geht",
                 "create_image_label": "Fügen Sie ein Titelbild hinzu (optional)",
                 "create_image_hint": "JPG, PNG, GIF oder WEBP, bis zu 8 MB. Dies erscheint oben auf der Veranstaltungsseite.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Geben Sie eine Beschreibung ein",
                 "error_price": "Geben Sie einen Geldpreis oder einen Zeitkreditpreis ein",
                 "error_create": "Ihr Eintrag konnte leider nicht erstellt werden. Bitte versuchen Sie es erneut.",
+                "created_pending": "Ihr Eintrag wurde erstellt und zur Prüfung eingereicht. Nur Sie können ihn sehen, bis ein Moderator ihn genehmigt.",
+                "pending_review_notice": "Dieser Eintrag wartet auf die Prüfung. Nur Sie können ihn sehen, bis ein Moderator ihn genehmigt.",
                 "error_update": "Leider konnten Ihre Änderungen nicht gespeichert werden. Bitte versuchen Sie es erneut.",
                 "error_suspended": "Ihr Verkäuferkonto ist gesperrt, sodass Sie keine neuen Angebote erstellen können."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value Stunden",
                 "spent_value": "-:value Stunden",
                 "pending_value": ":value Stunden",
+                "pending_in": "Ausstehend — eingehend",
+                "pending_out": "Ausstehend — ausgehend",
                 "pending_hint": "Eingehende und ausgehende Credits, die noch nicht abgeschlossen sind."
             },
             "hours_value": ":value Stunden",

@@ -126,6 +126,8 @@ return [
         'error_description' => 'Wprowadź opis',
         'error_price' => 'Wprowadź cenę pieniężną lub cenę kredytu czasowego',
         'error_create' => 'Przepraszamy, nie można utworzyć Twojego wpisu. Spróbuj ponownie.',
+        'created_pending' => 'Twój wpis został utworzony i przesłany do weryfikacji. Tylko Ty możesz go zobaczyć, dopóki moderator go nie zatwierdzi.',
+        'pending_review_notice' => 'Ten wpis oczekuje na weryfikację. Tylko Ty możesz go zobaczyć, dopóki moderator go nie zatwierdzi.',
         'error_update' => 'Przepraszamy, nie można zapisać zmian. Spróbuj ponownie.',
         'error_suspended' => 'Twoje konto sprzedawcy zostało zawieszone, więc nie możesz tworzyć nowych aukcji.',
     ],

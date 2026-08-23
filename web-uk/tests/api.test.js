@@ -4337,6 +4337,7 @@ describe('API Request Functions', () => {
 
       await api.uploadVoiceMessage('test-token', {
         recipient_id: 77,
+        duration: 23,
         file: {
           buffer: Buffer.from('fake webm audio bytes', 'utf8'),
           filename: 'voice-note.webm',
@@ -4355,6 +4356,30 @@ describe('API Request Functions', () => {
         })
       );
       expect(options.body).toBeInstanceOf(FormData);
+      // Laravel reads `duration` on POST /v2/messages/voice and stores 1s when
+      // it is absent — recipients then see "0:00" on every clip.
+      expect(options.body.get('duration')).toBe('23');
+    });
+
+    it('omits the voice duration field when none was measured', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 12, is_voice: true } })
+      });
+
+      await api.uploadVoiceMessage('test-token', {
+        recipient_id: 77,
+        duration: null,
+        file: {
+          buffer: Buffer.from('fake webm audio bytes', 'utf8'),
+          filename: 'voice-note.webm',
+          contentType: 'audio/webm'
+        }
+      });
+
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options.body.get('duration')).toBeNull();
     });
 
     it('should upload message attachments to Laravel with multipart data', async () => {

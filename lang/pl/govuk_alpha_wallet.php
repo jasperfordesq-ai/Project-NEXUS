@@ -21,10 +21,14 @@ return [
         'heading' => 'Streszczenie',
         'earned' => 'Zdobyte',
         'spent' => 'Zużyty',
-        'pending' => 'Aż do',
+        'pending' => 'Oczekujące',
         'earned_value' => '+:value godz',
         'spent_value' => '-:value godz',
         'pending_value' => ':value godz',
+
+        'pending_in' => 'Oczekujące — przychodzące',
+
+        'pending_out' => 'Oczekujące — wychodzące',
         'pending_hint' => 'Kredyty przychodzące i wychodzące, które nie zostały jeszcze zakończone.',
     ],
     'hours_value' => ':value godz',

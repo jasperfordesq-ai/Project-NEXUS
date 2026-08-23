@@ -7545,6 +7545,26 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('href="/members">Message a member</a>');
   });
 
+  it('hides the community fund and donate forms when the wallet module is off', async () => {
+    const api = require('../src/lib/api');
+    api.getBalance.mockResolvedValueOnce({ data: { balance: 8, total_earned: 25, total_spent: 17 } });
+    api.getTransactions.mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
+    // Laravel's module-off shape — the flag is the only way to tell "off" from
+    // "empty fund", and dropping it rendered a live donate form on a disabled
+    // module.
+    api.callWalletApi.mockResolvedValueOnce({ data: { balance: 0, enabled: false } });
+
+    const response = await request(app)
+      .get('/wallet')
+      .set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).not.toContain('id="community-fund"');
+    expect(response.text).not.toContain('id="donate"');
+    // The member wallet itself still renders.
+    expect(response.text).toContain('8.0');
+  });
+
   it('renders the Laravel wallet manage hub for signed-in members', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
@@ -7596,8 +7616,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('+25.0 hours');
     expect(response.text).toContain('Spent');
     expect(response.text).toContain('-17.0 hours');
-    expect(response.text).toContain('Pending');
-    expect(response.text).toContain('3.0 hours');
+    // Incoming and outgoing pending credits are separate figures. Their sum is a
+    // number the member has nowhere — the react frontend fixed the same fault.
+    expect(response.text).toContain('Pending — incoming');
+    expect(response.text).toContain('+2.0 hours');
+    expect(response.text).toContain('Pending — outgoing');
+    expect(response.text).toContain('-1.0 hours');
+    expect(response.text).not.toContain('3.0 hours');
     expect(response.text).toContain('You do not have enough credits for that.');
     expect(response.text).toContain('method="get" action="/wallet/manage"');
     expect(response.text).toContain('value="alex"');
@@ -25111,6 +25136,60 @@ describe('shared accessible frontend shell', () => {
     });
   });
 
+  it('reports a failed cover-image upload instead of claiming a clean save', async () => {
+    const api = require('../src/lib/api');
+    const { ApiError } = require('../src/lib/api');
+    const agent = request.agent(app);
+    const cookie = signedCookieHeader();
+    const csrfToken = await csrfTokenFor(agent, '/events/new', cookie);
+
+    api.uploadEventImage.mockRejectedValueOnce(new ApiError('Upload failed', 500));
+    const created = await agent
+      .post('/events/new')
+      .set('Cookie', cookie)
+      .field('_csrf', csrfToken)
+      .field('title', 'Community garden day')
+      .field('description', 'Planting and tea')
+      .field('start_time', '2026-08-01T10:00')
+      .attach('image', Buffer.from('fake event image', 'utf8'), {
+        filename: 'garden.webp',
+        contentType: 'image/webp'
+      });
+    expect(created.status).toBe(302);
+    // The event exists — the redirect must say so AND say the image did not.
+    expect(created.headers.location).toBe('/events/42?status=event-created-image-failed');
+
+    const detail = await agent
+      .get('/events/42?status=event-created-image-failed')
+      .set('Cookie', cookie);
+    expect(detail.status).toBe(200);
+    expect(detail.text).toContain('The cover image could not be uploaded');
+
+    // Same contract on update.
+    api.uploadEventImage.mockRejectedValueOnce(new ApiError('Upload failed', 500));
+    const updated = await agent
+      .post('/events/42/edit')
+      .set('Cookie', cookie)
+      .field('_csrf', csrfToken)
+      .field('title', 'Community garden day')
+      .field('description', 'Planting and tea')
+      .field('start_time', '2026-08-01T10:00')
+      .attach('image', Buffer.from('fake event image', 'utf8'), {
+        filename: 'garden.webp',
+        contentType: 'image/webp'
+      });
+    expect(updated.status).toBe(302);
+    expect(updated.headers.location).toBe('/events/42?status=event-updated-image-failed');
+  });
+
+  it('confirms a recurring series was created on the events list', async () => {
+    const response = await request(app)
+      .get('/events?status=event-created')
+      .set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('Your event has been created.');
+  });
+
   it('requires the Laravel event description and preserves exact datetime fields', async () => {
     const api = require('../src/lib/api');
     const agent = request.agent(app);
@@ -30765,6 +30844,7 @@ describe('shared accessible frontend shell', () => {
       .post('/messages/77/voice')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .field('_csrf', csrfMatch[1])
+      .field('duration', '23')
       .attach('voice', Buffer.from('fake webm audio bytes', 'utf8'), {
         filename: 'voice-note.webm',
         contentType: 'audio/webm'
@@ -30774,11 +30854,29 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers.location).toBe('/messages/77?status=message-sent');
     expect(api.uploadVoiceMessage).toHaveBeenCalledWith('test-token', expect.objectContaining({
       recipient_id: 77,
+      // Measured client-side; without it Laravel stores every clip as 1 second
+      // and recipients see "0:00".
+      duration: 23,
       file: expect.objectContaining({
         filename: 'voice-note.webm',
         contentType: 'audio/webm',
         buffer: Buffer.from('fake webm audio bytes', 'utf8')
       })
+    }));
+
+    // Progressive enhancement stays optional: no duration (JS off) still sends,
+    // with a null duration for the API layer to omit.
+    const withoutDuration = await agent
+      .post('/messages/77/voice')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .field('_csrf', csrfMatch[1])
+      .attach('voice', Buffer.from('fake webm audio bytes', 'utf8'), {
+        filename: 'voice-note.webm',
+        contentType: 'audio/webm'
+      });
+    expect(withoutDuration.headers.location).toBe('/messages/77?status=message-sent');
+    expect(api.uploadVoiceMessage).toHaveBeenLastCalledWith('test-token', expect.objectContaining({
+      duration: null
     }));
   });
 
@@ -32844,7 +32942,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(api.callMarketplaceApi).toHaveBeenCalledWith('test-token', 'GET', '/listings/42');
     expect(response.text).toContain('Back to marketplace');
-    expect(response.text).not.toContain('This item has been saved.');
+    // The save/report/create actions all redirect here with ?status=…; the page
+    // used to drop the banner entirely, and this assertion pinned that bug.
+    expect(response.text).toContain('This item has been saved.');
     expect(response.text).toContain('Community bike');
     expect(response.text).toContain('A road-ready bicycle for local trips.');
     expect(response.text).toContain('GBP 15.50');
@@ -33722,6 +33822,18 @@ describe('shared accessible frontend shell', () => {
             tracking_number: 'TRACK123',
             listing: { title: 'Community bike' },
             seller: { name: 'Aisha Khan' }
+          },
+          {
+            // Paid in time credits: total_price is genuinely 0 and the total must
+            // say so in credits, never as a zero money amount.
+            id: 95,
+            order_number: 'MKT-95',
+            status: 'completed',
+            total_price: 0,
+            currency: 'GBP',
+            time_credits_used: 2,
+            listing: { title: 'Garden help' },
+            seller: { name: 'Aisha Khan' }
           }
         ]
       })
@@ -33759,6 +33871,9 @@ describe('shared accessible frontend shell', () => {
     expect(buyer.text).toContain('Order MKT-91');
     expect(buyer.text).toContain('Community bike');
     expect(buyer.text).toContain('Confirm delivery');
+    expect(buyer.text).toContain('Order MKT-95');
+    expect(buyer.text).toContain('2 time credits');
+    expect(buyer.text).not.toContain('£0.00');
     expect(seller.text).toContain('Sales');
     expect(seller.text).toContain('The order was marked as shipped.');
     expect(seller.text).toContain('Garden chair');
@@ -34261,6 +34376,71 @@ describe('shared accessible frontend shell', () => {
     expect(rejectedEditForm.text).toContain('Replayed edit');
     expect(rejectedEditForm.text).toContain('value="4.50"');
     expect(rejectedEditForm.text).toContain('value="0"');
+  });
+
+  it('tells a seller their new listing is awaiting moderation, on create and on the detail page', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent
+      .get('/contact')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+
+    // Laravel returns meta.notice on the 201 when the community moderates
+    // listings: the listing exists but only the seller can see it.
+    api.callMarketplaceApi.mockResolvedValueOnce({
+      data: { id: 42 },
+      meta: { notice: 'Your listing has been submitted for review.' }
+    });
+    const created = await agent
+      .post('/marketplace/create')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({
+        _csrf: csrfMatch[1],
+        title: 'Community bike',
+        description: 'A road-ready bicycle',
+        price_type: 'free',
+        delivery_method: 'pickup'
+      });
+    expect(created.headers.location).toBe('/marketplace/42?status=listing-created-pending');
+
+    // The detail page must render the redirect status (it used to drop every
+    // ?status=… it was sent) and mark the pending listing for its owner.
+    api.callMarketplaceApi.mockResolvedValueOnce({
+      data: {
+        id: 42,
+        title: 'Community bike',
+        description: 'A road-ready bicycle',
+        status: 'active',
+        moderation_status: 'pending',
+        price_type: 'free'
+      }
+    });
+    const detail = await agent
+      .get('/marketplace/42?status=listing-created-pending')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(detail.status).toBe(200);
+    expect(detail.text).toContain('Your listing has been created and sent for review.');
+    expect(detail.text).toContain('This listing is awaiting review.');
+
+    // An approved listing carries neither banner.
+    api.callMarketplaceApi.mockResolvedValueOnce({
+      data: {
+        id: 43,
+        title: 'Garden chair',
+        description: 'Solid wood',
+        status: 'active',
+        moderation_status: 'approved',
+        price_type: 'free'
+      }
+    });
+    const approved = await agent
+      .get('/marketplace/43')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(approved.text).not.toContain('awaiting review');
   });
 
   it('submits Laravel marketplace listing and buyer action aliases', async () => {

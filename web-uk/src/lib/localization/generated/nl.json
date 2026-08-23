@@ -2206,6 +2206,8 @@
                 "archived": "Je evenement is gearchiveerd.",
                 "archived_notice": "Dit evenement is gearchiveerd. De geschiedenis blijft bewaard, maar leden kunnen er niet meer aan deelnemen.",
                 "archive_failed": "Je evenement kon niet worden gearchiveerd. Probeer het opnieuw.",
+                "created_image_failed": "Je evenement is gemaakt. De omslagafbeelding kon niet worden geüpload — je kunt het opnieuw proberen via Evenement bewerken.",
+                "updated_image_failed": "Je evenement is bijgewerkt. De omslagafbeelding kon niet worden geüpload — je kunt het opnieuw proberen via Evenement bewerken.",
                 "attendees_title": "Wie gaat er",
                 "create_image_label": "Voeg een omslagafbeelding toe (optioneel)",
                 "create_image_hint": "JPG, PNG, GIF of WEBP, tot 8 MB. Dit verschijnt bovenaan de evenementpagina.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Voer een beschrijving in",
                 "error_price": "Voer een geldprijs of een tijdskredietprijs in",
                 "error_create": "Sorry, uw vermelding kan niet worden gemaakt. Probeer het opnieuw.",
+                "created_pending": "Uw vermelding is gemaakt en ter beoordeling verzonden. Alleen u kunt deze zien totdat een moderator deze goedkeurt.",
+                "pending_review_notice": "Deze vermelding wacht op beoordeling. Alleen u kunt deze zien totdat een moderator deze goedkeurt.",
                 "error_update": "Sorry, uw wijzigingen konden niet worden opgeslagen. Probeer het opnieuw.",
                 "error_suspended": "Uw verkopersaccount is opgeschort, u kunt dus geen nieuwe vermeldingen maken."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value uur",
                 "spent_value": "-:value uur",
                 "pending_value": ":value uur",
+                "pending_in": "In behandeling — inkomend",
+                "pending_out": "In behandeling — uitgaand",
                 "pending_hint": "Inkomende en uitgaande kredieten die nog niet zijn voltooid."
             },
             "hours_value": ":value uur",

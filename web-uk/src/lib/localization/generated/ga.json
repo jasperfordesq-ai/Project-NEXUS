@@ -2206,6 +2206,8 @@
                 "archived": "Tá d'imeacht curtha sa chartlann.",
                 "archived_notice": "Tá an t-imeacht seo sa chartlann. Caomhnaítear a stair, ach níl sé oscailte do ghníomhaíocht ball a thuilleadh.",
                 "archive_failed": "Níorbh fhéidir d'imeacht a chur sa chartlann. Bain triail eile as.",
+                "created_image_failed": "Cruthaíodh d'imeacht. Níorbh fhéidir an íomhá chlúdaigh a uaslódáil — is féidir leat triail eile a bhaint aisti ó Cuir an imeacht in eagar.",
+                "updated_image_failed": "Nuashonraíodh d'imeacht. Níorbh fhéidir an íomhá chlúdaigh a uaslódáil — is féidir leat triail eile a bhaint aisti ó Cuir an imeacht in eagar.",
                 "attendees_title": "Cé atá ag dul",
                 "create_image_label": "Cuir íomhá clúdaigh leis (roghnach)",
                 "create_image_hint": "JPG, PNG, GIF nó WEBP, suas le 8MB. Tá sé seo le feiceáil ag barr leathanach an imeachta.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Cuir cur síos isteach",
                 "error_price": "Cuir isteach praghas airgid nó praghas creidmheasa ama",
                 "error_create": "Ár leithscéal, níorbh fhéidir do liostú a chruthú. Bain triail eile as.",
+                "created_pending": "Cruthaíodh do liostú agus seoladh é le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.",
+                "pending_review_notice": "Tá an liostú seo ag fanacht le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.",
                 "error_update": "Ár leithscéal, níorbh fhéidir do chuid athruithe a shábháil. Bain triail eile as.",
                 "error_suspended": "Tá do chuntas díoltóra ar fionraí, mar sin ní féidir leat liostaí nua a chruthú."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+ :value uair an chloig",
                 "spent_value": "-:value uair an chloig",
                 "pending_value": ":value uair an chloig",
+                "pending_in": "Ar feitheamh — isteach",
+                "pending_out": "Ar feitheamh — amach",
                 "pending_hint": "Creidmheasanna isteach agus amach nach bhfuil críochnaithe go fóill."
             },
             "hours_value": ":value uair an chloig",

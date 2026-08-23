@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Je evenement is gearchiveerd.',
         'archived_notice' => 'Dit evenement is gearchiveerd. De geschiedenis blijft bewaard, maar leden kunnen er niet meer aan deelnemen.',
         'archive_failed' => 'Je evenement kon niet worden gearchiveerd. Probeer het opnieuw.',
+        'created_image_failed' => 'Je evenement is gemaakt. De omslagafbeelding kon niet worden geüpload — je kunt het opnieuw proberen via Evenement bewerken.',
+        'updated_image_failed' => 'Je evenement is bijgewerkt. De omslagafbeelding kon niet worden geüpload — je kunt het opnieuw proberen via Evenement bewerken.',
         'attendees_title' => 'Wie gaat er',
         'create_image_label' => 'Voeg een omslagafbeelding toe (optioneel)',
         'create_image_hint' => 'JPG, PNG, GIF of WEBP, tot 8 MB. Dit verschijnt bovenaan de evenementpagina.',

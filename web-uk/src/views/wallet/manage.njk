@@ -57,7 +57,8 @@
     <dl class="nexus-alpha-stat-grid">
       <div class="nexus-alpha-stat"><dt>{{ t("govuk_alpha_wallet.stats.earned") }}</dt><dd>{{ t("govuk_alpha_wallet.stats.earned_value", { value: hoursValue(wallet.earned) }) }}</dd></div>
       <div class="nexus-alpha-stat"><dt>{{ t("govuk_alpha_wallet.stats.spent") }}</dt><dd>{{ t("govuk_alpha_wallet.stats.spent_value", { value: hoursValue(wallet.spent) }) }}</dd></div>
-      <div class="nexus-alpha-stat"><dt>{{ t("govuk_alpha_wallet.stats.pending") }}</dt><dd>{{ t("govuk_alpha_wallet.stats.pending_value", { value: hoursValue(wallet.pendingTotal) }) }}</dd></div>
+      <div class="nexus-alpha-stat"><dt>{{ t("govuk_alpha_wallet.stats.pending_in") }}</dt><dd>{{ t("govuk_alpha_wallet.stats.earned_value", { value: hoursValue(wallet.pendingIn) }) }}</dd></div>
+      <div class="nexus-alpha-stat"><dt>{{ t("govuk_alpha_wallet.stats.pending_out") }}</dt><dd>{{ t("govuk_alpha_wallet.stats.spent_value", { value: hoursValue(wallet.pendingOut) }) }}</dd></div>
     </dl>
     <p class="govuk-hint">{{ t("govuk_alpha_wallet.stats.pending_hint") }}</p>
   </section>
@@ -112,6 +113,8 @@
     {% endfor %}
   </section>
 
+  {# Hidden when the tenant's wallet module is off — see wallet/index.njk. #}
+  {% if fund.enabled %}
   <section aria-labelledby="donate-heading" id="donate">
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="donate-heading">{{ t("govuk_alpha_wallet.donate.heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_wallet.donate.description") }}</p>
@@ -143,6 +146,7 @@
       <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{% if donateRecipient and donateTarget == "user" %}{{ t("govuk_alpha_wallet.donate.button_member", { name: donateRecipient.name }) }}{% else %}{{ t("govuk_alpha_wallet.donate.button_fund") }}{% endif %}</button>
     </form>
   </section>
+  {% endif %}
 
   <p class="govuk-body govuk-!-margin-top-7"><a class="govuk-link" href="{{ urlFor('/wallet') }}">{{ t("govuk_alpha_wallet.footer.wallet_link") }}</a></p>
 {% endblock %}

@@ -68,8 +68,7 @@ function normalizeWallet(raw) {
     earned: numberValue(wallet.total_earned ?? wallet.totalEarned),
     spent: numberValue(wallet.total_spent ?? wallet.totalSpent),
     pendingIn,
-    pendingOut,
-    pendingTotal: pendingIn + pendingOut
+    pendingOut
   };
 }
 
@@ -77,7 +76,12 @@ function normalizeFund(raw) {
   const fund = dataFrom(raw) || {};
   return {
     balance: numberValue(fund.balance),
-    donated: numberValue(fund.total_donated ?? fund.totalDonated)
+    donated: numberValue(fund.total_donated ?? fund.totalDonated),
+    // Laravel returns { balance: 0, enabled: false } when the tenant's wallet
+    // module is off. Dropping the flag rendered a permanent "0.0 hours" fund
+    // plus a live donate form — indistinguishable from an empty fund, which is
+    // exactly why a months-long fund outage went unnoticed here.
+    enabled: fund.enabled !== false
   };
 }
 

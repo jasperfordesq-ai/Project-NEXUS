@@ -25,6 +25,10 @@ return [
         'earned_value' => '+:value horas',
         'spent_value' => '-:value horas',
         'pending_value' => ':value horas',
+
+        'pending_in' => 'Pendiente — entrante',
+
+        'pending_out' => 'Pendiente — saliente',
         'pending_hint' => 'Créditos entrantes y salientes que aún no se han completado.',
     ],
     'hours_value' => ':value horas',

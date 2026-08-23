@@ -25,6 +25,10 @@ return [
         'earned_value' => '+ :value uair an chloig',
         'spent_value' => '-:value uair an chloig',
         'pending_value' => ':value uair an chloig',
+
+        'pending_in' => 'Ar feitheamh — isteach',
+
+        'pending_out' => 'Ar feitheamh — amach',
         'pending_hint' => 'Creidmheasanna isteach agus amach nach bhfuil críochnaithe go fóill.',
     ],
     'hours_value' => ':value uair an chloig',

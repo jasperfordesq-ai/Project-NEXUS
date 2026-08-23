@@ -2206,6 +2206,8 @@
                 "archived": "Tu evento ha sido archivado.",
                 "archived_notice": "Este evento está archivado. Se conserva su historial, pero ya no está abierto a la actividad de los miembros.",
                 "archive_failed": "No se pudo archivar tu evento. Inténtalo de nuevo.",
+                "created_image_failed": "Tu evento ha sido creado. No se pudo subir la imagen de portada — puedes intentarlo de nuevo desde Editar evento.",
+                "updated_image_failed": "Tu evento ha sido actualizado. No se pudo subir la imagen de portada — puedes intentarlo de nuevo desde Editar evento.",
                 "attendees_title": "quien va",
                 "create_image_label": "Añade una imagen de portada (opcional)",
                 "create_image_hint": "JPG, PNG, GIF o WEBP, hasta 8MB. Esto aparece en la parte superior de la página del evento.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Introduce una descripción",
                 "error_price": "Introduzca un precio en dinero o un precio en crédito a tiempo",
                 "error_create": "Lo sentimos, no se pudo crear su anuncio. Por favor inténtalo de nuevo.",
+                "created_pending": "Tu anuncio se ha creado y se ha enviado para revisión. Solo tú puedes verlo hasta que un moderador lo apruebe.",
+                "pending_review_notice": "Este anuncio está pendiente de revisión. Solo tú puedes verlo hasta que un moderador lo apruebe.",
                 "error_update": "Lo sentimos, sus cambios no se pudieron guardar. Por favor inténtalo de nuevo.",
                 "error_suspended": "Tu cuenta de vendedor está suspendida, por lo que no puedes crear nuevos anuncios."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value horas",
                 "spent_value": "-:value horas",
                 "pending_value": ":value horas",
+                "pending_in": "Pendiente — entrante",
+                "pending_out": "Pendiente — saliente",
                 "pending_hint": "Créditos entrantes y salientes que aún no se han completado."
             },
             "hours_value": ":value horas",

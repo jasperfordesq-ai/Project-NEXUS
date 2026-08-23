@@ -1150,6 +1150,10 @@ return [
         'archived' => 'Your event has been archived.',
         'archived_notice' => 'This event is archived. Its history is preserved, but it is no longer open for member activity.',
         'archive_failed' => 'Your event could not be archived. Try again.',
+
+        'created_image_failed' => 'Your event has been created. The cover image could not be uploaded — you can try adding it again from Edit event.',
+
+        'updated_image_failed' => 'Your event has been updated. The cover image could not be uploaded — you can try adding it again from Edit event.',
         'attendees_title' => 'Who is going',
         'create_image_label' => 'Add a cover image (optional)',
         'create_image_hint' => 'JPG, PNG, GIF or WEBP, up to 8MB. This appears at the top of the event page.',

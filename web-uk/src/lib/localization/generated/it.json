@@ -2206,6 +2206,8 @@
                 "archived": "Il tuo evento è stato archiviato.",
                 "archived_notice": "Questo evento è archiviato. La cronologia è conservata, ma non è più aperto alle attività dei membri.",
                 "archive_failed": "Non è stato possibile archiviare il tuo evento. Riprova.",
+                "created_image_failed": "Il tuo evento è stato creato. Non è stato possibile caricare l'immagine di copertina — puoi riprovare da Modifica evento.",
+                "updated_image_failed": "Il tuo evento è stato aggiornato. Non è stato possibile caricare l'immagine di copertina — puoi riprovare da Modifica evento.",
                 "attendees_title": "Chi sta andando",
                 "create_image_label": "Aggiungi un'immagine di copertina (facoltativo)",
                 "create_image_hint": "JPG, PNG, GIF o WEBP, fino a 8 MB. Questo appare nella parte superiore della pagina dell'evento.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Inserisci una descrizione",
                 "error_price": "Immettere un prezzo in denaro o un prezzo in credito temporale",
                 "error_create": "Siamo spiacenti, non è stato possibile creare la tua inserzione. Per favore riprova.",
+                "created_pending": "La tua inserzione è stata creata e inviata per la revisione. Solo tu puoi vederla finché un moderatore non la approva.",
+                "pending_review_notice": "Questa inserzione è in attesa di revisione. Solo tu puoi vederla finché un moderatore non la approva.",
                 "error_update": "Spiacenti, non è stato possibile salvare le modifiche. Per favore riprova.",
                 "error_suspended": "Il tuo Account venditore è sospeso, quindi non puoi creare nuove inserzioni."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value ore",
                 "spent_value": "-:value ore",
                 "pending_value": ":value ore",
+                "pending_in": "In sospeso — in entrata",
+                "pending_out": "In sospeso — in uscita",
                 "pending_hint": "Crediti in entrata e in uscita non ancora completati."
             },
             "hours_value": ":value ore",

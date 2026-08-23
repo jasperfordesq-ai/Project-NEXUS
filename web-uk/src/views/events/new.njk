@@ -289,8 +289,10 @@
                       <div class="govuk-radios__conditional{% if recurrenceEndsType != "after_count" %} govuk-radios__conditional--hidden{% endif %}" id="rec-count-conditional">
                         <div class="govuk-form-group">
                           <label class="govuk-label" for="recurrence_ends_after_count">{{ t("events.polish_events.recurrence_count_label") }}</label>
-                          <div id="rec-count-hint" class="govuk-hint">{{ t("events.polish_events.recurrence_count_hint") }}</div>
-                          <input class="govuk-input govuk-input--width-3" id="recurrence_ends_after_count" name="recurrence_ends_after_count" type="number" min="1" max="52" value="{{ values.recurrence_ends_after_count if values and values.recurrence_ends_after_count else '10' }}" aria-describedby="rec-count-hint">
+                          {# The hint says "Between 2 and :max" — interpolate the input's own
+                             bound and keep min in step with the wording. #}
+                          <div id="rec-count-hint" class="govuk-hint">{{ t("events.polish_events.recurrence_count_hint", { max: 52 }) }}</div>
+                          <input class="govuk-input govuk-input--width-3" id="recurrence_ends_after_count" name="recurrence_ends_after_count" type="number" min="2" max="52" value="{{ values.recurrence_ends_after_count if values and values.recurrence_ends_after_count else '10' }}" aria-describedby="rec-count-hint">
                         </div>
                       </div>
                       <div class="govuk-radios__item">

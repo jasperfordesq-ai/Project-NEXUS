@@ -2143,6 +2143,8 @@
                 "archived": "Your event has been archived.",
                 "archived_notice": "This event is archived. Its history is preserved, but it is no longer open for member activity.",
                 "archive_failed": "Your event could not be archived. Try again.",
+                "created_image_failed": "Your event has been created. The cover image could not be uploaded — you can try adding it again from Edit event.",
+                "updated_image_failed": "Your event has been updated. The cover image could not be uploaded — you can try adding it again from Edit event.",
                 "attendees_title": "Who is going",
                 "create_image_label": "Add a cover image (optional)",
                 "create_image_hint": "JPG, PNG, GIF or WEBP, up to 8MB. This appears at the top of the event page.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Enter a description",
                 "error_price": "Enter a money price or a time credit price",
                 "error_create": "Sorry, your listing could not be created. Please try again.",
+                "created_pending": "Your listing has been created and sent for review. Only you can see it until a moderator approves it.",
+                "pending_review_notice": "This listing is awaiting review. Only you can see it until a moderator approves it.",
                 "error_update": "Sorry, your changes could not be saved. Please try again.",
                 "error_suspended": "Your seller account is suspended, so you cannot create new listings."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value hours",
                 "spent_value": "-:value hours",
                 "pending_value": ":value hours",
+                "pending_in": "Pending — incoming",
+                "pending_out": "Pending — outgoing",
                 "pending_hint": "Incoming and outgoing credits that have not yet completed."
             },
             "hours_value": ":value hours",

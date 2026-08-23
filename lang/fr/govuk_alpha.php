@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Votre événement a été archivé.',
         'archived_notice' => 'Cet événement est archivé. Son historique est conservé, mais il n\'est plus ouvert aux activités des membres.',
         'archive_failed' => 'Votre événement n\'a pas pu être archivé. Réessayez.',
+        'created_image_failed' => 'Votre événement a été créé. L\'image de couverture n\'a pas pu être téléversée — vous pouvez réessayer depuis Modifier l\'événement.',
+        'updated_image_failed' => 'Votre événement a été mis à jour. L\'image de couverture n\'a pas pu être téléversée — vous pouvez réessayer depuis Modifier l\'événement.',
         'attendees_title' => 'Qui va',
         'create_image_label' => 'Ajouter une image de couverture (facultatif)',
         'create_image_hint' => 'JPG, PNG, GIF ou WEBP, jusqu\'à 8 Mo. Ceci apparaît en haut de la page de l\'événement.',

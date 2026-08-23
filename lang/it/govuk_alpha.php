@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Il tuo evento è stato archiviato.',
         'archived_notice' => 'Questo evento è archiviato. La cronologia è conservata, ma non è più aperto alle attività dei membri.',
         'archive_failed' => 'Non è stato possibile archiviare il tuo evento. Riprova.',
+        'created_image_failed' => 'Il tuo evento è stato creato. Non è stato possibile caricare l\'immagine di copertina — puoi riprovare da Modifica evento.',
+        'updated_image_failed' => 'Il tuo evento è stato aggiornato. Non è stato possibile caricare l\'immagine di copertina — puoi riprovare da Modifica evento.',
         'attendees_title' => 'Chi sta andando',
         'create_image_label' => 'Aggiungi un\'immagine di copertina (facoltativo)',
         'create_image_hint' => 'JPG, PNG, GIF o WEBP, fino a 8 MB. Questo appare nella parte superiore della pagina dell\'evento.',

@@ -127,6 +127,10 @@ return [
         'error_description' => 'Cuir cur síos isteach',
         'error_price' => 'Cuir isteach praghas airgid nó praghas creidmheasa ama',
         'error_create' => 'Ár leithscéal, níorbh fhéidir do liostú a chruthú. Bain triail eile as.',
+
+        'created_pending' => 'Cruthaíodh do liostú agus seoladh é le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.',
+
+        'pending_review_notice' => 'Tá an liostú seo ag fanacht le hathbhreithniú. Ní fheicfidh ach tusa é go dtí go gceadaíonn modhnóir é.',
         'error_update' => 'Ár leithscéal, níorbh fhéidir do chuid athruithe a shábháil. Bain triail eile as.',
         'error_suspended' => 'Tá do chuntas díoltóra ar fionraí, mar sin ní féidir leat liostaí nua a chruthú.',
     ],

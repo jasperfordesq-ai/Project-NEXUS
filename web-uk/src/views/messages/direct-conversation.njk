@@ -277,8 +277,11 @@
           <div class="govuk-form-group govuk-!-margin-bottom-2">
             <label class="govuk-label govuk-label--s" for="voice">{{ t("govuk_alpha_messages.voice.label") }}</label>
             <div id="voice-hint" class="govuk-hint">{{ t("govuk_alpha_messages.voice.hint") }}</div>
-            <input class="govuk-file-upload" id="voice" name="voice" type="file" accept="audio/*" capture aria-describedby="voice-hint">
+            <input class="govuk-file-upload" id="voice" name="voice" type="file" accept="audio/*" capture aria-describedby="voice-hint" data-voice-duration-target="voice-duration">
           </div>
+          {# Filled by /js/voice-duration.js; empty (no-JS) means the server
+             omits the duration, exactly as before the enhancement. #}
+          <input type="hidden" name="duration" value="" id="voice-duration">
           {{ govukButton({ text: t("govuk_alpha_messages.voice.submit"), classes: "govuk-button--secondary" }) }}
         </form>
       {% endif %}
@@ -287,4 +290,9 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("govuk_alpha.actions.archive_conversation"), classes: "govuk-button--secondary" }) }}
       </form>
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  <script src="/js/voice-duration.js" defer></script>
 {% endblock %}

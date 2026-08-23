@@ -129,6 +129,10 @@ return [
         'error_description' => 'Enter a description',
         'error_price' => 'Enter a money price or a time credit price',
         'error_create' => 'Sorry, your listing could not be created. Please try again.',
+
+        'created_pending' => 'Your listing has been created and sent for review. Only you can see it until a moderator approves it.',
+
+        'pending_review_notice' => 'This listing is awaiting review. Only you can see it until a moderator approves it.',
         'error_update' => 'Sorry, your changes could not be saved. Please try again.',
         'error_suspended' => 'Your seller account is suspended, so you cannot create new listings.',
     ],

@@ -1199,6 +1199,8 @@ return [
         'archived' => 'O seu evento foi arquivado.',
         'archived_notice' => 'Este evento está arquivado. O histórico é preservado, mas já não está aberto à atividade dos membros.',
         'archive_failed' => 'Não foi possível arquivar o seu evento. Tente novamente.',
+        'created_image_failed' => 'Seu evento foi criado. Não foi possível enviar a imagem de capa — você pode tentar novamente em Editar evento.',
+        'updated_image_failed' => 'Seu evento foi atualizado. Não foi possível enviar a imagem de capa — você pode tentar novamente em Editar evento.',
         'attendees_title' => 'Quem vai',
         'create_image_label' => 'Adicione uma imagem de capa (opcional)',
         'create_image_hint' => 'JPG, PNG, GIF ou WEBP, até 8 MB. Isso aparece no topo da página do evento.',

@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -119,6 +120,47 @@ class WalletControllerTest extends TestCase
                 "type={$filter} must stay completed-only — clients derive earned/spent from it",
             );
         }
+    }
+
+    /**
+     * The page-1 federation overlay merges COMPLETED cross-tenant credits into the
+     * list. Both overlay sources hard-filter to status = completed, so letting the
+     * overlay run for type=pending interleaved settled rows into a list the member
+     * asked to be pending-only.
+     */
+    public function test_pending_filter_excludes_the_completed_federation_overlay(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $otherTenant = Tenant::factory()->create();
+        $remoteSender = User::factory()->forTenant($otherTenant->id)->create();
+
+        // A completed internal cross-tenant credit, recorded in the SENDER's
+        // tenant — exactly what the overlay exists to surface on page 1.
+        $federated = Transaction::factory()->forTenant($otherTenant->id)->create([
+            'sender_id' => $remoteSender->id,
+            'sender_tenant_id' => $otherTenant->id,
+            'receiver_id' => $user->id,
+            'receiver_tenant_id' => $this->testTenantId,
+            'is_federated' => 1,
+            'status' => 'completed',
+        ]);
+
+        $default = $this->apiGet('/v2/wallet/transactions');
+        $default->assertStatus(200);
+        $this->assertContains(
+            $federated->id,
+            array_column($default->json('data') ?? [], 'id'),
+            'the overlay must still surface completed federated credits on the default list',
+        );
+
+        $pendingOnly = $this->apiGet('/v2/wallet/transactions?type=pending');
+        $pendingOnly->assertStatus(200);
+        $this->assertNotContains(
+            $federated->id,
+            array_column($pendingOnly->json('data') ?? [], 'id'),
+            'a completed federated credit must never appear under the Pending filter',
+        );
     }
 
     public function test_transactions_requires_authentication(): void

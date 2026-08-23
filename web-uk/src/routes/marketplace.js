@@ -81,6 +81,7 @@ const MARKETPLACE_SUCCESS_MESSAGES = {
   unsaved: 'Item removed from your saved list.',
   reported: 'Thank you. Your report has been sent to our team.',
   'listing-created': 'Your listing has been published.',
+  'listing-created-pending': 'Your listing has been created and sent for review. Only you can see it until a moderator approves it.',
   'listing-saved': 'Your changes were saved.',
   deleted: 'Your listing was deleted.',
   renewed: 'Your listing was renewed.',
@@ -108,6 +109,7 @@ const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   unsaved: 'govuk_alpha_commerce.saved.status_unsaved',
   reported: 'govuk_alpha_commerce.report.status_reported',
   'listing-created': 'listings.create.created',
+  'listing-created-pending': 'govuk_alpha_commerce.listing_form.created_pending',
   deleted: 'govuk_alpha_commerce.my_listings.status_deleted',
   renewed: 'govuk_alpha_commerce.my_listings.status_renewed',
   accepted: 'govuk_alpha_commerce.offers.status_accepted_done',
@@ -653,6 +655,9 @@ function decorateListing(listing) {
     primaryImage: images[0] || '',
     cardImage: cardImageUrl(row),
     isOwnItem: Boolean(row.is_own || row.is_owner || row.owned_by_current_user),
+    // Laravel only returns a moderation-pending listing to its owner, so this
+    // flag never marks someone else's listing.
+    isPendingModeration: trimmed(row.moderation_status) === 'pending',
     href: id ? `/marketplace/${id}` : '/marketplace'
   };
 }
@@ -873,7 +878,12 @@ function decorateOrder(order, role, translate = fallbackTranslator) {
     statusTagClass: ['completed', 'delivered'].includes(status)
       ? 'govuk-tag--green'
       : (status === 'cancelled' ? 'govuk-tag--red' : 'govuk-tag--blue'),
-    totalLabel: formatMoney(row.total_price ?? row.total ?? row.amount, row.currency || row.price_currency || 'EUR'),
+    // An order is paid EITHER in money OR in time credits (mutually exclusive in
+    // MarketplaceOrderService): a credits order has total_price 0, so printing the
+    // cash total told the buyer they paid €0.00.
+    totalLabel: decimalNumber(row.time_credits_used) > 0
+      ? formatCredits(decimalNumber(row.time_credits_used))
+      : formatMoney(row.total_price ?? row.total ?? row.amount, row.currency || row.price_currency || 'EUR'),
     counterparty,
     counterpartyLabel: translate(`govuk_alpha_commerce.orders.${isSeller ? 'buyer_label' : 'seller_label'}`),
     trackingNumber: trimmed(row.tracking_number),

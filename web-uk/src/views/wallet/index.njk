@@ -35,6 +35,10 @@
     {% if wallet.pendingIn > 0 %}<div class="nexus-alpha-stat"><dt>{{ t("wallet.pending_in_label") }}</dt><dd>{{ t("wallet.hours_value", { value: hoursValue(wallet.pendingIn) }) }} {{ govukTag({ text: t("wallet.pending_in_badge"), classes: "govuk-tag--yellow" }) }}</dd></div>{% endif %}
   </dl>
 
+  {# fund.enabled is false when the tenant's wallet module is off: Laravel
+     returns { balance: 0, enabled: false }. Rendering a zero fund plus a live
+     donate form made "switched off" indistinguishable from "empty". #}
+  {% if fund.enabled %}
   <section aria-labelledby="fund-heading" id="community-fund">
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="fund-heading">{{ t("wallet_t1.fund_heading") }}</h2>
     <p class="govuk-body">{{ t("wallet_t1.fund_description") }}</p>
@@ -56,6 +60,7 @@
       <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("wallet_t1.donate_button") }}</button>
     </form>
   </section>
+  {% endif %}
 
   <section aria-labelledby="transfer-heading" id="transfer">
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="transfer-heading">{{ t("wallet.transfer_title") }}</h2>

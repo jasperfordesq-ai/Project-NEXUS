@@ -731,10 +731,16 @@ router.post('/:userId(\\d+)/voice', asyncRoute(async (req, res) => {
     return redirectTo(res, messageRedirect(userId, 'voice-required'));
   }
 
+  // Measured client-side by /js/voice-duration.js. Laravel stores this on the
+  // message (floor 1s); omitting it is what made every voice note from this
+  // site play as one second long on other clients.
+  const duration = Number.parseInt(req.body && req.body.duration, 10);
+
   try {
     const buffer = await fs.readFile(file.filepath);
     await uploadVoiceMessage(token, {
       recipient_id: userId,
+      duration: Number.isFinite(duration) && duration > 0 ? duration : null,
       file: {
         buffer,
         filename: trimmed(file.originalFilename) || 'voice-message',

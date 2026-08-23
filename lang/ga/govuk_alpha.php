@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Tá d\'imeacht curtha sa chartlann.',
         'archived_notice' => 'Tá an t-imeacht seo sa chartlann. Caomhnaítear a stair, ach níl sé oscailte do ghníomhaíocht ball a thuilleadh.',
         'archive_failed' => 'Níorbh fhéidir d\'imeacht a chur sa chartlann. Bain triail eile as.',
+        'created_image_failed' => 'Cruthaíodh d\'imeacht. Níorbh fhéidir an íomhá chlúdaigh a uaslódáil — is féidir leat triail eile a bhaint aisti ó Cuir an imeacht in eagar.',
+        'updated_image_failed' => 'Nuashonraíodh d\'imeacht. Níorbh fhéidir an íomhá chlúdaigh a uaslódáil — is féidir leat triail eile a bhaint aisti ó Cuir an imeacht in eagar.',
         'attendees_title' => 'Cé atá ag dul',
         'create_image_label' => 'Cuir íomhá clúdaigh leis (roghnach)',
         'create_image_hint' => 'JPG, PNG, GIF nó WEBP, suas le 8MB. Tá sé seo le feiceáil ag barr leathanach an imeachta.',

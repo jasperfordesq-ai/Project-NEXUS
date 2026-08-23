@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Ihre Veranstaltung wurde archiviert.',
         'archived_notice' => 'Diese Veranstaltung ist archiviert. Ihr Verlauf bleibt erhalten, sie ist jedoch nicht mehr für Mitgliederaktivitäten geöffnet.',
         'archive_failed' => 'Ihre Veranstaltung konnte nicht archiviert werden. Versuchen Sie es erneut.',
+        'created_image_failed' => 'Ihre Veranstaltung wurde erstellt. Das Titelbild konnte nicht hochgeladen werden — Sie können es über „Veranstaltung bearbeiten“ erneut versuchen.',
+        'updated_image_failed' => 'Ihre Veranstaltung wurde aktualisiert. Das Titelbild konnte nicht hochgeladen werden — Sie können es über „Veranstaltung bearbeiten“ erneut versuchen.',
         'attendees_title' => 'Wer geht',
         'create_image_label' => 'Fügen Sie ein Titelbild hinzu (optional)',
         'create_image_hint' => 'JPG, PNG, GIF oder WEBP, bis zu 8 MB. Dies erscheint oben auf der Veranstaltungsseite.',

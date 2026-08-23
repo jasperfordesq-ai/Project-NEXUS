@@ -326,7 +326,9 @@ class WalletService
         // in the sender's tenant (invisible to the tenant-scoped native query above).
         // Cursor pagination stays keyed to the native transactions table; federation rows
         // appear as an overlay on page 1, re-sorted by created_at so they interleave correctly.
-        if ($cursor === null && $type !== 'sent') {
+        // Excluded for 'pending' as well as 'sent': both overlay sources hard-filter to
+        // status = completed, so they can never belong in a pending-only list.
+        if ($cursor === null && $type !== 'sent' && $type !== 'pending') {
             $fedItems = array_merge(
                 $this->getFederationTransactions($userId, $limit),
                 $this->getInternalFederatedInbound($userId, $limit)

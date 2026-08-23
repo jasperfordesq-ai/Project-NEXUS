@@ -126,6 +126,8 @@ return [
         'error_description' => 'Geben Sie eine Beschreibung ein',
         'error_price' => 'Geben Sie einen Geldpreis oder einen Zeitkreditpreis ein',
         'error_create' => 'Ihr Eintrag konnte leider nicht erstellt werden. Bitte versuchen Sie es erneut.',
+        'created_pending' => 'Ihr Eintrag wurde erstellt und zur Prüfung eingereicht. Nur Sie können ihn sehen, bis ein Moderator ihn genehmigt.',
+        'pending_review_notice' => 'Dieser Eintrag wartet auf die Prüfung. Nur Sie können ihn sehen, bis ein Moderator ihn genehmigt.',
         'error_update' => 'Leider konnten Ihre Änderungen nicht gespeichert werden. Bitte versuchen Sie es erneut.',
         'error_suspended' => 'Ihr Verkäuferkonto ist gesperrt, sodass Sie keine neuen Angebote erstellen können.',
     ],

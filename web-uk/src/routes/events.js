@@ -164,7 +164,8 @@ function loginRedirect() {
 
 const EVENTS_PATH = '/events';
 const EVENT_DETAIL_STATUSES = [
-  'event-created', 'rsvp-updated', 'event-updated', 'event-cancelled',
+  'event-created', 'event-created-image-failed', 'event-updated-image-failed',
+  'rsvp-updated', 'event-updated', 'event-cancelled',
   'event-submitted', 'event-published', 'checkin-success', 'checkin-failed',
   'waitlist-joined', 'waitlist-left', 'waitlist-offer-accepted', 'poll-voted',
   'rsvp-failed', 'rsvp-vetting-required', 'rsvp-policy-unavailable',
@@ -3303,7 +3304,10 @@ router.get('/', asyncRoute(async (req, res) => {
   const categories = collectionFrom(categoriesResult);
   const meta = result?.meta || {};
   const loadError = result?.loadError === true;
-  const eventStatus = ['event-archived', 'event-deleted', 'event-archive-failed'].includes(trimmed(req.query.status))
+  // event-created lands here from the recurring-series create, which redirects
+  // to the list (there is no single detail page for a series). It used to be
+  // dropped, so creating a series confirmed nothing.
+  const eventStatus = ['event-archived', 'event-deleted', 'event-archive-failed', 'event-created', 'event-created-image-failed'].includes(trimmed(req.query.status))
     ? trimmed(req.query.status)
     : '';
 
@@ -3455,19 +3459,25 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
       throw new ApiError('The event API did not return the created event ID.', 502, result);
     }
 
+    // A failed cover upload must not fail the created event, but it must not be
+    // silent either: during a server-side upload outage organisers were told
+    // "created" while every image was dropped.
+    let imageUploadFailed = false;
     try {
       await uploadEventCoverImage(req.token, eventId, image);
     } catch (uploadError) {
       if (uploadError instanceof ApiError && uploadError.status === 401) {
         throw uploadError;
       }
+      imageUploadFailed = image ? true : false;
     } finally {
       await removeUploadedFile(image);
     }
 
+    const createdStatus = imageUploadFailed ? 'event-created-image-failed' : 'event-created';
     redirectTo(res, checked(is_recurring)
-      ? `${EVENTS_PATH}?status=event-created`
-      : eventPath(eventId, '?status=event-created'));
+      ? `${EVENTS_PATH}?status=${createdStatus}`
+      : eventPath(eventId, `?status=${createdStatus}`));
   } catch (error) {
     await removeUploadedFile(image);
     if (isOnboardingRequired(error)) {
@@ -3687,17 +3697,21 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
   try {
     await updateEvent(req.token, id, eventScopedPayload(req.body));
 
+    // Same contract as create: the event change stands, the image failure is
+    // reported instead of swallowed.
+    let imageUploadFailed = false;
     try {
       await uploadEventCoverImage(req.token, id, image);
     } catch (uploadError) {
       if (uploadError instanceof ApiError && uploadError.status === 401) {
         throw uploadError;
       }
+      imageUploadFailed = image ? true : false;
     } finally {
       await removeUploadedFile(image);
     }
 
-    redirectTo(res, eventPath(id, '?status=event-updated'));
+    redirectTo(res, eventPath(id, imageUploadFailed ? '?status=event-updated-image-failed' : '?status=event-updated'));
   } catch (error) {
     await removeUploadedFile(image);
     if (isOnboardingRequired(error)) {

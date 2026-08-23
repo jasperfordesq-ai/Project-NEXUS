@@ -25,6 +25,10 @@ return [
         'earned_value' => '+:value uur',
         'spent_value' => '-:value uur',
         'pending_value' => ':value uur',
+
+        'pending_in' => 'In behandeling — inkomend',
+
+        'pending_out' => 'In behandeling — uitgaand',
         'pending_hint' => 'Inkomende en uitgaande kredieten die nog niet zijn voltooid.',
     ],
     'hours_value' => ':value uur',

@@ -27,6 +27,26 @@
     </p>
   {% endif %}
 
+  {% if eventStatus == 'event-created' %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="event-created-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="event-created-title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("events.created") }}</p>
+      </div>
+    </div>
+  {% elif eventStatus == 'event-created-image-failed' %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="event-created-image-failed-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="event-created-image-failed-title">{{ t("states.important") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-body">{{ t("events.created_image_failed") }}</p>
+      </div>
+    </div>
+  {% endif %}
+
   {% if eventStatus == 'event-archived' or eventStatus == 'event-deleted' %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="event-archived-title">
       <div class="govuk-notification-banner__header">

@@ -499,7 +499,12 @@ router.post('/create', asyncRoute(async (req, res) => {
   try {
     const result = await callApi(token, 'POST', '/listings', payload);
     const id = resultId(result);
-    return redirectTo(res, listingRedirect(id || 'mine', 'listing-created'));
+    // Laravel signals a moderated community by returning meta.notice on the 201:
+    // the listing exists but only the seller can see it until a moderator
+    // approves it. Saying just "created" here told sellers their listing was
+    // public when it was not.
+    const pendingModeration = Boolean(result && result.meta && result.meta.notice);
+    return redirectTo(res, listingRedirect(id || 'mine', pendingModeration ? 'listing-created-pending' : 'listing-created'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     rememberListingForm(req, 'create', values, ['govuk_alpha_commerce.listing_form.error_create']);

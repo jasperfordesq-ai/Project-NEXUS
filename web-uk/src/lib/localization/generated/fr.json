@@ -2206,6 +2206,8 @@
                 "archived": "Votre événement a été archivé.",
                 "archived_notice": "Cet événement est archivé. Son historique est conservé, mais il n'est plus ouvert aux activités des membres.",
                 "archive_failed": "Votre événement n'a pas pu être archivé. Réessayez.",
+                "created_image_failed": "Votre événement a été créé. L'image de couverture n'a pas pu être téléversée — vous pouvez réessayer depuis Modifier l'événement.",
+                "updated_image_failed": "Votre événement a été mis à jour. L'image de couverture n'a pas pu être téléversée — vous pouvez réessayer depuis Modifier l'événement.",
                 "attendees_title": "Qui va",
                 "create_image_label": "Ajouter une image de couverture (facultatif)",
                 "create_image_hint": "JPG, PNG, GIF ou WEBP, jusqu'à 8 Mo. Ceci apparaît en haut de la page de l'événement.",
@@ -6190,6 +6192,8 @@
                 "error_description": "Entrez une description",
                 "error_price": "Saisir un prix en argent ou un prix en crédit temps",
                 "error_create": "Désolé, votre annonce n'a pas pu être créée. Veuillez réessayer.",
+                "created_pending": "Votre annonce a été créée et envoyée pour vérification. Vous seul pouvez la voir jusqu'à ce qu'un modérateur l'approuve.",
+                "pending_review_notice": "Cette annonce est en attente de vérification. Vous seul pouvez la voir jusqu'à ce qu'un modérateur l'approuve.",
                 "error_update": "Désolé, vos modifications n'ont pas pu être enregistrées. Veuillez réessayer.",
                 "error_suspended": "Votre compte vendeur est suspendu, vous ne pouvez donc pas créer de nouvelles annonces."
             },
@@ -10608,6 +10612,8 @@
                 "earned_value": "+:value heures",
                 "spent_value": "-:value heures",
                 "pending_value": ":value heures",
+                "pending_in": "En attente — entrants",
+                "pending_out": "En attente — sortants",
                 "pending_hint": "Crédits entrants et sortants qui ne sont pas encore terminés."
             },
             "hours_value": ":value heures",

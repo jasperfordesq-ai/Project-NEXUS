@@ -126,6 +126,8 @@ return [
         'error_description' => 'Inserisci una descrizione',
         'error_price' => 'Immettere un prezzo in denaro o un prezzo in credito temporale',
         'error_create' => 'Siamo spiacenti, non è stato possibile creare la tua inserzione. Per favore riprova.',
+        'created_pending' => 'La tua inserzione è stata creata e inviata per la revisione. Solo tu puoi vederla finché un moderatore non la approva.',
+        'pending_review_notice' => 'Questa inserzione è in attesa di revisione. Solo tu puoi vederla finché un moderatore non la approva.',
         'error_update' => 'Spiacenti, non è stato possibile salvare le modifiche. Per favore riprova.',
         'error_suspended' => 'Il tuo Account venditore è sospeso, quindi non puoi creare nuove inserzioni.',
     ],

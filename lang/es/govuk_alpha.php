@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Tu evento ha sido archivado.',
         'archived_notice' => 'Este evento está archivado. Se conserva su historial, pero ya no está abierto a la actividad de los miembros.',
         'archive_failed' => 'No se pudo archivar tu evento. Inténtalo de nuevo.',
+        'created_image_failed' => 'Tu evento ha sido creado. No se pudo subir la imagen de portada — puedes intentarlo de nuevo desde Editar evento.',
+        'updated_image_failed' => 'Tu evento ha sido actualizado. No se pudo subir la imagen de portada — puedes intentarlo de nuevo desde Editar evento.',
         'attendees_title' => 'quien va',
         'create_image_label' => 'Añade una imagen de portada (opcional)',
         'create_image_hint' => 'JPG, PNG, GIF o WEBP, hasta 8MB. Esto aparece en la parte superior de la página del evento.',

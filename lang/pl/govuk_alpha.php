@@ -1199,6 +1199,8 @@ return [
         'archived' => 'Twoje wydarzenie zostało zarchiwizowane.',
         'archived_notice' => 'To wydarzenie jest zarchiwizowane. Jego historia została zachowana, ale nie jest już otwarte na aktywność członków.',
         'archive_failed' => 'Nie udało się zarchiwizować wydarzenia. Spróbuj ponownie.',
+        'created_image_failed' => 'Twoje wydarzenie zostało utworzone. Nie udało się przesłać zdjęcia okładki — możesz spróbować ponownie w sekcji Edytuj wydarzenie.',
+        'updated_image_failed' => 'Twoje wydarzenie zostało zaktualizowane. Nie udało się przesłać zdjęcia okładki — możesz spróbować ponownie w sekcji Edytuj wydarzenie.',
         'attendees_title' => 'Kto idzie',
         'create_image_label' => 'Dodaj zdjęcie na okładkę (opcjonalnie)',
         'create_image_hint' => 'JPG, PNG, GIF lub WEBP, do 8MB. Pojawia się na górze strony wydarzenia.',

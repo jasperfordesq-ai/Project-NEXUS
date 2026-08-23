@@ -56,6 +56,17 @@
         </div>
       {% endif %}
 
+      {# Mixed outcome: the event saved but its cover image did not. A blue
+         "Important" banner — neither a success nor a validation error. #}
+      {% if status in ["event-created-image-failed", "event-updated-image-failed"] %}
+        <div class="govuk-notification-banner" role="region" aria-labelledby="event-image-failed-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="event-image-failed-title">{{ t("states.important") }}</h2></div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">{{ t("govuk_alpha.events.created_image_failed") if status == "event-created-image-failed" else t("govuk_alpha.events.updated_image_failed") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
       {% if status == "checkin-failed" %}
         {% set eventErrorMessage = t("govuk_alpha.events.polish_events.checkin_failed") %}
       {% elif status == "rsvp-failed" %}

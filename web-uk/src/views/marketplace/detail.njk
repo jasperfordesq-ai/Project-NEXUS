@@ -13,6 +13,19 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+  {# The create/save/report handlers all redirect here with ?status=…; the page
+     dropped it, so a seller never saw "Your listing has been published." #}
+  {% include "marketplace/_status-banner.njk" %}
+  {% if item.isPendingModeration %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="listing-pending-banner-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="listing-pending-banner-title">{{ t("states.important") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-body">{{ t("govuk_alpha_commerce.listing_form.pending_review_notice") }}</p>
+      </div>
+    </div>
+  {% endif %}
   <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ item.title }}</h1>
   <p class="govuk-body">{{ govukTag({ text: item.priceLabel, classes: (item.priceTagClass) }) }}</p>

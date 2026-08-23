@@ -126,6 +126,8 @@ return [
         'error_description' => 'Introduce una descripción',
         'error_price' => 'Introduzca un precio en dinero o un precio en crédito a tiempo',
         'error_create' => 'Lo sentimos, no se pudo crear su anuncio. Por favor inténtalo de nuevo.',
+        'created_pending' => 'Tu anuncio se ha creado y se ha enviado para revisión. Solo tú puedes verlo hasta que un moderador lo apruebe.',
+        'pending_review_notice' => 'Este anuncio está pendiente de revisión. Solo tú puedes verlo hasta que un moderador lo apruebe.',
         'error_update' => 'Lo sentimos, sus cambios no se pudieron guardar. Por favor inténtalo de nuevo.',
         'error_suspended' => 'Tu cuenta de vendedor está suspendida, por lo que no puedes crear nuevos anuncios.',
     ],
