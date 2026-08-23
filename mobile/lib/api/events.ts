@@ -514,6 +514,26 @@ export const eventAttendanceMutationSchema = z.object({
     checked_in_at: nullableString,
     checked_out_at: nullableString,
     history_entry_id: z.number().int().positive().nullable(),
+    /**
+     * 🔴 Missing here made EVERY manual event check-in report failure while succeeding.
+     *
+     * `EventAttendanceTransitionResult::toArray()` has always returned `credit_status`
+     * (`disabled` when the community awards no credit for attendance, otherwise one of
+     * `EventCreditService::SETTLED_STATUSES`). The object above is `.strict()`, so the
+     * undeclared key made `parseContract` throw `EVENTS_CONTRACT_DRIFT` — a 422 — AFTER
+     * the server had already written the attendance row.
+     *
+     * Measured on a device 2026-08-23: an organiser checked a member in, the row landed
+     * (`event_attendance` → `checked_in`, version 1) and the RSVP moved to `attended`,
+     * and the app said "Attendance not updated" over a roster still reading "Not checked
+     * in". The organiser's only reasonable next move is to tap again, which then really
+     * does fail because the member is already marked attended.
+     *
+     * Kept as an optional nullable string rather than an enum on purpose: neither a new
+     * settled status nor an older server that omits the key may break check-in a second
+     * time. A `.strict()` object turns any such difference into a member-facing failure.
+     */
+    credit_status: nullableString.optional(),
   }).strict(),
 }).strict();
 

@@ -720,6 +720,90 @@ describe('bounded mobile attendance operations', () => {
       },
     );
   });
+
+  /**
+   * 🔴 Every manual event check-in reported failure while succeeding, and this suite
+   * stayed green throughout — because the fixture above was written from the schema
+   * rather than from the server.
+   *
+   * `EventAttendanceTransitionResult::toArray()` has always returned `credit_status`.
+   * The `mutation` object is `.strict()` and did not declare it, so `parseContract`
+   * threw `EVENTS_CONTRACT_DRIFT` (a 422) AFTER the server had committed the
+   * transition. Measured on a device 2026-08-23: the attendance row landed
+   * (`checked_in`, version 1), the RSVP moved to `attended`, and the organiser saw
+   * "Attendance not updated" over a roster still reading "Not checked in".
+   *
+   * So this test sends the payload the server actually sends. A fixture that omits a
+   * field the server always includes cannot detect the failure it is there to prevent.
+   */
+  it('accepts the credit_status the server always sends with an attendance transition', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: {
+        member: { id: 44, display_name: 'Taylor Member' },
+        mutation: {
+          attendance_id: 501,
+          event_id: 101,
+          user_id: 44,
+          action: 'check_in',
+          from_state: 'not_checked_in',
+          to_state: 'checked_in',
+          changed: true,
+          idempotent_replay: false,
+          attendance_version: 1,
+          changed_at: '2030-06-01T10:00:00Z',
+          checked_in_at: '2030-06-01T10:00:00Z',
+          checked_out_at: null,
+          history_entry_id: 700,
+          // 'disabled' when the community awards no credit for attendance; otherwise one
+          // of EventCreditService::SETTLED_STATUSES.
+          credit_status: 'disabled',
+        },
+      },
+      meta: { base_url: 'https://test.api' },
+    });
+
+    const result = await transitionEventAttendance(101, 44, {
+      action: 'check_in',
+      expectedVersion: 0,
+      idempotencyKey: 'mobile-attendance-credit-1',
+    });
+
+    expect(result.data.mutation.to_state).toBe('checked_in');
+    expect(result.data.mutation.credit_status).toBe('disabled');
+  });
+
+  it('still accepts a settled credit status, so a new one cannot break check-in again', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: {
+        member: { id: 44, display_name: 'Taylor Member' },
+        mutation: {
+          attendance_id: 502,
+          event_id: 101,
+          user_id: 44,
+          action: 'check_out',
+          from_state: 'checked_in',
+          to_state: 'checked_out',
+          changed: true,
+          idempotent_replay: false,
+          attendance_version: 2,
+          changed_at: '2030-06-01T12:00:00Z',
+          checked_in_at: '2030-06-01T10:00:00Z',
+          checked_out_at: '2030-06-01T12:00:00Z',
+          history_entry_id: 701,
+          credit_status: 'settled',
+        },
+      },
+      meta: { base_url: 'https://test.api' },
+    });
+
+    const result = await transitionEventAttendance(101, 44, {
+      action: 'check_out',
+      expectedVersion: 1,
+      idempotencyKey: 'mobile-attendance-credit-2',
+    });
+
+    expect(result.data.mutation.credit_status).toBe('settled');
+  });
 });
 
 describe('remaining Events calls', () => {

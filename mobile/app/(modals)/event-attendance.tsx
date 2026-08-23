@@ -139,6 +139,13 @@ function EventAttendanceScreenInner() {
           description: t('attendance.updateErrorDescription'),
           variant: 'danger',
         });
+        // 🔴 Refresh even on an unexpected failure. A contract-drift throw happens AFTER
+        // the server has committed the transition, so leaving the roster untouched showed
+        // an organiser "Not checked in" for somebody who was checked in — and their only
+        // reasonable next move was to tap again. Whatever went wrong, the roster the
+        // organiser is looking at must be the server's state, not the state before the
+        // attempt.
+        rosterApi.refresh();
       }
     } finally {
       setActiveMutation(null);

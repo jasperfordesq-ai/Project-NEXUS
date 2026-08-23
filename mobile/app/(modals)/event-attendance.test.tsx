@@ -191,6 +191,26 @@ describe('EventAttendanceScreen', () => {
     });
   });
 
+  /**
+   * 🔴 A contract-drift throw happens AFTER the server has committed the transition, so
+   * an unexpected failure could leave the roster showing the state before the attempt.
+   * Measured on a device 2026-08-23: the attendance row landed and the organiser was
+   * looking at "Not checked in" under "Attendance not updated" — their only reasonable
+   * next move being to tap again, which then really did fail. Whatever went wrong, the
+   * roster must end up showing the server's state.
+   */
+  it('refreshes the roster even when the action fails for an unexpected reason', async () => {
+    mockTransitionAttendance.mockRejectedValueOnce(new ApiResponseError(422, 'EVENTS_CONTRACT_DRIFT'));
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Check in'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+  });
+
   it('requires confirmation before recording a no-show', async () => {
     const screen = render(<EventAttendanceScreen />);
     fireEvent.press(screen.getByText('Mark no-show'));
