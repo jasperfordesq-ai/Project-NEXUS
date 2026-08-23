@@ -28,7 +28,7 @@
  * Guarded by `components/accentIconColour.test.ts`.
  */
 
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import type { ComponentProps } from 'react';
 
 import { useAccentForeground } from '@/lib/theme/accentForeground';

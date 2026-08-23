@@ -7,7 +7,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
 import { Accordion, Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';

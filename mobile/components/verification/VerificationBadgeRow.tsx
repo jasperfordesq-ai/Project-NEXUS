@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Chip } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 

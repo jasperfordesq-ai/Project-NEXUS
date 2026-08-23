@@ -9,7 +9,7 @@
  */
 
 import { Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 
 import type { ReactionsSummary } from '@/lib/api/feed';

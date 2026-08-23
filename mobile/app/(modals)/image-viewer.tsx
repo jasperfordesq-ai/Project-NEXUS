@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { Dimensions, ScrollView, Share, StatusBar, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button as HeroButton, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';

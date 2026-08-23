@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 
 import BottomSheet from '@/components/ui/BottomSheet';
 import Button from '@/components/ui/Button';

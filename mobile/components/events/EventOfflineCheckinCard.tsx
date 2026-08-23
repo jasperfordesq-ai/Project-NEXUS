@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Alert, Button, Card, Chip, Spinner, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import Input from '@/components/ui/Input';

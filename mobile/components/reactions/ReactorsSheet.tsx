@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Spinner } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';

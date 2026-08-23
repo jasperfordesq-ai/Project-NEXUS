@@ -6,7 +6,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import { Tabs, router, type Href, usePathname } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 

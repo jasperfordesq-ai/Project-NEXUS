@@ -7,8 +7,9 @@ import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import { Button as HeroButton, Card as HeroCard, Chip, Separator, Surface } from 'heroui-native';
+import { Ionicons } from '@/components/ui/Icon';
+import { Button as HeroButton, Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 
 import { type Exchange } from '@/lib/api/exchanges';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';

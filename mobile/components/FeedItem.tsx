@@ -6,9 +6,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { router } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard, Chip, Separator, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 
 import { useTranslation } from 'react-i18next';
@@ -1032,7 +1033,20 @@ function FeedItemInner({
           </HeroButton>
 
           {canBookmark ? (
-            <HeroButton size="sm" variant={bookmarked ? 'secondary' : 'ghost'} onPress={() => void handleSave()}>
+            /*
+              🔴 Icon-only, so the label is the ONLY thing a screen reader can announce.
+              It had none, and the icon glyph masked that: TalkBack read the private-use
+              codepoint, so the control looked "named" in an accessibility dump. Found on
+              2026-08-23 once decorative icons stopped reaching the tree. Its Share
+              sibling above has carried a label all along. Reuses the same keys as the
+              overflow menu entry below.
+            */
+            <HeroButton
+              size="sm"
+              variant={bookmarked ? 'secondary' : 'ghost'}
+              onPress={() => void handleSave()}
+              accessibilityLabel={bookmarked ? t('unsave') : t('save')}
+            >
               <Ionicons name={bookmarked ? 'bookmark' : 'bookmark-outline'} size={17} color={bookmarked ? primary : theme.textMuted} />
             </HeroButton>
           ) : null}

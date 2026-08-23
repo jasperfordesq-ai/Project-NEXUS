@@ -6,7 +6,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Chip } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 

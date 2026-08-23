@@ -7,10 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Chip, Separator, Spinner, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Separator, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { archiveConversation, getConversations, restoreConversation, displayName, type Conversation, type ConversationListResponse } from '@/lib/api/messages';

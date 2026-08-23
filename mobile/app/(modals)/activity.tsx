@@ -6,7 +6,7 @@
 import { useCallback } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Chip, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 

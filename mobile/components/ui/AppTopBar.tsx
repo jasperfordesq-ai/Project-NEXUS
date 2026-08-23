@@ -6,7 +6,7 @@
 import { useCallback, useEffect } from 'react';
 import { BackHandler, Platform, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Surface } from 'heroui-native';
 
 import { usePrimaryColor } from '@/lib/hooks/useTenant';

@@ -37,7 +37,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 
 import type { ReactionType } from '@/lib/api/feed';

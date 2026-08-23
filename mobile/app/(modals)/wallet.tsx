@@ -7,10 +7,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Chip, CloseButton, Spinner, Surface, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, CloseButton, Spinner, Surface, Text } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';

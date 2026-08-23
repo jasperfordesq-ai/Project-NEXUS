@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Alert, Button, Card, Chip, Spinner } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import Checkbox from '@/components/ui/Checkbox';

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { ScrollView, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Surface } from 'heroui-native';
 
 import { useTranslation } from 'react-i18next';

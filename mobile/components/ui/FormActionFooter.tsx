@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Spinner, Surface, Text } from 'heroui-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

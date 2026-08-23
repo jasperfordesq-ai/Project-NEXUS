@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Spinner } from 'heroui-native';
 // TODO: Migrate from expo-av to expo-audio when SDK 55+ is adopted.
 // expo-av is deprecated but expo-audio's API differs significantly (useAudioPlayer hook-based).

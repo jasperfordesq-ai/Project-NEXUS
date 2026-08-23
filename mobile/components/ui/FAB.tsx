@@ -5,7 +5,7 @@
 
 import React, { useCallback } from 'react';
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { Button as HeroButton } from 'heroui-native';
 import { useTranslation } from 'react-i18next';

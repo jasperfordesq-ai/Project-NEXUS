@@ -7,8 +7,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface, Tabs } from 'heroui-native';
+import { Ionicons } from '@/components/ui/Icon';
+import { Button as HeroButton, Card as HeroCard, Spinner, Surface, Tabs } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 
 import { reportException } from '@/lib/observability/report';
 import { useTranslation } from 'react-i18next';
