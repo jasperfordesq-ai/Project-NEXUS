@@ -903,6 +903,7 @@ return [
     'fed_settings_update_failed' => 'Theip ar na socruithe a nuashonrú. Bain triail eile as.',
     'fed_receiver_ids_required' => 'glacadóir_id agus glacadóir_tenant_id ag teastáil.',
     'user_profile_incomplete' => 'Níl próifíl an bhaill seo críochnaithe fós',
+    'user_profile_private'    => 'Níl an phróifíl seo roinnte go poiblí',
     'user_theme_update_failed' => 'Theip ar an rogha téama a nuashonrú',
     'user_theme_prefs_update_failed' => 'Theip ar na sainroghanna téama a nuashonrú',
     'user_lang_update_failed' => 'Theip ar an rogha teanga a nuashonrú',

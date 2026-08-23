@@ -167,6 +167,12 @@ class UsersController extends BaseApiController
                 if ($errorCode === 'PROFILE_INCOMPLETE') {
                     return $this->respondWithError('PROFILE_INCOMPLETE', __('api.user_profile_incomplete'), null, 404);
                 }
+                // Withheld by the owner's privacy setting, not missing. Still 404
+                // so a restricted profile is not confirmed to exist by status
+                // code alone — the code carries the distinction instead.
+                if ($errorCode === 'PROFILE_PRIVATE') {
+                    return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+                }
             }
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }

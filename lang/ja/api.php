@@ -941,6 +941,7 @@ return [
     'fed_partner_no_transactions' => 'このパートナーは取引を許可していません。',
     'fed_external_partner_rejected' => '外部パートナーがトランザクションを拒否しました。',
     'user_profile_incomplete' => 'このメンバーのプロフィールはまだ完成していません',
+    'user_profile_private'    => 'このプロフィールは公開されていません',
     'user_theme_update_failed' => 'テーマ設定の更新に失敗しました',
     'user_theme_prefs_update_failed' => 'テーマ設定の更新に失敗しました',
     'user_lang_update_failed' => '言語設定を更新できませんでした',

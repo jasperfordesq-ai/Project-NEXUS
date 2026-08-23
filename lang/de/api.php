@@ -903,6 +903,7 @@ return [
     'fed_settings_update_failed' => 'Die Einstellungen konnten nicht aktualisiert werden. Bitte versuchen Sie es erneut.',
     'fed_receiver_ids_required' => '„receiver_id“ und „receiver_tenant_id“ sind erforderlich.',
     'user_profile_incomplete' => 'Das Profil dieses Mitglieds ist noch nicht vollständig',
+    'user_profile_private'    => 'Dieses Profil ist nicht öffentlich freigegeben',
     'user_theme_update_failed' => 'Die Theme-Einstellungen konnten nicht aktualisiert werden',
     'user_theme_prefs_update_failed' => 'Die Designeinstellungen konnten nicht aktualisiert werden',
     'user_lang_update_failed' => 'Die Spracheinstellung konnte nicht aktualisiert werden',

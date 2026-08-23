@@ -1714,6 +1714,7 @@ return [
     // USER-FACING — USERS / PROFILE (additional)
     // ============================================
     'user_profile_incomplete'              => 'This member\'s profile is not yet complete',
+    'user_profile_private'                 => 'This profile is not shared publicly',
     'user_theme_update_failed'             => 'Failed to update theme preference',
     'user_theme_prefs_update_failed'       => 'Failed to update theme preferences',
     'user_invalid_accent_color'            => 'Invalid accent color. Use a valid hex color such as #6366f1.',

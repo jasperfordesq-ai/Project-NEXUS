@@ -941,6 +941,7 @@ return [
     'fed_partner_no_transactions' => 'Ten partner nie pozwala na transakcje.',
     'fed_external_partner_rejected' => 'Partner zewnętrzny odrzucił transakcję.',
     'user_profile_incomplete' => 'Profil tego użytkownika nie jest jeszcze kompletny',
+    'user_profile_private'    => 'Ten profil nie jest udostępniany publicznie',
     'user_theme_update_failed' => 'Nie udało się zaktualizować preferencji motywu',
     'user_theme_prefs_update_failed' => 'Nie udało się zaktualizować preferencji motywu',
     'user_lang_update_failed' => 'Nie udało się zaktualizować preferencji językowych',

@@ -53,8 +53,14 @@ const path = require('node:path');
  * missing copy — and `errors/419.njk` was already fully translated, meaning the
  * page heading read Irish while the browser tab read English. The remaining 19
  * are the categories listed above and still need their own new keys.
+ *
+ * 🔴 19 -> 18 on 2026-08-23: the member profile page's `'User not found'` literal
+ * is gone. That page no longer renders one generic 404 for every refusal — a
+ * profile still being set up and one restricted to its owner's connections now
+ * get their own translated page, and a 403 gets errors/403 — so the literal had
+ * nothing left to title. See members.js memberProfileRefusal().
  */
-const CEILING = 19;
+const CEILING = 18;
 
 const SRC = path.join(__dirname, '..', 'src');
 const TITLE_LITERAL = /title:\s*'[A-Z][^']{2,80}'/g;

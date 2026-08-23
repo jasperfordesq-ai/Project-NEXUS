@@ -1,0 +1,27 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  A profile that exists but is not shown — the owner has not finished setting up,
+  or limits it to their connections.
+
+  Deliberately NOT an error document. `layouts/error.njk` drops navigation on
+  purpose (so rendering an exception cannot cause a second failure), and using it
+  here left a signed-in member stranded on a page with no way back. This is an
+  ordinary page: the member keeps the header, the navigation and the footer.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ heading }}</h1>
+      <p class="govuk-body-l">{{ body }}</p>
+      <p class="govuk-body">
+        <a href="{{ urlFor(membersHref) }}" class="govuk-link">{{ membersLinkText }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

@@ -903,6 +903,7 @@ return [
     'fed_settings_update_failed' => 'Échec de la mise à jour des paramètres. Veuillez réessayer.',
     'fed_receiver_ids_required' => 'Receiver_id et Receiver_tenant_id sont requis.',
     'user_profile_incomplete' => 'Le profil de ce membre n\'est pas encore complet',
+    'user_profile_private'    => 'Ce profil n\'est pas partagé publiquement',
     'user_theme_update_failed' => 'Échec de la mise à jour des préférences de thème',
     'user_theme_prefs_update_failed' => 'Échec de la mise à jour des préférences de thème',
     'user_lang_update_failed' => 'Échec de la mise à jour des préférences linguistiques',

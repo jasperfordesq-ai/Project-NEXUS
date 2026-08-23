@@ -102,6 +102,19 @@ class UserService
      */
     public static function getPublicProfile(int $userId, ?int $viewerId = null): ?array
     {
+        /*
+         * 🔴 Reset the error bag, as validate()/update() and friends already do.
+         * This method never did, and `$errors` is STATIC: the controller reads
+         * `$errors[0]['code']`, so in any process that serves more than one
+         * lookup — a queue worker, a test run, Octane — the FIRST refusal recorded
+         * stuck to every later one. A member who genuinely did not exist was
+         * reported as PROFILE_INCOMPLETE (and, once the privacy branches gained a
+         * code, as PROFILE_PRIVATE) purely because an earlier lookup in the same
+         * process had been refused that way. Caught by
+         * UsersControllerTest::test_show_reports_a_missing_user_as_not_found_not_private.
+         */
+        self::$errors = [];
+
         $user = User::query()
             ->with(['listings', 'badges'])
             ->find($userId);
@@ -131,12 +144,27 @@ class UserService
         // Check privacy settings
         $privacyLevel = $user->privacy_profile ?? 'public';
 
+        /*
+         * A profile withheld by its owner's privacy setting now says so.
+         *
+         * 🔴 These two branches returned null with NO error code, so the
+         * controller fell through to a bare NOT_FOUND — indistinguishable from a
+         * member who does not exist. Every client therefore told the viewer
+         * "Page not found" about a real member who had simply chosen to be seen
+         * only by their connections. PROFILE_INCOMPLETE right above has always
+         * had its own code for exactly this reason; this is the same fix.
+         *
+         * Deliberately ADDITIVE: still 404, still null, only the code is new. A
+         * client that does not know PROFILE_PRIVATE keeps its current behaviour.
+         */
         if ($privacyLevel !== 'public' && $viewerId !== $userId) {
             if ($privacyLevel === 'members' && ! $viewerId) {
+                self::setError('PROFILE_PRIVATE', 'This profile is not shared publicly');
                 return null;
             }
             if ($privacyLevel === 'connections') {
                 if (! $viewerId || ! self::areConnected($userId, $viewerId)) {
+                    self::setError('PROFILE_PRIVATE', 'This profile is not shared publicly');
                     return null;
                 }
             }

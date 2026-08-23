@@ -941,6 +941,7 @@ return [
     'fed_partner_no_transactions' => 'Deze partner staat geen transacties toe.',
     'fed_external_partner_rejected' => 'Externe partner heeft de transactie afgewezen.',
     'user_profile_incomplete' => 'Het profiel van dit lid is nog niet compleet',
+    'user_profile_private'    => 'Dit profiel is niet openbaar gedeeld',
     'user_theme_update_failed' => 'Kan de themavoorkeur niet updaten',
     'user_theme_prefs_update_failed' => 'Kan de themavoorkeuren niet bijwerken',
     'user_lang_update_failed' => 'Kan taalvoorkeur niet updaten',

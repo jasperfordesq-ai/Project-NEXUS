@@ -108,6 +108,70 @@ function isNotFound(error) {
   return error instanceof ApiError && error.status === 404;
 }
 
+function memberApiErrorCode(error) {
+  const errors = error instanceof ApiError && error.data && Array.isArray(error.data.errors)
+    ? error.data.errors
+    : [];
+  const first = errors[0] && typeof errors[0] === 'object' ? errors[0] : {};
+  return String(first.code || '').trim().toUpperCase();
+}
+
+/**
+ * Which of the API's several distinct refusals to show a profile this error is.
+ *
+ * 🔴 Why this exists. `handleApiError` renders the generic "Page not found" page
+ * for EVERY 404, so four unrelated outcomes were indistinguishable to a member:
+ * a profile that genuinely does not exist, one whose owner has not finished
+ * setting up (`PROFILE_INCOMPLETE`), one the owner limits to their connections
+ * (`PROFILE_PRIVATE`), and a 403 because one of the two has blocked the other —
+ * which nothing handled at all, so `getUser` (the one call in this route's
+ * `Promise.all` without a `.catch`) rejected and the member got the
+ * server-error page instead.
+ *
+ * That mattered far more than it looks. Measured on production 2026-08-23: 235
+ * of 260 active members of one community were hidden by `PROFILE_INCOMPLETE`
+ * alone, and every one of them reported "Page not found" — indistinguishable
+ * from a deleted account. The members directory has always explained this
+ * honestly (`members.coverage_*`); the profile page now does too.
+ *
+ * Returns null for anything else, so a genuine fault keeps travelling to the
+ * error handler rather than being dressed up as a missing member.
+ */
+function memberProfileRefusal(error) {
+  if (!(error instanceof ApiError)) return null;
+  if (error.status === 403) return 'blocked';
+  if (error.status !== 404) return null;
+
+  const code = memberApiErrorCode(error);
+  if (code === 'PROFILE_INCOMPLETE') return 'incomplete';
+  if (code === 'PROFILE_PRIVATE') return 'private';
+  return 'missing';
+}
+
+/**
+ * Render the page that matches a refusal.
+ *
+ * `missing` and `blocked` reuse the existing error documents and their existing
+ * translations. `incomplete` and `private` are NOT errors — the member is signed
+ * in and browsing — so they get an ordinary page with navigation, and a 404
+ * status so a hidden profile still is not confirmed to a crawler.
+ */
+function renderMemberUnavailable(res, refusal) {
+  if (refusal === 'missing') {
+    return res.status(404).render('errors/404', { title: res.locals.t('error_pages.404_title') });
+  }
+  if (refusal === 'blocked') {
+    return res.status(403).render('errors/403', { title: res.locals.t('error_pages.403_title') });
+  }
+  return res.status(404).render('members/unavailable', {
+    title: res.locals.t(`members.unavailable_${refusal}_title`),
+    heading: res.locals.t(`members.unavailable_${refusal}_title`),
+    body: res.locals.t(`members.unavailable_${refusal}_body`),
+    membersHref: MEMBERS_PATH,
+    membersLinkText: res.locals.t('members.unavailable_back')
+  });
+}
+
 function dataFrom(result) {
   return result && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, 'data')
     ? result.data
@@ -962,6 +1026,10 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   // connection-status and block-status catches keep their own dedicated handling.
   let sectionsFailed = false;
   const trackSection = (fallback) => () => { sectionsFailed = true; return fallback; };
+  // The profile itself is the one call whose failure must change the WHOLE page
+  // rather than blank a section of it. Capture which refusal it was instead of
+  // letting the rejection escape to the generic 404 — see memberProfileRefusal().
+  let profileRefusal = null;
   const [
     userResult,
     connectionResult,
@@ -976,7 +1044,15 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     blockStatusResult,
     endorsementsResult
   ] = await Promise.all([
-    getUser(req.token, id),
+    getUser(req.token, id).catch((error) => {
+      if (isAuthError(error)) throw error;
+      profileRefusal = memberProfileRefusal(error);
+      // Not a refusal we can explain — a 5xx, a timeout, the API being down.
+      // Re-throw so it reaches the error handler and Sentry, rather than being
+      // reported to the member as a member who does not exist.
+      if (!profileRefusal) throw error;
+      return null;
+    }),
     getMemberConnectionStatus(req.token, id).catch((error) => {
       if (isAuthError(error)) throw error;
       connectionErrorMessage = res.locals.t('states.connection-failed');
@@ -1002,10 +1078,14 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     }),
     getMemberEndorsements(req.token, Number(id)).catch(() => ({ data: { endorsements: [] } }))
   ]);
+  if (profileRefusal) {
+    return renderMemberUnavailable(res, profileRefusal);
+  }
+
   const publicUser = dataFrom(userResult);
 
   if (!publicUser || typeof publicUser !== 'object') {
-    return res.status(404).render('errors/404', { title: 'User not found' });
+    return renderMemberUnavailable(res, 'missing');
   }
 
   const connection = memberConnectionFrom(connectionResult);
@@ -1058,9 +1138,15 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     errorMessage: connectionErrorMessage || (profileStatus?.type === 'error' ? profileStatus.text : flashedError),
     loadError: sectionsFailed ? res.locals.t('states.load_error') : ''
   });
-}, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH, notFoundTitle: 'User not found' }));
+// No `notFoundTitle`: every awaited call in this route now catches its own 404,
+// so handleApiError's 404 branch is unreachable here and the option was a dead
+// English literal. renderMemberUnavailable owns the titles instead.
+}, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH }));
 
 module.exports = router;
 // Exported for tests — the directory-coverage wording is the part most likely to
 // go wrong quietly, so it is exercised directly rather than through the route.
 module.exports.directoryCoverage = directoryCoverage;
+// Exported for tests — every branch here used to collapse into one "Page not
+// found" page, so the classification is what the regression test pins.
+module.exports.memberProfileRefusal = memberProfileRefusal;

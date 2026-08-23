@@ -169,6 +169,66 @@ class UsersControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * A profile withheld by its owner's privacy setting must say WHICH refusal it
+     * is, not just 404.
+     *
+     * 🔴 Both privacy branches in UserService::getPublicProfile() returned null
+     * with no error code, so the controller fell through to a bare NOT_FOUND. Every
+     * client then told the viewer "Page not found" about a real member who had
+     * simply chosen to be visible only to their connections — the same class of
+     * lie that PROFILE_INCOMPLETE already had its own code to avoid.
+     *
+     * The status stays 404 on purpose: a restricted profile must not be confirmed
+     * to exist by status code alone. The distinction rides on the code, which is
+     * what this test pins.
+     */
+    public function test_show_reports_a_connections_only_profile_as_private_not_missing(): void
+    {
+        $this->authenticatedUser();
+        $otherUser = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'privacy_profile' => 'connections',
+        ]);
+
+        $response = $this->apiGet("/v2/users/{$otherUser->id}");
+
+        $response->assertStatus(404);
+        $response->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+    }
+
+    /**
+     * The companion guard: a member who genuinely is not there must still report
+     * NOT_FOUND. If PROFILE_PRIVATE leaked onto absent users, the accessible
+     * frontend would tell members that a deleted account was "only shown to
+     * connections" — which reads as though the person is still around.
+     */
+    public function test_show_reports_a_missing_user_as_not_found_not_private(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->apiGet('/v2/users/999999');
+
+        $response->assertStatus(404);
+        $response->assertJsonPath('errors.0.code', 'NOT_FOUND');
+    }
+
+    /**
+     * A public profile must not be affected by the new branch at all.
+     */
+    public function test_show_still_returns_a_public_profile_to_a_signed_in_member(): void
+    {
+        $this->authenticatedUser();
+        $otherUser = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'privacy_profile' => 'public',
+        ]);
+
+        $response = $this->apiGet("/v2/users/{$otherUser->id}");
+
+        $response->assertStatus(200);
+    }
+
     // ================================================================
     // SHOW USER — Tenant isolation
     // ================================================================

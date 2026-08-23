@@ -941,6 +941,7 @@ return [
     'fed_partner_no_transactions' => 'هذا الشريك لا يسمح بالمعاملات.',
     'fed_external_partner_rejected' => 'رفض الشريك الخارجي الصفقة.',
     'user_profile_incomplete' => 'الملف الشخصي لهذا العضو لم يكتمل بعد',
+    'user_profile_private'    => 'هذا الملف الشخصي غير مشارَك علنًا',
     'user_theme_update_failed' => 'فشل تحديث تفضيلات السمة',
     'user_theme_prefs_update_failed' => 'فشل في تحديث تفضيلات الموضوع',
     'user_lang_update_failed' => 'فشل تحديث تفضيلات اللغة',
