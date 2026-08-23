@@ -74,6 +74,53 @@ class WalletControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    /**
+     * 🔴 The "Pending" filter could only ever answer "No matching transactions".
+     *
+     * `WalletService::getTransactions()` was unconditionally `->completed()`, while
+     * `getBalance()` reports `pending_in` / `pending_out` and BOTH frontends offer a
+     * Pending filter. Measured on a device 2026-08-23: the wallet tile read "PENDING 11h"
+     * and tapping Pending showed nothing — the member was told hours were pending and then
+     * shown none of them.
+     *
+     * The other half of the fix is that this stays ADDITIVE. Clients derive earned/spent
+     * from the default list as a fallback, so a pending amount must never appear there and
+     * be counted as settled.
+     */
+    public function test_transactions_returns_pending_rows_only_for_the_pending_filter(): void
+    {
+        $user = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+
+        $settled = Transaction::factory()->forTenant($this->testTenantId)->create([
+            'sender_id' => $user->id,
+            'receiver_id' => $other->id,
+            'status' => 'completed',
+        ]);
+        $pending = Transaction::factory()->forTenant($this->testTenantId)->create([
+            'sender_id' => $other->id,
+            'receiver_id' => $user->id,
+            'status' => 'pending',
+        ]);
+
+        $pendingOnly = $this->apiGet('/v2/wallet/transactions?type=pending');
+        $pendingOnly->assertStatus(200);
+        $pendingIds = array_column($pendingOnly->json('data') ?? [], 'id');
+        $this->assertContains($pending->id, $pendingIds, 'the pending filter must return pending rows');
+        $this->assertNotContains($settled->id, $pendingIds, 'the pending filter must not return settled rows');
+
+        foreach (['all', 'sent', 'received'] as $filter) {
+            $response = $this->apiGet('/v2/wallet/transactions?type=' . $filter);
+            $response->assertStatus(200);
+            $ids = array_column($response->json('data') ?? [], 'id');
+            $this->assertNotContains(
+                $pending->id,
+                $ids,
+                "type={$filter} must stay completed-only — clients derive earned/spent from it",
+            );
+        }
+    }
+
     public function test_transactions_requires_authentication(): void
     {
         $response = $this->apiGet('/v2/wallet/transactions');

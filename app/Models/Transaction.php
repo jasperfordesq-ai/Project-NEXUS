@@ -59,6 +59,20 @@ class Transaction extends Model
         return $query->where('status', 'completed');
     }
 
+    /**
+     * Pending transactions only.
+     *
+     * 🔴 Only external federation creates one of these (`FederationController`), so in an
+     * ordinary community the set is empty — but the wallet advertises pending totals from
+     * `getBalance()` and both frontends offer a "Pending" filter, and until 2026-08-23
+     * `getTransactions()` was hard-scoped to `completed()` so that filter could only ever
+     * answer "No matching transactions" while the tile beside it claimed hours were pending.
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
     public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where(function ($q) use ($userId) {

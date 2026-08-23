@@ -267,8 +267,24 @@ class WalletService
             ->with([
                 'sender:id,first_name,last_name,avatar_url,organization_name,profile_type',
                 'receiver:id,first_name,last_name,avatar_url,organization_name,profile_type',
-            ])
-            ->completed();
+            ]);
+
+        // 🔴 `type=pending` returns pending rows; everything else stays completed-only.
+        //
+        // This query was unconditionally `->completed()`, so the "Pending" filter that both
+        // frontends offer could only ever answer "No matching transactions" — while the
+        // wallet tile beside it read "PENDING 11h", taken from getBalance()'s
+        // pending_in/pending_out. The member was told hours were pending and then shown
+        // nothing when they asked what they were.
+        //
+        // Deliberately additive: the default list and the sent/received/earned/spent
+        // filters are unchanged, because clients compute earned/spent totals from this list
+        // as a fallback and a pending amount must never be counted as settled.
+        if ($type === 'pending') {
+            $query->pending();
+        } else {
+            $query->completed();
+        }
 
         // Filter by type and respect soft-delete flags
         if ($type === 'sent') {
