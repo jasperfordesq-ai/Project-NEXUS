@@ -16,6 +16,7 @@
 
 import { APP_VERSION } from '@/lib/constants';
 import {
+  __allowServerReportsForTests,
   __resetReportBudgetForTests,
   reportException,
   reportMessage,
@@ -62,8 +63,42 @@ beforeEach(() => {
   __resetReportBudgetForTests();
   fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
   global.fetch = fetchMock as unknown as typeof fetch;
+  // This is the one suite that legitimately exercises the sender, so it opts back
+  // in past the "never post from a test run" guard — against the mock above, never
+  // the real API. Every other suite stays guarded.
+  __allowServerReportsForTests(true);
   Sentry.captureMessage.mockClear();
   Sentry.captureException.mockClear();
+});
+
+afterEach(() => {
+  __allowServerReportsForTests(false);
+});
+
+// 🔴 The regression this exists for: ErrorBoundary.test.tsx throws on purpose and
+// mocks only Sentry, so its crash reports went as real POSTs to the production API
+// — 77 fake crashes in the owner's live error log in three days, from dev machines
+// and CI runners alike. Nothing in a test run may reach the network here.
+describe('never posting to the real API from a test run', () => {
+  it('🔴 sends nothing when the suite has not explicitly opted in', async () => {
+    __allowServerReportsForTests(false);
+
+    reportException(new Error('render exploded'), { componentStack: 'at Exploding' });
+    reportMessage('something drifted', { module: 'events' });
+    reportSentryMessage('drifted response', { tags: { module: 'events' } });
+    await settle();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('still hands the error to Sentry, so the guard cannot silence reporting itself', async () => {
+    __allowServerReportsForTests(false);
+
+    reportException(new Error('render exploded'));
+    await settle();
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('reaching the server', () => {

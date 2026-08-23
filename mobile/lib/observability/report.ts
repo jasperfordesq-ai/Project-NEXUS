@@ -129,11 +129,43 @@ function admit(key: string, now: number): boolean {
 }
 
 /**
+ * 🔴 A test run must never post to the real API, and it was doing exactly that.
+ *
+ * `postToServer` uses raw `fetch` by design (see the header note), and under Jest
+ * `fetch` is a working global while `API_BASE_URL` still points at production. So
+ * `ErrorBoundary.test.tsx` — which deliberately throws `render exploded` seven
+ * times and mocks only `@sentry/react-native` — sent seven unauthenticated POSTs
+ * to `https://api.project-nexus.ie/api/app/log` on every run, from developer
+ * machines AND from GitHub Actions runners. 77 fake crashes reached the owner's
+ * production error log in three days, one group escalating, burying real reports.
+ *
+ * Gating on the runner rather than on `NODE_ENV`, because `JEST_WORKER_ID` is set
+ * by Jest itself and cannot be inherited from a stray shell variable. The one
+ * suite that legitimately exercises the sender opts back in explicitly, so the
+ * guard cannot quietly disable the tests that prove reporting works.
+ */
+function isTestRunner(): boolean {
+  return typeof process !== 'undefined' && process.env?.JEST_WORKER_ID !== undefined;
+}
+
+let serverReportsAllowedInTests = false;
+
+/**
+ * Test-only: permit `postToServer` to run under Jest. Only `report.test.ts`
+ * should call this, and only with a mocked `global.fetch`.
+ */
+export function __allowServerReportsForTests(allow = true): void {
+  serverReportsAllowedInTests = allow;
+}
+
+/**
  * Post to our own API. Fire-and-forget: no await at the call site, no retry, and
  * every failure swallowed. This is diagnostics — it must never be able to affect
  * what the member is doing, or to become the error it is trying to report.
  */
 async function postToServer(event: string, context: ReportContext): Promise<void> {
+  if (isTestRunner() && !serverReportsAllowedInTests) return;
+
   try {
     // 🔴 Guarded, because one of the things being reported is storage FAILING. If a
     // broken read could throw out of this function, storage errors would be the single
