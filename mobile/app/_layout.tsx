@@ -14,6 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
+import { markAppReady } from '@/lib/startupTiming';
 import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -107,12 +108,28 @@ function RootInsetRecorder() {
   return null;
 }
 
+/**
+ * Records the moment the app first has something on screen — journey 7.16.
+ *
+ * An effect, so it runs after the first commit rather than during render, and empty deps
+ * so it can only fire once. Renders nothing. `markAppReady` ignores later calls, which
+ * matters under Fast Refresh: a re-mount would otherwise report a start-up of a few
+ * milliseconds and hide a real regression.
+ */
+function StartupTimingProbe() {
+  useEffect(() => {
+    markAppReady();
+  }, []);
+  return null;
+}
+
 function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
         <SafeAreaProvider>
           <RootInsetRecorder />
+          <StartupTimingProbe />
           {/*
             Shows notices published by infrastructure that has no provider of its own —
             currently "you have been signed out". Renders nothing; must stay INSIDE

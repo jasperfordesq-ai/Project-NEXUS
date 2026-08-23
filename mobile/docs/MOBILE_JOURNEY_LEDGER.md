@@ -69,15 +69,15 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
-| 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 6 | 4 | 0 | 0.522 |
+| 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 3 | 0 | 0.539 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
-| **Total** | **140** | **48** | **41** | **24** | **9** | **16** | **2** | — |
+| **Total** | **140** | **48** | **41** | **24** | **10** | **15** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(48 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 81.30`, over `140 − 2 excluded = 138`
-rows → **0.589**.
+`(48 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 81.60`, over `140 − 2 excluded = 138`
+rows → **0.591**.
 
 ### Credit recomputation
 
@@ -89,7 +89,7 @@ rows → **0.589**.
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (1 × 1.0) + (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 6.00 | ÷ 11 † | **0.545** |
-| 7 | (7 × 1.0) + (1 × 0.6) + (6 × 0.30) = 9.40 | ÷ 18 | **0.522** |
+| 7 | (7 × 1.0) + (1 × 0.6) + (7 × 0.30) = 9.70 | ÷ 18 | **0.539** |
 | 8 | (1 × 1.0) = 1.00 | ÷ 10 | **0.100** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
@@ -278,7 +278,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.13 | Offline check-in queue survives a dropped connection | CERTIFIED | Walked end to end 2026-08-23 on event 164: authorised a staff device, went into aeroplane mode, entered a member's signed code, watched it queue, **killed and relaunched the app**, found the action still pending, then synced — `POST …/offline-checkin/sync` 202, `event_offline_sync_batches` row 1 `completed`, and `event_attendance` row 13 `checked_in`. 🔴 **It could never have worked before today.** The encryption key was stored under `nexus:event-checkin:encryption-key:v1`, and `expo-secure-store` REFUSES any key outside `[A-Za-z0-9._-]` — colons are illegal. `lib/storage.ts` swallows write errors by design, so the write threw silently, the read returned null, and `encryptionKey()`'s own read-back check threw `offline_encryption_key_unavailable`. Authorising a device created it server-side (201), downloaded the manifest (200) and refreshed the workspace (200), and the organiser was told "That offline check-in action could not be completed" over "No devices are authorized". A second illegal key (`…session-index:v1`) was found by the new guard the moment it was written. 🔴 **The existing unit tests asserted the broken keys as literals**, so they pinned the bug instead of catching it — the same failure as this morning's contract fixture. They now use named constants, and `lib/secureStoreKeys.test.ts` refuses any key SecureStore would reject. 🔴 One thing the instrument cannot show: a restart **while still offline**. A debug build loads its JavaScript from Metro over the network, so it cannot relaunch in aeroplane mode. The restart was done after restoring the network but before syncing, which is what proves the queue reached disk |
 | 7.14 | Push notification arrives and opens the right screen | PARTIAL | 🔴 A real defect was found and fixed 2026-08-21 (`edcee0ba9`): every push from a **queued** listener was dropped — `afterResponse()` does not throw outside HTTP, so the documented inline fallback never ran, and the send also did not run in the tenant it logged. Mutation-verified. **Blocked from PROVEN**: sending a real message locally produced neither a bell nor a queued listener run, so the owner's end-to-end symptom was not reproduced. Arrival on a device is unverified |
 | 7.15 | In-app notification counts are correct | CERTIFIED | 2026-08-22: the header said "10 unread" against 26 genuinely unread rows, because it counted the loaded page rather than asking the server. `/v2/notifications/counts` had the right number all along and `getNotificationCounts` was in the client, unused. Now reads 26, matching the database, and refetches after mark-read/delete. The same walk found the notification cards cropped by a `HeroButton` wrapper — title, category and timestamp were hidden on every row and the body was cut mid-word; swapped to `NativePressable` |
-| 7.16 | Start-up time / bundle size within a budget | OPEN | No budget exists |
+| 7.16 | Start-up time / bundle size within a budget | PARTIAL | 2026-08-23: a budget now exists, is measured, and is BLOCKING in CI — `npm run budget:check` (`scripts/check-startup-budget.mjs`) exports the same Hermes bundle a release build embeds and compares it with the ceiling in `startup-budget.json` (**14,786,697 bytes** measured, ceiling 16,263,386 = +10%, warns inside 5%). Proved it can go red, warn, and report UNAVAILABLE (exit 2, never a pass) before it was trusted. 🔴 Behind "no budget exists" was no MEASUREMENT: `am start -W` reported ~1.3s for this app while the JavaScript had not finished loading — it stops at the native splash. The JavaScript phase is now instrumented (`lib/startupTiming.ts`) and reads **950/972/971 ms** over three cold starts on a debug build. Two dead ends worth not repeating: timing from the root layout reported **0ms** (expo-router loads it lazily, after everything expensive), which is why `index.js` exists as an entry point; and `performance.now()` returned **37,101,247** because React Native's clock counts from device boot, while `performance.reactNativeStartupTiming` — the correct native zero — is undefined in this Expo SDK build. 🔴 **PARTIAL, not certified: the member's real cold start on a shipped build is still not measured.** A debug build fetches its bundle from Metro, so the figure above is an upper bound on one phase; the honest instrument is Sentry's cold-start measurement, and Sentry has no DSN in any profile. Guarded by `lib/startupTiming.test.ts` (entry order, `main`, ceiling sanity, once-only, no invented number), the entry-order and ceiling cases mutation-verified |
 | 7.17 | Pixel regression gate covers the main screens | PARTIAL | Three screens gated of ~137 |
 | 7.18 | The app runs on iOS | OPEN | Never built or run |
 

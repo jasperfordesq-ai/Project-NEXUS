@@ -1,0 +1,61 @@
+{
+  "$comment": [
+    "Journey 7.16 — start-up time and bundle size within a budget.",
+    "Every number here was measured, and each says HOW. Nothing is inherited.",
+    "Raising a ceiling is a deliberate, reviewable diff: check-startup-budget.mjs only",
+    "enforces it, it never edits it."
+  ],
+  "bundle": {
+    "howMeasured": "node scripts/check-startup-budget.mjs — runs node node_modules/expo/bin/cli export --platform android and takes the size in bytes of the single .hbc under _expo/static/js/android",
+    "measuredBytes": 14786697,
+    "measuredOn": "2026-08-23",
+    "ceilingBytes": 16263386,
+    "$ceilingNote": "measured + 10%. The gate fails above this and warns within 5% of it.",
+    "shippedApkComparison": {
+      "$comment": [
+        "NOT comparable with the figure above, and the difference is not a defect.",
+        "This is assets/index.android.bundle inside the last locally built release APK",
+        "(android/app/build/outputs/apk/release/app-release.apk, built 2026-08-20 18:14).",
+        "It is a Gradle/Hermes release build, three days and 68 mobile commits behind the",
+        "export above (+12,750 lines). The next release build is what will let the two be",
+        "compared like with like."
+      ],
+      "bytes": 9601136,
+      "builtOn": "2026-08-20"
+    }
+  },
+  "startup": {
+    "$comment": [
+      "🔴 What is NOT measured, so no one reads this as a full picture: the member's real",
+      "cold start on a shipped build. adb's `am start -W` stops at the first frame, which",
+      "for this app is the native splash — it reported ~1.3s while the JavaScript had not",
+      "finished loading. React Native's own reactNativeStartupTiming marks would answer it",
+      "from the native side but are undefined in this Expo SDK build (measured on a device",
+      "2026-08-23), and Sentry, which measures cold start properly, has no DSN in any build",
+      "profile. So the JavaScript phase below is what can honestly be measured today."
+    ],
+    "nativeFirstFrameMs": {
+      "howMeasured": "adb shell am start -W -n ie.project.nexus/.MainActivity, TotalTime, three cold starts after am force-stop",
+      "buildType": "debug",
+      "observedMs": [
+        1298,
+        1336,
+        1544
+      ],
+      "measuredOn": "2026-08-23",
+      "$note": "The native splash frame only. Kept because it is the figure people quote, and it is the figure that misleads."
+    },
+    "jsPhaseMs": {
+      "howMeasured": "lib/startupTiming.ts logs `nexus-startup: … js <n>ms` at the root layout's first commit; read from adb logcat on emulator-5554 (411dp, API 36) after am force-stop, three cold starts",
+      "buildType": "debug",
+      "$buildTypeNote": "A debug build downloads its bundle from Metro and Hermes must parse JavaScript rather than load bytecode, so a release build should be FASTER than this. Treat it as an upper bound on the JavaScript phase.",
+      "observedMs": [
+        950,
+        972,
+        971
+      ],
+      "measuredOn": "2026-08-23",
+      "$note": "Measured from the bundle entry point, which is why index.js exists. Timed from the root layout instead, this read 0ms while the app took seconds to open."
+    }
+  }
+}

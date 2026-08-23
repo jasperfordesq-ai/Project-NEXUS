@@ -2,7 +2,7 @@
   "name": "nexus-mobile",
   "version": "1.2.0",
   "license": "AGPL-3.0-or-later",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -30,6 +30,7 @@
     "api:check": "node scripts/generate-api-consumer-ledger.mjs --check",
     "parity:matrix": "node scripts/generate-parity-matrix.mjs",
     "parity:check": "node scripts/generate-parity-matrix.mjs --check",
+    "budget:check": "node scripts/check-startup-budget.mjs",
     "drift:check": "npm run parity:check && npm run api:check && npm run themes:check",
     "emulator:start": "node scripts/emulator.mjs start",
     "emulator:stop": "node scripts/emulator.mjs stop",

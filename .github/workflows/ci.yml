@@ -1941,6 +1941,16 @@ jobs:
         working-directory: mobile
         run: npm run drift:check
 
+      # The bundle a release embeds, measured with the same Expo export a release
+      # build uses, against the ceiling in mobile/startup-budget.json. It needs no
+      # Android toolchain, so it belongs on this runner — and it is the only place
+      # anything in this repo notices the app getting heavier. The script exits 2
+      # when it cannot measure (no Expo CLI, export failure), which fails the step
+      # rather than passing vacuously.
+      - name: "BLOCKING: Mobile JavaScript bundle inside its budget"
+        working-directory: mobile
+        run: npm run budget:check
+
       # coverage:ratchet above enforces per-area shrink-only line floors from
       # mobile/coverage-baseline.json. A single global percentage cannot gate this
       # codebase: app/(modals)/ is 10,343 of 16,057 instrumented lines, so every

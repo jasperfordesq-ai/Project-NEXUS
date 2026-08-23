@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **You can now write a post to your community from your phone.** Until today the app could read every post a community wrote and never add one — there was no composer, no way in, and nothing in the app that called the server, even though the server has accepted posts all along and the website has had a composer for a long time. There is now a "What's on your mind?" row at the top of your feed, and a matching entry in the Create menu. Write, press Post, and the post opens so you can see it; go back and it is at the top of your feed. Two deliberate limits: no photo and no poll yet — those are separate jobs on the server side and each deserves its own proper test rather than being bolted on. Communities that have switched their feed off do not see any of it.
 
+- **The phone app now has a size limit it cannot quietly exceed, and we know for the first time how long it takes to start.** Nothing in this project had ever measured either. The app's code now weighs 14.1 MB, and the build fails if that grows past 15.5 MB — so it can still grow with new features, but only on purpose. I proved the check can actually fail, and that it says "could not measure" rather than "fine" when something stops it running.
+
+- **Start-up: about one second is spent in the app's own code.** Measured three times on the test phone. Two things worth knowing. The number everyone quotes — the one the standard Android tool gives, about 1.3 seconds — is the splash screen appearing, not the app being ready, so it flatters us. And the honest figure for what a member actually waits on a real installed app still isn't measured: that needs the crash-and-performance service switched on, which is one of the things only you can do. I've written down what is and isn't measured rather than rounding it up.
+
 - **Loading more of your feed as you scroll now has a test behind it, and was checked properly for the first time.** It had never been exercised on a phone because the local test community only had twenty things in its feed — not enough to have a second page. Now there are forty-four, and scrolling to the bottom fetched the second page, then the third, and finished with "You've reached the end" without repeating anything. One thing worth knowing came out of it: the server can answer a request for twenty items with eighteen and still say there are more. An app that took a short page as the end would strand people part-way down their own feed; ours does not, and there is now a test that keeps it that way.
 
 - **Your feed now notices when you have written something.** The feed deliberately does not reload every time you open it, because that would cost a request on the app's busiest screen. But it did mean a post you had just written was missing when you came back to the list — which reads as a post that was never saved. It now reloads on return, and only when something was actually written.
@@ -81,6 +85,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ASP.NET event RSVPs now survive the page reload.** The self-service action
+  returns the canonical relationship, metrics and RSVP counts that the unchanged
+  React client validates before refreshing; going and interested states are
+  persisted for the signed-in member and reappear on event detail.
+
+- **web-uk audit #7 — parity drift left by a week of backend fixes.** The wallet
+  manage page summed pending-in and pending-out into a single "Pending" figure
+  that corresponds to nothing (the same fault was fixed in `react-frontend` and
+  `mobile`; web-uk was missed); marketplace orders paid in time credits printed
+  the cash total, so a 2-credit order read "€0.00"; voice messages sent from
+  web-uk carried no `duration`, so Laravel stored every clip at its 1-second
+  floor and other clients rendered "0:00" (now measured client-side by
+  `public/js/voice-duration.js`, with no-JS behaviour unchanged); a moderated
+  community's seller was told their listing was "published" while only they
+  could see it, and `meta.notice` from the create endpoint was discarded; the
+  listing detail page never rendered the `?status=…` its own handlers redirect
+  with, so no create/save/report confirmation was ever shown; a failed event
+  cover-image upload was swallowed and reported as a clean save; creating a
+  recurring series confirmed nothing; and the community fund rendered a live
+  donate form over a permanent zero when the tenant's wallet module was off
+  (`enabled: false` was dropped). Laravel side: the page-1 federation overlay
+  merges `status = completed` rows and was still running for `type=pending`,
+  interleaving settled credits into a pending-only list.
+- **web-uk: silent successes, unreachable pages and lost input across eleven
+  routes.** Event invitation campaigns rendered their success sentence inside a
+  red error summary (the template's success whitelist had outgrown the route
+  file); `/jobs` sent an `offset` that `JobVacanciesController::index` ignores,
+  so "Next" re-served page 1 for ever and every vacancy past the first page was
+  unreachable (now cursor-paginated like its sibling pages); deleting an ideation
+  challenge fed the confirmation token into the API's `status` filter and emptied
+  the list; four optional date fields discarded `readDate().error`, creating
+  never-expiring polls, invites, coupons and vacancies from a mistyped date; and
+  message attachments collapsed every problem into one vague failure while
+  translated "too many"/"wrong type" messages sat unreachable (limits mirrored
+  from `MessageAttachmentUploader`, not invented).
+- **web-uk: error summaries no longer race the screen reader.** 49 hand-rolled
+  summaries carried `role="alert"` on the element `initAll()` focuses —
+  reproducing the race `govuk-frontend` fixed upstream by nesting the alert in a
+  child container — while 180 others already used the corrected form. Summaries
+  reporting a transient load failure additionally no longer steal focus on page
+  load (`data-disable-auto-focus`). Pinned repo-wide by
+  `tests/error-summary-alert-contract.test.js`.
+- **web-uk: route-built English stopped leaking into all eleven languages.**
+  Course levels/costs/lesson types, ideation attachment types and badge
+  rarity/tier/type rendered raw English enum words while their translated twins
+  sat unused; job alerts built their entire description by English
+  concatenation; percent suffixes, decimal points, `am`/`pm` with a fixed
+  day-month-year order, a currency-symbol prefix map that puts `€` before the
+  amount in German, byte units and `", "` list glue were all locale-blind. Now
+  `Intl`-formatted throughout, guarded by
+  `tests/route-label-localization-contract.test.js`. Two corrupted values fixed
+  at source: the Japanese feedback `mailto:` had raw multi-byte characters in its
+  percent-encoded query, and five locales had localised `example.com` into real
+  registrable domains.
+- **web-uk: GOV.UK component conformance.** The event create/edit forms showed
+  the *same* error under every field — the templates used a three-argument
+  `selectattr`, which nunjucks silently treats as a truthiness filter — and
+  date-field error links targeted a wrapper `<div>` that cannot take focus
+  instead of the day input. 27 warning texts announced "There is a problem" or
+  "Important" where the icon means "Warning"; the marketplace and event
+  registration status banners were valid as neither a notification banner nor an
+  error summary (no coloured band, no body); a federation error box had a title
+  and no message; marketplace coupon and slot tables had no row headers and an
+  action column headed "View" over "Edit" links; three navigation lists used a
+  class that does not exist in the design system and rendered as stacked links;
+  19 decorative live-region attributes sat on static text; and five dead utility
+  classes dropped their styling silently — one of them losing line breaks in
+  members' own registration answers.
+- **web-uk: keyboard and screen-reader fixes.** The submit-button loading state
+  set `disabled`, which drops focus to `<body>` and suppresses the new label's
+  announcement (GDS says not to disable submit buttons; double submission is now
+  blocked by a form guard instead). The review star rating reversed its row in
+  CSS so arrow keys moved focus visually backwards. A duplicated
+  `aria-describedby` silently detached the password-strength live region on
+  register and reset. Language-switcher options and machine-translated event
+  text now carry `lang` (and `dir` for Arabic). Repeated card-list actions,
+  onboarding's five identical "Change" links and the announcement actions now
+  name the item they act on; decorative images no longer repeat the adjacent
+  heading; the voice-message player has an accessible name; and tightly packed
+  link rows meet the 24px target-size minimum rather than relying on the
+  spacing exception.
 - **The two web-uk accessibility gates now pass in CI, where they had never
   actually run.** The `Web UK authenticated accessibility` job was only added in
   this cycle, so its first real execution surfaced two faults that a local run
