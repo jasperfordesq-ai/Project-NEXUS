@@ -1,13 +1,13 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-21 (rubric replaced; Baseline 4 banked at `869a2a030`)
+Last verified: 2026-08-23 (wallet transfer banked at green `d0c34906a`)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=309/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=310/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
-<!-- doc-consistency: ASPNET_BANKED_FLOOR=309 -->
+<!-- doc-consistency: ASPNET_BANKED_FLOOR=310 -->
 
 🔴 **READ THIS BEFORE THE NUMBER. The denominator is now FROZEN and the score is
 RATCHETED - it can never be published lower again.** Today the owner decided the
@@ -62,26 +62,33 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 309/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-22)
+## Banked score - Fixed Rubric Baseline 5, 310/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-23)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
-comparable to R1-R4**. Evidence boundary: monorepo `1a2f2a30f` - pushed, with
-**all eight workflows green** (Docs Lint, CI Pipeline, Docs Site, E2E, Platform
-contracts, Security Scan, CodeQL, Uptime). Laravel contract source: the same
+comparable to R1-R4**. Evidence boundary: monorepo `d0c34906a` - pushed, with
+the required workflows green (CI Pipeline, Platform contracts, E2E Tests, Docs
+Lint, Security Scan and CodeQL; operational Uptime and Deploy Drift Watchdog
+also green). The ASP.NET path-filtered jobs did not rerun on that Web UK-only
+tip; they all ran and passed at descendant `2a74ed555` of the ASP.NET change
+(build, image, messaging, static inventory, React guardrails and all six API
+shards). That workflow's overall failure was confined to Web UK, then fixed;
+there are zero ASP.NET file changes from `8d264b472` through `d0c34906a`.
+Laravel contract source: the same
 tree, exercised through the disposable Laravel on `:8091` with both parity
 fixtures applied. Generated artifacts: `artifacts/parity/api/api-parity.*`
 regenerated 2026-08-21T07:14; `artifacts/parity/{schema,localization}` at
 2026-08-20. Denominator source:
 [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) at 250 rows.
-Scoring-record SHA: the commit carrying this section. **Nothing from today's
-working tree is banked** - see Block 3.
+Controlled runtime evidence: `artifacts/smoke/react-smoke-2026-08-23T18-29-08-811Z.json`,
+produced after rebuilding the ASP.NET image from this exact tree. Scoring-record
+SHA: the commit carrying this section.
 
 **Block 2 - Banked score.**
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 54 | 170 |
+| Core member journeys certified - React | 55 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -91,7 +98,7 @@ working tree is banked** - see Block 3.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **309** | **1000** |
+| **Total** | **310** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -99,7 +106,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.2929 | 170 | 50 |
+| Core React | 1 | 42 | 0.3262 | 170 | 55 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -122,7 +129,7 @@ made 4.27 and 4.28 uncertifiable were closed in the same batch. All nine write
 journeys then passed on BOTH arms in one run, twice, with the instrument's
 known-defect and known-fixture-gap lists EMPTY — nothing excused.
 
-🔴 **The floor is 309, raised on evidence rather than on the publication.** It
+🔴 **The floor is 310, raised on evidence rather than on the publication.** It
 went to 290 first — the number CI had proved at that moment — and to 309 only
 after `3b676457c` came back green with every ASP.NET job actually RUN, not
 skipped: the build, the messaging tests and all six API shards (Web UK and React
@@ -130,7 +137,9 @@ jobs skipped correctly, since neither was touched). That two-step is the rule,
 not ceremony: promoting a row FORCES the category arithmetic, so the published
 number moves the moment the ledger does, and the floor must never follow it until
 something has actually been proved. Publish the computed number, hold the floor,
-raise it after CI.
+raise it after CI. The 2026-08-23 transaction adds one point only: row 1.29
+wallet transfer moved PROVEN → CERTIFIED after exact-SHA controlled evidence and
+green CI at `d0c34906a`.
 
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
@@ -141,9 +150,10 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 116 of 690 (-574).** 🔴 **Eleven of 250 rows are CERTIFIED** — ten
+- **Journeys: 117 of 690 (-573).** 🔴 **Twelve of 250 rows are CERTIFIED** — ten
   of them added today, all in Tier 4 (Web UK), alongside row 1.21 (the exchange
-  transaction) certified on 2026-08-21. 20 more are PROVEN.
+  transaction) certified on 2026-08-21 and row 1.29 (wallet transfer) certified
+  on 2026-08-23. 19 more are PROVEN.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
   smoke still has no control arm" and called building one queue item 1. That is
   FALSE and the ledger already said so** — the arm was built on 2026-08-21 and the
@@ -255,9 +265,13 @@ The score can no longer be published below 274. A future demotion of this row is
 recorded in the ledger immediately and republished at the next net-non-negative
 transaction; the headline does not fall.
 
-**Block 3 - Published but unscored.** Today's working-tree changes are real and
-verified locally but are **not banked**, because banking requires CI green at the
-evidence SHA:
+**Block 3 - Published but unscored.** None at the `d0c34906a` evidence boundary.
+The wallet-transfer promotion, category movement and floor rise are banked
+together in this scoring transaction.
+
+**Historical pre-bank evidence (superseded by the transaction above).** The
+following notes explain how earlier working-tree batches reached the current
+instruments and were deliberately held out of their then-current scores:
 
 - 🔴 **The no-op stub count was too small, and is now 562 routes / 326 methods
   (was 316 methods).** `check-noop-stubs.ps1` counted one of three kinds of
@@ -349,12 +363,12 @@ evidence SHA:
   the direct cross-origin transport check remains single-arm because the
   disposable Laravel's CORS allowlist does not carry the control port.
 
-**Block 4 - Dirty/in-flight work.** 25 `web-uk/src/routes/*.js` files carry known
-CRLF phantom modifications from a concurrent workstream, plus the nightly
-`sentry-triage-ledger.json`. None is ASP.NET's and none contributes points.
-Commit by explicit path.
+**Block 4 - Dirty/in-flight work.** The checkout contains concurrent Web UK
+route, view, style, library and test changes. None is ASP.NET work and none
+contributes points. This banking commit must stage only the five explicit score,
+ledger, roadmap and changelog paths.
 
-**Block 5 - Certification gaps.** 730 open points, itemised below.
+**Block 5 - Certification gaps.** 690 open points, itemised below.
 
 **History:** R4 (353, 2026-08-21), R3 (653, 2026-08-20), R2 (598, 2026-08-18):
 [`HISTORY/STATUS_ARCHIVE_2026-08.md`](HISTORY/STATUS_ARCHIVE_2026-08.md). R1 (712,

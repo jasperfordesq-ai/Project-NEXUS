@@ -1,7 +1,8 @@
 # Journey Certification Ledger
 
-Last verified: 2026-08-21 (evidence: monorepo `869a2a030`, platform-contracts
-run at that SHA all green). Rebuilt to its final denominator on 2026-08-21.
+Last verified: 2026-08-23 (evidence: monorepo `d0c34906a`, required workflows
+green; controlled React smoke artifact `react-smoke-2026-08-23T18-29-08-811Z.json`).
+Rebuilt to its final denominator on 2026-08-21.
 
 Status: **Canonical current - the finite, FROZEN denominator for ASP.NET completion**
 
@@ -117,13 +118,13 @@ mismatch. Reserve rows are included in every count.
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Core member journeys (React) | 42 | 1 | 19 | 0 | 3 | 19 | 0.317 |
+| 1 — Core member journeys (React) | 42 | 2 | 18 | 0 | 3 | 19 | 0.326 |
 | 2 — Community module journeys (React) | 28 | 0 | 1 | 7 | 0 | 20 | 0.084 |
 | 3 — Extended module journeys (React) | 42 | 0 | 0 | 2 | 0 | 40 | 0.012 |
 | 4 — Member journeys (Web UK accessible) | 32 | 10 | 0 | 20 | 0 | 2 | 0.469 |
 | 5 — Staff journeys (admin / super-admin / broker) | 72 | 0 | 0 | 1 | 0 | 71 | 0.003 |
 | 6 — Mobile app journeys (Expo / React Native) | 34 | 0 | 0 | 0 | 0 | 34 | 0.000 |
-| **Total** | **250** | **11** | **20** | **30** | **3** | **186** | — |
+| **Total** | **250** | **12** | **19** | **30** | **3** | **186** | — |
 
 **Total row count: 250.** This is the frozen denominator.
 
@@ -135,7 +136,7 @@ tier row count, to three decimals.
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (1 × 1.0) + (19 × 0.6) + (3 × 0.3) = 13.30 | ÷ 42 | **0.317** |
+| 1 | (2 × 1.0) + (18 × 0.6) + (3 × 0.3) = 13.70 | ÷ 42 | **0.326** |
 | 2 | (1 × 0.6) + (7 × 0.25) = 2.35 | ÷ 28 | **0.084** |
 | 3 | (2 × 0.25) = 0.50 | ÷ 42 | **0.012** |
 | 4 | (10 × 1.0) + (20 × 0.25) = 15.00 | ÷ 32 | **0.469** |
@@ -192,7 +193,7 @@ activity/nexus-score were in the same position: real member pages, no row.
 | 1.26 | Messages: send into existing thread | PROVEN | smoke `journey-message-send` |
 | 1.27 | Messages: start a new conversation | OPEN | |
 | 1.28 | Messages: voice + attachment send and play back | OPEN | fetch routes built 2026-08-20 with byte-identical private-media headers; the journey is unproven |
-| 1.29 | Wallet: transfer credits | PROVEN | smoke `action-transfer-credits` |
+| 1.29 | Wallet: transfer credits | CERTIFIED | **CERTIFIED 2026-08-23 at pushed, green SHA `d0c34906a`.** Same-run controlled artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-23T18-29-08-811Z.json`: `action-transfer-credits` = MATCH. (1) unchanged React client drove recipient selection, amount entry and submit through its own UI on both configuration-only arms; (2) effect asserted after reload: ASP.NET sender `17.5 → 16.5`, recipient `-2 → -1`, Laravel sender `94 → 93`, recipient `31 → 32`; (3) Laravel control passed in the same execution; (4) the committed smoke step records method/path evidence, fails on client contract drift, requires the ledger row, and asserts exact `-1/+1` two-party movement; (5) every API path observed during the transfer was checked against the committed no-op inventory at the same code boundary and none is a known do-nothing endpoint. The full run had no ASP.NET-only failures; unrelated RSVP remained NOT_COMPARABLE and Laravel listing-create was a control-only fixture failure. |
 | 1.30 | Wallet: history renders | PROVEN | smoke `journey-wallet-history` |
 | 1.31 | Members directory browse | PROVEN | smoke `journey-members-connect` (browse arm) |
 | 1.32 | Connections: request → accept → appears both sides | OPEN | connect controls render; the journey is not driven |
@@ -206,6 +207,12 @@ activity/nexus-score were in the same position: real member pages, no row.
 | 1.40 | Search: results are correct, not merely present (`/search`) | OPEN | Laravel search is Meilisearch-backed; filter drift there returns 500s. Result *correctness* against a known fixture has never been compared between engines. Scope origin: 2026-08-21 R5 expansion |
 | 1.RESERVE-A | *(reserve — unassigned)* | OPEN | Held for a Tier 1 journey discovered after 2026-08-21. Fill it; never grow the tier. Scope origin: 2026-08-21 R5 expansion |
 | 1.RESERVE-B | *(reserve — unassigned)* | OPEN | Held for a Tier 1 journey discovered after 2026-08-21. Fill it; never grow the tier. Scope origin: 2026-08-21 R5 expansion |
+
+<!-- Banking correction: the embedded 2026-08-21 warning in row 1.21 that the
+score was not yet banked is historical and superseded. Row 1.21 was included in
+the 309-point floor on 2026-08-22 and re-ran MATCH at green evidence SHA
+`d0c34906a` on 2026-08-23. Its committed smoke step and all five conditions are
+current. -->
 
 Also PROVEN in Tier 1 and folded into rows above: notifications list +
 mark-all-read (smoke `journey-notifications`), cookie-consent save (was a

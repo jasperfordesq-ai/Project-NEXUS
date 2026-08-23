@@ -4,20 +4,21 @@ Status: **Canonical current - owner-facing summary** (technical detail lives in
 [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
 list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
 
-Last updated: 2026-08-22
+Last updated: 2026-08-23
 
 ## Where we are, in three lines
 
 Every status report from here uses exactly this format. Both numbers can only ever
 go up, and the build enforces it.
 
-- **Score: 309/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
-- **Journeys certified: 11 of 250**
-- **Movement since last report: +19**
+- **Score: 310/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
+- **Journeys certified: 12 of 250**
+- **Movement since last report: +1**
 
-The score the build has *proved* is 290. 309 is published because the work list
-recomputes it, and it becomes the new floor once the checks go green on the commit
-carrying it. The number never goes down either way.
+The build has proved 310 at pushed SHA `d0c34906a`. The wallet-transfer journey
+passed through the unchanged React UI on both backends in one controlled run,
+including both balance effects and the persisted ledger entry. The number never
+goes down.
 
 ## What this is, and why we are building it
 
