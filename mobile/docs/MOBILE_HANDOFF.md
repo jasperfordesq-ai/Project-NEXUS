@@ -81,6 +81,65 @@ guards it. Three standards that came out of getting this wrong:
   correct. The actual cause was `sendVoice()` passing a literal `0`. Fixing the first plausible
   layer would have shipped a client change that did nothing.
 
+## Contract audit, 2026-08-23 — what the app assumes about the API
+
+🔴 **The API surface splits into two populations with opposite failure modes, and neither
+was checked against the server until today.**
+
+| | modules | endpoints | schemas |
+| --- | ---: | ---: | ---: |
+| Validated (zod) | 9 | 78 | **141 `.strict()` objects** |
+| Not validated at all | 37 | **416** | none |
+
+**Where a response is validated, drift throws.** A `.strict()` object rejects any field the
+server adds, and the calling screen shows that as a failed action — *after* the write has
+committed. That is exactly how event check-in came to tell an organiser their check-in had
+failed while the attendance row was already saved.
+
+**Where a response is not validated, drift is silent.** Fields the client reads simply come
+back `undefined`, and the screen either renders blanks or crashes on a property of
+`undefined`. That is exactly how the Matches screen crashed for every member: the server
+sends `module` and `listing_id`, the screen read `source_type` and `source_id`.
+
+The largest unvalidated surfaces are marketplace (89 endpoints), groups (40), volunteering
+(34), jobs (31), federation (28) and exchanges (20). **This is the biggest single pool of
+unexamined risk in the app**, and it is the recommended next piece of work.
+
+### What was built
+
+`mobile/lib/api/eventsContractDrift.test.ts` runs **19 real captured responses** — 15 reads
+and 4 writes — through the app's own client functions. `mobile/scripts/capture-events-contract.sh`
+refreshes them from a live local Laravel using the exact headers the client sends
+(`X-Events-Contract: 2`, plus `X-Event-Checkin-Contract` for the offline module).
+
+🔴 **It is mutation-verified against the original defect**: delete `credit_status` from the
+attendance schema and the gate goes red. The first version of the harness captured reads
+only and did **not** catch it — a drift on a write is the dangerous case, and a read-only
+audit would have missed the very thing that prompted it.
+
+🔴 **The gate declares its own coverage gaps** rather than implying completeness. An empty
+array satisfies any array schema, so five collections whose items were empty at capture time
+are named in the test as unverified: series occurrences, sync conflict items, registration
+product records, event templates and ticket types. Shrink-only — populate one, refresh, and
+remove it in the same commit.
+
+### Findings from running it
+
+- Every validated events envelope accepts real data. Nine modules, clean.
+- 🔴 **One false alarm of my own making, worth recording**: `GET /categories` appeared to
+  drift until I noticed my capture omitted `?type=event`, which the client does send. The
+  endpoint defaults to *listing* categories, whose `type` the event schema rightly refuses.
+  A capture that does not replay the client's request proves nothing.
+- 🔴 **A capability the server grants and the app does not offer**: the roster returns
+  `management_actions.undo_attendance: true`, the server accepts an `undo` transition, and
+  the response schema declares it — but the client's `EventAttendanceAction` type omits
+  `undo` and the online attendance screen has no undo control, while the **offline** queue
+  does. An organiser who checks in the wrong person cannot correct it from the live register.
+  Building it needs a reason field the client does not currently send, so it is recorded as
+  an owner decision rather than done.
+- The fixture community had **no event categories at all**, so the create-event category
+  picker was legitimately empty rather than broken. One has been seeded.
+
 ## Where it stands, 2026-08-23
 
 **575 / 1000 on rubric M1.** Of 140 journeys: 44 CERTIFIED, 41 PROVEN, 24 RENDERS, 9 PARTIAL,

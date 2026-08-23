@@ -408,8 +408,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:914 |
 | GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:925 |
 | GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1042 |
-| POST | `/api/v2/matches/{param}/dismiss` | matches.ts:57 |
-| GET | `/api/v2/matches/all` | matches.ts:45 |
+| POST | `/api/v2/matches/{param}/dismiss` | matches.ts:135 |
+| GET | `/api/v2/matches/all` | matches.ts:119 |
 | GET | `/api/v2/me/collections` | savedCollections.ts:55 |
 | POST | `/api/v2/me/collections` | savedCollections.ts:63 |
 | GET | `/api/v2/me/collections/{param}/items` | savedCollections.ts:67 |

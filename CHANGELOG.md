@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A check that the phone app and the server still agree with each other.** Three of today's faults came from the same place: the app assumed the server would answer in a particular shape, nobody had ever checked, and the test alongside it was written from the app's assumption rather than the server's answer. There is now a check that takes **nineteen real answers from the server** — fifteen questions and four actions — and runs each one through the app's own code. Proof it works: delete the field that caused this morning's check-in fault and the check goes red. Worth knowing that the first version of it only covered questions, not actions, and would **not** have caught that fault — actions are the dangerous half, because by the time the app complains the server has already done the thing.
+
+- **And it says what it does not cover.** Five lists were empty when the answers were captured, so the check proves nothing about the items inside them, and it names all five rather than quietly implying it covers everything.
+
+- **The wider picture from that audit, which is the part worth your attention.** The app asks the server 494 different questions. Only 78 of them are checked in any way; **416 are not checked at all**. The unchecked ones fail silently — fields come back empty and the screen either shows blanks or falls over, which is exactly what happened to Matches today. The biggest unchecked areas are the marketplace (89), groups (40), volunteering (34), jobs (31), federation (28) and exchanges (20). That is the largest pool of unexamined risk in the app and the obvious next piece of work.
+
 - **web-uk: the last native date input is converted to the GOV.UK three-field
   pattern**, and its browser-only `min` guard is replaced by a server-side check
   that a poll's closing date is in the future. `min` is advisory: anything posting
@@ -62,6 +68,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   actually needing a translator side by side.
 
 ### Fixed
+
+- **ASP.NET global React bootstrap calls now return tenant/member state instead
+  of plausible empty payloads.** Public menus include persisted published pages,
+  OAuth discovery requires both the global switch and the tenant's provider
+  allowlist, algorithm labels expose the four areas the React client consumes,
+  and identity status reflects the member's latest verification session and
+  badge. The no-op ratchet falls from 561 routes / 325 methods to 553 / 319;
+  cryptographic CSRF generation and live realtime configuration are now explicit,
+  tested defensible cases rather than silently broadening the scanner heuristic.
 
 - **The ASP.NET React journey smoke no longer mistakes its own selector and
   confirmation failures for backend results.** Credit transfer now selects the
