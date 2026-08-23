@@ -87,9 +87,16 @@ Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, o
 source-scan guard per failure family that has actually happened here, translations in seven
 languages, and a native release gate that passes in CI.
 
-Not green: the product has only recently begun to be walked at all, nothing has ever been
-distributed to anybody, crash reporting is off in every build profile, and the force-update
-lever has never been fired.
+Not green: the product has only recently begun to be walked at all, and nothing has ever been
+distributed to anybody.
+
+🔴 **Correcting my own earlier draft of this line, which said "crash reporting is off in every
+build profile".** That was copied forward from an older plan instead of checked.
+`lib/observability/report.ts` sends crashes to our own API (`POST /api/app/log`) as well as
+Sentry, so no third-party account is needed for reports to arrive. What is actually missing is
+narrower: no crash has ever been seen arriving from a real device, and there is no mobile
+Sentry project. The same draft also said the force-update lever had never been fired — it was
+fired on 2026-08-22 and works.
 
 ### Walked and certified in the last two sessions
 
