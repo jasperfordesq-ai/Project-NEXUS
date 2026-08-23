@@ -19,17 +19,22 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import {
+  cancelShiftSignup,
   expressInterest,
+  getMyShifts,
   getOpportunityApplications,
   getOpportunity,
   getOpportunities,
   handleVolunteerApplication,
+  type MyShiftsResponse,
   type OpportunityApplication,
   signUpForShift,
   type VolunteerOpportunity,
   type VolunteerShift,
+  type VolunteerShiftRegistration,
   type VolunteeringOrganisation,
 } from '@/lib/api/volunteering';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -42,6 +47,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 
@@ -153,13 +159,24 @@ function MetaRow({
 function ShiftCard({
   shift,
   onSignUp,
+  onCancel,
   signingUp,
+  cancelling,
   canSignUp,
+  isMine,
 }: {
   shift: VolunteerShift;
   onSignUp: () => void;
+  onCancel: () => void;
   signingUp: boolean;
+  cancelling: boolean;
   canSignUp: boolean;
+  /**
+   * 🔴 The shift this member is actually on. Without it every card looked
+   * identical, including the one they had just joined — see the block comment
+   * on `myShiftForThisOpportunity`.
+   */
+  isMine: boolean;
 }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
@@ -188,8 +205,24 @@ function ShiftCard({
                 : t('shiftSpots', { count: shift.spots_available })}
             </Text>
           </View>
+          {isMine ? (
+            <Chip size="sm" color="success" testID={`shift-mine-${shift.id}`}>
+              <Chip.Label>{t('myShifts.confirmed')}</Chip.Label>
+            </Chip>
+          ) : null}
         </View>
-        {canSignUp ? (
+        {canSignUp && isMine ? (
+          <HeroButton
+            size="sm"
+            variant="tertiary"
+            isDisabled={cancelling}
+            onPress={onCancel}
+            testID={`shift-cancel-${shift.id}`}
+          >
+            {cancelling ? <Spinner size="sm" /> : <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>}
+          </HeroButton>
+        ) : null}
+        {canSignUp && !isMine ? (
           <HeroButton size="sm" variant="secondary" isDisabled={signingUp} onPress={onSignUp}>
             {signingUp ? <Spinner size="sm" /> : <HeroButton.Label>{t('signUpForShift')}</HeroButton.Label>}
           </HeroButton>
@@ -309,7 +342,9 @@ function VolunteeringDetailScreenInner() {
   const [applySheetOpen, setApplySheetOpen] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
   const [signingShiftId, setSigningShiftId] = useState<number | null>(null);
+  const [cancellingShiftId, setCancellingShiftId] = useState<number | null>(null);
   const [applicationActionId, setApplicationActionId] = useState<number | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   const opportunityId = Number(id);
   const safeId = Number.isFinite(opportunityId) && opportunityId > 0 ? opportunityId : 0;
@@ -341,6 +376,32 @@ function VolunteeringDetailScreenInner() {
   const hasApplied = interestSent || Boolean(opportunity?.has_applied || opportunity?.application);
   const open = opportunity ? isOpenOpportunity(opportunity) : false;
   const canSignUpForShifts = Boolean(opportunity?.application?.status === 'approved' && !opportunity.is_owner);
+
+  /**
+   * 🔴 A volunteer can hold exactly ONE shift per opportunity, and nothing said so.
+   *
+   * The server stores the sign-up as `vol_applications.shift_id` — a single column on
+   * the application, not a row per shift — so `signUpForShift()` on a second shift
+   * silently moves the volunteer off the first. Walked on a device 2026-08-23: joined
+   * Mon Aug 24 (shift 65), then Wed Aug 26 (shift 66); the toast said "Shift joined —
+   * You have signed up for this shift" both times, Monday's card went back to "4 spots
+   * available", and `vol_applications.shift_id` had simply changed 65 → 66. The
+   * volunteer was dropped from Monday and told nothing.
+   *
+   * The opportunity payload carries no per-viewer flag on its shifts (no
+   * `is_signed_up`), so the shift they hold has to come from `GET /v2/volunteering/shifts`,
+   * which returns it with `opportunity_id` and is therefore filterable to this screen.
+   */
+  const myShiftsApi = useApi<MyShiftsResponse>(
+    () => getMyShifts(),
+    [safeId, canSignUpForShifts],
+    { enabled: safeId > 0 && canSignUpForShifts },
+  );
+  const myShiftForThisOpportunity: VolunteerShiftRegistration | null = useMemo(() => {
+    const items = myShiftsApi.data?.data?.items;
+    if (!Array.isArray(items)) return null;
+    return items.find((item) => item.opportunity_id === safeId) ?? null;
+  }, [myShiftsApi.data, safeId]);
 
   async function handleShare() {
     if (!opportunity) return;
@@ -384,23 +445,70 @@ function VolunteeringDetailScreenInner() {
     }
   }
 
-  async function handleSignUpForShift(shiftId: number) {
+  async function performSignUpForShift(shiftId: number) {
+    setSigningShiftId(shiftId);
+    try {
+      await signUpForShift(shiftId);
+      refresh();
+      myShiftsApi.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({ title: t('shiftSignupTitle'), description: t('shiftSignupMessage'), variant: 'success' });
+    } catch (err) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('shiftSignupError')),
+        variant: 'danger',
+      });
+    } finally {
+      setSigningShiftId(null);
+    }
+  }
+
+  function handleSignUpForShift(shiftId: number) {
     if (!isAuthenticated) {
       showToast({ title: t('signInRequiredTitle'), description: t('signInRequiredMessage'), variant: 'warning' });
       return;
     }
 
-    setSigningShiftId(shiftId);
+    // Already holding a different shift here: say what will be lost before doing it.
+    const held = myShiftForThisOpportunity;
+    if (held && held.id !== shiftId) {
+      confirm({
+        title: t('shiftMove.title'),
+        message: t('shiftMove.message', {
+          date: formatDate(held.start_time, 'short') ?? t('myShifts.dateUnknown'),
+        }),
+        confirmLabel: t('shiftMove.confirm'),
+        cancelLabel: t('common:buttons.cancel'),
+        variant: 'primary',
+        confirmTestID: 'shift-move-confirm',
+        cancelTestID: 'shift-move-cancel',
+        onConfirm: () => performSignUpForShift(shiftId),
+      });
+      return;
+    }
+
+    void performSignUpForShift(shiftId);
+  }
+
+  async function handleCancelShift(shiftId: number) {
+    setCancellingShiftId(shiftId);
     try {
-      await signUpForShift(shiftId);
+      await cancelShiftSignup(shiftId);
       refresh();
+      myShiftsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ title: t('shiftSignupTitle'), description: t('shiftSignupMessage'), variant: 'success' });
-    } catch {
+      showToast({ title: t('shiftCancelledTitle'), description: t('shiftCancelledMessage'), variant: 'success' });
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('shiftSignupError'), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('myShifts.cancelError')),
+        variant: 'danger',
+      });
     } finally {
-      setSigningShiftId(null);
+      setCancellingShiftId(null);
     }
   }
 
@@ -590,8 +698,11 @@ function VolunteeringDetailScreenInner() {
                   key={shift.id}
                   shift={shift}
                   signingUp={signingShiftId === shift.id}
+                  cancelling={cancellingShiftId === shift.id}
                   canSignUp={canSignUpForShifts}
-                  onSignUp={() => void handleSignUpForShift(shift.id)}
+                  isMine={myShiftForThisOpportunity?.id === shift.id}
+                  onSignUp={() => handleSignUpForShift(shift.id)}
+                  onCancel={() => void handleCancelShift(shift.id)}
                 />
               ))}
             </HeroCard.Body>
@@ -718,6 +829,7 @@ function VolunteeringDetailScreenInner() {
           </View>
         </View>
       </BottomSheet>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

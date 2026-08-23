@@ -349,6 +349,7 @@
     "receivedFrom": "From {{name}}",
     "requested": "Requested {{date}}",
     "yourShift": "Your shift",
+    "theirShift": "Son créneau",
     "proposedShift": "Proposed shift",
     "accept": "Accept",
     "reject": "Reject",
@@ -366,5 +367,12 @@
       "cancelled": "Cancelled",
       "expired": "Expired"
     }
+  },
+  "shiftCancelledTitle": "Créneau annulé",
+  "shiftCancelledMessage": "Vous n'êtes plus inscrit à ce créneau.",
+  "shiftMove": {
+    "title": "Passer à ce créneau ?",
+    "message": "Vous êtes inscrit au {{date}}. Vous inscrire à ce créneau vous retirera de celui-là.",
+    "confirm": "Me déplacer"
   }
 }

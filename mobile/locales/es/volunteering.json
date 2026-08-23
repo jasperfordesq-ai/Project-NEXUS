@@ -349,6 +349,7 @@
     "receivedFrom": "From {{name}}",
     "requested": "Requested {{date}}",
     "yourShift": "Your shift",
+    "theirShift": "Su turno",
     "proposedShift": "Proposed shift",
     "accept": "Accept",
     "reject": "Reject",
@@ -366,5 +367,12 @@
       "cancelled": "Cancelled",
       "expired": "Expired"
     }
+  },
+  "shiftCancelledTitle": "Turno cancelado",
+  "shiftCancelledMessage": "Ya no estás inscrito en este turno.",
+  "shiftMove": {
+    "title": "¿Cambiar a este turno?",
+    "message": "Estás inscrito el {{date}}. Si te inscribes en este turno, se te dará de baja de aquel.",
+    "confirm": "Cambiarme"
   }
 }

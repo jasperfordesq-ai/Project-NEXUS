@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -56,6 +56,18 @@ jest.mock('react-i18next', () => ({
         'shiftSignupTitle': 'Shift joined',
         'shiftSignupMessage': 'You joined the shift.',
         'shiftSignupError': 'Could not sign up.',
+        'shiftCancelledTitle': 'Shift cancelled',
+        'shiftCancelledMessage': 'You are no longer signed up for this shift.',
+        'myShifts.confirmed': 'Confirmed',
+        'myShifts.cancel': 'Cancel shift',
+        'myShifts.cancelError': 'Could not cancel this shift.',
+        'myShifts.dateUnknown': 'Date unavailable',
+        'shiftMove.title': 'Move to this shift?',
+        'shiftMove.message': opts
+          ? `You are signed up for ${String(opts.date ?? '')}. Signing up for this shift takes you off that one.`
+          : 'Move?',
+        'shiftMove.confirm': 'Move me',
+        'common:buttons.cancel': 'Cancel',
         'meta.location': 'Location',
         'meta.commitment': 'Commitment',
         'meta.starts': 'Starts',
@@ -127,10 +139,37 @@ jest.mock('@expo/vector-icons', () => ({
 
 jest.mock('@/lib/api/volunteering', () => ({
   getOpportunity: jest.fn(),
+  getOpportunities: jest.fn(),
   expressInterest: jest.fn().mockResolvedValue(undefined),
   getOpportunityApplications: jest.fn(),
   handleVolunteerApplication: (...args: unknown[]) => mockHandleVolunteerApplication(...args),
   signUpForShift: jest.fn().mockResolvedValue({ data: {} }),
+  cancelShiftSignup: jest.fn().mockResolvedValue(undefined),
+  getMyShifts: jest.fn(() => {
+    factoryCalls.push('myShifts');
+    return Promise.resolve({ data: { items: [], cursor: null, has_more: false } });
+  }),
+}));
+
+/**
+ * Which API the screen's `useApi` factory reached for. `useApi` is mocked, so it
+ * never runs the factory itself — the tests below run it once to tell the four
+ * `useApi` call sites apart, which is what lets one of them return the member's
+ * own shifts while the others return the opportunity.
+ */
+const factoryCalls: string[] = [];
+
+/**
+ * Records the confirmation instead of auto-running it. The load-bearing
+ * assertion in these tests is that pressing "Sign up for shift" on a SECOND
+ * shift does not call the API until the member has agreed to being moved.
+ */
+const mockConfirm = jest.fn();
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (opts: unknown) => mockConfirm(opts),
+    confirmDialog: null,
+  }),
 }));
 
 jest.mock('@/components/ui/Avatar', () => 'View');
@@ -152,7 +191,7 @@ jest.mock('@/components/ui/AppToast', () => ({
 // --- Tests ---
 
 import VolunteeringDetailScreen from './volunteering-detail';
-import { expressInterest, signUpForShift } from '@/lib/api/volunteering';
+import { cancelShiftSignup, expressInterest, signUpForShift } from '@/lib/api/volunteering';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -373,5 +412,119 @@ describe('VolunteeringDetailScreen', () => {
       }));
     });
   });
-});
+  /**
+   * 🔴 Walked on a device on 2026-08-23 and it was wrong.
+   *
+   * A volunteer can hold exactly ONE shift per opportunity — the server stores the
+   * sign-up as `vol_applications.shift_id`, a single column — but every shift card
+   * looked identical, including the one the member had just joined, and signing up
+   * for a second shift silently dropped them from the first while the toast said
+   * "Shift joined — You have signed up for this shift". Measured: `shift_id` went
+   * 65 → 66 and Monday's card went back to "4 spots available".
+   *
+   * These three tests pin the three halves of the repair: the held shift is marked
+   * and offers a cancel; a second sign-up asks first; and it does nothing until the
+   * member agrees.
+   */
+  function approvedOpportunityWithMyShift(myShiftId: number | null) {
+    const opportunity = {
+      ...mockOpportunity,
+      has_applied: true,
+      application: { id: 44, status: 'approved' },
+      shifts: [
+        { id: 1, start_time: '2026-08-24T09:00:00Z', end_time: '2026-08-24T11:00:00Z', capacity: 4, signup_count: 0, spots_available: 4 },
+        { id: 2, start_time: '2026-08-26T09:00:00Z', end_time: '2026-08-26T11:00:00Z', capacity: 4, signup_count: 0, spots_available: 4 },
+      ],
+    };
 
+    const myShifts = myShiftId === null
+      ? { data: { items: [], cursor: null, has_more: false } }
+      : {
+          data: {
+            items: [{
+              id: myShiftId,
+              opportunity_id: 10,
+              opportunity_title: 'Community Garden Volunteer',
+              location: null,
+              application_id: 44,
+              start_time: '2026-08-24T09:00:00Z',
+              end_time: '2026-08-24T11:00:00Z',
+              capacity: 4,
+              signup_count: 1,
+              spots_available: 3,
+            }],
+            cursor: null,
+            has_more: false,
+          },
+        };
+
+    mockUseApi.mockImplementation((factory: unknown) => {
+      factoryCalls.length = 0;
+      try {
+        void (factory as () => unknown)();
+      } catch {
+        // A mocked API can throw; only which one was reached matters here.
+      }
+      const isMyShifts = factoryCalls[0] === 'myShifts';
+      return {
+        data: isMyShifts ? myShifts : { data: opportunity },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      };
+    });
+  }
+
+  it('marks the shift the member is on and offers to cancel it, not to join it again', () => {
+    approvedOpportunityWithMyShift(1);
+
+    const { getByTestId, getAllByText } = render(<VolunteeringDetailScreen />);
+
+    // Shift 1 is theirs: confirmed chip plus a cancel action.
+    expect(getByTestId('shift-mine-1')).toBeTruthy();
+    expect(getByTestId('shift-cancel-1')).toBeTruthy();
+    // Shift 2 is not, so it keeps the join action — and there is only one of those.
+    expect(getAllByText('Sign up for shift')).toHaveLength(1);
+  });
+
+  it('cancels the held shift and says so', async () => {
+    approvedOpportunityWithMyShift(1);
+
+    const { getByTestId } = render(<VolunteeringDetailScreen />);
+
+    fireEvent.press(getByTestId('shift-cancel-1'));
+
+    await waitFor(() => {
+      expect(cancelShiftSignup).toHaveBeenCalledWith(1);
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Shift cancelled',
+        variant: 'success',
+      }));
+    });
+  });
+
+  it('will not move a member off their shift without asking first', async () => {
+    approvedOpportunityWithMyShift(1);
+
+    const { getByText } = render(<VolunteeringDetailScreen />);
+
+    fireEvent.press(getByText('Sign up for shift'));
+
+    // The whole point: nothing has happened yet.
+    expect(signUpForShift).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Move to this shift?',
+      message: expect.stringContaining('Signing up for this shift takes you off that one'),
+    }));
+
+    // …and the message names the shift they would lose, not the one they are joining.
+    const options = mockConfirm.mock.calls[0][0] as { message: string; onConfirm: () => Promise<void> };
+    expect(options.message).toContain('Aug 24');
+
+    await act(async () => {
+      await options.onConfirm();
+    });
+
+    expect(signUpForShift).toHaveBeenCalledWith(2);
+  });
+});

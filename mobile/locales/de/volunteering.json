@@ -349,6 +349,7 @@
     "receivedFrom": "From {{name}}",
     "requested": "Requested {{date}}",
     "yourShift": "Your shift",
+    "theirShift": "Ihre Schicht",
     "proposedShift": "Proposed shift",
     "accept": "Accept",
     "reject": "Reject",
@@ -366,5 +367,12 @@
       "cancelled": "Cancelled",
       "expired": "Expired"
     }
+  },
+  "shiftCancelledTitle": "Schicht abgesagt",
+  "shiftCancelledMessage": "Du bist für diese Schicht nicht mehr angemeldet.",
+  "shiftMove": {
+    "title": "Zu dieser Schicht wechseln?",
+    "message": "Du bist für {{date}} angemeldet. Wenn du dich für diese Schicht anmeldest, wirst du von jener abgemeldet.",
+    "confirm": "Wechseln"
   }
 }

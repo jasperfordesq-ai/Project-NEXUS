@@ -349,6 +349,7 @@
     "receivedFrom": "Ó {{name}}",
     "requested": "Iarrtha ar {{date}}",
     "yourShift": "Do sheal oibre",
+    "theirShift": "A seal",
     "proposedShift": "An seal oibre molta",
     "accept": "Glac leis",
     "reject": "Diúltaigh",
@@ -366,5 +367,12 @@
       "cancelled": "Cealaithe",
       "expired": "Imithe in éag"
     }
+  },
+  "shiftCancelledTitle": "Seal curtha ar ceal",
+  "shiftCancelledMessage": "Níl tú cláraithe don seal seo a thuilleadh.",
+  "shiftMove": {
+    "title": "Bog go dtí an seal seo?",
+    "message": "Tá tú cláraithe do {{date}}. Má chláraíonn tú don seal seo, baintear den seal sin tú.",
+    "confirm": "Bog mé"
   }
 }

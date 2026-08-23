@@ -349,6 +349,7 @@
     "receivedFrom": "From {{name}}",
     "requested": "Requested {{date}}",
     "yourShift": "Your shift",
+    "theirShift": "Their shift",
     "proposedShift": "Proposed shift",
     "accept": "Accept",
     "reject": "Reject",
@@ -366,5 +367,12 @@
       "cancelled": "Cancelled",
       "expired": "Expired"
     }
+  },
+  "shiftCancelledTitle": "Shift cancelled",
+  "shiftCancelledMessage": "You are no longer signed up for this shift.",
+  "shiftMove": {
+    "title": "Move to this shift?",
+    "message": "You are signed up for {{date}}. Signing up for this shift takes you off that one.",
+    "confirm": "Move me"
   }
 }
