@@ -184,6 +184,7 @@ export default function HomeScreen() {
       <OfflineBanner />
 
       <FlatList<FeedItemType>
+        testID="feed-list"
         data={items}
         keyExtractor={keyExtractor}
         renderItem={renderItem}

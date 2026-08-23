@@ -42,6 +42,7 @@ jest.mock('react-i18next', () => ({
         'newPost.placeholder': "What's on your mind?",
         'common:labels.friend': 'Friend',
         'common:buttons.retry': 'Retry',
+        'common:endOfList': 'You have reached the end',
       };
       return map[key] ?? key;
     },
@@ -371,6 +372,70 @@ describe('HomeScreen', () => {
     const { queryByTestId } = render(<HomeScreen />);
 
     expect(queryByTestId('feed-composer-trigger')).toBeNull();
+  });
+
+  /*
+    Journey 2.13 — loading more as you scroll. Walked on the emulator 2026-08-23 against a
+    44-item feed: one initial request, then two cursor requests, ending in "You've reached
+    the end" with no card repeated. These cases hold the two halves that walk cannot leave
+    behind: the list is actually wired to ask for the next page, and the feed's own page
+    extractor reads the server's real `meta`.
+  */
+  it('asks for the next page when the member reaches the end of the list', () => {
+    const loadMore = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, hasMore: true, loadMore });
+
+    const { getByTestId } = render(<HomeScreen />);
+    const list = getByTestId('feed-list');
+
+    expect(list.props.onEndReached).toBe(loadMore);
+    // A threshold of 0 only fires at the very bottom, which reads as a dead scroll.
+    expect(list.props.onEndReachedThreshold).toBeGreaterThan(0);
+  });
+
+  it('reads the cursor and has_more the server really sends, and never lists a card twice', () => {
+    render(<HomeScreen />);
+
+    // The extractor is the second argument the screen hands the pagination hook.
+    const extractor = mockUsePaginatedApi.mock.calls[0]?.[1] as (r: unknown) => {
+      items: unknown[]; cursor: string | null; hasMore: boolean;
+    };
+    expect(typeof extractor).toBe('function');
+
+    // Real page-1 meta from `GET /v2/feed?per_page=20&mode=ranked`, 2026-08-23.
+    const page = extractor({
+      data: [
+        { type: 'post', id: 208 },
+        { type: 'post', id: 209 },
+        // 🔴 A ranked feed can serve the same thing twice in one page — two keys the same
+        // would be duplicate FlatList keys, so one has to go.
+        { type: 'post', id: 208 },
+        // Same id, different kind: a genuinely different card, which must be kept.
+        { type: 'listing', id: 208 },
+      ],
+      meta: { per_page: 20, has_more: true, cursor: 'YzNjOTQ1NmYwODhkMWRmNGI2YTI3ZTVj' },
+    });
+
+    expect(page.items).toHaveLength(3);
+    expect(page.cursor).toBe('YzNjOTQ1NmYwODhkMWRmNGI2YTI3ZTVj');
+    expect(page.hasMore).toBe(true);
+
+    // The last page: `has_more` false and no cursor, which is what stops the scrolling.
+    const last = extractor({ data: [{ type: 'badge_earned', id: 677 }], meta: { per_page: 20, has_more: false, cursor: null } });
+    expect(last.hasMore).toBe(false);
+    expect(last.cursor).toBeNull();
+  });
+
+  it('says the list has ended, rather than looking like it is still loading', () => {
+    mockUsePaginatedApi.mockReturnValue({
+      ...defaultPaginatedState,
+      items: [mockFeedItem],
+      hasMore: false,
+    });
+
+    const { getByText } = render(<HomeScreen />);
+
+    expect(getByText('You have reached the end')).toBeTruthy();
   });
 
   it('re-reads the feed on focus only after something was written', () => {

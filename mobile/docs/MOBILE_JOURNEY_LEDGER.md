@@ -64,27 +64,27 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 — Onboarding and access | 14 | 6 | 3 | 3 | 0 | 2 | 0 | 0.611 |
-| 2 — Feed and social | 14 | 7 | 4 | 2 | 0 | 1 | 0 | 0.707 |
+| 2 — Feed and social | 14 | 8 | 4 | 2 | 0 | 0 | 0 | 0.779 |
 | 3 — Timebanking core | 20 | 6 | 6 | 5 | 1 | 1 | 1 | 0.587 |
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
 | 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 6 | 4 | 0 | 0.522 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 0 | 9 | 0 | 0.100 |
-| **Total** | **140** | **47** | **41** | **24** | **9** | **17** | **2** | — |
+| **Total** | **140** | **48** | **41** | **24** | **9** | **16** | **2** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(47 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 80.30`, over `140 − 2 excluded = 138`
-rows → **0.582**.
+`(48 × 1.0) + (41 × 0.6) + (24 × 0.25) + (9 × 0.30) = 81.30`, over `140 − 2 excluded = 138`
+rows → **0.589**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
 | 1 | (6 × 1.0) + (3 × 0.6) + (3 × 0.25) = 8.55 | ÷ 14 | **0.611** |
-| 2 | (7 × 1.0) + (4 × 0.6) + (2 × 0.25) = 9.90 | ÷ 14 | **0.707** |
+| 2 | (8 × 1.0) + (4 × 0.6) + (2 × 0.25) = 10.90 | ÷ 14 | **0.779** |
 | 3 | (6 × 1.0) + (6 × 0.6) + (5 × 0.25) + (1 × 0.30) = 11.15 | ÷ 19 † | **0.587** |
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
@@ -136,7 +136,7 @@ uninterpretable.
 | 2.10 | Share a post out of the app | PROVEN | Android share sheet opened from a card, 2026-08-20 |
 | 2.11 | Save / bookmark a post | PROVEN | Bookmark control present and reachable after `294586010`; toggle observed |
 | 2.12 | Feed filters (All / Following / Saved / Posts / Exchanges) | RENDERS | Chips visible; none exercised |
-| 2.13 | Infinite scroll loads more | OPEN | Fixture too small to page; never exercised on mobile |
+| 2.13 | Infinite scroll loads more | CERTIFIED | Walked 2026-08-23 against a 44-item feed (23 posts seeded through the new composer, since the old note "fixture too small to page" had become the only thing stopping this row). One initial request, then **two** cursor requests as the member scrolled, each page appended, ending in "You've reached the end" with no card repeated — verified in the API access log and in a direct page-walk of both `ranked` and `chronological` (20 + 20 + 4, zero cross-page repeats). 🔴 Worth knowing: the server can answer a `per_page=20` request with **18** items and `has_more: true`, so a client that stopped on a short page would strand the member — ours reads `has_more`. Guarded by three cases in `app/(tabs)/home.test.tsx` (end-of-list wiring, the feed's own page extractor against real `meta`, and the end-of-list message), the first two mutation-verified, on top of the nine existing `lib/hooks/usePaginatedApi.test.ts` cases |
 | 2.14 | Hide / report a post | CERTIFIED | 🔴 **No capability existed.** The card's "…" menu offered Share, Save and View post; the app called none of the server's four moderation endpoints, while the website has had hide, not-interested and mute since the V2 feed. Built 2026-08-22 (`lib/api/feedModeration.ts`) and walked: `reports` row 9 (post 183, `safety_concern`, open) and `feed_hidden` row 10. Guarded by `lib/api/feedModeration.test.ts` and four card-level tests, all mutation-verified |
 
 ## Tier 3 — Timebanking core (20 rows)
