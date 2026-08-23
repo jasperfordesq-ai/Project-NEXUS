@@ -94,3 +94,62 @@ Limitations and open evidence:
 - Operating-system **forced-colours / high-contrast** was not manually exercised; `matchMedia('(forced-colors: active)')` reported `false` throughout. The automated gate's forced-colour case passes, which is not a manual result.
 - **No screen reader was used, so no speech-output sign-off is claimed.** Name/role/state inspection is not equivalent to hearing what NVDA, JAWS or VoiceOver announces, and this gate needs a human running one.
 - This entry records evidence only. **No score was moved**: the `663/1000` W1 bank and the `35/150` manual-accessibility row are unchanged, and assigning any W2 percentage remains the separate fixed-rubric certification transaction.
+
+## Authenticated accessibility gate — first execution, 2026-08-19
+
+🔴 **These 59 checks existed but had never run.** The CI job runs the ISOLATED
+variant, whose runner greps three describes only
+(`scripts/accessibility-isolated-selection.js`); the authenticated, Irish and
+Arabic RTL gates were never in that selection, and the full `test:accessibility`
+aggregate needs a real backend, which must not be pointed at the shared local
+database. So the signed-in pages — the ones members actually spend their time on
+— had no automated axe, reflow or RTL coverage at all on a frontend whose entire
+reason for existing is accessibility.
+
+**Result of the first run:** 52 passed, 7 skipped, 0 failed, against the
+disposable environment (Laravel :8092, tenant `e2e-community`, synthetic
+accounts only). Each check loads the page at a 320px viewport, asserts one
+`<main>` / one `#main-content` / one `<h1>` / a service navigation, asserts no
+horizontal overflow, and runs axe, failing on any serious or critical violation.
+
+**What the first run found — all in the tests, not the pages:**
+- Five paths carried ids from another environment (`77`, `636`, `162`). They are
+  now `ACCESSIBILITY_MEMBER_ID`, `ACCESSIBILITY_ORG_ID` and
+  `ACCESSIBILITY_GOAL_ID`, defaulting to the original values so nothing changes
+  for the environment they were written against.
+- The block was `mode: 'serial'`, so the first fixture 404 skipped the other 37
+  checks. It is now `default`; the tests are independent.
+- Two assertions looked for `main .govuk-caption-l`, which stopped existing when
+  the captions were standardised on `caption-xl`. They broke silently because
+  this suite never runs.
+- One asserted `maxlength="500"` on a character-counted textarea. govuk-frontend
+  REMOVES that attribute when its JavaScript initialises
+  (`character-count.mjs:94`), deliberately, so a member can type past the limit
+  and get a real error. The no-JS guarantee is already covered at source level by
+  `character-count-contract.test.js`; the runtime check now proves the enhanced
+  component initialised instead.
+- One asked a standard poll for its ranked-choice ballot and expected success;
+  the API correctly answers 400. It now picks a poll the page itself marks as
+  ranked.
+- The knowledge-base check assumed at least one article. An empty library is a
+  legitimate state and the page still has to be accessible in it.
+
+**The 7 skips are honest, not silenced:** five organisation pages and one goal
+page (`ACCESSIBILITY_ORG_ID=none`, `ACCESSIBILITY_GOAL_ID=none` — this backend
+has neither seeded) and one ranked-choice poll. A skip requires an explicit
+environment declaration; a 404 still fails.
+
+**Repeat it:**
+
+```bash
+bash scripts/webuk-e2e-env.sh up   # from the repository root
+LARAVEL_BASE_URL=http://127.0.0.1:8091 \
+SMOKE_EMAIL=e2e.user.a@project-nexus.local SMOKE_PASSWORD='TestPassword123!' \
+SMOKE_TENANT=e2e-community ACCESSIBILITY_TENANT_SLUG=e2e-community \
+ACCESSIBILITY_MEMBER_ID=<a member OTHER than the one signed in> \
+ACCESSIBILITY_ORG_ID=none ACCESSIBILITY_GOAL_ID=none \
+npm --prefix web-uk run test:accessibility:authenticated
+```
+
+🔴 `ACCESSIBILITY_MEMBER_ID` must not be the signed-in member: the appreciation
+wall renders its form only `{% if not isSelf %}`.

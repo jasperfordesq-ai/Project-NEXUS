@@ -50,7 +50,8 @@
     "locales:audit-irish": "node scripts/audit-irish-locale.js",
     "locales:audit-keys": "node scripts/audit-translation-keys.js",
     "locales:audit-templates": "node scripts/audit-template-localization.js",
-    "playwright:install": "playwright install chromium"
+    "playwright:install": "playwright install chromium",
+    "test:accessibility:authenticated": "npm run build:css && node scripts/accessibility-local-server.js --grep=authenticated-page"
   },
   "dependencies": {
     "@sentry/node": "^10.70.0",

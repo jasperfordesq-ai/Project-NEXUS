@@ -40,6 +40,24 @@ const IRISH_ROUTES = [
   { name: 'Irish accessibility statement', path: `${mountPath}/accessibility?locale=ga`, heading: 'accessibility.title' }
 ];
 
+// 🔴 Fixture ids, not constants. These paths carried hardcoded `77` and `636`,
+// which tied the whole authenticated gate to one environment: against any other
+// backend the first one 404s, and because this block runs serially that single
+// failure stops the remaining 37 checks from running at all. The defaults are the
+// original values, so nothing changes for the environment this was written
+// against; the overrides let it run against the disposable one.
+// 🔴 This must be a member OTHER than the one the gate signs in as. The
+// appreciation wall renders its form only `{% if not isSelf %}`, so pointing
+// this at the signed-in member makes the page correct and the test fail.
+const FIXTURE_MEMBER_ID = process.env.ACCESSIBILITY_MEMBER_ID || '77';
+const FIXTURE_ORG_ID = process.env.ACCESSIBILITY_ORG_ID || '636';
+// 🔴 Set ACCESSIBILITY_ORG_ID=none ONLY for a backend that genuinely has no
+// organisation seeded. It skips the five organisation pages VISIBLY, in the
+// report, rather than letting them 404 and abort the serial run. It is not a
+// 404 escape hatch: where an organisation exists, a 404 still fails.
+const HAS_ORG_FIXTURE = FIXTURE_ORG_ID !== 'none' && FIXTURE_ORG_ID !== '';
+const FIXTURE_GOAL_ID = process.env.ACCESSIBILITY_GOAL_ID || '162';
+
 const AUTHENTICATED_ROUTES = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'account hub', path: '/account' },
@@ -62,18 +80,18 @@ const AUTHENTICATED_ROUTES = [
   { name: 'wallet', path: '/wallet' },
   { name: 'saved items', path: '/saved' },
   { name: 'my collections', path: '/me/collections' },
-  { name: 'public collections', path: '/users/77/collections' },
+  { name: 'public collections', path: `/users/${FIXTURE_MEMBER_ID}/collections` },
   { name: 'messages', path: '/messages' },
   { name: 'notifications', path: '/notifications' },
   { name: 'groups', path: '/groups' },
-  { name: 'organisation dashboard', path: '/volunteering/organisations/636/dashboard' },
-  { name: 'organisation review queue', path: '/volunteering/organisations/636/manage' },
-  { name: 'organisation settings', path: '/volunteering/organisations/636/settings' },
-  { name: 'organisation wallet', path: '/volunteering/organisations/636/wallet' },
-  { name: 'organisation volunteer roster', path: '/volunteering/organisations/636/volunteers' },
+  { name: 'organisation dashboard', path: `/volunteering/organisations/${FIXTURE_ORG_ID}/dashboard`, requiresOrgFixture: true },
+  { name: 'organisation review queue', path: `/volunteering/organisations/${FIXTURE_ORG_ID}/manage`, requiresOrgFixture: true },
+  { name: 'organisation settings', path: `/volunteering/organisations/${FIXTURE_ORG_ID}/settings`, requiresOrgFixture: true },
+  { name: 'organisation wallet', path: `/volunteering/organisations/${FIXTURE_ORG_ID}/wallet`, requiresOrgFixture: true },
+  { name: 'organisation volunteer roster', path: `/volunteering/organisations/${FIXTURE_ORG_ID}/volunteers`, requiresOrgFixture: true },
   { name: 'volunteer opportunity approval gate', path: '/volunteering/opportunities/create' },
   { name: 'search empty state', path: '/search?q=missing&type=events' },
-  { name: 'appreciation wall', path: '/users/77/appreciations' }
+  { name: 'appreciation wall', path: `/users/${FIXTURE_MEMBER_ID}/appreciations` }
 ];
 
 function seriousOrCritical(violations) {
@@ -668,7 +686,13 @@ test.describe('keyboard, focus, error, and forced-colour gate', () => {
 });
 
 test.describe('representative authenticated-page accessibility gate', () => {
-  test.describe.configure({ mode: 'serial' });
+  // 🔴 NOT serial. These tests are independent — each builds its own context from
+  // the shared storageState — and serial mode means the first failure SKIPS the
+  // rest. That is how one hardcoded fixture id hid 37 checks: the gate reported a
+  // single failure while three quarters of it never ran. In default mode a fixture
+  // gap costs you that one check, not the suite. (beforeAll then signs in once per
+  // worker rather than once overall, which is a few extra logins, not a problem.)
+  test.describe.configure({ mode: 'default' });
 
   let storageState;
   let authenticatedMountPath;
@@ -694,6 +718,8 @@ test.describe('representative authenticated-page accessibility gate', () => {
 
   for (const route of AUTHENTICATED_ROUTES) {
     test(`${route.name} has valid structure, reflow, and no high-impact axe violations`, async ({ browser, baseURL }, testInfo) => {
+      test.skip(Boolean(route.requiresOrgFixture) && !HAS_ORG_FIXTURE,
+        'this backend has no organisation fixture (ACCESSIBILITY_ORG_ID=none)');
       test.setTimeout(120_000);
       const context = await browser.newContext({ baseURL, storageState });
       const page = await context.newPage();
@@ -714,8 +740,21 @@ test.describe('representative authenticated-page accessibility gate', () => {
         }
         if (route.name === 'appreciation wall') {
           await expect(page.locator('h1')).toContainText(translate('en', 'govuk_alpha_saved.wall.heading', { name: '' }).trim());
-          await expect(page.locator('#appreciation-message')).toHaveAttribute('maxlength', '500');
-          await expect(page.locator('#appreciation-message')).toHaveAttribute('aria-describedby', 'appreciation-message-hint');
+          // 🔴 NOT maxlength, and NOT an exact aria-describedby. Both of those
+          // assertions described markup that govuk-frontend deliberately changes
+          // once its JavaScript runs, and neither had ever executed because this
+          // whole gate never ran in CI. The character count REMOVES maxlength on
+          // init (character-count.mjs:94) so a member can type past the limit and
+          // get a real error instead of being silently truncated, and it APPENDS
+          // its own -info id to aria-describedby. The no-JS guarantee that the
+          // attribute is present in the source is covered by
+          // character-count-contract.test.js; what belongs here is proof the
+          // enhanced component initialised and announces the remaining count.
+          await expect(page.locator('#appreciation-message'))
+            .toHaveAttribute('aria-describedby', /appreciation-message-hint/);
+          await expect(page.locator('#appreciation-message'))
+            .toHaveAttribute('aria-describedby', /appreciation-message-info/);
+          await expect(page.locator('#appreciation-message-info')).toHaveCount(1);
           await expect(page.locator('#appreciation-public')).toHaveAttribute('aria-describedby', 'appreciation-public-hint');
         }
         if (route.name === 'saved items') {
@@ -1208,7 +1247,18 @@ test.describe('representative authenticated-page accessibility gate', () => {
       });
       expect(formatViolations(seriousOrCritical(detailAxeResults.violations))).toEqual([]);
 
-      const rankPath = `${detailHref.replace(/\?.*$/, '')}/rank?locale=ar`;
+      // 🔴 /rank exists only for a RANKED-CHOICE poll; the API answers 400 'This is
+      // not a ranked-choice poll' for a standard one, and this took the first poll
+      // it found. Return to the list and pick a link the page itself marks as
+      // ranked, so the check exercises the ranked ballot rather than whichever
+      // poll happens to be newest. If the backend has no ranked poll, say so
+      // instead of failing on a correct refusal.
+      await page.goto(`${authenticatedMountPath}/polls?locale=ar`, { waitUntil: 'domcontentloaded' });
+      const rankedHref = await page.locator('main a[href*="/rank"]').evaluateAll((links) => (
+        links.map((link) => link.getAttribute('href') || '').find((href) => /\/polls\/\d+\/rank/.test(href)) || ''
+      ));
+      test.skip(rankedHref === '', 'this backend has no ranked-choice poll to exercise');
+      const rankPath = `${rankedHref.replace(/\?.*$/, '')}?locale=ar`;
       const rankResponse = await page.goto(rankPath, { waitUntil: 'domcontentloaded' });
       expect(rankResponse, `${rankPath} did not return a document response`).not.toBeNull();
       expect(rankResponse.status(), `${rankPath} returned HTTP ${rankResponse.status()}`).toBeLessThan(400);
@@ -1357,7 +1407,10 @@ test.describe('representative authenticated-page accessibility gate', () => {
         expect(formatViolations(seriousOrCritical(auxiliaryAxeResults.violations))).toEqual([]);
       }
 
-      const detailPath = `${authenticatedMountPath}/goals/162?locale=ar`;
+      // A backend with no goal seeded says so, rather than failing on a 404 that
+      // describes the fixture and not the page.
+      test.skip(FIXTURE_GOAL_ID === 'none', 'this backend has no goal fixture (ACCESSIBILITY_GOAL_ID=none)');
+      const detailPath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}?locale=ar`;
       const detailResponse = await page.goto(detailPath, { waitUntil: 'domcontentloaded' });
       expect(detailResponse, `${detailPath} did not return a document response`).not.toBeNull();
       expect(detailResponse.status(), `${detailPath} returned HTTP ${detailResponse.status()}`).toBeLessThan(400);
@@ -1369,8 +1422,8 @@ test.describe('representative authenticated-page accessibility gate', () => {
       await expect(page.locator('main .govuk-caption-xl')).not.toBeEmpty();
       await expect(page.locator('main .govuk-caption-xl')).not.toHaveText('undefined');
       await expect(page.locator('.govuk-back-link')).toHaveText(translate('ar', 'goals.back_to_goals'));
-      await expect(page.locator(`a[href$="/goals/162/social"]`)).toHaveText(translate('ar', 'govuk_alpha_goals.nav.social'));
-      await expect(page.locator(`a[href$="/goals/162/history"]`)).toHaveText(translate('ar', 'govuk_alpha_goals.nav.history'));
+      await expect(page.locator(`a[href$="/goals/${FIXTURE_GOAL_ID}/social"]`)).toHaveText(translate('ar', 'govuk_alpha_goals.nav.social'));
+      await expect(page.locator(`a[href$="/goals/${FIXTURE_GOAL_ID}/history"]`)).toHaveText(translate('ar', 'govuk_alpha_goals.nav.history'));
       expect(await page.locator('body').innerText()).not.toContain('undefined');
 
       const detailOverflow = await page.evaluate(() => ({
@@ -1391,7 +1444,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       });
       expect(formatViolations(seriousOrCritical(detailAxeResults.violations))).toEqual([]);
 
-      const editPath = `${authenticatedMountPath}/goals/162/edit?locale=ar`;
+      const editPath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}/edit?locale=ar`;
       const editResponse = await page.goto(editPath, { waitUntil: 'domcontentloaded' });
       expect(editResponse, `${editPath} did not return a document response`).not.toBeNull();
       expect(editResponse.status(), `${editPath} returned HTTP ${editResponse.status()}`).toBeLessThan(400);
@@ -1423,7 +1476,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       });
       expect(formatViolations(seriousOrCritical(editAxeResults.violations))).toEqual([]);
 
-      const checkinPath = `${authenticatedMountPath}/goals/162/checkin?locale=ar`;
+      const checkinPath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}/checkin?locale=ar`;
       const checkinResponse = await page.goto(checkinPath, { waitUntil: 'domcontentloaded' });
       expect(checkinResponse, `${checkinPath} did not return a document response`).not.toBeNull();
       expect(checkinResponse.status(), `${checkinPath} returned HTTP ${checkinResponse.status()}`).toBeLessThan(400);
@@ -1454,7 +1507,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       });
       expect(formatViolations(seriousOrCritical(checkinAxeResults.violations))).toEqual([]);
 
-      const reminderPath = `${authenticatedMountPath}/goals/162/reminder?locale=ar`;
+      const reminderPath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}/reminder?locale=ar`;
       const reminderResponse = await page.goto(reminderPath, { waitUntil: 'domcontentloaded' });
       expect(reminderResponse, `${reminderPath} did not return a document response`).not.toBeNull();
       expect(reminderResponse.status(), `${reminderPath} returned HTTP ${reminderResponse.status()}`).toBeLessThan(400);
@@ -1485,7 +1538,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       });
       expect(formatViolations(seriousOrCritical(reminderAxeResults.violations))).toEqual([]);
 
-      const buddyPath = `${authenticatedMountPath}/goals/162/buddy-actions?locale=ar`;
+      const buddyPath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}/buddy-actions?locale=ar`;
       const buddyResponse = await page.goto(buddyPath, { waitUntil: 'domcontentloaded' });
       expect(buddyResponse, `${buddyPath} did not return a document response`).not.toBeNull();
       expect(buddyResponse.status(), `${buddyPath} returned HTTP ${buddyResponse.status()}`).toBeLessThan(400);
@@ -1522,7 +1575,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
         { slug: 'history', titleKey: 'govuk_alpha_goals.history.title' },
         { slug: 'social', titleKey: 'govuk_alpha_goals.social.title' }
       ]) {
-        const goalPagePath = `${authenticatedMountPath}/goals/162/${goalPage.slug}?locale=ar`;
+        const goalPagePath = `${authenticatedMountPath}/goals/${FIXTURE_GOAL_ID}/${goalPage.slug}?locale=ar`;
         const goalPageResponse = await page.goto(goalPagePath, { waitUntil: 'domcontentloaded' });
         expect(goalPageResponse, `${goalPagePath} did not return a document response`).not.toBeNull();
         expect(goalPageResponse.status(), `${goalPagePath} returned HTTP ${goalPageResponse.status()}`).toBeLessThan(400);
@@ -1620,7 +1673,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).toHaveText(translate('ar', 'blog.title'));
-      await expect(page.locator('main .govuk-caption-l')).not.toBeEmpty();
+      await expect(page.locator('main .govuk-caption-xl')).not.toBeEmpty();
       await expect(page.locator('label[for="q"]')).toHaveText(translate('ar', 'blog.search_label'));
       await expect(page.locator('#q-hint')).toHaveText(translate('ar', 'blog.search_hint'));
       await expect(page.locator('main form[action$="/blog"] button')).toHaveText(translate('ar', 'blog.search_button'));
@@ -1850,7 +1903,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).not.toBeEmpty();
-      await expect(page.locator('main .govuk-caption-l')).toHaveText(translate('ar', 'profile.own_caption'));
+      await expect(page.locator('main .govuk-caption-xl')).toHaveText(translate('ar', 'profile.own_caption'));
       await expect(page.getByRole('link', { name: translate('ar', 'actions.edit_profile'), exact: true })).toHaveCount(1);
       await expect(page.getByRole('heading', { name: translate('ar', 'profile.activity_title'), exact: true })).toHaveCount(1);
 
@@ -2027,14 +2080,25 @@ test.describe('representative authenticated-page accessibility gate', () => {
       expect(indexResponse.status()).toBeLessThan(400);
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).toHaveText(translate('ar', 'kb.title'));
-      const firstArticle = page.locator('.nexus-alpha-card a').first();
-      await expect(firstArticle).toBeVisible();
-      const href = await firstArticle.getAttribute('href');
-      expect(href).toBeTruthy();
-      const detailResponse = await page.goto(`${href}${href.includes('?') ? '&' : '?'}locale=ar`, { waitUntil: 'domcontentloaded' });
-      expect(detailResponse.status()).toBeLessThan(400);
-      await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-      await expect(page.locator('.govuk-back-link')).toHaveText(translate('ar', 'kb.back_to_kb'));
+      // 🔴 An empty knowledge base is a legitimate state, not a failure — and the
+      // page still has to be accessible in it. Follow an article only when one
+      // exists; otherwise assert the empty state is actually shown, so this can
+      // never pass on a blank page.
+      const articleCount = await page.locator('.nexus-alpha-card a').count();
+      if (articleCount === 0) {
+        await expect(page.locator('.govuk-inset-text')).toHaveCount(1);
+      } else {
+        const firstArticle = page.locator('.nexus-alpha-card a').first();
+        await expect(firstArticle).toBeVisible();
+        const href = await firstArticle.getAttribute('href');
+        expect(href).toBeTruthy();
+        const detailResponse = await page.goto(`${href}${href.includes('?') ? '&' : '?'}locale=ar`, { waitUntil: 'domcontentloaded' });
+        expect(detailResponse.status()).toBeLessThan(400);
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        // The back link belongs to the ARTICLE page, so it is asserted here
+        // rather than after the branch — an empty library never reaches it.
+        await expect(page.locator('.govuk-back-link')).toHaveText(translate('ar', 'kb.back_to_kb'));
+      }
       const overflow = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
       expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
       const axeResults = await new AxeBuilder({ page }).analyze();
@@ -2241,10 +2305,10 @@ test.describe('representative authenticated-page accessibility gate', () => {
           description: 'govuk_alpha_members.nearby.description'
         },
         {
-          path: '/members/77?locale=ar'
+          path: `/members/${FIXTURE_MEMBER_ID}?locale=ar`
         },
         {
-          path: '/members/77/insights?locale=ar',
+          path: `/members/${FIXTURE_MEMBER_ID}/insights?locale=ar`,
           heading: 'govuk_alpha_members.insights.heading'
         }
       ]) {
