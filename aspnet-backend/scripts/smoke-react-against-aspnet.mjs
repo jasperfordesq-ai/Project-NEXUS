@@ -236,19 +236,22 @@ async function runArm(arm) {
   // and what it got. It was being truncated to 200 characters and discarded; the first
   // captured message reported 60 issues on a single endpoint. Serialise it instead.
   const contractDrift = [];
-  page.on('console', async (m) => {
-    if (m.type() !== 'error') return;
-    const text = m.text();
-    if (/contract drift/i.test(text)) {
-      try {
-        const args = await Promise.all(m.args().map((a) => a.jsonValue().catch(() => null)));
-        const detail = args.find((a) => a && typeof a === 'object' && a.endpoint);
-        if (detail) { contractDrift.push({ phase: current, ...detail }); return; }
-      } catch { /* fall through and keep the plain text */ }
-    }
-    consoleErrors.push({ phase: current, text: text.slice(0, 200) });
-  });
-  page.on('pageerror', (e) => pageErrors.push({ phase: current, text: String(e).slice(0, 200) }));
+  const captureClientErrorsFrom = (observedPage) => {
+    observedPage.on('console', async (m) => {
+      if (m.type() !== 'error') return;
+      const text = m.text();
+      if (/contract drift/i.test(text)) {
+        try {
+          const args = await Promise.all(m.args().map((a) => a.jsonValue().catch(() => null)));
+          const detail = args.find((a) => a && typeof a === 'object' && a.endpoint);
+          if (detail) { contractDrift.push({ phase: current, ...detail }); return; }
+        } catch { /* fall through and keep the plain text */ }
+      }
+      consoleErrors.push({ phase: current, text: text.slice(0, 200) });
+    });
+    observedPage.on('pageerror', (e) => pageErrors.push({ phase: current, text: String(e).slice(0, 200) }));
+  };
+  captureClientErrorsFrom(page);
 
   let current = 'landing';
   async function step(name, fn) {
@@ -622,18 +625,40 @@ async function runArm(arm) {
   });
 
   await step('action-rsvp-event', async () => {
-    await page.goto(`${BASE}/events`, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(1500);
+    // The disposable Laravel fixture's only event is owned by the primary smoke member.
+    // Owners cannot RSVP to their own event, so using that actor made the control skip
+    // while ASP.NET passed. This is fixture identity, not product divergence. Drive the
+    // unchanged UI as the fixture's second ordinary member on that arm; keep all API and
+    // client-contract instrumentation attached to the additional page.
+    let rsvpContext = null;
+    let rsvpPage = page;
+    try {
+      if (arm.rsvpActorEmail) {
+        rsvpContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+        rsvpPage = await rsvpContext.newPage();
+        captureApiFrom(rsvpPage);
+        captureClientErrorsFrom(rsvpPage);
+        const signedIn = await signInAs(
+          rsvpPage,
+          arm.rsvpActorEmail,
+          arm.rsvpActorPassword,
+          arm.communityLabel,
+        );
+        if (!signedIn.ok) skip(`RSVP fixture actor could not sign in: ${signedIn.reason}`);
+      }
+
+      await rsvpPage.goto(`${BASE}/events`, { waitUntil: 'networkidle', timeout: 60000 });
+      await rsvpPage.waitForTimeout(1500);
     // 🔴 Must match /events/<NUMBER>. `a[href*="/events/"]` also matches `/events/create`,
     // and picking that opened the CREATE form — whose buttons are "Select a category" and
     // "Create Event", so the step then reported "no RSVP control on the event page" while
     // never having opened an event at all. A selector fault that reads as a backend gap.
-    const hrefs = await page.locator('a[href*="/events/"]').evaluateAll((els) =>
+    const hrefs = await rsvpPage.locator('a[href*="/events/"]').evaluateAll((els) =>
       els.map((e) => e.getAttribute('href')).filter((h) => /\/events\/\d+(?:[/?#]|$)/.test(h || '')));
     if (!hrefs.length) skip('no event DETAIL links on the list (only create/filter links)');
     const eventPath = hrefs[0].startsWith('/') ? hrefs[0] : `/${hrefs[0]}`;
-    await page.goto(`${BASE}${eventPath}`, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(2500);
+    await rsvpPage.goto(`${BASE}${eventPath}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await rsvpPage.waitForTimeout(2500);
 
     // 🔴 THIS STEP USED TO ASSERT NOTHING. It clicked the RSVP control, waited 3s and
     // logged "RSVP control clicked" — so it could not fail however broken RSVP was, and
@@ -672,16 +697,26 @@ async function runArm(arm) {
       interested: 'Mark yourself as interested',
       not_going: 'Mark yourself as not going',
     };
-    const opt = (key) => page.locator(`${RSVP_GROUP} [role="radio"][aria-label="${ARIA[key]}"]`).first();
-    const checkedKey = async () => page.evaluate(({ group, aria }) => {
+    const opt = (key) => rsvpPage.locator(`${RSVP_GROUP} [role="radio"][aria-label="${ARIA[key]}"]`).first();
+    const checkedKey = async () => rsvpPage.evaluate(({ group, aria }) => {
       for (const [key, label] of Object.entries(aria)) {
         const el = document.querySelector(`${group} [role="radio"][aria-label="${label}"]`);
         if (el && el.getAttribute('aria-checked') === 'true') return key;
       }
       return null;
     }, { group: RSVP_GROUP, aria: ARIA });
+    const visibleRsvpState = async () => {
+      const checked = await checkedKey();
+      if (checked) return checked;
 
-    if (!(await page.locator(RSVP_GROUP).count())) {
+      // Once registration is confirmed React correctly removes the "Going" action
+      // (`can_register` is false) and renders a green "Going" status chip instead.
+      // Reading only aria-checked therefore reports none for the strongest successful
+      // outcome even though the reloaded page is explicitly showing it.
+      return await rsvpPage.getByText(/^Going$/i).count() ? 'going' : null;
+    };
+
+    if (!(await rsvpPage.locator(RSVP_GROUP).count())) {
       skip('no RSVP options group on the event page — selector needs updating, NOT a backend result');
     }
     const offered = [];
@@ -701,15 +736,15 @@ async function runArm(arm) {
     // sent, and reported BOTH backends as failing persistence. Start listening before
     // the click so a fast response cannot race the probe, then accept the real dialog
     // when the product requires it.
-    const mutationResponse = page.waitForResponse((response) => {
+    const mutationResponse = rsvpPage.waitForResponse((response) => {
       const request = response.request();
       return /\/api\/v2\/events\/\d+\/rsvp(?:\?|$)/.test(response.url())
         && ['POST', 'DELETE'].includes(request.method());
     }, { timeout: 15000 }).catch(() => null);
     await opt(target).click({ timeout: 8000 });
-    await page.waitForTimeout(500);
+    await rsvpPage.waitForTimeout(500);
 
-    const confirmation = page.locator('[role="alertdialog"]:visible, [role="dialog"]:visible').last();
+    const confirmation = rsvpPage.locator('[role="alertdialog"]:visible, [role="dialog"]:visible').last();
     if (await confirmation.count()) {
       const confirmButton = confirmation.getByRole('button')
         .filter({ hasNotText: /cancel|close/i })
@@ -731,13 +766,47 @@ async function runArm(arm) {
       const detail = (await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
       throw new Error(`RSVP mutation returned ${response.status()}${detail ? `: ${detail}` : ''}`);
     }
-    await page.waitForTimeout(2500);
-    console.log(`    RSVP ${before ?? '(none)'} -> clicked "${ARIA[target]}"; in-page selection now: ${await checkedKey() ?? '(none)'}`);
+    await rsvpPage.waitForTimeout(2500);
+    console.log(`    RSVP ${before ?? '(none)'} -> clicked "${ARIA[target]}"; in-page selection now: ${await visibleRsvpState() ?? '(none)'}`);
 
     // The assertion that matters: it must survive a reload, i.e. the backend stored it.
-    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(2500);
-    const persisted = await checkedKey();
+    // Capture the exact detail response the unchanged page consumes. A confirmed RSVP
+    // deliberately removes its own "Going" action, and a text-only lookup can confuse
+    // the viewer's status chip with another attendee's roster chip.
+    // Parse inside the response event. Retaining Playwright's Response object and
+    // calling json() several seconds later can fail with Network.getResponseBody / no
+    // data after Chromium releases the resource, despite the page having consumed it.
+    const reloadedDetailPayload = new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        rsvpPage.off('response', captureDetail);
+        resolve(null);
+      }, 15000);
+      async function captureDetail(candidate) {
+        const request = candidate.request();
+        if (request.method() !== 'GET'
+          || !/\/api\/v2\/events\/\d+(?:\?|$)/.test(candidate.url())) return;
+        clearTimeout(timer);
+        rsvpPage.off('response', captureDetail);
+        if (!candidate.ok()) { resolve(null); return; }
+        resolve(await candidate.json().catch(() => null));
+      }
+      rsvpPage.on('response', captureDetail);
+    });
+    await rsvpPage.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    const detailPayload = await reloadedDetailPayload;
+    await rsvpPage.waitForTimeout(2500);
+    const reloadedEvent = detailPayload?.data;
+    const persistedFromContract = reloadedEvent?.relationship?.registration?.state === 'confirmed'
+      ? 'going'
+      : reloadedEvent?.relationship?.engagement?.state === 'interested'
+        ? 'interested'
+        : ['declined', 'cancelled'].includes(reloadedEvent?.relationship?.registration?.state)
+          ? 'not_going'
+          : null;
+    const persisted = persistedFromContract ?? await visibleRsvpState();
+    if (!detailPayload) {
+      console.log('    reload response body unavailable to Playwright; asserting the rendered RSVP state instead');
+    }
     console.log(`    RSVP survived a reload: ${persisted === target ? `YES — "${target}" persisted` : `NO — reads "${persisted ?? '(none)'}"`}`);
     if (persisted !== target) {
       throw new Error(`RSVP did not persist: selected "${target}", after a reload the event reads `
@@ -747,7 +816,18 @@ async function runArm(arm) {
     // Put it back, so a repeat run is not measuring what the last run left behind.
     if (before && before !== target && await opt(before).count()) {
       await opt(before).click({ timeout: 8000 }).catch(() => {});
-      await page.waitForTimeout(1500);
+      await rsvpPage.waitForTimeout(500);
+      const restoreConfirmation = rsvpPage.locator('[role="alertdialog"]:visible, [role="dialog"]:visible').last();
+      if (await restoreConfirmation.count()) {
+        await restoreConfirmation.getByRole('button')
+          .filter({ hasNotText: /cancel|close/i })
+          .last()
+          .click({ timeout: 8000 });
+      }
+      await rsvpPage.waitForTimeout(1500);
+    }
+    } finally {
+      if (rsvpContext) await rsvpContext.close();
     }
   });
 
@@ -1839,6 +1919,10 @@ const LARAVEL_ARM = {
   providerEmail: process.env.SMOKE_PROVIDER_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
   providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_LARAVEL || 'TestPassword123!',
   transferSearch: process.env.SMOKE_TRANSFER_SEARCH_LARAVEL || 'E2E UserB',
+  // User A owns the sole disposable-control event and correctly receives no RSVP
+  // actions on it. User B is the ordinary attendee fixture for this one journey.
+  rsvpActorEmail: process.env.SMOKE_RSVP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
+  rsvpActorPassword: process.env.SMOKE_RSVP_PASSWORD_LARAVEL || 'TestPassword123!',
 };
 
 async function main() {
