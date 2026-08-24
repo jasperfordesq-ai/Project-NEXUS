@@ -368,7 +368,17 @@
       "admin_rejected": "Declined",
       "cancelled": "Cancelled",
       "expired": "Expired"
-    }
+    },
+    "ask": "Proposer un échange",
+    "askLabel": "Proposer d’échanger votre créneau sur {{title}}",
+    "askTitle": "Échanger ce créneau",
+    "askBody": "Choisissez le créneau que vous préférez. Nous demanderons à la personne qui y est inscrite — vous ne verrez son nom que si elle accepte.",
+    "askEmpty": "Aucun autre créneau de cette mission n’a d’inscrit : il n’y a donc encore personne avec qui échanger.",
+    "askOptionLabel": "Proposer un échange pour le créneau du {{date}}",
+    "optionsError": "Impossible de charger les autres créneaux.",
+    "requestSentTitle": "Demande d’échange envoyée",
+    "requestSentBody": "Nous avons interrogé l’autre bénévole. Vous serez informé de sa réponse.",
+    "requestError": "Impossible d’envoyer cette demande d’échange."
   },
   "shiftCancelledTitle": "Créneau annulé",
   "shiftCancelledMessage": "Vous n'êtes plus inscrit à ce créneau.",

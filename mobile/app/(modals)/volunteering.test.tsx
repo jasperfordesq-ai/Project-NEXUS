@@ -9,12 +9,31 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 let mockParams: Record<string, string> = {};
+/*
+  The real sheet renders through heroui's portal, which react-test-renderer does not mount.
+  Same stand-in as chat/exchange-detail/group-detail use, so the sheet's CONTENTS are
+  assertable and `visible` is still honoured.
+*/
+jest.mock('@/components/ui/BottomSheet', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return ({ visible, children }: { visible: boolean; children?: React.ReactNode }) =>
+    visible ? <View>{children}</View> : null;
+});
+
+const mockGetOpportunityShifts = jest.fn();
+const mockRequestShiftSwap = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
+  // BottomSheet (used by the swap sheet) defers its own state on focus.
+  useFocusEffect: (callback: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => callback(), []);
+  },
 }));
 
 jest.mock('react-i18next', () => ({
@@ -124,6 +143,16 @@ jest.mock('react-i18next', () => ({
         'donations.submit': 'Submit donation',
         'donations.validation': 'Enter a valid donation amount.',
         'donations.submitError': 'Could not submit this donation.',
+        'swaps.ask': 'Ask to swap',
+        'swaps.askTitle': 'Ask to swap this shift',
+        'swaps.askBody': 'Pick the shift you would rather do.',
+        'swaps.askEmpty': 'There is nobody to swap with yet.',
+        'swaps.askLabel': 'Ask to swap',
+        'swaps.askOptionLabel': 'Ask to swap',
+        'swaps.optionsError': 'Could not load the other shifts.',
+        'swaps.requestSentTitle': 'Swap request sent',
+        'swaps.requestSentBody': 'We have asked the other volunteer.',
+        'swaps.requestError': 'Could not send that swap request.',
         'donations.submitSuccessTitle': 'Pledge recorded',
         'donations.submitSuccess': 'Your donation has been recorded and will count towards the campaign once it is confirmed.',
         'donations.emptyTitle': 'No donations yet',
@@ -238,6 +267,8 @@ jest.mock('@/lib/api/volunteering', () => ({
   getVolunteerGivingDays: jest.fn(),
   getVolunteerDonations: jest.fn(),
   submitVolunteerDonation: jest.fn().mockResolvedValue({ data: {} }),
+  getOpportunityShifts: (...args: unknown[]) => mockGetOpportunityShifts(...args),
+  requestShiftSwap: (...args: unknown[]) => mockRequestShiftSwap(...args),
   getShiftSwaps: jest.fn(),
   getOrganisation: jest.fn(),
   getOrganisationApplications: jest.fn(),
@@ -335,6 +366,114 @@ describe('VolunteeringScreen', () => {
         expect.objectContaining({ title: 'Pledge recorded', variant: 'success' }),
       ),
     );
+  });
+
+  /**
+   * 🔴 Asking for a swap existed NOWHERE on the platform before 2026-08-24 — not here, not
+   * on the website — because the endpoint demanded the id of the volunteer you wanted to
+   * swap with, and nothing tells a member who is on which shift. The server resolves that
+   * now, so these cases pin the member's half: pick a shift, never a person.
+   */
+  describe('asking to swap a shift', () => {
+    const shiftRow = {
+      id: 66,
+      application_id: 240,
+      opportunity_id: 128,
+      opportunity_title: 'Saturday garden session',
+      start_time: '2026-08-26T10:00:00Z',
+      end_time: '2026-08-26T12:00:00Z',
+      capacity: 1,
+      signup_count: 1,
+      spots_available: 0,
+      location: 'Riverside',
+    };
+
+    beforeEach(() => {
+      mockParams = { tab: 'shifts' };
+      mockGetOpportunityShifts.mockReset();
+      mockRequestShiftSwap.mockReset().mockResolvedValue({ data: { id: 9 } });
+      (useAppToast() as unknown as { show: jest.Mock }).show.mockClear();
+      mockUseApi.mockImplementation(() => ({
+        data: { data: { items: [shiftRow] } },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      }));
+    });
+
+    it('offers only future shifts that somebody is actually on', async () => {
+      mockGetOpportunityShifts.mockResolvedValue({
+        data: [
+          { id: 66, start_time: '2026-08-26T10:00:00Z', end_time: '2026-08-26T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 },
+          { id: 67, start_time: '2099-08-29T10:00:00Z', end_time: '2099-08-29T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 },
+          { id: 68, start_time: '2099-08-31T10:00:00Z', end_time: '2099-08-31T12:00:00Z', capacity: 1, signup_count: 0, spots_available: 1 },
+          { id: 69, start_time: '2000-01-01T10:00:00Z', end_time: '2000-01-01T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 },
+        ],
+      });
+
+      const { getByTestId, queryByTestId } = render(<VolunteeringScreen />);
+      fireEvent.press(getByTestId('shift-swap-ask-66'));
+
+      await waitFor(() => expect(getByTestId('shift-swap-option-67')).toBeTruthy());
+      // Not the member's own shift, not an empty shift (nobody to swap with), not the past.
+      expect(queryByTestId('shift-swap-option-66')).toBeNull();
+      expect(queryByTestId('shift-swap-option-68')).toBeNull();
+      expect(queryByTestId('shift-swap-option-69')).toBeNull();
+    });
+
+    it('asks by shift and never sends a member id', async () => {
+      mockGetOpportunityShifts.mockResolvedValue({
+        data: [{ id: 67, start_time: '2099-08-29T10:00:00Z', end_time: '2099-08-29T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 }],
+      });
+      const { show } = useAppToast() as unknown as { show: jest.Mock };
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      fireEvent.press(getByTestId('shift-swap-ask-66'));
+      await waitFor(() => expect(getByTestId('shift-swap-option-67')).toBeTruthy());
+      fireEvent.press(getByTestId('shift-swap-option-67'));
+
+      await waitFor(() => expect(mockRequestShiftSwap).toHaveBeenCalledWith({ from_shift_id: 66, to_shift_id: 67 }));
+      // 🔴 The load-bearing assertion: no counterpart id is sent, so the app never has to
+      // know — and never has to show — who is on the other shift.
+      expect(mockRequestShiftSwap.mock.calls[0][0]).not.toHaveProperty('to_user_id');
+      // A sent request is invisible until the other person answers, so it must be said.
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ title: 'Swap request sent', variant: 'success' }));
+    });
+
+    it('says so plainly when there is nobody to swap with', async () => {
+      mockGetOpportunityShifts.mockResolvedValue({
+        data: [{ id: 68, start_time: '2099-08-31T10:00:00Z', end_time: '2099-08-31T12:00:00Z', capacity: 2, signup_count: 0, spots_available: 2 }],
+      });
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      fireEvent.press(getByTestId('shift-swap-ask-66'));
+
+      await waitFor(() => expect(getByTestId('shift-swap-no-options')).toBeTruthy());
+    });
+
+    it('passes the server\'s own refusal on to the member', async () => {
+      mockGetOpportunityShifts.mockResolvedValue({
+        data: [{ id: 67, start_time: '2099-08-29T10:00:00Z', end_time: '2099-08-29T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 }],
+      });
+      // A real refusal, not a plain object: describeApiError deliberately trusts only
+      // ApiResponseError, so a hand-rolled shape would silently take the fallback path and
+      // this test would prove nothing.
+      const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+      mockRequestShiftSwap.mockRejectedValue(
+        new ApiResponseError(409, 'A swap request already exists for these shifts', undefined, 'ALREADY_EXISTS'),
+      );
+      const { show } = useAppToast() as unknown as { show: jest.Mock };
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      fireEvent.press(getByTestId('shift-swap-ask-66'));
+      await waitFor(() => expect(getByTestId('shift-swap-option-67')).toBeTruthy());
+      fireEvent.press(getByTestId('shift-swap-option-67'));
+
+      await waitFor(() => expect(show).toHaveBeenCalledWith(expect.objectContaining({
+        description: 'A swap request already exists for these shifts',
+        variant: 'danger',
+      })));
+    });
   });
 
   it('opens the tab a link asked for', () => {

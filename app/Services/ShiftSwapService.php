@@ -53,9 +53,37 @@ class ShiftSwapService
         $toUserId    = (int) ($data['to_user_id'] ?? 0);
         $message     = trim($data['message'] ?? '');
 
-        if (! $fromShiftId || ! $toShiftId || ! $toUserId) {
+        if (! $fromShiftId || ! $toShiftId) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.shift_swap_fields_required')];
             return null;
+        }
+
+        /*
+          🔴 `to_user_id` is now OPTIONAL, and this is why nothing could ever create a swap
+          request until 2026-08-24.
+
+          The endpoint required the requester to name the volunteer they were swapping with.
+          No client could: nothing on the platform tells a volunteer who is on which shift,
+          and exposing that is a privacy and safeguarding decision, not a screen. So the
+          response half worked, the request half existed only as a curl command, and the
+          website's own empty state promised members a page that was never built.
+
+          Resolving the counterpart HERE avoids the decision entirely. The member picks a
+          shift, not a person; the server finds who holds it and never tells them. What the
+          member can see is unchanged: `signup_count` per shift is already public on
+          `GET /v2/volunteering/opportunities/{id}/shifts`, so "someone is on that shift" is
+          information they already have. The identity stays server-side.
+
+          Deterministic when several volunteers hold the target shift: the earliest approved
+          signup that has no pending swap on that shift already, so two members asking about
+          the same shift do not both queue behind one person.
+        */
+        if (! $toUserId) {
+            $toUserId = self::resolveCounterpartForShift($toShiftId, $fromUserId, $tenantId);
+            if (! $toUserId) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.shift_swap_no_one_on_shift')];
+                return null;
+            }
         }
 
         if ($fromUserId === $toUserId) {
@@ -154,6 +182,49 @@ class ShiftSwapService
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.shift_swap_create_failed')];
             return null;
         }
+    }
+
+    /**
+     * Who holds `$toShiftId`, for a swap the requester asked for by shift rather than by
+     * person? Returns null when nobody does — the caller turns that into a member-facing
+     * message rather than a silent failure.
+     *
+     * Never returned to the client: only used to address the request. Ordering is
+     * deliberate — a volunteer with no pending swap on this shift comes first, so a second
+     * requester is not queued behind the same person, and `vol_applications.id` breaks the
+     * tie so the result is stable between calls.
+     */
+    private static function resolveCounterpartForShift(int $toShiftId, int $excludeUserId, int $tenantId): ?int
+    {
+        $candidates = DB::table('vol_applications')
+            ->where('shift_id', $toShiftId)
+            ->where('status', 'approved')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', '!=', $excludeUserId)
+            ->orderBy('id')
+            ->pluck('user_id')
+            ->all();
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        $busy = DB::table('vol_shift_swap_requests')
+            ->where('tenant_id', $tenantId)
+            ->where('to_shift_id', $toShiftId)
+            ->whereIn('status', ['pending', 'admin_pending'])
+            ->pluck('to_user_id')
+            ->all();
+
+        foreach ($candidates as $candidate) {
+            if (! in_array((int) $candidate, array_map('intval', $busy), true)) {
+                return (int) $candidate;
+            }
+        }
+
+        // Everyone on that shift already has a pending swap: fall back to the first, so the
+        // duplicate check below decides whether this particular pair is a repeat.
+        return (int) $candidates[0];
     }
 
     /**

@@ -368,7 +368,17 @@
       "admin_rejected": "Declined",
       "cancelled": "Cancelled",
       "expired": "Expired"
-    }
+    },
+    "ask": "Pedir troca",
+    "askLabel": "Pedir para trocar o seu turno em {{title}}",
+    "askTitle": "Trocar este turno",
+    "askBody": "Escolha o turno que preferia fazer. Vamos perguntar a quem está inscrito — só verá o nome dessa pessoa se ela aceitar.",
+    "askEmpty": "Nenhum outro turno desta oportunidade tem inscritos, por isso ainda não há com quem trocar.",
+    "askOptionLabel": "Pedir troca para o turno de {{date}}",
+    "optionsError": "Não foi possível carregar os outros turnos.",
+    "requestSentTitle": "Pedido de troca enviado",
+    "requestSentBody": "Perguntámos à outra pessoa. Será avisado quando responder.",
+    "requestError": "Não foi possível enviar esse pedido de troca."
   },
   "shiftCancelledTitle": "Turno cancelado",
   "shiftCancelledMessage": "Já não está inscrito neste turno.",

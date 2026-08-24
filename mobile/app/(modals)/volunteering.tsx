@@ -23,6 +23,8 @@ import { useTranslation } from 'react-i18next';
 import {
   cancelShiftSwap,
   cancelShiftSignup,
+  getOpportunityShifts,
+  requestShiftSwap,
   expressInterest,
   generateVolunteerCertificate,
   getHoursSummary,
@@ -55,6 +57,7 @@ import {
   type VolunteerGivingDaysResponse,
   type VolunteerHoursSummary,
   type VolunteerOpportunity,
+  type VolunteerShift,
   type VolunteerShiftRegistration,
   type VolunteerShiftSwap,
   type VolunteerShiftSwapsResponse,
@@ -73,6 +76,7 @@ import { API_BASE_URL } from '@/lib/constants';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
+import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -677,6 +681,66 @@ function ShiftsPanel({
   const { show: showToast } = useAppToast();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
 
+  /**
+   * 🔴 Asking for a swap did not exist anywhere on the platform until 2026-08-24 — not in
+   * this app, not on the website — because `POST /v2/volunteering/swaps` demanded the id of
+   * the volunteer you wanted to swap with, and nothing tells a member who is on which shift.
+   * The server now resolves that itself, so the member picks a SHIFT and never sees a name.
+   *
+   * The list below is the opportunity's own shift list, which already publishes a signup
+   * count per shift, so nothing new is exposed: only shifts in the future, other than this
+   * one, with at least one person on them — because there has to be somebody to swap with.
+   */
+  const [swapForShift, setSwapForShift] = useState<VolunteerShiftRegistration | null>(null);
+  const [swapOptions, setSwapOptions] = useState<VolunteerShift[] | null>(null);
+  const [swapOptionsError, setSwapOptionsError] = useState<string | null>(null);
+  const [sendingSwapFor, setSendingSwapFor] = useState<number | null>(null);
+
+  async function openSwapSheet(shift: VolunteerShiftRegistration) {
+    setSwapForShift(shift);
+    setSwapOptions(null);
+    setSwapOptionsError(null);
+    try {
+      const response = await getOpportunityShifts(shift.opportunity_id);
+      const now = Date.now();
+      const options = (response?.data ?? []).filter((candidate) => (
+        candidate.id !== shift.id
+        && (candidate.signup_count ?? 0) > 0
+        && new Date(candidate.start_time).getTime() > now
+      ));
+      setSwapOptions(options);
+    } catch (err) {
+      setSwapOptionsError(describeApiError(err, t('swaps.optionsError')));
+      setSwapOptions([]);
+    }
+  }
+
+  async function handleRequestSwap(target: VolunteerShift) {
+    if (!swapForShift) return;
+    setSendingSwapFor(target.id);
+    try {
+      await requestShiftSwap({ from_shift_id: swapForShift.id, to_shift_id: target.id });
+      setSwapForShift(null);
+      onRefresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // A swap request is invisible until the other person answers, so say it was sent.
+      showToast({
+        title: t('swaps.requestSentTitle'),
+        description: t('swaps.requestSentBody'),
+        variant: 'success',
+      });
+    } catch (err) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('swaps.requestError')),
+        variant: 'danger',
+      });
+    } finally {
+      setSendingSwapFor(null);
+    }
+  }
+
   async function handleCancel(id: number) {
     setCancellingId(id);
     try {
@@ -754,10 +818,64 @@ function ShiftsPanel({
                   {cancellingId === shift.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>}
                 </HeroButton>
               </View>
+
+              <HeroButton
+                size="sm"
+                variant="tertiary"
+                onPress={() => void openSwapSheet(shift)}
+                accessibilityLabel={t('swaps.askLabel', { title: shift.opportunity_title })}
+                testID={`shift-swap-ask-${shift.id}`}
+              >
+                <Ionicons name="swap-horizontal-outline" size={16} color={primary} />
+                <HeroButton.Label>{t('swaps.ask')}</HeroButton.Label>
+              </HeroButton>
             </HeroCard.Body>
           </HeroCard>
         );
       })}
+
+      <BottomSheet visible={swapForShift !== null} onClose={() => setSwapForShift(null)}>
+        <View className="gap-3 p-4">
+          <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('swaps.askTitle')}</Text>
+          <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('swaps.askBody')}</Text>
+
+          {swapOptions === null ? (
+            <LoadingSpinner />
+          ) : swapOptionsError ? (
+            <Text className="text-sm" style={{ color: theme.error }}>{swapOptionsError}</Text>
+          ) : swapOptions.length === 0 ? (
+            <Text className="text-sm" style={{ color: theme.textSecondary }} testID="shift-swap-no-options">
+              {t('swaps.askEmpty')}
+            </Text>
+          ) : (
+            swapOptions.map((option) => {
+              const optionDate = formatDate(option.start_time);
+              const optionStart = formatTime(option.start_time);
+              const optionEnd = formatTime(option.end_time);
+              return (
+                <HeroButton
+                  key={option.id}
+                  variant="secondary"
+                  isDisabled={sendingSwapFor !== null}
+                  onPress={() => void handleRequestSwap(option)}
+                  testID={`shift-swap-option-${option.id}`}
+                  accessibilityLabel={t('swaps.askOptionLabel', { date: optionDate ?? '' })}
+                >
+                  {sendingSwapFor === option.id ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <HeroButton.Label>
+                      {optionStart && optionEnd
+                        ? `${optionDate ?? ''} · ${optionStart}–${optionEnd}`
+                        : optionDate ?? ''}
+                    </HeroButton.Label>
+                  )}
+                </HeroButton>
+              );
+            })
+          )}
+        </View>
+      </BottomSheet>
     </View>
   );
 }

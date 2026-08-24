@@ -368,7 +368,17 @@
       "admin_rejected": "Diúltaithe ag riarthóir",
       "cancelled": "Cealaithe",
       "expired": "Imithe in éag"
-    }
+    },
+    "ask": "Iarr babhtáil",
+    "askLabel": "Iarr do sheal ar {{title}} a bhabhtáil",
+    "askTitle": "Iarr an seal seo a bhabhtáil",
+    "askBody": "Roghnaigh an seal ba mhaith leat a dhéanamh. Fiafróimid den duine atá air — ní fheicfidh tú a ainm mura n-aontaíonn sé.",
+    "askEmpty": "Níl aon seal eile ar an deis seo ina bhfuil duine, mar sin níl aon duine le babhtáil leis go fóill.",
+    "askOptionLabel": "Iarr babhtáil don seal ar {{date}}",
+    "optionsError": "Níorbh fhéidir na sealanna eile a lódáil.",
+    "requestSentTitle": "Iarratas babhtála seolta",
+    "requestSentBody": "D'iarr muid ar an oibrí deonach eile. Cuirfear in iúl duit nuair a fhreagraíonn sé.",
+    "requestError": "Níorbh fhéidir an iarratas babhtála sin a sheoladh."
   },
   "shiftCancelledTitle": "Seal curtha ar ceal",
   "shiftCancelledMessage": "Níl tú cláraithe don seal seo a thuilleadh.",

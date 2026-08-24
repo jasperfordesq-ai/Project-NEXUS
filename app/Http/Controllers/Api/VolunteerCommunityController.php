@@ -172,6 +172,8 @@ class VolunteerCommunityController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_swap_request', 10, 60);
 
+        // `to_user_id` is optional: a member asks for a SHIFT, and the service resolves who
+        // holds it without ever telling them. See ShiftSwapService::requestSwap().
         $data = [
             'from_shift_id' => $this->inputInt('from_shift_id'),
             'to_shift_id'   => $this->inputInt('to_shift_id'),

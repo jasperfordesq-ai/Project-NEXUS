@@ -595,6 +595,28 @@ export function getShiftSwaps(direction: 'all' | 'sent' | 'received' = 'all'): P
   });
 }
 
+/** GET the shifts of one opportunity — capacity and signup counts included, no names. */
+export function getOpportunityShifts(opportunityId: number): Promise<{ data: VolunteerShift[] }> {
+  return api.get<{ data: VolunteerShift[] }>(`${API_V2}/volunteering/opportunities/${opportunityId}/shifts`);
+}
+
+/**
+ * Ask to swap one of your shifts for another on the same opportunity.
+ *
+ * 🔴 Deliberately sends NO `to_user_id`. The endpoint used to require it, which is why
+ * nothing on the platform could ever create a swap request: a volunteer is not told who
+ * holds which shift, and showing them would be a privacy and safeguarding decision. The
+ * server resolves the counterpart from the shift and never names them. What the member sees
+ * — how many people are signed up per shift — is already public on the shift list.
+ */
+export function requestShiftSwap(payload: {
+  from_shift_id: number;
+  to_shift_id: number;
+  message?: string;
+}): Promise<{ data: { id: number; message?: string } }> {
+  return api.post<{ data: { id: number; message?: string } }>(`${API_V2}/volunteering/swaps`, payload);
+}
+
 export function respondToShiftSwap(id: number, action: 'accept' | 'reject'): Promise<{ data: unknown }> {
   return api.put<{ data: unknown }>(`${API_V2}/volunteering/swaps/${id}`, { action });
 }

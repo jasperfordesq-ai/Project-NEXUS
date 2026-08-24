@@ -368,7 +368,17 @@
       "admin_rejected": "Declined",
       "cancelled": "Cancelled",
       "expired": "Expired"
-    }
+    },
+    "ask": "Ask to swap",
+    "askLabel": "Ask to swap your shift on {{title}}",
+    "askTitle": "Ask to swap this shift",
+    "askBody": "Pick the shift you would rather do. We will ask whoever is on it — you will not see their name unless they agree.",
+    "askEmpty": "There is no other shift on this opportunity with someone on it, so there is nobody to swap with yet.",
+    "askOptionLabel": "Ask to swap for the shift on {{date}}",
+    "optionsError": "Could not load the other shifts.",
+    "requestSentTitle": "Swap request sent",
+    "requestSentBody": "We have asked the other volunteer. You will be told when they answer.",
+    "requestError": "Could not send that swap request."
   },
   "shiftCancelledTitle": "Shift cancelled",
   "shiftCancelledMessage": "You are no longer signed up for this shift.",

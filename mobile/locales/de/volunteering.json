@@ -368,7 +368,17 @@
       "admin_rejected": "Declined",
       "cancelled": "Cancelled",
       "expired": "Expired"
-    }
+    },
+    "ask": "Tausch anfragen",
+    "askLabel": "Ihre Schicht bei {{title}} zum Tausch anbieten",
+    "askTitle": "Diese Schicht tauschen",
+    "askBody": "Wählen Sie die Schicht, die Sie lieber übernehmen würden. Wir fragen die Person, die darauf eingetragen ist — deren Namen sehen Sie nur, wenn sie zustimmt.",
+    "askEmpty": "Bei dieser Gelegenheit ist auf keiner anderen Schicht jemand eingetragen, es gibt also noch niemanden zum Tauschen.",
+    "askOptionLabel": "Tausch für die Schicht am {{date}} anfragen",
+    "optionsError": "Die anderen Schichten konnten nicht geladen werden.",
+    "requestSentTitle": "Tauschanfrage gesendet",
+    "requestSentBody": "Wir haben die andere Person gefragt. Sie erfahren es, sobald sie antwortet.",
+    "requestError": "Diese Tauschanfrage konnte nicht gesendet werden."
   },
   "shiftCancelledTitle": "Schicht abgesagt",
   "shiftCancelledMessage": "Du bist für diese Schicht nicht mehr angemeldet.",

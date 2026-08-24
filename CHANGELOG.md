@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Volunteers can now ask to swap a shift — which was impossible anywhere on the
+  platform until today.** Answering a swap request worked; asking for one did not
+  exist, on the app or the website, and the website's own help text pointed at a
+  page that had never been built. The obstacle was that the request had to name the
+  volunteer you wanted to swap with, and nothing tells you who is on which shift —
+  showing that is a privacy decision nobody had taken.
+  It turns out the decision wasn't needed. On the app you now pick the **shift**
+  you'd rather do, and the platform asks whoever is on it without telling you who
+  they are: "We will ask whoever is on it — you will not see their name unless they
+  agree." Nothing new is revealed, because the number of people signed up per shift
+  has always been shown. If several people are on the shift you want, it asks the
+  one who hasn't already been asked, so two people aren't left queuing behind the
+  same volunteer.
+  Walked end to end on a device: asked for a swap, the other volunteer was
+  notified, they accepted, and both shifts genuinely changed hands. The website
+  still has no equivalent screen.
+
 - **On the mobile app, "No matches yet" was hiding the real reason, which was
   usually fixable in ten seconds.** The server already explains an empty match
   list — no area on your profile, matching switched off, or nothing posted yet —

@@ -368,7 +368,17 @@
       "admin_rejected": "Declined",
       "cancelled": "Cancelled",
       "expired": "Expired"
-    }
+    },
+    "ask": "Proponi uno scambio",
+    "askLabel": "Proponi di scambiare il tuo turno su {{title}}",
+    "askTitle": "Scambia questo turno",
+    "askBody": "Scegli il turno che preferiresti fare. Lo chiederemo a chi è iscritto — vedrai il suo nome solo se accetta.",
+    "askEmpty": "Nessun altro turno di questa opportunità ha iscritti, quindi non c’è ancora nessuno con cui scambiare.",
+    "askOptionLabel": "Proponi uno scambio per il turno del {{date}}",
+    "optionsError": "Non è stato possibile caricare gli altri turni.",
+    "requestSentTitle": "Richiesta di scambio inviata",
+    "requestSentBody": "Abbiamo chiesto all’altro volontario. Ti avviseremo quando risponde.",
+    "requestError": "Non è stato possibile inviare la richiesta di scambio."
   },
   "shiftCancelledTitle": "Turno annullato",
   "shiftCancelledMessage": "Non sei più iscritto a questo turno.",
