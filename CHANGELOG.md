@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ASP.NET listing-creation certification now proves the persisted result.**
+  The paired React smoke reloads each newly created listing and requires the
+  submitted title on both ASP.NET and the Laravel control, so a redirect or
+  invented success response can no longer pass journey 1.19.
+
 - **Five things the app was saying to blind members that it shouldn't have been.**
   Found by turning on Android's screen reader and reading back everything the app
   announces, then comparing it with what a person would expect to hear. None of it

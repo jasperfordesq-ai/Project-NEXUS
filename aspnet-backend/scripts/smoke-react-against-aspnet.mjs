@@ -420,6 +420,7 @@ async function runArm(arm) {
   // through the browser against ASP.NET — only through the write harness, which speaks
   // HTTP directly and bypasses the app's own forms, CSRF handling and error surfacing.
   await step('action-create-listing', async () => {
+    const createdTitle = `Smoke listing ${stamp}`;
     // 🔴 `/listings/create`, not `/listings/new`. The wrong guess is not a harmless typo:
     // `listings/new` matches the `listings/:id` route, so the app requests
     // /api/v2/listings/new, gets a 404, and the step reports "form not reachable" — which
@@ -437,7 +438,7 @@ async function runArm(arm) {
     // the form was there, with a visible "Create Listing" submit. Target by LABEL.
     const title = page.getByLabel(/title/i).first();
     if (!(await title.count())) skip('no title field — selector needs updating, NOT a backend result');
-    await title.fill(`Smoke listing ${stamp}`, { timeout: 10000 });
+    await title.fill(createdTitle, { timeout: 10000 });
     const desc = page.getByLabel(/description/i).first();
     if (await desc.count()) await desc.fill('Created by the runtime smoke to exercise a member action end to end.');
     // 🔴 A category is REQUIRED (listing.require_category defaults on), so the submit stays
@@ -463,7 +464,10 @@ async function runArm(arm) {
     const listingMatch = after.match(/^\/listings\/(\d+)(?:[/?#]|$)/);
     if (!listingMatch) throw new Error(`create did not land on a listing detail route (${after})`);
     createdListingId = Number(listingMatch[1]);
-    console.log('    navigated away — create appears to have succeeded');
+    await page.getByRole('heading', { name: createdTitle }).waitFor({ state: 'visible', timeout: 15000 });
+    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByRole('heading', { name: createdTitle }).waitFor({ state: 'visible', timeout: 15000 });
+    console.log(`    listing ${createdListingId} survived reload with the submitted title`);
   });
 
   await step('action-edit-delete-listing', async () => {
