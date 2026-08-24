@@ -529,6 +529,8 @@ return [
         'content_type_embed' => 'Treść interaktywna',
         'body_label' => 'Treść lekcji',
         'body_hint' => 'Tekst, który uczniowie czytają, lub notatki na temat filmu lub dokumentu.',
+        'transcript_label' => 'Transkrypcja',
+        'transcript_hint' => 'Zapis tego, co zostało powiedziane w filmie. Osoby, które nie mogą go usłyszeć ani zobaczyć, polegają na nim.',
         'media_url_label' => 'Link do multimediów',
         'media_url_hint' => 'Adres internetowy filmu, dokumentu lub treści interaktywnej.',
         'add_lesson_button' => 'Dodaj lekcję',

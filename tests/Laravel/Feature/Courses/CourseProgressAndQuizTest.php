@@ -223,6 +223,39 @@ class CourseProgressAndQuizTest extends TestCase
         $this->assertNull($lesson->section_id);
     }
 
+    /**
+     * A video lesson had no text alternative and nowhere in the schema to put
+     * one, which is a WCAG 1.2 failure. The transcript must survive a create, an
+     * update, and a read — a field that is accepted but silently dropped is
+     * worse than no field, because the instructor believes they provided one.
+     */
+    public function test_lesson_transcript_round_trips_through_create_update_and_read(): void
+    {
+        $course = $this->makeCourseWithLessons(0);
+
+        $lesson = CourseLessonService::create($course->id, [
+            'title' => 'Welcome video',
+            'content_type' => 'video',
+            'video_url' => 'https://example.org/welcome.mp4',
+            'transcript' => "Hello and welcome.\nThis is the second line.",
+        ]);
+
+        $this->assertSame("Hello and welcome.\nThis is the second line.", $lesson->transcript);
+        // Read it back from the database, not from the in-memory model.
+        $this->assertSame(
+            "Hello and welcome.\nThis is the second line.",
+            CourseLesson::find($lesson->id)->transcript
+        );
+
+        $updated = CourseLessonService::update($lesson->id, ['transcript' => 'Corrected transcript.']);
+        $this->assertSame('Corrected transcript.', $updated->transcript);
+        $this->assertSame('Corrected transcript.', CourseLesson::find($lesson->id)->transcript);
+
+        // Omitting the field must leave it alone rather than blanking it.
+        CourseLessonService::update($lesson->id, ['title' => 'Renamed']);
+        $this->assertSame('Corrected transcript.', CourseLesson::find($lesson->id)->transcript);
+    }
+
     public function test_course_publish_honours_moderation_setting(): void
     {
         $this->setCourseModeration(true);

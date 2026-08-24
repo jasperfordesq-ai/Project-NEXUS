@@ -53,7 +53,8 @@
     "take_quiz": "Machen Sie ein Quiz",
     "back_to_course": "Zurück zum Kurs",
     "locked": "Diese Lektion ist noch nicht verfügbar.",
-    "locked_until": "Verfügbar von {{date}}"
+    "locked_until": "Verfügbar von {{date}}",
+    "transcript": "Transkript"
   },
   "quiz": {
     "title": "Quiz",
@@ -246,7 +247,9 @@
     "published_toast": "Kurs veröffentlicht – er ist jetzt für Mitglieder sichtbar.",
     "unpublished_toast": "Kurs unveröffentlicht – zurück zum Entwurf.",
     "publish_hint": "Ihr Kurs ist ein Entwurf. Veröffentlichen Sie es, um es für Mitglieder sichtbar zu machen und für die Anmeldung freizugeben.",
-    "url_placeholder": "Beispiel: https://example.com/file"
+    "url_placeholder": "Beispiel: https://example.com/file",
+    "transcript": "Transkript",
+    "transcript_hint": "Eine schriftliche Fassung des Gesagten. Lernende, die das Video nicht hören oder sehen können, sind darauf angewiesen."
   },
   "lesson_content": {
     "text": "Text",

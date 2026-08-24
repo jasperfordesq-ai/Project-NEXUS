@@ -35,6 +35,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A course video lesson can now carry a transcript, so someone who cannot hear
+  or watch it is not simply shut out.** Found by the accessible-frontend audit
+  (2026-08-23): a video lesson offered no text alternative at all, which is a
+  WCAG 1.2 failure, and there was nowhere in the schema to put one. Instructors
+  now get a Transcript box on video and embedded lessons in both the React
+  builder and the accessible frontend, and learners get it under the player —
+  in a disclosure, so a long transcript does not bury the rest of the lesson.
+  A new `course_lessons.transcript` column carries it, following the existing
+  `podcast_episodes.transcript` and `messages.transcript` precedents. Pinned by
+  a round-trip test through create, update and read (a field that is accepted
+  and silently dropped is worse than no field, because the instructor believes
+  they provided one), and a render test proving markup inside a transcript is
+  shown as text rather than executed.
+  🔴 Deliberately NOT included: `transcript_language`, which both precedents
+  have. Theirs supports automatic transcription, which detects a language; this
+  one is typed by the instructor in the lesson's own language, so the column
+  would have no consumer.
+  🔴 This is a transcript, **not captions**. Real captions need a subtitle file
+  displayed over the video as it plays, which needs an upload and storage path
+  the schema still has no room for. The React player also stopped emitting an
+  empty `<track kind="captions">`, which declared a caption file that does not
+  exist — worse than declaring none.
 - **The ASP.NET edition's wallet-transfer journey is now certified and banked.** The unchanged React application selected a real recipient and transferred one credit against both backends in the same controlled run. ASP.NET moved the sender and recipient by exactly `-1/+1`, persisted the transaction in wallet history, traversed no known do-nothing endpoint, and the same checks passed against Laravel. Green CI at the exact evidence SHA raises the fixed R5 floor from 309 to 310 and the certified count from 11 to 12 of 250.
 
 - **You can now write a post to your community from your phone.** Until today the app could read every post a community wrote and never add one — there was no composer, no way in, and nothing in the app that called the server, even though the server has accepted posts all along and the website has had a composer for a long time. There is now a "What's on your mind?" row at the top of your feed, and a matching entry in the Create menu. Write, press Post, and the post opens so you can see it; go back and it is at the top of your feed. Two deliberate limits: no photo and no poll yet — those are separate jobs on the server side and each deserves its own proper test rather than being bolted on. Communities that have switched their feed off do not see any of it.
@@ -157,6 +179,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   worker, a test run, Octane — reported every later refusal with the first
   one's reason, so a member who did not exist could be reported as having an
   incomplete profile.
+
+- **ASP.NET RSVP certification now uses a real Laravel attendee control.** The
+  controlled React smoke signs the disposable fixture's second member into the
+  event owned by its first member, asserts the saved relationship after reload,
+  understands the confirmed-status chip, and restores the starting RSVP state.
 
 - **ASP.NET event RSVPs now survive the page reload.** The self-service action
   returns the canonical relationship, metrics and RSVP counts that the unchanged

@@ -1,0 +1,23 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The text alternative for a video or embedded lesson (WCAG 1.2). There is no
+  captions file in the schema, so an instructor-written transcript is what a
+  learner who cannot hear or watch the media has.
+
+  In a details disclosure, matching the podcast episode page, so a long
+  transcript does not push the rest of the lesson off the screen. nl2br escapes
+  first and then adds the line breaks, so a transcript containing markup is
+  shown as text rather than rendered.
+#}
+{% if currentLesson.transcript %}
+  <details class="govuk-details" data-module="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.builder.transcript_label") }}</span>
+    </summary>
+    <div class="govuk-details__text">{{ currentLesson.transcript | nl2br | safe }}</div>
+  </details>
+{% endif %}

@@ -224,6 +224,7 @@ function LessonRow({ courseId, lesson, isFirst, isLast, onChange, onDelete, onMo
       title: draft.title,
       content_type: draft.content_type,
       body: draft.body,
+      transcript: draft.transcript,
       video_url: draft.video_url,
       embed_url: draft.embed_url,
       attachment_url: draft.attachment_url,
@@ -321,6 +322,15 @@ function LessonRow({ courseId, lesson, isFirst, isLast, onChange, onDelete, onMo
           ) : null}
           {draft.content_type === 'video' ? (
             <Input size="sm" label={t('builder.video_url')} placeholder={t('builder.url_placeholder')} value={draft.video_url ?? ''} onValueChange={(v) => set({ video_url: v })} />
+          ) : null}
+          {draft.content_type === 'video' || draft.content_type === 'embed' ? (
+            <Textarea
+              label={t('builder.transcript')}
+              description={t('builder.transcript_hint')}
+              value={draft.transcript ?? ''}
+              onValueChange={(v) => set({ transcript: v })}
+              rows={6}
+            />
           ) : null}
           {draft.content_type === 'embed' ? (
             <Input size="sm" label={t('builder.embed_url')} placeholder={t('builder.url_placeholder')} value={draft.embed_url ?? ''} onValueChange={(v) => set({ embed_url: v })} />

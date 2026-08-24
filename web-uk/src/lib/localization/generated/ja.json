@@ -6605,6 +6605,8 @@
                 "content_type_embed": "インタラクティブなコンテンツ",
                 "body_label": "レッスン内容",
                 "body_hint": "学習者はテキストを読んだり、ビデオやドキュメントに関するメモを読んだりします。",
+                "transcript_label": "書き起こし",
+                "transcript_hint": "動画で話されている内容を文字にしたものです。動画を聞いたり見たりできない受講者はこれを頼りにします。",
                 "media_url_label": "メディアリンク",
                 "media_url_hint": "ビデオ、ドキュメント、またはインタラクティブ コンテンツの Web アドレス。",
                 "add_lesson_button": "レッスンを追加",

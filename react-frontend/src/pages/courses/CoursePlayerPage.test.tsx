@@ -287,4 +287,47 @@ describe('CoursePlayerPage', () => {
     // If locked there should be no mark-complete button for lesson 1
     expect(markBtn).toBeUndefined();
   });
+/**
+   * A video lesson had no text alternative and nowhere to store one (WCAG 1.2).
+   * There is still no captions file in the schema, so the instructor's
+   * transcript is what a learner who cannot hear or watch the video has.
+   */
+  it('offers the transcript of a video lesson, and nothing when there is none', async () => {
+    const videoLesson = {
+      ...lesson1,
+      content_type: 'video' as const,
+      video_url: 'https://example.org/intro.mp4',
+      transcript: 'Hello and welcome to the course.',
+    };
+    mockCoursesApi.show.mockResolvedValue({
+      success: true,
+      data: {
+        ...mockCourse,
+        sections: [{ id: 1, course_id: 42, title: 'Section One', position: 1, lessons: [videoLesson] }],
+      },
+    });
+
+    render(<CoursePlayerPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Hello and welcome to the course.')).toBeInTheDocument();
+    });
+
+    // A video lesson without a transcript must not render an empty disclosure.
+    mockCoursesApi.show.mockResolvedValue({
+      success: true,
+      data: {
+        ...mockCourse,
+        sections: [{
+          id: 1, course_id: 42, title: 'Section One', position: 1,
+          lessons: [{ ...videoLesson, transcript: null }],
+        }],
+      },
+    });
+    const { container } = render(<CoursePlayerPage />);
+    await waitFor(() => {
+      expect(container.querySelector('video')).toBeTruthy();
+    });
+    expect(container.querySelector('details')).toBeNull();
+  });
 });

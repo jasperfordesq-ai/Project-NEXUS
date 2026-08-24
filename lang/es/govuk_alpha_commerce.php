@@ -529,6 +529,8 @@ return [
         'content_type_embed' => 'Contenido interactivo',
         'body_label' => 'Contenido de la lección',
         'body_hint' => 'El texto que leen los alumnos o notas sobre el vídeo o documento.',
+        'transcript_label' => 'Transcripción',
+        'transcript_hint' => 'Una versión escrita de lo que se dice en el vídeo. Las personas que no pueden oírlo ni verlo dependen de esto.',
         'media_url_label' => 'Enlace de medios',
         'media_url_hint' => 'La dirección web del vídeo, documento o contenido interactivo.',
         'add_lesson_button' => 'Agregar lección',

@@ -551,6 +551,10 @@ return [
         'content_type_embed' => 'Interactive content',
         'body_label' => 'Lesson content',
         'body_hint' => 'The text learners read, or notes about the video or document.',
+
+        'transcript_label' => 'Transcript',
+
+        'transcript_hint' => 'A written version of what is said in the video. Learners who cannot hear or watch it rely on this.',
         'media_url_label' => 'Media link',
         'media_url_hint' => 'The web address of the video, document or interactive content.',
         'add_lesson_button' => 'Add lesson',

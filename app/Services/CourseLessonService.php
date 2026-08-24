@@ -19,7 +19,7 @@ class CourseLessonService
     private const DRIP_TYPES = ['none', 'days_after_enroll', 'fixed_date'];
 
     private const FIELDS = [
-        'section_id', 'title', 'content_type', 'body', 'video_url',
+        'section_id', 'title', 'content_type', 'body', 'transcript', 'video_url',
         'attachment_url', 'embed_url', 'position', 'min_watch_percent',
         'drip_type', 'drip_offset_days', 'drip_date', 'is_preview',
     ];

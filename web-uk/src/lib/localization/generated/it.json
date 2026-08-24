@@ -6605,6 +6605,8 @@
                 "content_type_embed": "Contenuti interattivi",
                 "body_label": "Contenuto della lezione",
                 "body_hint": "Il testo letto dagli studenti o le note sul video o sul documento.",
+                "transcript_label": "Trascrizione",
+                "transcript_hint": "Una versione scritta di ciò che viene detto nel video. Gli studenti che non possono sentirlo o vederlo ne hanno bisogno.",
                 "media_url_label": "Collegamento multimediale",
                 "media_url_hint": "L'indirizzo web del video, documento o contenuto interattivo.",
                 "add_lesson_button": "Aggiungi lezione",

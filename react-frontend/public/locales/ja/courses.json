@@ -53,7 +53,8 @@
     "take_quiz": "クイズに挑戦する",
     "back_to_course": "コースに戻る",
     "locked": "このレッスンはまだ利用できません。",
-    "locked_until": "{{date}} から利用可能"
+    "locked_until": "{{date}} から利用可能",
+    "transcript": "書き起こし"
   },
   "quiz": {
     "title": "クイズ",
@@ -246,7 +247,9 @@
     "published_toast": "コースが公開されました - メンバーが閲覧できるようになりました。",
     "unpublished_toast": "コースは未公開 — ドラフトに戻ります。",
     "publish_hint": "あなたのコースはドラフトです。公開するとメンバーが閲覧できるようになり、登録が可能になります。",
-    "url_placeholder": "例: https://example.com/file"
+    "url_placeholder": "例: https://example.com/file",
+    "transcript": "書き起こし",
+    "transcript_hint": "話されている内容を文字にしたものです。動画を聞いたり見たりできない受講者はこれを頼りにします。"
   },
   "lesson_content": {
     "text": "文章",

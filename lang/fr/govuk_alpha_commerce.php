@@ -529,6 +529,8 @@ return [
         'content_type_embed' => 'Contenu interactif',
         'body_label' => 'Contenu de la leçon',
         'body_hint' => 'Les apprenants lisent du texte ou prennent des notes sur la vidéo ou le document.',
+        'transcript_label' => 'Transcription',
+        'transcript_hint' => 'Une version écrite de ce qui est dit dans la vidéo. Les apprenants qui ne peuvent pas l\'entendre ou la voir en dépendent.',
         'media_url_label' => 'Lien média',
         'media_url_hint' => 'L\'adresse Web de la vidéo, du document ou du contenu interactif.',
         'add_lesson_button' => 'Ajouter une leçon',

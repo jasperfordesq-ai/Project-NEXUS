@@ -36,6 +36,8 @@ export interface CourseLesson {
   title: string;
   content_type: LessonContentType;
   body?: string | null;
+  /** Text alternative for a video or embedded lesson (WCAG 1.2). Plain text. */
+  transcript?: string | null;
   video_url?: string | null;
   attachment_url?: string | null;
   embed_url?: string | null;

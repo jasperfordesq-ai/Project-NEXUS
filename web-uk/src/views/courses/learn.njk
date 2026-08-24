@@ -83,16 +83,17 @@
           {# The player had no accessible name at all. The lesson title is the
              name a screen reader needs; the element itself supplies the role.
              🔴 There is still no captions track: `course_lessons` has no
-             caption/subtitle column, so nothing can be wired here without a
-             backend change. The `body` field below IS rendered for video
-             lessons, so a transcript there is the available text alternative. #}
+             caption/subtitle column, so no captions file can be wired here. The
+             instructor's transcript below is the text alternative. #}
           <video class="nexus-alpha-detail-hero" controls preload="metadata" width="100%" aria-label="{{ currentLesson.title }}">
             <source src="{{ currentLesson.videoUrl }}">
             {{ t("govuk_alpha_courses.video_unsupported") }}
           </video>
           <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.videoUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_courses.open_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+          {% include "courses/_lesson-transcript.njk" %}
         {% elif currentLesson.contentType == 'embed' and currentLesson.embedUrl %}
           <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.embedUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_courses.open_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+          {% include "courses/_lesson-transcript.njk" %}
         {% endif %}
 
         {% if currentLesson.body %}

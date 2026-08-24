@@ -25,6 +25,7 @@ class CourseLesson extends Model
         'title',
         'content_type',
         'body',
+        'transcript',
         'video_url',
         'attachment_url',
         'embed_url',

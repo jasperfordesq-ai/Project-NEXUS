@@ -59,7 +59,8 @@
     "take_quiz": "Tóg tráth na gceist",
     "back_to_course": "Ar ais go cúrsa",
     "locked": "Níl an ceacht seo ar fáil go fóill.",
-    "locked_until": "Ar fáil ó {{date}}"
+    "locked_until": "Ar fáil ó {{date}}",
+    "transcript": "Tras-scríbhinn"
   },
   "quiz": {
     "title": "Tráth na gCeist",
@@ -258,7 +259,9 @@
     "published_toast": "Cúrsa foilsithe — tá sé le feiceáil anois ag baill.",
     "unpublished_toast": "Cúrsa neamhfhoilsithe — ar ais go dréacht.",
     "publish_hint": "Is dréacht é do chúrsa. Foilsigh é le go mbeidh sé infheicthe ag baill agus oscailte le haghaidh clárúcháin.",
-    "url_placeholder": "Sampla: https://example.com/file"
+    "url_placeholder": "Sampla: https://example.com/file",
+    "transcript": "Tras-scríbhinn",
+    "transcript_hint": "Leagan scríofa de na rudaí a deirtear. Bíonn foghlaimeoirí nach féidir leo an físeán a chloisteáil nó a fheiceáil ag brath air seo."
   },
   "lesson_content": {
     "text": "Téacs",

@@ -32898,7 +32898,8 @@ describe('shared accessible frontend shell', () => {
       section_id: '5',
       content_type: 'video',
       body: ' Watch this first ',
-      media_url: ' https://video.test/intro '
+      media_url: ' https://video.test/intro ',
+      transcript: ' Hello and welcome. '
     });
     expect(lessonResponse.headers.location).toBe('/courses/instructor/42/edit?status=lesson-added');
     expect(api.callCourseApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/lessons', {
@@ -32906,7 +32907,9 @@ describe('shared accessible frontend shell', () => {
       content_type: 'video',
       body: 'Watch this first',
       section_id: 5,
-      video_url: 'https://video.test/intro'
+      video_url: 'https://video.test/intro',
+      // The text alternative a learner who cannot hear or watch the video needs.
+      transcript: 'Hello and welcome.'
     });
 
     const lessonUpdateResponse = await post('/courses/instructor/42/lessons/7/update', {
@@ -32914,9 +32917,12 @@ describe('shared accessible frontend shell', () => {
       section_id: '',
       content_type: 'pdf',
       body: ' Read this ',
-      media_url: ' https://docs.test/guide.pdf '
+      media_url: ' https://docs.test/guide.pdf ',
+      transcript: ' Ignored on a document lesson '
     });
     expect(lessonUpdateResponse.headers.location).toBe('/courses/instructor/42/edit?status=lesson-saved');
+    // A transcript is only sent for video and embed: storing one against a
+    // document or a text lesson would be a transcript of nothing.
     expect(api.callCourseApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/42/lessons/7', {
       title: 'Updated lesson',
       content_type: 'pdf',

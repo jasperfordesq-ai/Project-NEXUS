@@ -391,6 +391,10 @@ function normalizeLesson(lesson, progress = { completed: new Set(), available: n
     contentType,
     contentTypeLabel: enumLabel(LESSON_CONTENT_TYPE_LABEL_KEYS, contentType),
     body: sanitizeCmsHtml(lesson.body),
+    // Plain text, NOT sanitizeCmsHtml: a transcript is typed prose, so it is
+    // escaped and line-broken at render (the podcast episode precedent) rather
+    // than treated as authored HTML.
+    transcript: trimmed(lesson.transcript),
     videoUrl: trimmed(lesson.video_url),
     embedUrl: trimmed(lesson.embed_url),
     attachmentUrl: trimmed(lesson.attachment_url),
@@ -1048,6 +1052,12 @@ function lessonPayload(body) {
     payload.attachment_url = mediaUrl;
   } else if (contentType === 'embed') {
     payload.embed_url = mediaUrl;
+  }
+
+  // Only meaningful for media a learner cannot read: sending it on a text
+  // lesson would store a transcript of nothing.
+  if (contentType === 'video' || contentType === 'embed') {
+    payload.transcript = trimmed(body.transcript, 100000);
   }
 
   return payload;

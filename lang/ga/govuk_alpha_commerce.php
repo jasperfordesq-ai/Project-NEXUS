@@ -532,6 +532,10 @@ return [
         'content_type_embed' => 'Ábhar idirghníomhach',
         'body_label' => 'Ábhar an cheachta',
         'body_hint' => 'Léann na foghlaimeoirí téacs, nó nótaí faoin bhfíseán nó faoin doiciméad.',
+
+        'transcript_label' => 'Tras-scríbhinn',
+
+        'transcript_hint' => 'Leagan scríofa de na rudaí a deirtear sa fhíseán. Bíonn foghlaimeoirí nach féidir leo é a chloisteáil nó a fheiceáil ag brath air seo.',
         'media_url_label' => 'Nasc meáin',
         'media_url_hint' => 'Seoladh gréasáin an fhíseáin, an doiciméid nó an ábhair idirghníomhach.',
         'add_lesson_button' => 'Cuir ceacht leis',

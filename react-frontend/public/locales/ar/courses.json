@@ -61,7 +61,8 @@
     "take_quiz": "خذ الاختبار",
     "back_to_course": "العودة إلى الدورة",
     "locked": "هذا الدرس غير متوفر بعد",
-    "locked_until": "متاح من {{date}}"
+    "locked_until": "متاح من {{date}}",
+    "transcript": "النص المكتوب"
   },
   "quiz": {
     "title": "لغز",
@@ -262,7 +263,9 @@
     "published_toast": "تم نشر الدورة التدريبية — وهي الآن مرئية للأعضاء.",
     "unpublished_toast": "الدورة التدريبية غير منشورة - العودة إلى المسودة.",
     "publish_hint": "الدورة الخاصة بك هي مسودة. قم بنشره ليكون مرئيًا للأعضاء ويكون مفتوحًا للتسجيل.",
-    "url_placeholder": "مثال: https://example.com/file"
+    "url_placeholder": "مثال: https://example.com/file",
+    "transcript": "النص المكتوب",
+    "transcript_hint": "نسخة مكتوبة لما يُقال. يعتمد على هذا المتعلمون الذين لا يستطيعون سماع الفيديو أو مشاهدته."
   },
   "lesson_content": {
     "text": "نص",

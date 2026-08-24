@@ -529,6 +529,8 @@ return [
         'content_type_embed' => 'Interaktive Inhalte',
         'body_label' => 'Unterrichtsinhalte',
         'body_hint' => 'Der Text, den die Lernenden lesen, oder Notizen zum Video oder Dokument.',
+        'transcript_label' => 'Transkript',
+        'transcript_hint' => 'Eine schriftliche Fassung dessen, was im Video gesagt wird. Lernende, die es nicht hören oder sehen können, sind darauf angewiesen.',
         'media_url_label' => 'Medienlink',
         'media_url_hint' => 'Die Webadresse des Videos, Dokuments oder interaktiven Inhalts.',
         'add_lesson_button' => 'Lektion hinzufügen',

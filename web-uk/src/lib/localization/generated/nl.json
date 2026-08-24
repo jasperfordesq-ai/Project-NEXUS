@@ -6605,6 +6605,8 @@
                 "content_type_embed": "Interactieve inhoud",
                 "body_label": "Inhoud van de les",
                 "body_hint": "De tekst die leerlingen lezen, of aantekeningen over de video of het document.",
+                "transcript_label": "Afschrift",
+                "transcript_hint": "Een geschreven versie van wat er in de video wordt gezegd. Cursisten die het niet kunnen horen of zien, zijn hierop aangewezen.",
                 "media_url_label": "Medialink",
                 "media_url_hint": "Het webadres van de video, het document of de interactieve inhoud.",
                 "add_lesson_button": "Les toevoegen",

@@ -187,6 +187,24 @@ export default function CoursePlayerPage() {
   );
 }
 
+/**
+ * A video or embedded lesson needs a text alternative (WCAG 1.2). There is no
+ * captions file in the schema, so the instructor's transcript is it — shown in a
+ * disclosure so it does not bury the player.
+ */
+function LessonTranscript({ lesson }: { lesson: CourseLesson }) {
+  const { t } = useTranslation('courses');
+  const transcript = lesson.transcript?.trim();
+  if (!transcript) return null;
+
+  return (
+    <details className="mt-4 rounded-md border border-default-200 p-3">
+      <summary className="cursor-pointer text-sm font-medium">{t('player.transcript')}</summary>
+      <div className="mt-2 text-sm whitespace-pre-wrap">{transcript}</div>
+    </details>
+  );
+}
+
 function LessonContent({ lesson }: { lesson: CourseLesson }) {
   const videoUrl = normalizeCourseMediaUrl(lesson.video_url);
   const embedUrl = normalizeCourseMediaUrl(lesson.embed_url);
@@ -195,22 +213,29 @@ function LessonContent({ lesson }: { lesson: CourseLesson }) {
   switch (lesson.content_type) {
     case 'video':
       return videoUrl ? (
-        <video controls className="w-full rounded-md" src={videoUrl}>
-          <track kind="captions" />
-        </video>
+        <>
+          {/* No <track>: an empty captions track declares a caption file that
+              does not exist, which is worse than declaring none. The transcript
+              below is the text alternative until the schema can carry captions. */}
+          <video controls className="w-full rounded-md" src={videoUrl} />
+          <LessonTranscript lesson={lesson} />
+        </>
       ) : null;
     case 'embed':
       return embedUrl ? (
-        <div className="aspect-video">
-          <iframe
-            title={lesson.title}
-            src={embedUrl}
-            className="w-full h-full rounded-md"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
-        </div>
+        <>
+          <div className="aspect-video">
+            <iframe
+              title={lesson.title}
+              src={embedUrl}
+              className="w-full h-full rounded-md"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+          <LessonTranscript lesson={lesson} />
+        </>
       ) : null;
     case 'pdf':
       return attachmentUrl ? (

@@ -53,7 +53,8 @@
     "take_quiz": "Quiz doen",
     "back_to_course": "Terug naar de cursus",
     "locked": "Deze les is nog niet beschikbaar.",
-    "locked_until": "Beschikbaar vanaf {{date}}"
+    "locked_until": "Beschikbaar vanaf {{date}}",
+    "transcript": "Afschrift"
   },
   "quiz": {
     "title": "Quiz",
@@ -246,7 +247,9 @@
     "published_toast": "Cursus gepubliceerd: deze is nu zichtbaar voor leden.",
     "unpublished_toast": "Cursus niet gepubliceerd — terug naar concept.",
     "publish_hint": "Je cursus is een concept. Publiceer het om het zichtbaar te maken voor leden en open te stellen voor inschrijving.",
-    "url_placeholder": "Voorbeeld: https://example.com/file"
+    "url_placeholder": "Voorbeeld: https://example.com/file",
+    "transcript": "Afschrift",
+    "transcript_hint": "Een geschreven versie van wat er wordt gezegd. Cursisten die de video niet kunnen horen of zien, zijn hierop aangewezen."
   },
   "lesson_content": {
     "text": "Tekst",
