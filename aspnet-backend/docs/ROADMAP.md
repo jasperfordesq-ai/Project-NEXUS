@@ -4,21 +4,30 @@ Status: **Canonical current - owner-facing summary** (technical detail lives in
 [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
 list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
 
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
 ## Where we are, in three lines
 
 Every status report from here uses exactly this format. Both numbers can only ever
 go up, and the build enforces it.
 
-- **Score: 310/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
-- **Journeys certified: 12 of 250**
-- **Movement since last report: +1**
+- **Score: 324/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
+- **Journeys certified: 16 of 250**
+- **Movement since last report: +14**
 
-The build has proved 310 at pushed SHA `d0c34906a`. The wallet-transfer journey
-passed through the unchanged React UI on both backends in one controlled run,
-including both balance effects and the persisted ledger entry. The number never
-goes down.
+Four more journeys are now certified: searching and filtering listings, creating a
+listing, editing and deleting a listing, and creating, editing and managing an
+event. Each one was driven through the unchanged React app against both backends
+in the same run, and each was checked again after a reload, so the change really
+was saved. That is what moved the score from 310 to 324. The number never goes
+down.
+
+🔴 **One honest caveat.** The build has proved **310** at pushed SHA
+`d0c34906a`. The new 324 was published from the work list at pushed SHA
+`3d5928730`, and the checks on that push were still running when this was
+written. So 324 is the correct number from the evidence already recorded, but it
+has not yet been confirmed by a green build. The safety floor stays at 310 until
+it is.
 
 ## What this is, and why we are building it
 

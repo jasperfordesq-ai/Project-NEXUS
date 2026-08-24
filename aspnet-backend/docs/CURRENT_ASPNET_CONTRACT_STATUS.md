@@ -1,10 +1,10 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-23 (wallet transfer banked at green `d0c34906a`)
+Last verified: 2026-08-24 (four Tier 1 listing/event rows banked at pushed `3d5928730`; CI in flight, floor held at 310)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=310/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=324/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=310 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 310/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-23)
+## Banked score - Fixed Rubric Baseline 5, 324/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-24)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -88,7 +88,7 @@ SHA: the commit carrying this section.
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 55 | 170 |
+| Core member journeys certified - React | 69 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -98,7 +98,7 @@ SHA: the commit carrying this section.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **310** | **1000** |
+| **Total** | **324** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -106,7 +106,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.3262 | 170 | 55 |
+| Core React | 1 | 42 | 0.4071 | 170 | 69 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -141,6 +141,20 @@ raise it after CI. The 2026-08-23 transaction adds one point only: row 1.29
 wallet transfer moved PROVEN → CERTIFIED after exact-SHA controlled evidence and
 green CI at `d0c34906a`.
 
+🔴 **The 2026-08-24 transaction moves Core React 55 → 69 (+14), total 310 →
+324, and the floor stays at 310.** Four Tier 1 rows moved on the evidence already
+recorded against them in the ledger: 1.18 listings filter and search (OPEN →
+CERTIFIED), 1.19 listing create (PROVEN → CERTIFIED), 1.20 listing edit and
+delete (OPEN → CERTIFIED) and 1.24 event create / edit / manage (OPEN →
+CERTIFIED). Weighted credit rose 13.7 → 17.1 of 42 rows (0.3262 → 0.4071); no row
+was demoted and no denominator moved. Those four commits landed the ledger rows
+without rebanking the category, and each row said banking awaited the next
+batched push — so this republication is that step, not new evidence. Published
+implementation SHA: `3d5928730`. 🔴 **The floor is deliberately NOT raised here:
+the required workflows on `3d5928730` were still running when this was written,
+so nothing on this tip has been proved green yet.** Raise `ASPNET_BANKED_FLOOR`
+to 324 only after that push is green, per the two-step rule above.
+
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
 was a *shape*: every field was individually correct and both backends answered
@@ -150,10 +164,12 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 117 of 690 (-573).** 🔴 **Twelve of 250 rows are CERTIFIED** — ten
-  of them added today, all in Tier 4 (Web UK), alongside row 1.21 (the exchange
-  transaction) certified on 2026-08-21 and row 1.29 (wallet transfer) certified
-  on 2026-08-23. 19 more are PROVEN.
+- **Journeys: 117 of 690 (-573).** 🔴 **Sixteen of 250 rows are CERTIFIED.**
+  Ten are in Tier 4 (Web UK). Tier 1 holds the other six: row 1.21 (the exchange
+  transaction) certified on 2026-08-21, row 1.29 (wallet transfer) on 2026-08-23,
+  and rows 1.18 (listings filter and search), 1.19 (listing create) and 1.20
+  (listing edit and delete) plus 1.24 (event create / edit / manage) on
+  2026-08-24. 18 more are PROVEN.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
   smoke still has no control arm" and called building one queue item 1. That is
   FALSE and the ledger already said so** — the arm was built on 2026-08-21 and the
