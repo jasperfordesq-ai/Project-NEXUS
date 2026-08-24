@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Seventeen core ASP.NET member journeys now have full same-run certification instead of ASP.NET-only proof.** The paired React smoke now creates and reloads its own listing, event, feed post, comment, transfer, RSVP, message and signup/legal-acceptance evidence; drives real listing/event/feed filters; verifies dashboard destinations, wallet history, exact member/profile identities and persisted theme state; and advances only generated disposable registrations through verification, approval and onboarding before proving the first-sign-in legal gate in a fresh browser context. One comprehensive run completed 22/22 steps as MATCH against ASP.NET and the Laravel control, with no failures or skips. The same certification gate exposed and closed the tenant-aware maps configuration stub and documented the already-tested recurrence capability projection, shrinking the no-op inventory from 553 routes/319 methods to 550/317. This promotes sign-up, verification, legal acceptance, sign-in, dashboard, feed browse/filter/create/comment, listings browse, event discovery/RSVP, existing-thread messaging, wallet history, directory browse, profiles and theme persistence from PROVEN to CERTIFIED; the banked score floor remains unchanged until the batched push is green.
+
 - **No git safety check had been running in this repository, including the scan that
   stops passwords and keys being committed to a public repo.** Found while explaining
   why a broken test reached `main`. The mobile app's tooling sets `core.hooksPath` for

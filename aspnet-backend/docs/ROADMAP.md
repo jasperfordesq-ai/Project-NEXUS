@@ -11,23 +11,22 @@ Last updated: 2026-08-24
 Every status report from here uses exactly this format. Both numbers can only ever
 go up, and the build enforces it.
 
-- **Score: 324/1000** (rubric R5 — final denominator, frozen 2026-08-21, never re-cut)
-- **Journeys certified: 16 of 250**
-- **Movement since last report: +14**
+- **Score: 352/1000 candidate** (rubric R5; banked floor remains 324 until the batched push is green)
+- **Journeys certified: 33 of 250**
+- **Movement since last report: +28**
 
-Four more journeys are now certified: searching and filtering listings, creating a
-listing, editing and deleting a listing, and creating, editing and managing an
-event. Each one was driven through the unchanged React app against both backends
-in the same run, and each was checked again after a reload, so the change really
-was saved. That is what moved the score from 310 to 324. The number never goes
-down.
+Seventeen more core member journeys now meet the certification bar: sign-up,
+verification, legal acceptance, sign-in, dashboard, feed browse/filter/create/
+comment, listings browse, event discovery/RSVP, existing-thread messaging,
+wallet history, member/profile browsing and theme persistence. One comprehensive
+run drove the unchanged React app against both backends and finished 22/22 MATCH,
+with no failures or skips. The effects were checked after fresh reads or reloads,
+not inferred from successful responses.
 
-The build has now proved **324** at pushed SHA `32bd2f94d`, with every check
-green, so the safety floor has been raised from 310 to 324. It took two pushes:
-324 was published first while the checks were still running, and that first push
-came back red on the check that compares the published score with the work list.
-Holding the floor until a build is actually green is what that rule is for, and
-it did its job.
+The ledger therefore computes a **352** candidate score, while the banked floor
+stays **324** at pushed, green SHA `32bd2f94d`. The candidate becomes banked only
+after this batch is pushed and the required CI workflows are green; no intermediate
+push is needed between individual journeys.
 
 ## What this is, and why we are building it
 

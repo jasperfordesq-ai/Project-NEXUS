@@ -1,10 +1,10 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-24 (four Tier 1 listing/event rows banked; 324 proved green at pushed `32bd2f94d`, floor raised to 324)
+Last verified: 2026-08-24 (33 journeys certified locally; 352 candidate at implementation `54f807e8f`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=324/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=352/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=324 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score - Fixed Rubric Baseline 5, 324/1000 (`ASPNET-CONTRACT-R5`, banked 2026-08-24)
+## Banked score calculation - Fixed Rubric Baseline 5, 352/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -82,13 +82,21 @@ regenerated 2026-08-21T07:14; `artifacts/parity/{schema,localization}` at
 [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) at 250 rows.
 Controlled runtime evidence: `artifacts/smoke/react-smoke-2026-08-23T18-29-08-811Z.json`,
 produced after rebuilding the ASP.NET image from this exact tree. Scoring-record
-SHA: the commit carrying this section.
+SHA: the commit carrying this section. The current candidate is implemented at
+`54f807e8f`: the paired React artifact
+`artifacts/smoke/react-smoke-2026-08-24T21-52-39-523Z.json` records 22/22 MATCH
+with no failure or skip; the static condition-5 gate is clean across all 86 API
+paths it observed; and the no-op inventory shrank to 550 routes across 317
+methods. The full regression boundary is 3,900/3,900 API tests and 38/38
+messaging tests, plus 2/2 focused maps/recurrence tests against the final C#
+change, all with no failure or skip. This local evidence publishes the mechanically derived 352 candidate,
+but it does not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 
 **Block 2 - Banked score.**
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 69 | 170 |
+| Core member journeys certified - React | 97 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -98,7 +106,7 @@ SHA: the commit carrying this section.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **324** | **1000** |
+| **Total** | **352** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -106,7 +114,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.4071 | 170 | 69 |
+| Core React | 1 | 42 | 0.5690 | 170 | 97 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -163,6 +171,18 @@ table. The Web UK and React jobs skipped correctly, nothing in either having
 changed; they had already run and passed every other check at `3d5928730`. Floor
 evidence SHA: `32bd2f94d`.
 
+🔴 **The 2026-08-24 core-backlog transaction moves Core React 69 → 97
+(+28), total 324 → 352, while the banked floor stays 324.** Seventeen Tier 1
+rows moved PROVEN → CERTIFIED: 1.1–1.4, 1.9–1.10, 1.12–1.14, 1.17,
+1.22–1.23, 1.26, 1.30–1.31, 1.33 and 1.35. Weighted credit rose 17.1 →
+23.9 of 42 rows (0.4071 → 0.5690); no row was demoted and no denominator
+moved. The unchanged React client completed a comprehensive 22/22 MATCH run
+against ASP.NET and its same-run Laravel control, with persisted effects and no
+failure or skip. Full local regression: 3,900/3,900 API, 38/38 messaging and
+2/2 final focused maps/recurrence tests. Implementation SHA: `54f807e8f`. The candidate becomes the
+floor only after the batch is pushed and the required CI workflows are green;
+there is no requirement to push between individual journey jobs.
+
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
 was a *shape*: every field was individually correct and both backends answered
@@ -172,12 +192,10 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 117 of 690 (-573).** 🔴 **Sixteen of 250 rows are CERTIFIED.**
-  Ten are in Tier 4 (Web UK). Tier 1 holds the other six: row 1.21 (the exchange
-  transaction) certified on 2026-08-21, row 1.29 (wallet transfer) on 2026-08-23,
-  and rows 1.18 (listings filter and search), 1.19 (listing create) and 1.20
-  (listing edit and delete) plus 1.24 (event create / edit / manage) on
-  2026-08-24. 18 more are PROVEN.
+- **Journeys: 159 of 690 (-531).** 🔴 **Thirty-three of 250 rows are
+  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 23. The
+  comprehensive 2026-08-24 core run promoted the final 17 Tier 1 PROVEN rows;
+  only one PROVEN row now remains across the full ledger, in Tier 2.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
   smoke still has no control arm" and called building one queue item 1. That is
   FALSE and the ledger already said so** — the arm was built on 2026-08-21 and the
@@ -205,9 +223,10 @@ five tiers, which have not been walked this way.
   expected to be more verification than implementation - the Phase 9 measurement
   pass will quantify that rather than guess it.
 - **Staff 1 of 150.** 72 rows, one RENDERS at unverified depth. 514 admin GET
-  routes have never been compared, and **all 317 remaining do-nothing endpoints
-  concentrate here** (`MiscParityController` 85, `AdminCompatibility2/3` 85,
-  `ReactFrontendCompatibility` 30, and nine more shim controllers). Public-sector
+  routes have never been compared, and most of the **550 remaining do-nothing
+  routes across 317 methods** concentrate here (`AdminExplicitParityController`
+  177, `MiscParityController` 82, `AdminCompatibility2/3` 86, and other shim
+  controllers). Public-sector
   buyers evaluate the admin panel, which is why this tier carries 150 points.
 - **Consumed-contract 68 of 110 (-42).** Sub-weighted: routes 28/28 (2,655 of
   2,667 matched); reads 18/30 (115 of 195 identical on the generated corpus);
