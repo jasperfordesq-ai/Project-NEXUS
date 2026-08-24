@@ -4,14 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
+
+let mockParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -122,6 +124,8 @@ jest.mock('react-i18next', () => ({
         'donations.submit': 'Submit donation',
         'donations.validation': 'Enter a valid donation amount.',
         'donations.submitError': 'Could not submit this donation.',
+        'donations.submitSuccessTitle': 'Pledge recorded',
+        'donations.submitSuccess': 'Your donation has been recorded and will count towards the campaign once it is confirmed.',
         'donations.emptyTitle': 'No donations yet',
         'donations.progress': opts ? `${String(opts.percent ?? 0)}%` : '0%',
         'donations.raisedOfGoal': opts ? `${String(opts.raised ?? '')} raised of ${String(opts.goal ?? '')}` : 'Raised',
@@ -267,6 +271,7 @@ jest.mock('@/components/ui/AppToast', () => {
 // --- Tests ---
 
 import VolunteeringScreen from './volunteering';
+import { useAppToast } from '@/components/ui/AppToast';
 
 const defaultPaginatedState = {
   items: [],
@@ -302,6 +307,48 @@ const mockOpportunity = {
 };
 
 describe('VolunteeringScreen', () => {
+  afterEach(() => {
+    mockParams = {};
+  });
+
+  /*
+    A link that names a tab has to land on it. This asserts the SCREEN's half of that: given
+    the parameter, the donations panel is what renders. The intent mapper's half is covered
+    by `nativeIntent.test.ts`, and journey 7.2 records what was measured on a device.
+  */
+  /*
+    🔴 A recorded donation is a PLEDGE: the server stores it as `pending`, so the campaign
+    totals on the same screen cannot move and the only other evidence is a row below the
+    form. Measured on a device on 2026-08-24 — 201 from the server, form cleared, "raised"
+    still €0.00, and nothing said so. Silence after a successful write reads as a failure.
+  */
+  it('tells the member when a donation pledge has been recorded', async () => {
+    mockParams = { tab: 'donations' };
+    const { show } = useAppToast() as unknown as { show: jest.Mock };
+    const { getByText, getByPlaceholderText } = render(<VolunteeringScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Amount'), '25');
+    fireEvent.press(getByText('Submit donation'));
+
+    await waitFor(() =>
+      expect(show).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Pledge recorded', variant: 'success' }),
+      ),
+    );
+  });
+
+  it('opens the tab a link asked for', () => {
+    mockParams = { tab: 'donations' };
+    const { getByText } = render(<VolunteeringScreen />);
+    expect(getByText('Make a donation')).toBeTruthy();
+  });
+
+  it('falls back to opportunities when the link names a tab that does not exist', () => {
+    mockParams = { tab: 'not-a-tab' };
+    const { getByPlaceholderText } = render(<VolunteeringScreen />);
+    expect(getByPlaceholderText('Search opportunities…')).toBeTruthy();
+  });
+
   it('renders the screen title via navigation options (no crash)', () => {
     const { toJSON } = render(<VolunteeringScreen />);
     expect(toJSON()).toBeTruthy();

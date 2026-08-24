@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -40,6 +40,7 @@ import {
   type ShopItem,
 } from '@/lib/api/gamification';
 import { useLocalSearchParams, usePathname } from 'expo-router';
+import { useParamTab } from '@/lib/hooks/useParamTab';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -1127,7 +1128,18 @@ export default function GamificationScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const { show: showToast } = useAppToast();
 
-  const [activeTab, setActiveTab] = useState<Tab>(() => getInitialTab(pathname, params.tab));
+  /*
+    🔴 `useParamTab`, not `useState(() => …)` — same reason as `volunteering.tsx`: a link
+    naming a tab did nothing while this screen was already open, because expo-router
+    changes the parameters without remounting. The path still decides the tab when there is
+    no parameter (this screen is also reached as /leaderboard and /nexus-score), which is
+    why the resolver falls back to `getInitialTab` rather than to a fixed tab.
+  */
+  const resolveTab = useCallback(
+    (raw: string | undefined): Tab => getInitialTab(pathname, raw),
+    [pathname],
+  );
+  const [activeTab, setActiveTab] = useParamTab<Tab>(params.tab, resolveTab, getInitialTab(pathname, undefined));
   const [period, setPeriod] = useState<LeaderboardPeriod>('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dailyRewardOverride, setDailyRewardOverride] = useState<DailyRewardStatus | null>(null);

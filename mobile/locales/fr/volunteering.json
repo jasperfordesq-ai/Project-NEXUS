@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Promesse enregistrée",
+    "submitSuccess": "Votre don a été enregistré et sera comptabilisé pour la campagne dès sa confirmation."
   },
   "applicationStatus": {
     "pending": "En attente",

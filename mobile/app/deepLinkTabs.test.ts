@@ -52,18 +52,43 @@ describe('the volunteering hub honours every tab a link can name', () => {
   it('validates the incoming tab against the whole list, not one value', () => {
     // 🔴 The exact shape of the original bug: a single === comparison against one tab.
     expect(source).not.toMatch(/params\.tab === '[a-z]+' \? '[a-z]+' : 'opportunities'/);
-    expect(source).toMatch(/TAB_KEYS\.includes\(params\.tab as TabKey\)/);
+    expect(source).toMatch(/TAB_KEYS\.includes\(raw as TabKey\)/);
   });
 
-  it('applies the requested tab in an effect, not only as initial state', () => {
-    /**
-     * 🔴 Validating the tab was NOT enough, and the device proved it. A `useState`
-     * initialiser reads the first render only, and a deep-linked screen mounts before
-     * expo-router populates its parameters — so the link was still ignored after the
-     * first fix. Anything that reduces this back to a `useState` initialiser reinstates
-     * a bug that looks fixed in the source.
-     */
-    expect(source).toMatch(/hasHonouredLink/);
-    expect(source).toMatch(/setActiveTab\(requestedTab\)/);
+  /**
+   * 🔴 Validating the tab was NOT enough, and the device proved it. A `useState`
+   * initialiser reads the first render only, and a deep-linked screen mounts before
+   * expo-router populates its parameters — so the link was still ignored after the first
+   * fix. Anything that reduces this back to a `useState` initialiser reinstates a bug that
+   * looks fixed in the source.
+   *
+   * 🔴 This case used to assert `hasHonouredLink` and `setActiveTab(requestedTab)` — the
+   * NAMES of one particular implementation, which applied the parameter exactly once. That
+   * left the other half of journey 7.2 open: a second link, or a link arriving while the
+   * screen was already open, still did nothing. The screen now uses the shared
+   * `useParamTab` hook, so the guard asserts the property that matters (the parameter is
+   * not read only at mount) rather than the mechanism that used to provide it.
+   */
+  it('does not read its tab parameter only at mount', () => {
+    expect(source).toMatch(/useParamTab<TabKey>\(params\.tab/);
+    expect(source).not.toMatch(/useState<TabKey>\((requestedTab|\(\) =>)/);
+  });
+});
+
+/**
+ * The same requirement for the gamification hub, which is also reached by three different
+ * routes (/gamification, /leaderboard, /nexus-score) as well as by `?tab=`.
+ */
+describe('the gamification hub honours a tab that arrives after mount', () => {
+  const source = read('(modals)/gamification.tsx');
+
+  it('does not read its tab parameter only at mount', () => {
+    expect(source).toMatch(/useParamTab<Tab>\(params\.tab/);
+    expect(source).not.toMatch(/useState<Tab>\(\(\) => getInitialTab/);
+  });
+
+  it('still lets the path decide when no tab parameter is given', () => {
+    // /leaderboard and /nexus-score must keep working with no query string at all.
+    expect(source).toMatch(/getInitialTab\(pathname, undefined\)/);
   });
 });

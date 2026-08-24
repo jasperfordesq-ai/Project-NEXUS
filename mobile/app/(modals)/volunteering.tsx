@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { useParamTab } from '@/lib/hooks/useParamTab';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
@@ -1321,6 +1322,20 @@ function DonationsPanel({
       setMessage('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      /*
+        🔴 Say so. A recorded donation is a PLEDGE — the server stores it as `pending` until
+        someone confirms the money arrived — so the campaign totals on this very screen
+        cannot move, and the pledge itself only appears in a list below the form. Measured
+        on a device on 2026-08-24: `POST /v2/volunteering/donations` returned 201, the form
+        cleared, "raised" stayed at €0.00 and 0 donors, and nothing said the pledge had been
+        taken. A member who does not scroll has no way to tell it worked, which is the same
+        shape as a success that reads as a failure.
+      */
+      showToast({
+        title: t('donations.submitSuccessTitle'),
+        description: t('donations.submitSuccess'),
+        variant: 'success',
+      });
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('donations.submitError')), variant: 'danger' });
@@ -1632,7 +1647,7 @@ export default function VolunteeringScreen() {
 function VolunteeringScreenInner() {
   const { t } = useTranslation(['volunteering', 'common']);
   const params = useLocalSearchParams<{ tab?: string }>();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -1646,36 +1661,29 @@ function VolunteeringScreenInner() {
    * Validated against TAB_KEYS rather than cast, so an unknown value still falls back to
    * Opportunities instead of leaving the screen on a tab that does not exist.
    */
-  const requestedTab: TabKey | null = TAB_KEYS.includes(params.tab as TabKey)
-    ? (params.tab as TabKey)
-    : null;
-  const [activeTab, setActiveTab] = useState<TabKey>(requestedTab ?? 'opportunities');
+  const resolveTab = useCallback(
+    (raw: string | undefined): TabKey | null => (TAB_KEYS.includes(raw as TabKey) ? (raw as TabKey) : null),
+    [],
+  );
+  /*
+    🔴 `useParamTab`, not `useState(() => …)`. A link naming a tab has to work when this
+    screen is ALREADY OPEN: expo-router updates the parameters without remounting, so a
+    once-only initial value left the member on whichever tab they were already looking at.
+    Measured again on a device on 2026-08-24 — `volunteering?tab=donations` opened
+    Opportunities — which is the half of journey 7.2 that stayed broken after the hook was
+    written for `jobs`. A member's own tap still wins; see the hook's own note.
+  */
+  const [activeTab, setActiveTab] = useParamTab<TabKey>(params.tab, resolveTab, 'opportunities');
 
-  /**
-   * 🔴 The requested tab has to be applied in an EFFECT, not just as the initial state.
-   *
-   * `useState(requestedTab)` reads only the FIRST render, and for a deep-linked screen
-   * expo-router mounts before the parameters are populated — so `params.tab` is undefined
-   * at that moment and the initial value is always the default. Fixing the nine-tabs
-   * comparison alone therefore changed nothing on the device, which is exactly what
-   * happened: `nexus://volunteering?tab=hours` still opened Opportunities after the first
-   * fix, and the intent mapper was proven correct (it returns
-   * `/(modals)/volunteering?tab=hours`).
-   *
-   * This is why the organisation-dashboard deep link worked once its parameter was named
-   * correctly and this one did not: that screen reads `params.id` straight into a
-   * `useApi` dependency, so a late arrival is picked up. A `useState` initialiser cannot
-   * be.
-   *
-   * `hasHonouredLink` makes it happen once, so a member who then taps another tab is not
-   * dragged back by a re-render.
-   */
-  const hasHonouredLink = useRef(false);
-  useEffect(() => {
-    if (hasHonouredLink.current || !requestedTab) return;
-    hasHonouredLink.current = true;
-    setActiveTab(requestedTab);
-  }, [requestedTab]);
+  /*
+    The effect that used to live here applied the parameter ONCE, via a `hasHonouredLink`
+    ref. That was written because a deep-linked screen mounts before expo-router populates
+    the parameters, so a `useState` initialiser always saw `undefined` — true, and worth
+    keeping in mind. But once-only means a SECOND link naming a different tab does nothing
+    while the screen is open. `useParamTab` applies the parameter whenever its raw value
+    changes, and only then, which honours a late arrival and a later link without ever
+    undoing a member's own tap.
+  */
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const [applyingId, setApplyingId] = useState<number | null>(null);
@@ -1786,11 +1794,26 @@ function VolunteeringScreenInner() {
     [isAuthenticated, tabs],
   );
 
+  /*
+    🔴 This is what actually swallowed a `?tab=` link, and the hook alone did not fix it.
+
+    Eight of the nine tabs need a signed-in member, and the session is restored from device
+    storage AFTER the first render — so for a moment `isAuthenticated` is false and only
+    "Opportunities" is visible. This effect then judged the requested tab unreachable and
+    reset it, before the session had loaded. By the time the member was signed in and the
+    tab existed, the parameter had not changed, so nothing re-applied it. Measured on a
+    device on 2026-08-24: a cold start on `volunteering?tab=donations` landed on
+    Opportunities every time, with the intent mapper proven correct and the tab valid.
+
+    Waiting for the session to be known costs nothing — the tab strip is already rendering
+    — and it is the difference between honouring a link and quietly ignoring it.
+  */
   useEffect(() => {
+    if (isAuthLoading) return;
     if (!visibleTabs.some((tab) => tab.key === activeTab)) {
       setActiveTab('opportunities');
     }
-  }, [activeTab, visibleTabs]);
+  }, [activeTab, visibleTabs, isAuthLoading]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>

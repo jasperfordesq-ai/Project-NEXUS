@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Zusage erfasst",
+    "submitSuccess": "Ihre Spende wurde erfasst und wird der Kampagne zugerechnet, sobald sie bestätigt ist."
   },
   "applicationStatus": {
     "pending": "Ausstehend",

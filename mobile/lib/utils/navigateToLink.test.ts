@@ -25,6 +25,38 @@ describe('navigateToLink', () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * 🔴 The query string is the whole point of these three. This function is what
+   * `_layout.tsx` replays a cold-start link through, and it used to push the section
+   * without its parameters — so a link naming a tab, a filter or a category opened the
+   * screen's default and looked, from the outside, like the screen ignoring the link.
+   * Measured on a device on 2026-08-24: `volunteering?tab=donations` produced two
+   * volunteering screens, the parameterised one underneath and this one on top.
+   */
+  it('carries a link query through to a section screen', () => {
+    navigateToLink('https://app.project-nexus.ie/volunteering?tab=donations');
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(modals)/volunteering',
+      params: { tab: 'donations' },
+    });
+  });
+
+  it('still pushes a bare route when the link has no query', () => {
+    navigateToLink('https://app.project-nexus.ie/volunteering');
+
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/volunteering');
+  });
+
+  it('never lets a query id override the record named in the path', () => {
+    navigateToLink('https://app.project-nexus.ie/groups/974?id=1&tab=files');
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(modals)/group-detail',
+      params: { tab: 'files', id: '974' },
+    });
+  });
+
   it('maps federation directory deep links to their native screens', () => {
     navigateToLink('/federation/partners');
     navigateToLink('/federation/members?partner_id=2');

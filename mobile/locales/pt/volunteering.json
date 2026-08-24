@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Promessa registada",
+    "submitSuccess": "O seu donativo foi registado e será contabilizado na campanha depois de ser confirmado."
   },
   "applicationStatus": {
     "pending": "Pendentes",

@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Impegno registrato",
+    "submitSuccess": "La tua donazione è stata registrata e sarà conteggiata nella campagna una volta confermata."
   },
   "applicationStatus": {
     "pending": "In attesa",

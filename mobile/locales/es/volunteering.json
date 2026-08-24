@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Compromiso registrado",
+    "submitSuccess": "Tu donación se ha registrado y contará para la campaña en cuanto se confirme."
   },
   "applicationStatus": {
     "pending": "Pendiente",

@@ -173,7 +173,9 @@
       "completed": "Completed",
       "failed": "Failed",
       "refunded": "Refunded"
-    }
+    },
+    "submitSuccessTitle": "Pledge recorded",
+    "submitSuccess": "Your donation has been recorded and will count towards the campaign once it is confirmed."
   },
   "applicationStatus": {
     "pending": "Pending",

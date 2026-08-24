@@ -173,7 +173,9 @@
       "completed": "Críochnaithe",
       "failed": "Theip air",
       "refunded": "Aisíoctha"
-    }
+    },
+    "submitSuccessTitle": "Gealltanas taifeadta",
+    "submitSuccess": "Taifeadadh do shíntiús agus cuirfear san áireamh é don fheachtas a luaithe a dhaingnítear é."
   },
   "applicationStatus": {
     "pending": "Ar feitheamh",

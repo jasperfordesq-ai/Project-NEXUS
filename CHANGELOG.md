@@ -29,6 +29,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the mobile app, a link that pointed at a particular part of a page landed
+  on the wrong part — and the reason turned out to be different from what had been
+  written down twice before.** Found by printing what the screen was actually
+  given, after two earlier fixes had failed to change anything.
+  Opening a link like "volunteering, donations" from a closed app produced **two**
+  copies of the page: the right one, opened on the right section, and a second,
+  plain copy on top of it. The app deliberately re-follows a link once it knows
+  who is signed in — that matters for someone who starts signed out and has to
+  sign in first — and the code that re-followed it was dropping everything after
+  the "?" in the address. The right page was underneath the whole time.
+  So this was never only about sections of a page: **anything a link carried was
+  being lost** — a filter, a category, "start a new one". That is fixed at the
+  source, for all forty places that navigate this way, and a link can no longer
+  smuggle in a different record id than the one in the address itself. Confirmed
+  on a device from a closed app.
+  Two other things were tidied in the same pass: two screens now notice a link
+  that arrives while they are already open, and the guard that was supposed to
+  protect this behaviour was rewritten — it had been checking for the names of
+  the old code rather than for the behaviour, so it stayed green through the whole
+  fault.
+
+- **On the mobile app, recording a donation to a fundraising campaign appeared to
+  do nothing.** Walked on a device. The donation was accepted, but the form simply
+  emptied: the campaign still said "€0.00 raised", the donor count stayed at zero,
+  and the only trace was a line far below the form. None of that was wrong — a
+  donation recorded this way is a pledge, and it only counts once someone confirms
+  the money arrived — but from the member's side it read as a failure. It now says
+  what happened, in all seven languages: "Pledge recorded — your donation has been
+  recorded and will count towards the campaign once it is confirmed."
+
 - **The message inbox contradicted itself about unread messages.** The summary at
   the top of the page and the badge on each conversation row show the same words,
   "1 unread message", but came from different places — one cached for 15 seconds,

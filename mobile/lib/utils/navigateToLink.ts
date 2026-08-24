@@ -59,6 +59,27 @@ const knownSections = new Set([
 /**
  * Maps a web-format deep-link (e.g. /exchanges/123) to the appropriate
  * mobile screen and navigates to it.
+ *
+ * 🔴 **This function must carry the link's query string.** It dropped it, and that made
+ * every parameterised deep link fail on a COLD START while looking correct everywhere else.
+ *
+ * What was measured on a device on 2026-08-24, after a probe printed the screen's own
+ * parameters: opening `volunteering?tab=donations` from a cold start produced **two**
+ * volunteering screens. `app/+native-intent.ts` mapped the URL correctly and expo-router
+ * mounted `/(modals)/volunteering?tab=donations` — the log shows that instance with
+ * `activeTab=donations`. Then `_layout.tsx` replayed the same link through this function
+ * once auth resolved, and this function pushed a bare `/(modals)/volunteering`, which
+ * landed **on top**. The member saw the paramless copy. The link, the mapper, the screen
+ * and the hook were all correct; the second navigation threw the parameter away.
+ *
+ * It read as "deep links ignore `?tab=`" and was recorded that way (journey 7.2), and the
+ * same loss applies to every query a link can carry — a filter, `create=1`, a marketplace
+ * category — not just tabs. The replay itself is deliberate and stays: a cold start while
+ * signed out has to reach the login screen first and follow the link afterwards.
+ *
+ * So: a section-index push passes the parsed query, and a detail push passes it too with
+ * the id from the PATH last, so a `?id=` in a link can never override the record actually
+ * being opened.
  */
 export function navigateToLink(link: string | null): void {
   if (!link) return;
@@ -71,24 +92,24 @@ export function navigateToLink(link: string | null): void {
     // different records with different ids, and sharing this case sent every exchange
     // notification to the listing screen, which answered "Listing not found".
     case 'exchanges':
-      if (id) router.push({ pathname: '/(modals)/exchange-request-detail', params: { id } });
-      else router.push('/(modals)/exchange-requests');
+      if (id) router.push({ pathname: '/(modals)/exchange-request-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/exchange-requests', params);
       break;
     case 'listings':
-      if (id) router.push({ pathname: '/(modals)/exchange-detail', params: { id } });
+      if (id) router.push({ pathname: '/(modals)/exchange-detail', params: { ...params, id } });
       else router.replace('/(tabs)/exchanges');
       break;
     case 'events':
-      if (id) router.push({ pathname: '/(modals)/event-detail', params: { id } });
+      if (id) router.push({ pathname: '/(modals)/event-detail', params: { ...params, id } });
       else router.replace('/(tabs)/events');
       break;
     case 'members':
-      if (id) router.push({ pathname: '/(modals)/member-profile', params: { id } });
-      else router.push('/(modals)/members');
+      if (id) router.push({ pathname: '/(modals)/member-profile', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/members', params);
       break;
     case 'profile':
-      if (id) router.push({ pathname: '/(modals)/member-profile', params: { id } });
-      else router.push('/(tabs)/profile');
+      if (id) router.push({ pathname: '/(modals)/member-profile', params: { ...params, id } });
+      else pushWithOptionalParams('/(tabs)/profile', params);
       break;
     case 'users':
       if (id && segments[1] === 'appreciations') {
@@ -96,9 +117,9 @@ export function navigateToLink(link: string | null): void {
       } else if (id && segments[1] === 'collections') {
         router.push({ pathname: '/(modals)/profile-collections', params: { userId: id, scope: 'public' } } as unknown as Href);
       } else if (id) {
-        router.push({ pathname: '/(modals)/member-profile', params: { id } });
+        router.push({ pathname: '/(modals)/member-profile', params: { ...params, id } });
       } else {
-        router.push('/(modals)/members');
+        pushWithOptionalParams('/(modals)/members', params);
       }
       break;
     case 'me':
@@ -114,8 +135,8 @@ export function navigateToLink(link: string | null): void {
       break;
     case 'blog':
     case 'blog-post':
-      if (id) router.push({ pathname: '/(modals)/blog-post', params: { id } });
-      else router.push('/(modals)/blog');
+      if (id) router.push({ pathname: '/(modals)/blog-post', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/blog', params);
       break;
     case 'resources':
       pushWithOptionalParams('/(modals)/resources', id ? { ...params, category: id } : params);
@@ -138,29 +159,29 @@ export function navigateToLink(link: string | null): void {
       pushWithOptionalParams('/(modals)/support', { ...params, doc: section });
       break;
     case 'groups':
-      if (id) router.push({ pathname: '/(modals)/group-detail', params: { id } });
-      else router.push('/(modals)/groups');
+      if (id) router.push({ pathname: '/(modals)/group-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/groups', params);
       break;
     case 'jobs':
-      if (id) router.push({ pathname: '/(modals)/job-detail', params: { id } });
-      else router.push('/(modals)/jobs');
+      if (id) router.push({ pathname: '/(modals)/job-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/jobs', params);
       break;
     case 'job':
-      if (id) router.push({ pathname: '/(modals)/job-detail', params: { id } });
-      else router.push('/(modals)/jobs');
+      if (id) router.push({ pathname: '/(modals)/job-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/jobs', params);
       break;
     case 'marketplace':
       navigateMarketplace(segments, params);
       break;
     case 'organisations':
     case 'organizations':
-      if (id) router.push({ pathname: '/(modals)/organisation-detail', params: { id } });
-      else router.push('/(modals)/organisations');
+      if (id) router.push({ pathname: '/(modals)/organisation-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/organisations', params);
       break;
     case 'organisation':
     case 'organization':
-      if (id) router.push({ pathname: '/(modals)/organisation-detail', params: { id } });
-      else router.push('/(modals)/organisations');
+      if (id) router.push({ pathname: '/(modals)/organisation-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/organisations', params);
       break;
     case 'volunteering':
       if (id === 'my-organisations') {
@@ -170,30 +191,30 @@ export function navigateToLink(link: string | null): void {
           pathname: '/(modals)/volunteering-org-dashboard',
           params: { id: segments[1], tab: params.tab ?? (segments[2] === 'dashboard' && segments[3] ? segments[3] : undefined) },
         } as unknown as Href);
-      } else if (id) router.push({ pathname: '/(modals)/volunteering-detail', params: { id } });
-      else router.push('/(modals)/volunteering');
+      } else if (id) router.push({ pathname: '/(modals)/volunteering-detail', params: { ...params, id } });
+      else pushWithOptionalParams('/(modals)/volunteering', params);
       break;
     case 'goals':
-      if (id) router.push({ pathname: '/(modals)/goal-detail', params: { id } } as unknown as Href);
-      else router.push('/(modals)/goals');
+      if (id) router.push({ pathname: '/(modals)/goal-detail', params: { ...params, id } } as unknown as Href);
+      else pushWithOptionalParams('/(modals)/goals', params);
       break;
     case 'activity':
-      router.push('/(modals)/activity' as Href);
+      pushWithOptionalParams('/(modals)/activity', params);
       break;
     case 'matches':
-      router.push('/(modals)/matches' as Href);
+      pushWithOptionalParams('/(modals)/matches', params);
       break;
     case 'reviews':
-      router.push('/(modals)/reviews' as Href);
+      pushWithOptionalParams('/(modals)/reviews', params);
       break;
     case 'skills':
-      router.push('/(modals)/skills' as Href);
+      pushWithOptionalParams('/(modals)/skills', params);
       break;
     case 'polls':
-      router.push('/(modals)/polls' as Href);
+      pushWithOptionalParams('/(modals)/polls', params);
       break;
     case 'endorsements':
-      router.push('/(modals)/endorsements');
+      pushWithOptionalParams('/(modals)/endorsements', params);
       break;
     case 'leaderboard':
       router.push({ pathname: '/(modals)/gamification', params: { tab: 'leaderboard', ...params } } as unknown as Href);
@@ -205,26 +226,26 @@ export function navigateToLink(link: string | null): void {
       router.push({ pathname: '/(modals)/gamification', params: { tab: 'score', ...params } } as unknown as Href);
       break;
     case 'ideation':
-      if (id) router.push({ pathname: '/(modals)/ideation-detail', params: { id } } as unknown as Href);
-      else router.push('/(modals)/ideation' as Href);
+      if (id) router.push({ pathname: '/(modals)/ideation-detail', params: { ...params, id } } as unknown as Href);
+      else pushWithOptionalParams('/(modals)/ideation', params);
       break;
     case 'gamification':
-      router.push('/(modals)/gamification');
+      pushWithOptionalParams('/(modals)/gamification', params);
       break;
     case 'federation':
       navigateFederation(segments, params);
       break;
     case 'wallet':
-      router.push('/(modals)/wallet');
+      pushWithOptionalParams('/(modals)/wallet', params);
       break;
     case 'notifications':
-      router.push('/(modals)/notifications');
+      pushWithOptionalParams('/(modals)/notifications', params);
       break;
     case 'chat':
-      router.push('/(modals)/chat');
+      pushWithOptionalParams('/(modals)/chat', params);
       break;
     case 'search':
-      router.push('/(modals)/search');
+      pushWithOptionalParams('/(modals)/search', params);
       break;
     default:
       // 🔴 Two separate faults were fixed on this one line.
@@ -333,7 +354,7 @@ function navigateMarketplace(segments: string[], queryParams: Record<string, str
 function navigateFederation(segments: string[], queryParams: Record<string, string>): void {
   const [branch, detailId] = segments;
   if (!branch) {
-    router.push('/(modals)/federation');
+    pushWithOptionalParams('/(modals)/federation', queryParams);
     return;
   }
 
