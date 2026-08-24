@@ -1,5 +1,42 @@
 #!/usr/bin/env sh
+#
+# 🔴 THIS FILE IS THE ONLY pre-commit GIT RUNS IN THIS REPOSITORY.
+#
+# mobile/package.json's "prepare" script runs `husky mobile/.husky` FROM THE
+# REPO ROOT, so any `npm install` inside mobile/ sets
+#   core.hooksPath = mobile/.husky/_
+# for the WHOLE repository. While that is set, git ignores .git/hooks entirely,
+# the shim written by scripts/git-hooks/install-hooks.sh never runs, and husky
+# dispatches here instead — for every commit anywhere in the tree, not just
+# mobile ones.
+#
+# 🔴 Until 2026-08-24 this file was:
+#
+#     # Mobile pre-commit hook disabled — mobile development on hold
+#     exit 0
+#
+# which silently disabled BOTH gates in scripts/git-hooks/pre-commit for the
+# entire repository: GATE A, the credential scan, on a PUBLIC repo, and GATE B,
+# the staged-PHP-test gate that AGENTS.md calls the one gate that must never be
+# bypassed. Nothing reported this: `exit 0` is indistinguishable from a clean
+# pass. The "mobile development on hold" premise was also long dead — mobile is
+# one of the most active areas of the project.
+#
+# So this file delegates rather than deciding. Do NOT restore `exit 0`. If
+# mobile ever needs its own pre-commit work, add it BELOW the delegation, so it
+# can only ever make the gate stricter, never weaker.
 
-# Mobile pre-commit hook disabled — mobile development on hold
-# CI pipeline handles type-check and lint validation
-exit 0
+ROOT=$(git rev-parse --show-toplevel) || exit 1
+HOOK="$ROOT/scripts/git-hooks/pre-commit"
+
+if [ ! -f "$HOOK" ]; then
+  echo "pre-commit: $HOOK is missing — hook cannot run." >&2
+  echo "This is the repo-wide gate, not a mobile-only one. Investigate before" >&2
+  echo "committing; do not work around it with --no-verify." >&2
+  exit 1
+fi
+
+# `sh "$HOOK"` rather than exec: git on Windows does not reliably preserve the
+# executable bit, so invoke the interpreter explicitly (same reasoning as the
+# generated .git/hooks shim).
+sh "$HOOK" "$@"

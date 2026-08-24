@@ -1,6 +1,13 @@
 # Shell scripts must use LF — CRLF breaks shebang execution on Linux/macOS
 *.sh        text eol=lf
 .husky/*    text eol=lf
+# 🔴 `.husky/*` above contains a slash, so git anchors it to the REPO ROOT.
+# It never matched mobile/.husky/ - the husky install that actually governs
+# this repo's hooks, since mobile/package.json's "prepare" points
+# core.hooksPath at it. Those hooks were therefore checked out CRLF.
+**/.husky/*         text eol=lf
+# Hook scripts carry no .sh extension, so the rules above miss them too.
+scripts/git-hooks/* text eol=lf
 Makefile    text eol=lf
 
 # Default behaviour for text files

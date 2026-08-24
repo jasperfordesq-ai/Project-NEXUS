@@ -29,6 +29,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **No git safety check had been running in this repository, including the scan that
+  stops passwords and keys being committed to a public repo.** Found while explaining
+  why a broken test reached `main`. The mobile app's tooling sets `core.hooksPath` for
+  the *whole* repository whenever packages are installed under `mobile/`, and git then
+  ignores the project's own checks completely. The file it pointed at instead said
+  `mobile pre-commit hook disabled` and did nothing. Both of the project's gates were
+  therefore silently off: the credential scan, on a public repository, and the check
+  that runs a commit's own PHP tests. Nothing reported this, because doing nothing and
+  passing cleanly look identical.
+  That mobile hook now hands control to the project's real checks rather than
+  overriding them, so the gates survive the next package install instead of being
+  switched off by it. The installer no longer claims both gates are live without
+  looking: it detects the override, confirms the checks are genuinely reachable, and
+  refuses with instructions when they are not. Line-ending rules now cover both hook
+  locations, which the previous pattern missed because it only matched the repository
+  root. Verified by attempting real commits: one carrying a fake access key and one
+  carrying a failing test were both blocked, and neither commit was created.
+  No evidence any secret was actually committed while the scan was off; that has not
+  been audited and is tracked separately.
+
 - **A post longer than a few lines could not be read in full in the mobile app, and
   posts written on the website appeared as raw code.** Reported by a member with a
   screenshot: her post opened showing `<p class="mb-1 leading-relaxed…` and tapping

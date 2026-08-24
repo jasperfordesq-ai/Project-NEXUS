@@ -58,6 +58,61 @@ SHIM
   echo "installed: .git/hooks/$hook -> scripts/git-hooks/$hook (shim)"
 done
 
+# ---------------------------------------------------------------------------
+# Is .git/hooks even what git consults?
+#
+# 🔴 Added 2026-08-24, after finding that NO git hook had been running here.
+# `core.hooksPath` overrides .git/hooks COMPLETELY. mobile/package.json runs
+# `husky mobile/.husky` from the repo root in its "prepare" script, so any
+# `npm install` under mobile/ sets core.hooksPath=mobile/.husky/_ for the whole
+# repository. mobile/.husky/pre-commit was `exit 0`, so both gates below were
+# silently dead - including the credential scan, on a PUBLIC repo - while this
+# script cheerfully printed "Done. Both pre-commit gates are now live."
+#
+# Reporting "installed" when the installed thing cannot run is the same class of
+# quiet failure the shim above exists to prevent, so verify instead of assuming.
+# ---------------------------------------------------------------------------
+HOOKS_PATH="$(git config --get core.hooksPath || true)"
+
+if [ -n "$HOOKS_PATH" ]; then
+  case "$HOOKS_PATH" in
+    /*) HP="$HOOKS_PATH" ;;
+     *) HP="$ROOT/$HOOKS_PATH" ;;
+  esac
+
+  # husky puts a dispatcher in <dir>/_ that sources <dir>/<hookname>, so check
+  # both the directory git points at and its parent.
+  DELEGATES=""
+  for candidate in "$HP/pre-commit" "$(dirname "$HP")/pre-commit"; do
+    if [ -f "$candidate" ] && grep -q "scripts/git-hooks/pre-commit" "$candidate" 2>/dev/null; then
+      DELEGATES="$candidate"
+      break
+    fi
+  done
+
+  if [ -z "$DELEGATES" ]; then
+    echo "" >&2
+    echo "==============================================================" >&2
+    echo " core.hooksPath = $HOOKS_PATH" >&2
+    echo "" >&2
+    echo " git IGNORES .git/hooks while that is set, so the shim this" >&2
+    echo " script just wrote will NEVER RUN. Nothing above is live." >&2
+    echo "" >&2
+    echo " Point that hook at the repo gate, e.g. in" >&2
+    echo "   $(dirname "$HP")/pre-commit" >&2
+    echo " end with:  sh \"\$(git rev-parse --show-toplevel)/scripts/git-hooks/pre-commit\" \"\$@\"" >&2
+    echo "" >&2
+    echo " Or clear the override:  git config --unset core.hooksPath" >&2
+    echo " (temporary - the next npm install under mobile/ re-sets it)" >&2
+    echo "==============================================================" >&2
+    exit 1
+  fi
+
+  echo ""
+  echo "note: core.hooksPath = $HOOKS_PATH (git ignores .git/hooks)."
+  echo "      $DELEGATES delegates to the repo gate, so it still runs."
+fi
+
 echo ""
 echo "Done. Both pre-commit gates are now live:"
 echo "  GATE A  credential scan          — every commit (needs git + grep)"
