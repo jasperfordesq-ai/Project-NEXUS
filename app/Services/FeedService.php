@@ -121,6 +121,20 @@ class FeedService
         $groupId = $filters['group_id'] ?? null;
         $subtype = $filters['subtype'] ?? null;
         $cursor = $filters['cursor'] ?? null;
+        /*
+          🔴 The DETAIL endpoints must not truncate, and this is why the option exists.
+
+          `SocialController::showPost()` is implemented as `getFeed(['post_id' => …])`, so it
+          inherited the list's 500-character limit — the one place a limit must never apply.
+          Reported by a member on 2026-08-24 ("It won't let me read more") and measured: a
+          1,268-character post came back from `/v2/feed/posts/210` as **503 characters** with
+          `content_truncated: true`. The full text of any post over 500 characters was
+          unreachable in the mobile app, and the "Read more" control took you to a screen
+          that had no more to show.
+
+          The list keeps truncating on purpose: it is 20 items a page and the payload matters.
+        */
+        $fullContent = (bool) ($filters['full_content'] ?? false);
         $commentsHasDeletedAt = Schema::hasColumn('comments', 'deleted_at');
 
         // Decode HMAC-signed cursor: base64(sig.json_payload)
@@ -484,7 +498,9 @@ class FeedService
                 $imageUrl = PodcastService::safePodcastArtworkPath($imageUrl);
             }
 
-            $contentResult = $this->truncateWithFlag($row->content ?? '', 500);
+            $contentResult = $fullContent
+                ? ['text' => $row->content ?? '', 'truncated' => false]
+                : $this->truncateWithFlag($row->content ?? '', 500);
 
             $entry = [
                 'id' => (int) $row->source_id,
@@ -1639,7 +1655,14 @@ class FeedService
     /**
      * Get a single feed item by type and ID.
      */
-    public function getItem(string $type, int $id, ?int $userId): ?array
+    /**
+     * One feed item in full.
+     *
+     * 🔴 `$fullContent` defaults TRUE here, unlike the list. This is a detail lookup: every
+     * caller of it is showing one item on its own screen, where clipping the body at 500
+     * characters is the bug, not the feature. See the note in `getFeed()`.
+     */
+    public function getItem(string $type, int $id, ?int $userId, bool $fullContent = true): ?array
     {
         $tenantId = TenantContext::getId();
         if ($type === 'post' && !FeedItemTables::canView('post', $id, $userId)) {
@@ -1705,7 +1728,9 @@ class FeedService
 
         // Format like the feed does — enrich with like status
         $item = $items[0];
-        $contentResult = $this->truncateWithFlag($item['content'] ?? '', 500);
+        $contentResult = $fullContent
+            ? ['text' => $item['content'] ?? '', 'truncated' => false]
+            : $this->truncateWithFlag($item['content'] ?? '', 500);
 
         $isLiked = false;
         if ($userId) {

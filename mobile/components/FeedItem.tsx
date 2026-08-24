@@ -23,6 +23,7 @@ import {
   type FeedTargetType,
 } from '@/lib/api/feedModeration';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { toPlainText } from '@/lib/utils/plainText';
 import { ApiResponseError } from '@/lib/api/client';
 import BottomSheet from '@/components/ui/BottomSheet';
 import NativePressable from '@/components/ui/NativePressable';
@@ -599,6 +600,12 @@ function FeedItemInner({
   const author = getFeedAuthor(item, t('stories.member'));
   const authorName = author.name;
   const detailTarget = disableDetailNavigation ? null : getDetailTarget(item);
+  /*
+    `disableDetailNavigation` is only ever set by the post's own page, so it is the honest
+    signal for "this IS the detail view" — the place that must show everything.
+  */
+  const isDetailView = disableDetailNavigation;
+  const postBody = toPlainText(item.content);
   const isCommentable = COMMENTABLE_TYPES.has(item.type);
   const canBookmark = BOOKMARKABLE_TYPES.has(item.type);
   const commentsCount = commentsCountOverride ?? localCommentsCount;
@@ -801,15 +808,34 @@ function FeedItemInner({
 
             {item.title ? (
               <Text className="text-base font-bold leading-6" style={{ color: theme.text }}>
-                {item.title}
+                {toPlainText(item.title)}
               </Text>
             ) : null}
-            {item.content ? (
+            {postBody ? (
               <View className="gap-1">
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={item.content_truncated ? 4 : 5}>
-                  {item.content}
+                {/*
+                  🔴 Two faults a member reported on 2026-08-24, in one screenshot.
+
+                  "Writing also garbled": a post written on the website is stored as HTML, and
+                  this rendered it literally — her post began `<p class="mb-1 leading-relaxed
+                  text-[var(--text-primary)]"><span>So I had meeting booked…`. Six other
+                  screens in this app already strip HTML; the feed, which is the first screen
+                  anyone sees, did not. `toPlainText` keeps the paragraph breaks.
+
+                  "It won't let me read more": on the post's OWN page this text was still
+                  clipped to four lines, and the only control was a "Read more" that
+                  navigates to the page you are already on — so it was disabled and grey, and
+                  the rest of the post was unreachable. On the detail screen the body is now
+                  shown in full and the button is not rendered at all.
+                */}
+                <Text
+                  className="text-sm leading-5"
+                  style={{ color: theme.textSecondary }}
+                  numberOfLines={isDetailView ? undefined : (item.content_truncated ? 4 : 5)}
+                >
+                  {postBody}
                 </Text>
-                {item.content.length > 150 || item.content_truncated ? (
+                {!isDetailView && (postBody.length > 150 || item.content_truncated) ? (
                   <HeroButton
                     size="sm"
                     variant="ghost"

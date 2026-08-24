@@ -221,7 +221,14 @@ class SocialController extends BaseApiController
     {
         $userId = $this->getOptionalUserId();
 
-        $result = $this->feedService->getFeed($userId, ['post_id' => $id, 'limit' => 1]);
+        // 🔴 `full_content`: this is the post's own page. Without it the reader gets the
+        // list's 500-character preview and no way to see the rest — measured 2026-08-24,
+        // a 1,268-character post came back as 503 characters.
+        $result = $this->feedService->getFeed($userId, [
+            'post_id' => $id,
+            'limit' => 1,
+            'full_content' => true,
+        ]);
 
         if (empty($result['items'])) {
             return $this->respondWithError('NOT_FOUND', __('api.post_not_found'), null, 404);

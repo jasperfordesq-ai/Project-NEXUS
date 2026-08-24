@@ -193,6 +193,81 @@ describe('FeedItem', () => {
     jest.clearAllMocks();
   });
 
+  /**
+   * 🔴 A member's bug report, 2026-08-24, with a screenshot of her own post open in the app:
+   *
+   *   "It won't let me read more"   — the post's own page clipped the body to four lines and
+   *                                   the only control was a "Read more" that goes to the
+   *                                   page she was already on, so it was disabled and grey.
+   *   "Writing also garbled"        — the post is stored as HTML (written on the website) and
+   *                                   the app rendered the markup literally, starting
+   *                                   `<p class="mb-1 leading-relaxed …"><span>So I had…`.
+   *
+   * Both halves are pinned here. The server half — the detail endpoint returning a
+   * 500-character preview — is pinned in tests/Laravel/Feature/Feed/.
+   */
+  function postAs(overrides: Record<string, unknown>) {
+    return {
+      id: 210,
+      type: 'post',
+      title: null,
+      content: 'A post.',
+      image_url: null,
+      user_id: 1,
+      author_name: 'Alan',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-07-13T09:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+      ...overrides,
+    } as unknown as FeedItemType;
+  }
+
+  const REPORTED_POST =
+    '<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>So I had meeting booked in this '
+    + 'morning for 10am to chat with a Time Bank member about what they need.</span></p>';
+
+  it('shows a post written on the website as words, not as markup', () => {
+    const { getByText, queryByText } = render(<FeedItem item={postAs({ content: REPORTED_POST })} />);
+
+    expect(
+      getByText('So I had meeting booked in this morning for 10am to chat with a Time Bank member about what they need.'),
+    ).toBeTruthy();
+    expect(queryByText(/<p class=/)).toBeNull();
+    expect(queryByText(/<span>/)).toBeNull();
+  });
+
+  it('shows the whole post on the post\'s own page, with no dead Read more', () => {
+    const long = `${'This is the body of a long post. '.repeat(20)}`;
+    const { queryByText, getByText } = render(
+      <FeedItem item={postAs({ content: long, content_truncated: false })} disableDetailNavigation />,
+    );
+
+    // 🔴 The load-bearing assertion: no line clamp on the detail view. `numberOfLines`
+    // undefined means the reader gets all of it.
+    expect(getByText(long.trim()).props.numberOfLines).toBeUndefined();
+    // And the control that led nowhere is gone rather than merely disabled.
+    expect(queryByText('readMore')).toBeNull();
+  });
+
+  it('still offers Read more in the feed, where it has somewhere to go', () => {
+    const long = `${'This is the body of a long post. '.repeat(20)}`;
+    const { getByText } = render(<FeedItem item={postAs({ content: long, content_truncated: true })} />);
+
+    // The translation stub in this file returns the key, so this asserts the control is
+    // rendered — the wording itself is covered by the locale content tests.
+    expect(getByText('readMore')).toBeTruthy();
+    expect(getByText(long.trim()).props.numberOfLines).toBe(4);
+  });
+
   it('falls back to the default visual config for feed item types not known by the mobile client', () => {
     const item = {
       id: 501,

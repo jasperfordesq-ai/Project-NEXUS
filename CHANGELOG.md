@@ -29,6 +29,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A post longer than a few lines could not be read in full in the mobile app, and
+  posts written on the website appeared as raw code.** Reported by a member with a
+  screenshot: her post opened showing `<p class="mb-1 leading-relaxed…` and tapping
+  "Read more" did nothing. She was right on both counts, and the first one was a
+  server fault, not an app one.
+  A post's own page was being built by the same code that builds the feed list, so
+  it inherited the list's 500-character preview: an 872-character post came back as
+  503 characters. There was no request any part of the platform could make that
+  returned the rest of it. The post page now returns the whole post; the feed list
+  still sends a preview, deliberately, because it carries twenty posts at a time.
+  In the app, the post page was also still clipping the text to four lines and
+  offering a "Read more" button that pointed at the page you were already on — so it
+  was greyed out and led nowhere. It now shows the whole post and drops the button.
+  And posts written on the website are stored with formatting markup, which the feed
+  was printing literally; it is now shown as words, with the paragraph breaks kept.
+  Six other screens in the app already did this — the feed, the first screen anyone
+  sees, was the one that did not.
+
 - **ASP.NET listing search and filters now narrow the catalogue instead of
   silently returning every listing.** The endpoint now honours the React app's
   search text, offer/request type, category, estimated-hours range, delivery
