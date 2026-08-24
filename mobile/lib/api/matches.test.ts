@@ -68,6 +68,57 @@ describe('matches API', () => {
     expect(Number.isFinite(match.id)).toBe(true);
   });
 
+  /**
+   * 🔴 The meta block is the server's explanation for an empty list, and this client used to
+   * drop it. Copied from the live answer on 2026-08-24, where the fixture member had no
+   * coordinates and therefore no listing matches at all: the engine's geographic gate cannot
+   * consider a physical listing without an area, and the screen said "No matches yet".
+   */
+  it('carries the reason an empty list is empty', async () => {
+    (api.get as jest.Mock).mockResolvedValue({
+      data: {
+        matches: [],
+        meta: {
+          total: 0,
+          modules: ['listings', 'groups', 'volunteering', 'events'],
+          min_score: 1,
+          needs_location: true,
+          degraded: true,
+          degraded_reason: 'no_coordinates',
+          has_active_listings: true,
+          paused: false,
+        },
+      },
+    });
+
+    const result = await getMatches();
+
+    expect(result.data).toEqual([]);
+    expect(result.meta).toEqual({
+      needsLocation: true,
+      degraded: true,
+      degradedReason: 'no_coordinates',
+      hasActiveListings: true,
+      paused: false,
+    });
+  });
+
+  it('treats an absent meta block as "nothing to explain", never as bad news', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: { matches: [] } });
+
+    const result = await getMatches();
+
+    // hasActiveListings must default TRUE: reading silence as "you have no listings" would
+    // show the member a reason the server never gave.
+    expect(result.meta).toEqual({
+      needsLocation: false,
+      degraded: false,
+      degradedReason: null,
+      hasActiveListings: true,
+      paused: false,
+    });
+  });
+
   it('reads the module-specific id field for volunteering and events', async () => {
     (api.get as jest.Mock).mockResolvedValue({
       data: {

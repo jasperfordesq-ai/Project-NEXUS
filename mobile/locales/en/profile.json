@@ -43,7 +43,17 @@
     "dismiss": "Dismiss",
     "emptyTitle": "No matches yet",
     "emptySubtitle": "New recommendations will appear here when they are available.",
-    "errorTitle": "Could not load matches"
+    "errorTitle": "Could not load matches",
+    "empty": {
+      "locationTitle": "Add your area to see matches",
+      "locationBody": "We match on what is near you, so we cannot look until your profile says roughly where you are. Nobody sees your exact address.",
+      "locationAction": "Add my area",
+      "pausedTitle": "Matching is paused",
+      "pausedBody": "Your settings have matching turned off, so nothing is being suggested to you at the moment.",
+      "listingsTitle": "Post something to start matching",
+      "listingsBody": "Matches are built around what you offer and what you need. Post your first offer or request and suggestions will start arriving.",
+      "listingsAction": "Post an offer or request"
+    }
   },
   "reviews": {
     "title": "Reviews",

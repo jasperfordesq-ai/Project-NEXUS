@@ -29,6 +29,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the mobile app, "No matches yet" was hiding the real reason, which was
+  usually fixable in ten seconds.** The server already explains an empty match
+  list — no area on your profile, matching switched off, or nothing posted yet —
+  and the app was throwing that explanation away. So a member with no location was
+  told "no matches yet", which reads as "nobody suits you", when the truth was "we
+  can't look until you tell us roughly where you are". Matching is built on what is
+  near you, so without an area the app genuinely cannot suggest anything local.
+  The screen now says which of the three reasons applies, in all seven languages,
+  and offers the button that fixes it. Two mistakes it deliberately avoids: it
+  never guesses a reason the server didn't give, and it doesn't blame your location
+  when you have matches but happen to be looking at an empty tab.
+  Measured on a device while fixing it: with an area on the profile the member gets
+  a real listing match at 51%; with the area removed, that match disappears
+  completely.
+
 - **Volunteers were told to check their details when they were actually waiting
   for the organisation.** Logging volunteering hours needs an approved
   application first. When it wasn't approved, the page said "Your hours could not

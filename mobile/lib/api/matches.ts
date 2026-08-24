@@ -69,12 +69,44 @@ interface RawMatch {
 
 interface MatchesPayload {
   matches?: RawMatch[];
+  meta?: RawMatchesMeta;
+}
+
+/**
+ * 🔴 The server explains an empty result and the app used to discard it.
+ *
+ * `GET /v2/matches/all` returns a `meta` block beside the list — `needs_location`,
+ * `degraded`, `degraded_reason`, `has_active_listings`, `paused` — and this client read only
+ * `matches`. Measured on 2026-08-24 with the fixture member: **zero listing matches**, and
+ * the server's own answer was `needs_location: true, degraded: true, degraded_reason:
+ * "no_coordinates"`. The member has no coordinates, so the engine's geographic gate cannot
+ * consider any physical listing, and the app showed the generic "no matches yet" — which
+ * reads as "nobody suits you" when the truth is "we cannot look until you add your area".
+ *
+ * That also explains something recorded as unexplained on 2026-08-23: a second candidate
+ * listing "would not enter the engine's result set at all". It could not — no coordinates.
+ */
+export interface MatchesMeta {
+  needsLocation: boolean;
+  degraded: boolean;
+  degradedReason: string | null;
+  hasActiveListings: boolean;
+  paused: boolean;
+}
+
+interface RawMatchesMeta {
+  needs_location?: boolean;
+  degraded?: boolean;
+  degraded_reason?: string | null;
+  has_active_listings?: boolean;
+  paused?: boolean;
 }
 
 type RawMatchesResponse = RawMatch[] | MatchesPayload | { data?: RawMatch[] | MatchesPayload };
 
 export interface MatchesResponse {
   data: MatchItem[];
+  meta: MatchesMeta;
 }
 
 const SOURCE_TYPES: readonly MatchSourceType[] = ['listing', 'job', 'volunteering', 'group', 'event'];
@@ -115,6 +147,18 @@ function normalizeMatch(raw: RawMatch): MatchItem {
   };
 }
 
+function normalizeMeta(raw: RawMatchesMeta | undefined): MatchesMeta {
+  return {
+    needsLocation: raw?.needs_location === true,
+    degraded: raw?.degraded === true,
+    degradedReason: raw?.degraded_reason ?? null,
+    // Absent means "not told" — and an unknown state must not read as "you have no
+    // listings", which would put a wrong explanation in front of the member.
+    hasActiveListings: raw?.has_active_listings !== false,
+    paused: raw?.paused === true,
+  };
+}
+
 export async function getMatches(): Promise<MatchesResponse> {
   const response = await api.get<RawMatchesResponse>(`${API_V2}/matches/all`);
   const payload =
@@ -128,7 +172,9 @@ export async function getMatches(): Promise<MatchesResponse> {
       ? payload.matches ?? []
       : [];
 
-  return { data: raw.map(normalizeMatch) };
+  const meta = !Array.isArray(payload) && payload && 'meta' in payload ? payload.meta : undefined;
+
+  return { data: raw.map(normalizeMatch), meta: normalizeMeta(meta) };
 }
 
 export function dismissMatch(listingId: number): Promise<unknown> {

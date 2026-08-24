@@ -43,7 +43,17 @@
     "dismiss": "Dismiss",
     "emptyTitle": "Sin coincidencias aún",
     "emptySubtitle": "New recommendations will appear here when they are available.",
-    "errorTitle": "Could not load matches"
+    "errorTitle": "Could not load matches",
+    "empty": {
+      "locationTitle": "Indica tu zona para ver coincidencias",
+      "locationBody": "Buscamos lo que hay cerca de ti, así que no podemos buscar hasta que tu perfil indique, a grandes rasgos, dónde estás. Nadie ve tu dirección exacta.",
+      "locationAction": "Indicar mi zona",
+      "pausedTitle": "Las coincidencias están en pausa",
+      "pausedBody": "En tus ajustes las coincidencias están desactivadas, así que ahora mismo no se te sugiere nada.",
+      "listingsTitle": "Publica algo para empezar",
+      "listingsBody": "Las coincidencias se construyen con lo que ofreces y lo que necesitas. Publica tu primera oferta o petición y empezarán a llegar sugerencias.",
+      "listingsAction": "Publicar una oferta o petición"
+    }
   },
   "reviews": {
     "title": "Reviews",

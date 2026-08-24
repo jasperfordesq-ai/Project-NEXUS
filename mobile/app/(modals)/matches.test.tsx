@@ -73,6 +73,14 @@ jest.mock('react-i18next', () => ({
         'matches.emptyTitle': 'No matches yet',
         'matches.emptySubtitle': 'New recommendations will appear here when they are available.',
         'matches.errorTitle': 'Could not load matches',
+        'matches.empty.locationTitle': 'Add your area to see matches',
+        'matches.empty.locationBody': 'We match on what is near you.',
+        'matches.empty.locationAction': 'Add my area',
+        'matches.empty.pausedTitle': 'Matching is paused',
+        'matches.empty.pausedBody': 'Your settings have matching turned off.',
+        'matches.empty.listingsTitle': 'Post something to start matching',
+        'matches.empty.listingsBody': 'Matches are built around what you offer.',
+        'matches.empty.listingsAction': 'Post an offer or request',
       };
       return map[key] ?? key;
     },
@@ -113,11 +121,110 @@ describe('MatchesScreen', () => {
     mockPush.mockClear();
     mockDismissMatch.mockResolvedValue({});
     mockUseApi.mockReturnValue({
-      data: { data: [listingMatch, jobMatch] },
+      data: {
+        data: [listingMatch, jobMatch],
+        meta: { needsLocation: false, degraded: false, degradedReason: null, hasActiveListings: true, paused: false },
+      },
       isLoading: false,
       error: null,
       refresh: jest.fn(),
     });
+  });
+
+  /**
+   * 🔴 An empty matches list has a reason and the server sends it. Measured against the
+   * live API on 2026-08-24: the fixture member got zero listing matches with
+   * `needs_location: true, degraded_reason: "no_coordinates"` — the engine cannot consider
+   * a physical listing for someone with no area — and the screen said "No matches yet",
+   * which reads as "nobody suits you".
+   */
+  function emptyWith(meta: Record<string, unknown>) {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [],
+        meta: { needsLocation: false, degraded: false, degradedReason: null, hasActiveListings: true, paused: false, ...meta },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+  }
+
+  it('says a missing area is why there are no matches, and offers to fix it', () => {
+    emptyWith({ needsLocation: true, degraded: true, degradedReason: 'no_coordinates' });
+
+    const { getByText, getByTestId } = render(<MatchesScreen />);
+
+    expect(getByTestId('matches-empty-location')).toBeTruthy();
+    expect(getByText('Add your area to see matches')).toBeTruthy();
+    fireEvent.press(getByText('Add my area'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/edit-profile');
+  });
+
+  it('says matching is paused when the member turned it off, and offers no action', () => {
+    emptyWith({ paused: true });
+
+    const { getByText, queryByText, getByTestId } = render(<MatchesScreen />);
+
+    expect(getByTestId('matches-empty-paused')).toBeTruthy();
+    expect(getByText('Matching is paused')).toBeTruthy();
+    // There is no matching-preferences screen in this app, so promising one would be a lie.
+    expect(queryByText('Add my area')).toBeNull();
+  });
+
+  it('asks for a first listing when the member has none', () => {
+    emptyWith({ hasActiveListings: false });
+
+    const { getByText, getByTestId } = render(<MatchesScreen />);
+
+    expect(getByTestId('matches-empty-listings')).toBeTruthy();
+    fireEvent.press(getByText('Post an offer or request'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/new-exchange');
+  });
+
+  it('does not blame the location when the member has matches but the filter has none', () => {
+    // A volunteering match exists; the Listings tab is empty. The member is not missing a
+    // location — this tab simply has nothing in it.
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [{ ...jobMatch, source_type: 'volunteering' }],
+        meta: { needsLocation: true, degraded: true, degradedReason: 'no_coordinates', hasActiveListings: true, paused: false },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, queryByTestId } = render(<MatchesScreen />);
+
+    fireEvent.press(getByText('Listings'));
+
+    expect(queryByTestId('matches-empty-location')).toBeNull();
+    expect(queryByTestId('matches-empty-none')).toBeTruthy();
+  });
+
+  it('keeps the plain wording when the server gives no reason', () => {
+    emptyWith({});
+
+    const { getByText, getByTestId } = render(<MatchesScreen />);
+
+    expect(getByTestId('matches-empty-none')).toBeTruthy();
+    expect(getByText('No matches yet')).toBeTruthy();
+  });
+
+  it('does not invent a "no listings" reason when the server did not say', () => {
+    // `has_active_listings` absent means "not told". Reading that as false would put a
+    // wrong explanation in front of the member.
+    mockUseApi.mockReturnValue({
+      data: { data: [], meta: { needsLocation: false, degraded: false, degradedReason: null, hasActiveListings: true, paused: false } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<MatchesScreen />);
+
+    expect(getByTestId('matches-empty-none')).toBeTruthy();
   });
 
   it('renders match stats and cards', () => {

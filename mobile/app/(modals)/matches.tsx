@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -87,6 +87,35 @@ export default function MatchesScreen() {
     : 0;
   const hotMatches = matches.filter((match) => match.match_score >= 80).length;
   const sourceCount = new Set(matches.map((match) => match.source_type)).size;
+
+  /**
+   * 🔴 An empty matches list has a REASON, and the server sends it. This screen used to
+   * show one generic sentence for every case, so a member whose profile has no area — which
+   * stops the engine considering any physical listing at all — was told "no matches yet",
+   * i.e. "nobody suits you", when the truth was "we cannot look yet, and here is what to do".
+   * Measured on 2026-08-24 against the live API: zero listing matches with
+   * `needs_location: true, degraded_reason: "no_coordinates"`.
+   *
+   * Order matters. Paused is the member's own choice, so it is said first; then a missing
+   * area, which blocks everything; then having nothing posted yet. Anything else keeps the
+   * original wording.
+   */
+  /*
+    🔴 Only when there is nothing AT ALL. A member who has matches but taps a filter with
+    none in it must not be told to add their area — they already have matches; this tab is
+    just empty. Caught while checking the fix on a device, where the volunteering match
+    would have sat behind a "you have no location" message.
+  */
+  const hasAnyMatch = matches.length > 0;
+  const emptyReason: 'paused' | 'location' | 'listings' | 'none' = hasAnyMatch
+    ? 'none'
+    : data?.meta?.paused
+    ? 'paused'
+    : data?.meta?.needsLocation
+      ? 'location'
+      : data?.meta?.hasActiveListings === false
+        ? 'listings'
+        : 'none';
 
   async function handleDismiss(match: MatchItem) {
     if (match.source_type !== 'listing' || dismissingId !== null) return;
@@ -174,11 +203,50 @@ export default function MatchesScreen() {
             ) : (
               <View className="px-4 py-8">
                 <EmptyState
-                  icon={error ? 'warning-outline' : 'sparkles-outline'}
-                  title={error ? t('matches.errorTitle') : t('matches.emptyTitle')}
-                  subtitle={error ? String(error) : t('matches.emptySubtitle')}
-                  actionLabel={error ? t('common:buttons.retry') : undefined}
-                  onAction={error ? () => void refresh() : undefined}
+                  icon={
+                    error
+                      ? 'warning-outline'
+                      : emptyReason === 'location'
+                        ? 'location-outline'
+                        : emptyReason === 'paused'
+                          ? 'pause-circle-outline'
+                          : emptyReason === 'listings'
+                            ? 'add-circle-outline'
+                            : 'sparkles-outline'
+                  }
+                  title={
+                    error
+                      ? t('matches.errorTitle')
+                      : emptyReason === 'none'
+                        ? t('matches.emptyTitle')
+                        : t(`matches.empty.${emptyReason}Title`)
+                  }
+                  subtitle={
+                    error
+                      ? String(error)
+                      : emptyReason === 'none'
+                        ? t('matches.emptySubtitle')
+                        : t(`matches.empty.${emptyReason}Body`)
+                  }
+                  actionLabel={
+                    error
+                      ? t('common:buttons.retry')
+                      : emptyReason === 'location'
+                        ? t('matches.empty.locationAction')
+                        : emptyReason === 'listings'
+                          ? t('matches.empty.listingsAction')
+                          : undefined
+                  }
+                  onAction={
+                    error
+                      ? () => void refresh()
+                      : emptyReason === 'location'
+                        ? () => router.push('/(modals)/edit-profile' as Href)
+                        : emptyReason === 'listings'
+                          ? () => router.push('/(modals)/new-exchange' as Href)
+                          : undefined
+                  }
+                  testID={`matches-empty-${emptyReason}`}
                 />
               </View>
             )

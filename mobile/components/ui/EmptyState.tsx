@@ -15,13 +15,15 @@ interface EmptyStateProps {
   subtitle?: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Lets a test assert WHICH empty state is on screen, not just that one is. */
+  testID?: string;
 }
 
-export default function EmptyState({ icon, title, subtitle, actionLabel, onAction }: EmptyStateProps) {
+export default function EmptyState({ icon, title, subtitle, actionLabel, onAction, testID }: EmptyStateProps) {
   const theme = useTheme();
 
   return (
-    <View className="items-center justify-center px-8 py-12">
+    <View className="items-center justify-center px-8 py-12" testID={testID}>
       <Ionicons name={icon} size={48} color={theme.textMuted} style={{ marginBottom: 16 }} />
       <Text className="text-lg font-semibold text-foreground text-center mb-2">{title}</Text>
       {subtitle ? (

@@ -43,7 +43,17 @@
     "dismiss": "Díbhe",
     "emptyTitle": "Níl aon mheaitseáil ann fós",
     "emptySubtitle": "Beidh moltaí nua le feiceáil anseo nuair a bheidh siad ar fáil.",
-    "errorTitle": "Níorbh fhéidir na meaitseálacha a lódáil"
+    "errorTitle": "Níorbh fhéidir na meaitseálacha a lódáil",
+    "empty": {
+      "locationTitle": "Cuir do cheantar leis chun cluichí a fheiceáil",
+      "locationBody": "Déanaimid meaitseáil ar an rud atá in aice leat, mar sin ní féidir linn breathnú go dtí go ndeir do phróifíl cá bhfuil tú, go garbh. Ní fheiceann aon duine do sheoladh cruinn.",
+      "locationAction": "Cuir mo cheantar leis",
+      "pausedTitle": "Tá an mheaitseáil ar sos",
+      "pausedBody": "Tá an mheaitseáil múchta i do shocruithe, mar sin níl aon rud á mholadh duit faoi láthair.",
+      "listingsTitle": "Postáil rud éigin chun tosú ag meaitseáil",
+      "listingsBody": "Tógtar cluichí timpeall ar an rud a thugann tú agus an rud a theastaíonn uait. Postáil do chéad tairiscint nó iarratas agus tosóidh moltaí ag teacht.",
+      "listingsAction": "Postáil tairiscint nó iarratas"
+    }
   },
   "reviews": {
     "title": "Léirmheasanna",
