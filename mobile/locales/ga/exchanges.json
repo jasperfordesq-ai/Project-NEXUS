@@ -44,8 +44,6 @@
       "participants": "Rannpháirtithe",
       "noParticipants": "Níor cuireadh rannpháirtí ar bith leis fós.",
       "splitPreview": "Réamhamharc scoilte",
-      "splitFrom": "Ó bhall #{{id}}",
-      "splitTo": "Do bhall #{{id}}: {{hours}} uair",
       "confirmed": "Deimhnithe",
       "unconfirmed": "Gan daingniú",
       "roles": {
@@ -62,7 +60,9 @@
         "confirmFailed": "Níorbh fhéidir linn d'uaireanta a dhearbhú. Bain triail eile as.",
         "completeFailed": "Níorbh fhéidir linn an malartú seo a chur i gcrích. Bain triail eile as.",
         "cancelFailed": "Níorbh fhéidir linn an malartú seo a chealú. Bain triail eile as."
-      }
+      },
+      "splitShare": "{{name}} — {{hours}} uair",
+      "splitUnknownMember": "Ball #{{id}}"
     },
     "emptyTitle": "Níor aimsíodh aon mhalartuithe grúpa",
     "emptyAll": "Beidh malartuithe grúpa a eagraíonn tú nó a nglacann tú leo le feiceáil anseo.",

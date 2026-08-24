@@ -45,19 +45,45 @@ export interface GroupExchangeParticipant {
   notes: string | null;
 }
 
+/**
+ * One participant's share of the exchange, as the server computes it.
+ *
+ * 🔴 This was typed as `Record<string, Record<string, number>>` — a from-member /
+ * to-member matrix — and the server has never returned that. `calculateSplit()` returns a
+ * flat list of `{user_id, role, hours}` for every split type (equal, weighted and custom).
+ * Nothing checked, so the screen iterated the list's indices and then each object's KEYS,
+ * and showed members lines like "From member #0" and "To member #role: provider hours".
+ * Seen on a device on 2026-08-24 on a group exchange created through the app.
+ *
+ * There is no transfer matrix in the model at all: hours are allocated per participant
+ * within their role, which is why the preview now reads as a list of shares.
+ */
+export interface GroupExchangeSplitShare {
+  user_id: number;
+  role: 'provider' | 'receiver' | string;
+  hours: number;
+}
+
 export interface GroupExchangeDetail extends GroupExchange {
   tenant_id: number;
   listing_id: number | null;
   broker_id: number | null;
   broker_notes: string | null;
   participants: GroupExchangeParticipant[];
-  calculated_split: Record<string, Record<string, number>>;
+  calculated_split: GroupExchangeSplitShare[];
 }
 
+/**
+ * 🔴 Typed from the server, not from the client's assumption. `GET /v2/group-exchanges`
+ * answers `{ data: GroupExchange[], meta: { has_more } }`. This interface described
+ * `{ data: { data, has_more } }`, which nothing has ever sent, and the list screen read
+ * that shape faithfully — so it was always empty. See the note in
+ * `app/(modals)/group-exchanges.tsx`.
+ */
 export interface GroupExchangeListResponse {
-  data: {
-    data: GroupExchange[];
-    has_more: boolean;
+  data: GroupExchange[];
+  meta?: {
+    has_more?: boolean;
   };
 }
 

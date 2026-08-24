@@ -129,6 +129,17 @@ function GroupExchangeDetailScreenInner() {
   const canConfirm = exchange.status === 'pending_confirmation' && Boolean(currentParticipant) && !currentParticipant?.confirmed;
   const canComplete = isOrganizer && exchange.status === 'pending_confirmation' && allConfirmed;
   const canCancel = isOrganizer && !['completed', 'cancelled'].includes(exchange.status);
+  /*
+    Defend against the shape as well as reading it correctly: an older server, or a
+    response that arrives as the previous map form, must not crash the screen or print
+    field names again. Anything that is not a list of shares shows nothing.
+  */
+  const splitShares = Array.isArray(exchange.calculated_split)
+    ? exchange.calculated_split.filter(
+        (share) => share && typeof share.user_id === 'number' && typeof share.hours === 'number',
+      )
+    : [];
+  const participantNames = new Map(participants.map((participant) => [participant.user_id, participant.name]));
   const createdDate = formatDate(exchange.created_at);
 
   return (
@@ -197,18 +208,30 @@ function GroupExchangeDetailScreenInner() {
         </HeroCard.Body>
       </HeroCard>
 
-      {Object.keys(exchange.calculated_split ?? {}).length > 0 ? (
+      {/*
+        🔴 This block used to read `calculated_split` as a from-member / to-member matrix,
+        which the server has never sent. On a real group exchange it printed the response's
+        own field names at the member: "From member #0", "To member #role: provider hours".
+        The server sends one row per participant — a share, not a transfer — so that is what
+        is shown, named from the participants list where the id is one of them.
+      */}
+      {splitShares.length > 0 ? (
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.splitPreview')}</Text>
-            {Object.entries(exchange.calculated_split).map(([fromId, rows]) => (
-              <Surface key={fromId} variant="secondary" className="rounded-panel p-3">
-                <Text className="text-sm font-medium" style={{ color: theme.text }}>{t('groupExchanges.detail.splitFrom', { id: fromId })}</Text>
-                {Object.entries(rows).map(([toId, hours]) => (
-                  <Text key={toId} className="text-sm" style={{ color: theme.textSecondary }}>
-                    {t('groupExchanges.detail.splitTo', { id: toId, hours })}
-                  </Text>
-                ))}
+            {splitShares.map((share, index) => (
+              <Surface key={`${share.user_id}-${share.role}-${index}`} variant="secondary" className="rounded-panel p-3">
+                <Text className="text-sm font-medium" style={{ color: theme.text }}>
+                  {t('groupExchanges.detail.splitShare', {
+                    name: participantNames.get(share.user_id) ?? t('groupExchanges.detail.splitUnknownMember', { id: share.user_id }),
+                    hours: share.hours,
+                  })}
+                </Text>
+                <Text className="text-sm" style={{ color: theme.textSecondary }}>
+                  {share.role === 'receiver'
+                    ? t('groupExchanges.detail.roles.receiver')
+                    : t('groupExchanges.detail.roles.provider')}
+                </Text>
               </Surface>
             ))}
           </HeroCard.Body>

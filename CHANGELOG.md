@@ -29,6 +29,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the mobile app, group exchanges never appeared in the list, and the split
+  of hours was shown as raw database field names.** Found by creating a real group
+  exchange on a device — a screen that had only ever been looked at before.
+  The exchange was created successfully and the app opened it, but the list it
+  came from still said "No group exchanges found", and it stayed empty on every
+  visit. The app was looking for the list in the wrong place in the server's
+  answer, so an organiser could never see anything they had set up; the wording
+  of the empty screen made that read as "you have none".
+  On the exchange's own page, the section that shows how the hours are divided
+  printed lines like "To member #role: provider hours" — the names of the fields
+  in the server's answer, not the answer itself. The app expected a different
+  shape entirely: a grid of transfers between members, which the platform has
+  never had. It now shows one line per person, with their name and their share:
+  "E2E UserB — 4 hours / Provider".
+  Both were invisible to the tests because both test fixtures had been written
+  from the app's own mistaken idea of the server's answer rather than from the
+  answer. Both are rewritten from real responses, and each fix was checked by
+  breaking it again and watching the tests fail. Verified on a device.
+
 - **On the mobile app, changing community while signed in locked you out of your
   own community.** Found by walking it on a device. An account belongs to one
   community, and its sign-in is not valid anywhere else — so the moment a member

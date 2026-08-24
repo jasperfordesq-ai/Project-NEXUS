@@ -44,8 +44,6 @@
       "participants": "Teilnehmer",
       "noParticipants": "Es wurden noch keine Teilnehmer hinzugefügt.",
       "splitPreview": "Split-Vorschau",
-      "splitFrom": "Von Mitglied #{{id}}",
-      "splitTo": "An Mitglied #{{id}}: {{hours}} Stunden",
       "confirmed": "Bestätigt",
       "unconfirmed": "Nicht bestätigt",
       "roles": {
@@ -62,7 +60,9 @@
         "confirmFailed": "Wir konnten Ihre Stunden nicht bestätigen. Bitte versuchen Sie es erneut.",
         "completeFailed": "Wir konnten diesen Austausch nicht abschließen. Bitte versuchen Sie es erneut.",
         "cancelFailed": "Wir konnten diesen Austausch nicht stornieren. Bitte versuchen Sie es erneut."
-      }
+      },
+      "splitShare": "{{name}} — {{hours}} Stunden",
+      "splitUnknownMember": "Mitglied #{{id}}"
     },
     "emptyTitle": "Keine Gruppenbörsen gefunden",
     "emptyAll": "Gruppenbörsen, die Sie organisieren oder denen Sie beitreten, werden hier angezeigt.",

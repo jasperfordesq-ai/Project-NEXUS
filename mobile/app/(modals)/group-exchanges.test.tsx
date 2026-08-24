@@ -81,26 +81,30 @@ jest.mock('@/components/ui/EmptyState', () => {
 
 import GroupExchangesScreen from './group-exchanges';
 
+const exchangeRow = {
+  id: 10,
+  title: 'Community garden shift',
+  description: 'Three members worked together.',
+  organizer_id: 1,
+  organizer_name: 'Alice Smith',
+  organizer_avatar: null,
+  status: 'active',
+  split_type: 'weighted',
+  total_hours: 6,
+  participant_count: 3,
+  created_at: '2026-05-01T12:00:00Z',
+};
+
+/*
+  🔴 This fixture used to be `{ data: { data: [row], has_more: false } }` — the client's own
+  invented envelope. The server sends `{ data: [row], meta: { has_more } }`. Because the
+  fixture agreed with the client, the suite proved the screen could render a row it would
+  never actually be given: on a device the list was empty every time, including immediately
+  after the app itself created a group exchange.
+*/
 beforeEach(() => {
   mockUseApi.mockReset().mockReturnValue({
-    data: {
-      data: {
-        data: [{
-          id: 10,
-          title: 'Community garden shift',
-          description: 'Three members worked together.',
-          organizer_id: 1,
-          organizer_name: 'Alice Smith',
-          organizer_avatar: null,
-          status: 'active',
-          split_type: 'weighted',
-          total_hours: 6,
-          participant_count: 3,
-          created_at: '2026-05-01T12:00:00Z',
-        }],
-        has_more: false,
-      },
-    },
+    data: { data: [exchangeRow], meta: { has_more: false } },
     isLoading: false,
     error: null,
     refresh: mockRefresh,
@@ -110,6 +114,33 @@ beforeEach(() => {
 });
 
 describe('GroupExchangesScreen', () => {
+  it('still renders a row when the server wraps the list, so an envelope change cannot empty the screen', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { data: [exchangeRow], has_more: false } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText } = render(<GroupExchangesScreen />);
+
+    expect(getByText('Community garden shift')).toBeTruthy();
+  });
+
+  it('shows the empty state only when the server really sent no rows', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: [], meta: { has_more: false } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText, queryByText } = render(<GroupExchangesScreen />);
+
+    expect(queryByText('Community garden shift')).toBeNull();
+    expect(getByText('No group exchanges found')).toBeTruthy();
+  });
+
   it('renders backend group exchange rows with status and split metadata', () => {
     const { getAllByText, getByText } = render(<GroupExchangesScreen />);
 

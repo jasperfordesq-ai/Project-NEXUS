@@ -44,8 +44,6 @@
       "participants": "Participants",
       "noParticipants": "Aucun participant n'a encore été ajouté.",
       "splitPreview": "Aperçu fractionné",
-      "splitFrom": "Du membre n°{{id}}",
-      "splitTo": "Au membre n°{{id}} : {{hours}} heures",
       "confirmed": "Confirmé",
       "unconfirmed": "Non confirmé",
       "roles": {
@@ -62,7 +60,9 @@
         "confirmFailed": "Nous n'avons pas pu confirmer vos horaires. Veuillez réessayer.",
         "completeFailed": "Nous n'avons pas pu finaliser cet échange. Veuillez réessayer.",
         "cancelFailed": "Nous n'avons pas pu annuler cet échange. Veuillez réessayer."
-      }
+      },
+      "splitShare": "{{name}} — {{hours}} heures",
+      "splitUnknownMember": "Membre #{{id}}"
     },
     "emptyTitle": "Aucun échange de groupe trouvé",
     "emptyAll": "Les échanges de groupe que vous organisez ou rejoignez apparaîtront ici.",

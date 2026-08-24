@@ -37,11 +37,36 @@ const statusTones: Record<GroupExchangeStatus, string> = {
   disputed: '#ef4444',
 };
 
+/**
+ * 🔴 This read `response.data.data` with `response.data.has_more`, and the server sends
+ * neither. `GET /v2/group-exchanges` answers `{ data: [...], meta: { has_more } }` — the
+ * list is `data` itself and the flag lives in `meta`. So `items` was ALWAYS empty and the
+ * screen always said "No group exchanges found".
+ *
+ * Measured on a device on 2026-08-24: a group exchange was created through the app
+ * (`POST /v2/group-exchanges` → 201), the app opened its detail screen, and the list it
+ * came from still showed the empty state — while the same request answered with that exact
+ * exchange when made by hand. Nothing an organiser created was ever visible in the list,
+ * and "Group exchanges you organise or join will appear here" made that read as "you have
+ * none" rather than "this screen cannot see them".
+ *
+ * Both shapes are accepted now — the wrapped one costs nothing to keep and stops a future
+ * server-side envelope change from emptying the screen again in silence.
+ */
 function unwrapGroupExchanges(response: unknown): { items: GroupExchange[]; hasMore: boolean } {
-  const payload = (response as { data?: { data?: GroupExchange[]; has_more?: boolean } })?.data;
+  const body = response as {
+    data?: GroupExchange[] | { data?: GroupExchange[]; has_more?: boolean };
+    meta?: { has_more?: boolean };
+  } | null;
+
+  if (Array.isArray(body?.data)) {
+    return { items: body.data, hasMore: Boolean(body?.meta?.has_more) };
+  }
+
+  const nested = body?.data as { data?: GroupExchange[]; has_more?: boolean } | undefined;
   return {
-    items: Array.isArray(payload?.data) ? payload.data : [],
-    hasMore: Boolean(payload?.has_more),
+    items: Array.isArray(nested?.data) ? nested.data : [],
+    hasMore: Boolean(nested?.has_more ?? body?.meta?.has_more),
   };
 }
 

@@ -44,8 +44,6 @@
       "participants": "Participants",
       "noParticipants": "No participants have been added yet.",
       "splitPreview": "Split preview",
-      "splitFrom": "From member #{{id}}",
-      "splitTo": "To member #{{id}}: {{hours}} hours",
       "confirmed": "Confirmed",
       "unconfirmed": "Not confirmed",
       "roles": {
@@ -62,7 +60,9 @@
         "confirmFailed": "We could not confirm your hours. Please try again.",
         "completeFailed": "We could not complete this exchange. Please try again.",
         "cancelFailed": "We could not cancel this exchange. Please try again."
-      }
+      },
+      "splitShare": "{{name}} — {{hours}} hours",
+      "splitUnknownMember": "Member #{{id}}"
     },
     "emptyTitle": "No group exchanges found",
     "emptyAll": "Group exchanges you organise or join will appear here.",

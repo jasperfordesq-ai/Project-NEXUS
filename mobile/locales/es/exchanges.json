@@ -44,8 +44,6 @@
       "participants": "Participantes",
       "noParticipants": "Aún no se han agregado participantes.",
       "splitPreview": "Vista previa dividida",
-      "splitFrom": "Del miembro #{{id}}",
-      "splitTo": "Al miembro #{{id}}: {{hours}} horas",
       "confirmed": "Confirmado",
       "unconfirmed": "No confirmado",
       "roles": {
@@ -62,7 +60,9 @@
         "confirmFailed": "No pudimos Confirma tu horario. Inténtelo de nuevo.",
         "completeFailed": "No pudimos completar este intercambio. Inténtelo de nuevo.",
         "cancelFailed": "No pudimos cancelar este intercambio. Inténtalo de nuevo."
-      }
+      },
+      "splitShare": "{{name}} — {{hours}} horas",
+      "splitUnknownMember": "Miembro #{{id}}"
     },
     "emptyTitle": "No se encontraron intercambios grupales",
     "emptyAll": "Los intercambios grupales que organices o te unas aparecerán aquí.",
