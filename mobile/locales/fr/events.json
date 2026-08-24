@@ -249,7 +249,7 @@
     "pollOptionFallback": "Option de sondage",
     "pollOptionResult": "{{label}} - {{percent}}%",
     "pollTotalVotes": "{{count}} votes",
-    "pollTotalVotes_one": "{{count}} vote",
+    "pollTotalVotes_one": "{{count}} voter",
     "pollTotalVotes_other": "{{count}} votes",
     "communityMember": "Membre de la communauté",
     "shareMessage": "{{title}} — {{url}}"

@@ -44,6 +44,7 @@
     "themes:generate": "node scripts/generate-tenant-themes.mjs",
     "themes:check": "node scripts/generate-tenant-themes.mjs --check",
     "check:cert-pins": "node scripts/check-cert-pins.mjs",
+    "check:untranslated": "node scripts/check-untranslated.mjs",
     "update:website": "node scripts/publish-update.mjs website",
     "rollback:staging": "node scripts/rollback-update.mjs staging",
     "rollback:website": "node scripts/rollback-update.mjs website",

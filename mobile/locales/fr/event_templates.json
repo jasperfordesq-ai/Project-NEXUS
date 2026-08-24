@@ -45,7 +45,7 @@
       "auditLoadFailedTitle": "Historique d’audit indisponible",
       "auditLoadFailedDescription": "Impossible de charger l’historique du modèle. Réessayez.",
       "auditEmpty": "Aucune entrée d’audit disponible.",
-      "auditEntry": "Version {{version}} · {{date}}",
+      "auditEntry": "Révision {{version}} · {{date}}",
       "auditMaterializedEvent": "Événement n° {{id}} créé",
       "notRecorded": "Non enregistré",
       "auditActions": {

@@ -9,11 +9,26 @@
   "sections_title": "Zu übernehmende Definitionen",
   "sections_description": "Jeder Bereich wird ausdrücklich gewählt. Mitarbeitendenzuweisungen werden nie automatisch ausgewählt.",
   "sections": {
-    "agenda": { "label": "Agenda", "description": "Geplante Sitzungen, Vortragende und geschützte Ressourcendefinitionen." },
-    "ticket_types": { "label": "Ticketarten", "description": "Kostenlose oder entworfene Ticketdefinitionen und Verkaufszeiträume." },
-    "registration": { "label": "Anmeldung", "description": "Anmeldeeinstellungen und das aktuell veröffentlichte Formular." },
-    "safety": { "label": "Sicherheitsanforderungen", "description": "Die aktuell veröffentlichten Sicherheits- und Teilnahmebedingungen." },
-    "staff": { "label": "Mitarbeitendenzuweisungen", "description": "Risikoreiche Zustimmung: aktive Rollen in neue künftige Termine übernehmen." }
+    "agenda": {
+      "label": "Agenda",
+      "description": "Geplante Sitzungen, Vortragende und geschützte Ressourcendefinitionen."
+    },
+    "ticket_types": {
+      "label": "Ticketarten",
+      "description": "Kostenlose oder entworfene Ticketdefinitionen und Verkaufszeiträume."
+    },
+    "registration": {
+      "label": "Anmeldung",
+      "description": "Anmeldeeinstellungen und das aktuell veröffentlichte Formular."
+    },
+    "safety": {
+      "label": "Sicherheitsanforderungen",
+      "description": "Die aktuell veröffentlichten Sicherheits- und Teilnahmebedingungen."
+    },
+    "staff": {
+      "label": "Mitarbeitendenzuweisungen",
+      "description": "Risikoreiche Zustimmung: aktive Rollen in neue künftige Termine übernehmen."
+    }
   },
   "section_not_permitted": "Ihre Veranstaltungsrolle darf diesen Bereich nicht übernehmen.",
   "no_sections_title": "Mindestens einen Bereich auswählen",
@@ -40,16 +55,37 @@
   },
   "counts": {
     "none": "In den ausgewählten Bereichen wurden keine Definitionen gefunden.",
-    "sessions": "Sitzungen", "speakers": "Vortragende", "resources": "Ressourcen", "ticket_types": "Ticketarten",
-    "registration_settings": "Anmeldeeinstellungen", "published_forms": "Veröffentlichte Formulare", "form_questions": "Formularfragen",
-    "safety_requirements": "Sicherheitsanforderungen", "staff_assignments": "Mitarbeitendenzuweisungen"
+    "sessions": "Sitzungen",
+    "speakers": "Vortragende",
+    "resources": "Ressourcen",
+    "ticket_types": "Ticketarten",
+    "registration_settings": "Anmeldeeinstellungen",
+    "published_forms": "Veröffentlichte Formulare",
+    "form_questions": "Formularfragen",
+    "safety_requirements": "Sicherheitsanforderungen",
+    "staff_assignments": "Mitarbeitendenzuweisungen"
   },
   "errors": {
-    "preview_error": { "title": "Vorschau konnte nicht erstellt werden", "description": "Prüfen Sie die ausgewählten Definitionen und versuchen Sie es erneut." },
-    "preview_expired": { "title": "Vorschau abgelaufen", "description": "Aktualisieren Sie die Vorschau vor der Bestätigung. Es wurde nichts gespeichert." },
-    "preview_stale": { "title": "Definitionen wurden nach der Vorschau geändert", "description": "Erstellen Sie eine neue Vorschau mit den aktuellen Definitionen." },
-    "commit_conflict": { "title": "Künftige Einrichtung wurde nicht gespeichert", "description": "Eine andere Version oder widersprüchliche Anfrage wurde zuerst gespeichert. Aktualisieren und prüfen Sie erneut." },
-    "commit_error": { "title": "Künftige Einrichtung konnte nicht gespeichert werden", "description": "Ihr stabiler Wiederholungsschlüssel bleibt erhalten. Bestätigen Sie erneut oder aktualisieren Sie eine abgelaufene Vorschau." }
+    "preview_error": {
+      "title": "Vorschau konnte nicht erstellt werden",
+      "description": "Prüfen Sie die ausgewählten Definitionen und versuchen Sie es erneut."
+    },
+    "preview_expired": {
+      "title": "Vorschau abgelaufen",
+      "description": "Aktualisieren Sie die Vorschau vor der Bestätigung. Es wurde nichts gespeichert."
+    },
+    "preview_stale": {
+      "title": "Definitionen wurden nach der Vorschau geändert",
+      "description": "Erstellen Sie eine neue Vorschau mit den aktuellen Definitionen."
+    },
+    "commit_conflict": {
+      "title": "Künftige Einrichtung wurde nicht gespeichert",
+      "description": "Eine andere Version oder widersprüchliche Anfrage wurde zuerst gespeichert. Aktualisieren und prüfen Sie erneut."
+    },
+    "commit_error": {
+      "title": "Künftige Einrichtung konnte nicht gespeichert werden",
+      "description": "Ihr stabiler Wiederholungsschlüssel bleibt erhalten. Bestätigen Sie erneut oder aktualisieren Sie eine abgelaufene Vorschau."
+    }
   },
   "success_created_title": "Künftige Einrichtung gespeichert",
   "success_created_description": "Die unveränderliche Definitionsversion {{version}} gilt nur für neu erstellte künftige Termine.",

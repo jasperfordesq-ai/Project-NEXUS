@@ -1,11 +1,21 @@
 {
   "title": "Éachtaí",
+  "subtitle": "Coinnigh súil ar do leibhéal, do shuaitheantais, do shraith agus do sheasamh sa phobal.",
+  "heroEyebrow": "Dul chun cinn sa phobal",
   "xp": "{{xp}} XP",
   "level": "Leibhéal {{level}}",
   "rank": "Rangú #{{rank}}",
   "unranked": "Gan rangú",
   "streak": "Sraith {{days}} lá",
+  "streakNone": "Níl aon tsraith ghníomhach ann",
   "nextLevel": "{{xp}} XP go dtí an chéad leibhéal eile",
+  "stats": {
+    "totalXp": "XP iomlán",
+    "earnedBadges": "Suaitheantais ghnóthaithe",
+    "lockedBadges": "Suaitheantais faoi ghlas",
+    "rank": "Rangú reatha",
+    "streak": "Sraith"
+  },
   "badges": {
     "title": "Suaitheantas",
     "earned": "Tuillte",
@@ -22,16 +32,6 @@
     "badgesCount": "{{count}} suaitheantas",
     "badgesCount_one": "{{count}} suaitheantas",
     "badgesCount_other": "{{count}} suaitheantas"
-  },
-  "subtitle": "Coinnigh súil ar do leibhéal, do shuaitheantais, do shraith agus do sheasamh sa phobal.",
-  "heroEyebrow": "Dul chun cinn sa phobal",
-  "streakNone": "Níl aon tsraith ghníomhach ann",
-  "stats": {
-    "totalXp": "XP iomlán",
-    "earnedBadges": "Suaitheantais ghnóthaithe",
-    "lockedBadges": "Suaitheantais faoi ghlas",
-    "rank": "Rangú reatha",
-    "streak": "Sraith"
   },
   "nexusScore": {
     "title": "Scór Nexus",

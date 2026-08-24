@@ -78,7 +78,7 @@
   "history_load_failed_title": "Historique d’audit indisponible",
   "history_load_failed_description": "Impossible de charger l’historique du message. Réessayez.",
   "history_empty": "Aucune entrée d’audit disponible.",
-  "history_entry_version": "Version {{version}} · {{date}}",
+  "history_entry_version": "Révision {{version}} · {{date}}",
   "history_transition": "{{from}} → {{to}}",
   "history_initial_status": "État initial : {{status}}",
   "history_actions": {
@@ -91,8 +91,28 @@
     "failed": "Échec de la diffusion",
     "retried": "Nouvelle tentative demandée"
   },
-  "variants": { "announcement": "Annonce", "follow_up": "Suivi après l’événement", "review_request": "Demande d’avis" },
-  "statuses": { "draft": "Brouillon", "scheduled": "Programmé", "sending": "En cours d’envoi", "sent": "Envoyé", "cancelled": "Annulé", "failed": "Échec" },
-  "segments": { "registration_confirmed": "Inscriptions confirmées", "waitlist_active": "Liste d’attente active", "attendance_attended": "Présents", "attendance_no_show": "Absents" },
-  "channels": { "email": "E-mail", "in_app": "Notification dans l’application", "push": "Notification push" }
+  "variants": {
+    "announcement": "Annonce",
+    "follow_up": "Suivi après l’événement",
+    "review_request": "Demande d’avis"
+  },
+  "statuses": {
+    "draft": "Brouillon",
+    "scheduled": "Programmé",
+    "sending": "En cours d’envoi",
+    "sent": "Envoyé",
+    "cancelled": "Annulé",
+    "failed": "Échec"
+  },
+  "segments": {
+    "registration_confirmed": "Inscriptions confirmées",
+    "waitlist_active": "Liste d’attente active",
+    "attendance_attended": "Présents",
+    "attendance_no_show": "Absents"
+  },
+  "channels": {
+    "email": "E-mail",
+    "in_app": "Notification dans l’application",
+    "push": "Notification push"
+  }
 }

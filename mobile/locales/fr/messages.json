@@ -63,18 +63,18 @@
     "toggleReaction": "Basculer la réaction {{emoji}}",
     "attachmentName": "Attachment {{index}}",
     "attachments": {
-      "add": "Add attachment",
-      "title": "Add attachment",
+      "add": "Ajouter une pièce jointe",
+      "title": "Ajouter une pièce jointe",
       "photoLibrary": "Photo library",
       "remove": "Remove {{name}}",
       "removeLabel": "Remove",
-      "open": "Open {{name}}",
+      "open": "Ouvrir {{name}}",
       "file": "Attachment",
       "permissionTitle": "Photo access needed",
       "permissionMessage": "Allow photo access to attach images."
     },
     "voice": {
-      "record": "Record voice message",
+      "record": "Enregistrer un message vocal",
       "recording": "Recording voice message",
       "ready": "Voice message ready",
       "stop": "Stop",

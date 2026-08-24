@@ -78,7 +78,7 @@
   "history_load_failed_title": "Prüfverlauf nicht verfügbar",
   "history_load_failed_description": "Der Nachrichtenverlauf konnte nicht geladen werden. Versuchen Sie es erneut.",
   "history_empty": "Keine Prüfeinträge verfügbar.",
-  "history_entry_version": "Version {{version}} · {{date}}",
+  "history_entry_version": "Fassung {{version}} · {{date}}",
   "history_transition": "{{from}} → {{to}}",
   "history_initial_status": "Anfangsstatus: {{status}}",
   "history_actions": {
@@ -91,8 +91,28 @@
     "failed": "Zustellung fehlgeschlagen",
     "retried": "Wiederholung angefordert"
   },
-  "variants": { "announcement": "Ankündigung", "follow_up": "Nachbereitung nach der Veranstaltung", "review_request": "Bewertungsanfrage" },
-  "statuses": { "draft": "Entwurf", "scheduled": "Geplant", "sending": "Wird gesendet", "sent": "Gesendet", "cancelled": "Abgebrochen", "failed": "Fehlgeschlagen" },
-  "segments": { "registration_confirmed": "Bestätigte Anmeldungen", "waitlist_active": "Aktive Warteliste", "attendance_attended": "Teilgenommen", "attendance_no_show": "Nicht teilgenommen" },
-  "channels": { "email": "E-Mail", "in_app": "In-App-Benachrichtigung", "push": "Push-Benachrichtigung" }
+  "variants": {
+    "announcement": "Ankündigung",
+    "follow_up": "Nachbereitung nach der Veranstaltung",
+    "review_request": "Bewertungsanfrage"
+  },
+  "statuses": {
+    "draft": "Entwurf",
+    "scheduled": "Geplant",
+    "sending": "Wird gesendet",
+    "sent": "Gesendet",
+    "cancelled": "Abgebrochen",
+    "failed": "Fehlgeschlagen"
+  },
+  "segments": {
+    "registration_confirmed": "Bestätigte Anmeldungen",
+    "waitlist_active": "Aktive Warteliste",
+    "attendance_attended": "Teilgenommen",
+    "attendance_no_show": "Nicht teilgenommen"
+  },
+  "channels": {
+    "email": "E-Mail",
+    "in_app": "In-App-Benachrichtigung",
+    "push": "Push-Benachrichtigung"
+  }
 }

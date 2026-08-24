@@ -63,18 +63,18 @@
     "toggleReaction": "Scoránaigh {{emoji}} imoibriú",
     "attachmentName": "Attachment {{index}}",
     "attachments": {
-      "add": "Add attachment",
-      "title": "Add attachment",
+      "add": "Cuir ceangaltán leis",
+      "title": "Cuir ceangaltán leis",
       "photoLibrary": "Photo library",
-      "remove": "Remove {{name}}",
+      "remove": "Bain {{name}}",
       "removeLabel": "Remove",
-      "open": "Open {{name}}",
+      "open": "Oscail {{name}}",
       "file": "Attachment",
       "permissionTitle": "Photo access needed",
       "permissionMessage": "Allow photo access to attach images."
     },
     "voice": {
-      "record": "Record voice message",
+      "record": "Taifead teachtaireacht ghutha",
       "recording": "Recording voice message",
       "ready": "Voice message ready",
       "stop": "Stop",

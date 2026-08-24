@@ -48,7 +48,7 @@
     "error": "Impossible de créer l'objectif."
   },
   "templates": {
-    "open": "Use template",
+    "open": "Utiliser un modèle",
     "title": "Goal templates",
     "subtitle": "Start from a proven structure and adjust it as you progress.",
     "loadError": "Could not load goal templates.",
@@ -56,9 +56,9 @@
     "emptyCategory": "No templates are available in this category.",
     "allCategories": "All",
     "use": "Use",
-    "useLabel": "Use {{title}}",
+    "useLabel": "Utiliser {{title}}",
     "target": "{{value}} target",
-    "duration": "{{days}} days",
+    "duration": "{{days}} jours",
     "createError": "Could not create a goal from this template."
   },
   "updateError": "Impossible de mettre à jour l'objectif.",
@@ -66,7 +66,7 @@
   "detail": {
     "title": "Goal detail",
     "loadError": "Could not load this goal. Please try again.",
-    "notFound": "Goal not found",
+    "notFound": "Objectif introuvable",
     "notFoundHint": "This goal may have been removed or is no longer available.",
     "insights": "Insights",
     "progressUpdate": "Update progress",
@@ -84,7 +84,7 @@
     "nextReminder": "Next reminder {{date}}",
     "milestones": "Milestones",
     "noMilestones": "No milestones have been generated yet.",
-    "completedOn": "Completed {{date}}",
+    "completedOn": "Terminé le {{date}}",
     "pendingMilestone": "Pending",
     "history": "Progress history",
     "noHistory": "No progress history yet.",
@@ -97,7 +97,7 @@
     "frequency": {
       "daily": "Daily",
       "weekly": "Weekly",
-      "biweekly": "Every 2 weeks",
+      "biweekly": "Toutes les 2 semaines",
       "monthly": "Monthly"
     }
   }

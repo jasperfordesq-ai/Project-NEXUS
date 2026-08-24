@@ -45,7 +45,7 @@
       "auditLoadFailedTitle": "Prüfverlauf nicht verfügbar",
       "auditLoadFailedDescription": "Der Vorlagenverlauf konnte nicht geladen werden. Versuchen Sie es erneut.",
       "auditEmpty": "Keine Prüfeinträge verfügbar.",
-      "auditEntry": "Version {{version}} · {{date}}",
+      "auditEntry": "Fassung {{version}} · {{date}}",
       "auditMaterializedEvent": "Veranstaltung #{{id}} erstellt",
       "notRecorded": "Nicht erfasst",
       "auditActions": {

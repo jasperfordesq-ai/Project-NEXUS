@@ -343,7 +343,7 @@
     "sellerLabel": "Vendedor",
     "buyerLabel": "Comprador",
     "quantity": "{{count}} itens",
-    "quantity_one": "{{count}} item",
+    "quantity_one": "item {{count}}",
     "totalTimeCredits_one": "{{count}} crédito de tempo",
     "totalTimeCredits": "{{count}} créditos de tempo",
     "date": "{{date}}",

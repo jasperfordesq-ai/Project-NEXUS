@@ -1,11 +1,21 @@
 {
   "title": "Errungenschaften",
+  "subtitle": "Track your level, badges, streak, and community standing.",
+  "heroEyebrow": "Community progress",
   "xp": "{{xp}} EP",
   "level": "Stufe {{level}}",
   "rank": "Rang #{{rank}}",
   "unranked": "Nicht platziert",
   "streak": "{{days}}-Tage-Serie",
+  "streakNone": "No active streak",
   "nextLevel": "{{xp}} EP bis zur nächsten Stufe",
+  "stats": {
+    "totalXp": "Total XP",
+    "earnedBadges": "Earned badges",
+    "lockedBadges": "Locked badges",
+    "rank": "Current rank",
+    "streak": "Streak"
+  },
   "badges": {
     "title": "Abzeichen",
     "earned": "Errungen",
@@ -23,18 +33,8 @@
     "badgesCount_one": "{{count}} Abzeichen",
     "badgesCount_other": "{{count}} Abzeichen"
   },
-  "subtitle": "Track your level, badges, streak, and community standing.",
-  "heroEyebrow": "Community progress",
-  "streakNone": "No active streak",
-  "stats": {
-    "totalXp": "Total XP",
-    "earnedBadges": "Earned badges",
-    "lockedBadges": "Locked badges",
-    "rank": "Current rank",
-    "streak": "Streak"
-  },
   "nexusScore": {
-    "title": "Nexus Score",
+    "title": "Nexus-Score",
     "eyebrow": "Reputation score",
     "subtitle": "See the signals that shape your community reputation.",
     "total": "Total score",
@@ -50,24 +50,24 @@
     "title": "Daily reward",
     "claimToday": "Claim {{xp}} XP today",
     "comeBackTomorrow": "Come back tomorrow for {{xp}} XP",
-    "streak": "{{count}} day streak",
-    "streak_one": "{{count}} day streak",
-    "streak_other": "{{count}} day streak",
+    "streak": "{{count}} Tage in Folge",
+    "streak_one": "{{count}} Tage in Folge",
+    "streak_other": "{{count}} Tage in Folge",
     "claimReward": "Claim reward",
     "claiming": "Claiming",
     "claimed": "Claimed",
     "claimedTitle": "Reward claimed",
     "claimedMessage": "You earned {{xp}} XP.",
-    "claimError": "Could not claim reward."
+    "claimError": "Belohnung konnte nicht abgeholt werden."
   },
   "challenges": {
     "title": "Challenges",
     "empty": "No challenges yet.",
-    "active": "Active challenges",
-    "completed": "Completed challenges",
+    "active": "Aktive Herausforderungen",
+    "completed": "Abgeschlossene Herausforderungen",
     "xpReward": "{{xp}} XP",
     "progress": "{{current}} / {{target}}",
-    "claimXp": "Claim {{xp}} XP",
+    "claimXp": "{{xp}} XP abholen",
     "claimed": "Claimed",
     "claimedTitle": "Challenge claimed",
     "claimedMessage": "Challenge reward claimed.",
@@ -103,10 +103,10 @@
     "save": "Save",
     "saving": "Saving",
     "noBadgesEarned": "No badges earned yet.",
-    "toggleBadge": "Toggle {{name}}",
+    "toggleBadge": "Schalten Sie{{name}}um",
     "selected": "Selected",
     "select": "Select",
-    "updated": "Showcase updated",
+    "updated": "Showcase aktualisiert",
     "updatedDescription": "Your profile showcase was updated.",
     "saveError": "Could not save showcase."
   }

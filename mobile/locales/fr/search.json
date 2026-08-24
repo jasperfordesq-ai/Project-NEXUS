@@ -32,15 +32,15 @@
     "cancel": "Cancel",
     "run": "Run",
     "delete": "Delete",
-    "deleteNamed": "Delete {{name}}",
+    "deleteNamed": "Supprimer{{name}}",
     "empty": "No saved searches yet.",
-    "noQuery": "No query",
+    "noQuery": "Aucune requête",
     "resultCount": "{{count}} result",
     "resultCount_one": "{{count}} result",
     "resultCount_other": "{{count}} results",
     "saveFailedTitle": "Could not save search",
     "saveFailedMessage": "Please check the search name and try again.",
     "deleteFailedTitle": "Could not delete search",
-    "deleteFailedMessage": "Please try again."
+    "deleteFailedMessage": "Veuillez réessayer."
   }
 }

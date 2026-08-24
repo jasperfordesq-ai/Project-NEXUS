@@ -4,14 +4,27 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Fill missing mobile locale keys from the equivalent web translation where
- * possible, then optionally use Google's public translation endpoint.
- * Existing translations are never overwritten.
+ * Fill mobile locale gaps from the equivalent web translation where possible, then
+ * optionally use Google's public translation endpoint. A real translation is never
+ * overwritten.
+ *
+ * 🔴 **A MISSING key is not the gap that exists.** Run with `--summary` alone and it
+ * reports "0 missing", because every mobile key is present in every locale. What it could
+ * not see, until `--identical` was added on 2026-08-24, is the **5,671 keys that are
+ * present and still hold the English sentence** — about 1,100 in each of de, es, fr, it and
+ * pt. That is the same blind spot that let 99,139 PHP values sit in English behind a green
+ * parity gate: comparing key SETS answers a different question from comparing values.
  *
  * Usage:
  *   node scripts/translate-mobile-i18n-gaps.mjs --summary
- *   node scripts/translate-mobile-i18n-gaps.mjs --google --concurrency 6
+ *   node scripts/translate-mobile-i18n-gaps.mjs --identical --summary
+ *   node scripts/translate-mobile-i18n-gaps.mjs --identical --reuse-only
+ *   node scripts/translate-mobile-i18n-gaps.mjs --identical --google --concurrency 6
  *   node scripts/translate-mobile-i18n-gaps.mjs --google --repair-artifacts
+ *
+ * `--reuse-only` needs no provider at all: it fills from the website's own reviewed
+ * translations, matched by the English phrase, which is both free and better than machine
+ * output. Roughly one gap in five can be filled that way.
  */
 
 import fs from 'fs';
@@ -27,6 +40,10 @@ const args = process.argv.slice(2);
 const SUMMARY = args.includes('--summary');
 const USE_GOOGLE = args.includes('--google');
 const REPAIR_ARTIFACTS = args.includes('--repair-artifacts');
+/** Count a present-but-English value as a gap (see the note at the top of this file). */
+const INCLUDE_IDENTICAL = args.includes('--identical');
+/** Fill only from the website's own translations. No provider, no network beyond the repo. */
+const REUSE_ONLY = args.includes('--reuse-only');
 const langFilter = args.includes('--lang') ? args[args.indexOf('--lang') + 1] : null;
 const requestedConcurrency = args.includes('--concurrency')
   ? Number(args[args.indexOf('--concurrency') + 1])
@@ -90,6 +107,22 @@ function protectVariables(text) {
 
 function restoreVariables(text, variables) {
   return text.replace(/ZXQNEXUSVAR(\d+)QXZ/gi, (_, index) => variables[Number(index)] ?? '');
+}
+
+/**
+ * Values that are the same in English by nature, not by neglect. A single word is already
+ * excluded elsewhere; this catches the rest, so the count stays a count of real work.
+ */
+function isLegitimatelyIdentical(value) {
+  const text = String(value).trim();
+  if (!text) return true;
+  // Nothing but placeholders and punctuation: "{{count}} / {{total}}".
+  if (!text.replace(/\{\{[^}]+\}\}/g, '').match(/[A-Za-z]/)) return true;
+  // A URL, an email address, or a path — translating these breaks them.
+  if (/^(https?:\/\/|mailto:|tel:|\/[a-z])/i.test(text)) return true;
+  // Product and platform names carry across untranslated.
+  if (/^(Project NEXUS|NEXUS|Google Play|App Store|Stripe|Apple|Android|iOS|Expo)\b/.test(text)) return true;
+  return false;
 }
 
 function hasTranslationArtifact(value) {
@@ -244,8 +277,8 @@ function buildWebTranslationMap(language) {
 }
 
 async function main() {
-  if (!SUMMARY && !USE_GOOGLE) {
-    throw new Error('Pass --summary for an audit or --google to fill provider-required gaps.');
+  if (!SUMMARY && !USE_GOOGLE && !REUSE_ONLY) {
+    throw new Error('Pass --summary for an audit, --reuse-only to fill from the website\'s translations, or --google to use the provider.');
   }
 
   let totalMissing = 0;
@@ -266,7 +299,13 @@ async function main() {
         .filter(([key, value]) => (
           target[key] === undefined || (REPAIR_ARTIFACTS && (
             hasTranslationArtifact(target[key]) || variableSignature(value) !== variableSignature(target[key])
-          ))
+          )) || (INCLUDE_IDENTICAL
+            // Present, but still the English sentence. Multi-word only: a single word is
+            // very often correct as-is ("Email", "OK", "Total"), and treating those as work
+            // would bury the real gap in noise.
+            && target[key] === value
+            && String(value).trim().split(/\s+/).length > 1
+            && !isLegitimatelyIdentical(value))
         ) && typeof value === 'string')
         .map(([key, value]) => ({ key, value }));
       if (missing.length === 0) continue;
@@ -281,8 +320,10 @@ async function main() {
 
       const updated = structuredClone(targetData);
       for (const { key, value } of reused) setNested(updated, key, reusable.get(value));
-      const translations = await translateAll(provider.map(item => item.value), language);
-      provider.forEach(({ key }, index) => setNested(updated, key, translations[index]));
+      if (!REUSE_ONLY) {
+        const translations = await translateAll(provider.map(item => item.value), language);
+        provider.forEach(({ key }, index) => setNested(updated, key, translations[index]));
+      }
       fs.writeFileSync(targetFile, `${JSON.stringify(orderLike(englishData, updated), null, 2)}\n`, 'utf8');
     }
   }

@@ -78,9 +78,9 @@
       "fields": {
         "title": "Title",
         "description": "Description",
-        "totalHours": "Total hours",
+        "totalHours": "Total de horas",
         "splitType": "Split type",
-        "memberSearch": "Find members",
+        "memberSearch": "Encontre membros",
         "participantHours": "Hours",
         "participantWeight": "Weight"
       },
@@ -101,10 +101,10 @@
       "error": "We could not create this group exchange. Please check the details and try again.",
       "participantsTitle": "Participants",
       "participantsDescription": "Optionally add members before creating the group exchange. Hours can be confirmed later from the detail screen.",
-      "searchMembers": "Search members",
+      "searchMembers": "Pesquisar membros",
       "searching": "Searching...",
       "searchError": "We could not search members right now. Please try again.",
-      "addProvider": "Add provider",
+      "addProvider": "Adicionar provedor",
       "addReceiver": "Add receiver",
       "providers": "{{count}} provider",
       "providers_one": "{{count}} provider",
@@ -116,7 +116,7 @@
       "summaryParticipants_one": "{{count}} participant selected",
       "summaryParticipants_other": "{{count}} participants selected",
       "remove": "Remove",
-      "removeParticipant": "Remove {{name}}"
+      "removeParticipant": "Remover {{name}}"
     }
   },
   "newExchange": "Novo Listagem",

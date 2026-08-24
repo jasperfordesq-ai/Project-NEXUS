@@ -9,11 +9,26 @@
   "sections_title": "Définitions à reporter",
   "sections_description": "Chaque section est choisie explicitement. Les affectations du personnel ne sont jamais sélectionnées automatiquement.",
   "sections": {
-    "agenda": { "label": "Programme", "description": "Sessions planifiées, intervenants et définitions des ressources protégées." },
-    "ticket_types": { "label": "Types de billets", "description": "Définitions gratuites ou en brouillon et leurs périodes de vente." },
-    "registration": { "label": "Inscription", "description": "Paramètres d’inscription et formulaire actuellement publié." },
-    "safety": { "label": "Exigences de sécurité", "description": "Exigences de sécurité et d’éligibilité actuellement publiées." },
-    "staff": { "label": "Affectations du personnel", "description": "Option à haut risque : reporter les rôles actifs sur les nouvelles occurrences futures." }
+    "agenda": {
+      "label": "Programme",
+      "description": "Sessions planifiées, intervenants et définitions des ressources protégées."
+    },
+    "ticket_types": {
+      "label": "Types de billets",
+      "description": "Définitions gratuites ou en brouillon et leurs périodes de vente."
+    },
+    "registration": {
+      "label": "Inscription",
+      "description": "Paramètres d’inscription et formulaire actuellement publié."
+    },
+    "safety": {
+      "label": "Exigences de sécurité",
+      "description": "Exigences de sécurité et d’éligibilité actuellement publiées."
+    },
+    "staff": {
+      "label": "Affectations du personnel",
+      "description": "Option à haut risque : reporter les rôles actifs sur les nouvelles occurrences futures."
+    }
   },
   "section_not_permitted": "Votre rôle sur l’événement ne permet pas de reporter cette section.",
   "no_sections_title": "Sélectionnez au moins une section",
@@ -40,16 +55,37 @@
   },
   "counts": {
     "none": "Aucune définition trouvée dans les sections sélectionnées.",
-    "sessions": "Sessions", "speakers": "Intervenants", "resources": "Ressources", "ticket_types": "Types de billets",
-    "registration_settings": "Paramètres d’inscription", "published_forms": "Formulaires publiés", "form_questions": "Questions du formulaire",
-    "safety_requirements": "Exigences de sécurité", "staff_assignments": "Affectations du personnel"
+    "sessions": "Sessions",
+    "speakers": "Intervenants",
+    "resources": "Ressources",
+    "ticket_types": "Types de billets",
+    "registration_settings": "Paramètres d’inscription",
+    "published_forms": "Formulaires publiés",
+    "form_questions": "Questions du formulaire",
+    "safety_requirements": "Exigences de sécurité",
+    "staff_assignments": "Affectations du personnel"
   },
   "errors": {
-    "preview_error": { "title": "Impossible de préparer l’aperçu", "description": "Vérifiez les définitions sélectionnées et réessayez." },
-    "preview_expired": { "title": "Aperçu expiré", "description": "Actualisez l’aperçu avant de confirmer. Rien n’a été enregistré." },
-    "preview_stale": { "title": "Les définitions ont changé après l’aperçu", "description": "Préparez un nouvel aperçu reflétant les dernières définitions." },
-    "commit_conflict": { "title": "La configuration future n’a pas été enregistrée", "description": "Une autre version ou demande incompatible a été enregistrée en premier. Actualisez et vérifiez à nouveau." },
-    "commit_error": { "title": "Impossible d’enregistrer la configuration future", "description": "Votre clé de nouvelle tentative est conservée. Confirmez à nouveau ou actualisez l’aperçu s’il a expiré." }
+    "preview_error": {
+      "title": "Impossible de préparer l’aperçu",
+      "description": "Vérifiez les définitions sélectionnées et réessayez."
+    },
+    "preview_expired": {
+      "title": "Aperçu expiré",
+      "description": "Actualisez l’aperçu avant de confirmer. Rien n’a été enregistré."
+    },
+    "preview_stale": {
+      "title": "Les définitions ont changé après l’aperçu",
+      "description": "Préparez un nouvel aperçu reflétant les dernières définitions."
+    },
+    "commit_conflict": {
+      "title": "La configuration future n’a pas été enregistrée",
+      "description": "Une autre version ou demande incompatible a été enregistrée en premier. Actualisez et vérifiez à nouveau."
+    },
+    "commit_error": {
+      "title": "Impossible d’enregistrer la configuration future",
+      "description": "Votre clé de nouvelle tentative est conservée. Confirmez à nouveau ou actualisez l’aperçu s’il a expiré."
+    }
   },
   "success_created_title": "Configuration future enregistrée",
   "success_created_description": "La version de définition immuable {{version}} s’appliquera uniquement aux nouvelles occurrences futures.",

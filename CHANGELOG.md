@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **872 phrases in the mobile app now really are in the reader's language, and the
+  rest can no longer be missed.** The app has always had every phrase present in
+  every language, which is why every existing check said the translations were
+  complete — but 5,671 of those phrases still held the English sentence, about one
+  string in nine, in German, Spanish, French, Italian and Portuguese. (Irish was
+  nearly done.) Nothing could see it: the checks compared the *list* of phrases,
+  not the phrases themselves — the same blind spot that once hid 99,139 untranslated
+  values on the website.
+  872 have been filled from the website's own reviewed translations, matched phrase
+  by phrase, which is better than machine translation and cost nothing. The
+  remaining 4,648 need a paid translation service: the free one now refuses this
+  machine outright.
+  The gap is now counted and held: a new check reports how much English is left in
+  each language and fails if it grows — and also fails if it shrinks without the
+  new, lower number being written down, so an improvement can't be quietly spent
+  later.
+
 - **On the mobile app, a link that pointed at a particular part of a page landed
   on the wrong part — and the reason turned out to be different from what had been
   written down twice before.** Found by printing what the screen was actually

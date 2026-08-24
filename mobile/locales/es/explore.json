@@ -6,25 +6,101 @@
   "errorTitle": "Could not load Explore",
   "emptyTitle": "Nothing to explore yet",
   "emptySubtitle": "Try search, or check back when your community has more activity.",
-  "actions": { "search": "Search", "forYou": "For you", "seeAll": "See all" },
-  "tabs": { "all": "All", "forYou": "For you", "listings": "Listings", "people": "People", "events": "Events", "groups": "Groups" },
-  "stats": { "members": "Members", "exchanges": "Exchanges", "hours": "Hours", "listings": "Listings" },
-  "sections": {
-    "recommended": { "title": "Recommended for you", "subtitle": "Listings and opportunities matched to your activity." },
-    "popularListings": { "title": "Popular listings", "subtitle": "Offers and requests getting attention right now." },
-    "nearYou": { "title": "Near you", "subtitle": "Listings with nearby location signals." },
-    "events": { "title": "Upcoming events", "subtitle": "Workshops, meetups, and community gatherings." },
-    "groups": { "title": "Active groups", "subtitle": "Community spaces with recent membership activity." },
-    "people": { "title": "People to meet", "subtitle": "New members and suggested connections." },
-    "contributors": { "title": "Top contributors", "subtitle": "Members helping the community grow." },
-    "posts": { "title": "Trending posts", "subtitle": "Community conversations with recent engagement." },
-    "volunteering": { "title": "Volunteering", "subtitle": "Opportunities from local organisations and partners." },
-    "organisations": { "title": "Organisations", "subtitle": "Active partners and local community groups." },
-    "blog": { "title": "Community stories", "subtitle": "Latest blog posts and platform updates." },
-    "jobs": { "title": "Jobs", "subtitle": "Recent vacancies and application opportunities." },
-    "polls": { "title": "Open polls", "subtitle": "Questions where members can share their view." },
-    "resources": { "title": "Featured resources", "subtitle": "Useful documents, links, and community reference material." }
+  "actions": {
+    "search": "Search",
+    "forYou": "For you",
+    "seeAll": "See all"
   },
-  "itemTypes": { "default": "Explore", "recommended": "Match", "popularListings": "Listing", "nearYou": "Nearby", "events": "Event", "groups": "Group", "people": "Member", "contributors": "Contributor", "posts": "Post", "volunteering": "Volunteer", "organisations": "Organisation", "blog": "Blog", "jobs": "Job", "polls": "Poll", "resources": "Resource" },
-  "itemMeta": { "level": "Level {{level}}" }
+  "tabs": {
+    "all": "All",
+    "forYou": "For you",
+    "listings": "Listings",
+    "people": "People",
+    "events": "Events",
+    "groups": "Groups"
+  },
+  "stats": {
+    "members": "Members",
+    "exchanges": "Exchanges",
+    "hours": "Hours",
+    "listings": "Listings"
+  },
+  "sections": {
+    "recommended": {
+      "title": "Recomendado para ti",
+      "subtitle": "Listings and opportunities matched to your activity."
+    },
+    "popularListings": {
+      "title": "Popular listings",
+      "subtitle": "Offers and requests getting attention right now."
+    },
+    "nearYou": {
+      "title": "Near you",
+      "subtitle": "Listings with nearby location signals."
+    },
+    "events": {
+      "title": "Upcoming events",
+      "subtitle": "Workshops, meetups, and community gatherings."
+    },
+    "groups": {
+      "title": "Active groups",
+      "subtitle": "Community spaces with recent membership activity."
+    },
+    "people": {
+      "title": "People to meet",
+      "subtitle": "New members and suggested connections."
+    },
+    "contributors": {
+      "title": "Top contributors",
+      "subtitle": "Members helping the community grow."
+    },
+    "posts": {
+      "title": "Trending posts",
+      "subtitle": "Community conversations with recent engagement."
+    },
+    "volunteering": {
+      "title": "Volunteering",
+      "subtitle": "Opportunities from local organisations and partners."
+    },
+    "organisations": {
+      "title": "Organisations",
+      "subtitle": "Active partners and local community groups."
+    },
+    "blog": {
+      "title": "Historias de la comunidad",
+      "subtitle": "Latest blog posts and platform updates."
+    },
+    "jobs": {
+      "title": "Jobs",
+      "subtitle": "Recent vacancies and application opportunities."
+    },
+    "polls": {
+      "title": "Open polls",
+      "subtitle": "Questions where members can share their view."
+    },
+    "resources": {
+      "title": "Featured resources",
+      "subtitle": "Useful documents, links, and community reference material."
+    }
+  },
+  "itemTypes": {
+    "default": "Explore",
+    "recommended": "Match",
+    "popularListings": "Listing",
+    "nearYou": "Nearby",
+    "events": "Event",
+    "groups": "Group",
+    "people": "Member",
+    "contributors": "Contributor",
+    "posts": "Post",
+    "volunteering": "Volunteer",
+    "organisations": "Organisation",
+    "blog": "Blog",
+    "jobs": "Job",
+    "polls": "Poll",
+    "resources": "Resource"
+  },
+  "itemMeta": {
+    "level": "Nivel {{level}}"
+  }
 }

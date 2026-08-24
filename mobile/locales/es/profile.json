@@ -22,7 +22,7 @@
     "subtitle": "Recommended opportunities across your timebank.",
     "total": "Total matches",
     "average": "Average score",
-    "hot": "Hot matches",
+    "hot": "Coincidencias destacadas",
     "sources": "Sources",
     "filter": {
       "all": "All",
@@ -38,10 +38,10 @@
       "group": "Group",
       "event": "Evento"
     },
-    "score": "{{score}}% match",
+    "score": "{{score}}% de coincidencia",
     "open": "Open match",
     "dismiss": "Dismiss",
-    "emptyTitle": "No matches yet",
+    "emptyTitle": "Sin coincidencias aún",
     "emptySubtitle": "New recommendations will appear here when they are available.",
     "errorTitle": "Could not load matches"
   },
@@ -53,10 +53,10 @@
     "pending": "Pending",
     "total": "Total reviews",
     "average": "Average rating",
-    "pendingCount": "Pending reviews",
+    "pendingCount": "Revisiones pendientes",
     "delete": "Delete",
     "deleteSuccess": "Review deleted.",
-    "write": "Write review",
+    "write": "Escribir reseña",
     "cancel": "Cancel",
     "submit": "Submit review",
     "comment": "Comment",
@@ -156,7 +156,7 @@
     "title": "Support & legal",
     "heading": "Help, resources, and policies",
     "description": "Read key policy summaries in the app or open the canonical web pages for the full current text.",
-    "open": "Open page",
+    "open": "Abrir página",
     "items": {
       "help": {
         "title": "Help center",
