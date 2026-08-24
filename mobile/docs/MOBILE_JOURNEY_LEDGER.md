@@ -59,6 +59,27 @@ eight rows PROVEN, all verified in the ledger tables, and **not one automated te
 them end to end.** Converting PROVEN → CERTIFIED is cheaper than any new feature and is
 Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 
+## 🔴 The goal, set by the owner on 2026-08-24
+
+**Everything on this list except Arabic is in scope, and the target is to finish it.**
+
+That is a change worth reading carefully, because two things previously treated as out of
+scope are now IN it:
+
+- **iOS** (row 7.18). The app has never been built or run on an iPhone.
+- **The remaining translations** (row 7.12) — roughly 3,200 multi-word phrases still in
+  English across six of the seven shipped locales.
+
+And one thing is now permanently OUT, rather than waiting:
+
+- **Arabic and right-to-left layout** (row 7.11) are excluded from the native app. Arabic
+  speakers are served by the web app and the accessible frontend. The row is N/A, not OPEN.
+
+Everything else — every OPEN row, every PARTIAL, and the 23 rows that only RENDERS —
+is work to be done, not a list of known limitations. The order of attack is by who gets
+hurt: a member who cannot tell why something failed comes before a screen nobody has
+walked, which comes before a gate that only guards three screens.
+
 ## Summary
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
@@ -69,15 +90,15 @@ Phase 2 of [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md).
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
-| 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 3 | 0 | 0.539 |
+| 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 2 | 1 | 0.571 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 1 | 8 | 0 | 0.130 |
-| **Total** | **140** | **50** | **41** | **24** | **11** | **12** | **2** | — |
+| **Total** | **140** | **50** | **41** | **24** | **11** | **11** | **3** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(50 × 1.0) + (41 × 0.6) + (24 × 0.25) + (11 × 0.30) = 83.90`, over `140 − 2 excluded = 138`
-rows → **0.608**.
+`(50 × 1.0) + (41 × 0.6) + (24 × 0.25) + (11 × 0.30) = 83.90`, over `140 − 3 excluded = 137`
+rows → **0.612**.
 
 ### Credit recomputation
 
@@ -89,12 +110,13 @@ rows → **0.608**.
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (1 × 1.0) + (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 6.00 | ÷ 11 † | **0.545** |
-| 7 | (7 × 1.0) + (1 × 0.6) + (7 × 0.30) = 9.70 | ÷ 18 | **0.539** |
+| 7 | (7 × 1.0) + (1 × 0.6) + (7 × 0.30) = 9.70 | ÷ 17 † | **0.571** |
 | 8 | (1 × 1.0) + (1 × 0.30) = 1.30 | ÷ 10 | **0.130** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
-(the review composer, a recorded parity decision) and Tier 6 has one (the removed
-auto-pay toggle). An owner decision must not read as a defect.
+(the review composer, a recorded parity decision), Tier 6 has one (the removed
+auto-pay toggle) and Tier 7 has one (Arabic and right-to-left, excluded from the
+native app by the owner on 2026-08-24). An owner decision must not read as a defect.
 
 🔴 **The denominator of 140 is FINAL for rubric M1.** New scope fills Tier 8 RESERVE rows.
 It never enlarges the total, because a denominator that grows lets a score fall while the
@@ -273,7 +295,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.8 | Crash reports reach the owner | PROVEN | Dual-destination reporting added 2026-08-20; never verified from a real crash |
 | 7.9 | Screen-reader pass over a core journey | PARTIAL | **First screen-reader audit ever done here, 2026-08-23**, with TalkBack running on the emulator over five screens (feed, exchanges, wallet, messages, event detail). 🔴 **`uiautomator dump` DOES work on this app once an accessibility service is running** — the recorded belief that it returns zero nodes was measured without one, and it blocked this audit for weeks. Three defect families found and fixed. **(a)** Icons rendered as `<Text>` holding a private-use codepoint, and Android composes a control's name from its children — so every tab and filter announced the raw glyph first (`content-desc=", For You"`). Fixed by routing all 131 `Ionicons` imports through `components/ui/Icon.tsx`, which hides them from the tree; zero glyphs remain on the audited screens. **(b)** `heroui-native`'s `Chip` renders a `Pressable` whether or not it has an `onPress`, so every informational chip was offered as a button that does nothing — messages went from 17 reported controls to 12 and the wallet from 9 to 6 once that was fixed. **(c)** The feed's save button was genuinely unlabelled, which only became visible once the glyph noise stopped masking it. 🔴 **PARTIAL, not certified: this is an audit, not a walk.** No journey was driven end to end through TalkBack's own gesture model — with it on, a tap moves focus rather than activating, so the app was still driven by coordinates. Guarded by `components/iconAccessibility.test.ts`, `components/ui/statusChipAccessibility.test.tsx` and `components/chipMigration.test.ts` (91 files left to migrate, shrink-only) |
 | 7.10 | Touch-target sizes audited | PARTIAL | **Measured for the first time 2026-08-23** from the live accessibility tree at the device's real 420dpi (48dp = 126px, the WCAG 2.2 AA minimum of 24dp = 63px — an earlier assumption of 2.25x density would have understated every figure). Across five screens, nine controls sat at **20dp tall**, below the AA minimum: the feed's five filter chips and four exchange status chips. `size="sm"` chips are 20dp. Fixed centrally — interactive chips now carry a 24dp minimum height, decorative ones are no longer targets at all — and re-measured to zero. 🔴 PARTIAL because five screens of roughly 137 were measured, and because a large group sits at **40dp**: above the AA floor but below Android's own 48dp guidance, which is recorded and not addressed |
-| 7.11 | Right-to-left (Arabic) | OPEN | No RTL support exists; `ar` is blocked |
+| 7.11 | Right-to-left (Arabic) | N/A | 🔴 **Owner decision, 2026-08-24: Arabic and right-to-left layout are NOT coming to the native mobile app.** Not deferred — excluded. Arabic speakers are served by the web app and the accessible frontend, both of which have the platform's eleven locales; the native app ships seven. So this is not a defect and must never be counted as one, which is why it is N/A rather than OPEN. Two consequences to keep in mind: the mobile locale set is deliberately seven, not eleven, so a parity check against `lang/` must not treat `ar` as a gap; and any layout work is free to assume left-to-right. If that decision is ever revisited, this row goes back to OPEN and the denominator does not change |
 | 7.12 | Every string translated in the 7 shipped locales | OPEN | ≥3,232 multi-word phrases still English across six locales (~11% each) |
 | 7.13 | Offline check-in queue survives a dropped connection | CERTIFIED | Walked end to end 2026-08-23 on event 164: authorised a staff device, went into aeroplane mode, entered a member's signed code, watched it queue, **killed and relaunched the app**, found the action still pending, then synced — `POST …/offline-checkin/sync` 202, `event_offline_sync_batches` row 1 `completed`, and `event_attendance` row 13 `checked_in`. 🔴 **It could never have worked before today.** The encryption key was stored under `nexus:event-checkin:encryption-key:v1`, and `expo-secure-store` REFUSES any key outside `[A-Za-z0-9._-]` — colons are illegal. `lib/storage.ts` swallows write errors by design, so the write threw silently, the read returned null, and `encryptionKey()`'s own read-back check threw `offline_encryption_key_unavailable`. Authorising a device created it server-side (201), downloaded the manifest (200) and refreshed the workspace (200), and the organiser was told "That offline check-in action could not be completed" over "No devices are authorized". A second illegal key (`…session-index:v1`) was found by the new guard the moment it was written. 🔴 **The existing unit tests asserted the broken keys as literals**, so they pinned the bug instead of catching it — the same failure as this morning's contract fixture. They now use named constants, and `lib/secureStoreKeys.test.ts` refuses any key SecureStore would reject. 🔴 One thing the instrument cannot show: a restart **while still offline**. A debug build loads its JavaScript from Metro over the network, so it cannot relaunch in aeroplane mode. The restart was done after restoring the network but before syncing, which is what proves the queue reached disk |
 | 7.14 | Push notification arrives and opens the right screen | PARTIAL | 🔴 A real defect was found and fixed 2026-08-21 (`edcee0ba9`): every push from a **queued** listener was dropped — `afterResponse()` does not throw outside HTTP, so the documented inline fallback never ran, and the send also did not run in the tenant it logged. Mutation-verified. **Blocked from PROVEN**: sending a real message locally produced neither a bell nor a queued listener run, so the owner's end-to-end symptom was not reproduced. Arrival on a device is unverified |

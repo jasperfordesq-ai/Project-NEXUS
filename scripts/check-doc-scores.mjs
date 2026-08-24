@@ -1212,11 +1212,28 @@ for (const { value, doc } of found.get('SCHEMA_CURRENT_RUNTIME_MIGRATIONS') || [
 // declares itself historical at the top are all allowed to hold these literals.
 // ---------------------------------------------------------------------------
 const RETIRED_LITERALS = [
-  { pattern: /712\/1000/, label: '712/1000 (Baseline 1, pre-drift denominator)' },
-  { pattern: /598\/1000/, label: '598/1000 (Baseline 2, ASPNET-CONTRACT-R2)' },
-  { pattern: /653\/1000/, label: '653/1000 (Baseline 3, ASPNET-CONTRACT-R3)' },
+  { pattern: /712\/1000/, label: '712/1000 (Baseline 1, pre-drift denominator)', aspnetTotal: true },
+  { pattern: /598\/1000/, label: '598/1000 (Baseline 2, ASPNET-CONTRACT-R2)', aspnetTotal: true },
+  { pattern: /653\/1000/, label: '653/1000 (Baseline 3, ASPNET-CONTRACT-R3)', aspnetTotal: true },
   { pattern: /ASPNET-CONTRACT-R[123]\b/, label: 'a retired rubric id (ASPNET-CONTRACT-R1/R2/R3)' }
 ];
+
+/**
+ * 🔴 A retired ASP.NET TOTAL is three digits over 1000, and another rubric can legitimately
+ * reach the same number. That happened on 2026-08-24: the mobile app's live M1 score became
+ * 598/1000 and this scan rejected it, having been written to catch a stale ASP.NET figure.
+ *
+ * So the numeric bans do not apply to the mobile rubric's own documents. The exemption is
+ * deliberately narrow:
+ *   - only files that carry a `MOBILE_M1_*` marker, which is what makes them M1 documents
+ *     and gets their score machine-checked against its own floor;
+ *   - only the three numeric literals. The retired rubric IDS stay banned everywhere,
+ *     because `ASPNET-CONTRACT-R2` in a mobile document can only be a mistake.
+ *
+ * The rule this protects is unchanged: R1–R3 and R4 measure different things and must never
+ * be compared. Two rubrics sharing a number is a coincidence, not a comparison.
+ */
+const isMobileRubricDocument = (text) => /MOBILE_M1_(CURRENT_SCORE|RUBRIC)|MOBILE_BANKED_FLOOR/.test(text);
 
 /** Files and trees where a retired literal is legitimate. */
 const isHistoricalLocation = (relativePosix) => {
@@ -1296,10 +1313,15 @@ const scanRetiredLiterals = () => {
       scanned += 1;
       if (declaresItselfHistorical(text)) continue;
 
+      const mobileRubricDoc = isMobileRubricDocument(text);
+
       const lines = text.split(/\r?\n/);
       lines.forEach((line, index) => {
-        for (const { pattern, label } of RETIRED_LITERALS) {
+        for (const { pattern, label, aspnetTotal } of RETIRED_LITERALS) {
           if (!pattern.test(line)) continue;
+          // See isMobileRubricDocument: a coincidence of numbers between two rubrics is not
+          // a comparison between them.
+          if (aspnetTotal && mobileRubricDoc) continue;
           fail(
             `${relativePosix}:${index + 1}: quotes ${label} in maintained documentation. `
             + 'Move it under HISTORY/, or mark this file historical/superseded/retired in its opening lines. '
