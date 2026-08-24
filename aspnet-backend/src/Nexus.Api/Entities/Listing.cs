@@ -33,6 +33,8 @@ public class Listing : ITenantEntity
     public double? Longitude { get; set; }
     public string? ImageUrl { get; set; }
     public decimal? EstimatedHours { get; set; }
+    public decimal? HoursAvailable { get; set; }
+    public string? ServiceType { get; set; }
     public bool IsFeatured { get; set; }
     public int ViewCount { get; set; }
     public DateTime? ExpiresAt { get; set; }

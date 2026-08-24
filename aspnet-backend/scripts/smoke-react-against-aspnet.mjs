@@ -102,6 +102,8 @@
  *     (defaults: e2e.user.a@project-nexus.local / TestPassword123! / first offered option)
  *   SMOKE_ASPNET_API / SMOKE_LARAVEL_API   backend origins (:5080 / :8091)
  *   SMOKE_PORT_ASPNET / SMOKE_PORT_LARAVEL frontend ports (5199 / 5198)
+ *   SMOKE_ONLY                              comma-separated step names for a focused
+ *                                           rerun; login prerequisites run automatically
  * A Laravel-side login failure caused by the empty tenant list surfaces as
  * LARAVEL_ONLY_FAIL — a control/fixture problem to fix, never an ASP.NET verdict.
  *
@@ -156,6 +158,8 @@ const PORT_ASPNET = Number(process.env.SMOKE_PORT_ASPNET || 5199);
 const PORT_LARAVEL = Number(process.env.SMOKE_PORT_LARAVEL || 5198);
 
 const stampSuffix = process.env.SMOKE_STAMP || String(process.hrtime.bigint() % 100000n);
+const requestedSteps = new Set((process.env.SMOKE_ONLY || '').split(',').map((value) => value.trim()).filter(Boolean));
+const prerequisiteSteps = new Set(['landing', 'dismiss-consent', 'login-page', 'select-community', 'login-submit']);
 
 // ── step machinery ────────────────────────────────────────────────────────────────
 // 🔴 The old step() caught every exception, printed FAILED, and moved on with no
@@ -193,6 +197,7 @@ async function runArm(arm) {
   const PASSWORD = arm.password;
   // Per-arm stamp so the two arms' created records can never be confused in a report.
   const stamp = `${stampSuffix}${arm.key === 'laravel' ? 'l' : ''}`;
+  let createdListingId = null;
 
   const api = [];
   const consoleErrors = [];
@@ -255,6 +260,7 @@ async function runArm(arm) {
 
   let current = 'landing';
   async function step(name, fn) {
+    if (requestedSteps.size > 0 && !requestedSteps.has(name) && !prerequisiteSteps.has(name)) return;
     current = name;
     const started = Date.now();
     const driftAtStart = contractDrift.length;
@@ -454,7 +460,54 @@ async function runArm(arm) {
     const after = page.url().replace(BASE, '');
     console.log(`    after submit: ${after}`);
     if (after.includes('/listings/create')) throw new Error('🔴 still on the form — the create did NOT complete');
+    const listingMatch = after.match(/^\/listings\/(\d+)(?:[/?#]|$)/);
+    if (!listingMatch) throw new Error(`create did not land on a listing detail route (${after})`);
+    createdListingId = Number(listingMatch[1]);
     console.log('    navigated away — create appears to have succeeded');
+  });
+
+  await step('action-edit-delete-listing', async () => {
+    if (!createdListingId) skip('create step did not produce a listing id');
+    const editedTitle = `Edited smoke listing ${stamp}`;
+
+    await page.goto(`${BASE}/listings/edit/${createdListingId}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1200);
+    await dismissConsent();
+    if (page.url().includes('/login')) throw new Error('edit redirected to login — session lost');
+
+    const title = page.getByLabel(/^Title/i).first();
+    if (!(await title.count())) skip('no edit title field — selector needs updating');
+    await title.fill(editedTitle);
+    const description = page.getByLabel(/^Description/i).first();
+    if (await description.count()) {
+      await description.fill('Edited through the unchanged React form to prove persisted listing management.');
+    }
+    const requestType = page.getByText('Request Help', { exact: true }).first();
+    if (await requestType.count()) await requestType.click();
+    const hoursAvailable = page.getByLabel(/Hours Available/i).first();
+    if (await hoursAvailable.count()) await hoursAvailable.fill('8');
+    const hybrid = page.getByText('Remote available', { exact: true }).first();
+    if (await hybrid.count()) await hybrid.click();
+
+    const update = page.locator('button[type="submit"]:has-text("Update Listing")').first();
+    if (!(await update.count())) skip('no Update Listing button — selector needs updating');
+    if (!(await update.isEnabled())) skip('update remains disabled — required edit field is unsatisfied');
+    await update.click({ timeout: 15000 });
+    await page.waitForURL(new RegExp(`/listings/${createdListingId}(?:[/?#]|$)`), { timeout: 30000 });
+    await page.waitForTimeout(1500);
+    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByRole('heading', { name: editedTitle }).waitFor({ state: 'visible', timeout: 15000 });
+    const detailText = await page.locator('body').innerText();
+    if (!detailText.includes('Community request')) throw new Error('edited listing type was not visible after reload');
+
+    await page.getByRole('button', { name: /^Delete$/ }).click({ timeout: 10000 });
+    const confirm = page.getByRole('button', { name: /^Delete listing$/ }).last();
+    await confirm.waitFor({ state: 'visible', timeout: 10000 });
+    await confirm.click({ timeout: 10000 });
+    await page.waitForURL(/\/listings(?:[/?#]|$)/, { timeout: 30000 });
+
+    await page.goto(`${BASE}/listings/${createdListingId}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByText('Listing Not Found', { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
   });
 
   await step('action-create-edit-manage-event', async () => {

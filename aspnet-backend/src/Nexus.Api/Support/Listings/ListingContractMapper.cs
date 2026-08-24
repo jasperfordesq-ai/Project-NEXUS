@@ -23,7 +23,7 @@ namespace Nexus.Api.Support.Listings;
 /// consumer.
 ///
 /// 🔴 HONEST NULLS, NOT INVENTED VALUES. Several fields Laravel sends have no column on
-/// this backend's `Listing` entity — `sdg_goals`, `price`, `service_type`, `availability`,
+/// this backend's `Listing` entity — `sdg_goals`, `price`, `availability`,
 /// `renewal_count`, `save_count`, `contact_count`, `moderation_status` and the
 /// author-reputation trio. The KEY is emitted (a client reading `listing.service_type`
 /// must not get `undefined` where Laravel gives it a value) with an explicit null or a
@@ -124,12 +124,12 @@ public static class ListingContractMapper
             ["sdg_goals"] = null,
             ["price"] = null,
             ["subcategory_id"] = null,
-            ["service_type"] = null,
+            ["service_type"] = NullIfBlank(l.ServiceType),
             ["availability"] = null,
             ["federated_visibility"] = null,
             ["direct_messaging_disabled"] = false,
             ["exchange_workflow_required"] = false,
-            ["hours_available"] = null,
+            ["hours_available"] = l.HoursAvailable,
             ["renewed_at"] = null,
             ["renewal_count"] = 0,
             ["contact_count"] = 0,

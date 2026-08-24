@@ -29,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ASP.NET listing edits and deletes now follow the production Laravel journey.**
+  The React edit form's listing type, category, coordinates, estimated hours,
+  available-hours cap and delivery mode are persisted and returned after a
+  reload; skill-tag replacement is owner-authorized; bodyless deletes return
+  the expected success status; and an unrelated same-community member can no
+  longer edit, retag or delete somebody else's listing. A database migration
+  adds durable storage for the available-hours cap and delivery mode.
+
 - **The wallet no longer offers a "Pending" filter that can never show anything.**
   In a community that isn't connected to another platform, nothing ever puts credits
   into a pending state — so tapping Pending always answered "No matching

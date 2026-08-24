@@ -28,6 +28,8 @@ public class ListingConfiguration : TenantScopedConfiguration
             entity.Property(e => e.Location).HasMaxLength(255);
             entity.Property(e => e.ImageUrl).HasMaxLength(2000);
             entity.Property(e => e.EstimatedHours).HasPrecision(10, 2);
+            entity.Property(e => e.HoursAvailable).HasPrecision(10, 2);
+            entity.Property(e => e.ServiceType).HasMaxLength(30);
 
             // Enum conversions stored as strings for readability
             entity.Property(e => e.Type)

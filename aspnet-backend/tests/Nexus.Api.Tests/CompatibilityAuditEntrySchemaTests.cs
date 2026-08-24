@@ -74,12 +74,10 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260822082641_AddReviewTransactionLink",
-            "the chain currently ends with the review/transaction link — reviews.TransactionId, "
-            + "a unique index on (TenantId, ReviewerId, TransactionId), and the removal of the "
-            + "harsher one-review-per-person index that rejected a second, legitimate review "
-            + "after a second exchange with the same member — ledger row 4.29. "
-            + "The previous tail was 20260821164404_AddExchangeTwoPartyConfirmation. "
+        migrations.Last().Should().Be("20260824114432_AddListingHoursAndServiceType",
+            "the chain currently ends with the listing-management fields consumed by the React edit journey: "
+            + "listings.HoursAvailable and listings.ServiceType — ledger row 1.20. "
+            + "The previous tail was 20260822082641_AddReviewTransactionLink. "
             + "Adding a migration is fine but must be deliberate — update this pin in the same commit; "
             + "the tail before that (20260817121949_AddSkillCategories) went in without updating it and left main red. "
             + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "

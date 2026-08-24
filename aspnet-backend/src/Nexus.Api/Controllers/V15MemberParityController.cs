@@ -797,8 +797,22 @@ public class V15MemberParityController : ControllerBase
     [HttpGet("api/v2/listings/{id:int}")]
     public async Task<IActionResult> V2Listing(int id)
     {
-        var listing = await _db.Listings.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id && l.DeletedAt == null);
-        return listing == null ? NotFound(new { error = "Listing not found" }) : Ok(new { data = ListingDto(listing) });
+        var viewerId = CurrentUserId();
+        var listing = await _db.Listings.AsNoTracking()
+            .Include(l => l.User)
+            .Include(l => l.Category)
+            .FirstOrDefaultAsync(l => l.Id == id && l.DeletedAt == null);
+        if (listing == null) return NotFound(new { error = "Listing not found" });
+        var isFavorited = viewerId is not null && await _db.ListingFavorites.AsNoTracking()
+            .AnyAsync(f => f.ListingId == id && f.UserId == viewerId.Value);
+        return Ok(new
+        {
+            data = ListingContractMapper.Listing(listing, new ListingContractMapper.Facts
+            {
+                ViewerId = viewerId,
+                IsFavorited = isFavorited,
+            }),
+        });
     }
 
     /// <summary>
@@ -899,39 +913,76 @@ public class V15MemberParityController : ControllerBase
             CategoryId = categoryId,
             Status = ListingStatus.Active,
             Location = GetString(body, "location"),
-            EstimatedHours = GetDecimal(body, "estimated_hours")
+            Latitude = GetDouble(body, "latitude"),
+            Longitude = GetDouble(body, "longitude"),
+            EstimatedHours = GetDecimal(body, "hours_estimate") ?? GetDecimal(body, "estimated_hours"),
+            HoursAvailable = GetDecimal(body, "hours_available"),
+            ServiceType = NullIfBlank(GetString(body, "service_type")),
         };
         _db.Listings.Add(listing);
         await _db.SaveChangesAsync();
-        return Created($"api/v2/listings/{listing.Id}", new { success = true, data = ListingDto(listing) });
+        return Created($"api/v2/listings/{listing.Id}", new
+        {
+            success = true,
+            data = ListingContractMapper.Listing(listing, new ListingContractMapper.Facts { ViewerId = userId }),
+        });
     }
 
     [HttpPut("api/v2/listings/{id:int}")]
     public async Task<IActionResult> V2UpdateListing(int id, [FromBody] JsonElement body)
     {
-        var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == id && l.DeletedAt == null);
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+        var listing = await _db.Listings.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.Id == id && l.DeletedAt == null);
         if (listing == null) return NotFound(new { error = "Listing not found" });
-        listing.Title = GetString(body, "title") ?? listing.Title;
-        listing.Description = GetString(body, "description") ?? listing.Description;
-        listing.Location = GetString(body, "location") ?? listing.Location;
-        listing.EstimatedHours = GetDecimal(body, "estimated_hours") ?? listing.EstimatedHours;
+        if (!await CanModifyListingAsync(listing, userId.Value, tenantId, HttpContext.RequestAborted))
+            return ListingForbidden("Listing editing is not allowed");
+
+        if (HasProperty(body, "title")) listing.Title = GetString(body, "title")?.Trim() ?? listing.Title;
+        if (HasProperty(body, "description")) listing.Description = NullIfBlank(GetString(body, "description"));
+        if (HasProperty(body, "location")) listing.Location = NullIfBlank(GetString(body, "location"));
+        if (HasProperty(body, "latitude")) listing.Latitude = GetDouble(body, "latitude");
+        if (HasProperty(body, "longitude")) listing.Longitude = GetDouble(body, "longitude");
+        if (HasProperty(body, "category_id")) listing.CategoryId = GetInt(body, "category_id");
+        if (HasProperty(body, "hours_estimate") || HasProperty(body, "estimated_hours"))
+            listing.EstimatedHours = GetDecimal(body, "hours_estimate") ?? GetDecimal(body, "estimated_hours");
+        if (HasProperty(body, "hours_available")) listing.HoursAvailable = GetDecimal(body, "hours_available");
+        if (HasProperty(body, "service_type")) listing.ServiceType = NullIfBlank(GetString(body, "service_type"));
+        if (HasProperty(body, "type") && Enum.TryParse<ListingType>(GetString(body, "type"), true, out var type))
+            listing.Type = type;
         listing.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
-        return Ok(new { success = true, data = ListingDto(listing) });
+        return Ok(new
+        {
+            success = true,
+            data = ListingContractMapper.Listing(listing, new ListingContractMapper.Facts { ViewerId = userId }),
+        });
     }
 
     [HttpDelete("api/v2/listings/{id:int}")]
     [HttpPost("api/listings/delete")]
-    public async Task<IActionResult> V2DeleteListing(int? id, [FromBody] JsonElement body)
+    public async Task<IActionResult> V2DeleteListing(
+        int? id,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] JsonElement? body)
     {
-        var listingId = id ?? GetInt(body, "id") ?? GetInt(body, "listing_id");
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var listingId = id ?? (body is { ValueKind: JsonValueKind.Object } value
+            ? GetInt(value, "id") ?? GetInt(value, "listing_id")
+            : null);
         if (listingId == null) return BadRequest(new { error = "listing id is required" });
-        var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == listingId.Value);
+        var tenantId = TenantId();
+        var listing = await _db.Listings.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.Id == listingId.Value && l.DeletedAt == null);
         if (listing == null) return NotFound(new { error = "Listing not found" });
+        if (!await CanModifyListingAsync(listing, userId.Value, tenantId, HttpContext.RequestAborted))
+            return ListingForbidden("Listing deletion is not allowed");
         listing.DeletedAt = DateTime.UtcNow;
         listing.Status = ListingStatus.Cancelled;
         await _db.SaveChangesAsync();
-        return Ok(new { success = true });
+        return id is not null ? NoContent() : Ok(new { success = true });
     }
 
     [HttpPost("api/v2/listings/{id:int}/save")]
@@ -963,6 +1014,15 @@ public class V15MemberParityController : ControllerBase
     [HttpPut("api/v2/listings/{id:int}/tags")]
     public async Task<IActionResult> V2UpdateListingTags(int id, [FromBody] JsonElement body)
     {
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+        var listing = await _db.Listings.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.Id == id && l.DeletedAt == null);
+        if (listing == null) return NotFound(new { error = "Listing not found" });
+        if (!await CanModifyListingAsync(listing, userId.Value, tenantId, HttpContext.RequestAborted))
+            return ListingForbidden("Listing editing is not allowed");
+
         var tags = ReadStringArray(body, "tags");
         var existing = await _db.ListingTags.Where(t => t.ListingId == id).ToListAsync();
         _db.ListingTags.RemoveRange(existing);
@@ -3024,6 +3084,24 @@ public class V15MemberParityController : ControllerBase
                 x.TenantId == tenantId && x.GroupId == groupId && x.UserId == actorId
                 && x.Status == "active" && (x.Role == Group.Roles.Owner || x.Role == Group.Roles.Admin), ct);
     }
+
+    private async Task<bool> CanModifyListingAsync(Listing listing, int actorId, int tenantId, CancellationToken ct)
+    {
+        if (listing.UserId == actorId) return true;
+
+        var actor = await _db.Users.IgnoreQueryFilters().AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == actorId && x.IsActive, ct);
+        if (actor is null) return false;
+        if (actor.IsGod || actor.IsSuperAdmin || actor.Role is "god" or "super_admin") return true;
+        return actor.TenantId == tenantId
+            && (actor.IsAdmin || actor.IsTenantSuperAdmin || actor.Role is "admin" or "tenant_admin");
+    }
+
+    private IActionResult ListingForbidden(string message) => StatusCode(StatusCodes.Status403Forbidden, new
+    {
+        success = false,
+        errors = new[] { new { code = "FORBIDDEN", message } },
+    });
 
     private static void ApplyVenueAccessibility(JsonElement body, Event ev)
     {
