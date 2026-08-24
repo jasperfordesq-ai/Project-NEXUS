@@ -199,6 +199,10 @@ async function runArm(arm) {
   const stamp = `${stampSuffix}${arm.key === 'laravel' ? 'l' : ''}`;
   let createdListingId = null;
   let createdListingTitle = null;
+  let createdEventId = null;
+  let createdEventTitle = null;
+  let createdFeedPostBody = null;
+  let transferEvidence = null;
 
   const api = [];
   const consoleErrors = [];
@@ -378,6 +382,10 @@ async function runArm(arm) {
   // and reads exactly like a backend refusing the second member.
   async function signInAs(p, email, password, communityLabel) {
     await p.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
+    // Registration returns a short-lived token even while the account is still
+    // pending verification/approval. A later sign-in must prove that login issued
+    // a usable session, not accidentally reuse that registration token.
+    await p.evaluate(() => localStorage.clear());
     await p.waitForTimeout(1200);
     await dismissConsent(p);
     const opts = (await p.locator('select option').allTextContents()).map((o) => o.trim()).filter(Boolean);
@@ -389,10 +397,26 @@ async function runArm(arm) {
     const submit = p.locator('button[type="submit"]:has-text("Sign In")').first();
     await submit.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     for (let i = 0; i < 20 && !(await submit.isEnabled().catch(() => false)); i++) await p.waitForTimeout(250);
-    await submit.click({ timeout: 15000 }).catch(() => {});
+    const submitLogin = async () => {
+      const responsePromise = p.waitForResponse((response) => response.request().method() === 'POST'
+        && /\/api\/auth\/login(?:$|\?)/.test(response.url()), { timeout: 15000 }).catch(() => null);
+      await submit.click({ timeout: 15000 });
+      return responsePromise;
+    };
+    let loginResponse = await submitLogin();
+    if (loginResponse?.status() === 429) {
+      const waitMs = 65000;
+      console.log(`    second-actor login rate-limited; waiting ${waitMs / 1000}s and retrying once`);
+      await p.waitForTimeout(waitMs);
+      loginResponse = await submitLogin();
+    }
     await p.waitForTimeout(5000);
     const keys = await p.evaluate(() => Object.keys(localStorage).filter((k) => /token|auth/i.test(k)));
-    if (!keys.length) return { ok: false, reason: `second actor ${email} could not sign in (landed on ${p.url().replace(BASE, '')})` };
+    if (!keys.length) {
+      const status = loginResponse ? loginResponse.status() : 'no response';
+      const detail = loginResponse ? (await loginResponse.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 180) : '';
+      return { ok: false, reason: `second actor ${email} could not sign in (POST login ${status}${detail ? ` ${detail}` : ''}; landed on ${p.url().replace(BASE, '')})` };
+    }
     return { ok: true };
   }
 
@@ -507,6 +531,25 @@ async function runArm(arm) {
     await page.getByText(createdListingTitle, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
   });
 
+  await step('journey-listings-browse', async () => {
+    if (!createdListingId || !createdListingTitle) {
+      skip('create step did not produce a listing for the browse assertion');
+    }
+    await page.goto(`${BASE}/listings`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1800);
+    const cards = page.getByTestId('listing-card');
+    const createdCard = cards.filter({ hasText: createdListingTitle });
+    await createdCard.waitFor({ state: 'visible', timeout: 15000 });
+    if (await createdCard.count() !== 1) {
+      throw new Error(`default listing browse should contain exactly one card for ${JSON.stringify(createdListingTitle)}`);
+    }
+    const detailLink = createdCard.locator(`a[href*="/listings/${createdListingId}"]`).first();
+    if (!(await detailLink.count())) {
+      throw new Error('the freshly persisted listing rendered without its detail link');
+    }
+    console.log(`    default browse returned persisted listing ${createdListingId} as a real card`);
+  });
+
   await step('action-edit-delete-listing', async () => {
     if (!createdListingId) skip('create step did not produce a listing id');
     const editedTitle = `Edited smoke listing ${stamp}`;
@@ -604,6 +647,7 @@ async function runArm(arm) {
     await page.waitForURL(/\/events\/\d+$/, { timeout: 20000 });
     const id = page.url().match(/\/events\/(\d+)$/)?.[1];
     if (!id) throw new Error(`create did not navigate to an event detail URL: ${page.url()}`);
+    createdEventId = id;
     await page.reload({ waitUntil: 'networkidle' });
     if (!(await page.getByText(createdTitle, { exact: true }).count())) {
       throw new Error('created event title did not survive a detail-page reload');
@@ -640,6 +684,52 @@ async function runArm(arm) {
       throw new Error('event owner could not open the management overview after editing');
     }
     console.log(`    event ${id} created, reloaded, edited, and opened in owner management`);
+    createdEventTitle = editedTitle;
+  });
+
+  await step('journey-events-browse-filters', async () => {
+    if (!createdEventId || !createdEventTitle) {
+      skip('event-create step did not produce an event for browse/filter assertions');
+    }
+    await page.goto(`${BASE}/events`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1800);
+    const search = page.getByRole('searchbox', { name: 'Search events' }).first();
+    if (!(await search.count())) skip('event searchbox missing — selector needs updating');
+    await search.fill(createdEventTitle);
+    await page.waitForTimeout(1200);
+    await page.getByText(createdEventTitle, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+
+    const timeFilter = page.getByRole('button', { name: /Filter events/i }).first();
+    if (!(await timeFilter.count())) skip('event time filter missing — selector needs updating');
+    await timeFilter.click();
+    await page.getByRole('option', { name: 'Past' }).click();
+    await page.getByText(createdEventTitle, { exact: true }).waitFor({ state: 'hidden', timeout: 15000 });
+    await timeFilter.click();
+    await page.getByRole('option', { name: 'Upcoming' }).click();
+    await page.getByText(createdEventTitle, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+
+    const detailLink = page.locator(`a[href*="/events/${createdEventId}"]`).filter({ hasText: createdEventTitle }).first();
+    if (!(await detailLink.count())) throw new Error('filtered event result has no link to the persisted event');
+    console.log(`    search + past/upcoming filters isolated persisted event ${createdEventId}`);
+  });
+
+  await step('journey-dashboard', async () => {
+    await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByRole('heading', { name: /Welcome back/i }).waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: 'Upcoming Events' }).waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: 'Quick Actions' }).waitFor({ state: 'visible', timeout: 15000 });
+    const body = await page.locator('body').innerText();
+    for (const heading of ['Upcoming Events', 'Quick Actions']) {
+      if (!body.includes(heading)) throw new Error(`dashboard omitted required panel ${JSON.stringify(heading)}`);
+    }
+    const outcomeLinks = page.locator('a[href*="/events/"], a[href$="/wallet"], a[href$="/messages"]');
+    if (await outcomeLinks.count() < 3) {
+      throw new Error('dashboard panels rendered without their consumed event/wallet/message destinations');
+    }
+    if (/unable to load dashboard|something went wrong|unexpected error/i.test(body)) {
+      throw new Error('dashboard rendered an error state alongside its shell');
+    }
+    console.log(`    dashboard rendered welcome, Upcoming Events, Quick Actions, and ${await outcomeLinks.count()} outcome links`);
   });
 
   // 🔴 POSTING. The feed composer opens from a "Create" button (there is no inline
@@ -652,28 +742,70 @@ async function runArm(arm) {
     await dismissConsent();
     if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
 
-    const create = page.locator('button:has-text("Create")').first();
-    if (!(await create.count())) skip('no Create control — selector needs updating, NOT a backend result');
-    await create.click({ timeout: 10000 }).catch(() => {});
-    await page.waitForTimeout(2000);
+    // The page-level "Create" button opens the default Listing tab. The quick
+    // action labelled "Add image" deliberately opens the Post tab (images remain
+    // optional), which is the actual post journey exercised here.
+    const create = page.getByRole('button', { name: 'Add image' }).first();
+    if (!(await create.count())) skip('no post composer control — selector needs updating, NOT a backend result');
+    await create.click({ timeout: 10000 });
+    const dialog = page.getByRole('dialog').last();
+    await dialog.waitFor({ state: 'visible', timeout: 15000 });
 
-    const composer = page.locator('textarea, [contenteditable="true"]').first();
+    const composer = dialog.getByRole('textbox', { name: /Post content editor/i }).first();
     if (!(await composer.count())) skip('composer did not open — selector needs updating, NOT a backend result');
     const body = `Smoke feed post ${stamp}`;
+    createdFeedPostBody = body;
     await composer.fill(body, { timeout: 10000 }).catch(async () => { await composer.type(body).catch(() => {}); });
     await page.waitForTimeout(500);
 
-    const submit = page.locator('button:has-text("Post"), button[type="submit"]').last();
+    const submit = dialog.getByRole('button', { name: /^Post$/ }).last();
     if (!(await submit.count()) || !(await submit.isEnabled())) {
       skip('submit missing or disabled — a required field is unsatisfied; not a backend result');
     }
-    await submit.click({ timeout: 15000 }).catch((e) => console.log('    click failed: ' + String(e).slice(0, 80)));
-    await page.waitForTimeout(4000);
+    const mutationResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/v2\/feed\/posts(?:$|\?)/.test(response.url()), { timeout: 15000 }).catch(() => null);
+    await submit.click({ timeout: 15000 });
+    const response = await mutationResponse;
+    if (!response) throw new Error('post composer produced no POST /api/v2/feed/posts request');
+    if (!response.ok()) {
+      const detail = (await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
+      throw new Error(`post creation returned ${response.status()}${detail ? `: ${detail}` : ''}`);
+    }
+    await dialog.waitFor({ state: 'hidden', timeout: 15000 });
     // 🔴 Assert the EFFECT: the post must be on the page, not merely "no error shown".
-    const present = await page.locator(`text=${body}`).count();
+    await page.goto(`${BASE}/feed?filter=posts&mode=recent`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    const present = await page.getByText(body, { exact: true }).count();
     const inCard = await page.locator(`[role="article"]:has-text("${body}")`).count();
     console.log(`    post visible on the feed afterwards: ${present > 0 ? 'YES — posting works' : 'no (unconfirmed)'} (as a card: ${inCard})`);
     if (!present) skip('post not visible after submit — effect unconfirmed (ranking/render, not proven either way)');
+  });
+
+  await step('journey-feed-browse', async () => {
+    if (!createdFeedPostBody) skip('feed-create step did not produce a post for browse correctness');
+    await page.goto(`${BASE}/feed?filter=posts&mode=recent`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    const card = page.locator(`[role="article"]:has-text("${createdFeedPostBody}")`).first();
+    await card.waitFor({ state: 'visible', timeout: 15000 });
+    if (!(await card.getByText(createdFeedPostBody, { exact: true }).count())) {
+      throw new Error('feed browse rendered the persisted post outside its article card');
+    }
+    console.log('    default feed browse contains the same-run persisted post card');
+  });
+
+  await step('journey-feed-filters', async () => {
+    if (!createdFeedPostBody) skip('feed-create step did not produce a post for filter correctness');
+    await page.goto(`${BASE}/feed?filter=posts&mode=recent`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1800);
+    const postText = page.getByText(createdFeedPostBody, { exact: true });
+    await postText.waitFor({ state: 'visible', timeout: 15000 });
+    const filters = page.getByRole('radiogroup', { name: 'Select feed filter' }).first();
+    if (!(await filters.count())) skip('desktop feed filter group missing — selector needs updating');
+    await filters.getByRole('radio', { name: 'Listings' }).click();
+    await postText.waitFor({ state: 'hidden', timeout: 15000 });
+    await filters.getByRole('radio', { name: 'Posts' }).click();
+    await postText.waitFor({ state: 'visible', timeout: 15000 });
+    console.log('    Listings excludes the post and Posts restores the same persisted card');
   });
 
   // 🔴 TRANSFERRING credits — the highest-risk member action, because it moves value.
@@ -775,9 +907,15 @@ async function runArm(arm) {
     if (!(await amount.count())) {
       skip('amount number field absent inside the transfer dialog after recipient selection — NOT a backend verdict');
     }
-    await amount.fill('1', { timeout: 8000 }).catch(() => {});
+    const transferAmount = balanceBefore >= 1 ? 1 : 0.25;
+    if (balanceBefore < transferAmount) {
+      await recipientCtx.close();
+      skip(`sender balance ${balanceBefore} is below the smallest safe smoke transfer ${transferAmount}`);
+    }
+    await amount.fill(String(transferAmount), { timeout: 8000 }).catch(() => {});
     const note = page.locator('textarea:visible').first();
-    if (await note.count()) await note.fill(`Smoke transfer ${stamp}`, { timeout: 8000 }).catch(() => {});
+    const transferNote = `Smoke transfer ${stamp}`;
+    if (await note.count()) await note.fill(transferNote, { timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(800);
 
     const confirm = page.locator('button:has-text("Send Credits")').last();
@@ -792,7 +930,7 @@ async function runArm(arm) {
     await page.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2500);
     const after = await page.locator('body').innerText();
-    const listed = after.includes(`Smoke transfer ${stamp}`);
+    const listed = after.includes(transferNote);
     const balanceAfter = await balanceFrom(page);
     await recipientPage.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
     await recipientPage.waitForTimeout(2500);
@@ -803,10 +941,11 @@ async function runArm(arm) {
     if (!listed) skip('transfer not visible in the ledger afterwards — effect unconfirmed, NOT a proven failure');
     const senderDelta = balanceAfter === null ? null : balanceAfter - balanceBefore;
     const recipientDelta = recipientBalanceAfter === null ? null : recipientBalanceAfter - recipientBalanceBefore;
-    console.log(`    credit movement — sender: ${senderDelta}, recipient: ${recipientDelta} (expected -1 / +1)`);
-    if (senderDelta !== -1 || recipientDelta !== 1) {
-      throw new Error(`transfer moved credits incorrectly: sender ${senderDelta}, recipient ${recipientDelta}; expected -1/+1`);
+    console.log(`    credit movement — sender: ${senderDelta}, recipient: ${recipientDelta} (expected ${-transferAmount} / +${transferAmount})`);
+    if (Math.abs(senderDelta + transferAmount) > 0.001 || Math.abs(recipientDelta - transferAmount) > 0.001) {
+      throw new Error(`transfer moved credits incorrectly: sender ${senderDelta}, recipient ${recipientDelta}; expected ${-transferAmount}/+${transferAmount}`);
     }
+    transferEvidence = { note: transferNote, amount: transferAmount };
   });
 
   await step('action-rsvp-event', async () => {
@@ -1031,8 +1170,9 @@ async function runArm(arm) {
     if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
     const text = (await page.locator('body').innerText()).trim();
     if (text.length < 200) throw new Error('profile page rendered almost no content');
-    const hasIdentity = /Member|member@acme\.test|Acme/i.test(text);
+    const hasIdentity = text.includes(arm.expectedSelfName) || text.includes(arm.email);
     console.log(`    profile renders the member's identity: ${hasIdentity ? 'YES' : 'no (unconfirmed — check fixture names)'}`);
+    if (!hasIdentity) throw new Error(`own profile omitted expected identity ${arm.expectedSelfName}`);
 
     // 🔴 There is NO Edit control on the profile page — own-profile editing lives in
     // SETTINGS (ProfilePage.tsx:199 explains the isOwnProfile → "Settings/edit UI"
@@ -1044,6 +1184,25 @@ async function runArm(arm) {
     const fields = await page.locator('input, textarea, select').count();
     console.log(`    settings (the edit surface) opened with ${fields} form fields: ${fields > 0 ? 'YES' : 'no'}`);
     if (fields === 0) throw new Error('settings rendered no editable fields');
+
+    await page.goto(`${BASE}/members`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1800);
+    const otherProfile = page.locator(`a[href$="/profile/${arm.providerId}"]`).first();
+    await otherProfile.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    if (!(await otherProfile.count())) throw new Error(`directory has no profile link for fixture member ${arm.providerId}`);
+    await otherProfile.click({ timeout: 10000 });
+    await page.waitForURL(/\/profile\/\d+(?:[/?#]|$)/, { timeout: 15000 });
+    await page.waitForFunction(
+      (identity) => document.body.innerText.includes(identity),
+      arm.expectedMemberName,
+      { timeout: 15000 },
+    ).catch(() => {});
+    const otherBody = await page.locator('body').innerText();
+    if (!otherBody.includes(arm.expectedMemberName)) {
+      throw new Error(`another member's profile did not render identity token ${arm.expectedMemberName}; `
+        + `page showed ${JSON.stringify(otherBody.replace(/\s+/g, ' ').slice(0, 220))}`);
+    }
+    console.log(`    own profile and ${arm.expectedMemberName}'s profile both render exact identities`);
   });
 
   // NOTIFICATIONS: the page must render, and if anything is unread, marking it read
@@ -1101,11 +1260,15 @@ async function runArm(arm) {
   // FEED COMMENT: commenting on the post this run just created. Asserts the comment
   // text is on the page afterwards.
   await step('journey-feed-comment', async () => {
+    if (!createdFeedPostBody) skip('feed-create step did not produce a post to comment on');
     await page.goto(`${BASE}/feed`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2000);
     if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
 
-    const comment = page.locator('button:has-text("Comment")').first();
+    const targetCard = page.locator(`[role="article"]:has-text("${createdFeedPostBody}")`).first();
+    await targetCard.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    if (!(await targetCard.count())) skip('same-run feed post card not found — selector or ordering gap');
+    const comment = targetCard.locator('button:has-text("Comment")').first();
     if (!(await comment.count())) skip('no Comment control — selector needs updating, NOT a backend result');
     await comment.click({ timeout: 8000 }).catch(() => {});
     await page.waitForTimeout(1500);
@@ -1114,11 +1277,26 @@ async function runArm(arm) {
     if (!(await box.count())) skip('comment box did not open — selector needs updating, NOT a backend result');
     const body = `Smoke comment ${stamp}`;
     await box.fill(body, { timeout: 8000 }).catch(() => {});
-    await box.press('Enter').catch(() => {});
+    const commentResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/v2\/comments(?:$|\?)/.test(response.url()), { timeout: 15000 }).catch(() => null);
+    await box.press('Enter');
+    const response = await commentResponse;
+    if (!response) throw new Error('comment composer produced no POST /api/v2/comments request');
+    if (!response.ok()) {
+      const detail = (await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
+      throw new Error(`comment creation returned ${response.status()}${detail ? `: ${detail}` : ''}`);
+    }
     await page.waitForTimeout(3000);
-    const present = await page.locator(`text=${body}`).count();
+    let present = await page.getByText(body, { exact: true }).count();
     console.log(`    comment visible afterwards: ${present > 0 ? 'YES — commenting works' : 'no (unconfirmed)'}`);
-    if (!present) skip('comment not visible afterwards — effect unconfirmed, NOT a proven failure');
+    if (!present) throw new Error('comment not visible after submit');
+    await page.goto(`${BASE}/feed?filter=posts&mode=recent`, { waitUntil: 'networkidle', timeout: 60000 });
+    const reloadedCard = page.locator(`[role="article"]:has-text("${createdFeedPostBody}")`).first();
+    await reloadedCard.waitFor({ state: 'visible', timeout: 15000 });
+    const reopenComments = reloadedCard.locator('button:has-text("Comment")').first();
+    await reopenComments.click({ timeout: 8000 });
+    await page.getByText(body, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+    console.log('    comment POST succeeded and the server-loaded comment survived a fresh feed navigation');
   });
 
   // MESSAGES: send a text message into the member<->admin conversation and assert it
@@ -1143,6 +1321,11 @@ async function runArm(arm) {
     const present = await page.locator(`text=${body}`).count();
     console.log(`    message visible in the thread afterwards: ${present > 0 ? 'YES — messaging works' : 'no (unconfirmed)'}`);
     if (!present) throw new Error('sent message did not appear in the thread');
+    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1800);
+    if (!(await page.getByText(body, { exact: true }).count())) {
+      throw new Error('sent message disappeared after reloading the conversation');
+    }
   });
 
   // MEMBERS CONNECT: the members directory must render members, and a connect control
@@ -1154,6 +1337,13 @@ async function runArm(arm) {
     if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
     const text = (await page.locator('body').innerText()).trim();
     if (text.length < 200) throw new Error('members directory rendered almost no content');
+    const profileLink = page.locator(`a[href$="/profile/${arm.providerId}"]`).first();
+    await profileLink.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    if (!(await profileLink.count())) throw new Error(`members directory omitted fixture profile ${arm.providerId}`);
+    const memberCardText = (await profileLink.innerText()).trim();
+    if (!memberCardText.includes(arm.expectedMemberName)) {
+      throw new Error(`fixture profile card omitted identity token ${arm.expectedMemberName}`);
+    }
 
     const connect = page.locator('button:has-text("Connect")').first();
     if (!(await connect.count())) {
@@ -1171,6 +1361,7 @@ async function runArm(arm) {
   // WALLET HISTORY: the transfer performed earlier in THIS run must appear in the
   // wallet's history — a written row a member can see back, not merely a 200.
   await step('journey-wallet-history', async () => {
+    if (!transferEvidence) skip('transfer step produced no same-run ledger evidence');
     await page.goto(`${BASE}/wallet`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2500);
     if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
@@ -1181,6 +1372,10 @@ async function runArm(arm) {
     const hasHistory = /Transaction|History|Sent|Received/i.test(text);
     console.log(`    wallet shows a transactions region: ${hasHistory ? 'YES' : 'no (unconfirmed)'}`);
     if (!hasHistory) throw new Error('no transactions region visible on the wallet');
+    if (!text.includes(transferEvidence.note)) {
+      throw new Error(`wallet history omitted the same-run transfer note ${JSON.stringify(transferEvidence.note)}`);
+    }
+    console.log(`    wallet history contains same-run ${transferEvidence.amount}-credit transfer after reload`);
   });
 
   // -- THE EXCHANGE TRANSACTION - ledger row 1.21 -------------------------------
@@ -1782,48 +1977,80 @@ async function runArm(arm) {
       // then signs in as the brand-new member. The ASP.NET dev seed carries a terms
       // document, so a FIRST sign-in must surface the legal-acceptance gate.
       let verified = false;
-      if (arm.key !== 'aspnet') {
-        // The verification bypass below is wired to the ASP.NET dev Postgres only;
-        // the Laravel control's disposable MariaDB is a different container and
-        // schema. Legal gate not measured on the control arm — stated, not glossed.
-        console.log('    (verification completion is wired only to the ASP.NET dev database — legal gate not measured on this arm)');
-      } else {
-        try {
-          const { execSync } = await import('node:child_process');
-          // 🔴 Windows cmd mangles nested double-quotes — pipe the SQL on stdin instead of
-          // embedding it in the argument (the quoted-argument version silently failed here).
-          const sql = `UPDATE users SET "EmailVerified"=true, "EmailVerifiedAt"=now(), "IsActive"=true WHERE "Email"='${email}';`;
-          execSync('docker exec -i nexus-aspnet-dev-db psql -U postgres -d nexus_dev', { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
-          verified = true;
-        } catch {
-          console.log('    (docker not reachable — verification completion skipped; legal gate NOT measured this run)');
+      try {
+        const { execSync } = await import('node:child_process');
+        // Verification itself normally arrives through email. The disposable runtime
+        // instrument advances that external boundary in each arm's own database, then
+        // removes this new user's acceptance so the unchanged UI must present and save
+        // the legal gate. Both mutations are confined to generated smoke addresses.
+        if (arm.key === 'aspnet') {
+          const sql = `UPDATE users SET "EmailVerified"=true, "EmailVerifiedAt"=now(), "IsActive"=true, "RegistrationStatus"='Active', is_approved=true WHERE "Email"='${email}';\n`
+            + `INSERT INTO onboarding_progress ("TenantId","UserId","StepId","IsCompleted","CompletedAt","CreatedAt") `
+            + `SELECT s."TenantId",u."Id",s."Id",true,now(),now() FROM onboarding_steps s JOIN users u ON u."TenantId"=s."TenantId" `
+            + `WHERE u."Email"='${email}' AND s."IsRequired"=true ON CONFLICT ("UserId","StepId") DO UPDATE SET "IsCompleted"=true,"CompletedAt"=now();\n`
+            + `DELETE FROM legal_document_acceptances WHERE "UserId"=(SELECT "Id" FROM users WHERE "Email"='${email}');`;
+          execSync('docker exec -i nexus-aspnet-dev-db psql -U postgres -d nexus_dev', {
+            input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000,
+          });
+        } else {
+          const sql = `UPDATE users SET is_verified=1, email_verified_at=NOW(), is_active=1, is_approved=1, status='active', onboarding_completed=1 WHERE email='${email}';\n`
+            + `DELETE ula FROM user_legal_acceptances ula JOIN users u ON u.id=ula.user_id WHERE u.email='${email}';`;
+          execSync('docker exec -i nexus-laravel-throwaway-db mariadb -unexus -pnexus_secret nexus', {
+            input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000,
+          });
         }
+        verified = true;
+      } catch (error) {
+        console.log(`    (disposable verification advance failed — ${String(error).slice(0, 160)})`);
       }
       if (verified) {
-        await page2.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
-        await page2.waitForTimeout(1500);
-        for (const label of ['Use basic features only', 'Essential only']) {
-          const b = page2.locator(`button:has-text("${label}")`).first();
-          if (await b.count() && await b.isVisible()) { await b.click({ timeout: 5000 }).catch(() => {}); await page2.waitForTimeout(400); }
-        }
-        await page2.selectOption('select', { label: 'ACME Community Timebank' }).catch(() => {});
-        await page2.fill('input[name="username"]', email).catch(() => {});
-        await page2.fill('input[name="password"]', 'SmokeSignup!2026x').catch(() => {});
-        await page2.locator('button:has-text("Sign In"), button[type="submit"]').first().click({ timeout: 10000 }).catch(() => {});
-        await page2.waitForTimeout(5000);
-        const afterLogin = (await page2.locator('body').innerText()).trim();
-        const gate = /accept|agree/i.test(afterLogin) && /terms|legal|document/i.test(afterLogin);
-        const inApp = /\/dashboard|\/onboarding|\/feed/.test(page2.url());
-        console.log(`    first sign-in of the NEW member -> ${page2.url().replace(BASE, '')} | legal gate visible: ${gate} | in-app: ${inApp}`);
-        if (!gate && !inApp) throw new Error('new member could neither pass the legal gate nor reach the app');
-        if (gate) {
-          const acceptButton = page2.locator('button:has-text("Accept")').first();
-          if (await acceptButton.count()) {
-            await acceptButton.click({ timeout: 8000 }).catch(() => {});
-            await page2.waitForTimeout(3000);
-            console.log(`    after accepting -> ${page2.url().replace(BASE, '')}`);
+        // Verification normally sends the member back from their email in a new
+        // browser navigation. Use a fresh context so registration-time auth state
+        // cannot satisfy (or interfere with) the first real sign-in assertion.
+        const firstSignInContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+        const firstSignInPage = await firstSignInContext.newPage();
+        captureApiFrom(firstSignInPage);
+        captureClientErrorsFrom(firstSignInPage);
+        try {
+          const legalStatusResponse = firstSignInPage.waitForResponse(
+            (response) => /\/api\/v2\/legal\/acceptance\/status(?:$|\?)/.test(response.url()),
+            // The same focused flow performs primary login + registration first,
+            // so a legitimate 65s auth-limiter retry may precede this request.
+            { timeout: 120000 },
+          ).catch(() => null);
+          const signedIn = await signInAs(firstSignInPage, email, 'SmokeSignup!2026x', arm.communityLabel);
+          if (!signedIn.ok) throw new Error(`verified new member could not sign in: ${signedIn.reason}`);
+          const statusResponse = await legalStatusResponse;
+          let legalStatus = null;
+          if (statusResponse) {
+            try { legalStatus = (await statusResponse.json())?.data ?? null; } catch { /* assertion below names the missing state */ }
           }
+          console.log(`    legal status -> ${JSON.stringify(legalStatus)}`);
+          const acceptButton = firstSignInPage.getByRole('button', { name: /Accept all updated legal documents and continue|Accept & Continue/i }).first();
+          await acceptButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+          const gate = await acceptButton.isVisible().catch(() => false);
+          console.log(`    first sign-in of the verified NEW member -> ${firstSignInPage.url().replace(BASE, '')} | legal gate visible: ${gate}`);
+          if (!legalStatus?.has_pending) {
+            throw new Error('legal status did not report the deliberately pending document for the verified new member');
+          }
+          if (legalStatus.enforcement_blocking === false || legalStatus.blocking_pending === false) {
+            throw new Error('legal status reported the pending document as non-blocking, so the acceptance gate cannot be certified');
+          }
+          if (!gate) throw new Error('verified new member had a blocking pending legal document but the unchanged UI did not show its gate');
+          await acceptButton.click({ timeout: 10000 });
+          await firstSignInPage.waitForTimeout(3000);
+          await firstSignInPage.reload({ waitUntil: 'networkidle', timeout: 60000 });
+          await firstSignInPage.waitForTimeout(1800);
+          const afterAccept = await firstSignInPage.locator('body').innerText();
+          if (/Updated legal documents/i.test(afterAccept)) {
+            throw new Error('legal acceptance gate returned after accepting and reloading');
+          }
+          console.log(`    legal acceptance persisted; after reload -> ${firstSignInPage.url().replace(BASE, '')}`);
+        } finally {
+          await firstSignInContext.close();
         }
+      } else {
+        skip('registration succeeded but disposable verification advance was unavailable; verification/legal journey unmeasurable');
       }
     } finally {
       await context2.close();
@@ -2088,6 +2315,9 @@ const ASPNET_ARM = {
   providerEmail: process.env.SMOKE_PROVIDER_EMAIL_ASPNET || 'coordinator@acme.test',
   providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
   transferSearch: process.env.SMOKE_TRANSFER_SEARCH_ASPNET || 'Maya Coordinator',
+  expectedSelfName: process.env.SMOKE_SELF_NAME_ASPNET || 'Charlie',
+  expectedMemberName: process.env.SMOKE_MEMBER_NAME_ASPNET || 'Maya',
+  providerId: Number(process.env.SMOKE_PROVIDER_ID_ASPNET || 4),
 };
 
 // Each side signs in with its OWN fixture's member — the fixtures hold different users
@@ -2104,6 +2334,9 @@ const LARAVEL_ARM = {
   providerEmail: process.env.SMOKE_PROVIDER_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
   providerPassword: process.env.SMOKE_PROVIDER_PASSWORD_LARAVEL || 'TestPassword123!',
   transferSearch: process.env.SMOKE_TRANSFER_SEARCH_LARAVEL || 'E2E UserB',
+  expectedSelfName: process.env.SMOKE_SELF_NAME_LARAVEL || 'E2E UserA',
+  expectedMemberName: process.env.SMOKE_MEMBER_NAME_LARAVEL || 'E2E',
+  providerId: Number(process.env.SMOKE_PROVIDER_ID_LARAVEL || 900015),
   // User A owns the sole disposable-control event and correctly receives no RSVP
   // actions on it. User B is the ordinary attendee fixture for this one journey.
   rsvpActorEmail: process.env.SMOKE_RSVP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',

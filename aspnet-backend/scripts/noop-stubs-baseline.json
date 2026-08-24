@@ -1,14 +1,14 @@
 {
   "_comment": "Shrink-only, PER METRIC, enforced in both directions. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower a number in the SAME commit that fixes endpoints; never raise one without -AcceptWidenedDefinition.",
   "_unit": "routes. `total` is DISTINCT verb+path across all defect categories. Method counts are kept because the historical figure (316) was in methods.",
-  "generated_at": "2026-08-23",
-  "total": 553,
-  "total_methods": 319,
+  "generated_at": "2026-08-24",
+  "total": 550,
+  "total_methods": 317,
   "overlap_routes": 2,
   "categories": {
     "noop_method": {
-      "routes": 368,
-      "methods": 308
+      "routes": 365,
+      "methods": 306
     },
     "echo_store": {
       "routes": 177,
@@ -20,8 +20,8 @@
     }
   },
   "defensible": {
-    "routes": 7,
-    "methods": 6
+    "routes": 9,
+    "methods": 7
   },
   "dispatchers": [
     {

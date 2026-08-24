@@ -235,6 +235,8 @@ $defensible = @(
        reason = 'Generates a fresh 128-bit token with RandomNumberGenerator on every request. The scanner intentionally does not treat all random output as endpoint work because OAuthRedirect also generates unpersisted random state; this exact token-generation contract is covered as a named exception.' }
     @{ file = 'NotificationPollingController.cs'; method = 'GetRealtimeConfig';
        reason = 'Projects the live Pusher environment/IConfiguration values and derives enabled from the required key, secret, and app ID. No database access is expected for a deployment configuration endpoint; Laravel reads the same values from config().' }
+    @{ file = 'EventRecurrenceController.cs'; method = 'Capabilities';
+       reason = 'Projects the maintained EventRecurrenceService runtime contract, including the configured occurrence ceiling and supported engine features. EventRecurrenceParityTests independently verifies the exact private response schema and active materialization job.' }
 )
 
 $hardcodedKeys = @{}

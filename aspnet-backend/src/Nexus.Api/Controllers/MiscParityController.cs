@@ -508,7 +508,78 @@ public class MiscParityController : ControllerBase
 
     [HttpGet("config/google-maps")]
     [AllowAnonymous]
-    public IActionResult GoogleMapsConfig() => Ok(new { data = new { enabled = false } });
+    public async Task<IActionResult> GoogleMapsConfig(CancellationToken cancellationToken)
+    {
+        var tenantId = _tenantContext.GetTenantIdOrThrow();
+        var requestedKeys = new[]
+        {
+            "features.maps", "feature.maps", "general.map_provider", "general.geocoding_provider",
+            "general.google_maps_api_key", "general.google_maps_map_id", "general.maptiler_api_key",
+            "general.os_maps_api_key"
+        };
+        var settings = await _db.TenantConfigs
+            .AsNoTracking()
+            .Where(config => config.TenantId == tenantId && requestedKeys.Contains(config.Key))
+            .ToDictionaryAsync(config => config.Key, config => config.Value, cancellationToken);
+
+        string Setting(string key) => settings.TryGetValue($"general.{key}", out var value) ? value.Trim() : string.Empty;
+        var mapsEnabled = ReadBool(settings, "features.maps") ?? ReadBool(settings, "feature.maps") ?? false;
+        var mapProvider = Allowed(Setting("map_provider"), ["google", "openstreetmap", "ordnance_survey"], "google");
+        var geocodingProvider = Allowed(Setting("geocoding_provider"), ["google", "nominatim", "os_places"], "google");
+
+        var tenantGoogleKey = Setting("google_maps_api_key");
+        var tenantMapId = Setting("google_maps_map_id");
+        var tenantMapTilerKey = Setting("maptiler_api_key");
+        var tenantOsKey = Setting("os_maps_api_key");
+        var googleKey = FirstNonEmpty(tenantGoogleKey, Environment.GetEnvironmentVariable("GOOGLE_MAPS_API_KEY"));
+        var mapId = FirstNonEmpty(tenantMapId, Environment.GetEnvironmentVariable("GOOGLE_MAPS_MAP_ID"));
+        var osKey = FirstNonEmpty(tenantOsKey, Environment.GetEnvironmentVariable("OS_MAPS_API_KEY"));
+
+        var googleMapsRequested = mapsEnabled && mapProvider == "google";
+        var googlePlacesRequested = geocodingProvider == "google";
+        var browserGoogleKey = googleMapsRequested || googlePlacesRequested ? googleKey : string.Empty;
+        var googleMapsEnabled = browserGoogleKey.Length > 0 && googleMapsRequested;
+        var googlePlacesEnabled = browserGoogleKey.Length > 0 && googlePlacesRequested;
+        var leafletEnabled = mapsEnabled && mapProvider is "openstreetmap" or "ordnance_survey";
+        var osTilesActive = leafletEnabled && mapProvider == "ordnance_survey" && osKey.Length > 0;
+        var mapTilerActive = leafletEnabled && mapProvider == "openstreetmap" && tenantMapTilerKey.Length > 0;
+        var osmTileUrl = osTilesActive
+            ? $"https://api.os.uk/maps/raster/v1/zxy/Road_3857/{{z}}/{{x}}/{{y}}.png?key={Uri.EscapeDataString(osKey)}"
+            : mapTilerActive
+                ? $"https://api.maptiler.com/maps/streets-v2/{{z}}/{{x}}/{{y}}@2x.png?key={Uri.EscapeDataString(tenantMapTilerKey)}"
+                : leafletEnabled ? "https://tile.openstreetmap.org/{z}/{x}/{y}.png" : string.Empty;
+        var osmTileAttribution = osTilesActive
+            ? $"Contains OS data &copy; Crown copyright and database rights {DateTime.UtcNow.Year}"
+            : mapTilerActive
+                ? "&copy; <a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\" rel=\"noopener\">MapTiler</a> &copy; <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\" rel=\"noopener\">OpenStreetMap</a> contributors"
+                : leafletEnabled ? "&copy; <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\" rel=\"noopener\">OpenStreetMap</a> contributors" : string.Empty;
+
+        return Ok(new
+        {
+            data = new
+            {
+                enabled = googleMapsEnabled || googlePlacesEnabled,
+                apiKey = browserGoogleKey,
+                mapId = googleMapsEnabled && mapId.Length > 0 ? mapId : null,
+                mapsEnabled,
+                mapProvider,
+                geocodingProvider,
+                googleMapsEnabled,
+                googlePlacesEnabled,
+                nominatimBaseUrl = "https://nominatim.openstreetmap.org",
+                osmTileUrl,
+                osmTileAttribution,
+                osmTileProvider = leafletEnabled ? osTilesActive ? "ordnance_survey" : mapTilerActive ? "maptiler" : "osm" : null,
+                tenantOverrides = new
+                {
+                    google_maps_api_key = tenantGoogleKey.Length > 0,
+                    google_maps_map_id = tenantMapId.Length > 0,
+                    maptiler_api_key = tenantMapTilerKey.Length > 0,
+                    os_maps_api_key = tenantOsKey.Length > 0
+                }
+            }
+        });
+    }
 
     [HttpGet("cookie-consent/inventory")]
     [AllowAnonymous]
@@ -1925,6 +1996,23 @@ public class MiscParityController : ControllerBase
     private int TenantId() => _tenantContext.TenantId ?? 0;
     private int UserId() => User.GetUserId() ?? 0;
     private static string Token() => Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+
+    private static bool? ReadBool(IReadOnlyDictionary<string, string> settings, string key)
+    {
+        if (!settings.TryGetValue(key, out var value)) return null;
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "1" or "true" or "yes" or "on" => true,
+            "0" or "false" or "no" or "off" => false,
+            _ => null
+        };
+    }
+
+    private static string Allowed(string value, IReadOnlyCollection<string> allowed, string fallback)
+        => allowed.Contains(value, StringComparer.Ordinal) ? value : fallback;
+
+    private static string FirstNonEmpty(string preferred, string? fallback)
+        => preferred.Length > 0 ? preferred : fallback?.Trim() ?? string.Empty;
 
     private static string IdentityVerificationStatus(VerificationSessionStatus? status) => status switch
     {
