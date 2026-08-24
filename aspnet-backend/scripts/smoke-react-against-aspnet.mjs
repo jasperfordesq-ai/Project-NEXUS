@@ -457,6 +457,97 @@ async function runArm(arm) {
     console.log('    navigated away — create appears to have succeeded');
   });
 
+  await step('action-create-edit-manage-event', async () => {
+    const createdTitle = `Smoke event ${stamp}`;
+    const editedTitle = `${createdTitle} edited`;
+    const start = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+    const dateParts = {
+      day: String(start.getDate()),
+      month: String(start.getMonth() + 1),
+      year: String(start.getFullYear()),
+    };
+
+    // React Aria renders DatePicker as editable spinbutton segments rather than an
+    // input[type=date]. Drive those public accessibility semantics so this remains
+    // the unchanged production form, not a request assembled by the smoke script.
+    const fillSegments = async (label, values) => {
+      // The visible label is connected with aria-labelledby, not copied into an
+      // aria-label attribute. getByRole resolves that accessible-name relation.
+      const group = page.getByRole('group', { name: label }).first();
+      if (!(await group.count())) skip(`${label} segment group missing — selector needs updating, NOT a backend result`);
+      const segments = group.locator('[role="spinbutton"]');
+      for (let i = 0; i < await segments.count(); i += 1) {
+        const segment = segments.nth(i);
+        const type = (await segment.getAttribute('data-type') || '').toLowerCase();
+        const value = values[type];
+        if (value) await segment.fill(value);
+      }
+    };
+
+    await page.goto(`${BASE}/events/create`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1500);
+    await dismissConsent();
+    if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+    const title = page.getByLabel('Event Title').first();
+    if (!(await title.count())) skip('event title field missing — selector needs updating, NOT a backend result');
+    await title.fill(createdTitle);
+    await page.getByLabel('Description').first().fill('Created by the runtime smoke to prove event creation, editing, and owner management end to end.');
+    await fillSegments('Start Date', dateParts);
+    await fillSegments('Start Time', { hour: '10', minute: '00' });
+
+    const create = page.locator('button[type="submit"]:has-text("Create Event")').first();
+    if (!(await create.count()) || !(await create.isEnabled())) {
+      skip('Create Event submit missing or disabled — a required field is unsatisfied; not a backend result');
+    }
+    const createResponsePromise = page.waitForResponse((response) =>
+      response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/v2/events',
+    { timeout: 20000 });
+    await create.click();
+    const createResponse = await createResponsePromise;
+    console.log(`    event create: POST ${new URL(createResponse.url()).pathname} -> ${createResponse.status()}`);
+    if (!createResponse.ok()) throw new Error(`event create returned ${createResponse.status()}`);
+    await page.waitForURL(/\/events\/\d+$/, { timeout: 20000 });
+    const id = page.url().match(/\/events\/(\d+)$/)?.[1];
+    if (!id) throw new Error(`create did not navigate to an event detail URL: ${page.url()}`);
+    await page.reload({ waitUntil: 'networkidle' });
+    if (!(await page.getByText(createdTitle, { exact: true }).count())) {
+      throw new Error('created event title did not survive a detail-page reload');
+    }
+
+    await page.goto(`${BASE}/events/${id}/edit`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1200);
+    const editTitle = page.getByLabel('Event Title').first();
+    await editTitle.fill(editedTitle);
+    const location = page.getByLabel(/location/i).first();
+    if (await location.count()) await location.fill('Smoke Hall');
+    const capacity = page.getByLabel(/max attendees/i).first();
+    if (await capacity.count()) await capacity.fill('24');
+    const update = page.locator('button[type="submit"]:has-text("Update Event")').first();
+    if (!(await update.count()) || !(await update.isEnabled())) {
+      throw new Error('Update Event submit missing or disabled after loading the owner edit form');
+    }
+    const updateResponsePromise = page.waitForResponse((response) =>
+      response.request().method() === 'PUT' && new URL(response.url()).pathname === `/api/v2/events/${id}`,
+    { timeout: 20000 });
+    await update.click();
+    const updateResponse = await updateResponsePromise;
+    console.log(`    event edit: PUT ${new URL(updateResponse.url()).pathname} -> ${updateResponse.status()}`);
+    if (!updateResponse.ok()) throw new Error(`event edit returned ${updateResponse.status()}`);
+
+    await page.goto(`${BASE}/events/${id}`, { waitUntil: 'networkidle', timeout: 60000 });
+    if (!(await page.getByText(editedTitle, { exact: true }).count())) {
+      throw new Error('edited event title did not persist on the detail page');
+    }
+    await page.goto(`${BASE}/events/${id}/manage/overview`, { waitUntil: 'networkidle', timeout: 60000 });
+    const body = await page.locator('body').innerText();
+    if (!body.includes(editedTitle) || !body.includes('Event operations')
+      || !body.includes('Operational overview') || /access denied|could not load/i.test(body)) {
+      throw new Error('event owner could not open the management overview after editing');
+    }
+    console.log(`    event ${id} created, reloaded, edited, and opened in owner management`);
+  });
+
   // 🔴 POSTING. The feed composer opens from a "Create" button (there is no inline
   // textarea on /feed — a selector looking for one reports "no composer" and reads like a
   // backend fault). Every consent dismissal carries a short timeout: a covered button hung

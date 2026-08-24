@@ -64,6 +64,28 @@ public sealed class EventConfigurationPolicyService(NexusDbContext db)
         return new(data);
     }
 
+    public async Task<bool> CanCreateAsync(int tenantId, int actorId, CancellationToken ct)
+    {
+        var actor = await db.Users.IgnoreQueryFilters().AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == actorId && x.IsActive, ct);
+        if (actor is null) return false;
+
+        var state = await LoadAsync(tenantId, false, ct);
+        var effective = Effective(await DefaultsAsync(tenantId, ct), state.Overrides);
+        var creationRole = effective["creation_role"] as string ?? "members";
+        if (creationRole == "members") return true;
+
+        var platformAdmin = actor.IsGod || actor.IsSuperAdmin
+            || actor.Role is "god" or "super_admin";
+        var localAdmin = actor.TenantId == tenantId
+            && (actor.IsAdmin || actor.IsTenantSuperAdmin || actor.Role is "admin" or "tenant_admin");
+        var localBroker = actor.TenantId == tenantId && actor.Role == "broker";
+
+        return creationRole == "admins"
+            ? platformAdmin || localAdmin
+            : platformAdmin || localAdmin || localBroker;
+    }
+
     public async Task<EventConfigurationPolicyResult> UpdateAsync(int tenantId, int actorId, int expectedVersion,
         IReadOnlyDictionary<string, JsonElement>? settings, string? reason, bool confirmDisruptive, CancellationToken ct)
     {

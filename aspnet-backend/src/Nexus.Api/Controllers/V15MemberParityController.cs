@@ -335,6 +335,16 @@ public class V15MemberParityController : ControllerBase
     {
         var userId = CurrentUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        if (!await new EventConfigurationPolicyService(_db).CanCreateAsync(tenantId, userId.Value, HttpContext.RequestAborted))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                success = false,
+                errors = new[] { new { code = "FORBIDDEN", message = "Event creation is not allowed" } },
+            });
+        }
 
         // Laravel collects every failure and returns them together, keyed by field.
         var details = new Dictionary<string, string[]>();
@@ -365,20 +375,42 @@ public class V15MemberParityController : ControllerBase
 
         var ev = new Event
         {
-            TenantId = TenantId(),
+            TenantId = tenantId,
             CreatedById = userId.Value,
-            Title = title!,
-            Description = GetString(body, "description"),
-            Location = GetString(body, "location"),
+            Title = title!.Trim(),
+            Description = NullIfBlank(GetString(body, "description")),
+            Location = NullIfBlank(GetString(body, "location")),
             StartsAt = startsAt!.Value,
             EndsAt = GetDate(body, "ends_at") ?? GetDate(body, "end_time"),
             MaxAttendees = GetInt(body, "max_attendees"),
-            ImageUrl = GetString(body, "image_url") ?? GetString(body, "cover_image")
+            ImageUrl = NullIfBlank(GetString(body, "image_url") ?? GetString(body, "cover_image")),
+            CategoryId = GetInt(body, "category_id"),
+            GroupId = GetInt(body, "group_id"),
+            Latitude = GetDouble(body, "latitude"),
+            Longitude = GetDouble(body, "longitude"),
+            IsOnline = GetBool(body, "is_online") ?? false,
+            AllowRemoteAttendance = GetBool(body, "allow_remote_attendance") ?? false,
+            OnlineLink = NullIfBlank(GetString(body, "online_link") ?? GetString(body, "online_url")),
+            VideoUrl = NullIfBlank(GetString(body, "video_url")),
+            Timezone = NullIfBlank(GetString(body, "timezone")) ?? "UTC",
+            AllDay = GetBool(body, "all_day") ?? false,
+            Status = "draft",
+            PublicationStatus = "draft",
+            OperationalStatus = "scheduled",
+            PublicationStatusChangedAt = DateTime.UtcNow,
+            PublicationStatusChangedBy = userId.Value,
+            OperationalStatusChangedAt = DateTime.UtcNow,
+            OperationalStatusChangedBy = userId.Value,
         };
+        ApplyVenueAccessibility(body, ev);
 
         _db.Events.Add(ev);
         await _db.SaveChangesAsync();
-        return Created($"api/v2/events/{ev.Id}", new { success = true, data = EventDto(ev) });
+        return Created($"/api/v2/events/{ev.Id}", new
+        {
+            success = true,
+            data = ApplyEventContractNegotiation(EventWriteContract(ev, userId.Value)),
+        });
     }
 
     /// <summary>
@@ -414,6 +446,12 @@ public class V15MemberParityController : ControllerBase
             return NotFound(new { error = "Event not found" });
         }
 
+        var canManage = viewerId is not null && await CanManageEventAsync(
+            row.Event,
+            viewerId.Value,
+            TenantId(),
+            HttpContext.RequestAborted);
+
         return Ok(new
         {
             data = ApplyEventContractNegotiation(
@@ -423,7 +461,12 @@ public class V15MemberParityController : ControllerBase
                     LegacyRsvpStatus = row.MyStatus,
                     ConfirmedCount = row.Confirmed,
                     InterestedCount = row.Interested,
-                    CanEdit = viewerId is not null && row.Event.CreatedById == viewerId,
+                    CanEdit = canManage,
+                    Manage = canManage,
+                    ViewRoster = canManage,
+                    ViewWaitlist = canManage,
+                    ManageAttendance = canManage,
+                    ViewMeetingLink = canManage,
                     // The viewer may register/withdraw depending on their current state — the
                     // client renders the RSVP control from these, so they must reflect reality.
                     CanRegister = row.MyStatus != Event.RsvpStatus.Going,
@@ -437,19 +480,51 @@ public class V15MemberParityController : ControllerBase
     [HttpPut("api/v2/events/{id:int}/recurring")]
     public async Task<IActionResult> V2UpdateEvent(int id, [FromBody] JsonElement body)
     {
-        var ev = await _db.Events.FirstOrDefaultAsync(e => e.Id == id);
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+        var ev = await _db.Events.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Id == id);
         if (ev == null) return NotFound(new { error = "Event not found" });
 
-        ev.Title = GetString(body, "title") ?? ev.Title;
-        ev.Description = GetString(body, "description") ?? ev.Description;
-        ev.Location = GetString(body, "location") ?? ev.Location;
-        ev.StartsAt = GetDate(body, "starts_at") ?? ev.StartsAt;
-        ev.EndsAt = GetDate(body, "ends_at") ?? ev.EndsAt;
-        ev.MaxAttendees = GetInt(body, "max_attendees") ?? ev.MaxAttendees;
-        ev.ImageUrl = GetString(body, "image_url") ?? ev.ImageUrl;
+        if (!await CanManageEventAsync(ev, userId.Value, tenantId, HttpContext.RequestAborted))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                success = false,
+                errors = new[] { new { code = "FORBIDDEN", message = "Event editing is not allowed" } },
+            });
+        }
+
+        if (HasProperty(body, "title")) ev.Title = GetString(body, "title")?.Trim() ?? ev.Title;
+        if (HasProperty(body, "description")) ev.Description = NullIfBlank(GetString(body, "description"));
+        if (HasProperty(body, "location")) ev.Location = NullIfBlank(GetString(body, "location"));
+        ev.StartsAt = GetDate(body, "starts_at") ?? GetDate(body, "start_time") ?? ev.StartsAt;
+        if (HasProperty(body, "ends_at") || HasProperty(body, "end_time"))
+            ev.EndsAt = GetDate(body, "ends_at") ?? GetDate(body, "end_time");
+        if (HasProperty(body, "max_attendees")) ev.MaxAttendees = GetInt(body, "max_attendees");
+        if (HasProperty(body, "image_url") || HasProperty(body, "cover_image"))
+            ev.ImageUrl = NullIfBlank(GetString(body, "image_url") ?? GetString(body, "cover_image"));
+        if (HasProperty(body, "category_id")) ev.CategoryId = GetInt(body, "category_id");
+        if (HasProperty(body, "group_id")) ev.GroupId = GetInt(body, "group_id");
+        if (HasProperty(body, "latitude")) ev.Latitude = GetDouble(body, "latitude");
+        if (HasProperty(body, "longitude")) ev.Longitude = GetDouble(body, "longitude");
+        if (HasProperty(body, "is_online")) ev.IsOnline = GetBool(body, "is_online") ?? false;
+        if (HasProperty(body, "allow_remote_attendance")) ev.AllowRemoteAttendance = GetBool(body, "allow_remote_attendance") ?? false;
+        if (HasProperty(body, "online_link") || HasProperty(body, "online_url"))
+            ev.OnlineLink = NullIfBlank(GetString(body, "online_link") ?? GetString(body, "online_url"));
+        if (HasProperty(body, "video_url")) ev.VideoUrl = NullIfBlank(GetString(body, "video_url"));
+        if (HasProperty(body, "timezone")) ev.Timezone = NullIfBlank(GetString(body, "timezone")) ?? ev.Timezone;
+        if (HasProperty(body, "all_day")) ev.AllDay = GetBool(body, "all_day") ?? false;
+        if (HasProperty(body, "venue_accessibility")) ApplyVenueAccessibility(body, ev);
+        ev.CalendarSequence++;
         ev.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
-        return Ok(new { success = true, data = EventDto(ev) });
+        return Ok(new
+        {
+            success = true,
+            data = ApplyEventContractNegotiation(EventWriteContract(ev, userId.Value)),
+        });
     }
 
     [HttpDelete("api/v2/events/{id:int}")]
@@ -2920,6 +2995,67 @@ public class V15MemberParityController : ControllerBase
         created_at = ev.CreatedAt
     };
 
+    private static Dictionary<string, object?> EventWriteContract(Event ev, int viewerId) =>
+        EventContractMapper.Event(ev, new EventContractMapper.Facts
+        {
+            ViewerId = viewerId,
+            CanEdit = true,
+            CanPublish = ev.PublicationStatus == "draft",
+            Manage = true,
+            ViewRoster = true,
+            ViewWaitlist = true,
+            ManageAttendance = true,
+            ViewMeetingLink = true,
+        });
+
+    private async Task<bool> CanManageEventAsync(Event ev, int actorId, int tenantId, CancellationToken ct)
+    {
+        if (ev.CreatedById == actorId) return true;
+
+        var actor = await _db.Users.IgnoreQueryFilters().AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == actorId && x.IsActive, ct);
+        if (actor is null) return false;
+        if (actor.IsGod || actor.IsSuperAdmin || actor.Role is "god" or "super_admin") return true;
+        if (actor.TenantId == tenantId
+            && (actor.IsAdmin || actor.IsTenantSuperAdmin || actor.Role is "admin" or "tenant_admin")) return true;
+
+        return ev.GroupId is int groupId
+            && await _db.GroupMembers.IgnoreQueryFilters().AsNoTracking().AnyAsync(x =>
+                x.TenantId == tenantId && x.GroupId == groupId && x.UserId == actorId
+                && x.Status == "active" && (x.Role == Group.Roles.Owner || x.Role == Group.Roles.Admin), ct);
+    }
+
+    private static void ApplyVenueAccessibility(JsonElement body, Event ev)
+    {
+        if (!body.TryGetProperty("venue_accessibility", out var profile)
+            || profile.ValueKind == JsonValueKind.Null)
+        {
+            ev.AccessibilityStepFree = null;
+            ev.AccessibilityToilet = null;
+            ev.AccessibilityHearingLoop = null;
+            ev.AccessibilityQuietSpace = null;
+            ev.AccessibilitySeating = null;
+            ev.AccessibilityParking = null;
+            ev.AccessibilityParkingDetails = null;
+            ev.AccessibilityTransitDetails = null;
+            ev.AccessibilityAssistanceContact = null;
+            ev.AccessibilityNotes = null;
+            return;
+        }
+
+        if (profile.ValueKind != JsonValueKind.Object) return;
+        ev.AccessibilityStepFree = GetBool(profile, "step_free_access");
+        ev.AccessibilityToilet = GetBool(profile, "accessible_toilet");
+        ev.AccessibilityHearingLoop = GetBool(profile, "hearing_loop");
+        ev.AccessibilityQuietSpace = GetBool(profile, "quiet_space");
+        ev.AccessibilitySeating = GetBool(profile, "seating_available");
+        ev.AccessibilityParking = GetBool(profile, "accessible_parking");
+        ev.AccessibilityParkingDetails = NullIfBlank(GetString(profile, "parking_details"));
+        ev.AccessibilityTransitDetails = NullIfBlank(GetString(profile, "transit_details"));
+        ev.AccessibilityAssistanceContact = NullIfBlank(GetString(profile, "assistance_contact"));
+        ev.AccessibilityNotes = NullIfBlank(GetString(profile, "notes"));
+    }
+
     private static object ListingDto(Listing listing) => new
     {
         id = listing.Id,
@@ -2947,6 +3083,28 @@ public class V15MemberParityController : ControllerBase
         if (prop.ValueKind == JsonValueKind.Number && prop.TryGetInt32(out var value)) return value;
         return int.TryParse(prop.ToString(), out var parsed) ? parsed : null;
     }
+
+    private static double? GetDouble(JsonElement body, string name)
+    {
+        if (body.ValueKind != JsonValueKind.Object || !body.TryGetProperty(name, out var prop)) return null;
+        if (prop.ValueKind == JsonValueKind.Number && prop.TryGetDouble(out var value)) return value;
+        return double.TryParse(prop.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    private static bool? GetBool(JsonElement body, string name)
+    {
+        if (body.ValueKind != JsonValueKind.Object || !body.TryGetProperty(name, out var prop)) return null;
+        if (prop.ValueKind is JsonValueKind.True or JsonValueKind.False) return prop.GetBoolean();
+        return bool.TryParse(prop.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool HasProperty(JsonElement body, string name) =>
+        body.ValueKind == JsonValueKind.Object && body.TryGetProperty(name, out _);
+
+    private static string? NullIfBlank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static decimal? GetDecimal(JsonElement body, string name)
     {
