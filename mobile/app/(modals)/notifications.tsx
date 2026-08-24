@@ -39,6 +39,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import NativePressable from '@/components/ui/NativePressable';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import { describeApiError } from '@/lib/api/describeApiError';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
 
@@ -94,8 +95,8 @@ export default function NotificationsScreen() {
           await markAllRead();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           refreshAll();
-        } catch {
-          showToast({ title: t('common:errors.alertTitle'), description: t('markError'), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' });
         } finally {
           setMarkingAll(false);
         }
@@ -119,8 +120,8 @@ export default function NotificationsScreen() {
       }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAll();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('markError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' });
     } finally {
       setActingId(null);
     }
@@ -132,8 +133,8 @@ export default function NotificationsScreen() {
       await deleteNotification(item.id);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAll();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('deleteError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('deleteError')), variant: 'danger' });
     } finally {
       setActingId(null);
     }

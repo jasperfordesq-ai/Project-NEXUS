@@ -21,6 +21,7 @@ import { getUserPreferences, saveUserPreferences } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const WEB_TRANSLATION_LOCALES = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as const;
 const MOBILE_TRANSLATION_LOCALES = WEB_TRANSLATION_LOCALES.filter((locale) => SUPPORTED_LANGUAGES.includes(locale));
@@ -52,8 +53,8 @@ export default function SettingsTranslationScreen() {
       setPrefersChronological(Boolean(preferences.feed?.prefers_chronological));
       setAutoTranslate(Boolean(preferences.translation?.auto_translate_ugc));
       setTargetLocale(normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale));
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('translation.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -83,8 +84,8 @@ export default function SettingsTranslationScreen() {
       });
       await changeLanguage(targetLocale);
       showToast({ title: t('translation.saved'), description: t('translation.savedBody'), variant: 'success' });
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('translation.saveError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.saveError')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }

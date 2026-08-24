@@ -49,6 +49,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
@@ -1214,8 +1215,8 @@ function MessageThreadView({
       });
       setReply('');
       onSent(response.data);
-    } catch {
-      showToast({ title: t('directory.messages.sendFailedTitle'), description: t('directory.messages.sendFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('directory.messages.sendFailedTitle'), description: describeApiError(err, t('directory.messages.sendFailedDescription')), variant: 'danger' });
     } finally {
       setIsSending(false);
     }
@@ -1442,8 +1443,8 @@ function FederationComposeCard({
       setBody('');
       showToast({ title: t('directory.messages.sentTitle'), description: t('directory.messages.sentDescription', { name: recipientName }), variant: 'success' });
       onSent(response.data);
-    } catch {
-      showToast({ title: t('directory.messages.sendFailedTitle'), description: t('directory.messages.sendFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('directory.messages.sendFailedTitle'), description: describeApiError(err, t('directory.messages.sendFailedDescription')), variant: 'danger' });
     } finally {
       setIsSending(false);
     }
@@ -1632,8 +1633,8 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
-    } catch {
-      showToast({ title: t('directory.settings.statusFailedTitle'), description: t('directory.settings.statusFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('directory.settings.statusFailedTitle'), description: describeApiError(err, t('directory.settings.statusFailedDescription')), variant: 'danger' });
     } finally {
       setIsTogglingStatus(false);
     }

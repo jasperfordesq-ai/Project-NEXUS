@@ -22,6 +22,7 @@ import {
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 import {
   cancelEventCommunication,
   createEventCommunication,
@@ -152,10 +153,10 @@ function EventCommunicationsScreenInner() {
       });
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('load_failed_title'),
-        description: t('load_failed_description'),
+        description: describeApiError(err, t('load_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -200,10 +201,10 @@ function EventCommunicationsScreenInner() {
       });
       setPreview(null);
       setComposerOpen(true);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('detail_failed_title'),
-        description: t('detail_failed_description'),
+        description: describeApiError(err, t('detail_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -250,11 +251,11 @@ function EventCommunicationsScreenInner() {
         return { ...detail, history: [...byId.values()] };
       });
       replaceBroadcast(detail.broadcast);
-    } catch {
+    } catch (err) {
       if (requestGeneration !== auditGeneration.current) return;
       showToast({
         title: t('history_load_failed_title'),
-        description: t('history_load_failed_description'),
+        description: describeApiError(err, t('history_load_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -313,10 +314,10 @@ function EventCommunicationsScreenInner() {
         channels: input.channels,
       });
       setPreview(result);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('preview_failed_title'),
-        description: t('preview_failed_description'),
+        description: describeApiError(err, t('preview_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -348,10 +349,10 @@ function EventCommunicationsScreenInner() {
         description: t(revised ? 'revised_description' : 'created_description'),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t('save_failed_title'),
-        description: t('save_failed_description'),
+        description: describeApiError(err, t('save_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -390,10 +391,10 @@ function EventCommunicationsScreenInner() {
         description: t('scheduled_description'),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t('schedule_failed_title'),
-        description: t('schedule_failed_description'),
+        description: describeApiError(err, t('schedule_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -428,10 +429,10 @@ function EventCommunicationsScreenInner() {
         description: t('cancelled_description'),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t('cancel_failed_title'),
-        description: t('cancel_failed_description'),
+        description: describeApiError(err, t('cancel_failed_description')),
         variant: 'danger',
       });
     } finally {
@@ -452,10 +453,10 @@ function EventCommunicationsScreenInner() {
         description: t('retry_queued_description'),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t('retry_failed_title'),
-        description: t('retry_failed_description'),
+        description: describeApiError(err, t('retry_failed_description')),
         variant: 'danger',
       });
     } finally {

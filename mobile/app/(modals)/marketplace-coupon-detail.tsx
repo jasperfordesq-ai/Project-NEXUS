@@ -30,6 +30,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatLegacyCouponMinorAmount } from '@/lib/utils/marketplaceCurrency';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceCouponDetailRoute() {
@@ -67,8 +68,8 @@ function MarketplaceCouponDetailScreen() {
       const response = await generatePublicMerchantCouponQr(safeCouponId);
       setQr(response.data);
       setIsQrOpen(true);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('publicCoupons.qrFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('publicCoupons.qrFailed')), variant: 'danger' });
     } finally {
       setIsQrLoading(false);
     }

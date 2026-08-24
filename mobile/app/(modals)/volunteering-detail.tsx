@@ -523,9 +523,9 @@ function VolunteeringDetailScreenInner() {
         description: t(action === 'approve' ? 'applications.approvedMessage' : 'applications.declinedMessage'),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('applications.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('applications.actionFailed')), variant: 'danger' });
     } finally {
       setApplicationActionId(null);
     }

@@ -38,6 +38,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import {
   eventIsoToLocalInput,
   eventLocalInputToIso,
@@ -370,8 +371,8 @@ function NewEventScreen() {
       }
 
       setSelectedImageUri(asset.uri);
-    } catch {
-      showToast({ title: t('create.imagePickFailedTitle'), description: t('create.imagePickFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('create.imagePickFailedTitle'), description: describeApiError(err, t('create.imagePickFailedDescription')), variant: 'danger' });
     }
   }
 
@@ -577,8 +578,8 @@ function NewEventScreen() {
                 : undefined;
             if (imageScope) await uploadEventImage(id, selectedImageUri, imageScope);
             else await uploadEventImage(id, selectedImageUri);
-          } catch {
-            showToast({ title: t('create.imageUploadFailedTitle'), description: t('create.imageUploadFailedDescription'), variant: 'danger' });
+          } catch (err) {
+            showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
           }
         }
         successDestination = createdRecurring
@@ -587,10 +588,10 @@ function NewEventScreen() {
       } else {
         // No id came back, so there is nothing to land on — the else branch below leaves the form.
       }
-    } catch {
+    } catch (err) {
       showToast({
         title: t('create.failedTitle'),
-        description: t(attemptedRecurrenceRevision ? 'create.revisionUnavailable' : 'create.failedDescription'),
+        description: describeApiError(err, t(attemptedRecurrenceRevision ? 'create.revisionUnavailable' : 'create.failedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -646,8 +647,8 @@ function NewEventScreen() {
       setRevisionFingerprint(null);
       revisionIdempotencyKeyRef.current = null;
       router.replace({ pathname: '/(modals)/event-detail', params: { id: String(eventId) } });
-    } catch {
-      showToast({ title: t('create.failedTitle'), description: t('create.revisionCommitFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('create.failedTitle'), description: describeApiError(err, t('create.revisionCommitFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }

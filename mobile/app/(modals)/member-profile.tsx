@@ -52,6 +52,7 @@ import {
 } from '@/lib/api/members';
 import type { Exchange } from '@/lib/api/exchanges';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import {
   getBadges,
@@ -805,8 +806,8 @@ function FederatedTransferCard({
       setAmount('');
       setDescription('');
       onComplete();
-    } catch {
-      showToast({ title: t('profile.transferFailedTitle'), description: t('profile.transferFailedMessage'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('profile.transferFailedTitle'), description: describeApiError(err, t('profile.transferFailedMessage')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }

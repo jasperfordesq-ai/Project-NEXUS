@@ -111,6 +111,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const WEB_URL = 'https://app.project-nexus.ie';
 const CARD_MIN_HEIGHT = 118;
@@ -446,11 +447,11 @@ function GroupDetailScreenInner() {
       filesApi.refresh();
       questionsApi.refresh();
       eventsApi.refresh();
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setIsMember(prevIsMember);
       setMemberCount(prevMemberCount);
-      showToast({ title: t('common:errors.alertTitle'), description: t('joinError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('joinError')), variant: 'danger' });
     } finally {
       setJoining(false);
     }
@@ -473,11 +474,11 @@ function GroupDetailScreenInner() {
         try {
           await leaveGroup(loadedGroup.id);
           refresh();
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           setIsMember(prevIsMember);
           setMemberCount(prevMemberCount);
-          showToast({ title: t('common:errors.alertTitle'), description: t('leaveError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('leaveError')), variant: 'danger' });
         } finally {
           setLeaving(false);
         }
@@ -502,9 +503,9 @@ function GroupDetailScreenInner() {
       discussionsApi.refresh();
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.discussionCreateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.discussionCreateError')), variant: 'danger' });
     } finally {
       setCreatingDiscussion(false);
     }
@@ -532,9 +533,9 @@ function GroupDetailScreenInner() {
       announcementsApi.refresh();
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.announcementCreateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementCreateError')), variant: 'danger' });
     } finally {
       setCreatingAnnouncement(false);
     }
@@ -546,9 +547,9 @@ function GroupDetailScreenInner() {
       await updateGroupAnnouncement(loadedGroup.id, announcement.id, { is_pinned: !announcement.is_pinned });
       announcementsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.announcementUpdateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementUpdateError')), variant: 'danger' });
     } finally {
       setUpdatingAnnouncementId(null);
     }
@@ -568,9 +569,9 @@ function GroupDetailScreenInner() {
           announcementsApi.refresh();
           refresh();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('common:errors.alertTitle'), description: t('detail.announcementDeleteError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementDeleteError')), variant: 'danger' });
         } finally {
           setUpdatingAnnouncementId(null);
         }
@@ -594,9 +595,9 @@ function GroupDetailScreenInner() {
       setShowQuestionComposer(false);
       questionsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.createError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.createError')), variant: 'danger' });
     } finally {
       setCreatingQuestion(false);
     }
@@ -1329,9 +1330,9 @@ function GroupFilesPanel({
           await deleteGroupFile(groupId, file.id);
           onRefresh();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('common:errors.alertTitle'), description: t('detail.files.deleteError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.files.deleteError')), variant: 'danger' });
         } finally {
           setDeletingId(null);
         }
@@ -1450,8 +1451,8 @@ function GroupMediaPanel({
     try {
       const response = await getGroupMedia(groupId, { type: filter });
       setItems(response.data.items ?? []);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.media.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -1480,9 +1481,9 @@ function GroupMediaPanel({
           await deleteGroupMedia(groupId, item.id);
           await loadMedia();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('common:errors.alertTitle'), description: t('detail.media.deleteError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.deleteError')), variant: 'danger' });
         } finally {
           setDeletingId(null);
         }
@@ -1516,9 +1517,9 @@ function GroupMediaPanel({
       });
       await loadMedia();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.media.uploadError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.uploadError')), variant: 'danger' });
     } finally {
       setUploadingMediaType(null);
     }
@@ -1678,8 +1679,8 @@ function GroupQAPanel({
     try {
       const response = await getGroupQuestion(groupId, questionId);
       setDetail(response.data);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.loadError')), variant: 'danger' });
       setExpandedId(null);
     } finally {
       setLoadingDetail(false);
@@ -1701,9 +1702,9 @@ function GroupQAPanel({
       setDetail(response.data);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.answerError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.answerError')), variant: 'danger' });
     } finally {
       setAnswering(false);
     }
@@ -1723,9 +1724,9 @@ function GroupQAPanel({
       onRefresh();
       if (expandedId) await refreshExpandedQuestion();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.voteError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.voteError')), variant: 'danger' });
     } finally {
       setVotingTarget(null);
     }
@@ -1738,9 +1739,9 @@ function GroupQAPanel({
       onRefresh();
       await refreshExpandedQuestion();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.acceptError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.acceptError')), variant: 'danger' });
     } finally {
       setAcceptingAnswerId(null);
     }
@@ -1997,8 +1998,8 @@ function GroupWikiPanel({
       setSelectedPage(response.data);
       setEditContent(response.data.content ?? '');
       setChangeSummary('');
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.pageLoadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.pageLoadError')), variant: 'danger' });
     } finally {
       setPageLoading(false);
     }
@@ -2015,8 +2016,8 @@ function GroupWikiPanel({
       } else if (selectedPage && !items.some((page) => page.id === selectedPage.id)) {
         setSelectedPage(null);
       }
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -2044,9 +2045,9 @@ function GroupWikiPanel({
       setSelectedPage(response.data);
       await loadPages(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.createError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.createError')), variant: 'danger' });
     } finally {
       setCreating(false);
     }
@@ -2070,9 +2071,9 @@ function GroupWikiPanel({
       setChangeSummary('');
       await loadPages(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.saveError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.saveError')), variant: 'danger' });
     } finally {
       setSaving(false);
     }
@@ -2085,8 +2086,8 @@ function GroupWikiPanel({
       const response = await getGroupWikiRevisions(groupId, selectedPage.id);
       setRevisions(response.data ?? []);
       setShowRevisions(true);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.revisionsError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.revisionsError')), variant: 'danger' });
     } finally {
       setRevisionsLoading(false);
     }
@@ -2110,9 +2111,9 @@ function GroupWikiPanel({
           setShowRevisions(false);
           await loadPages(false);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('common:errors.alertTitle'), description: t('detail.wiki.deleteError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.deleteError')), variant: 'danger' });
         } finally {
           setDeletingPage(false);
         }
@@ -2351,8 +2352,8 @@ function GroupTasksPanel({
       ]);
       setTasks(taskResponse.data ?? []);
       setStats(statsResponse.data);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.tasks.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -2371,9 +2372,9 @@ function GroupTasksPanel({
       await updateGroupTask(task.id, { status: nextStatus });
       await loadTasks();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.tasks.updateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.updateError')), variant: 'danger' });
     } finally {
       setUpdatingTaskId(null);
     }
@@ -2388,9 +2389,9 @@ function GroupTasksPanel({
       await updateGroupTask(task.id, payload);
       await loadTasks();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.tasks.updateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.updateError')), variant: 'danger' });
     } finally {
       setUpdatingTaskId(null);
     }
@@ -2421,9 +2422,9 @@ function GroupTasksPanel({
       setShowComposer(false);
       await loadTasks();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.tasks.createError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.createError')), variant: 'danger' });
     } finally {
       setCreating(false);
     }
@@ -2442,9 +2443,9 @@ function GroupTasksPanel({
           await deleteGroupTask(task.id);
           await loadTasks();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('common:errors.alertTitle'), description: t('detail.tasks.deleteError'), variant: 'danger' });
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.deleteError')), variant: 'danger' });
         } finally {
           setUpdatingTaskId(null);
         }
@@ -2701,8 +2702,8 @@ function GroupAnalyticsPanel({ groupId, canView }: { groupId: number; canView: b
       setDashboard(response.data);
       setRetention(retentionResponse.data);
       setComparative(comparativeResponse.data);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.analytics.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.analytics.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -2969,9 +2970,9 @@ function GroupMarketplacePanel({ groupId, canView }: { groupId: number; canView:
     try {
       if (nextSaved) await saveMarketplaceListing(item.id);
       else await unsaveMarketplaceListing(item.id);
-    } catch {
+    } catch (err) {
       setItems((current) => current.map((listing) => listing.id === item.id ? item : listing));
-      showToast({ title: t('common:errors.alertTitle'), description: t('marketplace:common.save_failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('marketplace:common.save_failed')), variant: 'danger' });
     }
   }
 

@@ -35,6 +35,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type TabKey = 'collections' | 'saved';
@@ -139,8 +140,8 @@ function MarketplaceCollectionsScreen() {
         ? { ...collection, item_count: Math.max(0, collection.item_count - 1) }
         : collection));
       setSelectedCollection((current) => current ? { ...current, item_count: Math.max(0, current.item_count - 1) } : current);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.removeItemFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.removeItemFailed')), variant: 'danger' });
     }
   }
 
@@ -155,8 +156,8 @@ function MarketplaceCollectionsScreen() {
         try {
           await deleteMarketplaceSavedSearch(search.id);
           setSavedSearches((current) => current.filter((entry) => entry.id !== search.id));
-        } catch {
-          showToast({ title: t('common:errors.alertTitle'), description: t('savedSearches.deleteFailed'), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('savedSearches.deleteFailed')), variant: 'danger' });
         }
       },
     });
@@ -180,8 +181,8 @@ function MarketplaceCollectionsScreen() {
       setNewDescription('');
       setNewIsPublic(false);
       setIsCreateOpen(false);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.createFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.createFailed')), variant: 'danger' });
     } finally {
       setIsCreating(false);
     }

@@ -32,6 +32,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import * as Haptics from '@/lib/haptics';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -136,8 +137,8 @@ function EditExchangeModalInner() {
       if (result.canceled || !result.assets?.[0]?.uri) return;
       setSelectedImageUri(result.assets[0].uri);
       setRemoveExistingImage(false);
-    } catch {
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.imagePickFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.imagePickFailed')), variant: 'danger' });
     }
   }
 
@@ -158,9 +159,9 @@ function EditExchangeModalInner() {
         if (fieldErrors.description) setFieldErrors((current) => ({ ...current, description: undefined }));
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.aiGenerateFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.aiGenerateFailed')), variant: 'danger' });
     } finally {
       setGeneratingDescription(false);
     }
@@ -226,9 +227,9 @@ function EditExchangeModalInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
       router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } });
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.editSaveFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.editSaveFailed')), variant: 'danger' });
     } finally {
       setSaving(false);
     }

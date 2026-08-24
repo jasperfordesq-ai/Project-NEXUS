@@ -18,6 +18,7 @@ import {
 } from '@/lib/api/events';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 interface EventAgendaEnterprisePanelProps {
   eventId: number;
@@ -66,10 +67,10 @@ export function EventAgendaEnterprisePanel({
         description: t(`agenda.enterprise.${action}SuccessDescription`),
         variant: 'success',
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t(`agenda.enterprise.${action}ErrorTitle`),
-        description: t(`agenda.enterprise.${action}ErrorDescription`),
+        description: describeApiError(err, t(`agenda.enterprise.${action}ErrorDescription`)),
         variant: 'danger',
       });
     } finally {
@@ -95,10 +96,10 @@ export function EventAgendaEnterprisePanel({
   const openResource = async (url: string) => {
     try {
       await Linking.openURL(url);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('agenda.enterprise.resourceErrorTitle'),
-        description: t('agenda.enterprise.resourceErrorDescription'),
+        description: describeApiError(err, t('agenda.enterprise.resourceErrorDescription')),
         variant: 'danger',
       });
     }

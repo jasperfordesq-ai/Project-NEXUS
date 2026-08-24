@@ -29,6 +29,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const REACTIONS: { key: AppreciationReactionType; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'heart', icon: 'heart-outline' },
@@ -109,9 +110,9 @@ function AppreciationsScreenInner() {
       setItems((current) =>
         current.map((item) => item.id === appreciation.id ? { ...item, my_reaction: nextReaction } : item),
       );
-    } catch {
+    } catch (err) {
       setItems((current) => current.map((item) => item.id === appreciation.id ? appreciation : item));
-      showToast({ title: t('common:errors.alertTitle'), description: t('appreciations.reactionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('appreciations.reactionFailed')), variant: 'danger' });
     } finally {
       setIsReacting(null);
     }

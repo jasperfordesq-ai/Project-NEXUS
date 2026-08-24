@@ -24,6 +24,7 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function extractPollsPage(response: FeedResponse) {
   if (!response?.data || !response?.meta) {
@@ -115,8 +116,8 @@ export default function PollsScreen() {
       setShowCreate(false);
       showToast({ title: t('pollsScreen.createdTitle'), description: t('pollsScreen.createdMessage'), variant: 'success' });
       refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('pollsScreen.createError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('pollsScreen.createError')), variant: 'danger' });
     } finally {
       setIsCreating(false);
     }

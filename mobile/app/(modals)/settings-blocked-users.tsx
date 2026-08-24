@@ -21,6 +21,7 @@ import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import { getBlockedUsers, unblockUser, type BlockedUser } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function formatBlockedDate(value: string | null, locale: string): string {
   if (!value) return '';
@@ -42,8 +43,8 @@ export default function SettingsBlockedUsersScreen() {
     setIsLoading(true);
     try {
       setUsers(await getBlockedUsers());
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('blockedUsers.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -70,8 +71,8 @@ export default function SettingsBlockedUsersScreen() {
       await unblockUser(user.user_id);
       setUsers((current) => current.filter((item) => item.user_id !== user.user_id));
       showToast({ title: t('blockedUsers.unblocked'), description: t('blockedUsers.unblockedDesc', { name: user.name }), variant: 'success' });
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('blockedUsers.unblockError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.unblockError')), variant: 'danger' });
     } finally {
       setUnblockingId(null);
     }

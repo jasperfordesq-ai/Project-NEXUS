@@ -601,9 +601,9 @@ function ApplicationsPanel({
       await withdrawApplication(id);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('withdrawError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('withdrawError')), variant: 'danger' });
     } finally {
       setWithdrawingId(null);
     }
@@ -682,9 +682,9 @@ function ShiftsPanel({
       await cancelShiftSignup(id);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('myShifts.cancelError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('myShifts.cancelError')), variant: 'danger' });
     } finally {
       setCancellingId(null);
     }
@@ -794,9 +794,9 @@ function SwapsPanel({
       await respondToShiftSwap(id, action);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t(action === 'accept' ? 'swaps.acceptError' : 'swaps.rejectError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(action === 'accept' ? 'swaps.acceptError' : 'swaps.rejectError')), variant: 'danger' });
     } finally {
       setActioningId(null);
     }
@@ -808,9 +808,9 @@ function SwapsPanel({
       await cancelShiftSwap(id);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('swaps.cancelError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('swaps.cancelError')), variant: 'danger' });
     } finally {
       setActioningId(null);
     }
@@ -984,9 +984,9 @@ function CertificatesPanel({
       await generateVolunteerCertificate();
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('certificates.generateError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('certificates.generateError')), variant: 'danger' });
     } finally {
       setGenerating(false);
     }
@@ -1124,9 +1124,9 @@ function ExpensesPanel({
       setDescription('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('expenses.submitError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('expenses.submitError')), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }
@@ -1321,9 +1321,9 @@ function DonationsPanel({
       setMessage('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('donations.submitError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('donations.submitError')), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }
@@ -1761,9 +1761,9 @@ function VolunteeringScreenInner() {
       opportunitiesApi.refresh();
       applicationsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('applyError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('applyError')), variant: 'danger' });
     } finally {
       setApplyingId(null);
     }

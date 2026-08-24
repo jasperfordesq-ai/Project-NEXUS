@@ -20,6 +20,7 @@ import { getMembers, type Member } from '@/lib/api/members';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const splitTypes: GroupExchange['split_type'][] = ['equal', 'custom', 'weighted'];
 
@@ -75,8 +76,8 @@ function NewGroupExchangeScreen() {
       setIsSearching(true);
       const response = await getMembers(0, query);
       setMemberResults((response.data ?? []).filter((member) => !selectedIds.has(member.id)));
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.searchError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('groupExchanges.create.searchError')), variant: 'danger' });
     } finally {
       setIsSearching(false);
     }
@@ -129,8 +130,8 @@ function NewGroupExchangeScreen() {
         return;
       }
       router.replace('/(modals)/group-exchanges' as Href);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.error'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('groupExchanges.create.error')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }

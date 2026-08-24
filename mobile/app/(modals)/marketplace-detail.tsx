@@ -51,6 +51,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceDetailRoute() {
@@ -303,9 +304,9 @@ function MarketplaceDetailScreen() {
     try {
       if (listing.is_saved) await unsaveMarketplaceListing(listing.id);
       else await saveMarketplaceListing(listing.id);
-    } catch {
+    } catch (err) {
       setListing(previous);
-      showToast({ title: t('common:errors.alertTitle'), description: t('common.save_failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
     }
   }
 
@@ -357,8 +358,8 @@ function MarketplaceDetailScreen() {
       let payment;
       try {
         payment = await createMarketplacePaymentIntent(orderId);
-      } catch {
-        showToast({ title: t('checkout.paymentRecoveryTitle'), description: t('checkout.paymentRecoveryHint', { order: orderNumber }), variant: 'danger' });
+      } catch (err) {
+        showToast({ title: t('checkout.paymentRecoveryTitle'), description: describeApiError(err, t('checkout.paymentRecoveryHint', { order: orderNumber })), variant: 'danger' });
         router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
         return;
       }
@@ -366,8 +367,8 @@ function MarketplaceDetailScreen() {
       if (payment.data.checkout_url) {
         try {
           await Linking.openURL(payment.data.checkout_url);
-        } catch {
-          showToast({ title: t('checkout.paymentRecoveryTitle'), description: t('checkout.paymentRecoveryHint', { order: orderNumber }), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('checkout.paymentRecoveryTitle'), description: describeApiError(err, t('checkout.paymentRecoveryHint', { order: orderNumber })), variant: 'danger' });
           router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
         }
         return;
@@ -410,9 +411,9 @@ function MarketplaceDetailScreen() {
       });
       setCouponApplied(true);
       showToast({ title: t('checkout.couponAppliedTitle'), description: t('checkout.couponAppliedHint'), variant: 'success' });
-    } catch {
+    } catch (err) {
       setCouponApplied(false);
-      showToast({ title: t('common:errors.alertTitle'), description: t('checkout.invalidCoupon'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('checkout.invalidCoupon')), variant: 'danger' });
     } finally {
       setIsActionLoading(false);
     }
@@ -481,8 +482,8 @@ function MarketplaceDetailScreen() {
     try {
       const response = await getMarketplaceCollections();
       setCollections(response.data);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.unableToLoad'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.unableToLoad')), variant: 'danger' });
     } finally {
       setIsCollectionLoading(false);
     }
@@ -496,8 +497,8 @@ function MarketplaceDetailScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setCollectionOpen(false);
       showToast({ title: t('collections.addedTitle'), description: t('collections.addedHint', { name: collection.name }), variant: 'success' });
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.addFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.addFailed')), variant: 'danger' });
     } finally {
       setIsActionLoading(false);
     }

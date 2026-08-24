@@ -16,6 +16,7 @@ import { setupFederation, type FederationSettings } from '@/lib/api/federation';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
@@ -79,8 +80,8 @@ function FederationOnboardingScreen() {
       await setupFederation(settings);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(modals)/federation');
-    } catch {
-      showToast({ title: t('directory.onboarding.failedTitle'), description: t('directory.onboarding.failedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('directory.onboarding.failedTitle'), description: describeApiError(err, t('directory.onboarding.failedDescription')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }

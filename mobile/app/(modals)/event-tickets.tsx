@@ -30,6 +30,7 @@ import {
   type MobileEventTicketType,
 } from '@/lib/api/eventTickets';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function idempotencyKey(action: 'allocate' | 'cancel'): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
@@ -143,10 +144,10 @@ function EventTicketsScreenInner() {
         variant: 'success',
       });
       await load();
-    } catch {
+    } catch (err) {
       showToast({
         title: t('tickets.mobile.allocateFailedTitle'),
-        description: t('tickets.mobile.allocateFailedDescription'),
+        description: describeApiError(err, t('tickets.mobile.allocateFailedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -183,10 +184,10 @@ function EventTicketsScreenInner() {
       setCancelTarget(null);
       setCancelReason('');
       await load();
-    } catch {
+    } catch (err) {
       showToast({
         title: t('tickets.mobile.cancelFailedTitle'),
-        description: t('tickets.mobile.cancelFailedDescription'),
+        description: describeApiError(err, t('tickets.mobile.cancelFailedDescription')),
         variant: 'danger',
       });
     } finally {

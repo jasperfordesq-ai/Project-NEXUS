@@ -32,6 +32,7 @@ import {
   type MobileEventTemplatePreview,
 } from '@/lib/api/eventTemplates';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function defaultStart(): string {
   const date = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -115,10 +116,10 @@ function EventTemplatesScreenInner() {
         return [...byId.values()];
       });
       setNextCursor(response.meta.has_more ? response.meta.next_cursor : null);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('templates.mobile.loadFailedTitle'),
-        description: t('templates.mobile.loadFailedDescription'),
+        description: describeApiError(err, t('templates.mobile.loadFailedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -169,11 +170,11 @@ function EventTemplatesScreenInner() {
         return [...byId.values()];
       });
       setAuditNextCursor(response.meta.has_more ? response.meta.next_cursor : null);
-    } catch {
+    } catch (err) {
       if (generation !== auditGenerationRef.current || auditTargetIdRef.current !== targetId) return;
       showToast({
         title: t('templates.mobile.auditLoadFailedTitle'),
-        description: t('templates.mobile.auditLoadFailedDescription'),
+        description: describeApiError(err, t('templates.mobile.auditLoadFailedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -236,10 +237,10 @@ function EventTemplatesScreenInner() {
       const result = await previewEventTemplate(selected.id, input);
       setConfirmedInput(input);
       setPreview(result);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('templates.mobile.previewFailedTitle'),
-        description: t('templates.mobile.previewFailedDescription'),
+        description: describeApiError(err, t('templates.mobile.previewFailedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -265,10 +266,10 @@ function EventTemplatesScreenInner() {
         pathname: '/(modals)/edit-event',
         params: { id: String(result.created_event.id) },
       });
-    } catch {
+    } catch (err) {
       showToast({
         title: t('templates.mobile.createFailedTitle'),
-        description: t('templates.mobile.createFailedDescription'),
+        description: describeApiError(err, t('templates.mobile.createFailedDescription')),
         variant: 'danger',
       });
     } finally {

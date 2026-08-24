@@ -90,15 +90,15 @@ walked, which comes before a gate that only guards three screens.
 | 4 — Volunteering | 18 | 2 | 14 | 1 | 1 | 0 | 0 | 0.608 |
 | 5 — Community modules | 34 | 17 | 6 | 11 | 0 | 0 | 0 | 0.687 |
 | 6 — Money and wallet | 12 | 1 | 7 | 2 | 1 | 0 | 1 | 0.545 |
-| 7 — Cross-cutting behaviour | 18 | 7 | 1 | 0 | 7 | 2 | 1 | 0.571 |
+| 7 — Cross-cutting behaviour | 18 | 8 | 1 | 0 | 6 | 2 | 1 | 0.612 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 1 | 8 | 0 | 0.130 |
-| **Total** | **140** | **50** | **41** | **24** | **11** | **11** | **3** | — |
+| **Total** | **140** | **51** | **41** | **24** | **10** | **11** | **3** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(50 × 1.0) + (41 × 0.6) + (24 × 0.25) + (11 × 0.30) = 83.90`, over `140 − 3 excluded = 137`
-rows → **0.612**.
+`(51 × 1.0) + (41 × 0.6) + (24 × 0.25) + (10 × 0.30) = 84.60`, over `140 − 3 excluded = 137`
+rows → **0.618**.
 
 ### Credit recomputation
 
@@ -110,7 +110,7 @@ rows → **0.612**.
 | 4 | (2 × 1.0) + (14 × 0.6) + (1 × 0.25) + (1 × 0.30) = 10.95 | ÷ 18 | **0.608** |
 | 5 | (17 × 1.0) + (6 × 0.6) + (11 × 0.25) = 23.35 | ÷ 34 | **0.687** |
 | 6 | (1 × 1.0) + (7 × 0.6) + (2 × 0.25) + (1 × 0.30) = 6.00 | ÷ 11 † | **0.545** |
-| 7 | (7 × 1.0) + (1 × 0.6) + (7 × 0.30) = 9.70 | ÷ 17 † | **0.571** |
+| 7 | (8 × 1.0) + (1 × 0.6) + (6 × 0.30) = 10.40 | ÷ 17 † | **0.612** |
 | 8 | (1 × 1.0) + (1 × 0.30) = 1.30 | ÷ 10 | **0.130** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
@@ -290,7 +290,7 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 | 7.3 | Controls stay reachable at 360dp | CERTIFIED | Five defects found; guarded by `components/narrowScreenReach.test.ts` |
 | 7.4 | Shared form footer never clips its submit | CERTIFIED | Broken at every width; guarded |
 | 7.5 | Text inputs are wide enough to read | CERTIFIED | Guarded by `components/ui/inputSizing.test.ts` |
-| 7.6 | A failed action explains why | PARTIAL | Helper added (`lib/api/describeApiError.ts`) and applied on walked paths. **186 sites across 57 files** still discard the server's message |
+| 7.6 | A failed action explains why | CERTIFIED | Swept and walked 2026-08-24. 🔴 **165 places across 53 files** told a member an action had failed and threw away the reason the server had already sent, because `catch {` with no binding cannot see the error. The measurement that started it: logging volunteer hours failed and the app said only "Could not log these hours" while the server had answered "You have already logged hours for this organization and date" — so the member retried and failed again. All 165 now bind the error and pass the existing translated sentence to `describeApiError`, which returns the server's wording **only when it is fit to show**: never a 5xx (that is an internal failure description), never anything over 200 characters or containing HTML, and never a code the app answers with its own screen (`ONBOARDING_REQUIRED`, `LEGAL_ACCEPTANCE_REQUIRED`, `UNAUTHENTICATED`). Walked on the emulator with a genuine race: an exchange was opened while `in_progress`, the other member disputed it behind the screen, and tapping "Report a problem" produced **"A problem cannot be reported for this exchange right now"** — the server's own sentence — where the old code would have shown "Please try again." 🔴 The helper had **no test of its own** despite standing between the server and every one of those messages; it now has eight, and the 5xx rule and the own-screen rule are mutation-verified. Guarded by `components/failureReasonReachesTheMember.test.ts`, a source scan that fails with the file and line of any screen that reports a failure without passing the reason on — also mutation-verified. That guard is deliberately narrow: a `catch {` that reports nothing to the member is left alone, because a best-effort refresh should not raise an error at anybody, and the test asserts that bare catches still exist so nobody widens it into a blanket ban |
 | 7.7 | Hiding a label keeps an accessible name | CERTIFIED | Guarded in `narrowScreenReach.test.ts` |
 | 7.8 | Crash reports reach the owner | PROVEN | Dual-destination reporting added 2026-08-20; never verified from a real crash |
 | 7.9 | Screen-reader pass over a core journey | PARTIAL | **First screen-reader audit ever done here, 2026-08-23**, with TalkBack running on the emulator over five screens (feed, exchanges, wallet, messages, event detail). 🔴 **`uiautomator dump` DOES work on this app once an accessibility service is running** — the recorded belief that it returns zero nodes was measured without one, and it blocked this audit for weeks. Three defect families found and fixed. **(a)** Icons rendered as `<Text>` holding a private-use codepoint, and Android composes a control's name from its children — so every tab and filter announced the raw glyph first (`content-desc=", For You"`). Fixed by routing all 131 `Ionicons` imports through `components/ui/Icon.tsx`, which hides them from the tree; zero glyphs remain on the audited screens. **(b)** `heroui-native`'s `Chip` renders a `Pressable` whether or not it has an `onPress`, so every informational chip was offered as a button that does nothing — messages went from 17 reported controls to 12 and the wallet from 9 to 6 once that was fixed. **(c)** The feed's save button was genuinely unlabelled, which only became visible once the glyph noise stopped masking it. 🔴 **PARTIAL, not certified: this is an audit, not a walk.** No journey was driven end to end through TalkBack's own gesture model — with it on, a tap moves focus rather than activating, so the app was still driven by coordinates. Guarded by `components/iconAccessibility.test.ts`, `components/ui/statusChipAccessibility.test.tsx` and `components/chipMigration.test.ts` (91 files left to migrate, shrink-only) |

@@ -147,8 +147,8 @@ export default function JobDetailScreen() {
         await saveJob(job.id);
         setIsSaved(true);
       }
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.saveError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.saveError')), variant: 'danger' });
     } finally {
       setSaveLoading(false);
     }
@@ -205,8 +205,8 @@ export default function JobDetailScreen() {
       await updateJobStatus(job.id, job.status === 'open' ? 'closed' : 'open');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshJob();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('owner.statusUpdateError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.statusUpdateError')), variant: 'danger' });
     }
   }
 
@@ -768,8 +768,8 @@ function OwnerApplicationCard({
       await updateJobApplication(application.id, { status });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onUpdated();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('owner.updateError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
       setIsUpdating(false);
     }

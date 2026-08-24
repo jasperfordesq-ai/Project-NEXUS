@@ -32,6 +32,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 const MAX_COMMENT_LENGTH = 10000;
@@ -120,10 +121,10 @@ export default function CommentSheet({
       setComments(nextComments);
       setLoadedTargetKey(targetKey);
       onCountChange?.(nextCount);
-    } catch {
+    } catch (err) {
       showToast({
         title: strings.actionFailedTitle,
-        description: strings.loadFailed,
+        description: describeApiError(err, strings.loadFailed),
         variant: 'danger',
       });
     } finally {
@@ -163,11 +164,11 @@ export default function CommentSheet({
       }
       await loadSheetComments(true);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: strings.actionFailedTitle,
-        description: editTarget ? strings.editFailed : strings.submitFailed,
+        description: describeApiError(err, editTarget ? strings.editFailed : strings.submitFailed),
         variant: 'danger',
       });
     } finally {
@@ -206,11 +207,11 @@ export default function CommentSheet({
           if (replyTarget?.id === comment.id) setReplyTarget(null);
           await loadSheetComments(true);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({
             title: strings.actionFailedTitle,
-            description: strings.deleteFailed,
+            description: describeApiError(err, strings.deleteFailed),
             variant: 'danger',
           });
         }

@@ -42,6 +42,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
@@ -192,9 +193,9 @@ function ApplicationsPanel({ applications, loading, onRefresh }: { applications:
       await handleVolunteerApplication(id, action);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.applications.actionError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.applications.actionError')), variant: 'danger' });
     } finally {
       setActioningId(null);
     }
@@ -263,9 +264,9 @@ function HoursPanel({ entries, loading, onRefresh }: { entries: OrganisationPend
       await verifyVolunteerHours(id, action);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.hours.actionError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.hours.actionError')), variant: 'danger' });
     } finally {
       setActioningId(null);
     }
@@ -390,9 +391,9 @@ function WalletPanel({
       setNote('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.wallet.depositError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.wallet.depositError')), variant: 'danger' });
     } finally {
       setSaving(false);
     }
@@ -511,9 +512,9 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
       });
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.settings.saveError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.settings.saveError')), variant: 'danger' });
     } finally {
       setSaving(false);
     }

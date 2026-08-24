@@ -35,6 +35,7 @@ import {
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -140,8 +141,8 @@ export default function GoalDetailScreen() {
         setReminder(nextReminder);
         if (nextReminder?.frequency) setSelectedFrequency(nextReminder.frequency);
       }
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -178,8 +179,8 @@ export default function GoalDetailScreen() {
       setGoal(result.data);
       setProgressIncrement('');
       await load();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.progressError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.progressError')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -196,8 +197,8 @@ export default function GoalDetailScreen() {
         const result = await setGoalReminder(goal.id, { frequency: selectedFrequency, enabled: true });
         setReminder(result.data);
       }
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.reminderError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.reminderError')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }

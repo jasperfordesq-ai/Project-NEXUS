@@ -22,6 +22,7 @@ import { useAuthContext } from '@/lib/context/AuthContext';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -90,7 +91,7 @@ function LegalAcceptanceScreenInner() {
       await acceptAllLegalDocuments();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
-    } catch {
+    } catch (err) {
       // 🔴 Never reported as success. The API records acceptances in one
       // transaction and fails the whole call if any of them could not be written,
       // so telling the member their agreement was recorded when it may not have
@@ -98,7 +99,7 @@ function LegalAcceptanceScreenInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
-        description: t('legal:acceptance.error'),
+        description: describeApiError(err, t('legal:acceptance.error')),
         variant: 'danger',
       });
     } finally {

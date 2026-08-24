@@ -32,6 +32,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 function formatDate(value?: string | null): string {
@@ -109,8 +110,8 @@ function ProfileCollectionsInner() {
     try {
       await removeSavedItem(item.id);
       setItems((current) => current.filter((candidate) => candidate.id !== item.id));
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.removeFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.removeFailed')), variant: 'danger' });
     }
   }
 
@@ -128,8 +129,8 @@ function ProfileCollectionsInner() {
       });
       setShowCreate(false);
       collectionsQuery.refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.createFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.createFailed')), variant: 'danger' });
     } finally {
       setCreating(false);
     }

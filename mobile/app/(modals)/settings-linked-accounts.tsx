@@ -19,6 +19,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import {
   approveSubAccount,
   getManagedSubAccounts,
@@ -91,8 +92,8 @@ function SettingsLinkedAccountsScreen() {
       await requestSubAccount(trimmed);
       setEmail('');
       query.refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.requestFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.requestFailed')), variant: 'danger' });
     } finally {
       setIsSending(false);
     }
@@ -103,8 +104,8 @@ function SettingsLinkedAccountsScreen() {
       setBusyId(item.relationship_id);
       await approveSubAccount(item.relationship_id);
       query.refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.approveFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.approveFailed')), variant: 'danger' });
     } finally {
       setBusyId(null);
     }
@@ -115,8 +116,8 @@ function SettingsLinkedAccountsScreen() {
       setBusyId(item.relationship_id);
       await revokeSubAccount(item.relationship_id);
       query.refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.revokeFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.revokeFailed')), variant: 'danger' });
     } finally {
       setBusyId(null);
     }
@@ -157,8 +158,8 @@ function SettingsLinkedAccountsScreen() {
         await updateSubAccountTiers(item.relationship_id, { [capability]: nextTier });
       }
       query.refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.permissionFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.permissionFailed')), variant: 'danger' });
     } finally {
       setBusyId(null);
     }

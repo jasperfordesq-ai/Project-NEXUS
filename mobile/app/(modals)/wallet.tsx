@@ -37,6 +37,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -193,10 +194,10 @@ function WalletModalInner() {
       setExtraTransactions((current) => [...current, ...(response.data ?? [])]);
       setExtraCursor(response.meta?.cursor ?? null);
       setExtraHasMore(Boolean(response.meta?.has_more));
-    } catch {
+    } catch (err) {
       showToast({
         title: t('actions.loadMoreFailedTitle'),
-        description: t('actions.loadMoreFailedMessage'),
+        description: describeApiError(err, t('actions.loadMoreFailedMessage')),
         variant: 'danger',
       });
     } finally {
@@ -402,10 +403,10 @@ function WalletActionPanel({
     try {
       const response = await searchWalletUsers(query.trim(), 10);
       setResults(response.data?.users ?? []);
-    } catch {
+    } catch (err) {
       showToast({
         title: t('actions.searchFailedTitle'),
-        description: t('actions.searchFailedMessage'),
+        description: describeApiError(err, t('actions.searchFailedMessage')),
         variant: 'danger',
       });
     } finally {

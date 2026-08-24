@@ -31,6 +31,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type Step = 1 | 2 | 3 | 4;
@@ -146,8 +147,8 @@ function MarketplaceMerchantOnboardingScreen() {
       const response = await updateAvatar(result.assets[0].uri);
       setAvatarUrl(response.data.avatar_url);
       if (user) refreshUser({ ...user, avatar_url: response.data.avatar_url });
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('merchantOnboarding.avatarFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('merchantOnboarding.avatarFailed')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }

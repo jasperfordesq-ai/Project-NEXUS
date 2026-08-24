@@ -48,6 +48,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type Tab = 'skills' | 'endorsements' | 'discover';
 type ListItem = Skill | Endorsement;
@@ -219,8 +220,8 @@ export default function EndorsementsScreen() {
       setSkillInput('');
       setAddingSkill(false);
       refreshSkills();
-    } catch {
-      showToast({ title: t('addSkillErrorTitle'), description: t('addSkillError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('addSkillErrorTitle'), description: describeApiError(err, t('addSkillError')), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }
@@ -236,8 +237,8 @@ export default function EndorsementsScreen() {
     try {
       const response = await getSkillCategory(category.id);
       setCategorySkills(response.data.skills ?? []);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('discover.loadSkillsError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadSkillsError')), variant: 'danger' });
     } finally {
       setLoadingCategoryId(null);
     }
@@ -251,8 +252,8 @@ export default function EndorsementsScreen() {
     try {
       const response = await getMembersWithSkill(skillName);
       setSkillMembers(response.data ?? []);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('discover.loadMembersError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadMembersError')), variant: 'danger' });
     } finally {
       setLoadingSkill(null);
     }
@@ -276,8 +277,8 @@ export default function EndorsementsScreen() {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           showToast({ title: t('skillRemovedTitle'), description: t('skillRemoved'), variant: 'success' });
           refreshSkills();
-        } catch {
-          showToast({ title: t('removeSkillErrorTitle'), description: t('removeSkillError'), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('removeSkillErrorTitle'), description: describeApiError(err, t('removeSkillError')), variant: 'danger' });
         }
       },
     });

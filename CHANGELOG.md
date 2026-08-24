@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **When something goes wrong, the app now tells you what the server actually said.** In 165 places across 53 screens it threw the explanation away and showed a generic line instead. The example that started this: logging volunteer hours failed and the app said only "Could not log these hours", while the server had answered "You have already logged hours for this organization and date". The member learns nothing, tries again, and fails again — with the answer sitting there unused.
+
+- **All 165 now pass the reason on, with limits.** The server's wording is only shown when it is fit for a member: never for an internal server fault, never for anything long or that looks like a web page, and never for the refusals the app answers by taking you to the right screen instead. Checked on a real phone against a real refusal: the message read "A problem cannot be reported for this exchange right now" where it used to say "Please try again". The helper doing that filtering had no test of its own despite standing in front of every one of these messages; it now has eight.
+
+- **And a check that stops it coming back**, which names the file and line of any screen that reports a failure without passing the reason on. It is deliberately narrow: a quiet failure that tells the member nothing is left alone, because a background refresh that fails should not raise an alarm at anybody.
+
 - **Six places where the app and the server disagreed about what a response contains — found by measuring, not guessing.** The app asks the server 494 questions and only 78 of them were checked in any way. The other 416 fail quietly: a field the app expects and the server never sends simply arrives empty, so a screen shows blanks or falls over. That is what took the Matches screen down yesterday. The checking tool now finds ids for itself instead of using a fixed list, which nearly doubled what it can actually inspect — 58 questions checked before, 115 now — and the marketplace went from 11 of 32 to 19 of 32 once I also created the missing test data (an offer, a saved search, a collection, a pickup slot).
 
 - **The one a member would have noticed: a group page never named the person who runs it.** The app was looking for an "admin" field the server does not send, so the whole "Group admin" card silently disappeared from every group. It now uses the group's creator, which the server does send, and there is a test that fails if the card vanishes again.

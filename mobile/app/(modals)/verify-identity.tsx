@@ -27,6 +27,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { presentIdentityPayment } from '@/lib/payments/identityPayment';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type PageState = 'loading' | 'dob_collection' | 'payment_required' | 'start' | 'in_progress' | 'verified' | 'failed' | 'error';
@@ -129,8 +130,8 @@ function VerifyIdentityScreenInner() {
     try {
       await saveIdentityDateOfBirth(value);
       await refreshStatus();
-    } catch {
-      showToast({ title: t('identity.error_title'), description: t('identity.error_save_dob'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('identity.error_title'), description: describeApiError(err, t('identity.error_save_dob')), variant: 'danger' });
     } finally {
       setIsSavingDob(false);
     }
@@ -153,8 +154,8 @@ function VerifyIdentityScreenInner() {
       }
       setPageState('in_progress');
       startPolling();
-    } catch {
-      showToast({ title: t('identity.error_title'), description: t('identity.error_start_verification'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('identity.error_title'), description: describeApiError(err, t('identity.error_start_verification')), variant: 'danger' });
       await refreshStatus();
     } finally {
       setIsStarting(false);
@@ -194,8 +195,8 @@ function VerifyIdentityScreenInner() {
 
       showToast({ title: t('identity.payment_success_title'), description: t('identity.payment_success_body'), variant: 'success' });
       await refreshStatus();
-    } catch {
-      showToast({ title: t('identity.error_title'), description: t('identity.error_create_payment'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('identity.error_title'), description: describeApiError(err, t('identity.error_create_payment')), variant: 'danger' });
     } finally {
       setIsCreatingPayment(false);
     }

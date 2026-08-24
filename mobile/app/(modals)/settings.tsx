@@ -23,6 +23,7 @@ import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import type { ThemeMode } from '@/lib/theme/themeStore';
 import { API_V2 } from '@/lib/constants';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
@@ -148,10 +149,10 @@ export default function SettingsScreen() {
     setSaving(true);
     try {
       await savePrefs({ [key]: updated[key] });
-    } catch {
+    } catch (err) {
       // Revert
       setPrefs(current);
-      showToast({ title: t('common:errors.generic'), description: t('saveError'), variant: 'danger' });
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
       setSaving(false);
     }
@@ -163,9 +164,9 @@ export default function SettingsScreen() {
     setSavingPrivacy(true);
     try {
       await savePrivacyPrefs(nextPrefs);
-    } catch {
+    } catch (err) {
       setPrivacyPrefs(currentPrivacy);
-      showToast({ title: t('common:errors.generic'), description: t('privacy.saveError'), variant: 'danger' });
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('privacy.saveError')), variant: 'danger' });
     } finally {
       setSavingPrivacy(false);
     }

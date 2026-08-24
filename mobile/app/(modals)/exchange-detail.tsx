@@ -53,6 +53,7 @@ import VerificationBadgeRow from '@/components/verification/VerificationBadgeRow
 import CommentSheet from '@/components/comments/CommentSheet';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 interface DetailStateProps {
   title: string;
@@ -292,9 +293,9 @@ function ExchangeDetailModalInner() {
         await unsaveExchange(listing.id);
       }
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch {
+    } catch (err) {
       setIsSaved(!nextSaved);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.saveFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.saveFailed')), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -314,10 +315,10 @@ function ExchangeDetailModalInner() {
       setIsLiked(Boolean(nextLiked));
       setLikesCount(payload.likes_count ?? previousCount + (nextLiked ? 1 : -1));
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch {
+    } catch (err) {
       setIsLiked(wasLiked);
       setLikesCount(previousCount);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.likeFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.likeFailed')), variant: 'danger' });
     } finally {
       setIsLiking(false);
     }
@@ -345,9 +346,9 @@ function ExchangeDetailModalInner() {
       setShowReportForm(false);
       setReportDetails('');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.reportFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.reportFailed')), variant: 'danger' });
     } finally {
       setIsReporting(false);
     }
@@ -361,9 +362,9 @@ function ExchangeDetailModalInner() {
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.renewedTitle'), description: t('detail.renewedMessage'), variant: 'success' });
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.renewFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.renewFailed')), variant: 'danger' });
     } finally {
       setIsRenewing(false);
     }
@@ -382,9 +383,9 @@ function ExchangeDetailModalInner() {
           await deleteExchange(listing.id);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           router.replace('/(tabs)/exchanges' as Href);
-        } catch {
+        } catch (err) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('detail.actionFailedTitle'), description: t('detail.deleteFailed'), variant: 'danger' });
+          showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.deleteFailed')), variant: 'danger' });
         } finally {
           setIsDeleting(false);
         }
@@ -410,9 +411,9 @@ function ExchangeDetailModalInner() {
       setShowRequestForm(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.exchangeRequestedTitle'), description: t('detail.exchangeRequestedMessage'), variant: 'success' });
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.exchangeRequestFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.exchangeRequestFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }

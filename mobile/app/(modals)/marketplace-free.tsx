@@ -28,6 +28,7 @@ import {
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 export default function MarketplaceFreeRoute() {
@@ -91,9 +92,9 @@ function MarketplaceFreeScreen() {
     try {
       if (nextSaved) await saveMarketplaceListing(item.id);
       else await unsaveMarketplaceListing(item.id);
-    } catch {
+    } catch (err) {
       setListings((current) => current.map((listing) => listing.id === item.id ? item : listing));
-      showToast({ title: t('common:errors.alertTitle'), description: t('common.save_failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
     }
   }
 

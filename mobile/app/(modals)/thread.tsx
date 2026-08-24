@@ -44,6 +44,7 @@ import VoiceMessageBubble from '@/components/VoiceMessageBubble';
 import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
 import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -239,9 +240,9 @@ function ThreadScreenInner() {
         setEditingMessage(null);
         setInputText('');
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch {
+      } catch (err) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        showToast({ title: t('errors.editFailedTitle'), description: t('errors.editFailed'), variant: 'danger' });
+        showToast({ title: t('errors.editFailedTitle'), description: describeApiError(err, t('errors.editFailed')), variant: 'danger' });
       } finally {
         setIsSending(false);
       }
@@ -355,8 +356,8 @@ function ThreadScreenInner() {
                 : item
             ));
           });
-        } catch {
-          showToast({ title: t('errors.deleteFailedTitle'), description: t('errors.deleteFailed'), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('errors.deleteFailedTitle'), description: describeApiError(err, t('errors.deleteFailed')), variant: 'danger' });
         }
       },
     });
@@ -431,11 +432,11 @@ function ThreadScreenInner() {
         setRecordingSeconds((seconds) => seconds + 1);
       }, 1000);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch {
+    } catch (err) {
       stopRecordingTimer();
       setIsRecording(false);
       recordingRef.current = null;
-      showToast({ title: t('thread.voice.failedTitle'), description: t('thread.voice.startFailed'), variant: 'danger' });
+      showToast({ title: t('thread.voice.failedTitle'), description: describeApiError(err, t('thread.voice.startFailed')), variant: 'danger' });
     }
   }, [editingMessage, isRecording, pendingAttachments.length, showToast, stopRecordingTimer, t]);
 
@@ -451,11 +452,11 @@ function ThreadScreenInner() {
       if (uri) {
         setVoiceUri(uri);
       }
-    } catch {
+    } catch (err) {
       recordingRef.current = null;
       setIsRecording(false);
       setVoiceUri(null);
-      showToast({ title: t('thread.voice.failedTitle'), description: t('thread.voice.stopFailed'), variant: 'danger' });
+      showToast({ title: t('thread.voice.failedTitle'), description: describeApiError(err, t('thread.voice.stopFailed')), variant: 'danger' });
     }
   }, [showToast, stopRecordingTimer, t]);
 
@@ -506,11 +507,11 @@ function ThreadScreenInner() {
       );
       setMessages((prev) => prev.map((message) => (message.id === optimistic.id ? { ...response.data, is_own: true } : message)));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
       setVoiceUri(voiceUri);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('errors.sendFailed'), description: t('thread.voice.sendFailed'), variant: 'danger' });
+      showToast({ title: t('errors.sendFailed'), description: describeApiError(err, t('thread.voice.sendFailed')), variant: 'danger' });
     } finally {
       setIsSending(false);
     }
@@ -536,8 +537,8 @@ function ThreadScreenInner() {
         return { ...message, reactions };
       }));
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch {
-      showToast({ title: t('errors.reactionFailedTitle'), description: t('errors.reactionFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('errors.reactionFailedTitle'), description: describeApiError(err, t('errors.reactionFailed')), variant: 'danger' });
     }
   }, [showToast, t]);
 

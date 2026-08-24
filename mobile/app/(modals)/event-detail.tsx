@@ -56,6 +56,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
+import { describeApiError } from '@/lib/api/describeApiError';
 import EventSafetyCard from '@/components/events/EventSafetyCard';
 import { EventAnalyticsSummaryCard } from '@/components/events/EventAnalyticsSummaryCard';
 import EventCheckinCredentialCard from '@/components/events/EventCheckinCredentialCard';
@@ -247,8 +248,8 @@ function EventDetailScreenInner() {
             setRelationship(null);
             setMetrics(null);
             refresh();
-          } catch {
-            showToast({ title: t('common:errors.alertTitle'), description: t('rsvpError'), variant: 'danger' });
+          } catch (err) {
+            showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('rsvpError')), variant: 'danger' });
           } finally {
             setUpdating(false);
           }
@@ -262,8 +263,8 @@ function EventDetailScreenInner() {
       const result = await rsvpEvent(event.id, status);
       setRelationship(result.data.relationship);
       setMetrics(result.data.metrics);
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('rsvpError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('rsvpError')), variant: 'danger' });
     } finally {
       setUpdating(false);
     }
@@ -325,14 +326,17 @@ function EventDetailScreenInner() {
 
       await joinEventWaitlist(event.id);
       refresh();
-    } catch {
+    } catch (err) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: t(leaving
-          ? hasActiveWaitlistOffer
-            ? 'detail.offerDeclineError'
-            : 'detail.leaveWaitlistError'
-          : 'detail.joinWaitlistError'),
+        description: describeApiError(
+          err,
+          t(leaving
+            ? hasActiveWaitlistOffer
+              ? 'detail.offerDeclineError'
+              : 'detail.leaveWaitlistError'
+            : 'detail.joinWaitlistError'),
+        ),
         variant: 'danger',
       });
     } finally {
@@ -371,10 +375,10 @@ function EventDetailScreenInner() {
         variant: 'success',
       });
       refresh();
-    } catch {
+    } catch (err) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: t('detail.publicationFailed'),
+        description: describeApiError(err, t('detail.publicationFailed')),
         variant: 'danger',
       });
     } finally {
@@ -441,10 +445,10 @@ function EventDetailScreenInner() {
         variant: 'success',
       });
       refresh();
-    } catch {
+    } catch (err) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: t('detail.offerAcceptError'),
+        description: describeApiError(err, t('detail.offerAcceptError')),
         variant: 'danger',
       });
     } finally {
@@ -1332,8 +1336,8 @@ function EventPollsCard({
     try {
       const result = await voteEventPoll(poll.id, optionId);
       setLocalPolls((prev) => ({ ...prev, [poll.id]: result.data }));
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('detail.pollVoteError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.pollVoteError')), variant: 'danger' });
     } finally {
       setVotingPollId(null);
     }

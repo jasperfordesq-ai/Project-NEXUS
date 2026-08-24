@@ -29,6 +29,7 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
@@ -172,8 +173,8 @@ export default function SearchScreen() {
       setSaveSearchName('');
       setShowSaveSearch(false);
       savedSearchesQuery.refresh();
-    } catch {
-      showToast({ title: t('saved.saveFailedTitle'), description: t('saved.saveFailedMessage'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('saved.saveFailedTitle'), description: describeApiError(err, t('saved.saveFailedMessage')), variant: 'danger' });
     } finally {
       setIsSavingSearch(false);
     }
@@ -196,8 +197,8 @@ export default function SearchScreen() {
     try {
       await deleteSavedSearch(item.id);
       savedSearchesQuery.refresh();
-    } catch {
-      showToast({ title: t('saved.deleteFailedTitle'), description: t('saved.deleteFailedMessage'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('saved.deleteFailedTitle'), description: describeApiError(err, t('saved.deleteFailedMessage')), variant: 'danger' });
     }
   }
 

@@ -51,6 +51,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type Tab = 'badges' | 'challenges' | 'journeys' | 'leaderboard' | 'score' | 'shop';
 type LeaderboardPeriod = 'weekly' | 'monthly' | 'all_time';
@@ -1236,8 +1237,8 @@ export default function GamificationScreen() {
       refreshProfile();
       refreshBadges();
       refreshReward();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('dailyReward.claimError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('dailyReward.claimError')), variant: 'danger' });
     } finally {
       setIsClaimingReward(false);
     }
@@ -1255,8 +1256,8 @@ export default function GamificationScreen() {
       showToast({ title: t('challenges.claimedTitle'), description: t('challenges.claimedMessage'), variant: 'success' });
       refreshProfile();
       refreshChallenges();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('challenges.claimError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('challenges.claimError')), variant: 'danger' });
     } finally {
       setClaimingChallengeId(null);
     }
@@ -1282,8 +1283,8 @@ export default function GamificationScreen() {
       showToast({ title: t('shop.purchaseComplete'), description: t('shop.purchaseCompleteDescription', { name: item.name }), variant: 'success' });
       refreshProfile();
       refreshShop();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('shop.purchaseError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('shop.purchaseError')), variant: 'danger' });
     } finally {
       setPurchasingShopItemId(null);
     }
@@ -1313,8 +1314,8 @@ export default function GamificationScreen() {
       setShowcaseKeysOverride(new Set(selectedKeys));
       showToast({ title: t('showcase.updated'), description: t('showcase.updatedDescription'), variant: 'success' });
       refreshBadges();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('showcase.saveError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('showcase.saveError')), variant: 'danger' });
     } finally {
       setIsSavingShowcase(false);
     }

@@ -29,6 +29,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import OfflineBanner from '@/components/OfflineBanner';
@@ -139,9 +140,9 @@ function NewExchangeModalInner() {
         if (fieldErrors.description) setFieldErrors((current) => ({ ...current, description: undefined }));
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: t('detail.aiGenerateFailed'), variant: 'danger' });
+      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.aiGenerateFailed')), variant: 'danger' });
     } finally {
       setGeneratingDescription(false);
     }
@@ -208,8 +209,8 @@ function NewExchangeModalInner() {
         if (selectedImageUri) {
           try {
             await uploadExchangeImage(listingId, selectedImageUri);
-          } catch {
-            showToast({ title: t('detail.imageUploadFailedTitle'), description: t('detail.imageUploadFailedMessage'), variant: 'danger' });
+          } catch (err) {
+            showToast({ title: t('detail.imageUploadFailedTitle'), description: describeApiError(err, t('detail.imageUploadFailedMessage')), variant: 'danger' });
           }
         }
       }

@@ -18,6 +18,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import * as Haptics from '@/lib/haptics';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
@@ -253,8 +254,8 @@ function PipelineApplicationCard({
       await updateJobApplication(application.id, { status });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onUpdated();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('owner.updateError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
       setIsUpdating(false);
     }

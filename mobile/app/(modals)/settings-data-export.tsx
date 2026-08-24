@@ -20,6 +20,7 @@ import { getDataExportHistory, requestDataExport, type DataExportFormat, type Da
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return '-';
@@ -54,8 +55,8 @@ export default function SettingsDataExportScreen() {
     setIsLoading(true);
     try {
       setHistory(await getDataExportHistory());
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('dataExport.loadError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
     }
@@ -79,8 +80,8 @@ export default function SettingsDataExportScreen() {
       await requestDataExport(format);
       showToast({ title: t('dataExport.requested'), description: t('dataExport.requestedBody'), variant: 'success' });
       await loadHistory();
-    } catch {
-      showToast({ title: t('common:errors.generic'), description: t('dataExport.requestError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.requestError')), variant: 'danger' });
     } finally {
       setIsRequesting(false);
     }

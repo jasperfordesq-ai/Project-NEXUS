@@ -31,6 +31,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type ConnectionTab = ConnectionListStatus;
 
@@ -80,9 +81,9 @@ function ConnectionsScreen() {
       if (action === 'remove') await removeConnection(id);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
-    } catch {
+    } catch (err) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('connections.actionFailedTitle'), description: t('connections.actionFailedDescription'), variant: 'danger' });
+      showToast({ title: t('connections.actionFailedTitle'), description: describeApiError(err, t('connections.actionFailedDescription')), variant: 'danger' });
     } finally {
       setActionId(null);
     }

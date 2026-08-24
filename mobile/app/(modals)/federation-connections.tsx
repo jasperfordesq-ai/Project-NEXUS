@@ -28,6 +28,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type ConnectionTab = 'accepted' | 'pending_received' | 'pending_sent';
 
@@ -72,8 +73,8 @@ function FederationConnectionsScreen() {
       if (action === 'remove') await removeFederationConnection(connection.id);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
-    } catch {
-      showToast({ title: t('directory.connections.actionFailedTitle'), description: t('directory.connections.actionFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('directory.connections.actionFailedTitle'), description: describeApiError(err, t('directory.connections.actionFailedDescription')), variant: 'danger' });
     } finally {
       setActionId(null);
     }

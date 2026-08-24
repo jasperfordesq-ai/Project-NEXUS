@@ -24,6 +24,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const statusTones: Record<GroupExchangeStatus, string> = {
   draft: '#64748b',
@@ -78,8 +79,8 @@ function GroupExchangeDetailScreenInner() {
         await cancelGroupExchange(exchange.id);
       }
       await refresh();
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t(`groupExchanges.detail.actions.${action}Failed`), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(`groupExchanges.detail.actions.${action}Failed`)), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }

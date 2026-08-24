@@ -26,6 +26,7 @@ import Input from '@/components/ui/Input';
 import NativePressable from '@/components/ui/NativePressable';
 import { ConversationSkeleton } from '@/components/ui/Skeleton';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
 function extractConversationsPage(response: ConversationListResponse) {
@@ -152,8 +153,8 @@ export default function MessagesScreen() {
           await archiveConversation(conversation.id);
           void inboxPage.refresh();
           void archivedPage.refresh();
-        } catch {
-          showToast({ title: t('errors.archiveFailedTitle'), description: t('errors.archiveFailed'), variant: 'danger' });
+        } catch (err) {
+          showToast({ title: t('errors.archiveFailedTitle'), description: describeApiError(err, t('errors.archiveFailed')), variant: 'danger' });
         }
       },
     });
@@ -164,8 +165,8 @@ export default function MessagesScreen() {
       await restoreConversation(conversation.id);
       void inboxPage.refresh();
       void archivedPage.refresh();
-    } catch {
-      showToast({ title: t('errors.restoreFailedTitle'), description: t('errors.restoreFailed'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('errors.restoreFailedTitle'), description: describeApiError(err, t('errors.restoreFailed')), variant: 'danger' });
     }
   }
 

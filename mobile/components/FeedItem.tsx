@@ -408,10 +408,10 @@ function FeedItemInner({
       const result = await toggleLike(item.type, item.id);
       setLiked(result.data.action === 'liked');
       setLikesCount(result.data.likes_count);
-    } catch {
+    } catch (err) {
       setLiked(wasLiked);
       setLikesCount((n) => (wasLiked ? n + 1 : n - 1));
-      showToast({ title: t('common:errors.alertTitle'), description: t('reaction.failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reaction.failed')), variant: 'danger' });
     }
   }, [liked, item.id, item.type, showToast, t]);
 
@@ -455,10 +455,10 @@ function FeedItemInner({
       if (result.data?.reactions) {
         setReactions(result.data.reactions);
       }
-    } catch {
+    } catch (err) {
       setReactions(previous);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('reaction.failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reaction.failed')), variant: 'danger' });
     } finally {
       isReactingRef.current = false;
     }
@@ -642,9 +642,9 @@ function FeedItemInner({
     try {
       const result = await toggleBookmark(item.type, item.id);
       setBookmarked(result.data.bookmarked);
-    } catch {
+    } catch (err) {
       setBookmarked(wasBookmarked);
-      showToast({ title: t('common:errors.alertTitle'), description: t('saveFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('saveFailed')), variant: 'danger' });
     }
   }, [bookmarked, item.id, item.type, showToast, t]);
 

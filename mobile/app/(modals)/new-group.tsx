@@ -19,6 +19,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
@@ -152,8 +153,8 @@ function NewGroupScreen() {
       }
 
       setSelectedImageUri(asset.uri);
-    } catch {
-      showToast({ title: t('create.imagePickFailedTitle'), description: t('create.imagePickFailedDescription'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('create.imagePickFailedTitle'), description: describeApiError(err, t('create.imagePickFailedDescription')), variant: 'danger' });
     }
   }
 
@@ -208,8 +209,8 @@ function NewGroupScreen() {
         if (selectedImageUri) {
           try {
             await uploadGroupImage(id, selectedImageUri);
-          } catch {
-            showToast({ title: t('create.imageUploadFailedTitle'), description: t('create.imageUploadFailedDescription'), variant: 'danger' });
+          } catch (err) {
+            showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
           }
         }
         successDestination = { pathname: '/(modals)/group-detail', params: { id: String(id) } };

@@ -43,6 +43,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type ApiGoal = Goal & {
@@ -389,8 +390,8 @@ function CreateGoalForm({
       setTitle('');
       setDescription('');
       setTargetValue('');
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('create.error'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('create.error')), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }
@@ -523,9 +524,9 @@ function GoalTemplatesPanel({
       const result = await createGoalFromTemplate(template.id);
       onCreated(result.data);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: t('templates.createError'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('templates.createError')), variant: 'danger' });
     } finally {
       setCreatingFromId(null);
     }
@@ -679,8 +680,8 @@ export default function GoalsScreen() {
     try {
       const result = await updateGoalStatus(id, status);
       setGoals((prev) => prev.map((goal) => (goal.id === id ? result.data as ApiGoal : goal)));
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('goals:updateError'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('goals:updateError')), variant: 'danger' });
     }
   }
 

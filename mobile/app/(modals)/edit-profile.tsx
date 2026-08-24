@@ -27,6 +27,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -137,9 +138,9 @@ function EditProfileScreenInner() {
       }
 
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
+    } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('uploadFailed'), description: t('uploadFailedMessage'), variant: 'danger' });
+      showToast({ title: t('uploadFailed'), description: describeApiError(err, t('uploadFailedMessage')), variant: 'danger' });
     } finally {
       setUploadingAvatar(false);
     }

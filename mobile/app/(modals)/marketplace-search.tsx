@@ -33,6 +33,7 @@ import {
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 const CONDITIONS: MarketplaceCondition[] = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS: (MarketplaceDeliveryMethod | '')[] = ['', 'pickup', 'shipping', 'both', 'community_delivery'];
@@ -178,9 +179,9 @@ function MarketplaceSearchScreen() {
     try {
       if (nextSaved) await saveMarketplaceListing(item.id);
       else await unsaveMarketplaceListing(item.id);
-    } catch {
+    } catch (err) {
       setItems((current) => current.map((listing) => listing.id === item.id ? item : listing));
-      showToast({ title: t('common:errors.alertTitle'), description: t('common.save_failed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
     }
   }
 
