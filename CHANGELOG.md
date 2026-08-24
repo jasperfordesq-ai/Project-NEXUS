@@ -95,6 +95,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Depositing credits into an organisation wallet can no longer move them
+  twice.** The deposit locked the rows it touched, which prevents over-spend but
+  not duplicate *intent*: a double-click or a network retry of an affordable
+  amount created two real movements, both looking entirely legitimate in the
+  audit trail. The personal wallet transfer and donate have carried an
+  idempotency key for months — the organisation deposit was the outlier, and the
+  accessible frontend's `data-prevent-double-click` was the only thing standing
+  in the way, which does nothing without JavaScript.
+  `VolOrgWalletService::depositFromUser()` now takes an optional idempotency key
+  and uses the same guard as `WalletService::transfer`: an explicit client key
+  over a 24-hour window, a 120-second content fingerprint as the fallback so an
+  accidental double-click is caught even from a client that sends no key, the
+  fingerprint bound to the content in **both** branches so a client that wrongly
+  reuses one key for a different amount still gets two deposits, a replay of the
+  original outcome rather than a second debit, the claim released when the
+  deposit was refused so a corrected retry is not blocked by our own guard, and
+  fail-open on any cache trouble. `VolunteerController::orgWalletDeposit`
+  accepts the key from an `Idempotency-Key` header or the body; `web-uk` renders
+  a fresh one per page and refuses to forward a stubby one. Proven by disabling
+  the guard and watching the duplicate tests go red.
+  🔴 One existing test was silently testing the guard rather than pagination:
+  `test_get_transactions_returns_paginated_items` made three *identical* keyless
+  deposits, which now correctly collapse to one, so its fixture uses distinct
+  amounts.
+  🔴 Recorded, not fixed: `lang/*/svc_notifications_2.json` is untranslated
+  English in all eleven locales. The one key added here is properly translated
+  rather than adding to that debt.
 - **The accessible site no longer says "Page not found" about members who are
   really there.** A member profile that the server declines to show has four
   quite different reasons, and every one of them landed on the same blank

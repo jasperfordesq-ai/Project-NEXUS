@@ -20,6 +20,7 @@
   "vol_org_wallet.amount_must_be_at_least_1": "Amount must be at least 1 hour",
   "vol_org_wallet.insufficient_personal_balance": "Insufficient personal balance",
   "vol_org_wallet.deposit_successful": "Deposit successful",
+  "vol_org_wallet.deposit_duplicate": "Deze storting wordt al verwerkt. Controleer je saldo voordat je het opnieuw probeert.",
   "vol_org_wallet.insufficient_organization_balance": "Insufficient organization balance",
   "vol_org_wallet.volunteer_not_found": "Volunteer not found",
   "vol_org_wallet.payment_successful": "Payment successful",

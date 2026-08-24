@@ -876,7 +876,15 @@ class VolunteerController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.volunteer.amount_gt_zero'), 'amount', 400);
         }
 
-        $result = VolOrgWalletService::depositFromUser($userId, (int) $id, $amount, $note ?: null);
+        // Anti-double-submit: forward a client Idempotency-Key (header or body)
+        // so a double-click or network retry collapses to ONE movement of
+        // credits. Same contract as the personal wallet transfer.
+        $idemKey = request()->header('Idempotency-Key');
+        if (!is_string($idemKey) || $idemKey === '') {
+            $idemKey = (string) $this->input('idempotency_key', '');
+        }
+
+        $result = VolOrgWalletService::depositFromUser($userId, (int) $id, $amount, $note ?: null, $idemKey !== '' ? $idemKey : null);
         if (!$result['success']) {
             return $this->respondWithError('VALIDATION_ERROR', $result['message'], null, 400);
         }

@@ -5,6 +5,7 @@
 
 const express = require('express');
 const fs = require('fs/promises');
+const { randomUUID } = require('crypto');
 const {
   ApiError,
   callVolunteeringApi,
@@ -2361,6 +2362,10 @@ router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
     summary,
     transactions,
     loadError,
+    // Fresh per render, like the wallet transfer and donate forms: a resubmit
+    // of the SAME page carries the same key, so the server collapses it to one
+    // movement of credits.
+    depositIdempotencyKey: randomUUID(),
     status: orgWalletStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -3292,6 +3297,14 @@ router.post('/organisations/:id(\\d+)/wallet/deposit', asyncRoute(async (req, re
     return redirectTo(res, orgWalletRedirect(id, 'deposit-amount-invalid'));
   }
 
+  // A stubby key is worse than none: it would collapse unrelated deposits.
+  // The form renders a fresh UUID per page, so a real submit always carries a
+  // long one — reject anything shorter rather than send it on.
+  const idempotencyKey = trimmed(req.body.idempotency_key, 191);
+  if (idempotencyKey.length < 8) {
+    return redirectTo(res, orgWalletRedirect(id, 'deposit-failed'));
+  }
+
   return runAction(
     req,
     res,
@@ -3299,7 +3312,8 @@ router.post('/organisations/:id(\\d+)/wallet/deposit', asyncRoute(async (req, re
     `/organisations/${id}/wallet/deposit`,
     {
       amount,
-      note: trimmed(req.body.note) || null
+      note: trimmed(req.body.note) || null,
+      idempotency_key: idempotencyKey
     },
     orgWalletRedirect(id, 'deposit-made'),
     orgWalletRedirect(id, 'deposit-failed')

@@ -72,6 +72,9 @@
   </div>
   <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/wallet/deposit') }}" class="govuk-!-margin-bottom-8">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {# Moves credits: the key lets the server collapse a double submit into one
+       deposit, which the double-click guard alone cannot do without JavaScript. #}
+    <input type="hidden" name="idempotency_key" value="{{ depositIdempotencyKey }}">
     <div class="govuk-form-group">
       <label class="govuk-label" for="amount">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_label") }}</label>
       <div id="amount-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_hint") }}</div>

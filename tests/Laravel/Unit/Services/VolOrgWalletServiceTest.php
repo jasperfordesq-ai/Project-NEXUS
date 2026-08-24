@@ -165,6 +165,104 @@ class VolOrgWalletServiceTest extends TestCase
         $this->assertEquals(0, DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->count());
     }
 
+    /**
+     * 🔴 The row locks prevent OVER-SPEND, not duplicate INTENT.
+     *
+     * A double-click or a network retry of an affordable deposit used to move the
+     * credits twice, and both movements looked entirely legitimate in the audit
+     * trail. The personal wallet transfer and donate have carried an idempotency
+     * key for months; the organisation deposit was the outlier.
+     */
+    public function test_duplicate_deposit_with_the_same_key_moves_credits_once(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 100]);
+        $orgId = $this->makeOrg(2, 50.00);
+        $this->pinTenant();
+
+        $key = 'idem-' . bin2hex(random_bytes(8));
+        $first = VolOrgWalletService::depositFromUser($user->id, $orgId, 25.0, null, $key);
+        $second = VolOrgWalletService::depositFromUser($user->id, $orgId, 25.0, null, $key);
+
+        $this->assertTrue($first['success'], $first['message'] ?? '');
+        // The replay reports the SAME outcome — the member is not told their
+        // second click failed, because their money did move exactly once.
+        $this->assertTrue($second['success'], $second['message'] ?? '');
+        $this->assertEquals($first['new_balance'], $second['new_balance']);
+
+        // The credits moved once, and the audit trail records one deposit.
+        $this->assertEquals(75, (int) DB::table('users')->where('id', $user->id)->value('balance'));
+        $this->assertEquals(75.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
+        $this->assertEquals(
+            1,
+            DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->where('type', 'deposit')->count()
+        );
+    }
+
+    /**
+     * Without any key, an accidental double-click is still caught by the 120s
+     * content fingerprint — the same fallback WalletService::transfer uses.
+     */
+    public function test_accidental_double_submit_without_a_key_moves_credits_once(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 100]);
+        $orgId = $this->makeOrg(2, 50.00);
+        $this->pinTenant();
+
+        VolOrgWalletService::depositFromUser($user->id, $orgId, 10.0);
+        VolOrgWalletService::depositFromUser($user->id, $orgId, 10.0);
+
+        $this->assertEquals(90, (int) DB::table('users')->where('id', $user->id)->value('balance'));
+        $this->assertEquals(
+            1,
+            DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->where('type', 'deposit')->count()
+        );
+    }
+
+    /**
+     * The guard must never collapse two genuinely different deposits. A client
+     * that wrongly reuses one key for a different amount still gets both — the
+     * fingerprint binds the content, not just the key.
+     */
+    public function test_same_key_with_a_different_amount_is_a_separate_deposit(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 100]);
+        $orgId = $this->makeOrg(2, 50.00);
+        $this->pinTenant();
+
+        $key = 'idem-' . bin2hex(random_bytes(8));
+        $first = VolOrgWalletService::depositFromUser($user->id, $orgId, 5.0, null, $key);
+        $second = VolOrgWalletService::depositFromUser($user->id, $orgId, 7.0, null, $key);
+
+        $this->assertTrue($first['success'], $first['message'] ?? '');
+        $this->assertTrue($second['success'], $second['message'] ?? '');
+        $this->assertEquals(88, (int) DB::table('users')->where('id', $user->id)->value('balance'));
+        $this->assertEquals(
+            2,
+            DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->where('type', 'deposit')->count()
+        );
+    }
+
+    /**
+     * A REFUSED deposit must not leave its claim behind: the member fixes the
+     * problem and retries with the same key from the same page, and that retry
+     * has to be allowed through.
+     */
+    public function test_a_refused_deposit_does_not_block_a_corrected_retry(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 5]);
+        $orgId = $this->makeOrg(2, 50.00);
+        $this->pinTenant();
+
+        $key = 'idem-' . bin2hex(random_bytes(8));
+        $refused = VolOrgWalletService::depositFromUser($user->id, $orgId, 25.0, null, $key);
+        $this->assertFalse($refused['success']);
+
+        // Same key, an amount they can now afford.
+        $retry = VolOrgWalletService::depositFromUser($user->id, $orgId, 5.0, null, $key);
+        $this->assertTrue($retry['success'], $retry['message'] ?? '');
+        $this->assertEquals(0, (int) DB::table('users')->where('id', $user->id)->value('balance'));
+    }
+
     public function test_pay_volunteer_debits_org_credits_volunteer_and_writes_audit(): void
     {
         $admin = User::factory()->forTenant(2)->create();
@@ -310,8 +408,12 @@ class VolOrgWalletServiceTest extends TestCase
         $orgId = $this->makeOrg(2, 0, $user->id);
         $this->pinTenant();
 
-        for ($i = 0; $i < 3; $i++) {
-            $dep = VolOrgWalletService::depositFromUser($user->id, $orgId, 10);
+        // 🔴 Distinct amounts on purpose. Three IDENTICAL keyless deposits are
+        // exactly what the anti-double-submit fingerprint collapses into one, so
+        // the old fixture (3 × 10 credits) now produces a single transaction and
+        // was silently testing the guard rather than pagination.
+        foreach ([10, 11, 12] as $amount) {
+            $dep = VolOrgWalletService::depositFromUser($user->id, $orgId, $amount);
             $this->assertTrue($dep['success'], $dep['message'] ?? '');
         }
 

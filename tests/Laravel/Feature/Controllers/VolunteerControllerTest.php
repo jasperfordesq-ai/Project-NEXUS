@@ -832,6 +832,53 @@ public function test_apply_requires_auth(): void
             ->where('vol_organization_id', $orgId)->where('type', 'deposit')->count());
     }
 
+    /**
+     * The endpoint must honour a client Idempotency-Key so a double-click or a
+     * network retry moves the credits once. Accepted from the header AND the
+     * body, matching the personal wallet transfer's contract — web-uk posts it
+     * as a form field because a hidden input is all a no-JavaScript page has.
+     */
+    public function test_org_wallet_deposit_honours_an_idempotency_key_from_header_or_body(): void
+    {
+        $this->enableVolunteeringFeature();
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 20,
+        ]);
+        Sanctum::actingAs($owner, ['*']);
+        $orgId = $this->createVolunteerOrganisation($owner->id, 0.00, false);
+
+        $bodyKey = 'body-' . bin2hex(random_bytes(8));
+        $this->apiPost("/v2/volunteering/organisations/{$orgId}/wallet/deposit", [
+            'amount' => 4,
+            'idempotency_key' => $bodyKey,
+        ])->assertStatus(200);
+        $this->apiPost("/v2/volunteering/organisations/{$orgId}/wallet/deposit", [
+            'amount' => 4,
+            'idempotency_key' => $bodyKey,
+        ])->assertStatus(200);
+
+        // One movement, one audit row — not two.
+        $this->assertEquals(4.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
+        $this->assertEquals(16, (int) DB::table('users')->where('id', $owner->id)->value('balance'));
+        $this->assertSame(1, DB::table('vol_org_transactions')
+            ->where('vol_organization_id', $orgId)->where('type', 'deposit')->count());
+
+        // The header form of the same contract, with a distinct amount so the
+        // content fingerprint cannot be what dedups it.
+        $headerKey = 'header-' . bin2hex(random_bytes(8));
+        $this->withHeaders(['Idempotency-Key' => $headerKey])
+            ->apiPost("/v2/volunteering/organisations/{$orgId}/wallet/deposit", ['amount' => 5])
+            ->assertStatus(200);
+        $this->withHeaders(['Idempotency-Key' => $headerKey])
+            ->apiPost("/v2/volunteering/organisations/{$orgId}/wallet/deposit", ['amount' => 5])
+            ->assertStatus(200);
+
+        $this->assertEquals(9.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
+        $this->assertEquals(11, (int) DB::table('users')->where('id', $owner->id)->value('balance'));
+        $this->assertSame(2, DB::table('vol_org_transactions')
+            ->where('vol_organization_id', $orgId)->where('type', 'deposit')->count());
+    }
+
     public function test_org_wallet_deposit_forbidden_for_non_manager(): void
     {
         $this->enableVolunteeringFeature();

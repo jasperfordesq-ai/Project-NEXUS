@@ -10,6 +10,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -169,7 +170,7 @@ class VolOrgWalletService
      *
      * @return array{success: bool, message: string, new_balance?: float}
      */
-    public static function depositFromUser(int $userId, int $volOrgId, float $amount, ?string $note = null): array
+    public static function depositFromUser(int $userId, int $volOrgId, float $amount, ?string $note = null, ?string $idempotencyKey = null): array
     {
         if ($amount <= 0) {
             return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.amount_must_be_greater_than_zero')];
@@ -185,6 +186,56 @@ class VolOrgWalletService
         }
 
         $tenantId = TenantContext::getId();
+
+        // ── Idempotency / anti-double-submit guard ──
+        // Same pattern and reasoning as WalletService::transfer. The row locks
+        // below prevent OVER-SPEND, not duplicate INTENT: a double-click or a
+        // network retry of an affordable amount would otherwise move the credits
+        // twice, both movements looking entirely legitimate in the audit trail.
+        // Prefer an explicit client key (24h window); otherwise fall back to a
+        // 120s content fingerprint so an accidental double-click is caught even
+        // from a client that sends no key. The fingerprint binds the CONTENT in
+        // both branches, so a client that wrongly reuses one key for two
+        // genuinely different deposits still gets two deposits rather than a
+        // silent replay. Fail OPEN on any cache hiccup — never block a real
+        // deposit because the cache is unavailable.
+        $explicitKey = trim((string) ($idempotencyKey ?? ''));
+        $hasExplicitKey = $explicitKey !== '';
+        $content = $volOrgId . '|' . (int) $amount . '|' . (string) $note;
+        $fingerprint = $hasExplicitKey
+            ? sha1('key:' . $explicitKey . '|' . $content)
+            : sha1('content:' . $content);
+        $idemCacheKey = "volorgdeposit:idem:{$tenantId}:{$userId}:{$fingerprint}";
+        $idemTtl = $hasExplicitKey ? 86400 : 120;
+
+        $claimed = true;
+        try {
+            $claimed = Cache::add($idemCacheKey, ['status' => 'pending'], $idemTtl);
+        } catch (\Throwable $cacheEx) {
+            $claimed = true;       // cache unavailable → do not block the deposit
+            $idemCacheKey = null;  // and do not try to store or forget later
+        }
+        if (! $claimed) {
+            // Duplicate inside the window. If the original already committed,
+            // replay its OUTCOME so the member sees the same confirmation and
+            // balance rather than a second movement; if it is still in flight,
+            // refuse rather than risk a double debit.
+            $prior = null;
+            try {
+                $prior = Cache::get($idemCacheKey);
+            } catch (\Throwable $e) {
+                $prior = null;
+            }
+            if (is_array($prior) && array_key_exists('new_balance', $prior)) {
+                return [
+                    'success' => true,
+                    'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'),
+                    'new_balance' => $prior['new_balance'],
+                ];
+            }
+
+            return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_duplicate')];
+        }
 
         $result = DB::transaction(function () use ($userId, $volOrgId, $amount, $note, $tenantId) {
             // Lock user row to prevent concurrent balance changes
@@ -246,6 +297,22 @@ class VolOrgWalletService
 
             return ['success' => true, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'), 'new_balance' => $newBalance, '_deposit_user_id' => $userId, '_org_name' => $org->name, '_amount' => $intAmount];
         });
+
+        // Record the outcome so a duplicate replays it, or release the claim so a
+        // genuine retry after a REFUSED deposit (wrong org, too little balance)
+        // is not blocked by our own guard for the rest of the window.
+        if ($idemCacheKey !== null) {
+            try {
+                if (!empty($result['success'])) {
+                    Cache::put($idemCacheKey, ['new_balance' => $result['new_balance'] ?? null], $idemTtl);
+                } else {
+                    Cache::forget($idemCacheKey);
+                }
+            } catch (\Throwable $e) {
+                // Losing the record only weakens dedup; it must never fail the
+                // deposit that already committed.
+            }
+        }
 
         // Send deposit confirmation email (outside transaction)
         if (!empty($result['success'])) {

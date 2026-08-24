@@ -38077,6 +38077,9 @@ describe('shared accessible frontend shell', () => {
     expect(walletResponse.text).not.toContain('Auto-pay is on');
     expect(walletResponse.text).not.toContain('/wallet/auto-pay');
     expect(walletResponse.text).toContain('method="post" action="/volunteering/organisations/42/wallet/deposit"');
+    // A fresh key per render, like the wallet transfer and donate forms: a
+    // resubmit of the same page collapses to one deposit server-side.
+    expect(walletResponse.text).toMatch(/name="idempotency_key" value="[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"/i);
     expect(walletResponse.text).toContain('Deposit');
     expect(walletResponse.text).toContain('Initial float');
     expect(walletResponse.text).not.toContain('shared accessible frontend preparation page');
@@ -38513,12 +38516,26 @@ describe('shared accessible frontend shell', () => {
       .post('/volunteering/organisations/42/wallet/deposit')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], amount: '5', note: ' Float ' });
+      .send({ _csrf: csrfMatch[1], amount: '5', note: ' Float ', idempotency_key: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' });
     expect(depositResponse.headers.location).toBe('/volunteering/organisations/42/wallet?status=deposit-made');
+    // The key is forwarded so the server can collapse a double submit into one
+    // movement of credits — a value-moving action must not rely on the browser.
     expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'POST', '/organisations/42/wallet/deposit', {
       amount: 5,
-      note: 'Float'
+      note: 'Float',
+      idempotency_key: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
     });
+
+    // A stubby key is refused rather than forwarded: it would collapse two
+    // unrelated deposits into one.
+    api.callVolunteeringApi.mockClear();
+    const stubbyKey = await agent
+      .post('/volunteering/organisations/42/wallet/deposit')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], amount: '5', idempotency_key: 'abc' });
+    expect(stubbyKey.headers.location).toBe('/volunteering/organisations/42/wallet?status=deposit-failed');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalled();
 
     const autoPayResponse = await agent
       .post('/volunteering/organisations/42/wallet/auto-pay')
