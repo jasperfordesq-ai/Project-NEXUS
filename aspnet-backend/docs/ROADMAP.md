@@ -22,12 +22,12 @@ in the same run, and each was checked again after a reload, so the change really
 was saved. That is what moved the score from 310 to 324. The number never goes
 down.
 
-🔴 **One honest caveat.** The build has proved **310** at pushed SHA
-`d0c34906a`. The new 324 was published from the work list at pushed SHA
-`3d5928730`, and the checks on that push were still running when this was
-written. So 324 is the correct number from the evidence already recorded, but it
-has not yet been confirmed by a green build. The safety floor stays at 310 until
-it is.
+The build has now proved **324** at pushed SHA `32bd2f94d`, with every check
+green, so the safety floor has been raised from 310 to 324. It took two pushes:
+324 was published first while the checks were still running, and that first push
+came back red on the check that compares the published score with the work list.
+Holding the floor until a build is actually green is what that rule is for, and
+it did its job.
 
 ## What this is, and why we are building it
 

@@ -1,13 +1,13 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-24 (four Tier 1 listing/event rows banked at pushed `3d5928730`; CI in flight, floor held at 310)
+Last verified: 2026-08-24 (four Tier 1 listing/event rows banked; 324 proved green at pushed `32bd2f94d`, floor raised to 324)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
 <!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=324/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
-<!-- doc-consistency: ASPNET_BANKED_FLOOR=310 -->
+<!-- doc-consistency: ASPNET_BANKED_FLOOR=324 -->
 
 🔴 **READ THIS BEFORE THE NUMBER. The denominator is now FROZEN and the score is
 RATCHETED - it can never be published lower again.** Today the owner decided the
@@ -129,7 +129,7 @@ made 4.27 and 4.28 uncertifiable were closed in the same batch. All nine write
 journeys then passed on BOTH arms in one run, twice, with the instrument's
 known-defect and known-fixture-gap lists EMPTY — nothing excused.
 
-🔴 **The floor is 310, raised on evidence rather than on the publication.** It
+🔴 **The floor is 324, raised on evidence rather than on the publication.** It
 went to 290 first — the number CI had proved at that moment — and to 309 only
 after `3b676457c` came back green with every ASP.NET job actually RUN, not
 skipped: the build, the messaging tests and all six API shards (Web UK and React
@@ -150,10 +150,18 @@ CERTIFIED). Weighted credit rose 13.7 → 17.1 of 42 rows (0.3262 → 0.4071); n
 was demoted and no denominator moved. Those four commits landed the ledger rows
 without rebanking the category, and each row said banking awaited the next
 batched push — so this republication is that step, not new evidence. Published
-implementation SHA: `3d5928730`. 🔴 **The floor is deliberately NOT raised here:
-the required workflows on `3d5928730` were still running when this was written,
-so nothing on this tip has been proved green yet.** Raise `ASPNET_BANKED_FLOOR`
-to 324 only after that push is green, per the two-step rule above.
+implementation SHA: `3d5928730`.
+
+🔴 **Floor raised 310 → 324 later the same day, on the second step, not on the
+publication.** The 324 was published first with the floor held, because the
+workflows on `3d5928730` were still running; that push then came back with the
+score check itself RED, which is exactly what holding the floor protects against.
+The corrected tip `32bd2f94d` is green with the ASP.NET jobs actually RUN, not
+skipped: build, image builds, messaging tests and all six API shards, plus CI
+Pipeline, E2E, Security Scan and the Docs Lint step that recomputes this very
+table. The Web UK and React jobs skipped correctly, nothing in either having
+changed; they had already run and passed every other check at `3d5928730`. Floor
+evidence SHA: `32bd2f94d`.
 
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
