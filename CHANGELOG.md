@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The wallet no longer offers a "Pending" filter that can never show anything.**
+  In a community that isn't connected to another platform, nothing ever puts credits
+  into a pending state — so tapping Pending always answered "No matching
+  transactions". It now appears only when there really is something pending. The
+  summary still says "No pending credits", so nothing is hidden; the difference is
+  that a member is no longer invited to tap a control that leads nowhere.
+
 - **Volunteers can now ask to swap a shift — which was impossible anywhere on the
   platform until today.** Answering a swap request worked; asking for one did not
   exist, on the app or the website, and the website's own help text pointed at a

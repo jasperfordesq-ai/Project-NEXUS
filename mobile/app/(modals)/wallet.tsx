@@ -47,6 +47,27 @@ type DonationTarget = 'community_fund' | 'user';
 
 const filters: TransactionFilter[] = ['all', 'earned', 'spent', 'pending'];
 
+/**
+ * 🔴 Pending is offered only when something is actually pending.
+ *
+ * Measured on 2026-08-24: in a community without external federation switched on, **nothing
+ * ever writes a pending credit**. `WalletService` settles both of its insert paths as
+ * `completed`; the only producer of `transactions.status = 'pending'` is
+ * `FederationController`, which is off by default and has never had a partner connected.
+ * `EventCreditService` does write `pending`, but to its own claims table and only for the
+ * moment between claiming and settling — a member never sees it.
+ *
+ * So for practically every member this tab could only ever answer "No matching
+ * transactions": a control that exists, looks live, and leads nowhere. It now appears when
+ * there is a pending amount to look at — which is exactly when a federated community has
+ * one — and stays out of the way otherwise. The balance card still says "No pending
+ * credits", so the absence is stated rather than merely implied.
+ */
+function visibleFilters(pendingIn: number, pendingOut: number): TransactionFilter[] {
+  const hasPending = pendingIn > 0 || pendingOut > 0;
+  return hasPending ? filters : filters.filter((item) => item !== 'pending');
+}
+
 function formatDate(iso?: string | null): string {
   if (!iso) return '';
   const date = new Date(iso);
@@ -318,8 +339,8 @@ function WalletModalInner() {
                 </View>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                  {filters.map((item) => (
-                    <FilterChip key={item} label={t(`filter.${item}`)} selected={filter === item} onPress={() => setFilter(item)} tone={primary} />
+                  {visibleFilters(stats.pendingIn, stats.pendingOut).map((item) => (
+                    <FilterChip key={item} label={t(`filter.${item}`)} selected={filter === item} onPress={() => setFilter(item)} tone={primary} testID={`wallet-filter-${item}`} />
                   ))}
                 </ScrollView>
 
@@ -756,9 +777,9 @@ function MiniMetric({ label, value, tone, theme }: { label: string; value: strin
   );
 }
 
-function FilterChip({ label, selected, onPress, tone }: { label: string; selected: boolean; onPress: () => void; tone: string }) {
+function FilterChip({ label, selected, onPress, tone, testID }: { label: string; selected: boolean; onPress: () => void; tone: string; testID?: string }) {
   return (
-    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} onPress={onPress} style={selected ? { backgroundColor: tone } : undefined}>
+    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} onPress={onPress} style={selected ? { backgroundColor: tone } : undefined} testID={testID}>
       <HeroButton.Label>{label}</HeroButton.Label>
     </HeroButton>
   );

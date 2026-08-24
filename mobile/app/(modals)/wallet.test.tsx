@@ -492,6 +492,29 @@ describe('WalletModal', () => {
     });
   }
 
+  /**
+   * 🔴 In a community without external federation, NOTHING ever writes a pending credit —
+   * measured 2026-08-24: `WalletService` settles both insert paths as `completed`, and the
+   * only producer of `transactions.status = 'pending'` is `FederationController`, which is
+   * off by default and has never had a partner connected. So for practically every member
+   * the Pending filter could only ever answer "No matching transactions": a control that
+   * looks live and leads nowhere. It is offered when there is something pending, and not
+   * otherwise — the balance card still says "No pending credits", so the absence is stated.
+   */
+  it('offers the Pending filter only when something is pending', () => {
+    walletWithPending(0, 0);
+    const none = render(<WalletModal />);
+    expect(none.queryByTestId('wallet-filter-pending')).toBeNull();
+    // The other filters are untouched, and the stat tile still states the zero.
+    expect(none.queryByTestId('wallet-filter-all')).toBeTruthy();
+    expect(none.getByText('No pending credits')).toBeTruthy();
+    none.unmount();
+
+    walletWithPending(0, 4);
+    const some = render(<WalletModal />);
+    expect(some.queryByTestId('wallet-filter-pending')).toBeTruthy();
+  });
+
   it('never adds pending in and pending out together', () => {
     walletWithPending(7, 4);
 
