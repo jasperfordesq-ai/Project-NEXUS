@@ -787,7 +787,15 @@ class FeedServiceTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_getItem_truncates_long_content(): void
+    /**
+     * 🔴 This test asserted the OPPOSITE until 2026-08-24: that getItem() truncates at
+     * 500 characters. That was the defect, not the contract. getItem() is a DETAIL
+     * lookup - every caller shows one item on its own screen - so a member reported
+     * that the full text of any post over 500 characters was unreachable, and the
+     * "Read more" control opened a screen with no more to show. getItem() now defaults
+     * $fullContent to TRUE. Do not "fix" this test by restoring the old assertion.
+     */
+    public function test_getItem_returns_full_content_by_default(): void
     {
         $service = new FeedService(new FeedActivity(), new FeedPost());
 
@@ -810,6 +818,40 @@ class FeedServiceTest extends TestCase
         DB::shouldReceive('selectOne')->once()->andReturn(null);
 
         $result = $service->getItem('post', 100, 10);
+
+        $this->assertFalse($result['content_truncated']);
+        $this->assertSame(600, mb_strlen($result['content']));
+        $this->assertSame($longContent, $result['content']);
+    }
+
+    /**
+     * The other half. Truncation is still reachable on request, so that fixing the
+     * detail view cannot silently remove the list's 500-character preview - twenty
+     * items a page, where the payload does matter.
+     */
+    public function test_getItem_truncates_when_full_content_is_disabled(): void
+    {
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+
+        $longContent = str_repeat('A', 600);
+        $postRow = (object) [
+            'id' => 100,
+            'content' => $longContent,
+            'image_url' => null,
+            'created_at' => '2026-03-01 12:00:00',
+            'likes_count' => 0,
+            'user_id' => 10,
+            'type' => 'post',
+            'author_name' => 'Test User',
+            'author_avatar' => null,
+            'comments_count' => 0,
+        ];
+
+        $this->stubFeedItemTablesPermissive();
+        DB::shouldReceive('select')->once()->andReturn([$postRow]);
+        DB::shouldReceive('selectOne')->once()->andReturn(null);
+
+        $result = $service->getItem('post', 100, 10, false);
 
         $this->assertTrue($result['content_truncated']);
         $this->assertSame(503, mb_strlen($result['content']));
