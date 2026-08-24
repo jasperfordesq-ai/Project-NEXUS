@@ -52,7 +52,8 @@ export default function MemberCard({ member }: MemberCardProps) {
               className="rounded-full p-1"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderColor: withAlpha(primary, 0.18), borderWidth: 1 }}
             >
-              <Avatar uri={member.avatar ?? member.avatar_url ?? null} name={displayName} size={56} />
+              {/* Decorative: the card is already labelled with this member's name. */}
+              <Avatar uri={member.avatar ?? member.avatar_url ?? null} name={displayName} size={56} decorative />
             </View>
             <View className="min-w-0 flex-1 gap-2">
               <View className="flex-row items-start justify-between gap-2">

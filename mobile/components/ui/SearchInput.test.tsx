@@ -77,7 +77,14 @@ describe('SearchInput', () => {
       />,
     );
 
-    expect(getByTestId('search-icon')).toBeTruthy();
+    /*
+      🔴 The magnifier is OUR icon now, not `SearchField.SearchIcon`. The library's version
+      hardcodes `accessibilityLabel: "Search icon"` on its SVG and ignores accessibility
+      props, so it announced itself as a stop on every search field — measured with TalkBack
+      on 2026-08-24. `components/ui/Icon.tsx` hides icons from the accessibility tree, so
+      the assertion is that the decorative wrapper is there and the library's is not.
+    */
+    expect(getByTestId('search-icon-decorative')).toBeTruthy();
 
     fireEvent.changeText(getByPlaceholderText('Search listings'), 'garden tools');
     expect(onChangeText).toHaveBeenCalledWith('garden tools');

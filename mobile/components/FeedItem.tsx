@@ -706,13 +706,32 @@ function FeedItemInner({
     }
   }, [isReporting, item.id, moderationTargetType, reportReason, showToast, t]);
 
-  const cardLabel = `${authorName}. ${item.title ?? ''}${item.content ? '. ' + item.content.slice(0, 100) : ''}`;
+  /*
+    🔴 There is deliberately no `accessibilityLabel` on the card wrapper any more.
+
+    It used to be `accessible` with a composed summary — author, title, first 100 characters
+    — and that made every post announce TWICE. Measured with TalkBack running on
+    emulator-5554 on 2026-08-24, reading the live accessibility tree:
+
+      [View]      "E2E UserA. Leaking tap in the kitchen - urgent. Need help with plumbing…"
+      [ViewGroup] "E2E UserA, E2E UserA, 2h ago, Leaking tap in the kitchen - urgent, Need
+                   help with plumbing…, Cork, Ireland"        <- nested inside the above
+
+    Android does not collapse a container that holds focusable children: the buttons stay
+    separate stops, so the summary was an EXTRA stop rather than a replacement, and the
+    inner group re-read the whole post. Worse, the truncation meant the first reading cut
+    off mid-sentence at 100 characters.
+
+    Without it the card reads as its parts — who and when, then the title and body in full,
+    then each action — which is one clear pass instead of one truncated pass followed by a
+    full one.
+  */
 
   // Hidden or muted: the card goes at once. See `dismissed` above for why.
   if (dismissed) return null;
 
   return (
-    <View className="mx-4 my-2" accessible accessibilityLabel={cardLabel} accessibilityRole="summary">
+    <View className="mx-4 my-2">
       <HeroCard variant="default" className="overflow-hidden">
         <View
           className="h-1 w-full"
@@ -727,7 +746,12 @@ function FeedItemInner({
         />
         <Pressable onPress={handleDoubleTap}>
           <HeroCard.Header className="flex-row items-center gap-3 px-4 pb-2 pt-4">
-            <Avatar uri={author.avatar} name={authorName} size={40} />
+            {/*
+              Decorative here: the name is the very next thing read, so a labelled avatar
+              made TalkBack say it twice — "E2E UserA, E2E UserA" — with heroui's own
+              "Avatar" description as a third stop after it.
+            */}
+            <Avatar uri={author.avatar} name={authorName} size={40} decorative />
             <View className="min-w-0 flex-1">
               <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
                 {authorName}

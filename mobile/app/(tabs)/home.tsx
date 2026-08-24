@@ -426,7 +426,17 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 28 }}
       />
 
-      <FAB icon="add" onPress={() => router.push('/(modals)/new-exchange')} position="bottom-right" />
+      {/*
+        🔴 An explicit name, because the default is "Action button" — measured with TalkBack
+        on 2026-08-24, where the only floating button on the home screen announced itself as
+        "Action button" and told a blind member nothing about what it does.
+      */}
+      <FAB
+        icon="add"
+        onPress={() => router.push('/(modals)/new-exchange')}
+        position="bottom-right"
+        accessibilityLabel={t('home:composer.exchange')}
+      />
       <ReactorsSheet
         visible={Boolean(reactorsTarget)}
         targetType={reactorsTarget?.targetType ?? 'post'}

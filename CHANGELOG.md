@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Five things the app was saying to blind members that it shouldn't have been.**
+  Found by turning on Android's screen reader and reading back everything the app
+  announces, then comparing it with what a person would expect to hear. None of it
+  was visible in a screenshot.
+  Every post in the feed was read out **twice** — once as a summary that stopped
+  mid-sentence after 100 characters, then again in full — and the author's name was
+  said twice inside the second reading. Every profile picture in the app announced
+  itself as "Avatar", and in the member directory each row also read out a lone
+  letter (the initial shown when someone has no photo). The round button on the home
+  screen announced itself as "Action button", which says nothing about what it does;
+  it now says "New exchange". And every search box announced its magnifying glass as
+  "Search icon".
+  All fixed and checked on a device. The home screen went from 25 spoken stops to 22
+  clear ones; a member row now reads "View E2E's profile, Not ID verified, 5 given,
+  8 total" instead of six stops including a stray letter. Nothing looks any
+  different.
+
 - **ASP.NET listing edits and deletes now follow the production Laravel journey.**
   The React edit form's listing type, category, coordinates, estimated hours,
   available-hours cap and delivery mode are persisted and returned after a
