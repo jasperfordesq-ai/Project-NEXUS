@@ -2227,6 +2227,7 @@ return [
         ],
         'states' => [
             'group-joined' => 'グループに参加しました。',
+            'group-requested' => '参加リクエストを送信しました。管理者が確認します。',
             'group-left' => 'グループから退出しました。',
             'group-failed' => 'メンバーシップを更新できませんでした。もう一度お試しください。',
             'group-created' => 'グループが作成されました。',
@@ -2254,6 +2255,7 @@ return [
         'events_description' => 'このグループが主催する今後のイベント。',
         'events_empty' => 'このグループには今後のイベントはありません。',
         'events_members_only' => 'イベントを見るにはこのグループに参加してください。',
+        'discussions_members_only' => 'ディスカッションを見るにはこのグループに参加してください。',
         'event_starts' => '開始',
         'event_location' => '場所',
         'event_online' => 'オンライン',

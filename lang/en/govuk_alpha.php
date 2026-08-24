@@ -2253,6 +2253,7 @@ return [
         ],
         'states' => [
             'group-joined' => 'You have joined the group.',
+            'group-requested' => 'Your request to join has been sent. An admin will review it.',
             'group-left' => 'You have left the group.',
             'group-failed' => 'We could not update your membership. Please try again.',
             'group-created' => 'Your group has been created.',
@@ -2280,6 +2281,7 @@ return [
         'events_description' => 'Upcoming events organised by this group.',
         'events_empty' => 'This group has no upcoming events.',
         'events_members_only' => 'Join this group to see its events.',
+        'discussions_members_only' => 'Join this group to see its discussions.',
         'event_starts' => 'Starts',
         'event_location' => 'Location',
         'event_online' => 'Online',

@@ -29,6 +29,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Saving a listing showed up on one page and nowhere else.** Pressing Save
+  changed the button to "Unsave", but the listing list you came from still showed
+  no "Saved" label. Two different features were sharing the word "Saved": the
+  button records a favourite, while the list was checking a separate
+  "saved items" store that the button never writes to. The list now reads the
+  same thing the button writes, so the two agree. Checked by saving and
+  un-saving and watching both pages follow along.
+
+- **People who had never asked to join a group were told an admin was reviewing
+  their request.** Opening a group's discussions as a non-member showed "Your
+  request to join is waiting for an admin to approve it" — which could easily
+  stop someone from joining at all, since they would assume they already had. It
+  now says "Join this group to see its discussions", and a genuinely pending
+  request still gets the pending message. New wording in all eleven languages.
+
+- **Asking to join a group that needs approval said "You have joined the
+  group".** The same page then said the request was waiting for an admin, so one
+  screen said both. The server is explicit that the request is pending; that
+  answer was being thrown away. It now says the request has been sent, and open
+  groups still say you have joined.
+
+### Notes
+
+- **Volunteering could not be walked.** The test community has no volunteering
+  opportunities, so there was nothing to open or apply for. The listing page,
+  its search and its empty states are correct, but applying, shifts and hours
+  remain unchecked. Recorded so this is not mistaken for a clean result.
+
+- **Member profiles were walked and are correct.** Search with a working empty
+  state; connect (which correctly becomes "Request sent" and offers to cancel);
+  reviews (empty refused, real review appears); sending credits from the profile
+  (a bad amount refused, one credit moved exactly one); and blocking, which
+  hides the profile and is reversible from the blocked-members list.
+
 - **872 phrases in the mobile app now really are in the reader's language, and the
   rest can no longer be missed.** The app has always had every phrase present in
   every language, which is why every existing check said the translations were

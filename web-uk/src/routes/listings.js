@@ -14,7 +14,6 @@ const {
   updateListing,
   deleteListing,
   getListingCategories,
-  getBookmarks,
   setListingSkillTags,
   uploadListingImage,
   callListingApi,
@@ -1284,10 +1283,19 @@ router.get('/', asyncRoute(async (req, res) => {
     params.radius_km = Number(near);
   }
 
-  const [listingResult, categoriesResult, bookmarksResult] = await Promise.all([
+  // 🔴 This page used to read BOOKMARKS to decide which listings show a "Saved"
+  // tag, while the listing's own Save button writes a FAVOURITE
+  // (POST /v2/listings/{id}/save -> user_saved_listings, gated by
+  // listing.enable_favourites). They are two different features that share one
+  // word in the interface, so pressing Save on a listing changed nothing on the
+  // list the member came from — and the "Saved items" page, which genuinely is
+  // bookmark-based, stayed empty too. The list payload already reports
+  // `is_favorited` per row, which is exactly what the detail page and the React
+  // app use; read that instead. Bookmarks are still the right store for the
+  // /saved page — web-uk simply has no control that creates one for a listing.
+  const [listingResult, categoriesResult] = await Promise.all([
     getListings(token, params).then(result => ({ result, error: false })).catch(() => ({ result: { data: [], meta: {} }, error: true })),
-    getListingCategories(token).catch(() => ({ data: [] })),
-    token ? getBookmarks(token, { type: 'listing', page: 1, per_page: 50 }).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
+    getListingCategories(token).catch(() => ({ data: [] }))
   ]);
   const result = listingResult.result;
   const listings = collectionFrom(result).map(listing => ({
@@ -1300,10 +1308,10 @@ router.get('/', asyncRoute(async (req, res) => {
   const categories = collectionFrom(categoriesResult)
     .map(category => ({ id: positiveInteger(category && category.id), name: trimmed(category && category.name) }))
     .filter(category => category.id && category.name);
-  const savedListingIds = new Set(collectionFrom(bookmarksResult)
-    .map(bookmark => positiveInteger(bookmark && (bookmark.bookmarkable_id ?? bookmark.bookmarkableId ?? bookmark.item_id ?? bookmark.itemId)))
-    .filter(Boolean));
-  for (const listing of listings) listing.isSaved = savedListingIds.has(positiveInteger(listing.id));
+  // Same source as the detail page's own button state, so the two agree.
+  for (const listing of listings) {
+    listing.isSaved = listing.is_favorited === true || listing.isFavorited === true;
+  }
   const meta = result?.meta || {};
   const pagination = {
     hasMore: Boolean(meta.has_more),

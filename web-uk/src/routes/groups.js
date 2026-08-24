@@ -1364,11 +1364,20 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
     .map(normalizeDiscussion)
     .filter((discussion) => discussion.id !== null);
 
+  // 🔴 "Not a member" and "waiting for approval" are different things, and this
+  // page used to show the pending-approval message to anyone who was not a
+  // member. Somebody who had never asked to join was told their request was
+  // waiting for an admin — which could stop them joining at all. `detail.njk`
+  // already guards that message with exactly this state.
+  const myMembership = group.myMembership || group.my_membership;
+  const isPending = trimmed(myMembership?.status || myMembership?.state) === 'pending';
+
   return res.render('groups/discussions', {
     title: (res.locals.t ? res.locals.t('govuk_alpha.groups.discussions.title') : 'Discussions'),
     activeNav: 'explore',
     group,
     isMember,
+    isPending,
     discussions,
     ...discussionStatus(req.query.status, res.locals.t)
   });
@@ -1651,8 +1660,9 @@ router.post('/:id(\\d+)/delete', requireAuth, audit.groupDelete(), asyncRoute(as
 router.post('/:id(\\d+)/join', requireAuth, audit.groupJoin(), asyncRoute(async (req, res) => {
   const { id } = req.params;
 
+  let joinResult;
   try {
-    await joinGroup(req.token, id);
+    joinResult = await joinGroup(req.token, id);
   } catch (error) {
     if (error instanceof ApiError && error.status !== 401) {
       return res.redirect(groupRedirect(res, id, groupMembershipFailureStatus(error)));
@@ -1660,7 +1670,16 @@ router.post('/:id(\\d+)/join', requireAuth, audit.groupJoin(), asyncRoute(async 
     throw error;
   }
 
-  res.redirect(groupRedirect(res, id, 'group-joined'));
+  // 🔴 Joining a group that needs approval does NOT make you a member, and the
+  // API says so plainly: {"status":"pending","action":"requested"}. web-uk threw
+  // that away and always announced "You have joined the group." — on a page that
+  // then told the same member their request was waiting for an admin. Read the
+  // answer instead of assuming it.
+  const joined = dataFrom(joinResult) || {};
+  const membershipState = trimmed(joined.status || joined.membership?.status || joined.membership?.state);
+  const pending = membershipState === 'pending' || trimmed(joined.action) === 'requested';
+
+  res.redirect(groupRedirect(res, id, pending ? 'group-requested' : 'group-joined'));
 }));
 
 // Leave group

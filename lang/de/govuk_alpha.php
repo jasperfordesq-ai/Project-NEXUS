@@ -2227,6 +2227,7 @@ return [
         ],
         'states' => [
             'group-joined' => 'Sie sind der Gruppe beigetreten.',
+            'group-requested' => 'Ihre Beitrittsanfrage wurde gesendet. Ein Administrator prüft sie.',
             'group-left' => 'Sie haben die Gruppe verlassen.',
             'group-failed' => 'Ihre Mitgliedschaft konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.',
             'group-created' => 'Ihre Gruppe wurde erstellt.',
@@ -2254,6 +2255,7 @@ return [
         'events_description' => 'Bevorstehende Veranstaltungen, die von dieser Gruppe organisiert werden.',
         'events_empty' => 'Diese Gruppe hat keine bevorstehenden Veranstaltungen.',
         'events_members_only' => 'Treten Sie dieser Gruppe bei, um ihre Veranstaltungen zu sehen.',
+        'discussions_members_only' => 'Treten Sie dieser Gruppe bei, um ihre Diskussionen zu sehen.',
         'event_starts' => 'Beginnt',
         'event_location' => 'Ort',
         'event_online' => 'Online-Veranstaltung',

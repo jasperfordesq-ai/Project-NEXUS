@@ -2227,6 +2227,7 @@ return [
         ],
         'states' => [
             'group-joined' => 'Vous avez rejoint le groupe.',
+            'group-requested' => 'Votre demande d\'adhésion a été envoyée. Un administrateur va l\'examiner.',
             'group-left' => 'Vous avez quitté le groupe.',
             'group-failed' => 'Nous n\'avons pas pu mettre à jour votre adhésion. Veuillez réessayer.',
             'group-created' => 'Votre groupe a été créé.',
@@ -2254,6 +2255,7 @@ return [
         'events_description' => 'Événements à venir organisés par ce groupe.',
         'events_empty' => 'Ce groupe n\'a pas d\'événements à venir.',
         'events_members_only' => 'Rejoignez ce groupe pour voir ses événements.',
+        'discussions_members_only' => 'Rejoignez ce groupe pour voir ses discussions.',
         'event_starts' => 'Commence le',
         'event_location' => 'Lieu',
         'event_online' => 'En ligne',

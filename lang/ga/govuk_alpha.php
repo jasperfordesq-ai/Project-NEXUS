@@ -2229,6 +2229,7 @@ return [
         ],
         'states' => [
             'group-joined' => 'Tá tú tar éis dul isteach sa ghrúpa.',
+            'group-requested' => 'Seoladh d\'iarratas ar bhallraíocht. Déanfaidh riarthóir athbhreithniú air.',
             'group-left' => 'D\'fhág tú an grúpa.',
             'group-failed' => 'Níorbh fhéidir do bhallraíocht a nuashonrú. Déan iarracht arís le do thoil.',
             'group-created' => 'Cruthaíodh do ghrúpa.',
@@ -2256,6 +2257,7 @@ return [
         'events_description' => 'Imeachtaí atá le teacht eagraithe ag an ngrúpa seo.',
         'events_empty' => 'Níl aon imeachtaí atá le teacht ag an ngrúpa seo.',
         'events_members_only' => 'Glac le ballraíocht sa ghrúpa chun a chuid imeachtaí a fheiceáil.',
+        'discussions_members_only' => 'Glac le ballraíocht sa ghrúpa chun a chuid plé a fheiceáil.',
         'event_starts' => 'Tosú',
         'event_location' => 'Suíomh',
         'event_online' => 'Ar líne',

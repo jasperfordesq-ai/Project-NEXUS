@@ -3236,6 +3236,7 @@
                 },
                 "states": {
                     "group-joined": "Dołączyłeś do grupy.",
+                    "group-requested": "Twoja prośba o dołączenie została wysłana. Administrator ją rozpatrzy.",
                     "group-left": "Opuściłeś grupę.",
                     "group-failed": "Nie udało się zaktualizować Twojego członkostwa. Spróbuj ponownie.",
                     "group-created": "Twoja grupa została utworzona.",
@@ -3263,6 +3264,7 @@
                 "events_description": "Nadchodzące wydarzenia organizowane przez tę grupę.",
                 "events_empty": "Ta grupa nie ma nadchodzących wydarzeń.",
                 "events_members_only": "Dołącz do tej grupy, aby zobaczyć jej wydarzenia.",
+                "discussions_members_only": "Dołącz do tej grupy, aby zobaczyć jej dyskusje.",
                 "event_starts": "Rozpoczyna się",
                 "event_location": "Lokalizacja",
                 "event_online": "W Internecie",

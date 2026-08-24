@@ -3236,6 +3236,7 @@
                 },
                 "states": {
                     "group-joined": "U bent lid geworden van de groep.",
+                    "group-requested": "Je verzoek om lid te worden is verzonden. Een beheerder bekijkt het.",
                     "group-left": "U heeft de groep verlaten.",
                     "group-failed": "Wij konden uw lidmaatschap niet bijwerken. Probeer het opnieuw.",
                     "group-created": "Uw groep is aangemaakt.",
@@ -3263,6 +3264,7 @@
                 "events_description": "Aankomende evenementen georganiseerd door deze groep.",
                 "events_empty": "Deze groep heeft geen aankomende evenementen.",
                 "events_members_only": "Word lid van deze groep om de evenementen te zien.",
+                "discussions_members_only": "Word lid van deze groep om de discussies te zien.",
                 "event_starts": "Begint",
                 "event_location": "Locatie",
                 "event_online": "Online evenement",

@@ -30,8 +30,12 @@
     </div>
   {% endif %}
 
-  {% if not isMember %}
+  {#- A pending request and never having asked are different states, and only one
+      of them should mention an admin approving anything. -#}
+  {% if isPending %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.pending_member") }}</p></div>
+  {% elif not isMember %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.discussions_members_only") }}</p></div>
   {% else %}
     <p class="govuk-body">
       <a class="govuk-button" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions/new') }}">{{ t("groups.discussions.new_link") }}</a>

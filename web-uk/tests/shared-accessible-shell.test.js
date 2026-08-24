@@ -29029,6 +29029,10 @@ describe('shared accessible frontend shell', () => {
         title: 'Public ladder offer',
         status: 'active',
         type: 'offer',
+        // The listing's own favourite flag — the same source the detail page's
+        // Save button writes to. This used to come from a bookmark, which the
+        // Save button never creates, so the tag and the button disagreed.
+        is_favorited: true,
         created_at: '2026-07-05T14:15:00Z'
       }],
       meta: { cursor: 'next-page', has_more: true, per_page: 20, total_items: 21 }
@@ -29055,7 +29059,12 @@ describe('shared accessible frontend shell', () => {
       radius_km: 10
     });
     expect(index.text).toContain('Public ladder offer');
-    expect(api.getBookmarks).toHaveBeenCalledWith('test-token', { type: 'listing', page: 1, per_page: 50 });
+    // 🔴 Bookmarks must NOT decide this. Saving a listing writes a FAVOURITE
+    // (POST /v2/listings/{id}/save), so reading bookmarks here meant pressing
+    // Save changed nothing on this page.
+    // (Other pages in this suite legitimately read bookmarks — for events — so
+    // this is scoped to listings rather than asserting no call at all.)
+    expect(api.getBookmarks.mock.calls.filter(([, params]) => params?.type === 'listing')).toEqual([]);
     expect(index.text).toMatch(/<strong class="govuk-tag govuk-tag--green">\s*Saved\s*<\/strong>/);
     expect(index.text).toContain('<option value="9" selected>Home and garden</option>');
     expect(index.text).toContain('href="/listings?q=ladder&amp;type=offer&amp;category_id=9&amp;hours=short&amp;service=remote&amp;near=10&amp;posted=7&amp;sort=recommended&amp;cursor=next-page"');
