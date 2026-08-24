@@ -29,6 +29,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **33 things across the mobile app were too small to be offered as tappable, and
+  none of them should have been tappable at all.** A new tool measures every
+  tappable thing on 24 screens against the accessibility minimum, using the
+  screen's real density. Everything it flagged turned out to be the same thing: a
+  small label — "5 members", "Not ID verified", "Closes Sep 22, 2026", "2 votes" —
+  that the design library quietly renders as a button. Fourteen screens and cards
+  now use the wrapper that leaves labels as labels, so they are no longer offered
+  as targets at all. Re-measured from a clean start: every flagged screen is now
+  clear.
+  The tool's own first results were wrong, which is worth saying: it measured
+  whichever screen happened to be showing, so on a slow screen it reported the
+  previous one's contents. It now proves which screen it is looking at before
+  measuring, and says "unverified" instead of guessing.
+
 - **ASP.NET listing-creation certification now proves the persisted result.**
   The paired React smoke reloads each newly created listing and requires the
   submitted title on both ASP.NET and the Laravel control, so a redirect or

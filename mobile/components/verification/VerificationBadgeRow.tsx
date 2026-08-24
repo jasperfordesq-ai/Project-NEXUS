@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Chip } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { getUserVerificationBadges, type VerificationBadge } from '@/lib/api/verification';

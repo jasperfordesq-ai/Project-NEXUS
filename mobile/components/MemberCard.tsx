@@ -6,7 +6,9 @@
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { type Member } from '@/lib/api/members';

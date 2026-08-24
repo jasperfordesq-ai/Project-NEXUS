@@ -29,8 +29,21 @@ import path from 'node:path';
 const MOBILE_ROOT = path.resolve(__dirname, '..');
 const SEARCH_DIRS = ['app', 'components'];
 
-/** Measured 2026-08-23 after migrating the six screens audited with TalkBack. */
-const BUDGET = 91;
+/**
+ * Measured 2026-08-23 after migrating the six screens audited with TalkBack; lowered to 77
+ * on 2026-08-24, evidence-led.
+ *
+ * 🔴 The fourteen files migrated that day were not picked by taste.
+ * `scripts/audit-touch-targets.mjs` measured 24 screens and found **33** touch targets below
+ * the WCAG 2.2 AA minimum — and every single one was an informational chip 20dp tall:
+ * "5 members", "Not ID verified", "2 members", "0 posts", "Public", "Joined", "Timebank",
+ * "Closes Sep 22, 2026", "48 unread", "2 votes", "You voted", "0 downloads". Migrating a
+ * file stops its informational chips being touch targets at all, which is why the audit and
+ * this budget move together: the member card and directory, the verification badges, and the
+ * jobs, marketplace, notifications, profile, resources, polls, events and volunteering
+ * screens.
+ */
+const BUDGET = 77;
 
 function collectTsx(dir: string, out: string[] = []): string[] {
   const abs = path.join(MOBILE_ROOT, dir);

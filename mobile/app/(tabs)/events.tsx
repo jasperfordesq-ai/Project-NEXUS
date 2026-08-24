@@ -10,7 +10,8 @@ import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Chip, Select, Separator, Spinner, Surface, Tabs } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Select, Separator, Spinner, Surface, Tabs } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import {
