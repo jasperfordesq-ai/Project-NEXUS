@@ -57,6 +57,9 @@ const HEROUI_VARIABLES = path.join(
   MOBILE_ROOT, 'node_modules', 'heroui-native', 'lib', 'module', 'styles', 'variables.css'
 );
 const PALETTE = argValue('--palette') ?? path.join(MOBILE_ROOT, 'config', 'tenant-palettes.json');
+const GLOBAL_CSS = path.join(MOBILE_ROOT, 'global.css');
+/** Emitted per community below, so they must not be copied from global.css. */
+const GENERATED_PER_TENANT = new Set(['--accent', '--accent-foreground', '--accent-hover']);
 const OUT_DIR = path.join(MOBILE_ROOT, 'generated');
 const OUT_FILE = argValue('--out') ?? path.join(OUT_DIR, 'tenant-themes.css');
 
@@ -170,6 +173,51 @@ function readSchemeBlocks() {
   return blocks;
 }
 
+/**
+ * The variables THIS PROJECT adds on top of HeroUI's set, read from global.css.
+ *
+ * 🔴 uniwind requires every registered theme to declare the same variables, and this file
+ * previously handled that for `--accent-hover` by hand — but `--border-strong` was added to
+ * global.css later and nothing brought it along. The result was an error on every launch:
+ *
+ *   Uniwind Error - Theme t-agoris-light is missing variable --border-strong
+ *   Uniwind Error - All themes must have the same variables
+ *
+ * That is not cosmetic. A LogBox error banner sits over the bottom of the screen, covering
+ * the tab bar, so a tap on "More" lands on the banner — which is what broke four of the
+ * nine nightly device flows on 2026-08-24 (`02-auth-logout`, `03-browse-listings`,
+ * `04-browse-groups`, `08-search-flow`), each failing an assertion made after a tab tap.
+ * Measured on a device: dismiss the banner and the same tap navigates immediately.
+ *
+ * So the extras are now READ rather than listed, and the next variable added to global.css
+ * comes along on its own.
+ */
+function readProjectExtras(herouiNames) {
+  const source = fs.readFileSync(GLOBAL_CSS, 'utf8');
+  const extras = {};
+
+  for (const scheme of ['light', 'dark']) {
+    const match = new RegExp(`@variant ${scheme}\\s*\\{([\\s\\S]*?)\\n\\s*\\}`).exec(source);
+    if (!match) {
+      fail(`could not find global.css's "@variant ${scheme}" block.`);
+    }
+    extras[scheme] = [...match[1].matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/g)]
+      .map(([, name, value]) => [name, value.trim()])
+      // Anything HeroUI declares is already emitted, and the accent trio is per-community.
+      .filter(([name]) => !herouiNames.has(name) && !GENERATED_PER_TENANT.has(name));
+  }
+
+  const names = (scheme) => extras[scheme].map(([n]) => n).sort().join(',');
+  if (names('light') !== names('dark')) {
+    fail(
+      'global.css declares different extra variables for light and dark, so generated '
+      + 'themes cannot match. uniwind would reject the set with a less helpful message.'
+    );
+  }
+
+  return extras;
+}
+
 // ── generation ───────────────────────────────────────────────────────────────
 
 export function themeName(slug, scheme) {
@@ -177,7 +225,7 @@ export function themeName(slug, scheme) {
   return `t-${slug}-${scheme}`;
 }
 
-function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks) {
+function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks, extras) {
   const baseHex = scheme === 'dark' ? (accentDarkHex ?? accentHex) : accentHex;
   let accent = hexToRgb(baseHex);
 
@@ -225,6 +273,12 @@ function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks) {
   // themes, so every theme must declare it too or uniwind rejects the set.
   lines.push(`      --accent-hover: ${toCssColor(hover)};`);
 
+  // Every other variable global.css adds, carried over with its own value. See
+  // readProjectExtras() for what went wrong when this was a hand-maintained list.
+  for (const [name, value] of extras[scheme]) {
+    lines.push(`      ${name}: ${value};`);
+  }
+
   return {
     css: [`    @variant ${themeName(slug, scheme)} {`, ...lines, '    }'].join('\n'),
     foreground,
@@ -233,6 +287,8 @@ function buildThemeBlock(slug, scheme, accentHex, accentDarkHex, blocks) {
 
 function generate() {
   const blocks = readSchemeBlocks();
+  const herouiNames = new Set(blocks.light.map(([name]) => name));
+  const extras = readProjectExtras(herouiNames);
 
   const palette = JSON.parse(fs.readFileSync(PALETTE, 'utf8'));
   const tenants = palette.tenants ?? {};
@@ -248,7 +304,7 @@ function generate() {
     if (!entry?.accent) fail(`tenant "${slug}" has no "accent" colour.`);
 
     for (const scheme of ['light', 'dark']) {
-      const built = buildThemeBlock(slug, scheme, entry.accent, entry.accentDark, blocks);
+      const built = buildThemeBlock(slug, scheme, entry.accent, entry.accentDark, blocks, extras);
       blocksCss.push(built.css);
       report.push(
         `  ${themeName(slug, scheme).padEnd(28)} accent ${entry.accent}  ` +

@@ -11,6 +11,21 @@
  * missing and this renders its children untouched — a member must never be shut out of
  * their own account by a lock they cannot satisfy.
  *
+ * The lock is an OVERLAY: `children` render from the very first frame and the lock is
+ * painted on top of them — opaque, absolutely positioned, covering the screen while the
+ * check runs as well, because content must never appear before the decision. The
+ * navigation tree underneath is mounted throughout, which is the safer shape for anything
+ * wrapping a navigator (compare `UpdateRequiredGate`, whose condition is false on the
+ * first pass so the navigator always mounts).
+ *
+ * 🔴 A correction worth keeping, because the wrong version of it cost an hour: this gate
+ * was briefly blamed for **breaking the tab bar** after four nightly device flows started
+ * failing on assertions made after a tab tap. It was not the cause. The cause was a
+ * LogBox error banner — raised by a missing theme variable — sitting over the bottom of the
+ * screen and swallowing the tap. Measured on a device: dismiss the banner and the same tap
+ * navigates immediately, gate and all. The bisect that pointed here was noise, because
+ * whether the banner was up varied between runs.
+ *
  * 🔴 It locks on a cold start, not on every return from the background. That is a
  * deliberate scope line for a first version rather than an oversight: "fingerprint
  * sign-in" is about getting in, and re-prompting on every app switch is the fastest way
@@ -23,7 +38,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button as HeroButton, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -101,62 +116,70 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     };
   }, [isAuthenticated, isLoading, unlock]);
 
-  if (state === 'open') return <>{children}</>;
-
   return (
-    <SafeAreaView
-      testID="biometric-lock-gate"
-      className="flex-1 bg-background"
-      style={{ flex: 1, backgroundColor: theme.bg }}
-    >
-      <View className="flex-1 items-center justify-center gap-5 px-8" style={{ flex: 1 }}>
-        <View
-          className="size-20 items-center justify-center rounded-full"
-          style={{ backgroundColor: withAlpha(primary, 0.14) }}
+    <View style={{ flex: 1 }}>
+      {children}
+      {state === 'open' ? null : (
+        /*
+          Opaque and absolutely positioned. React Native hands a touch to the topmost view,
+          so this also swallows taps meant for the screen underneath — without needing a
+          `pointerEvents` prop, which is just as well: that prop is inert in this app's
+          setup (see the bottom-sheet notes).
+        */
+        <SafeAreaView
+          testID="biometric-lock-gate"
+          style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.bg }]}
         >
-          <Ionicons name="finger-print-outline" size={38} color={primary} />
-        </View>
-        {state === 'locked' ? (
-          <>
-            <Text className="text-center text-2xl font-bold" style={{ color: theme.text }}>
-              {t('settings:biometricLock.lockedTitle')}
-            </Text>
-            <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>
-              {t('settings:biometricLock.lockedSubtitle')}
-            </Text>
-            {failure ? (
-              <Text
-                testID="biometric-lock-error"
-                className="text-center text-sm leading-5"
-                style={{ color: theme.error }}
-              >
-                {t(`settings:biometricLock.errors.${failure}`)}
-              </Text>
-            ) : null}
-            {/*
-              No `backgroundColor` override: the fill and the label must both come from
-              the theme's accent pair, or the dark-mode accent lift leaves dark ink on the
-              un-lifted colour. `components/accentOverride.test.ts` caught this here.
-            */}
-            <HeroButton
-              variant="primary"
-              isDisabled={isPrompting}
-              style={{ alignSelf: 'stretch' }}
-              onPress={() => void unlock()}
+          <View className="flex-1 items-center justify-center gap-5 px-8" style={{ flex: 1 }}>
+            <View
+              className="size-20 items-center justify-center rounded-full"
+              style={{ backgroundColor: withAlpha(primary, 0.14) }}
             >
-              <HeroButton.Label>{t('settings:biometricLock.unlock')}</HeroButton.Label>
-            </HeroButton>
-            {/*
-              Always offered, never hidden behind a failure count: a member whose sensor
-              has stopped reading needs a way back into their account tonight, not after
-              enough failed attempts.
-            */}
-            <HeroButton variant="ghost" onPress={() => void logout()}>
-              <HeroButton.Label>{t('common:labels.signOut')}</HeroButton.Label>
-            </HeroButton>
-          </>
-        ) : null}
-      </View>
-    </SafeAreaView>
+              <Ionicons name="finger-print-outline" size={38} color={primary} />
+            </View>
+            {state === 'locked' ? (
+              <>
+                <Text className="text-center text-2xl font-bold" style={{ color: theme.text }}>
+                  {t('settings:biometricLock.lockedTitle')}
+                </Text>
+                <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>
+                  {t('settings:biometricLock.lockedSubtitle')}
+                </Text>
+                {failure ? (
+                  <Text
+                    testID="biometric-lock-error"
+                    className="text-center text-sm leading-5"
+                    style={{ color: theme.error }}
+                  >
+                    {t(`settings:biometricLock.errors.${failure}`)}
+                  </Text>
+                ) : null}
+                {/*
+                  No `backgroundColor` override: the fill and the label must both come from
+                  the theme's accent pair, or the dark-mode accent lift leaves dark ink on the
+                  un-lifted colour. `components/accentOverride.test.ts` caught this here.
+                */}
+                <HeroButton
+                  variant="primary"
+                  isDisabled={isPrompting}
+                  style={{ alignSelf: 'stretch' }}
+                  onPress={() => void unlock()}
+                >
+                  <HeroButton.Label>{t('settings:biometricLock.unlock')}</HeroButton.Label>
+                </HeroButton>
+                {/*
+                  Always offered, never hidden behind a failure count: a member whose sensor
+                  has stopped reading needs a way back into their account tonight, not after
+                  enough failed attempts.
+                */}
+                <HeroButton variant="ghost" onPress={() => void logout()}>
+                  <HeroButton.Label>{t('common:labels.signOut')}</HeroButton.Label>
+                </HeroButton>
+              </>
+            ) : null}
+          </View>
+        </SafeAreaView>
+      )}
+    </View>
   );
 }

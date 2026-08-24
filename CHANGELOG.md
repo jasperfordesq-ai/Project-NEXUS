@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The nightly phone tests were failing for a reason that had nothing to do with the app, and all nine now pass.** Six of the nine were red — two for days, four as of this morning — and every one of them failed for the same silly reason: a yellow developer warning bar sits along the bottom of the screen, right on top of the tab bar, so a tap meant for "More" hit the warning bar instead. Every test that taps a tab then failed the next check. Meanwhile the ordinary test suite was green and so was the whole build pipeline, which is exactly why nobody caught it.
+
+- **The warning bar was there because of a real gap in the community colour themes.** One colour variable was missing from the generated per-community themes, and the app complains about that on every launch. The generator now carries every variable across on its own, so the next one added cannot go missing. The developer warning bar is also switched off for the test build — a test suite that any unrelated warning can break cannot tell you anything about the app.
+
 ### Added
 
 - **The ASP.NET edition's wallet-transfer journey is now certified and banked.** The unchanged React application selected a real recipient and transferred one credit against both backends in the same controlled run. ASP.NET moved the sender and recipient by exactly `-1/+1`, persisted the transaction in wallet history, traversed no known do-nothing endpoint, and the same checks passed against Laravel. Green CI at the exact evidence SHA raises the fixed R5 floor from 309 to 310 and the certified count from 11 to 12 of 250.

@@ -264,6 +264,11 @@ jobs:
           EXPO_PUBLIC_DEFAULT_TENANT=${{ env.TENANT_SLUG }}
           EXPO_PUBLIC_APP_URL=https://app.project-nexus.ie
           EXPO_PUBLIC_ALLOW_PRODUCTION_API_IN_DEV=true
+          # 🔴 Suppresses LogBox for this build only. A warning banner sits over the tab
+          # bar and swallows the tap, which broke four of these nine flows on 2026-08-24
+          # while every unit test passed. A suite an unrelated warning can break cannot be
+          # trusted to report on the app. See app/_layout.tsx for the measurement.
+          EXPO_PUBLIC_E2E=1
           ENVFILE
           cat .env.local
 

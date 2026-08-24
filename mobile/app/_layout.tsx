@@ -67,7 +67,15 @@ function useNavigationTheme(): { navTheme: Theme; scheme: 'light' | 'dark' } {
 validateEnv();
 configureNativeTheme();
 
-// Suppress known non-fatal dev-mode warnings that block the UI in Expo Go
+/*
+  🔴 A LogBox banner is not only noise: it sits over the BOTTOM of the screen, on top of the
+  tab bar, and swallows the tap. On 2026-08-24 that cost four of the nine nightly device
+  flows — `02-auth-logout`, `03-browse-listings`, `04-browse-groups` and `08-search-flow`,
+  each failing an assertion made after tapping "More" — while every unit test passed and the
+  whole CI pipeline was green. Measured on a device: dismiss the banner and the same tap
+  navigates immediately. So anything that raises a banner on a normal launch is a real
+  problem, and the two below are here because they are known and accepted, not to hide them.
+*/
 LogBox.ignoreLogs([
   'expo-notifications',
   'expo-av',
@@ -75,7 +83,24 @@ LogBox.ignoreLogs([
   'Each child in a list should have a unique',
   'Encountered two children with the same key',
   'Non-serializable values were found in the navigation state',
+  // The session payload genuinely exceeds SecureStore's 2 KB advisory size and stores
+  // fine; expo warns on every write. Accepted, not hidden — if the write ever does fail,
+  // `lib/storage.ts` reports it to Sentry and to our own API.
+  'Value being stored in SecureStore is larger than 2048 bytes',
 ]);
+
+/*
+  🔴 In the device-test harness, suppress LogBox entirely.
+
+  The banner covering the tab bar means ANY future warning silently breaks four flows, and
+  a suite that can be broken by an unrelated warning cannot be trusted to report on the
+  app. This is deliberately gated on an environment variable the harness sets, so a
+  developer still sees every warning; `EXPO_PUBLIC_E2E` is written by
+  `.github/workflows/mobile-device-tests.yml` and by `scripts/e2e.mjs`.
+*/
+if (process.env.EXPO_PUBLIC_E2E === '1') {
+  LogBox.ignoreAllLogs(true);
+}
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '',

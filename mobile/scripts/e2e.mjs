@@ -128,6 +128,24 @@ check('animations are enabled (LogBox banner would cover the tab bar)', () => {
   return `scale ${scale || '1'}`;
 });
 
+check('LogBox is suppressed for this build (a banner covers the tab bar)', () => {
+  /*
+    🔴 Not cosmetic. The LogBox banner sits over the bottom of the screen, on top of the
+    tab bar, and swallows the tap — which broke four of these nine flows on 2026-08-24
+    (`02-auth-logout`, `03-browse-listings`, `04-browse-groups`, `08-search-flow`) while
+    every unit test passed. Measured on a device: dismiss the banner and the same tap
+    navigates immediately.
+
+    Reported rather than enforced: the flag is inlined into the bundle, so setting it now
+    would need Metro restarted before it took effect, and a developer running one flow by
+    hand can simply dismiss the banner. CI sets it in the workflow.
+  */
+  const flag = readEnvLocal('EXPO_PUBLIC_E2E');
+  if (flag === '1') return 'EXPO_PUBLIC_E2E=1';
+  return 'NOT set — a warning banner can swallow a tab tap. Add EXPO_PUBLIC_E2E=1 to '
+    + 'mobile/.env.local and restart Metro, or dismiss the banner by hand.';
+});
+
 check('the local API is reachable and accepts the test account', () => {
   const apiUrl = readEnvLocal('EXPO_PUBLIC_API_URL') || 'http://10.0.2.2:8090';
   const tenant = readEnvLocal('EXPO_PUBLIC_DEFAULT_TENANT') || 'hour-timebank';

@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=592/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=592 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=596/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=596 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,7 +22,7 @@ competing score anywhere.
 
 ## The headline
 
-**592 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**596 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
@@ -58,11 +58,11 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Layout across device sizes | 80 | 52 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and guarded on 2026-08-20, and on 2026-08-22 **every text field in the app** was found sized to its own content rather than its container — the wallet's recipient search and the group discussion title shipped as pills. Fixed once in `components/ui/Input.tsx`; guarded. Still only two widths, still no tablet |
 | Accessibility | 60 | 34 | 60 | Contrast gated. 🔴 **First screen-reader audit ever run, 2026-08-23**, with TalkBack over five screens: every control now carries a meaningful name, no accessible name contains an icon glyph, informational chips are no longer announced as buttons, and touch targets were measured at the real device density with the nine below the WCAG 2.2 AA 24dp minimum fixed. Raised by 14 for that. Still short of full: it was an audit rather than a journey driven end to end through the screen reader, five screens of roughly 137, a large group of controls sits at 40dp (above the AA floor, below Android's 48dp guidance), 91 files still take `Chip` straight from heroui-native, and there is no RTL |
 | Internationalisation | 70 | 25 | 70 | 7 of the platform's 11 locales; ≥3,232 multi-word phrases still English across six; `ar` blocked for want of RTL |
-| Automated test depth | 100 | 70 | 100 | 319 suites / 2,216 tests (`npm test`, 2026-08-23), 0 skipped, 0 quarantined, 28 coverage floors, 13 source-scanning guards — and **zero automated device journeys**. Unchanged from 70: the new tests are real, but a suite that stayed green through the sheet outage AND through a missing half of the core exchange has not earned more credit |
+| Automated test depth | 100 | 74 | 100 | 319 suites / 2,216 tests (`npm test`, 2026-08-24), 0 skipped, 0 quarantined, 28 coverage floors, 13 source-scanning guards — and the nine nightly Maestro device flows, which now all pass for the first time. 🔴 Raised by 4 for that, and the reason is worth reading: **six of the nine were failing, and none of them was a defect in the app.** A LogBox error banner sits over the bottom of the screen, on top of the tab bar, and swallows the tap — so every flow that taps a tab failed an assertion afterwards. Two had been red for days and four went red on 2026-08-24, while `npm test` was green and the whole CI pipeline was green. The banner came from a missing theme variable (`--border-strong`), now carried into the generated community themes; LogBox is also suppressed for the device-test build, because a suite an unrelated warning can break cannot report on the app. Still short of full: nine flows is a thin slice of 137 screens, and a suite that stayed green through the sheet outage and a missing half of the core exchange has not earned more than this. Unchanged from 70: the new tests are real, but a suite that stayed green through the sheet outage AND through a missing half of the core exchange has not earned more credit |
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **592** | **1000** | — |
+| **Total** | **1000** | **596** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -70,7 +70,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 592 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 596 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
