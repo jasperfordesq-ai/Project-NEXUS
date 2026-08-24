@@ -84,7 +84,7 @@ walked, which comes before a gate that only guards three screens.
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | N/A | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Onboarding and access | 14 | 8 | 4 | 1 | 0 | 1 | 0 | 0.761 |
+| 1 — Onboarding and access | 14 | 9 | 4 | 0 | 0 | 1 | 0 | 0.814 |
 | 2 — Feed and social | 14 | 8 | 6 | 0 | 0 | 0 | 0 | 0.829 |
 | 3 — Timebanking core | 20 | 7 | 11 | 0 | 1 | 0 | 1 | 0.732 |
 | 4 — Volunteering | 18 | 2 | 15 | 0 | 1 | 0 | 0 | 0.628 |
@@ -92,19 +92,19 @@ walked, which comes before a gate that only guards three screens.
 | 6 — Money and wallet | 12 | 1 | 9 | 0 | 1 | 0 | 1 | 0.609 |
 | 7 — Cross-cutting behaviour | 18 | 9 | 1 | 0 | 5 | 2 | 1 | 0.653 |
 | 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 1 | 8 | 0 | 0.130 |
-| **Total** | **140** | **54** | **62** | **1** | **9** | **11** | **3** | — |
+| **Total** | **140** | **55** | **62** | **0** | **9** | **11** | **3** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(54 × 1.0) + (62 × 0.6) + (1 × 0.25) + (9 × 0.30) = 94.15`, over `140 − 3 excluded = 137`
-rows → **0.687**.
+`(55 × 1.0) + (62 × 0.6) + (9 × 0.30) = 94.90`, over `140 − 3 excluded = 137`
+rows → **0.693**.
 
 ### Credit recomputation
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (8 × 1.0) + (4 × 0.6) + (1 × 0.25) = 10.65 | ÷ 14 | **0.761** |
+| 1 | (9 × 1.0) + (4 × 0.6) = 11.40 | ÷ 14 | **0.814** |
 | 2 | (8 × 1.0) + (6 × 0.6) = 11.60 | ÷ 14 | **0.829** |
 | 3 | (7 × 1.0) + (11 × 0.6) + (1 × 0.30) = 13.90 | ÷ 19 † | **0.732** |
 | 4 | (2 × 1.0) + (15 × 0.6) + (1 × 0.30) = 11.30 | ÷ 18 | **0.628** |
@@ -130,7 +130,7 @@ uninterpretable.
 | 1.1 | Choose a community from the picker and see its name | CERTIFIED | Names were invisible at every width until `42f38e533`; verified 411dp + 360dp, guarded by `app/deepLinkParams.test.ts` sibling `narrowScreenReach.test.ts` |
 | 1.2 | Sign in with email and password | PROVEN | Walked on two devices repeatedly, 2026-08-20/21; no automated device test |
 | 1.3 | Sign out | PROVEN | Walked 2026-08-20 (reached the login screen afterwards) |
-| 1.4 | Create an account from the app | RENDERS | Register screen photographed, real fields, international phone placeholder; never submitted |
+| 1.4 |Create an account from the app | CERTIFIED | Walked for real 2026-08-24 on emulator-5554, the whole chain. A new member was created from the app (Priya Nolan, an international phone number and a free-text location): `POST /v2/auth/register` → **201**, and the row landed complete and correctly tenant-scoped (tenant 2, `status: pending`, phone `+353871234567`, location "Cork, Ireland", `preferred_language: en`, `role: member`). A verification email was really dispatched — `email_log` row 31603, "Verify Your Email - Hour Timebank", status `sent`, provider `smtp` — and the app showed "Check your email / Your account was created and is waiting for verification". **Then the emailed link was opened on the device**: `verify-email?token=…` routed into the app, called `POST /api/auth/verify-email` → **200**, and the screen said "Email verified". 🔴 One substitution, named so nobody reads more into this row than it proves: the token is stored as a SHA-256 hash, so the real emailed value cannot be read back here and mail delivery itself was not exercised. A token with a known raw value was minted for the walk; the endpoint, the routing and both screens are the real ones. 🔴 **And the refusal is honest, which is the part most likely to have been wrong.** This community has admin approval switched on, so a verified member still cannot sign in — and the app says exactly that: "Your account is pending admin approval" (`AUTH_ACCOUNT_PENDING_APPROVAL`), not a generic wrong-password error. Validation is real too: the first attempt used an `@example.com` address and was refused with "The email address is not deliverable — the domain has no mail servers. Check for typos and try again". Not walked: an admin approving the account, which is an admin journey, so a brand-new member's first session is still unexercised |
 | 1.5 | Forgot password → email → reset | CERTIFIED | Walked 2026-08-22, both halves. Request: the screen validates, the API resolves the member in the right tenant, and the confirmation is deliberately non-committal ("If an account exists…") so it cannot be used to enumerate addresses. Reset: the deep link to the reset screen carried the token through, the new password was accepted, and the token was consumed — the row was gone afterwards, so it is single-use. Verified by API: the new password signs in and the old one is refused. The fixture password was then restored. 🔴 **The mail leg cannot complete locally and that is correct behaviour, not a defect**: the token is stored ONLY after the dispatcher accepts the email, deliberately, so a mail outage leaves any previous valid link usable instead of silently invalidating it. With no SMTP in the container the send returns false, no token is written, and a WARNING is logged (`[PasswordReset] reset email send returned false`) — the log level is `warning` on purpose because production runs at that level. To walk the mail leg for real, point the container at a mail catcher; to walk the reset screen without one, insert a `password_resets` row whose stored token column holds the SHA-256 of a plaintext you keep, then open the reset deep link carrying that plaintext |
 | 1.6 | Passkey / biometric sign-in | CERTIFIED | Built and walked 2026-08-23. 🔴 **Read the scope before trusting this row**: what exists is a **device unlock of the session already on the phone** — the member signs in with a password once, and the phone's fingerprint, face or PIN is what lets the app back in. It is NOT a passkey and does not talk to the server; that capability stays absent and is recorded in the parity table below with its blockers (Credential Manager, a Digital Asset Links file under the API domain, and the release signing certificate — still an open owner decision). Walked on the emulator with a real enrolled fingerprint: the toggle appeared in Settings only once something was enrolled, turning it on raised the system prompt ("Unlock your account", with "Use PIN" offered) and stored nothing until the fingerprint passed, a cold start then showed the prompt before any app content, the fingerprint opened the feed, cancelling showed the lock screen with "Unlock was cancelled." plus Unlock and Sign out, the Unlock button worked, and turning the lock off again needed no fingerprint. Three deliberate safety choices: enabling REQUIRES passing the check first (or a member could lock themselves out of their own session), the phone's PIN stays available as a fallback so a finger that will not read is not a lockout, and Sign out is always on the lock screen. It locks on a **cold start only**, not on every return from the background — recorded as the next step, not claimed. 🔴 Emulator note for whoever walks this next: enrolment is screenshot-blocked (FLAG_SECURE, so `screencap` is black) but `uiautomator dump` reads it fine; `adb -s <id> emu finger touch 1` is what advances it, while `adb shell cmd fingerprint fingerdown` did nothing. `nexus_test` now has PIN 1234 and one enrolled fingerprint. Guarded by `lib/biometricLock.test.ts` (12 cases), with the enable-requires-authentication rule mutation-verified. Adds `expo-local-authentication` and the USE_BIOMETRIC / USE_FINGERPRINT permissions, which meant a native rebuild — the first native dependency added since the last release build |
 | 1.7 | Session survives an app restart | PROVEN | A reaction persisted across a full restart, 2026-08-20 |
