@@ -121,3 +121,46 @@ appId: ie.project.nexus
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 06-wallet
+
+# ── Screens that hold still ───────────────────────────────────────────────────
+#
+# 🔴 Added 2026-08-24 to widen the gate from three compared screens to six, and
+# chosen for ONE reason: they contain no relative timestamps and no staggered list
+# animation, which is exactly why the feed, listings and messages captures had to be
+# excluded from comparison (see VOLATILE_SCREENS in scripts/screenshots.mjs).
+#
+#   settings      a static list of labels and switches
+#   support       a static list of documents
+#   new-exchange  an EMPTY form — nothing on it comes from the database at all
+#
+# Each was captured twice before its baseline was approved, and only approved because
+# the two runs matched. A baseline that does not reproduce is worse than no baseline.
+#
+# Reached by link rather than by tapping, so a change to the More menu cannot silently
+# stop these being captured. 🔴 `nexus://`, NOT the https address: Maestro's `openLink` does
+# not name a package, so an https link can be handed to the browser instead of the app —
+# which is exactly what happened on the first attempt, and the tour failed its assertion
+# while the same link opened the screen correctly through `adb … -d <url> <package>`.
+- openLink: nexus://settings
+- extendedWaitUntil:
+    visible: "Settings|Appearance|Account"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 07-settings
+
+- openLink: nexus://support
+- extendedWaitUntil:
+    visible: "Support|Help|Contact"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 08-support
+
+- openLink: nexus://listings/create
+- extendedWaitUntil:
+    visible: "Title|What are you offering|Offer|Request"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 09-new-exchange

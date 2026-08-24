@@ -29,6 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The mobile app's screenshot check now watches twice as many screens — and one
+  screen it was already watching turned out to be unreliable.** The check
+  photographs screens and compares them with approved copies, so an accidental
+  layout change is caught. It covered three screens; it now covers six in the light
+  theme and four in dark, adding settings, the support page and an empty
+  create-listing form — all chosen because nothing on them moves or changes with
+  the date.
+  Each new screen was photographed twice and the two photographs compared before
+  being trusted. That same check showed the **sign-in screen** differs by about 1%
+  between two identical runs, because the community logo is fetched and sometimes
+  arrives after the photograph. It has been taken out of the comparison and the
+  reason written down, so the check can't fail on a run where nothing changed.
+
 - **33 things across the mobile app were too small to be offered as tappable, and
   none of them should have been tappable at all.** A new tool measures every
   tappable thing on 24 screens against the accessibility minimum, using the

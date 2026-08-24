@@ -89,7 +89,42 @@ const SCROLLBAR_PX = 24;
  * captured (looking at them by hand still catches a broken layout) and skipped by
  * the comparison, which is stated in the output rather than hidden.
  */
-const VOLATILE_SCREENS = new Set(['02-home-feed.png', '03-listings.png', '04-messages.png']);
+const VOLATILE_SCREENS = new Set([
+  '02-home-feed.png',
+  '03-listings.png',
+  '04-messages.png',
+  /*
+    🔴 Added 2026-08-24, and it was already in the gate. Two consecutive tours were compared
+    against each other rather than against the baseline, and the sign-in screen differed by
+    **0.968%** — ten times the threshold — while settings, support and an empty create form
+    all came in at 0.010–0.013%. So the gate's first screen could fail on a run where nothing
+    had changed, which is the failure mode that teaches people to ignore a gate.
+    The cause is the tenant logo: it is fetched, so in one run it is painted and in the next
+    the placeholder is still there. Fixing it needs the capture to wait for that image
+    specifically — real work, not pretended here. Meanwhile it is captured for eyeballing
+    and excluded from the comparison, stated in the output.
+  */
+  '01-login.png',
+]);
+
+/**
+ * 🔴 Volatility is per SCHEME, because it turned out not to be a property of the screen.
+ *
+ * Measured on 2026-08-24 by running the tour twice in each scheme and comparing the two runs
+ * against each other: the support screen reproduced in light at **0.010%** and drifted in
+ * dark at **0.375%**. Treating volatility as a property of the screen would have meant
+ * either losing a good light-scheme assertion or approving a dark baseline that does not
+ * reproduce. Neither is acceptable, so the exclusion is recorded where it belongs.
+ */
+const VOLATILE_BY_SCHEME = {
+  dark: new Set(['08-support.png']),
+  light: new Set(),
+};
+
+/** Is this capture excluded from comparison in the scheme being run? */
+function isVolatile(name, schemeName) {
+  return VOLATILE_SCREENS.has(name) || (VOLATILE_BY_SCHEME[schemeName]?.has(name) ?? false);
+}
 
 /** A difference this small is anti-aliasing noise, not a regression. */
 const MAX_DIFF_RATIO = 0.001; // 0.1% of compared pixels
@@ -512,8 +547,8 @@ function doCompare() {
   let failures = 0;
   let skipped = 0;
   for (const name of names) {
-    if (VOLATILE_SCREENS.has(name)) {
-      console.log(`screenshots: skip ${name} — not reproducible, see VOLATILE_SCREENS`);
+    if (isVolatile(name, scheme)) {
+      console.log(`screenshots: skip ${name} — not reproducible in ${scheme}, see VOLATILE_SCREENS`);
       skipped += 1;
       continue;
     }
@@ -573,8 +608,8 @@ function doApprove() {
   ensureDir(baselineDir);
   let n = 0;
   for (const f of fs.readdirSync(currentDir).filter((x) => x.endsWith('.png'))) {
-    if (VOLATILE_SCREENS.has(f)) {
-      console.log(`screenshots: not promoting ${f} — it does not reproduce, so it cannot be an assertion`);
+    if (isVolatile(f, scheme)) {
+      console.log(`screenshots: not promoting ${f} — it does not reproduce in ${scheme}, so it cannot be an assertion`);
       continue;
     }
     fs.copyFileSync(path.join(currentDir, f), path.join(baselineDir, f));
