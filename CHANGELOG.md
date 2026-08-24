@@ -29,6 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ASP.NET listing search and filters now narrow the catalogue instead of
+  silently returning every listing.** The endpoint now honours the React app's
+  search text, offer/request type, category, estimated-hours range, delivery
+  mode, posting age, coordinate requirement and distance radius. Nearby results
+  include their computed distance only when requested. A paired browser journey
+  proves exact search and type changes through the unchanged React UI against
+  both ASP.NET and Laravel, with database-backed coverage for the remaining
+  filter combinations.
+
 - **The mobile app's screenshot check now watches twice as many screens — and one
   screen it was already watching turned out to be unreliable.** The check
   photographs screens and compares them with approved copies, so an accidental

@@ -198,6 +198,7 @@ async function runArm(arm) {
   // Per-arm stamp so the two arms' created records can never be confused in a report.
   const stamp = `${stampSuffix}${arm.key === 'laravel' ? 'l' : ''}`;
   let createdListingId = null;
+  let createdListingTitle = null;
 
   const api = [];
   const consoleErrors = [];
@@ -421,6 +422,7 @@ async function runArm(arm) {
   // HTTP directly and bypasses the app's own forms, CSRF handling and error surfacing.
   await step('action-create-listing', async () => {
     const createdTitle = `Smoke listing ${stamp}`;
+    createdListingTitle = createdTitle;
     // 🔴 `/listings/create`, not `/listings/new`. The wrong guess is not a harmless typo:
     // `listings/new` matches the `listings/:id` route, so the app requests
     // /api/v2/listings/new, gets a 404, and the step reports "form not reachable" — which
@@ -468,6 +470,41 @@ async function runArm(arm) {
     await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
     await page.getByRole('heading', { name: createdTitle }).waitFor({ state: 'visible', timeout: 15000 });
     console.log(`    listing ${createdListingId} survived reload with the submitted title`);
+  });
+
+  await step('action-filter-search-listings', async () => {
+    if (!createdListingId || !createdListingTitle) skip('create step did not produce a searchable listing');
+    await page.goto(`${BASE}/listings`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1200);
+    await dismissConsent();
+
+    const search = page.getByRole('searchbox').first();
+    if (!(await search.count())) skip('listing searchbox is missing — selector needs updating');
+    await search.fill(createdListingTitle);
+    const searchForm = search.locator('xpath=ancestor::form[1]');
+    const searchButton = searchForm.locator('button[type="submit"]').first();
+    if (!(await searchButton.count())) skip('listing search submit is missing — selector needs updating');
+    await searchButton.click({ timeout: 10000 });
+    await page.waitForTimeout(1500);
+
+    const cards = page.getByTestId('listing-card');
+    await page.getByText(createdListingTitle, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+    if (await cards.count() !== 1) {
+      throw new Error(`search should return exactly the created listing, got ${await cards.count()} cards`);
+    }
+
+    // HeroUI v3 Select is a button + popover listbox, not a native <select> or
+    // combobox. Drive its public accessibility semantics rather than hidden DOM.
+    const typeTrigger = page.locator('button[aria-haspopup="listbox"]')
+      .filter({ hasText: /All Types|Offers|Requests/ }).first();
+    if (!(await typeTrigger.count())) skip('listing type filter trigger is missing — selector needs updating');
+    await typeTrigger.click();
+    await page.getByRole('option', { name: 'Requests' }).click();
+    await page.getByText(createdListingTitle, { exact: true }).waitFor({ state: 'hidden', timeout: 15000 });
+
+    await typeTrigger.click();
+    await page.getByRole('option', { name: 'Offers' }).click();
+    await page.getByText(createdListingTitle, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
   });
 
   await step('action-edit-delete-listing', async () => {

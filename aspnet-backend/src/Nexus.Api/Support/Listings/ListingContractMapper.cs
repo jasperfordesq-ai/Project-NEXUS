@@ -42,6 +42,7 @@ public static class ListingContractMapper
     {
         public int? ViewerId { get; init; }
         public bool IsFavorited { get; init; }
+        public double? DistanceKm { get; init; }
     }
 
     public static Dictionary<string, object?> Listing(Entities.Listing l, Facts? facts = null)
@@ -67,7 +68,7 @@ public static class ListingContractMapper
                 ["color"] = null,
             };
 
-        return new Dictionary<string, object?>
+        var result = new Dictionary<string, object?>
         {
             ["id"] = l.Id,
             ["user_id"] = l.UserId,
@@ -140,13 +141,22 @@ public static class ListingContractMapper
             ["reviewed_at"] = Iso(l.ReviewedAt),
             ["rejection_reason"] = NullIfBlank(l.RejectionReason),
 
-            // Distance/match are computed by a search projection this endpoint does not
-            // run; null rather than 0, because 0 would read as "right here".
+            // Legacy distance/match projections remain unavailable. Proximity browse
+            // adds the React-consumed `distance_km` key below; these honest nulls must
+            // not be converted to 0, which would read as "right here".
             ["distance"] = null,
             ["cached_distance_km"] = null,
             ["match"] = null,
             ["reciprocity_match"] = null,
         };
+
+        // Laravel adds this key only for a proximity query. Omitting it otherwise is
+        // intentional: React tests `distance_km !== undefined`, so a null key would
+        // incorrectly render a distance badge on ordinary browse results.
+        if (f.DistanceKm.HasValue)
+            result["distance_km"] = Math.Round(f.DistanceKm.Value, 2);
+
+        return result;
     }
 
     private static string? NullIfBlank(string? value) =>

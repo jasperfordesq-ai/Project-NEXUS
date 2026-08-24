@@ -743,29 +743,120 @@ public class V15MemberParityController : ControllerBase
     [HttpGet("api/v2/users/{id:int}/listings")]
     [HttpGet("api/v2/users/me/listings")]
     [HttpGet("api/v2/federation/listings")]
-    public async Task<IActionResult> V2Listings([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? type = null)
+    public async Task<IActionResult> V2Listings(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        [FromQuery(Name = "per_page")] int? perPage = null,
+        [FromQuery] string? type = null,
+        [FromQuery(Name = "q")] string? queryText = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? category = null,
+        [FromQuery(Name = "category_id")] int? categoryId = null,
+        [FromQuery(Name = "min_hours")] decimal? minHours = null,
+        [FromQuery(Name = "max_hours")] decimal? maxHours = null,
+        [FromQuery(Name = "service_type")] string? serviceType = null,
+        [FromQuery(Name = "posted_within")] int? postedWithin = null,
+        [FromQuery(Name = "with_coordinates")] string? withCoordinates = null,
+        [FromQuery(Name = "near_lat")] double? nearLat = null,
+        [FromQuery(Name = "near_lng")] double? nearLng = null,
+        [FromQuery(Name = "radius_km")] double? radiusKm = null)
     {
         var query = _db.Listings.AsNoTracking().Where(l => l.DeletedAt == null);
-        if (type != null && Enum.TryParse<ListingType>(type, true, out var parsedType)) query = query.Where(l => l.Type == parsedType);
-        if (Request.Path.Value?.Contains("featured", StringComparison.OrdinalIgnoreCase) == true) query = query.Where(l => l.IsFeatured);
 
-        var total = await query.CountAsync();
-        // 🔴 Projected through ListingContractMapper, not a hand-rolled anonymous object.
-        // This endpoint was the worst remaining read: 50 fields short of Laravel, 42 of
-        // them names the React source reads. The listings UI specifically reads `category`,
-        // `user`, `author_name`, `image_url`, `hours_estimate`, `is_favorited`,
-        // `author_rating` and `service_type` — verified by grep, not assumed.
-        var viewerId = CurrentUserId();
-        var rows = await query
-            .OrderByDescending(l => l.CreatedAt)
-            .Skip(Skip(page, limit))
-            .Take(Limit(limit))
-            .Include(l => l.User)
-            .Include(l => l.Category)
-            .ToListAsync();
+        var types = (type ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(value => Enum.TryParse<ListingType>(value, true, out var parsed) ? parsed : (ListingType?)null)
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .Distinct()
+            .ToArray();
+        if (types.Length > 0) query = query.Where(l => types.Contains(l.Type));
+
+        var term = string.IsNullOrWhiteSpace(queryText) ? search : queryText;
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            var needle = term.Trim().ToLowerInvariant();
+            query = query.Where(l => l.Title.ToLower().Contains(needle)
+                || (l.Description != null && l.Description.ToLower().Contains(needle))
+                || (l.Location != null && l.Location.ToLower().Contains(needle)));
+        }
+
+        if (categoryId is > 0) query = query.Where(l => l.CategoryId == categoryId.Value);
+        else if (!string.IsNullOrWhiteSpace(category))
+        {
+            var slug = category.Trim().ToLowerInvariant();
+            query = query.Where(l => l.Category != null && l.Category.Slug.ToLower() == slug);
+        }
+
+        if (minHours.HasValue) query = query.Where(l => l.EstimatedHours >= Math.Clamp(minHours.Value, 0m, 1000m));
+        if (maxHours.HasValue) query = query.Where(l => l.EstimatedHours <= Math.Clamp(maxHours.Value, 0m, 2000m));
+
+        var allowedServiceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "physical_only", "remote_only", "hybrid", "location_dependent" };
+        var serviceTypes = (serviceType ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(allowedServiceTypes.Contains)
+            .Select(value => value.ToLowerInvariant())
+            .Distinct()
+            .ToArray();
+        if (serviceTypes.Length > 0)
+            query = query.Where(l => l.ServiceType != null && serviceTypes.Contains(l.ServiceType.ToLower()));
+
+        if (postedWithin.HasValue)
+        {
+            var cutoff = DateTime.UtcNow.AddDays(-Math.Clamp(postedWithin.Value, 1, 365));
+            query = query.Where(l => l.CreatedAt >= cutoff);
+        }
+
+        var requireCoordinates = withCoordinates is "1" or "true" or "True" or "TRUE";
+        var proximity = nearLat is >= -90 and <= 90 && nearLng is >= -180 and <= 180 && radiusKm.HasValue;
+        if (requireCoordinates || proximity)
+            query = query.Where(l => l.Latitude.HasValue && l.Longitude.HasValue);
+        if (Request.Path.Value?.Contains("featured", StringComparison.OrdinalIgnoreCase) == true)
+            query = query.Where(l => l.IsFeatured);
+
+        var effectiveLimit = Limit(perPage ?? limit);
+        var currentPage = Math.Max(page, 1);
+        var withRelations = query.Include(l => l.User).Include(l => l.Category);
+        var distances = new Dictionary<int, double>();
+        List<Listing> rows;
+        int total;
+
+        if (proximity)
+        {
+            var radius = Math.Clamp(radiusKm!.Value, 0.1, 500);
+            var latitudeDelta = radius / 111.32;
+            var longitudeScale = Math.Max(Math.Cos(nearLat!.Value * Math.PI / 180.0), 0.01);
+            var longitudeDelta = radius / (111.32 * longitudeScale);
+            var candidates = await withRelations
+                .Where(l => l.Latitude >= nearLat.Value - latitudeDelta && l.Latitude <= nearLat.Value + latitudeDelta
+                    && l.Longitude >= nearLng!.Value - longitudeDelta && l.Longitude <= nearLng.Value + longitudeDelta)
+                .ToListAsync();
+            var ranked = candidates
+                .Select(l => new { Row = l, Km = ListingDistanceKm(nearLat.Value, nearLng!.Value, l.Latitude!.Value, l.Longitude!.Value) })
+                .Where(item => item.Km <= radius)
+                .OrderBy(item => item.Km)
+                .ThenBy(item => item.Row.Id)
+                .ToList();
+            total = ranked.Count;
+            var pageRows = ranked.Skip(Skip(currentPage, effectiveLimit)).Take(effectiveLimit).ToList();
+            rows = pageRows.Select(item => item.Row).ToList();
+            distances = pageRows.ToDictionary(item => item.Row.Id, item => item.Km);
+        }
+        else
+        {
+            total = await query.CountAsync();
+            rows = await withRelations
+                .OrderByDescending(l => l.CreatedAt)
+                .ThenByDescending(l => l.Id)
+                .Skip(Skip(currentPage, effectiveLimit))
+                .Take(effectiveLimit)
+                .ToListAsync();
+        }
 
         // Favourites in ONE query rather than per row — an N+1 here would be a
         // performance fault introduced by a parity fix.
+        var viewerId = CurrentUserId();
         var ids = rows.Select(l => l.Id).ToList();
         var favourited = viewerId is null
             ? new HashSet<int>()
@@ -778,11 +869,12 @@ public class V15MemberParityController : ControllerBase
         {
             ViewerId = viewerId,
             IsFavorited = favourited.Contains(l.Id),
+            DistanceKm = distances.TryGetValue(l.Id, out var distanceKm) ? distanceKm : null,
         })).ToList();
 
         // Listings is one of the endpoints whose Laravel meta carries the richer
         // pagination block — measured, not assumed. See Paged().
-        return Ok(Paged(listings, page, limit, total, richPagination: true));
+        return Ok(Paged(listings, currentPage, effectiveLimit, total, richPagination: true));
     }
 
     [HttpGet("api/v2/listings/saved")]
@@ -3095,6 +3187,17 @@ public class V15MemberParityController : ControllerBase
         if (actor.IsGod || actor.IsSuperAdmin || actor.Role is "god" or "super_admin") return true;
         return actor.TenantId == tenantId
             && (actor.IsAdmin || actor.IsTenantSuperAdmin || actor.Role is "admin" or "tenant_admin");
+    }
+
+    private static double ListingDistanceKm(double latitudeA, double longitudeA, double latitudeB, double longitudeB)
+    {
+        const double earthRadiusKm = 6371.0;
+        var latitudeDelta = (latitudeB - latitudeA) * Math.PI / 180.0;
+        var longitudeDelta = (longitudeB - longitudeA) * Math.PI / 180.0;
+        var a = Math.Sin(latitudeDelta / 2) * Math.Sin(latitudeDelta / 2)
+            + Math.Cos(latitudeA * Math.PI / 180.0) * Math.Cos(latitudeB * Math.PI / 180.0)
+            * Math.Sin(longitudeDelta / 2) * Math.Sin(longitudeDelta / 2);
+        return Math.Round(earthRadiusKm * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a)), 2);
     }
 
     private IActionResult ListingForbidden(string message) => StatusCode(StatusCodes.Status403Forbidden, new
