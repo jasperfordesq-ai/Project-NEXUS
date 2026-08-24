@@ -70,6 +70,7 @@
       "Agenda",
       "Check-ins",
       "Code",
+      "Cookies",
       "Details",
       "Downloads",
       "Elite",
@@ -89,6 +90,7 @@
       "Video"
     ],
     "es": [
+      "Cookies",
       "Idea",
       "Ideas",
       "No",
@@ -161,6 +163,7 @@
       "Beginner",
       "Clubs",
       "Code",
+      "Cookies",
       "Details",
       "Direct",
       "Document",
@@ -174,6 +177,7 @@
       "Partner",
       "Partners",
       "Payload (JSON)",
+      "platform super-admin",
       "Quiz",
       "Respect",
       "Score (%)",
@@ -183,8 +187,7 @@
       "Status:",
       "Tip:",
       "Type",
-      "Video",
-      "platform super-admin"
+      "Video"
     ],
     "pl": [
       "Administrator",
@@ -194,6 +197,7 @@
     "pt": [
       "Agenda",
       "Check-ins",
+      "Cookies",
       "Elite",
       "Item",
       "Latitude",

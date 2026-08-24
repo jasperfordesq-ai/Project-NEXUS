@@ -25,7 +25,7 @@ return [
         'hide' => 'Ocultar mensaje de cookies',
     ],
     'cookie_settings' => [
-        'title' => 'Galletas',
+        'title' => 'Cookies',
         'caption' => 'Cookies en :service',
         'intro' => 'Las cookies son pequeños archivos que se guardan en su dispositivo cuando visita un sitio web. Usamos cookies para que este servicio funcione y para mejorarlo.',
         'essential_heading' => 'Cookies esenciales',

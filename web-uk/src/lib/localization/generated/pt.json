@@ -1034,7 +1034,7 @@
                 "hide": "Ocultar mensagem de cookies"
             },
             "cookie_settings": {
-                "title": "Biscoitos",
+                "title": "Cookies",
                 "caption": "Cookies em :service",
                 "intro": "Os cookies são pequenos ficheiros guardados no seu dispositivo quando visita um site. Utilizamos cookies para que este serviço funcione e para o melhorar.",
                 "essential_heading": "Cookies essenciais",

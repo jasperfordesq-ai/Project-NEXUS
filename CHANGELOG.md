@@ -29,6 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Four languages titled the cookie settings page with the word for the
+  biscuit.** German said "Kekse", Portuguese "Biscoitos", Spanish "Galletas" and
+  Dutch "Koekjes" — the food, not the browser kind. Spotted while checking a
+  German page during other work. Every other string in the same section already
+  said "cookies", so the title was the odd one out in each language, and the same
+  slip appeared on the React privacy page's navigation link. All eight now say
+  "Cookies", which is the standard term in all four languages. Irish ("Fianáin"),
+  Japanese, Polish and Arabic were already correct and are untouched.
+
 - **On the accessible frontend, creating an event was a dead end, and an
   organiser could not reach their own event's tools.** Found by walking the
   events journey in a browser; no static sweep across seven audits could see it.

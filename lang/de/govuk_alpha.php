@@ -25,7 +25,7 @@ return [
         'hide' => 'Cookie-Hinweis ausblenden',
     ],
     'cookie_settings' => [
-        'title' => 'Kekse',
+        'title' => 'Cookies',
         'caption' => 'Cookies auf :service',
         'intro' => 'Cookies sind kleine Dateien, die beim Besuch einer Website auf Ihrem Gerät gespeichert werden. Wir verwenden Cookies, damit dieser Dienst funktioniert und um ihn zu verbessern.',
         'essential_heading' => 'Notwendige Cookies',
