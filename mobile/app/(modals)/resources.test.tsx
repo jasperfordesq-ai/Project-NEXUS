@@ -12,6 +12,10 @@ const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
+  // The screen re-reads on focus, so the effect runs its callback once here — the same as
+  // arriving on the screen. Without this the list is whatever it was when first fetched,
+  // which is the defect the focus refresh fixes.
+  useFocusEffect: (callback: () => void) => callback(),
 }));
 
 jest.mock('expo-linking', () => ({
@@ -141,5 +145,40 @@ describe('ResourcesScreen', () => {
 
     fireEvent.press(getByText('Read article'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/kb-article', params: { id: '7' } });
+  });
+
+  it('re-reads the list when the member comes back to it', () => {
+    /*
+      🔴 Measured on a device 2026-08-24: a resource was uploaded, this screen was reopened,
+      and it still said "Nothing found" while making NO request at all. It had fetched once
+      when the community had none. A member who adds a file is told there is nothing here
+      until they restart the app — and the pull-to-refresh control makes that staleness read
+      as "there really is nothing" rather than "nobody asked".
+    */
+    const refreshResources = jest.fn();
+    const refreshCategories = jest.fn();
+    /*
+      The default harness cycles three useApi calls (resources, categories, knowledge) and
+      the screen renders their real shapes, so the states are reused and only the refresh
+      functions are swapped — a bare `{ data: [] }` here would crash on `categories.map`.
+    */
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      const index = ((call - 1) % 3) + 1;
+      if (index === 1) {
+        return { data: { data: [] }, isLoading: false, error: null, refresh: refreshResources };
+      }
+      if (index === 2) {
+        // Categories arrive as a bare array, not an envelope — the screen maps over it.
+        return { data: [], isLoading: false, error: null, refresh: refreshCategories };
+      }
+      return { data: { items: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    });
+
+    render(<ResourcesScreen />);
+
+    expect(refreshResources).toHaveBeenCalled();
+    expect(refreshCategories).toHaveBeenCalled();
   });
 });

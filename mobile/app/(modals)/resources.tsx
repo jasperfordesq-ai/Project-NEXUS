@@ -3,10 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Linking from 'expo-linking';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
@@ -71,14 +71,31 @@ export default function ResourcesScreen() {
   const isLoading = tab === 'resources' ? resourcesLoading : kbLoading;
   const error = tab === 'resources' ? resourcesError : kbError;
 
-  function refresh() {
+  const refresh = useCallback(() => {
     if (tab === 'resources') {
       refreshResources();
       refreshCategories();
     } else {
       refreshKb();
     }
-  }
+    // The three refresh functions are stable per useApi instance; listing them would
+    // rebuild this callback on every render and re-run the focus effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  /*
+    🔴 Re-read whenever the member comes back to this screen.
+
+    Measured on a device 2026-08-24: a resource was uploaded through the API, this screen
+    was reopened, and it still said "Nothing found" — making NO request at all. The list
+    had been fetched once, while the community had none, and nothing ever asked again. Kill
+    the app and relaunch and the resource appears. So a member who adds a file, or whose
+    community adds one, is told there is nothing here until they restart the app.
+
+    A pull-to-refresh existed, which is exactly the trap: the screen looks refreshable, so
+    the staleness reads as "there really is nothing" rather than "nobody asked".
+  */
+  useFocusEffect(refresh);
 
   return (
     <ModalErrorBoundary>
