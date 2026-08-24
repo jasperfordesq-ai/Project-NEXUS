@@ -29,6 +29,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A silent mail server could hold a member's request open for a minute, and
+  make a completed action look like it failed.** Found by walking the create-a-
+  listing journey in a browser rather than reading code — none of the seven
+  static sweeps could see it. Some emails are sent **synchronously inside
+  member-facing writes**: creating a listing sends the confirmation before
+  replying. `App\Core\Mailer` is a hand-rolled SMTP client, so it connected with
+  a 30-second timeout and then read every reply with **no** timeout at all,
+  inheriting php.ini's `default_socket_timeout` — measured at **60.1 seconds per
+  read**, and a send performs several. Reproduced end to end: with the mail host
+  unreachable, creating a listing took 9.6s, the accessible frontend gave up at
+  its 15s budget, the member saw a failure — and the listing **had been
+  created**. Anyone retrying gets a duplicate.
+  Both waits are now bounded by the existing `SMTP_TIMEOUT` setting, which this
+  mailer had simply never read, and a timed-out reply now aborts the send
+  instead of being mistaken for a valid response — so one stall ends the attempt
+  rather than costing a timeout per read. The default drops from 30s to 5s
+  (a healthy relay connects in well under 100ms). Pinned by tests that bind a
+  real socket which accepts and then stays silent; with the fix removed they
+  measure 60.1s and fail.
+  🔴 Worth knowing: `MAIL_MAILER=array` does **not** disable this mailer — it
+  opens its own socket and ignores Laravel's mail layer. Using it as a control
+  to rule mail out is misleading, and did mislead during this investigation.
+  🔴 Honest scope: this is a latent fragility with a demonstrated failure mode,
+  not a proven live production fault — production's relay presumably answers
+  quickly, and that was not measured. The remaining ~4s of a listing create is
+  still the synchronous email and is unaddressed; queueing it is the real fix
+  and carries its own risks (the queue crash-loops without Redis, and a slow
+  queued listener sends duplicates).
 - **When something goes wrong, the app now tells you what the server actually said.** In 165 places across 53 screens it threw the explanation away and showed a generic line instead. The example that started this: logging volunteer hours failed and the app said only "Could not log these hours", while the server had answered "You have already logged hours for this organization and date". The member learns nothing, tries again, and fails again — with the answer sitting there unused.
 
 - **All 165 now pass the reason on, with limits.** The server's wording is only shown when it is fit for a member: never for an internal server fault, never for anything long or that looks like a web page, and never for the refusals the app answers by taking you to the right screen instead. Checked on a real phone against a real refusal: the message read "A problem cannot be reported for this exchange right now" where it used to say "Please try again". The helper doing that filtering had no test of its own despite standing in front of every one of these messages; it now has eight.

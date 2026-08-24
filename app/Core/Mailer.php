@@ -23,6 +23,22 @@ class Mailer
     private $fromName;
     private $socket;
 
+    /**
+     * Seconds to wait for the SMTP host — for the initial connect AND for each
+     * reply once connected.
+     *
+     * This matters more than it looks: these emails are sent SYNCHRONOUSLY
+     * inside member-facing write requests (creating a listing, for one), so a
+     * mail server that is slow or silent delays, and can outright fail, an
+     * action the member has already completed. Measured 2026-08-24: with an
+     * unreachable host, creating a listing took 9.6s and the accessible
+     * frontend gave up at its 15s budget and showed a failure — for a listing
+     * that HAD been created.
+     *
+     * Tune with SMTP_TIMEOUT; `config/mail.php` holds the default.
+     */
+    private $timeout = 5;
+
     // Gmail API settings
     private $useGmailApi;
     private $gmailClientId;
@@ -120,6 +136,7 @@ class Mailer
         // Always load SMTP credentials (used as primary when Gmail is disabled, or as fallback)
         $this->host = $envValues['SMTP_HOST'] ?? '';
         $this->port = $envValues['SMTP_PORT'] ?? 587;
+        $this->timeout = max(1, (int) ($envValues['SMTP_TIMEOUT'] ?? 5));
         $this->username = $envValues['SMTP_USER'] ?? '';
         $this->password = $envValues['SMTP_PASS'] ?? '';
         $this->encryption = $envValues['SMTP_ENCRYPTION'] ?? 'tls';
@@ -321,6 +338,7 @@ class Mailer
             'SMTP_USER'           => (string) (config('mail.mailers.smtp.username') ?? ''),
             'SMTP_PASS'           => (string) (config('mail.mailers.smtp.password') ?? ''),
             'SMTP_ENCRYPTION'     => (string) (config('mail.mailers.smtp.encryption') ?? 'tls'),
+            'SMTP_TIMEOUT'        => (int) (config('mail.mailers.smtp.timeout') ?? 5),
             'SMTP_FROM_EMAIL'     => (string) (config('mail.from.address') ?? ''),
             'SMTP_FROM_NAME'      => (string) (config('mail.from.name') ?? 'Project NEXUS'),
             'MAIL_PLATFORM_PROVIDER'        => (string) (config('mail.platform_provider') ?? 'postmark'),
@@ -1119,10 +1137,16 @@ class Mailer
             throw new \Exception("SMTP host not configured");
         }
 
-        $this->socket = @fsockopen($host, $this->port, $errno, $errstr, 30);
+        $this->socket = @fsockopen($host, $this->port, $errno, $errstr, $this->timeout);
         if (!$this->socket) {
             throw new \Exception("Could not connect to SMTP host: $errstr ($errno)");
         }
+
+        // Bound the REPLIES too, not just the connect. Without this, fgets()
+        // inherits php.ini's default_socket_timeout (60s here) on every read,
+        // and a send performs several — so a host that accepts the connection
+        // and then goes quiet could hold a member's request open for minutes.
+        stream_set_timeout($this->socket, $this->timeout);
 
         $ehloHost = $_SERVER['HTTP_HOST'] ?? 'api.project-nexus.ie';
 
@@ -1223,6 +1247,18 @@ class Mailer
                 break;
             }
         }
+
+        // A timed-out read must ABORT the send, not be mistaken for a reply.
+        // fgets() returns false on timeout, which ends the loop above and would
+        // otherwise hand back an empty or half-read response — leaving the rest
+        // of the SMTP conversation to carry on against a server that never
+        // answered. Throwing also means one stall ends the attempt, so the
+        // worst case is roughly connect + one timeout rather than a timeout per
+        // read.
+        if (stream_get_meta_data($this->socket)['timed_out'] ?? false) {
+            throw new \Exception("Timed out waiting for the SMTP host after {$this->timeout}s");
+        }
+
         return $response;
     }
 

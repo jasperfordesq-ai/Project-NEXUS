@@ -46,7 +46,13 @@ return [
             'password' => env('SMTP_PASS', env('MAIL_PASSWORD')),
             // Hard cap SMTP connection/IO so a stalled relay cannot hang the
             // scheduler's newsletter loop indefinitely (has happened before).
-            'timeout' => (int) env('SMTP_TIMEOUT', 30),
+            //
+            // 30 -> 5 on 2026-08-24. These sends are not only the scheduler's:
+            // some go out SYNCHRONOUSLY inside member-facing writes, so this
+            // value is part of how long a member waits after pressing a button.
+            // A healthy relay connects in well under 100ms, so 5s is ~50x
+            // headroom; raise SMTP_TIMEOUT if a genuinely slow relay needs it.
+            'timeout' => (int) env('SMTP_TIMEOUT', 5),
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
