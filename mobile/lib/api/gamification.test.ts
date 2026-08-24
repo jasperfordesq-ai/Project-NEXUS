@@ -32,13 +32,20 @@ const mockBadge: Badge = {
   is_earned: true,
 };
 
+/*
+  🔴 The keys `GET /v2/gamification/profile` actually returns, read off the live API on
+  2026-08-24. The previous fixture put `next_level_xp`, `badges`, `rank` and `streak_days`
+  in the profile; the server sends none of them, so it was testing a shape that does not
+  exist while the real screens got by on fallbacks.
+*/
 const mockProfile: GamificationProfile = {
   xp: 250,
   level: 3,
-  next_level_xp: 500,
-  badges: [mockBadge],
-  rank: 12,
-  streak_days: 5,
+  level_name: 'Contributor',
+  level_progress: { current_xp: 250, xp_for_next_level: 500, progress_percentage: 50 },
+  badges_count: 1,
+  showcased_badges: [mockBadge],
+  is_own_profile: true,
 };
 
 const mockLeaderboardResponse: LeaderboardResponse = {
@@ -117,14 +124,19 @@ describe('getGamificationProfile', () => {
     expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/profile');
     expect(result.data.xp).toBe(250);
     expect(result.data.level).toBe(3);
-    expect(result.data.streak_days).toBe(5);
+    // Progress comes from `level_progress`, which is what the server sends. `next_level_xp`
+    // and `streak_days` are NOT in the response — see the fixture note above.
+    expect(result.data.level_progress?.xp_for_next_level).toBe(500);
   });
 
-  it('returns the full profile including badges', async () => {
+  it('carries the showcased badges the profile really contains', async () => {
     (api.get as jest.Mock).mockResolvedValue({ data: mockProfile });
     const result = await getGamificationProfile();
-    expect(result.data.badges).toHaveLength(1);
-    expect(result.data.badges[0].name).toBe('First Exchange');
+    // 🔴 Not `badges`: the profile endpoint sends `showcased_badges` and `badges_count`, and
+    // the full list comes from GET /v2/gamification/badges.
+    expect(result.data.showcased_badges).toHaveLength(1);
+    expect(result.data.showcased_badges?.[0]?.name).toBe('First Exchange');
+    expect(result.data.badges_count).toBe(1);
   });
 
   it('passes a target user id when loading another member profile', async () => {

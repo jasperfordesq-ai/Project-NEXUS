@@ -24,16 +24,30 @@ export interface VolunteerOpportunity {
   id: number;
   title: string;
   description: string | null;
-  organisation: VolunteeringOrganisation | null;
-  organization?: VolunteeringOrganisation | null;
+  /**
+   * 🔴 The server sends `organization` (US spelling) — measured against
+   * `GET /v2/volunteering/opportunities/{id}` on 2026-08-24. This pair was declared the
+   * wrong way round: the British spelling was required and the one that arrives was
+   * optional. Every screen already reads `organisation ?? organization`, which is the only
+   * reason the organisation's name shows at all.
+   */
+  organisation?: VolunteeringOrganisation | null;
+  organization: VolunteeringOrganisation | null;
   location: string | null;
   is_remote: boolean;
-  hours_per_week: number | null;
-  commitment: string | null;
+  /*
+    🔴 These four are NOT in `GET /v2/volunteering/opportunities/{id}` — measured
+    2026-08-24. The response carries `start_date`, `end_date`, `shifts` and `skills_needed`
+    instead. Every screen that shows them already checks `typeof x === 'number'` first,
+    which is the only reason nothing displays "undefined"; declaring them required promised
+    a value that never arrives.
+  */
+  hours_per_week?: number | null;
+  commitment?: string | null;
   skills_needed: string[] | string | null;
   status: 'open' | 'closed' | 'filled';
-  spots_available: number | null;
-  deadline: string | null;
+  spots_available?: number | null;
+  deadline?: string | null;
   created_at: string;
   has_applied?: boolean;
   is_active?: boolean;

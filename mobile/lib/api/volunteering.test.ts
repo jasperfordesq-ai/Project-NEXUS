@@ -52,6 +52,12 @@ const mockOpportunity: VolunteerOpportunity = {
   id: 3,
   title: 'Community Garden Helper',
   description: 'Help maintain the community garden.',
+  /*
+    🔴 The server sends `organization` (US spelling) — measured 2026-08-24. The British
+    spelling stays optional, and both are set here because every screen reads
+    `organisation ?? organization` and either can arrive.
+  */
+  organization: { id: 2, name: 'Green Spaces Co-op', avatar: null },
   organisation: { id: 2, name: 'Green Spaces Co-op', avatar: null },
   location: 'Dublin',
   is_remote: false,

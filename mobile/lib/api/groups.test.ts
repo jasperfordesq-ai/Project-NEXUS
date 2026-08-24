@@ -90,7 +90,13 @@ const mockGroupDetail: GroupDetail = {
   is_member: false,
   created_at: '2026-01-01T00:00:00Z',
   recent_members: [],
+  /*
+    🔴 `admin` is NOT in `GET /v2/groups/{id}` — measured 2026-08-24. The server sends
+    `creator` and `owner_id`. Kept here only to prove the optional field still passes
+    through when something does supply it; the creator below is what a real response has.
+  */
   admin: { id: 99, name: 'Admin User', avatar_url: null },
+  creator: { id: 674, name: 'E2E UserA', avatar_url: null },
   tags: ['community'],
 };
 
@@ -151,7 +157,9 @@ describe('getGroup', () => {
     const result = await getGroup(42);
     expect(api.get).toHaveBeenCalledWith('/api/v2/groups/42');
     expect(result.data.id).toBe(1);
-    expect(result.data.admin.name).toBe('Admin User');
+    expect(result.data.admin?.name).toBe('Admin User');
+    // What a real response actually carries, and what the screen now falls back to.
+    expect(result.data.creator?.name).toBe('E2E UserA');
   });
 });
 

@@ -35,7 +35,14 @@ export interface Group {
 
 export interface GroupDetail extends Group {
   long_description?: string | null;
-  admin: GroupMember;
+  /**
+   * 🔴 NOT sent by `GET /v2/groups/{id}` — measured 2026-08-24. It was declared required,
+   * and the detail screen guards with `group.admin ? …`, so the "Admin" section of every
+   * group page simply never rendered: a member could not see who runs their own group. The
+   * server does send `creator` (id, name, avatar) and `owner_id`, so the screen now falls
+   * back to `creator` and the field stays optional here.
+   */
+  admin?: GroupMember | null;
   creator?: GroupMember | null;
   tags?: string[];
   viewer_membership?: {

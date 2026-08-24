@@ -10,11 +10,17 @@ export interface Organisation {
   id: number;
   name: string;
   description: string | null;
-  logo: string | null;
+  /**
+   * 🔴 `GET /v2/volunteering/organisations/{id}` sends `logo_url`, not `logo` — measured
+   * 2026-08-24. Both are kept because the list and detail endpoints have differed in the
+   * past, and every consumer already reads `logo ?? logo_url`.
+   */
+  logo?: string | null;
   logo_url?: string | null;
   website: string | null;
   contact_email?: string | null;
-  location: string | null;
+  /** NOT sent by the organisation endpoints — measured 2026-08-24. */
+  location?: string | null;
   members_count?: number;
   listings_count?: number;
   opportunity_count?: number;

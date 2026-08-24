@@ -413,6 +413,12 @@ function GroupDetailScreenInner() {
   }
 
   const loadedGroup = group;
+  /*
+    Who runs this group, from whatever the server sent. `admin` is not in the response
+    (see the "Admin" card below); `creator` is. Ordered so that a future server that does
+    send `admin` wins, because a group's admin can change while its creator cannot.
+  */
+  const groupOrganiser = loadedGroup?.admin ?? loadedGroup?.creator ?? null;
   const currentMemberCount = memberCount ?? loadedGroup.member_count ?? 0;
   const isUpdating = joining || leaving;
   const displayDescription = loadedGroup.long_description ?? loadedGroup.description;
@@ -778,15 +784,23 @@ function GroupDetailScreenInner() {
               </HeroCard>
             ) : null}
 
-            {loadedGroup.admin ? (
+            {/*
+              🔴 `admin` is NOT in the group response — measured against
+              `GET /v2/groups/{id}` on 2026-08-24, which sends `creator` and `owner_id`.
+              The field was declared required in `GroupDetail`, so this guard was always
+              false and **the "Admin" section of every group page never rendered**: a
+              member could not see who runs their own group. It falls back to `creator`,
+              which is what the server does send.
+            */}
+            {groupOrganiser ? (
               <HeroCard className="rounded-panel p-0">
                 <HeroCard.Body className="gap-3 p-4">
                   <SectionTitle title={t('detail.admin')} />
-                  <View className="flex-row items-center gap-3">
-                    <Avatar uri={loadedGroup.admin.avatar_url ?? undefined} name={loadedGroup.admin.name ?? '?'} size={42} />
+                  <View className="flex-row items-center gap-3" testID="group-organiser">
+                    <Avatar uri={groupOrganiser.avatar_url ?? undefined} name={groupOrganiser.name ?? '?'} size={42} />
                     <View className="min-w-0 flex-1">
                       <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
-                        {loadedGroup.admin.name ?? t('common:unknown')}
+                        {groupOrganiser.name ?? t('common:unknown')}
                       </Text>
                       <Text className="text-xs" style={{ color: theme.textSecondary }}>
                         {t('detail.groupAdmin')}

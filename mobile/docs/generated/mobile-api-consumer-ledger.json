@@ -1202,8 +1202,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:166",
-        "gamification.ts:168"
+        "gamification.ts:195",
+        "gamification.ts:197"
       ]
     },
     {
@@ -1212,7 +1212,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:216"
+        "gamification.ts:245"
       ]
     },
     {
@@ -1221,7 +1221,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:224"
+        "gamification.ts:253"
       ]
     },
     {
@@ -1230,7 +1230,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:232"
+        "gamification.ts:261"
       ]
     },
     {
@@ -1239,7 +1239,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:200"
+        "gamification.ts:229"
       ]
     },
     {
@@ -1248,7 +1248,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:208"
+        "gamification.ts:237"
       ]
     },
     {
@@ -1257,7 +1257,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:181"
+        "gamification.ts:210"
       ]
     },
     {
@@ -1266,8 +1266,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:190",
-        "gamification.ts:192"
+        "gamification.ts:219",
+        "gamification.ts:221"
       ]
     },
     {
@@ -1276,8 +1276,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:155",
-        "gamification.ts:157"
+        "gamification.ts:184",
+        "gamification.ts:186"
       ]
     },
     {
@@ -1286,7 +1286,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:240"
+        "gamification.ts:269"
       ]
     },
     {
@@ -1295,7 +1295,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:248"
+        "gamification.ts:277"
       ]
     },
     {
@@ -1304,7 +1304,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "gamification.ts:256"
+        "gamification.ts:285"
       ]
     },
     {
@@ -1484,7 +1484,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:399"
+        "groups.ts:406"
       ]
     },
     {
@@ -1493,7 +1493,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:377"
+        "groups.ts:384"
       ]
     },
     {
@@ -1502,7 +1502,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:391"
+        "groups.ts:398"
       ]
     },
     {
@@ -1511,7 +1511,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:384"
+        "groups.ts:391"
       ]
     },
     {
@@ -1520,7 +1520,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:395"
+        "groups.ts:402"
       ]
     },
     {
@@ -1529,7 +1529,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:576"
+        "groups.ts:583"
       ]
     },
     {
@@ -1538,7 +1538,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:588"
+        "groups.ts:595"
       ]
     },
     {
@@ -1547,7 +1547,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:582"
+        "groups.ts:589"
       ]
     },
     {
@@ -1556,7 +1556,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:526"
+        "groups.ts:533"
       ]
     },
     {
@@ -1565,11 +1565,20 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:730"
+        "groups.ts:737"
       ]
     },
     {
       "http": "DELETE",
+      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:755"
+      ]
+    },
+    {
+      "http": "PUT",
       "endpoint": "/api/v2/groups/{param}/announcements/{param}",
       "status": "verified",
       "matched_via": "exact",
@@ -1578,21 +1587,12 @@
       ]
     },
     {
-      "http": "PUT",
-      "endpoint": "/api/v2/groups/{param}/announcements/{param}",
-      "status": "verified",
-      "matched_via": "exact",
-      "sites": [
-        "groups.ts:741"
-      ]
-    },
-    {
       "http": "POST",
       "endpoint": "/api/v2/groups/{param}/answers/{param}/accept",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:634"
+        "groups.ts:641"
       ]
     },
     {
@@ -1601,7 +1601,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:514"
+        "groups.ts:521"
       ]
     },
     {
@@ -1610,7 +1610,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:720"
+        "groups.ts:727"
       ]
     },
     {
@@ -1619,7 +1619,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:538"
+        "groups.ts:545"
       ]
     },
     {
@@ -1628,7 +1628,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:542"
+        "groups.ts:549"
       ]
     },
     {
@@ -1637,7 +1637,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:484"
+        "groups.ts:491"
       ]
     },
     {
@@ -1646,7 +1646,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:755"
+        "groups.ts:762"
       ]
     },
     {
@@ -1655,7 +1655,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:555"
+        "groups.ts:562"
       ]
     },
     {
@@ -1664,7 +1664,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:565"
+        "groups.ts:572"
       ]
     },
     {
@@ -1673,7 +1673,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:559"
+        "groups.ts:566"
       ]
     },
     {
@@ -1682,7 +1682,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:502"
+        "groups.ts:509"
       ]
     },
     {
@@ -1691,7 +1691,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:762"
+        "groups.ts:769"
       ]
     },
     {
@@ -1700,7 +1700,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:630"
+        "groups.ts:637"
       ]
     },
     {
@@ -1709,7 +1709,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:601"
+        "groups.ts:608"
       ]
     },
     {
@@ -1718,7 +1718,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:612"
+        "groups.ts:619"
       ]
     },
     {
@@ -1727,7 +1727,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:605"
+        "groups.ts:612"
       ]
     },
     {
@@ -1736,7 +1736,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:620"
+        "groups.ts:627"
       ]
     },
     {
@@ -1745,7 +1745,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:685"
+        "groups.ts:692"
       ]
     },
     {
@@ -1754,7 +1754,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:681"
+        "groups.ts:688"
       ]
     },
     {
@@ -1763,7 +1763,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:699"
+        "groups.ts:706"
       ]
     },
     {
@@ -1772,7 +1772,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:641"
+        "groups.ts:648"
       ]
     },
     {
@@ -1781,7 +1781,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:652"
+        "groups.ts:659"
       ]
     },
     {
@@ -1790,7 +1790,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:664"
+        "groups.ts:671"
       ]
     },
     {
@@ -1799,7 +1799,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:645"
+        "groups.ts:652"
       ]
     },
     {
@@ -1808,7 +1808,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:660"
+        "groups.ts:667"
       ]
     },
     {
@@ -1817,7 +1817,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:668"
+        "groups.ts:675"
       ]
     },
     {
@@ -3431,7 +3431,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:85",
+        "members.ts:91",
         "reviews.ts:74"
       ]
     },
@@ -3522,7 +3522,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:710"
+        "groups.ts:717"
       ]
     },
     {
@@ -3531,7 +3531,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:706"
+        "groups.ts:713"
       ]
     },
     {
@@ -3559,7 +3559,7 @@
       "matched_via": "exact",
       "sites": [
         "client.ts:478",
-        "members.ts:70"
+        "members.ts:76"
       ]
     },
     {
@@ -3568,7 +3568,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:75"
+        "members.ts:81"
       ]
     },
     {
@@ -3595,7 +3595,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "members.ts:80"
+        "members.ts:86"
       ]
     },
     {
@@ -3785,7 +3785,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:456"
+        "volunteering.ts:470"
       ]
     },
     {
@@ -3794,7 +3794,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:487"
+        "volunteering.ts:501"
       ]
     },
     {
@@ -3803,7 +3803,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:479"
+        "volunteering.ts:493"
       ]
     },
     {
@@ -3812,7 +3812,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:555"
+        "volunteering.ts:569"
       ]
     },
     {
@@ -3821,7 +3821,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:559"
+        "volunteering.ts:573"
       ]
     },
     {
@@ -3830,7 +3830,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:575"
+        "volunteering.ts:589"
       ]
     },
     {
@@ -3839,7 +3839,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:593"
+        "volunteering.ts:607"
       ]
     },
     {
@@ -3848,7 +3848,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:563"
+        "volunteering.ts:577"
       ]
     },
     {
@@ -3857,7 +3857,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:567"
+        "volunteering.ts:581"
       ]
     },
     {
@@ -3866,7 +3866,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:571"
+        "volunteering.ts:585"
       ]
     },
     {
@@ -3875,7 +3875,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:610"
+        "volunteering.ts:624"
       ]
     },
     {
@@ -3884,7 +3884,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:483"
+        "volunteering.ts:497"
       ]
     },
     {
@@ -3893,7 +3893,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:491"
+        "volunteering.ts:505"
       ]
     },
     {
@@ -3902,7 +3902,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:495"
+        "volunteering.ts:509"
       ]
     },
     {
@@ -3911,7 +3911,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:439"
+        "volunteering.ts:453"
       ]
     },
     {
@@ -3920,7 +3920,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:597"
+        "volunteering.ts:611"
       ]
     },
     {
@@ -3929,7 +3929,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:449"
+        "volunteering.ts:463"
       ]
     },
     {
@@ -3938,7 +3938,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:601"
+        "volunteering.ts:615"
       ]
     },
     {
@@ -3947,7 +3947,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:466"
+        "volunteering.ts:480"
       ]
     },
     {
@@ -3956,7 +3956,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:614"
+        "volunteering.ts:628"
       ]
     },
     {
@@ -3965,7 +3965,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "organisations.ts:52"
+        "organisations.ts:58"
       ]
     },
     {
@@ -3974,7 +3974,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "organisations.ts:69"
+        "organisations.ts:75"
       ]
     },
     {
@@ -3983,8 +3983,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "organisations.ts:62",
-        "volunteering.ts:499"
+        "organisations.ts:68",
+        "volunteering.ts:513"
       ]
     },
     {
@@ -3993,7 +3993,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:547"
+        "volunteering.ts:561"
       ]
     },
     {
@@ -4002,7 +4002,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:510"
+        "volunteering.ts:524"
       ]
     },
     {
@@ -4011,7 +4011,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:517"
+        "volunteering.ts:531"
       ]
     },
     {
@@ -4020,7 +4020,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:503"
+        "volunteering.ts:517"
       ]
     },
     {
@@ -4029,7 +4029,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:523"
+        "volunteering.ts:537"
       ]
     },
     {
@@ -4038,7 +4038,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:535"
+        "volunteering.ts:549"
       ]
     },
     {
@@ -4047,7 +4047,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:529"
+        "volunteering.ts:543"
       ]
     },
     {
@@ -4056,7 +4056,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:551"
+        "volunteering.ts:565"
       ]
     },
     {
@@ -4065,7 +4065,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:622"
+        "volunteering.ts:636"
       ]
     },
     {
@@ -4074,7 +4074,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:618"
+        "volunteering.ts:632"
       ]
     },
     {
@@ -4083,7 +4083,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:579"
+        "volunteering.ts:593"
       ]
     },
     {
@@ -4092,7 +4092,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:589"
+        "volunteering.ts:603"
       ]
     },
     {
@@ -4101,7 +4101,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:585"
+        "volunteering.ts:599"
       ]
     },
     {

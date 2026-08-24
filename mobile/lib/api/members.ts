@@ -12,7 +12,12 @@ export interface Member {
   /** May be empty string — use first_name + last_name as fallback */
   name: string;
   first_name: string;
-  last_name: string;
+  /**
+   * 🔴 NOT sent by `GET /v2/users/{id}` — measured 2026-08-24. That is deliberate: another
+   * member sees `name` and `first_name`, and surnames are withheld. Declaring it required
+   * promised a value that is always `undefined`.
+   */
+  last_name?: string;
   /** List endpoint returns `avatar`; single-user endpoint returns `avatar_url` */
   avatar?: string | null;
   avatar_url?: string | null;
@@ -21,7 +26,8 @@ export interface Member {
   latitude: number | null;
   longitude: number | null;
   created_at: string;
-  is_verified: boolean;
+  /** NOT sent by `GET /v2/users/{id}` — measured 2026-08-24. */
+  is_verified?: boolean;
   rating: number | null;
   total_hours_given: number;
   total_hours_received: number;

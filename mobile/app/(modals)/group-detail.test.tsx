@@ -456,14 +456,38 @@ const mockGroupDetail = {
   is_featured: false,
   is_member: false,
   tags: [],
-  admin: {
-    id: 10,
-    name: 'Alice Admin',
+  /*
+    🔴 A REAL `GET /v2/groups/{id}` sends `creator`, never `admin` — measured 2026-08-24.
+    The fixture used to carry `admin` only, which is why no test noticed that the "Admin"
+    card on every group page had silently stopped rendering.
+  */
+  creator: {
+    id: 674,
+    name: 'Aoife Organiser',
     avatar_url: null,
   },
 };
 
 describe('GroupDetailScreen', () => {
+  it('names who runs the group, from the creator the server actually sends', () => {
+    // 🔴 The load-bearing case. `GroupDetail.admin` was declared required and is not in the
+    // response, so `group.admin ? …` was always false and this whole card vanished — a
+    // member could not see who runs their own group.
+    mockUseApi.mockReturnValue({
+      data: { data: mockGroupDetail },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getAllByText, getByText, getByTestId } = render(<GroupDetailScreen />);
+
+    expect(getByTestId('group-organiser')).toBeTruthy();
+    expect(getByText('Aoife Organiser')).toBeTruthy();
+    // Twice on purpose: the card's heading and the role beneath the name.
+    expect(getAllByText('Group admin').length).toBeGreaterThan(0);
+  });
+
   it('renders loading spinner when data is loading', () => {
     // Default mock: isLoading=true, data=null — LoadingSpinner is mocked to null
     // The screen renders a SafeAreaView with LoadingSpinner (null); we verify no content shown

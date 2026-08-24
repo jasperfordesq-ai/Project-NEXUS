@@ -8,30 +8,59 @@ import { API_V2 } from '@/lib/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/**
+  * 🔴 Measured against `GET /v2/gamification/badges` on 2026-08-24. The server sends
+  * `awarded_at`, `claimed_at` AND `earned_at` — and does NOT send `is_earned`, which was
+  * declared required here. That is the field whose absence rendered all ten of a member's
+  * earned badges as "Locked" behind a padlock (row 8.1): `earned_at` is null on rows that
+  * `awarded_at` fills in.
+  */
 export interface Badge {
   id: number;
   name: string;
   description: string;
   icon: string;
   earned_at: string | null;
-  is_earned: boolean;
+  /** The one the server actually fills in when a badge has been earned. */
+  awarded_at?: string | null;
+  claimed_at?: string | null;
+  /** NOT sent by the API. Kept optional for callers that compute it themselves. */
+  is_earned?: boolean;
 }
 
+/**
+  * 🔴 Measured against `GET /v2/gamification/profile` on 2026-08-24. Of the six fields this
+  * declared required, FOUR are never sent: `next_level_xp`, `badges`, `rank` and
+  * `streak_days`. The screens survive only because they were written defensively —
+  * `numberOrFallback(profile.next_level_xp, profile.level_progress?.xp_for_next_level, …)` —
+  * but `profile.badges.map(...)` would have compiled and crashed. What the server does send
+  * and this type did not mention is listed below.
+  */
 export interface GamificationProfile {
   xp: number;
   level: number;
-  next_level_xp: number;
+  /** Absent from the response; read `level_progress.xp_for_next_level` instead. */
+  next_level_xp?: number;
   level_progress?: {
     current_xp?: number;
     xp_for_current_level?: number;
     xp_for_next_level?: number;
     progress_percentage?: number;
   };
-  badges: Badge[];
+  /** Absent from the response. Badges come from `GET /v2/gamification/badges`. */
+  badges?: Badge[];
   badges_count?: number;
   showcased_badges?: Badge[];
-  rank: number | null;
-  streak_days: number;
+  /** Absent from the response; the leaderboard endpoint carries a member's rank. */
+  rank?: number | null;
+  /** Absent from the response. */
+  streak_days?: number;
+  // Sent, and previously undeclared:
+  level_name?: string | null;
+  level_thresholds?: Record<string, number> | number[];
+  xp_values?: Record<string, number>;
+  is_own_profile?: boolean;
+  user?: { id: number; name?: string | null; avatar_url?: string | null } | null;
 }
 
 export interface LeaderboardEntry {
