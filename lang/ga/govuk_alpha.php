@@ -1643,6 +1643,8 @@ return [
         'description_label' => 'Cad a rinne tú?',
         'hours_created' => 'Cuireadh d\'uaireanta isteach le haghaidh athbhreithnithe.',
         'hours_failed' => 'Níorbh fhéidir d\'uaireanta a logáil. Seiceáil na sonraí agus bain triail eile as.',
+        'hours_needs_approved_application' => 'Is féidir leat uaireanta a logáil don deis seo nuair a bheidh d\'iarratas ceadaithe ag an eagraíocht.',
+        'hours_needs_approved_organisation' => 'Is féidir leat uaireanta a logáil don eagraíocht seo nuair a bheidh tú ceadaithe aici mar shaorálaí.',
         'recent_hours_title' => 'Logs uair an chloig le déanaí',
         'empty_hours' => 'Níl aon uaireanta deonacha logáilte go fóill.',
         'pagination_label' => 'Leathanaigh obair dheonach',

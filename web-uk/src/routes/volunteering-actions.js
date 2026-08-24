@@ -320,7 +320,12 @@ async function runAction(req, res, method, path, data, successRedirect, failureR
     return redirectTo(res, redirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    return redirectTo(res, failureRedirect);
+    // A failure redirect may be a function, so a caller can turn a specific API
+    // refusal into a specific answer instead of one generic "try again".
+    const redirect = typeof failureRedirect === 'function'
+      ? failureRedirect(error)
+      : failureRedirect;
+    return redirectTo(res, redirect);
   }
 }
 
@@ -492,6 +497,22 @@ function hoursStatus(status, t = null) {
       message: t ? t('govuk_alpha.volunteering.hours_created') : 'Your hours have been submitted for review.'
     };
   }
+  if (status === 'hours-needs-approved-application') {
+    return {
+      type: 'error',
+      message: t
+        ? t('govuk_alpha.volunteering.hours_needs_approved_application')
+        : 'You can log hours for this opportunity once the organisation has approved your application.'
+    };
+  }
+  if (status === 'hours-needs-approved-organisation') {
+    return {
+      type: 'error',
+      message: t
+        ? t('govuk_alpha.volunteering.hours_needs_approved_organisation')
+        : 'You can log hours for this organisation once it has approved you as a volunteer.'
+    };
+  }
   if (status === 'hours-failed') {
     return {
       type: 'error',
@@ -603,6 +624,29 @@ function emergencyAlertStatus(status, t = null) {
 function apiErrorCode(error) {
   const firstError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
   return trimmed(firstError?.code ?? error?.data?.code).toUpperCase();
+}
+
+function apiErrorField(error) {
+  const firstError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
+  return trimmed(firstError?.field ?? error?.data?.field);
+}
+
+/**
+ * Which "cannot log hours" is this?
+ *
+ * The API refuses with FORBIDDEN and names the field: `opportunity_id` when the
+ * member has no approved application for that opportunity, `organization_id`
+ * when they have no approved relationship with the organisation. Both are
+ * "you are waiting on the organisation", not "your input is wrong", and telling
+ * someone to check their details for either is a dead end.
+ */
+function hoursFailureStatus(error) {
+  if (apiErrorCode(error) === 'FORBIDDEN') {
+    const field = apiErrorField(error);
+    if (field === 'opportunity_id') return 'hours-needs-approved-application';
+    if (field === 'organization_id') return 'hours-needs-approved-organisation';
+  }
+  return 'hours-failed';
 }
 
 function groupSignupStatus(status, t = null) {
@@ -2736,7 +2780,13 @@ router.post('/hours', asyncRoute(async (req, res) => {
     '/hours',
     payload,
     '/volunteering/hours?status=hours-created',
-    '/volunteering/hours?status=hours-failed'
+    // 🔴 The commonest refusal here is NOT bad input. Logging hours requires an
+    // APPROVED application (or an approved relationship with the organisation),
+    // and the API says exactly that — naming the field. The generic
+    // "check the details and try again" sent members back to re-read a date and
+    // an hours figure that were both fine, with no way to discover that they
+    // were waiting on the organisation.
+    (error) => `/volunteering/hours?status=${hoursFailureStatus(error)}`
   );
 }));
 

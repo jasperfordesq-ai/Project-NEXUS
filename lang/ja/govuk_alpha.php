@@ -1643,6 +1643,8 @@ return [
         'description_label' => 'あなたは何をしましたか？',
         'hours_created' => 'あなたの勤務時間は審査のために提出されました。',
         'hours_failed' => '時間を記録できませんでした。詳細を確認して、再試行してください。',
+        'hours_needs_approved_application' => 'この募集の活動時間は、団体があなたの応募を承認したあとに記録できます。',
+        'hours_needs_approved_organisation' => 'この団体の活動時間は、団体があなたをボランティアとして承認したあとに記録できます。',
         'recent_hours_title' => '最近の 1 時間のログ',
         'empty_hours' => 'ボランティア活動時間はまだ記録されていません。',
         'pagination_label' => 'ボランティアページ',

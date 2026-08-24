@@ -2652,6 +2652,8 @@
                 "description_label": "Che cosa hai fatto%",
                 "hours_created": "I tuoi orari sono stati inviati per la revisione.",
                 "hours_failed": "Impossibile registrare le tue ore. Controlla i dettagli e riprova.",
+                "hours_needs_approved_application": "Potrai registrare le ore per questa opportunità quando l'organizzazione avrà approvato la tua candidatura.",
+                "hours_needs_approved_organisation": "Potrai registrare le ore per questa organizzazione quando ti avrà approvato come volontario.",
                 "recent_hours_title": "Registri delle ore recenti",
                 "empty_hours": "Non sono state ancora registrate ore di volontariato.",
                 "pagination_label": "Pagine di volontariato",

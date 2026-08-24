@@ -1643,6 +1643,8 @@ return [
         'description_label' => 'ماذا فعلت؟',
         'hours_created' => 'لقد تم إرسال ساعاتك للمراجعة.',
         'hours_failed' => 'لا يمكن تسجيل ساعاتك. تحقق من التفاصيل وحاول مرة أخرى.',
+        'hours_needs_approved_application' => 'يمكنك تسجيل الساعات لهذه الفرصة بعد أن توافق المنظمة على طلبك.',
+        'hours_needs_approved_organisation' => 'يمكنك تسجيل الساعات لهذه المنظمة بعد أن توافق عليك كمتطوع.',
         'recent_hours_title' => 'سجلات الساعة الأخيرة',
         'empty_hours' => 'لم يتم تسجيل أي ساعات تطوعية بعد.',
         'pagination_label' => 'صفحات التطوع',

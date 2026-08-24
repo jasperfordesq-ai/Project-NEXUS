@@ -1643,6 +1643,8 @@ return [
         'description_label' => 'Wat heb je gedaan%',
         'hours_created' => 'Je uren zijn ter beoordeling ingediend.',
         'hours_failed' => 'Je uren konden niet worden geregistreerd. Controleer de details en probeer het opnieuw.',
+        'hours_needs_approved_application' => 'Je kunt uren voor deze kans vastleggen zodra de organisatie je aanmelding heeft goedgekeurd.',
+        'hours_needs_approved_organisation' => 'Je kunt uren voor deze organisatie vastleggen zodra zij je als vrijwilliger heeft goedgekeurd.',
         'recent_hours_title' => 'Recente urenregistraties',
         'empty_hours' => 'Er zijn nog geen vrijwilligersuren geregistreerd.',
         'pagination_label' => 'Pagina\'s voor vrijwilligerswerk',

@@ -1643,6 +1643,8 @@ return [
         'description_label' => 'Co zrobiłeś%',
         'hours_created' => 'Twoje godziny pracy zostały przesłane do sprawdzenia.',
         'hours_failed' => 'Nie udało się zarejestrować Twoich godzin. Sprawdź szczegóły i spróbuj ponownie.',
+        'hours_needs_approved_application' => 'Będziesz mógł zarejestrować godziny dla tej możliwości, gdy organizacja zatwierdzi Twoje zgłoszenie.',
+        'hours_needs_approved_organisation' => 'Będziesz mógł zarejestrować godziny dla tej organizacji, gdy zatwierdzi Cię jako wolontariusza.',
         'recent_hours_title' => 'Ostatnie rejestry godzin',
         'empty_hours' => 'Nie zarejestrowano jeszcze żadnych godzin wolontariatu.',
         'pagination_label' => 'Strony o wolontariacie',

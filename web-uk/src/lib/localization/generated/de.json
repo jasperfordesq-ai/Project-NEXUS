@@ -2652,6 +2652,8 @@
                 "description_label": "Was hast du gemacht%",
                 "hours_created": "Ihre Stunden wurden zur Überprüfung eingereicht.",
                 "hours_failed": "Ihre Stunden konnten nicht protokolliert werden. Überprüfen Sie die Details und versuchen Sie es erneut.",
+                "hours_needs_approved_application": "Sie können Stunden für diese Gelegenheit erfassen, sobald die Organisation Ihre Bewerbung genehmigt hat.",
+                "hours_needs_approved_organisation": "Sie können Stunden für diese Organisation erfassen, sobald sie Sie als Freiwillige oder Freiwilligen bestätigt hat.",
                 "recent_hours_title": "Aktuelle Stundenprotokolle",
                 "empty_hours": "Es wurden noch keine Freiwilligenstunden erfasst.",
                 "pagination_label": "Freiwilligenseiten",

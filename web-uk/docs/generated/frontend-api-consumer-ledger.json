@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-24T14:23:18.940Z",
+  "generatedAt": "2026-08-24T14:54:30.418Z",
   "provenance": {
-    "generatedAt": "2026-08-24T14:23:18.940Z",
+    "generatedAt": "2026-08-24T14:54:30.418Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "21066ecb053291978a839eaba54b0e137ff50cea",
+    "laravelCommitSha": "4a1d90af325dfef89a80dfd3d05300ea33afc833",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "21066ecb053291978a839eaba54b0e137ff50cea",
+    "webUkRepositoryCommitSha": "4a1d90af325dfef89a80dfd3d05300ea33afc833",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -1191,6 +1191,7 @@
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/template-source.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
         "tests/whats-on-venues-template-render.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -22700,7 +22701,8 @@
         "tests/runtime/member-block-mutation.spec.js",
         "tests/session-touch.test.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24460,7 +24462,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/accessibility-needs",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:1961",
+      "source": "src/routes/volunteering-actions.js:2005",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24486,7 +24488,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24496,7 +24499,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/accessibility-needs",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2799",
+      "source": "src/routes/volunteering-actions.js:2849",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -24522,7 +24525,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24532,7 +24536,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/applications?status=approved&per_page=50",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2449",
+      "source": "src/routes/volunteering-actions.js:2493",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24563,7 +24567,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24573,7 +24578,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/applications/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2712",
+      "source": "src/routes/volunteering-actions.js:2756",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24603,7 +24608,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24613,7 +24619,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/applications/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3231",
+      "source": "src/routes/volunteering-actions.js:3281",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24643,7 +24649,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24653,7 +24660,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/certificates",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:1915",
+      "source": "src/routes/volunteering-actions.js:1959",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24684,7 +24691,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24694,7 +24702,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/certificates",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2810",
+      "source": "src/routes/volunteering-actions.js:2860",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -24725,7 +24733,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24735,7 +24744,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/certificates/{param}/html",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:1948",
+      "source": "src/routes/volunteering-actions.js:1992",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:code",
@@ -24765,7 +24774,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24801,7 +24811,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24811,7 +24822,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/credentials",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2383",
+      "source": "src/routes/volunteering-actions.js:2427",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24842,7 +24853,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24891,7 +24903,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/credentials/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2960",
+      "source": "src/routes/volunteering-actions.js:3010",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24922,7 +24934,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24965,7 +24978,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/donations",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3029",
+      "source": "src/routes/volunteering-actions.js:3079",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -24994,7 +25007,8 @@
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
-        "tests/template-source.test.js"
+        "tests/template-source.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25004,7 +25018,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/donations?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2523",
+      "source": "src/routes/volunteering-actions.js:2567",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25033,7 +25047,8 @@
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
-        "tests/template-source.test.js"
+        "tests/template-source.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25043,7 +25058,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/emergency-alerts?cursor={param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:1988",
+      "source": "src/routes/volunteering-actions.js:2032",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25075,7 +25090,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25085,7 +25101,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/emergency-alerts/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2908",
+      "source": "src/routes/volunteering-actions.js:2958",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25117,7 +25133,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25127,7 +25144,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/expenses",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3117",
+      "source": "src/routes/volunteering-actions.js:3167",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -25154,7 +25171,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25164,7 +25182,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/expenses?per_page=50",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2551",
+      "source": "src/routes/volunteering-actions.js:2595",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25191,7 +25209,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25201,7 +25220,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/giving-days",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2522",
+      "source": "src/routes/volunteering-actions.js:2566",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25227,7 +25246,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25237,7 +25257,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/group-reservations",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2015",
+      "source": "src/routes/volunteering-actions.js:2059",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25267,7 +25287,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25277,7 +25298,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/group-reservations/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3081",
+      "source": "src/routes/volunteering-actions.js:3131",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25307,7 +25328,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25317,7 +25339,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/group-reservations/{param}/members",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3050",
+      "source": "src/routes/volunteering-actions.js:3100",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25347,7 +25369,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25357,7 +25380,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/group-reservations/{param}/members/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3068",
+      "source": "src/routes/volunteering-actions.js:3118",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id; path:userId",
@@ -25387,7 +25410,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25397,7 +25421,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/hours",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2732",
+      "source": "src/routes/volunteering-actions.js:2776",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -25428,7 +25452,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25438,7 +25463,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/hours?per_page=10",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2446",
+      "source": "src/routes/volunteering-actions.js:2490",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25469,7 +25494,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25479,7 +25505,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/hours/{param}/verify",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3255",
+      "source": "src/routes/volunteering-actions.js:3305",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25509,7 +25535,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25519,7 +25546,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/hours/summary",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2445",
+      "source": "src/routes/volunteering-actions.js:2489",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25550,7 +25577,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25560,7 +25588,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/incidents",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2053",
+      "source": "src/routes/volunteering-actions.js:2097",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25587,7 +25615,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25597,7 +25626,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/incidents",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3201",
+      "source": "src/routes/volunteering-actions.js:3251",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -25624,7 +25653,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25634,7 +25664,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/my-organisations?{query}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2162",
+      "source": "src/routes/volunteering-actions.js:2206",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25667,7 +25697,8 @@
         "tests/ledger-token-crosscheck.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25715,7 +25746,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/my-waitlists",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2095",
+      "source": "src/routes/volunteering-actions.js:2139",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25745,7 +25776,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25755,7 +25787,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/opportunities",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2647",
+      "source": "src/routes/volunteering-actions.js:2691",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -25787,7 +25819,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -25911,7 +25944,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/opportunities/{param}/apply",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2668",
+      "source": "src/routes/volunteering-actions.js:2712",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25941,7 +25974,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26028,7 +26062,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2280",
+      "source": "src/routes/volunteering-actions.js:2324",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26060,7 +26094,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26070,7 +26105,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/organisations/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3277",
+      "source": "src/routes/volunteering-actions.js:3327",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26098,7 +26133,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26146,7 +26182,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/applications?status=pending&per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2247",
+      "source": "src/routes/volunteering-actions.js:2291",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26172,7 +26208,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26182,7 +26219,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/hours/pending?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2250",
+      "source": "src/routes/volunteering-actions.js:2294",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26208,7 +26245,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26218,7 +26256,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/stats",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2218",
+      "source": "src/routes/volunteering-actions.js:2262",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26244,7 +26282,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26254,7 +26293,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/volunteers?{query}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2314",
+      "source": "src/routes/volunteering-actions.js:2358",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26280,7 +26319,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26290,7 +26330,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/wallet",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2348",
+      "source": "src/routes/volunteering-actions.js:2392",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26316,7 +26356,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26326,7 +26367,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/organisations/{param}/wallet/deposit",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3308",
+      "source": "src/routes/volunteering-actions.js:3358",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26352,7 +26393,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26362,7 +26404,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/organisations/{param}/wallet/transactions?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2350",
+      "source": "src/routes/volunteering-actions.js:2394",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26389,7 +26431,8 @@
         "tests/routes.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26399,7 +26442,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/recommended-shifts?limit=15&min_score=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2192",
+      "source": "src/routes/volunteering-actions.js:2236",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26431,7 +26474,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26473,7 +26517,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts?limit=50",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2126",
+      "source": "src/routes/volunteering-actions.js:2170",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26503,7 +26547,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26513,7 +26558,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/shifts/{param}/signup",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2699",
+      "source": "src/routes/volunteering-actions.js:2743",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26543,7 +26588,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26553,7 +26599,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/shifts/{param}/signup",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2684",
+      "source": "src/routes/volunteering-actions.js:2728",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26583,7 +26629,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26593,7 +26640,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/shifts/{param}/waitlist",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2822",
+      "source": "src/routes/volunteering-actions.js:2872",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26623,7 +26670,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26633,7 +26681,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/swaps",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2123",
+      "source": "src/routes/volunteering-actions.js:2167",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26665,7 +26713,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26675,7 +26724,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/swaps",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2844",
+      "source": "src/routes/volunteering-actions.js:2894",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26707,7 +26756,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26717,7 +26767,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/swaps/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2889",
+      "source": "src/routes/volunteering-actions.js:2939",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26749,7 +26799,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26759,7 +26810,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/swaps/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2872",
+      "source": "src/routes/volunteering-actions.js:2922",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26791,7 +26842,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26801,7 +26853,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/training",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2049",
+      "source": "src/routes/volunteering-actions.js:2093",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26828,7 +26880,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26838,7 +26891,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/training",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3159",
+      "source": "src/routes/volunteering-actions.js:3209",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26865,7 +26918,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26875,7 +26929,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/wellbeing",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2496",
+      "source": "src/routes/volunteering-actions.js:2540",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26907,7 +26961,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -26917,7 +26972,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/wellbeing/checkin",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:2984",
+      "source": "src/routes/volunteering-actions.js:3034",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26947,7 +27002,8 @@
         "tests/form-input-preserved-volunteering.test.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"

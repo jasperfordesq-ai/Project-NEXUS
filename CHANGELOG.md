@@ -29,6 +29,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Volunteers were told to check their details when they were actually waiting
+  for the organisation.** Logging volunteering hours needs an approved
+  application first. When it wasn't approved, the page said "Your hours could not
+  be logged. Check the details and try again" — so a volunteer would keep
+  re-reading a date and an hours figure that were both perfectly correct, with no
+  way to discover the real reason. It now says they can log hours once the
+  organisation has approved them, with separate wording for an unapproved
+  application and an unapproved organisation. New messages in all eleven
+  languages.
+
+### Notes
+
+- **The volunteering journey now works end to end, and has been walked.**
+  Previously it could not be checked at all because the test community had no
+  volunteering data. Seeded through the pages themselves and walked: registering
+  an organisation (which correctly waits for approval, and explains that
+  clearly); an administrator approving it; posting an opportunity (an empty form
+  refused with a proper error summary); another member finding it by browsing and
+  by search; applying once, after which the apply form is correctly withdrawn so
+  nobody applies twice; the organisation seeing and approving the application;
+  logging hours, which are held as pending; and the organisation approving those
+  hours, at which point **the time credits arrive — two hours became two credits,
+  and nothing arrived before approval**. The volunteers roster then shows the
+  member as approved with their total hours.
+
 - **Saving a listing showed up on one page and nowhere else.** Pressing Save
   changed the button to "Unsave", but the listing list you came from still showed
   no "Saved" label. Two different features were sharing the word "Saved": the

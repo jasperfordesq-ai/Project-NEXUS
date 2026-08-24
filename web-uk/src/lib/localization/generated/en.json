@@ -2652,6 +2652,8 @@
                 "description_label": "What did you do?",
                 "hours_created": "Your hours have been submitted for review.",
                 "hours_failed": "Your hours could not be logged. Check the details and try again.",
+                "hours_needs_approved_application": "You can log hours for this opportunity once the organisation has approved your application.",
+                "hours_needs_approved_organisation": "You can log hours for this organisation once it has approved you as a volunteer.",
                 "recent_hours_title": "Recent hour logs",
                 "empty_hours": "No volunteering hours have been logged yet.",
                 "pagination_label": "Volunteering pages",

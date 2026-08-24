@@ -2652,6 +2652,8 @@
                 "description_label": "Qu'est-ce que tu as fait%",
                 "hours_created": "Vos heures ont été soumises pour examen.",
                 "hours_failed": "Vos heures n'ont pas pu être enregistrées. Vérifiez les détails et réessayez.",
+                "hours_needs_approved_application": "Vous pourrez enregistrer des heures pour cette mission dès que l'organisation aura accepté votre candidature.",
+                "hours_needs_approved_organisation": "Vous pourrez enregistrer des heures pour cette organisation dès qu'elle vous aura accepté comme bénévole.",
                 "recent_hours_title": "Journaux d'heures récents",
                 "empty_hours": "Aucune heure de bénévolat n'a encore été enregistrée.",
                 "pagination_label": "Pages de bénévolat",
