@@ -764,6 +764,7 @@ return [
     'message_no_transcript' => 'Esta mensagem não tem transcrição para traduzir',
     'message_no_translatable_content' => 'Esta mensagem não tem conteúdo para traduzir',
     'message_translation_failed' => 'A tradução falhou. Por favor, tente novamente.',
+    'message_translation_unavailable' => 'A tradução de mensagens não está disponível nesta comunidade.',
     'conversation_not_found' => 'Conversa não encontrada',
     'listing_edit_own_only' => 'Você só pode editar suas próprias listagens',
     'listing_delete_own_only' => 'Você só pode excluir suas próprias listagens',

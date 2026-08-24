@@ -764,6 +764,7 @@ return [
     'message_no_transcript' => 'Questo messaggio non ha trascrizione da tradurre',
     'message_no_translatable_content' => 'Questo messaggio non ha contenuto da tradurre',
     'message_translation_failed' => 'Traduzione fallita. Per favore riprova.',
+    'message_translation_unavailable' => 'La traduzione dei messaggi non è disponibile in questa comunità.',
     'conversation_not_found' => 'Conversazione non trovata',
     'listing_edit_own_only' => 'Puoi modificare solo le tue inserzioni',
     'listing_delete_own_only' => 'Puoi eliminare solo le tue inserzioni',

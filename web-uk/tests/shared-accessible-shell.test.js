@@ -260,6 +260,9 @@ jest.mock('../src/lib/api', () => ({
   getMemberEndorsements: jest.fn().mockResolvedValue({ data: { endorsements: [] } }),
   transferWalletCredits: jest.fn().mockResolvedValue({ data: { id: 99, type: 'debit', status: 'completed' } }),
   getUnreadCount: jest.fn().mockResolvedValue({ unreadCount: 0 }),
+  // Called when a conversation is opened: reading it marks it read server-side,
+  // so the cached unread count has to be dropped or the inbox contradicts itself.
+  invalidateMessageUnreadCount: jest.fn(),
   getNotifications: jest.fn().mockResolvedValue({ data: [], meta: { cursor: null, has_more: false, per_page: 30 } }),
   getNotification: jest.fn().mockResolvedValue({ data: {} }),
   getGroupedNotifications: jest.fn().mockResolvedValue({ data: [], meta: { cursor: null, has_more: false, per_page: 30 } }),

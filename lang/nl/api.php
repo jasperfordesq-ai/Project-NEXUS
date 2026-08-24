@@ -788,6 +788,7 @@ return [
     'message_no_transcript' => 'Dit bericht heeft geen transcript om te vertalen',
     'message_no_translatable_content' => 'Dit bericht heeft geen inhoud om te vertalen',
     'message_translation_failed' => 'Vertaling mislukt. Probeer het opnieuw.',
+    'message_translation_unavailable' => 'Berichtvertaling is niet beschikbaar in deze community.',
     'conversation_not_found' => 'Gesprek niet gevonden',
     'listing_edit_own_only' => 'U kunt alleen uw eigen vermeldingen bewerken',
     'listing_delete_own_only' => 'U kunt alleen uw eigen vermeldingen verwijderen',

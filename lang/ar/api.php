@@ -788,6 +788,7 @@ return [
     'message_no_transcript' => 'لا تحتوي هذه الرسالة على نص للترجمة',
     'message_no_translatable_content' => 'لا تحتوي هذه الرسالة على محتوى لترجمته',
     'message_translation_failed' => 'فشلت الترجمة. يرجى المحاولة مرة أخرى.',
+    'message_translation_unavailable' => 'ترجمة الرسائل غير متوفرة في هذا المجتمع.',
     'conversation_not_found' => 'لم يتم العثور على المحادثة',
     'listing_edit_own_only' => 'يمكنك فقط تعديل قوائمك الخاصة',
     'listing_delete_own_only' => 'يمكنك فقط حذف قوائمك الخاصة',

@@ -18,6 +18,21 @@ use Illuminate\Support\Facades\Log;
 class TranscriptionService
 {
     /**
+     * Is the provider this service needs actually configured?
+     *
+     * 🔴 Both transcribe() and translate() return null when the key is missing,
+     * which is indistinguishable from "the provider was called and failed".
+     * Callers used to report both as a server error telling the member to try
+     * again — advice that can never work on an installation with no key, and a
+     * permanent 500 in error monitoring. Check this FIRST and answer
+     * "unavailable" instead.
+     */
+    public static function isConfigured(): bool
+    {
+        return ! empty(config('services.openai.api_key'));
+    }
+
+    /**
      * Transcribe an audio file using OpenAI Whisper API.
      *
      * @param string $audioFilePath Absolute path to the audio file on disk.

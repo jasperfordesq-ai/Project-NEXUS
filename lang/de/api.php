@@ -764,6 +764,7 @@ return [
     'message_no_transcript' => 'Für diese Nachricht gibt es kein zu übersetzendes Transkript',
     'message_no_translatable_content' => 'Diese Nachricht enthält keinen zu übersetzenden Inhalt',
     'message_translation_failed' => 'Die Übersetzung ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    'message_translation_unavailable' => 'Die Nachrichtenübersetzung ist in dieser Gemeinschaft nicht verfügbar.',
     'conversation_not_found' => 'Konversation nicht gefunden',
     'listing_edit_own_only' => 'Sie können nur Ihre eigenen Einträge bearbeiten',
     'listing_delete_own_only' => 'Sie können nur Ihre eigenen Einträge löschen',

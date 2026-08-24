@@ -2918,6 +2918,18 @@ class FederationV2Controller extends BaseApiController
             return $this->respondWithError('NO_CONTENT', __('api.message_no_translatable_content'), null, 422);
         }
 
+        // Same reasoning as MessagesController::translate(): a missing provider
+        // key is a permanent condition, not a failure to retry. Answer
+        // "unavailable" rather than a 500 that says "please try again".
+        if (! TranscriptionService::isConfigured()) {
+            return $this->respondWithError(
+                'TRANSLATION_UNAVAILABLE',
+                __('api.message_translation_unavailable'),
+                null,
+                503,
+            );
+        }
+
         // INT7: Fetch conversation context for better disambiguation
         $conversationContext = [];
         $translationConfig = TranslationConfigurationService::getAll();

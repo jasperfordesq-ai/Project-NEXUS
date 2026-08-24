@@ -764,6 +764,7 @@ return [
     'message_no_transcript' => 'Níl aon tras-scríbhinn ag an teachtaireacht seo le haistriú',
     'message_no_translatable_content' => 'Níl aon ábhar sa teachtaireacht seo le haistriú',
     'message_translation_failed' => 'Theip ar an aistriúchán. Bain triail eile as.',
+    'message_translation_unavailable' => 'Níl aistriúchán teachtaireachtaí ar fáil sa chomhphobal seo.',
     'conversation_not_found' => 'Comhrá gan aimsiú',
     'listing_edit_own_only' => 'Ní féidir leat ach do liostaí féin a chur in eagar',
     'listing_delete_own_only' => 'Ní féidir leat ach do liostaí féin a scriosadh',

@@ -795,6 +795,22 @@ class MessagesController extends BaseApiController
             return $this->respondWithError('NO_CONTENT', __('api.message_no_translatable_content'), null, 422);
         }
 
+        // 🔴 "Not configured" is not a failure. Without this check the missing-key
+        // case fell through to TRANSLATION_FAILED / 500 below, which told the
+        // member to try again — advice that can never work here — and recorded a
+        // permanent server error on every press. It also matters to the React
+        // auto-translate loop, which retries every message on each cycle: a
+        // distinguishable answer lets a client stop asking. Checked before the
+        // provider call so no request is made at all.
+        if (! TranscriptionService::isConfigured()) {
+            return $this->respondWithError(
+                'TRANSLATION_UNAVAILABLE',
+                __('api.message_translation_unavailable'),
+                null,
+                503,
+            );
+        }
+
         // INT7: Fetch conversation context for better disambiguation
         $conversationContext = [];
         $translationConfig = TranslationConfigurationService::getAll();

@@ -1452,6 +1452,7 @@ return [
     'message_no_transcript'                => 'This message has no transcript to translate',
     'message_no_translatable_content'     => 'This message has no content to translate',
     'message_translation_failed'           => 'Translation failed. Please try again.',
+    'message_translation_unavailable'      => 'Message translation is not available on this community.',
     'conversation_not_found'               => 'Conversation not found',
 
     // ============================================

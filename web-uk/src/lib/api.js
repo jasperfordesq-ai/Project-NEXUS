@@ -2349,17 +2349,52 @@ async function getConversation(token, id, params = {}) {
     query.set('cursor', String(params.cursor));
   }
   const suffix = query.size ? `?${query.toString()}` : '';
-  return request(`/api/v2/messages/${encodeURIComponent(id)}${suffix}`, {
+  const result = await request(`/api/v2/messages/${encodeURIComponent(id)}${suffix}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
+
+  // Reading a conversation marks it read server-side, so our cached count is
+  // stale the moment this returns. See invalidateMessageUnreadCount() — the
+  // direct-conversation page reaches the same endpoint through callMessageApi()
+  // rather than this helper, so it invalidates there too.
+  invalidateMessageUnreadCount(token);
+
+  return result;
 }
 
-async function getUnreadCount(token) {
-  // Check cache first
+/**
+ * Drop this member's cached message unread count.
+ *
+ * 🔴 Call this after anything that reads a conversation. GET
+ * /api/v2/messages/{id} MARKS THE CONVERSATION READ — verified against the API:
+ * unread-count goes 1 -> 0 across that single GET with nothing else in between.
+ * The count is cached for CACHE_TTL.COUNTS (15s), so without this the inbox
+ * summary keeps announcing "1 unread message" for up to fifteen seconds after
+ * the member has read it. The per-conversation row badge does not have the
+ * problem — it comes from the uncached conversation list — which is why the two
+ * tags on the same page disagreed, both rendering the identical words.
+ */
+function invalidateMessageUnreadCount(token) {
+  cache.delete(cacheKey(token, 'msg-unread'));
+}
+
+/**
+ * The member's unread message count, cached for 15s.
+ *
+ * `options.fresh` skips the cached value and re-reads. The inbox passes it,
+ * because there the count is the page's own subject matter and sits next to a
+ * LIVE per-conversation list: with the cache, a message that arrived seconds ago
+ * showed as "1 unread message" on its row while the page summary said nothing at
+ * all. A page must not contradict itself about the thing it is for. The result
+ * is still written to the cache, so the header badge on the next page benefits.
+ */
+async function getUnreadCount(token, options = {}) {
   const key = cacheKey(token, 'msg-unread');
-  const cached = cache.get(key);
-  if (cached !== undefined) {
-    return cached;
+  if (!options.fresh) {
+    const cached = cache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
   }
 
   const result = await request('/api/v2/messages/unread-count', {
@@ -2422,6 +2457,10 @@ async function replyToConversation(token, conversationId, content) {
 // Alias for sendMessage — kept for backward compatibility with callers
 const startConversation = sendMessage;
 
+// Explicit read marking. Nothing calls this today and that is not an oversight:
+// GET /api/v2/messages/{id} already marks the conversation read, so the read
+// happens as a side effect of viewing rather than as an action. Kept because an
+// explicit "mark as read" control would need exactly this.
 async function markConversationRead(token, conversationId) {
   const result = await request(`/api/v2/messages/${encodeURIComponent(conversationId)}/read`, {
     method: 'PUT',
@@ -4084,6 +4123,7 @@ module.exports = {
   callFederationApi,
   getConversations,
   getConversation,
+  invalidateMessageUnreadCount,
   getUnreadCount,
   sendMessage,
   replyToConversation,

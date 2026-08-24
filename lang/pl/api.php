@@ -788,6 +788,7 @@ return [
     'message_no_transcript' => 'Ta wiadomość nie zawiera transkrypcji do przetłumaczenia',
     'message_no_translatable_content' => 'Ta wiadomość nie zawiera treści do przetłumaczenia',
     'message_translation_failed' => 'Tłumaczenie nie powiodło się. Spróbuj ponownie.',
+    'message_translation_unavailable' => 'Tłumaczenie wiadomości nie jest dostępne w tej społeczności.',
     'conversation_not_found' => 'Nie znaleziono rozmowy',
     'listing_edit_own_only' => 'Możesz edytować tylko swoje własne aukcje',
     'listing_delete_own_only' => 'Możesz usuwać tylko własne wpisy',

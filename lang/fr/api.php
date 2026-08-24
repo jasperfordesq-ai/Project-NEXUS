@@ -764,6 +764,7 @@ return [
     'message_no_transcript' => 'Ce message n\'a pas de transcription à traduire',
     'message_no_translatable_content' => 'Ce message n\'a pas de contenu à traduire',
     'message_translation_failed' => 'La traduction a échoué. Veuillez réessayer.',
+    'message_translation_unavailable' => 'La traduction des messages n\'est pas disponible dans cette communauté.',
     'conversation_not_found' => 'Conversation introuvable',
     'listing_edit_own_only' => 'Vous ne pouvez modifier que vos propres annonces',
     'listing_delete_own_only' => 'Vous ne pouvez supprimer que vos propres annonces',

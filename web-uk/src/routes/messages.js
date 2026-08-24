@@ -12,6 +12,7 @@ const {
   getUser,
   searchUsers,
   callMessageApi,
+  invalidateMessageUnreadCount,
   uploadVoiceMessage,
   uploadMessageAttachments,
   callConversationApi,
@@ -518,6 +519,13 @@ async function renderDirectConversation(req, res, userId) {
     })
   ]);
 
+  // 🔴 The GET above IS the read event — the API marks the conversation read as
+  // a side effect of fetching it. Our unread count is cached for 15s, so without
+  // this the member reads a message, returns to the inbox, and is still told
+  // "1 unread message". Verified against the API: the count goes 1 -> 0 across
+  // that single GET.
+  invalidateMessageUnreadCount(req.token);
+
   const profile = dataFrom(profileResult);
   const currentUserId = positiveInteger(profile && profile.id);
   const normalized = directConversationFrom(messagesResult, userId, currentUserId, res.locals.t);
@@ -620,6 +628,10 @@ function groupCreateFailureStatus(error) {
 
 function translateFailureStatus(error) {
   const code = apiErrorCode(error);
+  // TRANSLATION_UNAVAILABLE means the provider is not configured for this
+  // installation — a permanent condition. Reporting it as a failure told the
+  // member "please try again later" about something that will never work.
+  if (code === 'TRANSLATION_UNAVAILABLE') return 'translate-unavailable';
   if (code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
   if (code.includes('NO_CONTENT')) return 'translate-empty';
   return 'translate-failed';
@@ -777,7 +789,13 @@ router.post('/groups', requireConnectionsFeature, asyncRoute(async (req, res) =>
   if (!token) return redirectTo(res, loginRedirect());
 
   const name = trimmed(req.body.name);
-  const memberIds = memberIdsFrom(req.body.member_ids || req.body.members);
+  // Drop the creator if they somehow reach here in the member list: they are the
+  // administrator by definition, and the API refuses a list that contains them,
+  // which surfaced as an unexplained "We could not create the group".
+  const creatorProfile = dataFrom(await getRequestProfile(req, token).catch(() => null));
+  const creatorId = positiveInteger(creatorProfile && creatorProfile.id);
+  const memberIds = memberIdsFrom(req.body.member_ids || req.body.members)
+    .filter(id => id !== creatorId);
   const payload = {
     name,
     member_ids: memberIds
@@ -910,7 +928,16 @@ router.get('/groups/new', requireConnectionsFeature, requireAuth, asyncRoute(asy
   const restriction = await messageRestriction(req);
   const access = messageAccess(req, restriction);
   const query = trimmed(req.query.q);
-  const selectedIds = selectedGroupMemberIds(req.query);
+  // 🔴 The creator must never appear as someone to add. Before this, searching
+  // offered "Add to group" for YOURSELF, taking it listed you twice — once as
+  // "You (administrator)" and again as a nameless "Community member" — and it
+  // counted towards the "at least two other members" rule, so the page said the
+  // group could be created and the API then refused it with an unexplained "We
+  // could not create the group". Filtered from BOTH the results and the
+  // selection, so a hand-edited URL cannot recreate the dead end either.
+  const creatorProfile = dataFrom(await getRequestProfile(req, req.token).catch(() => null));
+  const creatorId = positiveInteger(creatorProfile && creatorProfile.id);
+  const selectedIds = selectedGroupMemberIds(req.query).filter(id => id !== creatorId);
   const selected = new Set(selectedIds);
   let searchResults = [];
   let rawSearchResults = [];
@@ -922,7 +949,7 @@ router.get('/groups/new', requireConnectionsFeature, requireAuth, asyncRoute(asy
         displayName: memberName(member, res.locals.t),
         id: positiveInteger(member.id)
       }))
-      .filter(member => member.id !== null);
+      .filter(member => member.id !== null && member.id !== creatorId);
     searchResults = rawSearchResults.filter(member => !selected.has(member.id));
   }
   const namedSelected = new Map(rawSearchResults.map(member => [member.id, member.displayName]));
@@ -1082,7 +1109,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
       archived: showArchived,
       ...(cursor ? { cursor } : {})
     }),
-    getUnreadCount(req.token).catch(() => ({ data: { count: 0 } })),
+    // `fresh` on purpose: this page shows the count NEXT TO a live per-conversation
+    // list, and a cached value made the two disagree in both directions.
+    getUnreadCount(req.token, { fresh: true }).catch(() => ({ data: { count: 0 } })),
     canStart && searchQuery
       ? searchUsers(req.token, searchQuery, { limit: 10 }).catch(() => ({ data: [] }))
       : Promise.resolve({ data: [] }),

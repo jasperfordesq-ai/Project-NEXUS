@@ -788,6 +788,7 @@ return [
     'message_no_transcript' => 'このメッセージには翻訳するトランスクリプトがありません',
     'message_no_translatable_content' => 'このメッセージには翻訳する内容がありません',
     'message_translation_failed' => '翻訳に失敗しました。もう一度試してください。',
+    'message_translation_unavailable' => 'このコミュニティではメッセージの翻訳を利用できません。',
     'conversation_not_found' => '会話が見つかりません',
     'listing_edit_own_only' => '自分のリストのみ編集できます',
     'listing_delete_own_only' => '自分のリストのみ削除できます',

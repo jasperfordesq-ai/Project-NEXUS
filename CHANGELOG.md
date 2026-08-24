@@ -29,6 +29,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The message inbox contradicted itself about unread messages.** The summary at
+  the top of the page and the badge on each conversation row show the same words,
+  "1 unread message", but came from different places — one cached for 15 seconds,
+  one live. They disagreed in both directions: after reading a message the
+  summary kept claiming it was unread, and a message that had just arrived showed
+  on its row while the summary said nothing at all. Reading a conversation is
+  what marks it read, so the page now clears the cached count at that moment, and
+  the inbox reads its own figure fresh. Verified against the server at each step.
+
+- **Pressing "Translate" told members to try again when translation was not
+  available at all.** If no translation provider is configured, the service
+  reported the same "translation failed, please try again" as a genuine provider
+  error — advice that could never work, a permanent server error in monitoring,
+  and, in the React app, an auto-translate loop that retried every message on
+  every cycle. The API now answers with a distinct "not available" result, and
+  members are told plainly that message translation is not available on this
+  community. New wording added in all eleven languages.
+
+- **Starting a group conversation offered you yourself as a member to add, then
+  refused to create the group.** Taking that offer listed you twice — once as the
+  administrator, once as a nameless "Community member" — and counted towards the
+  page's own "at least two other members" rule, so the page said the group could
+  be created and the attempt then failed with an unexplained "We could not create
+  the group". You are the administrator by definition, so you no longer appear in
+  the member search, and a hand-edited web address naming you is ignored rather
+  than producing the same dead end.
+
+- **Nothing was found wrong in the wallet.** Walked end to end for completeness:
+  eight different bad transfers were each refused with their own specific reason,
+  a real transfer of 3 credits moved exactly 3 (102 → 99 and 23 → 26, nothing
+  created or lost), both members' histories and balances updated, the CSV export
+  contained the transaction, and re-submitting the same page did not send the
+  credits twice. Recorded here so it is not re-audited.
+
 - **On the mobile app, group exchanges never appeared in the list, and the split
   of hours was shown as raw database field names.** Found by creating a real group
   exchange on a device — a screen that had only ever been looked at before.
