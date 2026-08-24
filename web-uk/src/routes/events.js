@@ -10,6 +10,7 @@ const { URL } = require('node:url');
 const {
   getEvents,
   getEvent,
+  getEventPermissions,
   createEvent,
   updateEvent,
   cancelEvent,
@@ -1446,6 +1447,22 @@ router.post('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
   }
 }));
 
+// A 409 from the attendance endpoints has FOUR distinct causes, and only one of
+// them is the optimistic-concurrency clash that "this record changed elsewhere"
+// describes. Collapsing them told door staff to re-read a roster that was fine —
+// when check-in had not opened yet, or the event had ended, or the person had no
+// confirmed place, or the event was still a draft. Each needs its own answer,
+// because each has a different next step.
+function attendanceConflictStatus(error) {
+  switch (apiErrorCode(error)) {
+    case 'EVENT_ATTENDANCE_TOO_EARLY': return 'attendance-too-early';
+    case 'EVENT_ATTENDANCE_WINDOW_CLOSED': return 'attendance-window-closed';
+    case 'EVENT_ATTENDANCE_REGISTRATION_REQUIRED': return 'attendance-not-registered';
+    case 'EVENT_REGISTRATION_UNAVAILABLE': return 'attendance-event-unavailable';
+    default: return 'attendance-conflict';
+  }
+}
+
 // Record attendance from a signed attendee code that a staff member has typed or
 // pasted, rather than from picking a person off the roster.
 //
@@ -1491,7 +1508,8 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 409) {
-      return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-conflict'));
+      const status = attendanceConflictStatus(error);
+      return redirectTo(res, eventPath(id, `/check-in?status=${status === 'attendance-conflict' ? 'attendance-code-conflict' : status}`));
     }
     // An unreadable code and a code for somebody this staff member cannot see are the
     // SAME answer, so the page must not distinguish them either.
@@ -1527,7 +1545,7 @@ router.post('/:id(\\d+)/check-in/:userId(\\d+)', requireAuth, asyncRoute(async (
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 409) {
-      return redirectTo(res, eventPath(id, '/check-in?status=attendance-conflict'));
+      return redirectTo(res, eventPath(id, `/check-in?status=${attendanceConflictStatus(error)}`));
     }
     if (error instanceof ApiError && [400, 403, 404, 422].includes(error.status)) {
       return redirectTo(res, eventPath(id, '/check-in?status=attendance-failed'));
@@ -3553,7 +3571,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const attendeesCursor = trimmed(req.query.attendees_cursor, 2048);
 
-  const [eventResult, rsvpsResult, currentUserResult, relationshipResult, polls] = await Promise.all([
+  const [eventResult, rsvpsResult, currentUserResult, relationshipResult, polls, permissionsResult] = await Promise.all([
     getEvent(token, id),
     getEventRsvps(token, id, { status: 'all', perPage: 50, cursor: attendeesCursor }).catch((error) => {
       if (isAuthError(error)) throw error;
@@ -3567,12 +3585,25 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       if (isAuthError(error)) throw error;
       return null;
     }) : Promise.resolve(null),
-    eventPollDetails(token, Number(id), res.locals.t)
+    eventPollDetails(token, Number(id), res.locals.t),
+    // Fails soft: without it the page renders exactly as it did before, which is
+    // the pre-fix behaviour rather than an error page.
+    token ? getEventPermissions(token, id).catch((error) => {
+      if (isAuthError(error)) throw error;
+      return {};
+    }) : Promise.resolve({})
   ]);
 
   const event = currentEventDetail(eventFrom(eventResult));
   event.onlineLink = event.online_link;
   event.videoUrl = event.video_url;
+  // The v1 detail body carries no permission set, so an organiser saw no publish
+  // control, no check-in link, no attendee management and no broadcast link on
+  // their own event — every one of those is gated on event.permissions.
+  if (permissionsResult?.permissions) {
+    event.permissions = permissionsResult.permissions;
+    if (permissionsResult.canEdit) event.can_edit = true;
+  }
   const ownerId = eventOwnerId(event);
   const currentUserId = idFrom(currentUserResult);
   const isCurrentUserOwner = ownerId !== null && currentUserId !== null && String(ownerId) === String(currentUserId);

@@ -1419,6 +1419,50 @@ describe('API Request Functions', () => {
       expect(result.data.title).toBe('Community Meetup 3');
     });
 
+    // The organiser's permission set only exists on the CANONICAL (v2) events
+    // contract. Without this negotiation header the response carries no
+    // `permissions` at all, and every organiser control on the event page — the
+    // publish button, check-in, attendee management, broadcasts — stays hidden.
+    it('should negotiate the canonical events contract when reading permissions', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: { id: 6, permissions: { publish: true, check_in: true }, can_edit: true } })
+      });
+
+      const result = await api.getEventPermissions('test-token', 6);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/events/6',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token',
+            'X-Events-Contract': '2'
+          })
+        })
+      );
+      expect(result.permissions).toEqual({ publish: true, check_in: true });
+      expect(result.canEdit).toBe(true);
+    });
+
+    it('should return no permissions rather than guessing when the read is anonymous', async () => {
+      const result = await api.getEventPermissions('', 6);
+      expect(result).toEqual({});
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should ignore a permissions value that is not an object', async () => {
+      // A malformed body must not become a truthy permission set — that would
+      // show controls the viewer may not actually be allowed to use.
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: { id: 6, permissions: ['publish'] } })
+      });
+
+      expect(await api.getEventPermissions('test-token', 6)).toEqual({});
+    });
+
     it('should call the Laravel v2 event attendee endpoint with auth', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

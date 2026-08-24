@@ -300,6 +300,9 @@ jest.mock('../src/lib/api', () => ({
   downloadEventRegistrationSubmissions: jest.fn().mockResolvedValue({ status: 200, body: Buffer.from('Question,Answer'), headers: { 'content-type': 'text/csv; charset=UTF-8', 'content-disposition': 'attachment; filename="event-registration-42.csv"' } }),
   getEvents: jest.fn().mockResolvedValue({ data: [], pagination: { page: 1, totalPages: 1 } }),
   getEvent: jest.fn().mockResolvedValue({ data: { id: 42, title: 'Community garden day', start_time: '2026-08-01T10:00:00' } }),
+  // The organiser's permission set, read from the canonical events contract. The
+  // v1 detail body carries none, which is why it is a separate call.
+  getEventPermissions: jest.fn().mockResolvedValue({}),
   getEventRsvps: jest.fn().mockResolvedValue({ data: [] }),
   createEvent: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   updateEvent: jest.fn().mockResolvedValue({ data: { id: 42 } }),

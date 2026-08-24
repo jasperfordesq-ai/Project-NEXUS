@@ -29,6 +29,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the accessible frontend, creating an event was a dead end, and an
+  organiser could not reach their own event's tools.** Found by walking the
+  events journey in a browser; no static sweep across seven audits could see it.
+  An event is created as a **draft**, the page said "Success — your event has
+  been created", and there was no way to publish it — so it stayed invisible to
+  members for ever. The same root cause hid the check-in page, attendee
+  management, broadcasts and lifecycle history: all of those controls are gated
+  on the event's permission set, which exists only on the canonical (v2) events
+  contract, and this app never negotiated it. Measured before and after: an
+  organiser went from 3 links and no publish control to 7 links and a working
+  publish control, and create → publish → visible to another member now
+  completes entirely within the accessible frontend.
+  The permission set is read in a **separate** call on purpose. Opting the event
+  detail read itself into v2 was measured and rejected: on the same event it
+  drops 43 fields, 21 of which this app uses, including **all ten venue
+  accessibility fields** (step-free access, hearing loop, quiet space, accessible
+  toilet, parking, seating, transit details, assistance contact, notes), and
+  changes `location` from a string to an object. Losing accessibility
+  information on the accessible frontend to gain a publish button is not a trade
+  worth making; a proper v2 migration is separate work.
+
+- **Event door staff were told the wrong thing when check-in was refused.** The
+  attendance endpoints answer HTTP 409 for five different situations, and the
+  accessible frontend showed one message for all of them: "This attendance
+  record changed elsewhere. The roster has been refreshed; review it before
+  trying again." Confirmed live — checking someone in before the window opened
+  produced exactly that, sending staff to re-read a roster that was perfectly
+  fine. Four of the five now say what actually happened and what to do:
+  check-in has not opened yet; check-in has closed; this person has no confirmed
+  place; this event is not published. The original wording is kept for the one
+  case it describes, a genuine concurrent edit. Applies to both the signed-code
+  and roster-pick paths, with copy hand-translated into all eleven languages.
+
 - **The ASP.NET edition now supports the complete event create, edit, and owner-management journey used by the React app.** Event writes persist the consumed schedule, timezone, location, capacity, remote-attendance, video, and venue-accessibility fields; return the canonical event contract instead of the former flat compatibility DTO; enforce tenant and organizer/admin/group-manager authorization; and expose the owner capabilities that make the management workspace reachable. A repeatable browser control now creates, reloads, edits, and manages an event through the unchanged React UI against both ASP.NET and Laravel, backed by focused persistence and authorization tests.
 
 - **A silent mail server could hold a member's request open for a minute, and

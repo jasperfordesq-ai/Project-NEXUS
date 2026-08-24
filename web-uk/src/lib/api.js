@@ -2822,6 +2822,28 @@ async function getEvent(token, id) {
   });
 }
 
+// The organiser's permission set for one event, read from the CANONICAL events
+// contract (v2). It is deliberately a separate call rather than a header on
+// getEvent(), because v2 is not a superset of v1 for this page: measured on the
+// same event, opting the detail read into v2 loses 43 keys, 21 of which this app
+// reads — including all ten venue accessibility fields (step-free access,
+// hearing loop, quiet space, accessible toilet, parking, seating, transit,
+// assistance contact, notes) — and changes `location` from a string to an object.
+// Losing accessibility information on the accessible frontend to gain a publish
+// button is not a trade worth making, so we take the one extra read until this
+// app is migrated to v2 properly.
+async function getEventPermissions(token, id) {
+  if (!token) return {};
+  const result = await request(`/api/v2/events/${encodeURIComponent(id)}`, {
+    headers: { Authorization: `Bearer ${token}`, 'X-Events-Contract': '2' }
+  });
+  const data = result?.data ?? result;
+  const permissions = data?.permissions;
+  return permissions && typeof permissions === 'object' && !Array.isArray(permissions)
+    ? { permissions, canEdit: data.can_edit === true }
+    : {};
+}
+
 // What's On — the LOGGED-OUT event advertising pages. Deliberately
 // unauthenticated: /v2/public/events serves the PublicEventProjection
 // allowlist, which is a narrower field set than /v2/events. Never send a
@@ -4113,6 +4135,7 @@ module.exports = {
   getEvents,
   getMyEvents,
   getEvent,
+  getEventPermissions,
   getPublicEvents,
   getPublicEvent,
   // Co-decide support actions
