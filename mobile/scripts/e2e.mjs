@@ -128,6 +128,33 @@ check('animations are enabled (LogBox banner would cover the tab bar)', () => {
   return `scale ${scale || '1'}`;
 });
 
+check('the local queue has a worker (bells, emails and push are queued)', () => {
+  /*
+    🔴 Nothing queued happens locally unless someone runs a worker, and the silence looks
+    exactly like a bug. Measured on 2026-08-24 while chasing "a message produces no
+    notification": 33 jobs were sitting in `queues:default` with no worker, so no bell, no
+    email and no push had fired for any of them. Running
+    `docker exec nexus-php-app php artisan queue:work --stop-when-empty` produced the bell
+    immediately — the product was fine, the environment was not.
+
+    Reported rather than enforced: a flow that never triggers a queued listener does not
+    need a worker, and starting one from here would hide the very thing worth knowing.
+  */
+  try {
+    const depth = execFileSync('docker', ['exec', 'nexus-php-redis', 'redis-cli', 'LLEN', 'queues:default'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    const waiting = Number.parseInt(depth, 10);
+    if (!Number.isFinite(waiting)) return 'queue depth unknown (redis not reachable)';
+    if (waiting === 0) return 'nothing waiting';
+    return `${waiting} job(s) WAITING — no bell, email or push will fire until a worker `
+      + 'runs: docker exec nexus-php-app php artisan queue:work --stop-when-empty';
+  } catch {
+    return 'could not read the queue (docker or redis not available)';
+  }
+});
+
 check('LogBox is suppressed for this build (a banner covers the tab bar)', () => {
   /*
     🔴 Not cosmetic. The LogBox banner sits over the bottom of the screen, on top of the

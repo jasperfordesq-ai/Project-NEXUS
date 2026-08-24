@@ -82,25 +82,49 @@ class PushLogTest extends TestCase
 
     // ─── record() — no-op paths ────────────────────────────────────────────────
 
-    public function test_record_is_noop_when_nothing_sent_and_nothing_failed(): void
+    /**
+     * 🔴 These two used to assert the OPPOSITE — that nothing is written when there was
+     * nobody to send to — and that silence made the log unable to answer the only question
+     * anyone asks of it. `NotificationDispatcher` describes the consequence in production:
+     * "a `new_message` bell with no push_log line beside it. It reads as 'the send never
+     * happened' when it was 'the send found no devices'."
+     *
+     * Measured on 2026-08-24: a real message produced a correct bell,
+     * `fcm_device_tokens` held zero rows, `push_log` held zero rows, and nothing in the
+     * data could tell those apart. Recording `no_targets` is what separates "nobody has
+     * installed the app" from "delivery is broken".
+     */
+    public function test_record_writes_no_targets_when_there_was_nobody_to_send_to(): void
     {
-        $before = DB::table('push_log')->where('tenant_id', self::TENANT_ID)->count();
+        PushLog::record(self::TENANT_ID, 1, 'no_targets_event', 'Title', null, 0, 0, []);
 
-        PushLog::record(self::TENANT_ID, 1, 'test_event', 'Title', null, 0, 0, []);
+        $row = DB::table('push_log')
+            ->where('tenant_id', self::TENANT_ID)
+            ->where('activity_type', 'no_targets_event')
+            ->latest('id')
+            ->first();
 
-        $after = DB::table('push_log')->where('tenant_id', self::TENANT_ID)->count();
-        $this->assertSame($before, $after);
+        $this->assertNotNull($row, 'a send that found no devices must still be recorded');
+        $this->assertSame('no_targets', $row->status);
+        $this->assertSame(0, (int) $row->fcm_sent);
+        $this->assertSame(0, (int) $row->fcm_failed);
     }
 
-    public function test_record_is_noop_when_web_ok_is_false_with_no_fcm_and_no_errors(): void
+    public function test_a_false_web_push_with_no_fcm_is_no_targets_not_a_failure(): void
     {
-        $before = DB::table('push_log')->where('tenant_id', self::TENANT_ID)->count();
+        // webOk=false means "no browser subscription", which is not a delivery failure —
+        // but it is not nothing either, so it is recorded as having had no targets.
+        PushLog::record(self::TENANT_ID, 1, 'web_false_event', null, false, 0, 0, []);
 
-        // webOk=false is treated as "no browser subscription", not a failure
-        PushLog::record(self::TENANT_ID, 1, 'test_event', null, false, 0, 0, []);
+        $row = DB::table('push_log')
+            ->where('tenant_id', self::TENANT_ID)
+            ->where('activity_type', 'web_false_event')
+            ->latest('id')
+            ->first();
 
-        $after = DB::table('push_log')->where('tenant_id', self::TENANT_ID)->count();
-        $this->assertSame($before, $after);
+        $this->assertNotNull($row);
+        $this->assertSame('no_targets', $row->status);
+        $this->assertSame(0, (int) $row->web_ok);
     }
 
     // ─── record() — delivered paths ────────────────────────────────────────────

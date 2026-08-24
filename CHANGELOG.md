@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The ASP.NET edition now supports the complete event create, edit, and owner-management journey used by the React app.** Event writes persist the consumed schedule, timezone, location, capacity, remote-attendance, video, and venue-accessibility fields; return the canonical event contract instead of the former flat compatibility DTO; enforce tenant and organizer/admin/group-manager authorization; and expose the owner capabilities that make the management workspace reachable. A repeatable browser control now creates, reloads, edits, and manages an event through the unchanged React UI against both ASP.NET and Laravel, backed by focused persistence and authorization tests.
+
 - **A silent mail server could hold a member's request open for a minute, and
   make a completed action look like it failed.** Found by walking the create-a-
   listing journey in a browser rather than reading code — none of the seven
@@ -57,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   still the synchronous email and is unaddressed; queueing it is the real fix
   and carries its own risks (the queue crash-loops without Redis, and a slow
   queued listener sends duplicates).
+- **The notification log could not answer "was a push actually sent?" — now it can.** When a push found nobody to send to, the system wrote nothing at all, so "we never tried" and "we tried and nobody had a device registered" looked identical in the records. The code's own notes said that was exactly what production showed. It now records that case explicitly, which is the difference between "nobody has installed the app yet" and "notifications are broken".
+
+- **A correction to something I told you was broken.** The note on push notifications said a real message produced no notification at all. Re-testing today: the notification is fine — what was missing was the background worker that processes queued jobs, which does not run in the local test setup. Thirty-three jobs were waiting. Run the worker and the notification appears immediately, correctly worded and pointing at the right conversation. The earlier finding is withdrawn, and the test setup now warns when jobs are piling up so nobody mistakes that silence for a fault again.
+
+- **What is still genuinely unproven: a push arriving on a real phone.** No device can register for notifications in the local setup at all, and the two ways to fix that both need something only you can provide — either the app's identifier on your Expo account, or Firebase credentials. It is now written down as a decision to make rather than an open mystery.
+
 - **When something goes wrong, the app now tells you what the server actually said.** In 165 places across 53 screens it threw the explanation away and showed a generic line instead. The example that started this: logging volunteer hours failed and the app said only "Could not log these hours", while the server had answered "You have already logged hours for this organization and date". The member learns nothing, tries again, and fails again — with the answer sitting there unused.
 
 - **All 165 now pass the reason on, with limits.** The server's wording is only shown when it is fit for a member: never for an internal server fault, never for anything long or that looks like a web page, and never for the refusals the app answers by taking you to the right screen instead. Checked on a real phone against a real refusal: the message read "A problem cannot be reported for this exchange right now" where it used to say "Please try again". The helper doing that filtering had no test of its own despite standing in front of every one of these messages; it now has eight.

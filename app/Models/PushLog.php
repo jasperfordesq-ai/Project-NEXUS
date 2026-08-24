@@ -14,10 +14,22 @@ use Illuminate\Support\Facades\Schema;
 /**
  * PushLog — delivery observability for device push (web + FCM).
  *
- * One row per fanOutPush() that actually delivered or genuinely failed. Pure
- * "user has no device / push disabled" cases are NOT logged (they are not
- * delivery events). All writes are best-effort and guarded so push and the
- * HTTP request are never affected by a logging failure.
+ * One row per fanOutPush() that reached the send, whatever the outcome. All writes are
+ * best-effort and guarded so push and the HTTP request are never affected by a logging
+ * failure.
+ *
+ * 🔴 "Nobody had a device" used to write NO ROW, and that made the log unable to answer
+ * the only question anyone asks of it. `NotificationDispatcher` says so itself, about
+ * production: *"a `new_message` bell with no push_log line beside it. It reads as 'the send
+ * never happened' when it was 'the send found no devices'."* A tenant-context bug was fixed
+ * on 2026-08-21 while that ambiguity was left in place, so the same silence still meant two
+ * completely different things: no push was attempted, or a push was attempted and had
+ * nowhere to go.
+ *
+ * Measured on 2026-08-24: a real message to a member produced a correct bell,
+ * `fcm_device_tokens` held **zero** rows, and `push_log` held zero rows — with no way to
+ * tell those two facts apart from the log. It now records a `no_targets` row, which is what
+ * distinguishes "no one has installed the app" from "delivery is broken".
  */
 class PushLog extends Model
 {
@@ -39,10 +51,10 @@ class PushLog extends Model
     ];
 
     /**
-     * Record a push delivery outcome. Computes a coarse status from the
-     * per-channel results and inserts a row — unless nothing was sent and
-     * nothing failed (no targets / push disabled), in which case it is a
-     * no-op so the log stays meaningful and low-volume.
+     * Record a push delivery outcome. Computes a coarse status from the per-channel
+     * results and inserts a row — including when there was nothing to send to, which is
+     * recorded as `no_targets` rather than dropped. See the class note: a missing row was
+     * indistinguishable from a push that never ran.
      *
      * WebPush returns only a bool, and `false` usually means "no browser
      * subscription" rather than a real failure, so a bare `false` is NOT
@@ -61,11 +73,17 @@ class PushLog extends Model
             $anySent = ($webOk === true) || $fcmSent > 0;
             $anyFail = $fcmFailed > 0 || count($errors) > 0;
 
-            if (!$anySent && !$anyFail) {
-                return; // no targets / push disabled — not a delivery event
-            }
-
-            $status = ($anySent && $anyFail) ? 'partial' : ($anySent ? 'delivered' : 'failed');
+            /*
+              🔴 No longer a no-op. `no_targets` means the send ran and found no device or
+              browser subscription for this member — the commonest real answer to "why did
+              my phone not buzz", and the one the log could not previously give.
+            */
+            $status = match (true) {
+                $anySent && $anyFail => 'partial',
+                $anySent => 'delivered',
+                $anyFail => 'failed',
+                default => 'no_targets',
+            };
 
             $errorText = empty($errors) ? null : mb_substr(implode(' | ', $errors), 0, 2000);
 
