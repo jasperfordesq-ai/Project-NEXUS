@@ -158,6 +158,44 @@ describe('api.get', () => {
     });
   });
 
+  /**
+   * 🔴 `anonymous` exists because of a measured dead end, not a tidiness idea. A member who
+   * switched to a community their account is not in got 403 on every request, INCLUDING the
+   * public community list the picker is built from — so the one screen that could have put
+   * them back said "Could not load communities". Sending the token is what broke it.
+   */
+  it('omits the stored token when a request is marked anonymous', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+
+    await api.get('/api/v2/tenants', undefined, { anonymous: true });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers.Authorization).toBeUndefined();
+    // The community header still goes out: the list is public, not tenant-less.
+    expect(options.headers['X-Tenant-Slug']).toBe('hour-timebank');
+  });
+
+  it('still refuses a caller-supplied token on an anonymous request', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+
+    await api.get('/api/v2/tenants', undefined, {
+      anonymous: true,
+      headers: { Authorization: 'Bearer smuggled' },
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers.Authorization).toBeUndefined();
+  });
+
+  it('keeps sending the token on every request that did not ask to be anonymous', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+
+    await api.get('/api/v2/users');
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+  });
+
   it('omits Authorization header when no token is stored', async () => {
     mockStorage.get.mockImplementation(async (key: string) => {
       if (key === 'nexus_tenant_slug') return 'hour-timebank';

@@ -273,6 +273,21 @@ export interface RequestOptions {
   timeout?: number;
   /** Mark as file upload to use the longer upload timeout */
   isUpload?: boolean;
+  /**
+   * Send the request WITHOUT the stored token. Only for endpoints that are public by
+   * design, and only where sending a token can make a working request fail.
+   *
+   * 🔴 The community list is the case that forced this, measured on a device on
+   * 2026-08-24. A member who had switched to a community their account is not in got
+   * `403 "Token tenant does not match requested tenant"` on every request — including
+   * `GET /v2/tenants`, the public list the community picker is built from. So the one
+   * screen that could have put them back in their own community showed "Could not load
+   * communities" instead. The escape hatch was locked from the inside.
+   *
+   * This never ADDS credentials: a caller-supplied Authorization header is still
+   * stripped below. It only omits the stored one.
+   */
+  anonymous?: boolean;
 }
 
 async function request<T>(
@@ -283,7 +298,7 @@ async function request<T>(
 ): Promise<T> {
   // Support both legacy params-only signature and new options object
   const options: RequestOptions =
-    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions)
+    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions || 'anonymous' in paramsOrOptions)
       ? (paramsOrOptions as RequestOptions)
       : { params: paramsOrOptions as Record<string, string> | undefined };
 
@@ -322,7 +337,7 @@ async function request<T>(
     headers['Content-Type'] = 'application/json';
   }
 
-  if (token) {
+  if (token && !options.anonymous) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 

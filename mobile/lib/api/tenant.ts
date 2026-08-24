@@ -43,7 +43,14 @@ export function getTenantConfig(): Promise<{ data: TenantConfig }> {
   return api.get<{ data: TenantConfig }>(`${API_V2}/tenant/bootstrap`);
 }
 
-/** GET /api/v2/tenants — public list of available tenants (for tenant picker) */
+/**
+ * GET /api/v2/tenants — public list of available tenants (for tenant picker)
+ *
+ * 🔴 Deliberately sent WITHOUT the stored token. This list is public, and sending a token
+ * is what broke it: a member sitting in a community their account does not belong to gets
+ * 403 on everything the token touches, so the picker — the only screen that could put them
+ * back — could not load. Measured on a device on 2026-08-24. See `RequestOptions.anonymous`.
+ */
 export function listTenants(): Promise<{ data: TenantListItem[] }> {
-  return api.get<{ data: TenantListItem[] }>(`${API_V2}/tenants`);
+  return api.get<{ data: TenantListItem[] }>(`${API_V2}/tenants`, undefined, { anonymous: true });
 }

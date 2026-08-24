@@ -29,6 +29,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the mobile app, changing community while signed in locked you out of your
+  own community.** Found by walking it on a device. An account belongs to one
+  community, and its sign-in is not valid anywhere else — so the moment a member
+  picked a different community from the picker, every request was refused: their
+  profile, the community's own branding, their notification count and the feed
+  all came back with "Token tenant does not match requested tenant". The home
+  screen kept the previous content on display, so it still looked signed in and
+  working, and the only control offered was a Retry button that could never
+  succeed. Closing the app and reopening it did not clear it.
+  The way back was blocked too. The community picker is built from the public
+  list of communities, but the app was sending the sign-in token with that
+  request, so it was refused as well and the screen said "Could not load
+  communities" — the one screen that could have put the member back where they
+  belonged was the one screen that would not load.
+  Both are fixed. The picker now explains what a switch means before anything
+  changes — "Your account is with Hour Timebank. To use Agoris Caring Community
+  you need to sign in there, so you will be signed out of Hour Timebank now" —
+  and signs the member out for them, in the order that lets the sign-out reach
+  the server. Choosing the community you are already in does nothing, as before.
+  The list of communities is now fetched without the token, so the picker always
+  loads. Proved on a device from the broken state, and covered by tests that were
+  each checked by breaking the fix and watching them fail.
+
 - **Four languages titled the cookie settings page with the word for the
   biscuit.** German said "Kekse", Portuguese "Biscoitos", Spanish "Galletas" and
   Dutch "Koekjes" — the food, not the browser kind. Spotted while checking a
