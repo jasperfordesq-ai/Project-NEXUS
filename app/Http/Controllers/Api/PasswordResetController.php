@@ -179,6 +179,21 @@ class PasswordResetController extends BaseApiController
             );
         }
 
+        // A reset credential is bound to the community that issued it. React
+        // supplies X-Tenant-ID, web-uk supplies X-Tenant-Slug, and emailed
+        // links carry the tenant path/domain, all of which TenantContext has
+        // already resolved. Reject a valid token in a foreign context before
+        // password/session state can be touched.
+        $requestTenantId = (int) TenantContext::getId();
+        if ($requestTenantId > 0 && $requestTenantId !== (int) $resetRecord['tenant_id']) {
+            return $this->respondWithError(
+                ApiErrorCodes::AUTH_TOKEN_INVALID,
+                __('api.invalid_reset_token'),
+                'token',
+                400
+            );
+        }
+
         // Update the password — scope by user ID to prevent cross-tenant updates
         $email = (string) $resetRecord['email'];
         $tokenTenantId = (int) $resetRecord['tenant_id'];

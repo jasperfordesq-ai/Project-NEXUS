@@ -152,6 +152,43 @@ class PasswordResetControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [400, 404, 422]);
     }
 
+    public function test_reset_password_rejects_valid_token_from_another_tenant_without_consuming_it(): void
+    {
+        $email = 'cross-tenant-reset-' . uniqid('', true) . '@example.test';
+        $oldPassword = 'old-cross-tenant-password-123';
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $email,
+            'status' => 'active',
+            'is_approved' => true,
+            'password_hash' => Hash::make($oldPassword),
+        ]);
+        $plainToken = bin2hex(random_bytes(32));
+        DB::table('password_resets')->insert([
+            'email' => $email,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', $plainToken),
+            'created_at' => now(),
+        ]);
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response('', 200)]);
+
+        $response = $this->withHeader('X-Tenant-ID', '1')->postJson('/api/auth/reset-password', [
+            'token' => $plainToken,
+            'password' => 'new-cross-tenant-password-456',
+            'password_confirmation' => 'new-cross-tenant-password-456',
+        ]);
+
+        $response->assertStatus(400);
+        $this->assertTrue(Hash::check(
+            $oldPassword,
+            (string) DB::table('users')->where('id', $user->id)->value('password_hash')
+        ));
+        $this->assertDatabaseHas('password_resets', [
+            'email' => $email,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', $plainToken),
+        ]);
+    }
+
     public function test_reset_password_rolls_back_when_session_revocation_fails(): void
     {
         $email = 'reset-revocation-failure-' . uniqid('', true) . '@example.test';

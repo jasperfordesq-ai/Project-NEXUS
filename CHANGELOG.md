@@ -63,6 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A password-reset link from one community could be used while the browser was
+  pointed at a different one.** The link itself was always tied to the community
+  that sent it, and the new password was only ever written to the right account —
+  but the server did not check the two agreed before doing the work. It now
+  refuses that combination outright, before touching the password or signing
+  anyone out, and the unused link stays valid so the member can still finish the
+  reset in the right place. A test covers it.
 - **The app was asking Android for permission to draw over other apps.** Nothing
   in it draws over anything — the permission comes from the development tooling
   and should never have been in a release build. Google Play lists every
@@ -79,6 +86,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The .NET edition now handles forgotten passwords and staying signed in the
+  same way the live site does.** This is the second edition of the server, the one
+  some public-sector buyers require; it is not in use anywhere. Four things were
+  wrong. The reset email was sent and forgotten about, so a member could be told
+  "check your inbox" when nothing had been sent — the link is now only created
+  once the mail server has accepted the message, which also means a failed send
+  no longer cancels a link the member already has. The link pointed at a web
+  address that does not exist on the real site. Two reset attempts, or two
+  "stay signed in" attempts, arriving at the same moment could both succeed;
+  only one can now, and the loser gets the same harmless retry the site already
+  handles. And the reset form's own fields were named differently from the ones
+  the website sends. Fifteen tests cover the two journeys end to end. No
+  production code or configuration is affected.
 - **Identity verification is hidden in the phone app for now.** Google requires
   apps to use Google's own payment system for anything bought inside them, and
   the app was charging a card through Stripe for ID verification. Getting that
