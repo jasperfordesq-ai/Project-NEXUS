@@ -294,5 +294,34 @@
       "notEnrolled": "Configurez d'abord une empreinte, le visage ou un code PIN dans les réglages du téléphone.",
       "unavailable": "Le déverrouillage n'est pas disponible sur ce téléphone pour le moment."
     }
+  },
+  "deleteAccount": {
+    "title": "Supprimer le compte",
+    "settingsHint": "Supprimer définitivement votre compte et vos données personnelles",
+    "permanentBadge": "Définitif",
+    "warning": "Cette action est irréversible",
+    "warningBody": "La suppression de votre compte retire immédiatement vos données personnelles de cette communauté. Il n'y a aucun moyen de les récupérer.",
+    "consequences": {
+      "profile": "Votre profil, votre photo, votre présentation et vos coordonnées sont supprimés.",
+      "listings": "Vos annonces sont retirées et sortent de la recherche.",
+      "messages": "Les messages que vous avez envoyés sont effacés. La conversation reste dans la boîte de réception de l'autre personne, sans vos informations.",
+      "credits": "Les écritures de crédits-temps restent dans les comptes de la communauté, sans votre nom.",
+      "signIn": "Votre mot de passe, vos clés d'accès et vos appareils connectés sont supprimés, et vous êtes déconnecté partout."
+    },
+    "confirmTitle": "Confirmer la suppression",
+    "typeConfirm": "Tapez {{keyword}} ci-dessous, puis saisissez votre mot de passe.",
+    "confirmationLabel": "Tapez {{keyword}}",
+    "keyword": "DELETE",
+    "passwordLabel": "Mot de passe actuel",
+    "submit": "Supprimer mon compte",
+    "deleting": "Suppression…",
+    "done": "Compte supprimé",
+    "doneBody": "Votre compte et vos données personnelles ont été supprimés.",
+    "failed": "Compte non supprimé",
+    "failedBody": "Votre compte n'a pas été supprimé. Vérifiez votre mot de passe et réessayez.",
+    "tooSoon": "Vous venez d'essayer. Attendez environ une minute, puis réessayez.",
+    "confirmRequired": "Confirmation requise",
+    "confirmRequiredBody": "Tapez {{keyword}} et saisissez votre mot de passe pour continuer.",
+    "alternativeHint": "Si vous voulez seulement faire une pause, vous pouvez désactiver les notifications ou limiter qui voit votre profil dans Confidentialité."
   }
 }

@@ -91,14 +91,14 @@ walked, which comes before a gate that only guards three screens.
 | 5 — Community modules | 34 | 18 | 16 | 0 | 0 | 0 | 0 | 0.812 |
 | 6 — Money and wallet | 12 | 1 | 9 | 0 | 1 | 0 | 1 | 0.609 |
 | 7 — Cross-cutting behaviour | 18 | 9 | 1 | 0 | 6 | 1 | 1 | 0.671 |
-| 8 — RESERVE (pre-counted scope) | 10 | 1 | 0 | 0 | 1 | 8 | 0 | 0.130 |
-| **Total** | **140** | **57** | **62** | **0** | **8** | **10** | **3** | — |
+| 8 — RESERVE (pre-counted scope) | 10 | 2 | 0 | 0 | 1 | 7 | 0 | 0.230 |
+| **Total** | **140** | **58** | **62** | **0** | **8** | **9** | **3** | — |
 
 Overall credit, used by the Journey certification category in
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md):
 
-`(57 × 1.0) + (62 × 0.6) + (8 × 0.30) = 96.60`, over `140 − 3 excluded = 137`
-rows → **0.705**.
+`(58 × 1.0) + (62 × 0.6) + (8 × 0.30) = 97.60`, over `140 − 3 excluded = 137`
+rows → **0.712**.
 
 ### Credit recomputation
 
@@ -111,7 +111,7 @@ rows → **0.705**.
 | 5 | (18 × 1.0) + (16 × 0.6) = 27.60 | ÷ 34 | **0.812** |
 | 6 | (1 × 1.0) + (9 × 0.6) + (1 × 0.30) = 6.70 | ÷ 11 † | **0.609** |
 | 7 | (9 × 1.0) + (1 × 0.6) + (6 × 0.30) = 11.40 | ÷ 17 † | **0.671** |
-| 8 | (1 × 1.0) + (1 × 0.30) = 1.30 | ÷ 10 | **0.130** |
+| 8 | (2 × 1.0) + (1 × 0.30) = 2.30 | ÷ 10 | **0.230** |
 
 † N/A rows are excluded from the divisor, not counted as failures. Tier 3 has one
 (the review composer, a recorded parity decision), Tier 6 has one (the removed
@@ -313,7 +313,7 @@ arrives; never add a row to another tier.
 | --- | --- | --- | --- |
 | 8.1 | Earned achievements show as earned | CERTIFIED | 🔴 **Claimed from RESERVE 2026-08-23: the achievements module had no row at all** across 140, though it is a whole member-facing screen (XP, levels, badges). Found by the API field audit, which reported `is_earned` absent from the badges response. It is: `GET /v2/gamification/badges` populates **`awarded_at`** and leaves `earned_at` and `claimed_at` null, sending neither `is_earned` nor `earned`. `isBadgeEarned()` checked all three of the fields the server does not send, so **all ten of a member's earned badges rendered as "Locked" behind a padlock** — measured on a device. Fixed by accepting `awarded_at`; re-measured, all ten now read "Earned". Guarded by two tests using the real payload, mutation-verified. 🔴 The existing fixture set `is_earned: true` AND `earned_at` — the fourth fixture that day written from the client's type instead of the response |
 | 8.2 | The client and the server agree on what a response contains | PARTIAL | 🔴 **Claimed from RESERVE 2026-08-24.** The app asks the API 494 questions and only 78 were validated in any way; the other 416 fail silently — a field the client declares and the server omits arrives as `undefined`, so a screen shows blanks or crashes on a property of undefined. That is how the Matches screen went down for every member on 2026-08-23. `scripts/audit-api-field-coverage.mjs` now measures it: it reads each client module's interfaces, fetches the real endpoint and compares. **Coverage went 58 → 115 of the app's typed getters actually checked**, and the reason is worth knowing: v1 held a fixed table of ids, and `${id}` appears in 168 endpoints where its correct value depends on which collection it addresses — `/marketplace/sellers/${id}` was handed listing 100, answered 404, and a working endpoint was filed as broken. Ids are now DISCOVERED from the collection above the parameter, with a small table for the kinds that live elsewhere. Marketplace alone went 11 → 19 of 32 after that plus seeding an offer, a saved search, a collection and a pickup slot through the API. **Eight mismatches found; six were real and are fixed** (see below), and two were the tool's own fault — a getter that reshapes the response in the client cannot be compared with the raw body, so those are now detected and labelled rather than reported as defects. 🔴 PARTIAL, and it must stay that way until the numbers say otherwise: **115 checked of 494**. 28 endpoints answer with an empty collection, which proves nothing about the shape of their items; 21 have no id to address; 13 refuse the fixture account. Those are honest gaps, listed by name in the tool's own output, not rounded up. |
-| 8.3 | RESERVE | OPEN | — |
+| 8.3 | Delete your own account from inside the app | CERTIFIED | 🔴 **Claimed from RESERVE 2026-08-25, and it was a genuine hole in the 140**: the website has had account deletion since before this app existed, the app had no row, no screen and no API call, and Google Play requires an app that lets people create an account to let them delete it in the app. Walked end to end on emulator-5554 against the local API with a disposable member (user 900021, seeded because a `.local` address cannot register). Evidence, in order: the row appears last in Settings → Account with a destructive tone; the screen lists what erasure really does (five claims, each true of `GdprService::executeAccountDeletion` — profile anonymised, listings withdrawn, sent messages cleared while the counterparty thread survives, time-credit rows kept for the community accounts, credentials and sessions deleted); with the keyword typed and no password the button reported `enabled="false"` in the accessibility tree; a WRONG password returned **403** and the account was untouched (`status: active`, `anonymized_at: null`) and the member stayed signed in; the correct password returned **200** and the row became `deleted_900021_…@anonymized.local` / "Deleted User" / `inactive` with `anonymized_at` and `deleted_at` set, phone and location null, **0** `personal_access_tokens` and **0** `refresh_token_sessions`; the app signed itself out to the sign-in screen; and the old credentials now return `AUTH_INVALID_CREDENTIALS`. 🔴 **The walk found two faults a unit test could not have.** First, `api.delete()` discarded every request body it was given (the exchange-cancel call routes its reason through the query string for exactly that reason), so a password could only have travelled in the URL, into server and proxy logs — fixed, and the 403 above is the proof the body now arrives. Second, the endpoint is rate-limited to one attempt per 60 seconds, so mistyping the password once made the retry fail with the server's own words: "Rate limit exceeded. Please try again later." — jargon, and silent about how long, while `Retry-After: 60` was sitting in the response. That case now says "You tried a moment ago. Wait about a minute, then try again." in all seven languages. Guarded by 16 tests (screen, confirmation gate, client body, reachability), mutation-verified on the keyword gate, the do-not-sign-out-on-failure rule and both halves of the reachability guard |
 | 8.4 | RESERVE | OPEN | — |
 | 8.5 | RESERVE | OPEN | — |
 | 8.6 | RESERVE | OPEN | — |
@@ -343,6 +343,7 @@ to it — which is exactly how "write a post" went unnoticed. Keep this table by
 | Marketplace sell | present | present (`new-marketplace-listing`) | — |
 | Send a message | present | present (`new-message`) | — |
 | Create a group | present | present (`new-group`) | — |
+| Delete your own account | `pages/settings/SettingsPage.tsx` modal → `DELETE /v2/users/me` | present (`settings-delete-account`, 2026-08-25) | Built 2026-08-25 after the owner reported the gap — and it was a real one: no row, no screen, no API call, while the website has had it since before this app existed. Also a hard Google Play requirement. Calls the SAME endpoint as the website, so the erasure itself is the one already in production (password re-auth, then `GdprService::executeAccountDeletion`); a second erasure path would be worse than a second client. Two gates before the button arms: the typed keyword and the current password. 🔴 Fixing it also fixed a silent client fault — `api.delete()` discarded every request body it was given, so the password could only have travelled in the query string, into server and proxy logs. Walked end to end on emulator-5554 on 2026-08-25 — see row 8.3 for the evidence and the two faults the walk found. 🔴 The earlier text here said it was NOT yet walked; that was true for about an hour and is kept in mind rather than in prose, because this ledger's own rule is that a walk is what certifies a journey, and deleting an account is exactly the kind of irreversible action a unit test cannot vouch for — which is why it was walked before this row was written |
 
 ## How to update this ledger
 

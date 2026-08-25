@@ -183,10 +183,13 @@ export function confirmExchangeRequest(
 /**
  * DELETE /api/v2/exchanges/:id — either party cancels.
  *
- * 🔴 The reason travels as a QUERY parameter, not a body. `api.delete()` takes request
- * options as its second argument and sends no body at all, so a `{ reason }` object passed
- * there is silently dropped — the cancellation would still work and the reason would
- * vanish. Laravel's `input()` reads the query string, so this arrives intact.
+ * 🔴 The reason travels as a QUERY parameter, not a body. That was once the only option:
+ * `api.delete()` discarded every body it was given, so a `{ reason }` object vanished
+ * while the cancellation itself still worked. `api.delete()` now sends `options.body`
+ * (added 2026-08-25 for account deletion, which must send a password), but this call
+ * stays as it is — Laravel's `input()` reads the query string, the server contract is
+ * unchanged, and a reason string is not sensitive. Do not "fix" it into a body without
+ * checking the server side first.
  */
 export function cancelExchangeRequest(
   id: number,

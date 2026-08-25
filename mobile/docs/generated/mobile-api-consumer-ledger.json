@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 49,
-    "call_sites": 507,
-    "distinct_endpoints": 418,
-    "verified": 418,
+    "call_sites": 510,
+    "distinct_endpoints": 421,
+    "verified": 421,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -731,7 +731,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:479",
+        "client.ts:510",
         "exchanges.ts:205"
       ]
     },
@@ -741,7 +741,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchangeRequests.ts:196"
+        "exchangeRequests.ts:199"
       ]
     },
     {
@@ -795,7 +795,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "exchangeRequests.ts:226"
+        "exchangeRequests.ts:229"
       ]
     },
     {
@@ -1430,7 +1430,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:83"
+        "groupExchanges.ts:109"
       ]
     },
     {
@@ -1439,7 +1439,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:91"
+        "groupExchanges.ts:117"
       ]
     },
     {
@@ -1448,7 +1448,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:103"
+        "groupExchanges.ts:129"
       ]
     },
     {
@@ -1457,7 +1457,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:87"
+        "groupExchanges.ts:113"
       ]
     },
     {
@@ -1466,7 +1466,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:99"
+        "groupExchanges.ts:125"
       ]
     },
     {
@@ -1475,7 +1475,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:95"
+        "groupExchanges.ts:121"
       ]
     },
     {
@@ -3052,7 +3052,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:135"
+        "matches.ts:181"
       ]
     },
     {
@@ -3061,7 +3061,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:119"
+        "matches.ts:163"
       ]
     },
     {
@@ -3549,7 +3549,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:48"
+        "tenant.ts:55"
       ]
     },
     {
@@ -3558,7 +3558,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:478",
+        "client.ts:509",
         "members.ts:76"
       ]
     },
@@ -3586,7 +3586,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:100"
+        "settings.ts:119"
       ]
     },
     {
@@ -3613,7 +3613,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:95"
+        "settings.ts:114"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/users/me",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "settings.ts:110"
       ]
     },
     {
@@ -3658,7 +3667,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:118"
+        "settings.ts:137"
       ]
     },
     {
@@ -3667,7 +3676,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:159"
+        "settings.ts:178"
       ]
     },
     {
@@ -3685,7 +3694,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:104"
+        "settings.ts:123"
       ]
     },
     {
@@ -3694,7 +3703,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:109"
+        "settings.ts:128"
       ]
     },
     {
@@ -3730,7 +3739,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:113"
+        "settings.ts:132"
       ]
     },
     {
@@ -3739,7 +3748,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:123"
+        "settings.ts:142"
       ]
     },
     {
@@ -3748,7 +3757,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:190"
+        "settings.ts:209"
       ]
     },
     {
@@ -3757,7 +3766,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:231"
+        "settings.ts:250"
       ]
     },
     {
@@ -3766,7 +3775,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:127"
+        "settings.ts:146"
       ]
     },
     {
@@ -3775,8 +3784,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:134",
-        "settings.ts:150"
+        "settings.ts:153",
+        "settings.ts:169"
       ]
     },
     {
@@ -3839,7 +3848,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:607"
+        "volunteering.ts:629"
       ]
     },
     {
@@ -3875,7 +3884,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:624"
+        "volunteering.ts:646"
       ]
     },
     {
@@ -3920,7 +3929,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:611"
+        "volunteering.ts:633"
       ]
     },
     {
@@ -3938,7 +3947,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:615"
+        "volunteering.ts:637"
       ]
     },
     {
@@ -3956,7 +3965,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:628"
+        "volunteering.ts:650"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/shifts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:600"
       ]
     },
     {
@@ -4065,7 +4083,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:636"
+        "volunteering.ts:658"
       ]
     },
     {
@@ -4074,7 +4092,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:632"
+        "volunteering.ts:654"
       ]
     },
     {
@@ -4087,12 +4105,21 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/swaps",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:617"
+      ]
+    },
+    {
       "http": "DELETE",
       "endpoint": "/api/v2/volunteering/swaps/{param}",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:603"
+        "volunteering.ts:625"
       ]
     },
     {
@@ -4101,7 +4128,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:599"
+        "volunteering.ts:621"
       ]
     },
     {

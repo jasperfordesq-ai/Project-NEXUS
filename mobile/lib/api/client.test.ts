@@ -290,6 +290,36 @@ describe('api.delete', () => {
     expect(options.method).toBe('DELETE');
     expect(options.body).toBeUndefined();
   });
+
+  /**
+   * 🔴 `api.delete()` hardcoded `undefined` as its body until 2026-08-25, so any data
+   * handed to it vanished without a word — `cancelExchangeRequest` still routes its
+   * reason through the query string because of it. Account deletion forced the fix:
+   * `DELETE /v2/users/me` requires the member's password, and a password in a URL is
+   * written to server logs, proxy logs and crash reports.
+   */
+  it('sends options.body as the request body', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ success: true }));
+
+    await api.delete('/api/v2/users/me', { body: { password: 'hunter2' } });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.method).toBe('DELETE');
+    expect(JSON.parse(options.body as string)).toEqual({ password: 'hunter2' });
+  });
+
+  it('does not mistake a body-only options object for query parameters', async () => {
+    // The legacy two-signature detection decides "options or params?" by looking for
+    // known option keys. Before `body` joined that list, `{ body: {...} }` was read as a
+    // params bag and produced `?body=%5Bobject%20Object%5D` — the password would have
+    // been in the URL as well as the body.
+    fetchMock.mockResolvedValueOnce(mockResponse({ success: true }));
+
+    await api.delete('/api/v2/users/me', { body: { password: 'hunter2' } });
+
+    const [url] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('https://test.api/api/v2/users/me');
+  });
 });
 
 describe('204 No Content response', () => {

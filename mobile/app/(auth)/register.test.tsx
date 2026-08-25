@@ -164,7 +164,11 @@ function fillRequiredRegistrationFields(
   fireEvent.changeText(getByTestId('register-confirm-password'), values.passwordConfirm);
 
   if (values.termsAccepted) {
-    fireEvent.press(getByText('I agree to the platform terms and privacy notice.'));
+    // 🔴 By testID, not by label text. This looked up the checkbox by its English
+    // sentence, so adding the 18+ declaration to the sign-up wording on 2026-08-25 broke
+    // ten tests in this file for a reason that had nothing to do with what they assert.
+    // The label text is asserted deliberately, once, by scripts/check-age-declaration.mjs.
+    fireEvent.press(getByTestId('register-terms'));
   }
 }
 
@@ -271,7 +275,7 @@ describe('RegisterScreen', () => {
       },
     });
 
-    const { findByText, getAllByText, getByTestId, getByText } = render(<RegisterScreen />);
+    const { findByText, getAllByText, getByTestId } = render(<RegisterScreen />);
 
     fireEvent.changeText(getByTestId('register-first-name'), 'Mobile');
     fireEvent.changeText(getByTestId('register-last-name'), 'Member');
@@ -280,7 +284,7 @@ describe('RegisterScreen', () => {
     fireEvent.changeText(getByTestId('register-email'), 'Mobile.Pending@Example.com');
     fireEvent.changeText(getByTestId('register-password'), 'TestPassword123!');
     fireEvent.changeText(getByTestId('register-confirm-password'), 'TestPassword123!');
-    fireEvent.press(getByText('I agree to the platform terms and privacy notice.'));
+    fireEvent.press(getByTestId('register-terms'));
     pressSubmit(getAllByText);
 
     await waitFor(() => expect(mockApiRegister).toHaveBeenCalledTimes(1));

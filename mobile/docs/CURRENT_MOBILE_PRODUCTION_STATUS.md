@@ -12,8 +12,8 @@ Last reviewed: 2026-08-21
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=627/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=627 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=629/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=629 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,7 +22,7 @@ competing score anywhere.
 
 ## The headline
 
-**627 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**629 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
 
 It builds, signs, installs on a real phone, and the volunteering journey works end to end
 with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
@@ -52,7 +52,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 212 | 300 | Ledger overall credit **0.705** × 300 = 211.5. 57 CERTIFIED, 62 PROVEN, 0 RENDERS, 8 PARTIAL of 137 scoring rows — no row is left at "it renders" for the first time — thirteen screens that had only ever been looked at were walked on a device on 2026-08-24, and one of them (resources) turned out never to re-read its own list — 137, not 138, because Arabic is now an excluded owner decision rather than an open gap. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row |
+| Journey certification | 300 | 214 | 300 | Ledger overall credit **0.712** × 300 = 213.6. 58 CERTIFIED, 62 PROVEN, 0 RENDERS, 8 PARTIAL of 137 scoring rows — no row is left at "it renders" for the first time — thirteen screens that had only ever been looked at were walked on a device on 2026-08-24, and one of them (resources) turned out never to re-read its own list — 137, not 138, because Arabic is now an excluded owner decision rather than an open gap. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row. 🔴 **+2 on 2026-08-25**: RESERVE row 8.3 claimed by in-app account deletion, which the website has had all along and the app did not have at all — walked end to end on a device, including a wrong-password refusal that left the account intact and the member signed in. Capability parity is deliberately NOT moved for it: closing one gap does not license a number without redoing the whole hand-comparison, and that comparison is exactly what missed two absent capabilities last time |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away — a sheet renders through a portal, so one was found sitting on top of an unrelated screen after a deep link. Walked on four sheet families plus swipe-to-dismiss. Deep links fixed three times over: parameter names, `?tab=`, and `/exchanges/:id`, which answered "Listing not found". Error messages are no longer among the gaps: all 165 sites that reported a failure without the server's reason now pass it on, walked on a device against a real 409. Still unmeasured: touch-target sizes beyond the five audited screens |
 | Layout across device sizes | 80 | 52 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and guarded on 2026-08-20, and on 2026-08-22 **every text field in the app** was found sized to its own content rather than its container — the wallet's recipient search and the group discussion title shipped as pills. Fixed once in `components/ui/Input.tsx`; guarded. Still only two widths, still no tablet |
@@ -62,7 +62,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-m
 | Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
 | Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
 | Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **627** | **1000** | — |
+| **Total** | **1000** | **629** | **1000** | — |
 
 **Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
 dirty tree with this documentation restructure in flight. Laravel API at the same commit.
@@ -70,7 +70,7 @@ Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Larave
 for the release build — the live API. The bottom-sheet fix and the two categories it moved
 were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
 
-🔴 **The floor is 627 and it ratchets.** A published total may never fall. If scope is
+🔴 **The floor is 629 and it ratchets.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
 headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 

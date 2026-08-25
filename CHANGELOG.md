@@ -27,8 +27,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **You can now delete your account from inside the phone app.** The website's
+  settings page has had this since before the app existed; the app had nothing —
+  no button, no screen, no request. It is also a firm Google Play rule that an app
+  which lets people create an account must let them delete it in the app, so this
+  was a blocker for publishing as well as a gap a member would notice. Settings →
+  Account → Delete account. It uses the same server request the website uses, so
+  what actually happens to the data is unchanged: type DELETE, enter your
+  password, and your profile, listings and sent messages go, while time-credit
+  records stay in the community's accounts with your name removed. The screen says
+  all of that in plain words before the button will work, in all seven of the app's
+  languages.
+  Fixing it uncovered a quieter fault: the app's own code for "delete" requests
+  threw away any information attached to them. Nothing had needed it before, so
+  nothing had noticed. Without the fix, the password could only have been sent in
+  the web address itself, where it would be written into server logs.
+
 ### Changed
 
+- **Every sign-up form now says the same thing about age: Project NEXUS is for
+  adults, 18 and over.** The web app's form had always said "and I am 18 years of
+  age or older". The phone app's said nothing about age in any of its seven
+  languages, and the accessible frontend's said nothing in any of its eleven. So
+  the platform was describing itself two ways at once, and the phone app is the one
+  going to Google Play, where the audience has to be declared and has to match what
+  the app tells people. All three forms now carry the declaration, hand-translated
+  in every language each one offers, and a new check
+  (`node scripts/check-age-declaration.mjs`, blocking in CI) fails if any of them
+  ever stops saying it. Nothing could see the disagreement before: every key was
+  present in every language, so both translation gates were green while the three
+  sentences said different things.
+- **The public features page no longer advertises something the platform does not
+  offer.** It described "consent flows for members under 18", which cannot be true
+  of a platform whose sign-up requires being 18 or older. The guardian-consent
+  capability is real and is unchanged; it is now described for what it is — an
+  optional, staff-mediated consent record for communities running supervised
+  activity with young people, switched off unless a community turns it on — with
+  the adults-only position stated alongside it, in all eleven languages.
+  [docs/PRODUCT-AUDIENCE.md](docs/PRODUCT-AUDIENCE.md) records the position, what
+  the code enforces versus what a member declares, and the gaps still open (social
+  sign-up makes no age statement; two communities' terms documents contain no age
+  clause).
+- **Two translation checks that existed but were not being run are now blocking in
+  CI.** The phone app's untranslated-value ratchet was written yesterday and wired
+  to nothing, so nothing would have noticed English creeping back into the other
+  six languages. It now runs in the mobile job, alongside the new sign-up age
+  check.
 - **The app icon was being cropped on real Android phones.** Android cuts the
   launcher icon into whatever shape the phone uses — a circle on most — and only
   guarantees the middle two thirds of the artwork survives. Ours filled the whole

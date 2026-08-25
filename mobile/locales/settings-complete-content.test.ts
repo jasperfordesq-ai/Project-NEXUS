@@ -29,6 +29,14 @@ describe('complete mobile Irish Settings catalogue', () => {
       'identity.dob_placeholder',
       'dataExport.format.json',
       'linkedAccounts.emailPlaceholder',
+      // The account-deletion confirmation keyword is deliberately NOT translated, in this
+      // app and in the web app's eleven locales. Translating it in one place and not the
+      // other is how the web app once locked members out of deleting their own accounts:
+      // the screen said "type ELIMINAR" while the code compared against "DELETE".
+      // `app/accountDeletionParity.test.ts` asserts it stays "DELETE" everywhere, and the
+      // gate accepts the localized keyword too, so a future decision to translate it
+      // would need both places changed together.
+      'deleteAccount.keyword',
     ]);
 
     expect(irishFlat.size).toBe(englishFlat.size);

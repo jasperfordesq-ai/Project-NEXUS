@@ -294,5 +294,34 @@
       "notEnrolled": "Configura primero una huella, el rostro o un PIN en los ajustes del teléfono.",
       "unavailable": "El desbloqueo no está disponible en este teléfono ahora mismo."
     }
+  },
+  "deleteAccount": {
+    "title": "Eliminar cuenta",
+    "settingsHint": "Eliminar definitivamente tu cuenta y tus datos personales",
+    "permanentBadge": "Definitivo",
+    "warning": "Esta acción no se puede deshacer",
+    "warningBody": "Al eliminar la cuenta, tus datos personales se retiran de esta comunidad de inmediato. No hay forma de recuperarlos.",
+    "consequences": {
+      "profile": "Se eliminan tu perfil, tu foto, tu presentación y tus datos de contacto.",
+      "listings": "Tus anuncios se retiran y salen de la búsqueda.",
+      "messages": "Los mensajes que enviaste se borran. La conversación se queda en la bandeja de la otra persona, sin tus datos.",
+      "credits": "Los apuntes de créditos de tiempo se quedan en las cuentas de la comunidad, sin tu nombre.",
+      "signIn": "Se eliminan tu contraseña, tus llaves de acceso y los dispositivos con sesión abierta, y se cierra la sesión en todos ellos."
+    },
+    "confirmTitle": "Confirmar la eliminación",
+    "typeConfirm": "Escribe {{keyword}} abajo y luego tu contraseña.",
+    "confirmationLabel": "Escribe {{keyword}}",
+    "keyword": "DELETE",
+    "passwordLabel": "Contraseña actual",
+    "submit": "Eliminar mi cuenta",
+    "deleting": "Eliminando…",
+    "done": "Cuenta eliminada",
+    "doneBody": "Tu cuenta y tus datos personales se han eliminado.",
+    "failed": "La cuenta no se eliminó",
+    "failedBody": "Tu cuenta no se eliminó. Comprueba la contraseña e inténtalo de nuevo.",
+    "tooSoon": "Lo has intentado hace un momento. Espera un minuto y vuelve a intentarlo.",
+    "confirmRequired": "Hace falta confirmación",
+    "confirmRequiredBody": "Escribe {{keyword}} e introduce tu contraseña para continuar.",
+    "alternativeHint": "Si solo quieres una pausa, puedes desactivar las notificaciones o limitar quién ve tu perfil en Privacidad."
   }
 }

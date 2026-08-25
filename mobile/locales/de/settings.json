@@ -294,5 +294,34 @@
       "notEnrolled": "Richten Sie zuerst Fingerabdruck, Gesicht oder PIN in den Telefoneinstellungen ein.",
       "unavailable": "Das Entsperren ist auf diesem Telefon derzeit nicht verfügbar."
     }
+  },
+  "deleteAccount": {
+    "title": "Konto löschen",
+    "settingsHint": "Ihr Konto und Ihre persönlichen Daten endgültig löschen",
+    "permanentBadge": "Endgültig",
+    "warning": "Das lässt sich nicht rückgängig machen",
+    "warningBody": "Beim Löschen Ihres Kontos werden Ihre persönlichen Daten sofort aus dieser Gemeinschaft entfernt. Sie lassen sich nicht wiederherstellen.",
+    "consequences": {
+      "profile": "Ihr Profil, Foto, Ihre Kurzbiografie und Ihre Kontaktdaten werden entfernt.",
+      "listings": "Ihre Angebote werden zurückgezogen und aus der Suche entfernt.",
+      "messages": "Von Ihnen gesendete Nachrichten werden gelöscht. Das Gespräch bleibt im Postfach der anderen Person, ohne Ihre Angaben.",
+      "credits": "Zeitguthaben-Buchungen bleiben in der Buchhaltung der Gemeinschaft, ohne Ihren Namen.",
+      "signIn": "Ihr Passwort, Ihre Passkeys und angemeldeten Geräte werden gelöscht, und Sie werden überall abgemeldet."
+    },
+    "confirmTitle": "Löschung bestätigen",
+    "typeConfirm": "Geben Sie unten {{keyword}} ein und dann Ihr Passwort.",
+    "confirmationLabel": "{{keyword}} eingeben",
+    "keyword": "DELETE",
+    "passwordLabel": "Aktuelles Passwort",
+    "submit": "Mein Konto löschen",
+    "deleting": "Wird gelöscht…",
+    "done": "Konto gelöscht",
+    "doneBody": "Ihr Konto und Ihre persönlichen Daten wurden gelöscht.",
+    "failed": "Konto nicht gelöscht",
+    "failedBody": "Ihr Konto wurde nicht gelöscht. Prüfen Sie Ihr Passwort und versuchen Sie es erneut.",
+    "tooSoon": "Sie haben es gerade erst versucht. Warten Sie etwa eine Minute und versuchen Sie es dann erneut.",
+    "confirmRequired": "Bestätigung erforderlich",
+    "confirmRequiredBody": "Geben Sie {{keyword}} und Ihr Passwort ein, um fortzufahren.",
+    "alternativeHint": "Wenn Sie nur eine Pause möchten, können Sie stattdessen Benachrichtigungen ausschalten oder unter Datenschutz einschränken, wer Ihr Profil sieht."
   }
 }

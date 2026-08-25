@@ -248,3 +248,31 @@ The page at `https://mobile.project-nexus.ie` should include:
 - Link to the Google Play listing when available.
 - Privacy policy, support contact, and source/license links.
 - A clear note that direct website download is Android-only.
+
+## Google Play declarations that are already decided
+
+The Play Console asks questions whose answers must match what the app tells its users.
+These two are settled, so nobody has to guess at submission time:
+
+- **Target audience: adults only, 18 and over.** Sign-up requires confirming you are 18 or
+  older, and since 2026-08-25 the app's own sign-up form says so in all seven of its
+  languages, matching the web and accessible frontends. Google Play's **Families policy
+  therefore does not apply**, and the app must not be declared as targeting children.
+  `node ../scripts/check-age-declaration.mjs` runs in the mobile CI job and fails if any
+  sign-up form stops stating a minimum age — the declaration and the product cannot drift
+  apart silently. Background and the open gaps (social sign-up makes no age statement; two
+  tenants' terms documents contain no age clause) are in
+  [../../docs/PRODUCT-AUDIENCE.md](../../docs/PRODUCT-AUDIENCE.md).
+- **In-app account deletion exists (built 2026-08-25), so the hardest of these
+  requirements is met.** Play requires that an app which lets people create an account
+  lets them request deletion *inside the app*, not only on a website, and until this date
+  the app had no such path at all — a certain rejection. It is at Settings → Account →
+  Delete account (`app/(modals)/settings-delete-account.tsx`), calls the same
+  `DELETE /v2/users/me` the web app calls, and performs a full GDPR Article 17 erasure
+  rather than a deactivation. The Data Safety form's deletion question can be answered
+  "users can request that their data be deleted" without qualification.
+- **Guardian consent is not a child-facing feature.** The app contains guardian-consent
+  screens for volunteering. They are for communities running supervised activity with young
+  people whose accounts a coordinator sets up, the tenant setting is off by default, and no
+  consent has ever been recorded in production. Describe it that way in the listing; do not
+  present the app as a service for under-18s.

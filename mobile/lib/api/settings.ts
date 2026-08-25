@@ -91,6 +91,25 @@ export function requestDataExport(format: DataExportFormat): Promise<unknown> {
   return api.post<unknown>(`${API_V2}/me/data-export`, { format });
 }
 
+/**
+ * GDPR Article 17 erasure of the signed-in member's own account.
+ *
+ * `DELETE /api/v2/users/me`, the same endpoint the web app's settings page calls, so both
+ * clients get identical server behaviour: password re-authentication, then
+ * `GdprService::executeAccountDeletion` (messages, tokens, passkeys, listings, AI chat,
+ * uploaded files and the search index — not a PII-column wipe), then a farewell email and
+ * an admin notification.
+ *
+ * 🔴 The password goes in the BODY. `api.delete()` gained body support for this call; a
+ * password in a query string would land in server and proxy logs. The server answers 400
+ * `VALIDATION_ERROR` with no password, 403 `INVALID_PASSWORD` on a wrong one, and rate
+ * limits to one attempt per minute — so a failure here is worth showing verbatim rather
+ * than collapsing into "something went wrong".
+ */
+export function deleteAccount(password: string): Promise<unknown> {
+  return api.delete<unknown>(`${API_V2}/users/me`, { body: { password } });
+}
+
 export async function getBlockedUsers(): Promise<BlockedUser[]> {
   const response = await api.get<ApiEnvelope<BlockedUser[]>>(`${API_V2}/users/blocked`);
   return unwrap(response, []);

@@ -887,6 +887,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('settings:dataExport.title') }}
       />
       <Stack.Screen
+        name="(modals)/settings-delete-account"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:deleteAccount.title') }}
+      />
+      <Stack.Screen
         name="(modals)/settings-translation"
         options={{ ...modalOptions, headerShown: false, title: t('settings:translation.title') }}
       />

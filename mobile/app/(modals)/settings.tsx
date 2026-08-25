@@ -272,6 +272,26 @@ export default function SettingsScreen() {
               }}
               theme={theme}
             />
+            {/*
+              🔴 Owner-reported parity gap, 2026-08-25: the web app's settings page has had
+              account deletion since before this app existed, and this app had nothing — no
+              row, no screen, no API call. It is also a hard Google Play requirement that an
+              app which lets people create an account lets them delete it in the app, not
+              only on a website. Last in the section, and destructive-toned, because a
+              mis-tap here costs nothing: the next screen needs the keyword AND the
+              password before anything is sent.
+            */}
+            <ActionRow
+              label={t('deleteAccount.title')}
+              subtitle={t('deleteAccount.settingsHint')}
+              icon="trash-outline"
+              tone={theme.error}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/(modals)/settings-delete-account' as Href);
+              }}
+              theme={theme}
+            />
           </Section>
 
           <Section

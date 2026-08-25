@@ -294,5 +294,34 @@
       "notEnrolled": "Socraigh méarlorg, aghaidh nó PIN i socruithe do fhóin ar dtús.",
       "unavailable": "Níl an díghlasáil ar fáil ar an bhfón seo faoi láthair."
     }
+  },
+  "deleteAccount": {
+    "title": "Scrios cuntas",
+    "settingsHint": "Scrios do chuntas agus do shonraí pearsanta go buan",
+    "permanentBadge": "Buan",
+    "warning": "Ní féidir seo a chur ar ceal",
+    "warningBody": "Baineann scriosadh do chuntais do shonraí pearsanta den phobal seo láithreach. Ní féidir iad a fháil ar ais.",
+    "consequences": {
+      "profile": "Baintear do phróifíl, do ghrianghraf, do bheathaisnéis agus do shonraí teagmhála.",
+      "listings": "Tarraingítear siar do liostaí agus baintear as an gcuardach iad.",
+      "messages": "Glantar na teachtaireachtaí a sheol tú. Fanann an comhrá i mbosca isteach an duine eile, gan do shonraí.",
+      "credits": "Fanann taifid na gcreidmheasanna ama i gcuntais an phobail, gan d'ainm.",
+      "signIn": "Scriostar do phasfhocal, do phas-eochracha agus na gléasanna atá sínithe isteach, agus sínítear amach tú i ngach áit."
+    },
+    "confirmTitle": "Deimhnigh an scriosadh",
+    "typeConfirm": "Clóscríobh {{keyword}} thíos, ansin cuir isteach do phasfhocal.",
+    "confirmationLabel": "Clóscríobh {{keyword}}",
+    "keyword": "DELETE",
+    "passwordLabel": "Pasfhocal reatha",
+    "submit": "Scrios mo chuntas",
+    "deleting": "Á scriosadh…",
+    "done": "Cuntas scriosta",
+    "doneBody": "Scriosadh do chuntas agus do shonraí pearsanta.",
+    "failed": "Níor scriosadh an cuntas",
+    "failedBody": "Níor scriosadh do chuntas. Seiceáil do phasfhocal agus bain triail eile as.",
+    "tooSoon": "Bhain tú triail as nóiméad ó shin. Fan tuairim is nóiméad, ansin bain triail eile as.",
+    "confirmRequired": "Deimhniú de dhíth",
+    "confirmRequiredBody": "Clóscríobh {{keyword}} agus cuir isteach do phasfhocal chun leanúint ar aghaidh.",
+    "alternativeHint": "Más sos atá uait amháin, is féidir leat fógraí a mhúchadh, nó teorainn a chur ar cé a fheiceann do phróifíl faoi Phríobháideachas."
   }
 }

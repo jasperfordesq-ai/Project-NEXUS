@@ -288,6 +288,22 @@ export interface RequestOptions {
    * stripped below. It only omits the stored one.
    */
   anonymous?: boolean;
+  /**
+   * Request body for `api.delete()`, which is the one verb helper with no positional
+   * body parameter.
+   *
+   * 🔴 It was previously impossible to send a body on a DELETE at all: the helper
+   * hardcoded `undefined`, so an options object containing data was silently dropped.
+   * `cancelExchangeRequest` works around that by putting its `reason` in the query
+   * string, which is fine for a reason and unacceptable for the case that forced this
+   * field — `DELETE /v2/users/me` requires the member's password, and a password in a
+   * URL ends up in server logs, proxy logs and crash reports.
+   *
+   * POST/PUT/PATCH must keep using their positional body. Passing `body` in their
+   * options is an excess-property error on an object literal, which is the intended
+   * outcome: it would be silently ignored.
+   */
+  body?: unknown;
 }
 
 async function request<T>(
@@ -298,7 +314,7 @@ async function request<T>(
 ): Promise<T> {
   // Support both legacy params-only signature and new options object
   const options: RequestOptions =
-    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions || 'anonymous' in paramsOrOptions)
+    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions || 'anonymous' in paramsOrOptions || 'body' in paramsOrOptions)
       ? (paramsOrOptions as RequestOptions)
       : { params: paramsOrOptions as Record<string, string> | undefined };
 
@@ -511,7 +527,9 @@ export const api = {
   },
 
   delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    return request<T>('DELETE', endpoint, undefined, options);
+    // `options.body` — not `undefined`. See RequestOptions.body: this helper used to
+    // discard every body it was given.
+    return request<T>('DELETE', endpoint, options?.body, options);
   },
 
   /** POST with file-upload timeout (60s) for large payloads */

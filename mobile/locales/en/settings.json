@@ -294,5 +294,34 @@
       "notEnrolled": "Set up a fingerprint, face or PIN in your phone's settings first.",
       "unavailable": "Unlock is not available on this phone right now."
     }
+  },
+  "deleteAccount": {
+    "title": "Delete account",
+    "settingsHint": "Permanently delete your account and personal data",
+    "permanentBadge": "Permanent",
+    "warning": "This cannot be undone",
+    "warningBody": "Deleting your account removes your personal data from this community straight away. There is no way to get it back.",
+    "consequences": {
+      "profile": "Your profile, photo, biography and contact details are removed.",
+      "listings": "Your listings are withdrawn and taken out of search.",
+      "messages": "Messages you sent are cleared. The conversation stays in the other person's inbox, without your details.",
+      "credits": "Time-credit records stay in the community's accounts, with your name removed.",
+      "signIn": "Your password, passkeys and signed-in devices are deleted, and you are signed out everywhere."
+    },
+    "confirmTitle": "Confirm deletion",
+    "typeConfirm": "Type {{keyword}} below, then enter your password.",
+    "confirmationLabel": "Type {{keyword}}",
+    "keyword": "DELETE",
+    "passwordLabel": "Current password",
+    "submit": "Delete my account",
+    "deleting": "Deleting…",
+    "done": "Account deleted",
+    "doneBody": "Your account and personal data have been deleted.",
+    "failed": "Account not deleted",
+    "failedBody": "Your account was not deleted. Check your password and try again.",
+    "tooSoon": "You tried a moment ago. Wait about a minute, then try again.",
+    "confirmRequired": "Confirmation needed",
+    "confirmRequiredBody": "Type {{keyword}} and enter your password to continue.",
+    "alternativeHint": "If you only want a break, you can turn off notifications, or limit who can see your profile under Privacy."
   }
 }

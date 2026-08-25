@@ -294,5 +294,34 @@
       "notEnrolled": "Configura prima impronta, volto o PIN nelle impostazioni del telefono.",
       "unavailable": "Lo sblocco non è disponibile su questo telefono in questo momento."
     }
+  },
+  "deleteAccount": {
+    "title": "Elimina account",
+    "settingsHint": "Elimina definitivamente il tuo account e i tuoi dati personali",
+    "permanentBadge": "Definitivo",
+    "warning": "Questa azione è irreversibile",
+    "warningBody": "L'eliminazione dell'account rimuove subito i tuoi dati personali da questa comunità. Non è possibile recuperarli.",
+    "consequences": {
+      "profile": "Il tuo profilo, la foto, la biografia e i contatti vengono rimossi.",
+      "listings": "I tuoi annunci vengono ritirati e tolti dalla ricerca.",
+      "messages": "I messaggi che hai inviato vengono cancellati. La conversazione resta nella casella dell'altra persona, senza i tuoi dati.",
+      "credits": "Le registrazioni dei crediti di tempo restano nella contabilità della comunità, senza il tuo nome.",
+      "signIn": "Password, passkey e dispositivi collegati vengono eliminati e la sessione viene chiusa su tutti i dispositivi."
+    },
+    "confirmTitle": "Conferma l'eliminazione",
+    "typeConfirm": "Digita {{keyword}} qui sotto, poi inserisci la password.",
+    "confirmationLabel": "Digita {{keyword}}",
+    "keyword": "DELETE",
+    "passwordLabel": "Password attuale",
+    "submit": "Elimina il mio account",
+    "deleting": "Eliminazione…",
+    "done": "Account eliminato",
+    "doneBody": "Il tuo account e i tuoi dati personali sono stati eliminati.",
+    "failed": "Account non eliminato",
+    "failedBody": "Il tuo account non è stato eliminato. Controlla la password e riprova.",
+    "tooSoon": "Hai provato un attimo fa. Attendi circa un minuto e riprova.",
+    "confirmRequired": "Serve una conferma",
+    "confirmRequiredBody": "Digita {{keyword}} e inserisci la password per continuare.",
+    "alternativeHint": "Se vuoi solo una pausa, puoi disattivare le notifiche o limitare chi vede il tuo profilo in Privacy."
   }
 }
