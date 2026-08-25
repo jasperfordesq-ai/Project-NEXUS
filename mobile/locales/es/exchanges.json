@@ -491,5 +491,6 @@
         "quality": "No es lo acordado"
       }
     }
-  }
+  },
+  "unknownMember": "Miembro desconocido"
 }

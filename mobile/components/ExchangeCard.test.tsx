@@ -100,6 +100,33 @@ describe('ExchangeCard', () => {
     expect(getByText('3.4 km away')).toBeTruthy();
   });
 
+  /**
+   * 🔴 Found in production on 2026-08-25, while capturing store screenshots: a listing whose
+   * owner no longer resolves came back as `user: null` with `author_name: "Unknown"`, and the
+   * card rendered a literal "?" — as the name, and again as the avatar's initial. The server
+   * had a better answer the whole time.
+   */
+  it('falls back to the name the server sent when the member cannot be resolved', () => {
+    const { getAllByText, queryByText } = render(
+      <ExchangeCard exchange={{ ...exchange, user: undefined, author_name: 'Unknown' }} />,
+    );
+
+    // More than one node carries it — the visible label and the avatar's own text — which is
+    // exactly why the old '?' appeared twice on screen.
+    expect(getAllByText('Unknown').length).toBeGreaterThan(0);
+    expect(queryByText('?')).toBeNull();
+  });
+
+  it('says "unknown member" rather than "?" when the server sends nothing either', () => {
+    const { getAllByText, queryByText } = render(
+      <ExchangeCard exchange={{ ...exchange, user: undefined, author_name: undefined }} />,
+    );
+
+    // The test i18n stub returns the key, so this asserts the key is reached at all.
+    expect(getAllByText('unknownMember').length).toBeGreaterThan(0);
+    expect(queryByText('?')).toBeNull();
+  });
+
   it('exposes a card save action without opening the detail screen', () => {
     const onToggleSave = jest.fn();
     const { getByLabelText } = render(<ExchangeCard exchange={exchange} onToggleSave={onToggleSave} />);

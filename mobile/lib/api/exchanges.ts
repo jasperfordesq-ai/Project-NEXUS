@@ -70,7 +70,14 @@ export interface Exchange {
   likes_count?: number;
   comments_count?: number;
   is_reported?: boolean;
-  user: {
+  /**
+   * 🔴 NULLABLE, because the server really does send `user: null` — seen in production on
+   * 2026-08-25 for a listing whose `user_id` no longer resolves, alongside
+   * `author_name: "Unknown"`. This was typed as always-present, so every reader was written
+   * as though it could be trusted, and `ExchangeCard` quietly substituted a literal '?'.
+   * The `author_*` fields below are the server's answer for exactly this case.
+   */
+  user?: {
     id: number;
     name?: string;
     first_name?: string;

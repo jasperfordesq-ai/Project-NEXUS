@@ -491,5 +491,6 @@
         "quality": "Pas ce qui était convenu"
       }
     }
-  }
+  },
+  "unknownMember": "Membre inconnu"
 }

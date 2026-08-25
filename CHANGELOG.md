@@ -63,6 +63,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Everyone reading the app in English was seeing American dates.** A listing
+  posted on 17 August showed as "8/17/2026" — month first — on a platform built
+  for Ireland and the UK. The app deliberately follows the language you pick in
+  settings rather than your phone's, so that switching to Spanish gives you
+  Spanish dates; the flaw was that a language on its own carries no country, and
+  English on its own means America. Dates now take the language you chose and the
+  country your phone is in, so an Irish phone shows 17/8/2026 and Spanish still
+  reads in Spanish.
+
+- **A listing whose author could not be found showed a bare question mark.** Where
+  the member's name and photo belong, the app printed "?" twice — which reads as
+  the app being broken rather than the person being gone. The server had been
+  sending a proper answer all along and the app was discarding it. It now shows
+  that, or "Unknown member" if there is nothing at all.
+  Both of these were found by using the real app on a phone to take store
+  screenshots — neither would have been caught by a test, because both look
+  entirely normal until you read them.
+
+- **Members' surnames were being handed out by the wallet's recipient search, and are not any more.** Everywhere else on the platform a surname is private to everyone except a community's admins — the member directory and profile pages both hide it. The box you type into when sending someone time credits did not, so anyone could have collected every surname in their community two letters at a time. It now returns the first name only, exactly like the rest of the platform. So that you can still tell two members called Mary apart before sending credits, each result now shows the member's username beside their first name, and the send button names them both — sending credits is not something you can undo, so the list must never be ambiguous. Searching by surname still finds the right person; the surname is simply not read back to you. Admins see surnames as before.
+
 - **Crash reporting for the phone app is now set up, and proven to work.** There
   was nowhere for the app's crashes to go: the website and the backend each have
   their own place in the error-reporting service, and the app had none. One was

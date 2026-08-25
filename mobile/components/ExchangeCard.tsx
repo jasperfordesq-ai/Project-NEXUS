@@ -34,7 +34,21 @@ export default function ExchangeCard({ exchange, onToggleSave }: ExchangeCardPro
   }
 
   const hours = exchange.hours_estimate ?? 0;
-  const user = exchange.user ?? { id: 0, name: '?', avatar_url: null };
+  /**
+   * 🔴 The server sends `author_name` and `author_avatar` alongside the nested `user`, and
+   * this card threw both away: when `user` was null it rendered a literal '?', twice — once
+   * as the name and once as the avatar initial derived from it.
+   *
+   * Seen in production on 2026-08-25 while capturing store screenshots: a listing whose
+   * `user_id` no longer resolves came back as `user: null, author_name: "Unknown"`, and the
+   * card showed "?" over a bare date. A question mark tells a member nothing; it reads like
+   * the app is broken rather than like the person is gone.
+   */
+  const user = exchange.user ?? {
+    id: 0,
+    name: exchange.author_name?.trim() || t('unknownMember'),
+    avatar_url: exchange.author_avatar ?? null,
+  };
   const imageUrl = resolveImageUrl(exchange.image_url);
   const isOffer = exchange.type === 'offer';
   const accent = isOffer ? '#10B981' : '#F59E0B';
