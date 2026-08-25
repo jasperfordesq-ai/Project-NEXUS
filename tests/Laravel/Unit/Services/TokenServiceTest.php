@@ -75,6 +75,23 @@ class TokenServiceTest extends TestCase
         $this->assertEquals(900, $expiry);
     }
 
+    public function test_local_certification_can_use_a_seconds_scale_access_token_lifetime(): void
+    {
+        config(['auth.test_access_token_expiry_seconds' => 5]);
+
+        $this->assertSame(5, $this->service->getAccessTokenExpiry(false));
+        $token = $this->service->generateToken(1, 2, [], false);
+        $payload = json_decode(base64_decode(strtr(explode('.', $token)[1], '-_', '+/')), true);
+        $this->assertSame(5, (int) $payload['exp'] - (int) $payload['nbf']);
+    }
+
+    public function test_out_of_range_certification_override_cannot_widen_the_access_token_lifetime(): void
+    {
+        config(['auth.test_access_token_expiry_seconds' => 86400]);
+
+        $this->assertSame(900, $this->service->getAccessTokenExpiry(false));
+    }
+
     public function test_getRefreshTokenExpiry_returns_web_expiry(): void
     {
         $expiry = $this->service->getRefreshTokenExpiry(false);

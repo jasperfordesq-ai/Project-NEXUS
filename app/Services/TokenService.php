@@ -74,6 +74,11 @@ class TokenService
      */
     public function getAccessTokenExpiry(?bool $isMobile = null): int
     {
+        $testSeconds = (int) config('auth.test_access_token_expiry_seconds', 0);
+        if (app()->environment(['local', 'testing']) && $testSeconds >= 1 && $testSeconds <= 60) {
+            return $testSeconds;
+        }
+
         return self::ACCESS_TOKEN_EXPIRY;
     }
 
@@ -205,7 +210,7 @@ class TokenService
             !$payload
             || ($payload['type'] ?? '') !== 'access'
             || (int) ($payload['access_version'] ?? 0) !== self::ACCESS_TOKEN_VERSION
-            || (int) ($payload['exp'] ?? 0) - (int) ($payload['nbf'] ?? 0) > self::ACCESS_TOKEN_EXPIRY
+            || (int) ($payload['exp'] ?? 0) - (int) ($payload['nbf'] ?? 0) > $this->getAccessTokenExpiry()
         ) {
             return null;
         }
@@ -395,7 +400,7 @@ class TokenService
             || $issuedAt < 1
             || $expiresAt <= $now
             || $issuedAt >= $expiresAt
-            || $expiresAt - $issuedAt > self::ACCESS_TOKEN_EXPIRY
+            || $expiresAt - $issuedAt > $this->getAccessTokenExpiry()
         ) {
             return false;
         }
