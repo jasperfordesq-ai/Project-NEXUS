@@ -76,11 +76,59 @@ public class UsersController : ControllerBase
     /// Demonstrates: Tenant filter automatically applied to queries.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int limit = 20)
+    public async Task<IActionResult> List(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        [FromQuery] string? q = null)
     {
         if (page < 1) page = 1;
         limit = Math.Clamp(limit, 1, 100);
         var skip = (page - 1) * limit;
+
+        if (Request.Path.StartsWithSegments("/api/v2"))
+        {
+            var v2Query = _db.Users.Where(u => u.IsActive && u.IsApproved);
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var search = q.Trim().ToLower();
+                v2Query = v2Query.Where(u =>
+                    u.FirstName.ToLower().Contains(search) ||
+                    u.LastName.ToLower().Contains(search) ||
+                    (u.FirstName + " " + u.LastName).ToLower().Contains(search));
+            }
+
+            var v2Total = await v2Query.CountAsync();
+            var v2Users = await v2Query
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .Skip(skip)
+                .Take(limit)
+                .Select(u => new
+                {
+                    id = u.Id,
+                    name = (u.FirstName + " " + u.LastName).Trim(),
+                    first_name = u.FirstName,
+                    last_name = u.LastName,
+                    avatar = u.AvatarUrl,
+                    avatar_url = u.AvatarUrl,
+                    tagline = (string?)null,
+                    bio = u.Bio,
+                    location = (string?)null
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                data = v2Users,
+                pagination = new
+                {
+                    page,
+                    limit,
+                    total = v2Total,
+                    pages = (int)Math.Ceiling((double)v2Total / limit)
+                }
+            });
+        }
 
         // Global query filter ensures only current tenant's users are returned
         var users = await _db.Users

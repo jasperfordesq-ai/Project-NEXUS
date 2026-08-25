@@ -299,8 +299,10 @@ public class CompatibilityAliasController : ControllerBase
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = _tenantContext.GetTenantIdOrThrow();
 
-        var connection = await _db.Connections.FirstOrDefaultAsync(c => c.Id == id);
+        var connection = await _db.Connections.FirstOrDefaultAsync(c =>
+            c.Id == id && c.TenantId == tenantId);
         if (connection == null) return NotFound(new { error = "Connection not found" });
 
         if (connection.AddresseeId != userId.Value)

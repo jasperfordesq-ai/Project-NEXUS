@@ -77,6 +77,36 @@ public class MessagesControllerTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task V2ReactJourney_NewDirectMessage_IsVisibleInRecipientsFreshInboxAndThread()
+    {
+        const string body = "Fresh recipient direct-message proof";
+        await AuthenticateAsMemberAsync();
+        var sendResponse = await Client.PostAsJsonAsync("/api/v2/messages", new
+        {
+            recipient_id = TestData.AdminUser.Id,
+            body
+        });
+        sendResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await AuthenticateAsAdminAsync();
+        var inboxResponse = await Client.GetAsync("/api/v2/messages");
+        inboxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var inboxPayload = await inboxResponse.Content.ReadFromJsonAsync<JsonElement>();
+        inboxPayload.GetProperty("data").EnumerateArray().Should().ContainSingle(conversation =>
+            conversation.GetProperty("participant").GetProperty("id").GetInt32() == TestData.MemberUser.Id &&
+            conversation.GetProperty("last_message").GetProperty("body").GetString() == body);
+
+        var threadResponse = await Client.GetAsync($"/api/v2/messages/{TestData.MemberUser.Id}");
+        threadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var threadPayload = await threadResponse.Content.ReadFromJsonAsync<JsonElement>();
+        threadPayload.GetProperty("data").EnumerateArray().Should().ContainSingle(message =>
+            message.GetProperty("body").GetString() == body &&
+            message.GetProperty("sender").GetProperty("id").GetInt32() == TestData.MemberUser.Id);
+        threadPayload.GetProperty("meta").GetProperty("conversation").GetProperty("other_user")
+            .GetProperty("id").GetInt32().Should().Be(TestData.MemberUser.Id);
+    }
+
+    [Fact]
     public async Task SendMessage_ToSelf_ReturnsBadRequest()
     {
         // Arrange

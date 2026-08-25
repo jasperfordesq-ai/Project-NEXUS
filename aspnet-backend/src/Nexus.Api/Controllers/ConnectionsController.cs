@@ -38,10 +38,77 @@ public class ConnectionsController : ControllerBase
     public async Task<IActionResult> GetConnections(
         [FromQuery] string? status = null,
         [FromQuery] int page = 1,
-        [FromQuery] int limit = 20)
+        [FromQuery] int limit = 20,
+        [FromQuery(Name = "per_page")] int? perPage = null,
+        [FromQuery] string? cursor = null)
     {
         var userId = GetCurrentUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = User.GetTenantId();
+        if (tenantId == null) return BadRequest(new { error = "Tenant context not resolved" });
+
+        if (Request.Path.StartsWithSegments("/api/v2"))
+        {
+            var v2Page = int.TryParse(cursor, out var parsedCursor) && parsedCursor > 0
+                ? parsedCursor
+                : Math.Max(page, 1);
+            var v2Limit = Math.Clamp(perPage ?? limit, 1, 100);
+            var v2Query = _db.Connections
+                .Include(c => c.Requester)
+                .Include(c => c.Addressee)
+                .Where(c => c.TenantId == tenantId.Value &&
+                    (c.RequesterId == userId.Value || c.AddresseeId == userId.Value));
+
+            v2Query = status switch
+            {
+                "pending_received" => v2Query.Where(c =>
+                    c.Status == Connection.Statuses.Pending && c.AddresseeId == userId.Value),
+                "pending_sent" => v2Query.Where(c =>
+                    c.Status == Connection.Statuses.Pending && c.RequesterId == userId.Value),
+                { Length: > 0 } => v2Query.Where(c => c.Status == status),
+                _ => v2Query
+            };
+
+            var v2Connections = await v2Query
+                .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                .Skip((v2Page - 1) * v2Limit)
+                .Take(v2Limit + 1)
+                .Select(c => new
+                {
+                    connection_id = c.Id,
+                    user = c.RequesterId == userId.Value
+                        ? new
+                        {
+                            id = c.Addressee.Id,
+                            name = (c.Addressee.FirstName + " " + c.Addressee.LastName).Trim(),
+                            avatar_url = c.Addressee.AvatarUrl,
+                            location = (string?)null,
+                            bio = c.Addressee.Bio
+                        }
+                        : new
+                        {
+                            id = c.Requester.Id,
+                            name = (c.Requester.FirstName + " " + c.Requester.LastName).Trim(),
+                            avatar_url = c.Requester.AvatarUrl,
+                            location = (string?)null,
+                            bio = c.Requester.Bio
+                        },
+                    status = c.Status,
+                    created_at = c.CreatedAt
+                })
+                .ToListAsync();
+
+            var hasMore = v2Connections.Count > v2Limit;
+            return Ok(new
+            {
+                data = v2Connections.Take(v2Limit),
+                meta = new
+                {
+                    cursor = hasMore ? (v2Page + 1).ToString() : null,
+                    has_more = hasMore
+                }
+            });
+        }
 
         if (page < 1) page = 1;
         if (limit < 1) limit = 1;
@@ -50,7 +117,8 @@ public class ConnectionsController : ControllerBase
         var query = _db.Connections
             .Include(c => c.Requester)
             .Include(c => c.Addressee)
-            .Where(c => c.RequesterId == userId || c.AddresseeId == userId);
+            .Where(c => c.TenantId == tenantId.Value &&
+                (c.RequesterId == userId || c.AddresseeId == userId));
 
         // Filter by status if provided
         if (!string.IsNullOrEmpty(status))

@@ -204,21 +204,21 @@ SET @PW := (SELECT password_hash FROM users WHERE id = @UA);
 
 INSERT INTO users
     (id, tenant_id, first_name, last_name, name, email, password_hash, role,
-     profile_type, status, is_active, is_verified, email_verified_at,
+     profile_type, status, is_active, is_verified, is_approved, email_verified_at,
      onboarding_completed, privacy_profile, privacy_search, balance, bio,
      preferred_language, created_at, updated_at)
 VALUES
   (950010, @T,  'Maya', 'Coordinator', 'Maya Coordinator',
    'maya.coordinator@project-nexus.local', @PW, 'member', 'individual',
-   'active', 1, 1, NOW(), 1, 'public', 1, 40.00,
+   'active', 1, 1, 1, NOW(), 1, 'public', 1, 40.00,
    'Community coordinator for events, volunteering and onboarding.', 'en', NOW(), NOW()),
   (950011, @T2, 'Bob', 'Boss', 'Bob Boss',
    'bob.boss@project-nexus.local', @PW, 'admin', 'individual',
-   'active', 1, 1, NOW(), 1, 'public', 1, 0.00,
+   'active', 1, 1, 1, NOW(), 1, 'public', 1, 0.00,
    'Second-community admin, mirroring the ASP.NET partner tenant admin.', 'en', NOW(), NOW()),
   (950012, @T2, 'Nina', 'Neighbour', 'Nina Neighbour',
    'nina.neighbour@project-nexus.local', @PW, 'member', 'individual',
-   'active', 1, 1, NOW(), 1, 'public', 1, 25.00,
+   'active', 1, 1, 1, NOW(), 1, 'public', 1, 25.00,
    'Second-community member, so the extra community is not an empty shell.', 'en', NOW(), NOW());
 
 -- ---------------------------------------------------------------------------

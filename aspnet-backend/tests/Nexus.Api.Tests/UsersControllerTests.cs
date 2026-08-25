@@ -153,6 +153,23 @@ public class UsersControllerTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task V2ReactJourney_UserSearch_FiltersAndReturnsRecipientButtonShapeWithinTenant()
+    {
+        await AuthenticateAsMemberAsync();
+
+        var response = await Client.GetAsync("/api/v2/users?q=Admin&limit=10");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var users = payload.GetProperty("data");
+        users.GetArrayLength().Should().Be(1);
+        users[0].GetProperty("id").GetInt32().Should().Be(TestData.AdminUser.Id);
+        users[0].GetProperty("name").GetString().Should().StartWith("Admin");
+        users.EnumerateArray().Should().NotContain(user =>
+            user.GetProperty("id").GetInt32() == TestData.OtherTenantUser.Id);
+    }
+
+    [Fact]
     public async Task GetById_NonExistent_ReturnsNotFound()
     {
         await AuthenticateAsMemberAsync();

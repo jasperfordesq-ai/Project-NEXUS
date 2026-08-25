@@ -135,6 +135,68 @@ public class ConnectionsControllerTests : IntegrationTestBase
     #region List Connections Tests
 
     [Fact]
+    public async Task V2ReactJourney_RequestAcceptAndFreshLists_ReturnConsumedConnectionShapeForBothMembers()
+    {
+        await AuthenticateAsMemberAsync();
+        var requestResponse = await Client.PostAsJsonAsync("/api/v2/connections/request", new
+        {
+            user_id = TestData.AdminUser.Id
+        });
+        requestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await AuthenticateAsAdminAsync();
+        var pendingResponse = await Client.GetAsync("/api/v2/connections?status=pending_received&per_page=20");
+        pendingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var pendingPayload = await pendingResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var pending = pendingPayload.GetProperty("data");
+        pending.GetArrayLength().Should().Be(1);
+        var pendingRow = pending[0];
+        pendingRow.GetProperty("connection_id").GetInt32().Should().BeGreaterThan(0);
+        pendingRow.GetProperty("status").GetString().Should().Be("pending");
+        pendingRow.GetProperty("user").GetProperty("id").GetInt32().Should().Be(TestData.MemberUser.Id);
+        pendingRow.GetProperty("user").GetProperty("name").GetString().Should().Be("Member User");
+        pendingPayload.GetProperty("meta").GetProperty("has_more").GetBoolean().Should().BeFalse();
+
+        var connectionId = pendingRow.GetProperty("connection_id").GetInt32();
+        var acceptResponse = await Client.PostAsJsonAsync($"/api/v2/connections/{connectionId}/accept", new { });
+        acceptResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var recipientListResponse = await Client.GetAsync("/api/v2/connections?status=accepted&per_page=20");
+        recipientListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recipientPayload = await recipientListResponse.Content.ReadFromJsonAsync<JsonElement>();
+        recipientPayload.GetProperty("data").EnumerateArray()
+            .Should().ContainSingle(row => row.GetProperty("user").GetProperty("id").GetInt32() == TestData.MemberUser.Id);
+
+        await AuthenticateAsMemberAsync();
+        var requesterListResponse = await Client.GetAsync("/api/v2/connections?status=accepted&per_page=20");
+        requesterListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var requesterPayload = await requesterListResponse.Content.ReadFromJsonAsync<JsonElement>();
+        requesterPayload.GetProperty("data").EnumerateArray()
+            .Should().ContainSingle(row => row.GetProperty("user").GetProperty("id").GetInt32() == TestData.AdminUser.Id);
+    }
+
+    [Fact]
+    public async Task V2ReactJourney_UnrelatedTenantCannotViewOrAcceptConnection()
+    {
+        await AuthenticateAsMemberAsync();
+        var requestResponse = await Client.PostAsJsonAsync("/api/v2/connections/request", new
+        {
+            user_id = TestData.AdminUser.Id
+        });
+        var requestPayload = await requestResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var connectionId = requestPayload.GetProperty("connection").GetProperty("id").GetInt32();
+
+        await AuthenticateAsOtherTenantUserAsync();
+        var listResponse = await Client.GetAsync("/api/v2/connections?status=pending_received&per_page=20");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listPayload = await listResponse.Content.ReadFromJsonAsync<JsonElement>();
+        listPayload.GetProperty("data").GetArrayLength().Should().Be(0);
+
+        var acceptResponse = await Client.PostAsJsonAsync($"/api/v2/connections/{connectionId}/accept", new { });
+        acceptResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task GetConnections_NoConnections_ReturnsEmptyList()
     {
         // Arrange

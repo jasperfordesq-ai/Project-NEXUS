@@ -141,7 +141,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
@@ -203,6 +203,87 @@ async function runArm(arm) {
   let createdEventTitle = null;
   let createdFeedPostBody = null;
   let transferEvidence = null;
+
+  // These three certification journeys need a deterministic EMPTY starting
+  // state. The actors are synthetic fixture users in disposable databases; the
+  // reset removes only the direct relationship rows between those exact users.
+  // Every asserted mutation after this point is still driven by the unchanged
+  // React UI. Refuse to run the reset against any unrecognised arm/container.
+  function resetRelationshipMutationState(secondActorId = arm.relationshipActorId) {
+    const first = Number(arm.selfId);
+    const second = Number(secondActorId);
+    if (!Number.isInteger(first) || !Number.isInteger(second) || first <= 0 || second <= 0 || first === second) {
+      throw new Error('relationship fixture reset refused invalid actor identifiers');
+    }
+
+    if (arm.key === 'aspnet') {
+      const sql = `
+        BEGIN;
+        DELETE FROM message_attachments WHERE "MessageId" IN (
+          SELECT m."Id" FROM messages m JOIN conversations c ON c."Id" = m."ConversationId"
+          WHERE c."TenantId" = 1 AND c."IsGroup" = false
+            AND c."Participant1Id" = ${Math.min(first, second)} AND c."Participant2Id" = ${Math.max(first, second)}
+        );
+        DELETE FROM messages WHERE "ConversationId" IN (
+          SELECT "Id" FROM conversations WHERE "TenantId" = 1 AND "IsGroup" = false
+            AND "Participant1Id" = ${Math.min(first, second)} AND "Participant2Id" = ${Math.max(first, second)}
+        );
+        DELETE FROM conversation_participants WHERE "ConversationId" IN (
+          SELECT "Id" FROM conversations WHERE "TenantId" = 1 AND "IsGroup" = false
+            AND "Participant1Id" = ${Math.min(first, second)} AND "Participant2Id" = ${Math.max(first, second)}
+        );
+        DELETE FROM conversations WHERE "TenantId" = 1 AND "IsGroup" = false
+          AND "Participant1Id" = ${Math.min(first, second)} AND "Participant2Id" = ${Math.max(first, second)};
+        DELETE FROM connections WHERE "TenantId" = 1
+          AND (("RequesterId" = ${first} AND "AddresseeId" = ${second})
+            OR ("RequesterId" = ${second} AND "AddresseeId" = ${first}));
+        COMMIT;`;
+      execFileSync('docker', ['exec', '-i', 'nexus-aspnet-dev-db', 'psql', '-U', 'postgres', '-d', 'nexus_dev', '-v', 'ON_ERROR_STOP=1'], {
+        input: sql,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return;
+    }
+
+    if (arm.key === 'laravel') {
+      const sql = `
+        START TRANSACTION;
+        CREATE TEMPORARY TABLE smoke_target_conversations (id BIGINT UNSIGNED PRIMARY KEY);
+        INSERT INTO smoke_target_conversations (id)
+          SELECT c.id FROM conversations c
+          WHERE c.tenant_id = 1 AND c.is_group = 0
+            AND EXISTS (SELECT 1 FROM conversation_participants a WHERE a.conversation_id = c.id AND a.user_id = ${first})
+            AND EXISTS (SELECT 1 FROM conversation_participants b WHERE b.conversation_id = c.id AND b.user_id = ${second});
+        DELETE FROM message_reactions WHERE message_id IN (
+          SELECT id FROM messages WHERE tenant_id = 1
+            AND ((sender_id = ${first} AND receiver_id = ${second}) OR (sender_id = ${second} AND receiver_id = ${first}))
+        );
+        DELETE FROM broker_message_copies WHERE original_message_id IN (
+          SELECT id FROM messages WHERE tenant_id = 1
+            AND ((sender_id = ${first} AND receiver_id = ${second}) OR (sender_id = ${second} AND receiver_id = ${first}))
+        );
+        DELETE FROM user_first_contacts WHERE first_message_id IN (
+          SELECT id FROM messages WHERE tenant_id = 1
+            AND ((sender_id = ${first} AND receiver_id = ${second}) OR (sender_id = ${second} AND receiver_id = ${first}))
+        );
+        DELETE FROM messages WHERE tenant_id = 1
+          AND ((sender_id = ${first} AND receiver_id = ${second}) OR (sender_id = ${second} AND receiver_id = ${first}));
+        DELETE FROM conversation_participants WHERE conversation_id IN (SELECT id FROM smoke_target_conversations);
+        DELETE FROM conversations WHERE id IN (SELECT id FROM smoke_target_conversations);
+        DROP TEMPORARY TABLE smoke_target_conversations;
+        DELETE FROM connections WHERE tenant_id = 1
+          AND ((requester_id = ${first} AND receiver_id = ${second})
+            OR (requester_id = ${second} AND receiver_id = ${first}));
+        COMMIT;`;
+      execFileSync('docker', ['exec', '-i', 'nexus-laravel-throwaway-db', 'mariadb', '-unexus', '-pnexus_secret', 'nexus'], {
+        input: sql,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return;
+    }
+
+    throw new Error(`relationship fixture reset refused unknown arm ${arm.key}`);
+  }
 
   const api = [];
   const consoleErrors = [];
@@ -1257,6 +1338,64 @@ async function runArm(arm) {
     if (persisted !== after) throw new Error('theme preference did not persist across reload');
   });
 
+  // SETTINGS PROFILE MUTATION (ledger 1.34): edit a harmless field in the real
+  // profile-settings surface, persist it, read it in a fresh authenticated
+  // browser context, then restore the original value through the same UI.
+  await step('journey-settings-profile-persist', async () => {
+    await page.goto(`${BASE}/settings`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1500);
+    if (page.url().includes('/login')) throw new Error('redirected to login — session lost');
+
+    const tagline = page.getByLabel('Tagline', { exact: true }).first();
+    await tagline.waitFor({ state: 'visible', timeout: 15000 });
+    const observedOriginal = await tagline.inputValue();
+    const original = observedOriginal.startsWith('Relationship batch ')
+      || (arm.profileOriginalTagline && observedOriginal === '')
+      ? arm.profileOriginalTagline
+      : observedOriginal;
+    const unique = `Relationship batch ${stamp}`;
+    await tagline.fill(unique);
+
+    const saveResponsePromise = page.waitForResponse((response) => response.request().method() === 'PUT'
+      && /\/api\/v2\/users\/me(?:$|\?)/.test(response.url()), { timeout: 20000 });
+    await page.getByRole('button', { name: 'Save Changes', exact: true }).click({ timeout: 10000 });
+    const saveResponse = await saveResponsePromise;
+    if (!saveResponse.ok()) {
+      throw new Error(`profile settings save returned ${saveResponse.status()}: ${(await saveResponse.text()).slice(0, 240)}`);
+    }
+
+    const freshCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const freshPage = await freshCtx.newPage();
+    captureApiFrom(freshPage);
+    captureClientErrorsFrom(freshPage);
+    try {
+      const signedIn = await signInAs(freshPage, EMAIL, PASSWORD, arm.communityLabel);
+      if (!signedIn.ok) skip(`fresh settings reader unavailable: ${signedIn.reason}`);
+      await freshPage.goto(`${BASE}/settings`, { waitUntil: 'networkidle', timeout: 60000 });
+      const freshTagline = freshPage.getByLabel('Tagline', { exact: true }).first();
+      await freshTagline.waitFor({ state: 'visible', timeout: 15000 });
+      const persisted = await freshTagline.inputValue();
+      if (persisted !== unique) {
+        throw new Error(`fresh settings read returned ${JSON.stringify(persisted)} instead of ${JSON.stringify(unique)}`);
+      }
+
+      await freshTagline.fill(original);
+      const restoreResponsePromise = freshPage.waitForResponse((response) => response.request().method() === 'PUT'
+        && /\/api\/v2\/users\/me(?:$|\?)/.test(response.url()), { timeout: 20000 });
+      await freshPage.getByRole('button', { name: 'Save Changes', exact: true }).click({ timeout: 10000 });
+      const restoreResponse = await restoreResponsePromise;
+      if (!restoreResponse.ok()) throw new Error(`profile settings restore returned ${restoreResponse.status()}`);
+      await freshPage.reload({ waitUntil: 'networkidle', timeout: 60000 });
+      await freshPage.getByLabel('Tagline', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+      if (await freshPage.getByLabel('Tagline', { exact: true }).first().inputValue() !== original) {
+        throw new Error('profile settings original value did not survive restoration reload');
+      }
+      console.log(`    unique tagline persisted in a fresh context, then original ${JSON.stringify(original)} was restored`);
+    } finally {
+      await freshCtx.close();
+    }
+  });
+
   // FEED COMMENT: commenting on the post this run just created. Asserts the comment
   // text is on the page afterwards.
   await step('journey-feed-comment', async () => {
@@ -1328,6 +1467,63 @@ async function runArm(arm) {
     }
   });
 
+  // NEW DIRECT CONVERSATION (ledger 1.27): remove only this disposable actor
+  // pair's prior fixture state, start through the real New Message UI, and prove
+  // the exact message from both participants' freshly loaded thread views.
+  await step('journey-message-new-conversation', async () => {
+    resetRelationshipMutationState(arm.messageActorId);
+    await page.goto(`${BASE}/messages`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1500);
+    await page.getByRole('button', { name: 'New Message', exact: true }).first().click({ timeout: 10000 });
+    const dialog = page.getByRole('dialog').last();
+    const memberSearch = dialog.getByLabel('Search for a member...', { exact: true }).first();
+    await memberSearch.fill(arm.messageActorSearch);
+    const actorChoice = dialog.getByRole('button').filter({ hasText: arm.messageActorToken }).first();
+    await actorChoice.waitFor({ state: 'visible', timeout: 15000 });
+    await actorChoice.click({ force: true });
+    try {
+      await page.waitForURL(new RegExp(`/messages/new/${arm.messageActorId}(?:[/?#]|$)`), { timeout: 15000 });
+    } catch {
+      throw new Error(`recipient selection did not open /messages/new/${arm.messageActorId}; actual URL ${page.url()}`);
+    }
+
+    const composer = page.locator('textarea[placeholder="Type a message..."], input[placeholder="Type a message..."]').first();
+    await composer.waitFor({ state: 'visible', timeout: 15000 });
+    const body = `New conversation ${stamp}`;
+    await composer.fill(body);
+    const sendResponsePromise = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/v2\/messages(?:$|\?)/.test(response.url()), { timeout: 20000 });
+    await composer.press('Enter');
+    const sendResponse = await sendResponsePromise;
+    if (!sendResponse.ok()) {
+      throw new Error(`new-conversation send returned ${sendResponse.status()}: ${(await sendResponse.text()).slice(0, 240)}`);
+    }
+    await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByText(body, { exact: true }).waitFor({ state: 'visible', timeout: 15000 });
+    const senderView = await page.locator('body').innerText();
+    if (!senderView.includes(arm.messageActorName)) throw new Error('sender thread omitted the intended recipient identity');
+
+    const recipientCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const recipientPage = await recipientCtx.newPage();
+    captureApiFrom(recipientPage);
+    captureClientErrorsFrom(recipientPage);
+    try {
+      const signedIn = await signInAs(recipientPage, arm.messageActorEmail, arm.messageActorPassword, arm.communityLabel);
+      if (!signedIn.ok) skip(`new-conversation recipient unavailable: ${signedIn.reason}`);
+      await recipientPage.goto(`${BASE}/messages`, { waitUntil: 'networkidle', timeout: 60000 });
+      const recipientThread = recipientPage.locator('a[href*="/messages/"]').filter({ hasText: body }).first();
+      console.log(`    recipient inbox ${recipientPage.url().replace(BASE, '')}: stamped preview count ${await recipientThread.count()}`);
+      await recipientThread.waitFor({ state: 'visible', timeout: 15000 });
+      await recipientThread.click({ force: true });
+      await recipientPage.getByText(body, { exact: false }).waitFor({ state: 'visible', timeout: 15000 });
+      const recipientView = await recipientPage.locator('body').innerText();
+      if (!recipientView.includes(arm.expectedSelfName)) throw new Error('recipient thread omitted the intended sender identity');
+      console.log(`    genuinely new thread persisted for ${arm.expectedSelfName} ↔ ${arm.messageActorName}`);
+    } finally {
+      await recipientCtx.close();
+    }
+  });
+
   // MEMBERS CONNECT: the members directory must render members, and a connect control
   // must accept a click and change state (or already be connected from a prior run —
   // both are success; a vanished directory is not).
@@ -1356,6 +1552,63 @@ async function runArm(arm) {
     const changed = /Pending|Requested|Cancel request|Connected/i.test(after);
     console.log(`    connect state changed after click: ${changed ? 'YES — connection request works' : 'no (unconfirmed)'}`);
     if (!changed) skip('connect click did not visibly change state — effect unconfirmed, NOT a proven failure');
+  });
+
+  // CONNECTION REQUEST -> ACCEPT (ledger 1.32): the reset above guarantees the
+  // pair begins unconnected; both mutations and both final reads use React UI.
+  await step('journey-connections-request-accept', async () => {
+    resetRelationshipMutationState();
+    await page.goto(`${BASE}/profile/${arm.relationshipActorId}`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1500);
+    const connect = page.getByRole('button', { name: 'Connect', exact: true }).first();
+    await connect.waitFor({ state: 'visible', timeout: 15000 });
+    const requestResponsePromise = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/v2\/connections\/request(?:$|\?)/.test(response.url()), { timeout: 20000 });
+    await connect.click();
+    const requestResponse = await requestResponsePromise;
+    if (!requestResponse.ok()) {
+      throw new Error(`connection request returned ${requestResponse.status()}: ${(await requestResponse.text()).slice(0, 240)}`);
+    }
+
+    const recipientCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const recipientPage = await recipientCtx.newPage();
+    captureApiFrom(recipientPage);
+    captureClientErrorsFrom(recipientPage);
+    try {
+      const signedIn = await signInAs(recipientPage, arm.relationshipActorEmail, arm.relationshipActorPassword, arm.communityLabel);
+      if (!signedIn.ok) skip(`connection recipient unavailable: ${signedIn.reason}`);
+      await recipientPage.goto(`${BASE}/connections`, { waitUntil: 'networkidle', timeout: 60000 });
+      const pendingTab = recipientPage.getByRole('tab', { name: /^Pending/ });
+      await pendingTab.focus();
+      await pendingTab.press('Enter');
+      await recipientPage.waitForFunction(() =>
+        document.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.includes('Pending'), null,
+      { timeout: 15000 });
+      await recipientPage.getByText(arm.expectedSelfName, { exact: false }).first()
+        .waitFor({ state: 'visible', timeout: 15000 });
+      const accept = recipientPage.locator('button:visible').filter({ hasText: /^\s*Accept\s*$/ }).first();
+      await accept.waitFor({ state: 'visible', timeout: 15000 });
+      const acceptResponsePromise = recipientPage.waitForResponse((response) => response.request().method() === 'POST'
+        && new RegExp(`/api/v2/connections/\\d+/accept(?:$|\\?)`).test(response.url()), { timeout: 20000 });
+      await accept.click({ force: true });
+      const acceptResponse = await acceptResponsePromise;
+      if (!acceptResponse.ok()) {
+        throw new Error(`connection accept returned ${acceptResponse.status()}: ${(await acceptResponse.text()).slice(0, 240)}`);
+      }
+
+      await recipientPage.reload({ waitUntil: 'networkidle', timeout: 60000 });
+      await recipientPage.getByRole('tab', { name: /^My Connections/ }).press('Enter');
+      await recipientPage.getByText(arm.expectedSelfName, { exact: false }).first()
+        .waitFor({ state: 'visible', timeout: 15000 });
+
+      await page.goto(`${BASE}/connections`, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.getByRole('tab', { name: /^My Connections/ }).press('Enter');
+      await page.getByText(arm.relationshipActorName, { exact: false }).first()
+        .waitFor({ state: 'visible', timeout: 15000 });
+      console.log(`    request accepted and fresh connection lists contain both ${arm.expectedSelfName} and ${arm.relationshipActorName}`);
+    } finally {
+      await recipientCtx.close();
+    }
   });
 
   // WALLET HISTORY: the transfer performed earlier in THIS run must appear in the
@@ -2447,6 +2700,19 @@ const ASPNET_ARM = {
   expectedSelfName: process.env.SMOKE_SELF_NAME_ASPNET || 'Charlie',
   expectedMemberName: process.env.SMOKE_MEMBER_NAME_ASPNET || 'Maya',
   providerId: Number(process.env.SMOKE_PROVIDER_ID_ASPNET || 4),
+  selfId: Number(process.env.SMOKE_SELF_ID_ASPNET || 3),
+  relationshipActorId: Number(process.env.SMOKE_RELATIONSHIP_ID_ASPNET || 4),
+  relationshipActorEmail: process.env.SMOKE_RELATIONSHIP_EMAIL_ASPNET || 'coordinator@acme.test',
+  relationshipActorPassword: process.env.SMOKE_RELATIONSHIP_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
+  relationshipActorName: process.env.SMOKE_RELATIONSHIP_NAME_ASPNET || 'Maya',
+  messageActorId: Number(process.env.SMOKE_MESSAGE_ID_ASPNET || 1),
+  messageActorEmail: process.env.SMOKE_MESSAGE_EMAIL_ASPNET || 'admin@acme.test',
+  messageActorPassword: process.env.SMOKE_MESSAGE_PASSWORD_ASPNET || 'NexusV2!Demo#2026',
+  messageActorName: process.env.SMOKE_MESSAGE_NAME_ASPNET || 'Alice',
+  messageActorSearch: process.env.SMOKE_MESSAGE_SEARCH_ASPNET || 'Alice',
+  messageActorToken: process.env.SMOKE_MESSAGE_TOKEN_ASPNET || 'Alice',
+  profileOriginalTagline: process.env.SMOKE_PROFILE_ORIGINAL_ASPNET || 'Handy neighbour offering repairs, gardening and mentoring.',
+  crossTenantUserId: Number(process.env.SMOKE_CROSS_TENANT_ID_ASPNET || 2),
 };
 
 // Each side signs in with its OWN fixture's member — the fixtures hold different users
@@ -2466,6 +2732,19 @@ const LARAVEL_ARM = {
   expectedSelfName: process.env.SMOKE_SELF_NAME_LARAVEL || 'E2E UserA',
   expectedMemberName: process.env.SMOKE_MEMBER_NAME_LARAVEL || 'E2E',
   providerId: Number(process.env.SMOKE_PROVIDER_ID_LARAVEL || 900015),
+  selfId: Number(process.env.SMOKE_SELF_ID_LARAVEL || 900014),
+  relationshipActorId: Number(process.env.SMOKE_RELATIONSHIP_ID_LARAVEL || 900015),
+  relationshipActorEmail: process.env.SMOKE_RELATIONSHIP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
+  relationshipActorPassword: process.env.SMOKE_RELATIONSHIP_PASSWORD_LARAVEL || 'TestPassword123!',
+  relationshipActorName: process.env.SMOKE_RELATIONSHIP_NAME_LARAVEL || 'E2E UserB',
+  messageActorId: Number(process.env.SMOKE_MESSAGE_ID_LARAVEL || 900015),
+  messageActorEmail: process.env.SMOKE_MESSAGE_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
+  messageActorPassword: process.env.SMOKE_MESSAGE_PASSWORD_LARAVEL || 'TestPassword123!',
+  messageActorName: process.env.SMOKE_MESSAGE_NAME_LARAVEL || 'E2E UserB',
+  messageActorSearch: process.env.SMOKE_MESSAGE_SEARCH_LARAVEL || 'E2E UserB',
+  messageActorToken: process.env.SMOKE_MESSAGE_TOKEN_LARAVEL || 'E2E',
+  profileOriginalTagline: process.env.SMOKE_PROFILE_ORIGINAL_LARAVEL || '',
+  crossTenantUserId: Number(process.env.SMOKE_CROSS_TENANT_ID_LARAVEL || 950011),
   // User A owns the sole disposable-control event and correctly receives no RSVP
   // actions on it. User B is the ordinary attendee fixture for this one journey.
   rsvpActorEmail: process.env.SMOKE_RSVP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
