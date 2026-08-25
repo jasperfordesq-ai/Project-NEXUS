@@ -1,10 +1,10 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-25 (36 journeys certified locally; 364 candidate at implementation `a100ca1ea`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
+Last verified: 2026-08-25 (39 journeys certified locally; 376 candidate at implementation `f4c75e169`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=364/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=376/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=324 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score calculation - Fixed Rubric Baseline 5, 364/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
+## Banked score calculation - Fixed Rubric Baseline 5, 376/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -88,14 +88,14 @@ failure or skip. The static condition-5 gate is clean across every consumed auth
 and onboarding path, and the no-op inventory is 550 routes across 315 methods.
 The full regression boundary is 3,903/3,903 API tests and 38/38 messaging tests,
 all with no failure or skip. Scoring-record SHA: the commit carrying this section.
-This local evidence publishes the mechanically derived 364 candidate, but it does
+This local evidence publishes the mechanically derived 376 candidate, but it does
 not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 
 **Block 2 - Banked score.**
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 109 | 170 |
+| Core member journeys certified - React | 121 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -105,7 +105,7 @@ not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **364** | **1000** |
+| **Total** | **376** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -113,7 +113,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.6405 | 170 | 109 |
+| Core React | 1 | 42 | 0.7119 | 170 | 121 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -194,6 +194,22 @@ success-shaped onboarding reads, shrinking the no-op inventory to 550 routes
 across 315 methods. Implementation SHA: `a100ca1ea`. This candidate
 becomes the floor only after the batch is pushed and required CI is green.
 
+🔴 **The 2026-08-25 relationship/settings transaction moves Core React 109 →
+121 (+12), total 364 → 376, while the banked floor stays 324.** Rows 1.27,
+1.32 and 1.34 moved OPEN → CERTIFIED. Weighted Tier 1 credit rose 26.9 →
+29.9 of 42 rows (0.6405 → 0.7119); no row was demoted and no denominator
+moved. The unchanged React client drives a genuinely new direct conversation,
+connection request/accept with both fresh lists, and a settings-field save,
+fresh read and restoration against ASP.NET and the same-run disposable Laravel
+control. Focused integration coverage proves recipient-side direct-message
+visibility, the consumed connection shape and both tenant boundaries. The
+550-route/315-method no-op inventory is unchanged. Same-run controlled artifact
+`aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T12-50-10-080Z.json`
+records 8/8 MATCH, no failures or skips, across both configuration-only arms.
+Full local verification is green at 3,907/3,907 API tests and 38/38 messaging
+tests. Implementation SHA: `f4c75e169`. This candidate becomes the floor only
+after the batch is pushed and required CI is green.
+
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
 was a *shape*: every field was individually correct and both backends answered
@@ -203,10 +219,17 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 171 of 690 (-519).** 🔴 **Thirty-six of 250 rows are
-  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 26. The
+- **Journeys: 183 of 690 (-507).** 🔴 **Thirty-nine of 250 rows are
+  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 29. The
   comprehensive 2026-08-24 core run promoted the final 17 Tier 1 PROVEN rows;
   only one PROVEN row now remains across the full ledger, in Tier 2.
+
+- **Active non-mobile client parity: 183/570 = 32.11%.** This is the earned
+  journey-category score for React, Web UK and staff journeys only; it excludes
+  the 120-point native-mobile category rather than treating unassessed mobile
+  work as a failure of the active clients. **Non-mobile overall readiness:
+  376/880 = 42.73%.** The historical fixed-baseline headline remains 376/1000
+  for continuity, and the banked floor remains 324 until push plus green CI.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
   smoke still has no control arm" and called building one queue item 1. That is
   FALSE and the ledger already said so** — the arm was built on 2026-08-21 and the
