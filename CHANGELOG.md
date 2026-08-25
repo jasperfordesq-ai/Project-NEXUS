@@ -63,6 +63,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Crash reporting for the phone app is now set up, and proven to work.** There
+  was nowhere for the app's crashes to go: the website and the backend each have
+  their own place in the error-reporting service, and the app had none. One was
+  created, a test report was sent to it and read back to confirm it arrived, and
+  the nightly error summary now covers it. Release builds also upload the file
+  that turns compressed code back into readable line numbers — without it, crash
+  reports arrive as gibberish, and every build profile had that switched off,
+  including the one for the Play Store. Locally built releases carry crash
+  reporting automatically now, and say so plainly when they cannot.
+  One step is left and it needs your login: two settings on the cloud build
+  service, both written out ready to paste.
+
 - **A password-reset link from one community could be used while the browser was
   pointed at a different one.** The link itself was always tied to the community
   that sent it, and the new password was only ever written to the right account —

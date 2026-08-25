@@ -20,6 +20,31 @@ assert(Number.isInteger(app.android?.versionCode) && app.android.versionCode > 1
 assert(app.runtimeVersion?.policy === 'appVersion', 'runtimeVersion must use appVersion policy');
 assert(app.updates?.enabled === true && app.updates?.checkAutomatically === 'ON_LOAD', 'OTA checks must be enabled on load');
 assert(eas.build?.production?.channel === 'production', 'production build must be pinned to production OTA channel');
+
+// 🔴 Crash reports are unreadable without source maps, and the release build FAILS without
+// the credentials to upload them. Both halves were once true at the same time: every profile
+// set SENTRY_DISABLE_AUTO_UPLOAD, production included, so a shipped app would have reported
+// minified stack traces — and nobody would have noticed until the first real crash.
+//
+// Proven on 2026-08-25, on this machine: with the `nexus-mobile` project created and a token
+// present, `:app:bundleRelease` uploads ("Upload type: artifact bundle") and the bundle
+// appears in Sentry against release `ie.project.nexus@1.2.0+2`. Without a token it fails at
+// `createBundleReleaseJsAndAssets_SentryUpload`.
+//
+// So: production uploads, and every other profile must NOT — they have no token and would
+// fail. If a production build ever fails at that step, the EAS secret SENTRY_AUTH_TOKEN is
+// missing; create it rather than re-adding the flag, or crash reports go back to gibberish.
+assert(
+  eas.build?.production?.env?.SENTRY_DISABLE_AUTO_UPLOAD === undefined,
+  'production must upload Sentry source maps — without them crash reports are minified and useless',
+);
+for (const [name, profile] of Object.entries(eas.build ?? {})) {
+  if (name === 'production') continue;
+  assert(
+    profile?.env?.SENTRY_DISABLE_AUTO_UPLOAD === 'true',
+    `build profile "${name}" must disable Sentry source-map upload — it has no credentials and the build fails without them`,
+  );
+}
 assert(eas.build?.staging?.channel === 'staging', 'staging build must be pinned to staging OTA channel');
 assert(eas.build?.website?.channel === 'website', 'website build must be pinned to website OTA channel');
 

@@ -180,40 +180,54 @@ release.
 
 ---
 
-## Crash reporting — two secrets, and why the build depends on them
+## Crash reporting — set up on 2026-08-25, with one step left
 
-Right now: `Sentry.init({ dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '', enabled: !!dsn })`,
-and no build profile sets that variable — so crash reporting is **off in every build**.
+**Done, and verified rather than configured:**
 
-The org exists (`hour-timebank-clg`, EU region) with PHP and React projects; there is **no
-mobile project yet**. `app.json` now names the org, `nexus-mobile` as the project and the EU
-host, so once that project is created nothing else needs editing:
+- The **`nexus-mobile` Sentry project exists** in `hour-timebank-clg` (EU region), created
+  2026-08-25. Project id `4511972962336848`.
+- **It receives events.** A test event was sent to its DSN and read back through the API as a
+  real issue, then resolved. "Set up" here means an event arrived, not that a DSN was pasted
+  somewhere.
+- **The DSN and project slug are recorded** in `.secrets.local/sentry.env` as
+  `SENTRY_DSN_MOBILE` and `SENTRY_PROJECT_MOBILE` — gitignored, because this repository is
+  public.
+- **The nightly triage sweep now covers it.** `scripts/sentry-triage.mjs` already had the
+  slot; it had nothing to read. It ran clean with the project in place.
+- **Local release builds carry crash reporting.** `scripts/build-apk-local.sh` reads the DSN
+  from the secrets file and prints `Crash reporting: ON (nexus-mobile)` — or says plainly
+  that it is off, on a machine without the file, rather than building silently blind.
+- **Production builds now upload source maps.** `SENTRY_DISABLE_AUTO_UPLOAD` is gone from the
+  production profile and kept on every other one. Proven on this machine: with the project
+  and a token, `:app:bundleRelease` reports "Upload type: artifact bundle", and the bundle
+  appears in Sentry against release `ie.project.nexus@1.2.0+2`, dist `2`, 2 files. Without a
+  token the same build FAILS at `createBundleReleaseJsAndAssets_SentryUpload`. Both halves of
+  that are asserted by `npm run verify:release`, mutation-verified.
 
-```json
-["@sentry/react-native/expo", {
-  "organization": "hour-timebank-clg", "project": "nexus-mobile",
-  "url": "https://de.sentry.io/"
-}]
+**The one step left, and why it needs you.** This machine is not signed in to Expo
+(`eas whoami` → "Not logged in"), so cloud builds have no way to receive either value. After
+`npx eas-cli@latest login`:
+
+```bash
+cd mobile
+# The DSN. Public by design — it ships inside the app — but kept out of a public repo.
+npx eas-cli@latest secret:create --scope project --name EXPO_PUBLIC_SENTRY_DSN   --value "$(grep '^SENTRY_DSN_MOBILE=' ../.secrets.local/sentry.env | cut -d= -f2-)"
+
+# The upload token. A REAL secret — it can write to the Sentry org.
+npx eas-cli@latest secret:create --scope project --name SENTRY_AUTH_TOKEN   --value "$(grep '^SENTRY_AUTH_TOKEN_RELEASES=' ../.secrets.local/sentry.env | cut -d= -f2-)"
 ```
 
-Owner steps, in order:
+🔴 **If a production build ever fails at the Sentry upload step, the `SENTRY_AUTH_TOKEN`
+secret is missing.** Create it — do not re-add `SENTRY_DISABLE_AUTO_UPLOAD` to get past it.
+That flag is what made every crash report unreadable in the first place, and
+`verify:release` now refuses it.
 
-1. Create the `nexus-mobile` project in Sentry (Platform: React Native).
-2. `npx eas-cli@latest secret:create --scope project --name EXPO_PUBLIC_SENTRY_DSN --value "<the DSN>"`
-3. `npx eas-cli@latest secret:create --scope project --name SENTRY_AUTH_TOKEN --value "<a token with project:releases>"`
-4. Remove `"SENTRY_DISABLE_AUTO_UPLOAD": "true"` from the **production** profile in
-   `eas.json` only. Keep it in development/local-emulator/preview/staging/website — those
-   builds have nothing to upload to and would fail, as proven above.
-5. Add `SENTRY_PROJECT_MOBILE=nexus-mobile` to `.secrets.local/sentry.env` so the nightly
-   triage sweep picks the project up (`scripts/sentry-triage.mjs` already has the slot).
-
-Until then, crash visibility is **not zero, but it is partial**: the app posts JavaScript
-errors to `POST /api/app/log`, which logs at `error` level into the PHP Sentry project, so
-they surface in the nightly sweep under `php`. What is lost is anything that kills the app
-before JavaScript can report — native crashes, startup failures — which is exactly the class
-a first public release produces.
-
----
+Until those two secrets exist, an EAS-built app reports nothing: `Sentry.init` runs with
+`enabled: false`. Partial cover in the meantime — the app posts JavaScript errors to
+`POST /api/app/log`, which the PHP project's `sentry` log channel picks up, so they surface
+in the nightly sweep under `php`. What is lost is anything that kills the app before
+JavaScript can report: native crashes and startup failures, which is precisely what a first
+public release produces.
 
 ## Store listing — draft copy, ready to paste
 
@@ -342,8 +356,8 @@ a wrong answer here is grounds for removal later.
 
 1. Owner: Play App Signing on, upload key created **and backed up** (Decision 1).
 2. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
-3. Owner: Sentry `nexus-mobile` project + the two EAS secrets, then production
-   auto-upload back on.
+3. ~~Sentry project~~ — **done 2026-08-25**, and verified end to end. Owner: sign in to
+   Expo and create the two EAS secrets (two commands, above).
 4. Build a real signed bundle: `cd mobile && npm run build:android:play`
    (`eas build --platform android --profile production`, which already produces an AAB and
    increments the version code).
@@ -358,5 +372,6 @@ a wrong answer here is grounds for removal later.
 
 - A signed build, and therefore any evidence that a store build works.
 - A feature graphic, and screenshots that are not of test data.
-- Crash reporting, until the Sentry project exists.
+- Crash reporting on **cloud-built** apps, until the two EAS secrets exist. The project,
+  the DSN, the source-map upload and the nightly sweep are done and proven.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.

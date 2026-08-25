@@ -105,8 +105,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.project-nexus.ie",
-        "EXPO_PUBLIC_DEFAULT_TENANT": "hour-timebank",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "EXPO_PUBLIC_DEFAULT_TENANT": "hour-timebank"
       }
     }
   },
