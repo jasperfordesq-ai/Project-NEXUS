@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-08-24T02:10:11.910Z",
+  "lastRunAt": "2026-08-25T09:16:21.080Z",
   "issues": {
     "130353163": {
       "title": "Geocoding exception",
@@ -217,6 +217,24 @@
       "sha": null,
       "decidedAt": "2026-08-23T08:16:21.754Z",
       "decidedAtRelease": "nexus-php@869a2a0304fa"
+    },
+    "142482613": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Duplicate grouping of NEXUS-PHP-51 - the same nightly GDPR DSAR backlog alarm, one day earlier (24 Aug). Same two findings: the backlog itself is the owner's own admin test requests (standing decision from NEXUS-PHP-4A, 2026-08-13, nothing to action), and the alarm still spawns a fresh Sentry group every night despite the setFingerprint fix in commit 9ed9a316a being live in release d0c34906ab49. Root cause and suggested fix recorded in full against issue 142707378 (NEXUS-PHP-51). Not fixed automatically: classified sensitive (matched 'gdpr'), so code changes need owner authorisation.",
+      "sha": null,
+      "decidedAt": "2026-08-25T09:19:35.765Z",
+      "decidedAtRelease": "nexus-php@d0c34906ab49"
+    },
+    "142707378": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "GDPR DSAR backlog alarm, and now a diagnosed defect in the alarm itself. Two separate things. (1) The backlog: same standing owner decision as NEXUS-PHP-4A (2026-08-13) - requests #6/#7/#8 (tenant 5) and #11 (tenant 11) are the owner's own admin test requests, so there is no Article 12(3) clock and nothing to action. (2) The respawn: commit 9ed9a316a (2026-08-13) tried to stop this alarm creating a fresh Sentry group every night by calling setFingerprint(['gdpr_request_overdue']) before Sentry\\captureMessage(). That commit IS in the live release d0c34906ab49, and it has not worked - NEXUS-PHP-50 (24 Aug) and NEXUS-PHP-51 (25 Aug) are new groups on consecutive days. Root cause: OverdueGdprRequestCheck::raiseAlert() has TWO Sentry paths, and the fix only covered one. Leg 1 is Log::error($message, $context); production's LOG_STACK includes the 'sentry' log channel (config/logging.php:102), so that log line becomes its own Sentry event carrying NO fingerprint, grouped by message text. The message text embeds each request's age in days ('#6 t5 portability 71d'), which increments nightly, so every night is a new group. Proof from the NEXUS-PHP-51 event: tag logger=production and extra key 'log_context' - both signatures of the sentry-laravel LOG HANDLER, not of the explicit capture, whose context block would be named 'gdpr_requests'. Suggested fix (NOT applied - classified sensitive, needs owner authorisation): keep the ages out of the logged message string and pass them only in $context, or send leg 1 to a log channel that excludes sentry. Then one group whose event count is the age of the breach, as commit 9ed9a316a intended. Regression test should assert the logged message is byte-identical on two runs whose request ages differ.",
+      "sha": null,
+      "decidedAt": "2026-08-25T09:19:28.126Z",
+      "decidedAtRelease": "nexus-php@d0c34906ab49"
     }
   }
 }
