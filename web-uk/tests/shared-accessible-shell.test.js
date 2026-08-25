@@ -11466,7 +11466,11 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Your connections at Project NEXUS Accessible');
     expect(signed.text).toContain('My network');
     expect(signed.text).toContain('Manage the people you are connected with, requests waiting for your reply, and requests you have sent.');
-    expect(signed.text).toContain('You have 2 connections, 1 requests waiting for your reply and 1 requests you have sent.');
+    // 🔴 Was the prose sentence, which this line pinned verbatim — including its
+    //    own plural disagreement, "1 requests". Replaced 2026-08-25 by a summary
+    //    list of labelled counts; see count-summaries-are-grammatical.test.js.
+    expect(signed.text).toContain('govuk-summary-list__key');
+    expect(signed.text).not.toMatch(/1 requests/);
     expect(signed.text).toContain('Search your network');
     expect(signed.text).toContain('Filter the people shown below by name or location.');
     expect(signed.text).toContain('value="Town"');
@@ -11513,7 +11517,9 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).not.toContain('Sorry, there is a problem loading your connections.');
-    expect(response.text).toContain('You have 0 connections, 0 requests waiting for your reply and 0 requests you have sent.');
+    // The summary still reports zeroes when the connection API fails, rather
+    // than vanishing (see the note on the sentence it replaced, above).
+    expect(response.text).toContain('govuk-summary-list__key');
     expect(response.text).toContain('No connections yet');
     expect(response.text).toContain('No pending requests');
     expect(response.text).toContain('No sent requests');
@@ -11544,7 +11550,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('شبكتي - Project NEXUS Accessible');
     // Asserted on a distinctive Arabic fragment rather than the whole sentence,
     // so this proves Arabic rendering without pinning locale number formatting.
-    expect(response.text).toContain('في انتظار ردك');
+    // The fragment used here came from the prose summary sentence, which is gone.
+    // The Arabic tab label proves the same thing: the page renders the Arabic
+    // catalogue, not English placeholders.
+    expect(response.text).toContain('الطلبات المعلقة');
     expect(response.text).toContain('مسح البحث');
   });
 

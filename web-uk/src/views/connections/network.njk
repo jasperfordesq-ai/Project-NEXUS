@@ -41,7 +41,28 @@
     </div>
   {% endif %}
 
-  <p class="govuk-body">{{ t("govuk_alpha_connections.network.summary", { total: countLabels.accepted, received: countLabels.received, sent: countLabels.sent }) }}</p>
+  {# 🔴 A summary LIST, not the `network.summary` sentence it replaced. That
+     sentence read "You have :total connections, :received requests waiting for
+     your reply and :sent requests you have sent", which renders "You have 1
+     connections, 1 requests waiting…" — wrong in English and unfixable in one
+     string, because Laravel's choice syntax pluralises on ONE count and this
+     sentence carries three. Label-and-value pairs agree with nothing, so they
+     are correct in all eleven languages, and they reuse the tab labels rather
+     than adding thirty-three new plural forms to translate. #}
+  <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_connections.network.tab_accepted") }}</dt>
+      <dd class="govuk-summary-list__value">{{ countLabels.accepted }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_connections.network.tab_pending_received") }}</dt>
+      <dd class="govuk-summary-list__value">{{ countLabels.received }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_connections.network.tab_pending_sent") }}</dt>
+      <dd class="govuk-summary-list__value">{{ countLabels.sent }}</dd>
+    </div>
+  </dl>
 
   <form method="get" action="{{ urlFor('/connections/network') }}" class="govuk-!-margin-bottom-6">
     <input type="hidden" name="tab" value="{{ activeTab }}">

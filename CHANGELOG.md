@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **"You have 1 connections" — the accessible site's My network page no longer gets its grammar wrong.** With exactly one connection, or one request waiting, the summary line read "You have 1 connections, 1 requests waiting for your reply…". It could not be fixed by making the words plural-aware, because that one sentence carries three separate counts and the translation system can only adjust for one. The three counts are now shown as plain labels with their numbers beside them — right in all eleven languages, and no new wording for anyone to translate.
+
 - **The accessible site's Notifications page now tells you what happened.** Two silences, both found by using the page. Marking a single notification as read said nothing at all — every other button there (mark all as read, delete, delete all, mark a group read) confirms itself, and the confirmation wording for this one had already been written and translated into all eleven languages. It had simply never been switched on. Worse, when any of these actions failed, the page reloaded looking exactly the same and said nothing — so a failed "mark all as read" was indistinguishable from a successful one. Failures now say so, in the reader's own language rather than in English. This matters most for people using a screen reader, who get no visual cue that a page changed.
 
 - **Everyone reading the app in English was seeing American dates.** A listing
