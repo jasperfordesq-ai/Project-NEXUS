@@ -66,6 +66,9 @@
   },
   "identity": {
     "page_title": "Verify Identity",
+    "unavailable_title": "Non disponibile nell'app",
+    "unavailable_body": "La verifica dell'identità al momento non può essere avviata dall'app. Se sei già verificato, lo stato è mostrato qui sopra.",
+    "unavailable_note": "Nulla di ciò che hai già fatto va perso: qui si sarebbe solo avviata la procedura.",
     "eyebrow": "Trust and safety",
     "loading_title": "Controllo dello stato della verifica...",
     "verified_title": "Identità verificata",

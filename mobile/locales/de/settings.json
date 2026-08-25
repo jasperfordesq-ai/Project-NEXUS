@@ -66,6 +66,9 @@
   },
   "identity": {
     "page_title": "Identität verifizieren",
+    "unavailable_title": "In der App nicht verfügbar",
+    "unavailable_body": "Die Identitätsprüfung kann derzeit nicht in der App gestartet werden. Wenn Sie bereits geprüft sind, sehen Sie Ihren Status oben.",
+    "unavailable_note": "Nichts, was Sie bereits erledigt haben, geht verloren — hier würden Sie den Vorgang lediglich starten.",
     "eyebrow": "Trust and safety",
     "loading_title": "Checking verification status...",
     "verified_title": "Identity verified",

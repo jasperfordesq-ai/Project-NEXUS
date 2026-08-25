@@ -13,38 +13,51 @@ for the score, and the checklist at the end of this page for what is genuinely o
 
 ---
 
-## 🔴 Read this first: one policy risk that could get the app rejected or removed
+## The payments question — decided and implemented
 
-**The app takes a card payment inside itself, through Stripe, for identity verification.**
-`app/(modals)/verify-identity.tsx` → `lib/payments/identityPayment.native.ts` opens a Stripe
-payment sheet and, on success, unlocks an "ID verified" badge in the app.
+**Decided by the owner on 2026-08-25: identity verification is hidden in the app.** What
+follows is the record of why, and what was actually changed, because the decision has to be
+re-made — not merely re-read — before it is ever reversed.
 
-Google Play's Payments policy requires **Google Play Billing** for purchases of digital
-content or services consumed inside the app. A verification badge is exactly that. The usual
-exemptions — physical goods, services delivered outside the app, charitable donations — are
-arguable here at best, and the consequence of guessing wrong is not a rejection letter but a
-removal *after* launch, once the app is live and members are using it.
+**The risk.** `verify-identity` took a card payment inside the app, through Stripe, and
+unlocked an "ID verified" badge in the app. Google Play requires **Google Play Billing** for
+digital content or services consumed inside an app. A badge is exactly that. The penalty for
+guessing wrong is not a rejection letter before launch — it is removal after launch, with
+members already using the app.
 
-Three ways out, in the order they cost:
+**What was changed.** One switch, `IDENTITY_VERIFICATION_AVAILABLE_IN_APP` in
+`lib/constants.ts`, currently `false`:
 
-1. **Hide the paid identity flow on Android for the first release.** The verification
-   capability stays for web members; the app simply does not offer it. Smallest change,
-   no policy exposure, and reversible. Note that Play's anti-steering rules also mean the
-   app must not link out to the website to pay — so this means hiding it, not redirecting.
-2. **Make verification free on mobile** (the platform absorbs the Stripe Identity cost).
-   A product and cost decision.
-3. **Integrate Google Play Billing.** Real work, and Play's cut applies to what is
-   essentially a pass-through fee, so the economics are poor.
+- The Settings → Account row is **absent**, not disabled. A row leading to "you cannot do
+  this here" still advertises a paid feature the app may not sell.
+- The screen keeps its **status** — a member who is already verified still sees that, and
+  someone mid-verification can still refresh — and replaces the start/date-of-birth/fee
+  steps with "Not available in the app". Hiding the sale must not hide what someone already
+  paid for.
+- The **"Open web verification flow" button is deleted, not hidden.** Play's anti-steering
+  rule is a separate violation from the billing one: an in-app button that sends someone out
+  to buy the same thing elsewhere breaks it on its own. `native-config.test.js` now fails if
+  any screen links to that path again.
+- Both handlers return early when the switch is off, so a future refactor cannot reach a
+  paid flow through a button that stopped being conditional.
 
-Recommendation: (1) for the first submission. It is a platform check in one screen and can
-be lifted at any time. **This is an owner decision and nothing has been changed for it.**
+**What was deliberately NOT changed.**
 
-The **donations** feature (`Donations & Support`) is a different case: voluntary donations to
-the community running the timebank are not a purchase of digital goods, and are ordinarily
-outside Play Billing. Lower risk, but declare it honestly on the content and payments
-questions rather than leaving it unmentioned.
+- **The marketplace keeps taking payments.** It sells second-hand *physical* goods with
+  pickup or shipping (`delivery_method: pickup | shipping | both | community_delivery`), and
+  physical goods are explicitly exempt from Play Billing — this is how every classifieds app
+  works. Hiding it would have cost a working feature for no reason.
+- **Time-credit donations** are unaffected: donating hours to a community fund or another
+  member moves no money.
 
----
+**Re-enabling.** Flip the constant to `true`. Everything underneath is untouched and still
+tested — the test suites cover both states deliberately. Before flipping it, the billing
+question has to be answered, not assumed: either Play Billing, or verification becomes free
+in the app, or Play's policy has changed in a way that covers this.
+
+**Consequence for the store forms:** the app now takes money in exactly one place, the
+marketplace, for physical goods between members. Answer the payments and content questions
+from that, not from the code's Stripe imports.
 
 ## What was verified on 2026-08-25, with evidence
 
@@ -297,7 +310,7 @@ to request that their data be deleted?"* — as of 2026-08-25 that is true in th
 | Photos | Yes | Optional | Profile photo, listing and marketplace images | No |
 | Messages | Yes | Required for messaging | Member-to-member conversations | No |
 | App activity | Yes | Required | Exchanges, events, groups, credits | No |
-| Payment info | Yes | Optional | Donations and identity verification — handled by Stripe; no card details reach our servers | Processor only |
+| Payment info | Yes | Optional | Marketplace purchases only — handled by Stripe; no card details reach our servers. Identity verification is hidden in the app (see above), so no fee is charged here | Processor only |
 | Device ID (push token) | Yes | Optional | Sending push notifications | Processor only (Expo/FCM) |
 | Crash logs / diagnostics | **Only once Sentry is switched on** | Optional | Diagnosing faults | Processor only |
 
@@ -314,8 +327,10 @@ release.
   choose to).
 - **Users can share personal information:** Yes — a profile, and free-text messages.
 - **User-generated content is present:** Yes, with reporting and blocking available.
-- **Does the app contain purchases?** Yes — donations, and (unless hidden, see the policy
-  risk above) an identity-verification fee.
+- **Does the app contain purchases?** Yes — buying second-hand goods from other members in
+  the marketplace, which is a physical-goods purchase between two people. There is no digital
+  purchase and no identity-verification fee in the app (see the payments section above), and
+  time-credit donations move no money.
 
 Expect a rating around PEGI 3 / ESRB Everyone with "users interact" and "shares location"
 interactive-element flags. Answer these honestly even though a stricter rating results:
@@ -326,7 +341,7 @@ a wrong answer here is grounds for removal later.
 ## The order of work once the account is verified
 
 1. Owner: Play App Signing on, upload key created **and backed up** (Decision 1).
-2. Owner: decide the identity-payment question (the policy risk at the top).
+2. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
 3. Owner: Sentry `nexus-mobile` project + the two EAS secrets, then production
    auto-upload back on.
 4. Build a real signed bundle: `cd mobile && npm run build:android:play`
@@ -344,5 +359,4 @@ a wrong answer here is grounds for removal later.
 - A signed build, and therefore any evidence that a store build works.
 - A feature graphic, and screenshots that are not of test data.
 - Crash reporting, until the Sentry project exists.
-- The identity-payment decision.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.

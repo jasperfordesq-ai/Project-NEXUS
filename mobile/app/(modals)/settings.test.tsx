@@ -128,8 +128,17 @@ jest.mock('@/components/ui/AppToast', () => {
   return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
 });
 
+/**
+ * 🔴 Identity verification is switched off in the app for Google Play's payments policy
+ * (owner decision, 2026-08-25). A getter so each test can pick the state it means, and both
+ * are covered: off is what ships, on is what the constant promises still works.
+ */
+let mockIdentityAvailableInApp = false;
 jest.mock('@/lib/constants', () => ({
   API_V2: '/api/v2',
+  get IDENTITY_VERIFICATION_AVAILABLE_IN_APP() {
+    return mockIdentityAvailableInApp;
+  },
 }));
 
 jest.mock('expo-constants', () => ({
@@ -215,7 +224,13 @@ describe('SettingsScreen', () => {
     const { getAllByText, getByText } = render(<SettingsScreen />);
     expect(getAllByText('Account').length).toBeGreaterThan(0);
     expect(getByText('Change Password')).toBeTruthy();
-    expect(getByText('Verify Identity')).toBeTruthy();
+  });
+
+  it('does not offer identity verification while it is switched off', () => {
+    // Absent, not disabled. A row leading to "you cannot do this here" would still be
+    // advertising a paid feature the app is not allowed to sell.
+    const { queryByText } = render(<SettingsScreen />);
+    expect(queryByText('Verify Identity')).toBeNull();
   });
 
   it('renders privacy controls from user preferences', () => {
@@ -244,11 +259,16 @@ describe('SettingsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/(modals)/change-password');
   });
 
-  it('navigates to verify identity when Verify Identity is pressed', () => {
-    const { router } = require('expo-router');
-    const { getByText } = render(<SettingsScreen />);
-    fireEvent.press(getByText('Verify Identity'));
-    expect(router.push).toHaveBeenCalledWith('/(modals)/verify-identity');
+  it('navigates to verify identity when it is switched back on', () => {
+    mockIdentityAvailableInApp = true;
+    try {
+      const { router } = require('expo-router');
+      const { getByText } = render(<SettingsScreen />);
+      fireEvent.press(getByText('Verify Identity'));
+      expect(router.push).toHaveBeenCalledWith('/(modals)/verify-identity');
+    } finally {
+      mockIdentityAvailableInApp = false;
+    }
   });
 
   it('navigates to advanced settings screens', () => {

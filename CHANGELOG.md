@@ -79,6 +79,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Identity verification is hidden in the phone app for now.** Google requires
+  apps to use Google's own payment system for anything bought inside them, and
+  the app was charging a card through Stripe for ID verification. Getting that
+  wrong gets an app removed after it launches, not rejected before, so the option
+  is switched off for the first release rather than argued about. Anyone already
+  verified still sees their verified status; the screen now says the check can't
+  be started in the app, and the button that sent people to the website to pay is
+  gone — sending people elsewhere to buy is a separate rule, broken on its own.
+  It is one setting to switch back on, and the code underneath is untouched and
+  still tested.
+  Two things deliberately left alone: buying second-hand items from other members
+  still works, because Google's rule doesn't apply to physical things people post
+  or hand over; and donating time credits was never money in the first place.
+
 - **Every sign-up form now says the same thing about age: Project NEXUS is for
   adults, 18 and over.** The web app's form had always said "and I am 18 years of
   age or older". The phone app's said nothing about age in any of its seven

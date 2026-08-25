@@ -21,7 +21,7 @@ import {
   startIdentityVerification,
   type IdentityStatus,
 } from '@/lib/api/verification';
-import { APP_URL } from '@/lib/constants';
+import { IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { presentIdentityPayment } from '@/lib/payments/identityPayment';
@@ -32,6 +32,13 @@ import AccentIcon from '@/components/ui/AccentIcon';
 
 type PageState = 'loading' | 'dob_collection' | 'payment_required' | 'start' | 'in_progress' | 'verified' | 'failed' | 'error';
 type TFunction = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * The states whose only purpose is to start or pay for verification. With the flow off for
+ * Play's payments policy, these are the states that must say so instead — in the header
+ * card as well as below it.
+ */
+const ACTION_STATES: readonly PageState[] = ['dob_collection', 'payment_required', 'start', 'failed'];
 
 export default function VerifyIdentityScreen() {
   return (
@@ -54,6 +61,10 @@ function VerifyIdentityScreenInner() {
   const [isSavingDob, setIsSavingDob] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  // Read once, named once: every gate below reads this rather than the constant, so the
+  // screen has a single place to change if it ever becomes conditional on something else.
+  const canVerifyHere = IDENTITY_VERIFICATION_AVAILABLE_IN_APP;
+  const showUnavailable = !canVerifyHere && ACTION_STATES.includes(pageState);
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
@@ -138,6 +149,9 @@ function VerifyIdentityScreenInner() {
   }
 
   async function handleStartVerification() {
+    // Belt and braces: the buttons are not rendered, but a future refactor must not be
+    // able to reach a paid flow the app is not allowed to offer.
+    if (!canVerifyHere) return;
     setIsStarting(true);
     try {
       const response = await startIdentityVerification();
@@ -163,6 +177,9 @@ function VerifyIdentityScreenInner() {
   }
 
   async function handleCreatePayment() {
+    // Belt and braces: the buttons are not rendered, but a future refactor must not be
+    // able to reach a paid flow the app is not allowed to offer.
+    if (!canVerifyHere) return;
     setIsCreatingPayment(true);
     try {
       const response = await createIdentityVerificationPayment();
@@ -220,8 +237,12 @@ function VerifyIdentityScreenInner() {
               </View>
               <View className="min-w-0 flex-1 gap-1">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('identity.eyebrow')}</Text>
-                <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }}>{titleForState(pageState, t)}</Text>
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{bodyForState(pageState, t, fee)}</Text>
+                <Text testID="identity-heading" className="text-2xl font-bold leading-8" style={{ color: theme.text }}>
+                  {showUnavailable ? t('identity.unavailable_title') : titleForState(pageState, t)}
+                </Text>
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                  {showUnavailable ? t('identity.unavailable_body') : bodyForState(pageState, t, fee)}
+                </Text>
               </View>
             </View>
             <VerificationStatusChip pageState={pageState} theme={theme} t={t} />
@@ -235,7 +256,7 @@ function VerifyIdentityScreenInner() {
           </Surface>
         ) : null}
 
-        {pageState === 'dob_collection' ? (
+        {canVerifyHere && pageState === 'dob_collection' ? (
           <HeroCard className="rounded-panel p-0">
             <HeroCard.Body className="gap-4 p-4">
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('identity.dob_title')}</Text>
@@ -258,7 +279,14 @@ function VerifyIdentityScreenInner() {
           </HeroCard>
         ) : null}
 
-        {pageState === 'payment_required' ? (
+        {/*
+          🔴 Everything from here that STARTS or PAYS FOR verification is behind
+          IDENTITY_VERIFICATION_AVAILABLE_IN_APP, which is off for Google Play's payments
+          policy (owner decision, 2026-08-25). What stays visible is status: a member who is
+          already verified still sees it, and someone mid-verification can still refresh.
+          Selling is what Play objects to, not telling someone where they stand.
+        */}
+        {canVerifyHere && pageState === 'payment_required' ? (
           <HeroCard className="rounded-panel p-0">
             <HeroCard.Body className="gap-4 p-4">
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('identity.fee_title')}</Text>
@@ -271,10 +299,6 @@ function VerifyIdentityScreenInner() {
                 {isCreatingPayment ? <Spinner size="sm" /> : <AccentIcon name="card-outline" size={17} />}
                 <HeroButton.Label>{t('identity.pay_button', { fee })}</HeroButton.Label>
               </HeroButton>
-              <HeroButton variant="secondary" onPress={() => void Linking.openURL(`${APP_URL}/settings/verify-identity`)}>
-                <Ionicons name="open-outline" size={17} color={primary} />
-                <HeroButton.Label>{t('identity.open_web_flow')}</HeroButton.Label>
-              </HeroButton>
               <HeroButton variant="secondary" onPress={() => void handleRefresh()}>
                 <Ionicons name="refresh-outline" size={17} color={primary} />
                 <HeroButton.Label>{t('identity.refresh_status')}</HeroButton.Label>
@@ -283,7 +307,7 @@ function VerifyIdentityScreenInner() {
           </HeroCard>
         ) : null}
 
-        {(pageState === 'start' || pageState === 'failed') ? (
+        {canVerifyHere && (pageState === 'start' || pageState === 'failed') ? (
           <HeroCard className="rounded-panel p-0">
             <HeroCard.Body className="gap-4 p-4">
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('identity.what_needed_title')}</Text>
@@ -296,6 +320,15 @@ function VerifyIdentityScreenInner() {
               </HeroButton>
             </HeroCard.Body>
           </HeroCard>
+        ) : null}
+
+        {showUnavailable ? (
+          <Surface variant="secondary" className="flex-row items-center gap-3 rounded-panel p-4">
+            <Ionicons name="information-circle-outline" size={22} color={theme.textSecondary} />
+            <Text testID="identity-unavailable" className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
+              {t('identity.unavailable_note')}
+            </Text>
+          </Surface>
         ) : null}
 
         {pageState === 'in_progress' ? (

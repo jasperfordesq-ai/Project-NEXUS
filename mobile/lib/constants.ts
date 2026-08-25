@@ -124,3 +124,32 @@ export const API_V2 = '/api/v2';
 /** Web app URL for share links and deep linking */
 export const APP_URL: string =
   process.env.EXPO_PUBLIC_APP_URL ?? 'https://app.project-nexus.ie';
+
+/**
+ * Whether identity verification can be started from inside the app.
+ *
+ * 🔴 **OFF, by owner decision on 2026-08-25, for Google Play's payments policy.**
+ *
+ * Verification costs a fee, and paying it in the app unlocked an "ID verified" badge in the
+ * app. Google Play requires *its own* billing for anything bought inside an app and consumed
+ * inside it; a badge is exactly that. The penalty for getting it wrong is not a rejection
+ * before launch — it is removal after launch, once members are using it. So the flow is
+ * hidden for the first release rather than argued about.
+ *
+ * What this switch does NOT do, deliberately:
+ *
+ * - It does not hide a verified member's status. Showing a badge someone already earned is
+ *   not a sale, and hiding it would lose them something they paid for.
+ * - It does not touch the **marketplace**, whose Stripe payments are for second-hand
+ *   physical goods with pickup or shipping. Physical goods are explicitly exempt from Play
+ *   Billing — that is how every classifieds app works — so hiding those would cost a
+ *   working feature for no reason.
+ * - It does not link out to the website. An in-app button sending someone to pay elsewhere
+ *   is the anti-steering rule, which is a separate violation from the billing one, so that
+ *   button is gone rather than relocated.
+ *
+ * To re-enable: flip this to `true`. Everything below it — the screens, the API calls, the
+ * Stripe sheet — is untouched and still tested. Before flipping it, resolve the billing
+ * question; see `docs/PLAY_SUBMISSION.md`.
+ */
+export const IDENTITY_VERIFICATION_AVAILABLE_IN_APP = false;

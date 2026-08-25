@@ -21,7 +21,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import type { ThemeMode } from '@/lib/theme/themeStore';
-import { API_V2 } from '@/lib/constants';
+import { API_V2, IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -250,17 +250,25 @@ export default function SettingsScreen() {
               }}
               theme={theme}
             />
-            <ActionRow
-              label={t('identity.page_title')}
-              subtitle={t('identity.hint')}
-              icon="finger-print-outline"
-              tone={theme.success}
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/(modals)/verify-identity' as Href);
-              }}
-              theme={theme}
-            />
+            {/*
+              🔴 Absent, not disabled, while identity verification is off for Play's payments
+              policy — see IDENTITY_VERIFICATION_AVAILABLE_IN_APP. A row that opens a screen
+              saying "you cannot do this here" is worse than no row: it advertises a paid
+              feature the app is not allowed to sell.
+            */}
+            {IDENTITY_VERIFICATION_AVAILABLE_IN_APP ? (
+              <ActionRow
+                label={t('identity.page_title')}
+                subtitle={t('identity.hint')}
+                icon="finger-print-outline"
+                tone={theme.success}
+                onPress={() => {
+                  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/(modals)/verify-identity' as Href);
+                }}
+                theme={theme}
+              />
+            ) : null}
             <ActionRow
               label={t('changePassword')}
               subtitle={t('changePasswordHint')}

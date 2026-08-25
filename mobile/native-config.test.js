@@ -266,6 +266,46 @@ describe('native app configuration', () => {
     }
   });
 
+  /**
+   * 🔴 Google Play's anti-steering rule, which is a SEPARATE violation from the billing one.
+   *
+   * An app may not send someone out to buy, elsewhere, the thing it is not allowed to sell
+   * in-app. The identity screen had exactly that: a "Open web verification flow" button
+   * calling `Linking.openURL(APP_URL + '/settings/verify-identity')`, sitting directly under
+   * the in-app pay button. Both are gone (owner decision, 2026-08-25 — see
+   * IDENTITY_VERIFICATION_AVAILABLE_IN_APP), and this stops the link coming back.
+   *
+   * Scoped to the paid verification path deliberately. The app opens plenty of URLs and
+   * should keep doing so — the marketplace's Stripe payments are for second-hand physical
+   * goods, which Play explicitly exempts.
+   */
+  it('never links out to the paid identity verification flow', () => {
+    // The two payment modules for NON-Android targets are the allowed exceptions, and they
+    // are listed rather than pattern-excluded so a third one cannot appear quietly. Metro
+    // resolves `identityPayment.native.ts` on Android, so neither of these is in the app
+    // Play receives; both are also unreachable while the flow is switched off.
+    const allowed = [
+      path.join('lib', 'payments', 'identityPayment.ts'),
+      path.join('lib', 'payments', 'identityPayment.web.ts'),
+    ];
+    const offenders = listSourceFiles('app')
+      .concat(listSourceFiles('lib'), listSourceFiles('components'))
+      .filter((file) => !/\.test\.[jt]sx?$/.test(file))
+      .filter((file) => /settings\/verify-identity/.test(read(file)))
+      .filter((file) => !allowed.includes(file));
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('does not ship the web identity redirect to Android', () => {
+    // The exceptions above are only safe because Android resolves the `.native` variant.
+    // If that file stopped existing, Metro would fall back to `identityPayment.ts` — the one
+    // that opens the website — and the anti-steering guard above would be exempting a file
+    // that really does ship.
+    expect(fs.existsSync(path.join(root, 'lib/payments/identityPayment.native.ts'))).toBe(true);
+    expect(read('lib/payments/identityPayment.native.ts')).not.toContain('settings/verify-identity');
+  });
+
   it('keeps the generated network-security source fail-closed', () => {
     const networkConfig = read('android-network-security-config.xml');
 

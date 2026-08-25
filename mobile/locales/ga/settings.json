@@ -66,6 +66,9 @@
   },
   "identity": {
     "page_title": "Deimhnigh d'aitheantas",
+    "unavailable_title": "Níl sé ar fáil san aip",
+    "unavailable_body": "Ní féidir fíorú céannachta a thosú san aip faoi láthair. Má tá tú fíoraithe cheana féin, taispeántar do stádas thuas.",
+    "unavailable_note": "Níl aon rud atá déanta agat cheana caillte — níl anseo ach an áit a gcuirfeá tús leis.",
     "eyebrow": "Muinín agus sábháilteacht",
     "loading_title": "Stádas deimhnithe á sheiceáil...",
     "verified_title": "Aitheantas deimhnithe",

@@ -66,6 +66,9 @@
   },
   "identity": {
     "page_title": "Verify Identity",
+    "unavailable_title": "Not available in the app",
+    "unavailable_body": "Identity verification can't be started from the app at the moment. If you're already verified, your status is shown above.",
+    "unavailable_note": "Nothing you have already done is lost — this is only where you would start it.",
     "eyebrow": "Trust and safety",
     "loading_title": "Checking verification status...",
     "verified_title": "Identity verified",

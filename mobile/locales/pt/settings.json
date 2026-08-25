@@ -66,6 +66,9 @@
   },
   "identity": {
     "page_title": "Verify Identity",
+    "unavailable_title": "Não disponível na aplicação",
+    "unavailable_body": "De momento não é possível iniciar a verificação de identidade na aplicação. Se já estiver verificado, o seu estado aparece acima.",
+    "unavailable_note": "Nada do que já fez se perde — aqui seria apenas onde iniciaria o processo.",
     "eyebrow": "Trust and safety",
     "loading_title": "Verificando o status da verificação...",
     "verified_title": "Identidade verificada",
