@@ -29,6 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The app icon was being cropped on real Android phones.** Android cuts the
+  launcher icon into whatever shape the phone uses — a circle on most — and only
+  guarantees the middle two thirds of the artwork survives. Ours filled the whole
+  square, with the four dots right at the edges, so those dots and the outer ring
+  were sliced off. It looked correct on the emulator because that launcher trims
+  less, which is why it took a real phone to notice.
+  The same artwork now sits inside the safe area with the blue supplied behind it,
+  so the whole design shows on any phone shape. It appears slightly smaller — that
+  is the space Android reserves, not a change to the design. A test now measures the
+  icon and fails if artwork strays outside the safe area again.
+
 - **The listings page now spends its screen on listings.** The block at the top —
   title, description, result count, search, type tabs, Near me, Filters and sort —
   was not part of the list: it sat above it as a fixed panel that could never scroll
