@@ -2677,7 +2677,10 @@ async function runArm(arm) {
       const waitAgain = Math.max(0, ((afterFirst.claims?.exp || 0) * 1000) - Date.now() + 1200);
       await measuredPage.waitForTimeout(waitAgain);
       await measuredPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-      await measuredPage.waitForTimeout(2500);
+      await measuredPage.waitForFunction(({ access, refresh }) => (
+        localStorage.getItem('nexus_access_token') !== access
+          && localStorage.getItem('nexus_refresh_token') !== refresh
+      ), { access: afterFirst.access, refresh: afterFirst.refresh }, { timeout: 30000 });
       const afterSecond = await credentialEvidence(measuredPage);
       if (afterSecond.refreshFingerprint === afterFirst.refreshFingerprint || measuredPage.url().includes('/login')) {
         throw new Error('winning successor did not remain usable for the next real expiry');
