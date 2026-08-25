@@ -1,7 +1,7 @@
 # Journey Certification Ledger
 
-Last verified: 2026-08-24 (local certification evidence:
-`react-smoke-2026-08-24T21-52-39-523Z.json`; 22 paired MATCH, no failures or
+Last verified: 2026-08-25 (local certification evidence:
+`react-smoke-2026-08-25T21-02-49-889Z.json`; 7 paired MATCH, no failures or
 skips. Score banking awaits the next batched push and green CI.)
 Rebuilt to its final denominator on 2026-08-21.
 
@@ -119,13 +119,13 @@ mismatch. Reserve rows are included in every count.
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Core member journeys (React) | 42 | 29 | 0 | 0 | 3 | 10 | 0.712 |
+| 1 — Core member journeys (React) | 42 | 31 | 0 | 0 | 2 | 9 | 0.752 |
 | 2 — Community module journeys (React) | 28 | 0 | 1 | 7 | 0 | 20 | 0.084 |
 | 3 — Extended module journeys (React) | 42 | 0 | 0 | 2 | 0 | 40 | 0.012 |
 | 4 — Member journeys (Web UK accessible) | 32 | 10 | 0 | 20 | 0 | 2 | 0.469 |
 | 5 — Staff journeys (admin / super-admin / broker) | 72 | 0 | 0 | 1 | 0 | 71 | 0.003 |
 | 6 — Mobile app journeys (Expo / React Native) | 34 | 0 | 0 | 0 | 0 | 34 | 0.000 |
-| **Total** | **250** | **39** | **1** | **30** | **3** | **177** | — |
+| **Total** | **250** | **41** | **1** | **30** | **2** | **176** | — |
 
 **Total row count: 250.** This is the frozen denominator.
 
@@ -137,7 +137,7 @@ tier row count, to three decimals.
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (29 × 1.0) + (3 × 0.3) = 29.90 | ÷ 42 | **0.712** |
+| 1 | (31 × 1.0) + (2 × 0.3) = 31.60 | ÷ 42 | **0.752** |
 | 2 | (1 × 0.6) + (7 × 0.25) = 2.35 | ÷ 28 | **0.084** |
 | 3 | (2 × 0.25) = 0.50 | ÷ 42 | **0.012** |
 | 4 | (10 × 1.0) + (20 × 0.25) = 15.00 | ÷ 32 | **0.469** |
@@ -171,8 +171,8 @@ activity/nexus-score were in the same position: real member pages, no row.
 | 1.3 | Legal acceptance gate on first sign-in | CERTIFIED | Same artifact: both status endpoints reported a blocking pending document, the unchanged UI exposed and submitted the gate, and a fresh reload proved it stayed cleared; `journey-sign-up` MATCH. |
 | 1.4 | Sign-in: existing member, tenant select | CERTIFIED | Same artifact: `login-page`, `select-community`, and `login-submit` all MATCH; each arm required real auth keys and reached the protected feed. |
 | 1.5 | Sign-out clears session both sides | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same-run artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T07-34-46-275Z.json`: `journey-sign-out-session-invalidation` = MATCH (7/7 MATCH overall, no failure or skip). On both configuration-only arms, the unchanged React client opened the real Navbar user menu, clicked *Log Out*, received a successful `/api/auth/logout`, reached `/login`, removed access, refresh, tenant-id and tenant-slug state, hid the authenticated menu, and returned a later protected `/dashboard` navigation to login without credential resurrection. This is the client-local half of the combined journey; row 1.36 records the server replay assertions. The committed smoke step is repeatable and every consumed API path is clean in the 550-route/315-method no-op inventory. |
-| 1.6 | Password reset: request → email → reset → sign-in | OPEN | needs mail capture in the instrument |
-| 1.7 | Token refresh across real access-token expiry | PARTIAL | forced-401 probe shows the client routes to `/login` — client behaviour, not a backend verdict |
+| 1.6 | Password reset: request → email → reset → sign-in | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same-run artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T21-02-49-889Z.json`: `journey-password-reset-email` = MATCH (7/7 MATCH overall, no failure or skip, exit 0). On both configuration-only arms, the unchanged React client requested recovery while signed out, received the same public shape for known and unknown identities, consumed the tenant-domain link from the actual captured email, submitted a policy-compliant replacement password, and reached a protected page only with that replacement. The step proves tenant binding, cross-tenant duplicate-email isolation, single use, malformed/unknown/expired rejection, old-password refusal, pre-reset refresh-session invalidation, deterministic actor restoration and no credential disclosure. Focused ASP.NET recovery coverage is 4/4; the combined auth journey classes are 8/8. Every consumed path is implemented and clean in the no-op ratchet. Implementation `f25935184`. |
+| 1.7 | Token refresh across real access-token expiry | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same artifact: `journey-real-token-expiry-refresh` = MATCH on both arms. Each disposable backend minted a genuine five-second access token while retaining the normal refresh lifetime; the unchanged client remained on a protected page after an ordinary bearer 401, made exactly one single-flight `/api/auth/refresh-token` call, retried successfully and rotated redacted access/refresh fingerprints without changing user or tenant claims. A second real expiry proves the successor remains usable; foreign-tenant presentation, superseded-family resurrection and current-device logout are rejected without invalidating the unrelated device. Focused concurrency coverage proves exactly one winner and one credential-free loser, with the winning successor usable. Full ASP.NET verification is 3,915/3,915 API plus 38/38 messaging; no-op inventory resolves 550 routes across 315 methods (548 distinct routes after scanner deduplication). Implementation `f25935184`. |
 | 1.8 | Onboarding completion → lands in app | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same-run artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T07-34-46-275Z.json`: `journey-sign-up` = MATCH (7/7 MATCH overall). The unchanged React client registered one disposable member per arm, the docker-guarded instrument advanced only email verification/approval, and the member then completed the real wizard: uploaded a PNG, saved a 50-character bio, skipped optional interests/skills, traversed the tenant-configured safeguarding step when present, finished, reached `/dashboard`, accepted the blocking legal gate, reloaded, and received `onboarding_completed:true` from a fresh `/api/v2/users/me`. ASP.NET's former success-shaped `config`/`status` stubs were replaced with tenant-settings, profile, progress and preference reads; two new integration tests went RED against those stubs and the full onboarding controller class is 13/13 green. Condition 5 is clean across config, status, categories, safeguarding, avatar, profile, completion, legal and users/me paths; the inventory shrank to 550 routes/315 methods. All five ADR-0004 conditions are met. |
 | 1.9 | Dashboard renders correct panels | CERTIFIED | Same artifact: `journey-dashboard` MATCH; welcome, Upcoming Events, Quick Actions, and consumed event/wallet/message destinations were required with no error state. |
 | 1.10 | Feed browse | CERTIFIED | Same artifact: `journey-feed-browse` MATCH; both chronological post feeds contained the exact same-run persisted post inside a real article card. |

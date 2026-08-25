@@ -1,10 +1,10 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-25 (39 journeys certified locally; 376 candidate at implementation `f4c75e169`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
+Last verified: 2026-08-25 (41 journeys certified locally; 383 candidate at implementation `f25935184`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=376/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=383/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=324 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score calculation - Fixed Rubric Baseline 5, 376/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
+## Banked score calculation - Fixed Rubric Baseline 5, 383/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -88,14 +88,14 @@ failure or skip. The static condition-5 gate is clean across every consumed auth
 and onboarding path, and the no-op inventory is 550 routes across 315 methods.
 The full regression boundary is 3,903/3,903 API tests and 38/38 messaging tests,
 all with no failure or skip. Scoring-record SHA: the commit carrying this section.
-This local evidence publishes the mechanically derived 376 candidate, but it does
+This local evidence publishes the mechanically derived 383 candidate, but it does
 not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 
 **Block 2 - Banked score.**
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 121 | 170 |
+| Core member journeys certified - React | 128 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -105,7 +105,7 @@ not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **376** | **1000** |
+| **Total** | **383** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -113,7 +113,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.7119 | 170 | 121 |
+| Core React | 1 | 42 | 0.7524 | 170 | 128 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -210,6 +210,25 @@ Full local verification is green at 3,907/3,907 API tests and 38/38 messaging
 tests. Implementation SHA: `f4c75e169`. This candidate becomes the floor only
 after the batch is pushed and required CI is green.
 
+🔴 **The 2026-08-25 recovery/continuity transaction moves Core React 121 →
+128 (+7), total 376 → 383, while the banked floor stays 324.** Row 1.6 moved
+OPEN → CERTIFIED and row 1.7 moved PARTIAL → CERTIFIED. Weighted Tier 1 credit
+rose 29.9 → 31.6 of 42 rows (0.7119 → 0.7524); no row was demoted and no
+denominator moved. The unchanged React client completed both journeys against
+ASP.NET and the same-run disposable Laravel control: the actual captured reset
+email drove a tenant-bound, single-use password change and invalidated earlier
+sessions; a genuinely expired access token produced a protected 401, one
+single-flight refresh, a successful retry, both-credential rotation, a usable
+successor and device-scoped logout. Same-run artifact
+`aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T21-02-49-889Z.json`
+records 7/7 MATCH, no failures or skips, exit 0. Focused ASP.NET auth journey
+coverage is 8/8; relevant Laravel coverage is 76 tests / 246 assertions. Full
+local ASP.NET verification is green at 3,915/3,915 API tests and 38/38
+messaging tests. The no-op ratchet resolves 550 routes across 315 methods (548
+distinct routes after scanner deduplication). Implementation SHA: `f25935184`.
+This candidate becomes the floor only after the batch is pushed and required CI
+is green.
+
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
 was a *shape*: every field was individually correct and both backends answered
@@ -219,16 +238,16 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 183 of 690 (-507).** 🔴 **Thirty-nine of 250 rows are
-  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 29. The
+- **Journeys: 190 of 690 (-500).** 🔴 **Forty-one of 250 rows are
+  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 31. The
   comprehensive 2026-08-24 core run promoted the final 17 Tier 1 PROVEN rows;
   only one PROVEN row now remains across the full ledger, in Tier 2.
 
-- **Active non-mobile client parity: 183/570 = 32.11%.** This is the earned
+- **Active non-mobile client parity: 190/570 = 33.33%.** This is the earned
   journey-category score for React, Web UK and staff journeys only; it excludes
   the 120-point native-mobile category rather than treating unassessed mobile
   work as a failure of the active clients. **Non-mobile overall readiness:
-  376/880 = 42.73%.** The historical fixed-baseline headline remains 376/1000
+  383/880 = 43.52%.** The historical fixed-baseline headline remains 383/1000
   for continuity, and the banked floor remains 324 until push plus green CI.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
   smoke still has no control arm" and called building one queue item 1. That is

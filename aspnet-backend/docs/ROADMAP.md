@@ -4,26 +4,27 @@ Status: **Canonical current - owner-facing summary** (technical detail lives in
 [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
 list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
 
-Last updated: 2026-08-24
+Last updated: 2026-08-25
 
 ## Where we are, in three lines
 
 Every status report from here uses exactly this format. Both numbers can only ever
 go up, and the build enforces it.
 
-- **Score: 352/1000 candidate** (rubric R5; banked floor remains 324 until the batched push is green)
-- **Journeys certified: 33 of 250**
-- **Movement since last report: +28**
+- **Score: 383/1000 candidate** (rubric R5; banked floor remains 324 until the batched push is green)
+- **Journeys certified: 41 of 250**
+- **Movement since last report: +31**
 
-Seventeen more core member journeys now meet the certification bar: sign-up,
-verification, legal acceptance, sign-in, dashboard, feed browse/filter/create/
-comment, listings browse, event discovery/RSVP, existing-thread messaging,
-wallet history, member/profile browsing and theme persistence. One comprehensive
-run drove the unchanged React app against both backends and finished 22/22 MATCH,
-with no failures or skips. The effects were checked after fresh reads or reloads,
-not inferred from successful responses.
+Eight more core member journeys now meet the certification bar since this roadmap
+was last updated: onboarding, sign-out and server-side invalidation, new direct
+messaging, connection request/accept, profile-setting persistence, password
+recovery through a captured email, and continuity across a genuinely expired
+access token. The latest focused run selected recovery and refresh together,
+drove the unchanged React app against both backends, and finished 7/7 MATCH with
+no failures or skips. Persisted and security effects were asserted rather than
+inferred from successful responses.
 
-The ledger therefore computes a **352** candidate score, while the banked floor
+The ledger therefore computes a **383** candidate score, while the banked floor
 stays **324** at pushed, green SHA `32bd2f94d`. The candidate becomes banked only
 after this batch is pushed and the required CI workflows are green; no intermediate
 push is needed between individual journeys.
@@ -119,12 +120,14 @@ work list have not been walked this way yet.
 
 ## What works today, proved by using it
 
-A member can sign up, verify their email, accept the legal agreement, sign in, use
-the dashboard, browse and scroll the feed, filter it, post, comment, browse and
-create listings, browse events, RSVP, send a message, transfer credits, see their
-wallet history, browse members, view their profile, change theme and have it
-stick, and clear notifications — all through the app's own screens against the
-.NET engine.
+A member can sign up, verify their email, accept the legal agreement, complete
+onboarding, sign in and out, recover a password from the delivered email, remain
+signed in across a real access-token expiry, use the dashboard, browse and scroll
+the feed, filter it, post, comment, browse and create listings, browse events,
+RSVP, start and continue messages, transfer credits, see wallet history, connect
+with another member, browse profiles, and persist theme and profile settings —
+all through the app's own screens against the .NET engine and the same-run
+Laravel control.
 
 That test can now **fail**. Until today it caught every error and exited
 successfully anyway, so a green run proved nothing at all. It was fixed and then
@@ -135,13 +138,13 @@ against Laravel, checked side by side in the same run.
 
 ## The honest gaps
 
-- **The main app has no side-by-side comparison for most journeys.** Its test now
-  has a comparison arm, but only the accessible site has been walked through its
-  own forms end to end. That is why nine of the eleven certified journeys are on
-  the accessible site and only one — the exchange itself, request through to
-  credits moving — is on the main app. Doing for the main app what was done for
-  the accessible site is the single biggest thing left that needs no new
-  decisions from you.
+- **The main app has 31 of 42 Tier 1 rows certified.** Excluding two pre-counted
+  reserve slots, nine real journeys remain: feed page-2 loading and reaction
+  persistence need stable card hooks; multi-photo posts and signed offline event
+  check-in have named backend/storage gaps; voice/attachment messaging is built
+  but unproven; WebAuthn registration/sign-in and 2FA still need durable challenge
+  subsystems; and search correctness has not been compared against a known
+  fixture. The broader module and staff tiers remain much less explored.
 - **The admin panel is barely touched** — 514 admin addresses never compared, and
   it holds almost all the do-nothing endpoints. Buyers evaluate the admin panel,
   which is why it now carries 150 of the 1,000 points.
