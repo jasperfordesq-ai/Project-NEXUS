@@ -119,13 +119,13 @@ mismatch. Reserve rows are included in every count.
 
 | Tier | Rows | CERTIFIED | PROVEN | RENDERS | PARTIAL | OPEN/BROKEN | Credit |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 — Core member journeys (React) | 42 | 23 | 0 | 0 | 3 | 16 | 0.569 |
+| 1 — Core member journeys (React) | 42 | 26 | 0 | 0 | 3 | 13 | 0.640 |
 | 2 — Community module journeys (React) | 28 | 0 | 1 | 7 | 0 | 20 | 0.084 |
 | 3 — Extended module journeys (React) | 42 | 0 | 0 | 2 | 0 | 40 | 0.012 |
 | 4 — Member journeys (Web UK accessible) | 32 | 10 | 0 | 20 | 0 | 2 | 0.469 |
 | 5 — Staff journeys (admin / super-admin / broker) | 72 | 0 | 0 | 1 | 0 | 71 | 0.003 |
 | 6 — Mobile app journeys (Expo / React Native) | 34 | 0 | 0 | 0 | 0 | 34 | 0.000 |
-| **Total** | **250** | **33** | **1** | **30** | **3** | **183** | — |
+| **Total** | **250** | **36** | **1** | **30** | **3** | **180** | — |
 
 **Total row count: 250.** This is the frozen denominator.
 
@@ -137,7 +137,7 @@ tier row count, to three decimals.
 
 | Tier | Weighted sum | ÷ rows | Credit |
 | --- | --- | ---: | ---: |
-| 1 | (23 × 1.0) + (3 × 0.3) = 23.90 | ÷ 42 | **0.569** |
+| 1 | (26 × 1.0) + (3 × 0.3) = 26.90 | ÷ 42 | **0.640** |
 | 2 | (1 × 0.6) + (7 × 0.25) = 2.35 | ÷ 28 | **0.084** |
 | 3 | (2 × 0.25) = 0.50 | ÷ 42 | **0.012** |
 | 4 | (10 × 1.0) + (20 × 0.25) = 15.00 | ÷ 32 | **0.469** |
@@ -170,10 +170,10 @@ activity/nexus-score were in the same position: real member pages, no row.
 | 1.2 | Email verification → first sign-in | CERTIFIED | Same artifact: the docker-guarded disposable fixtures advanced email verification and approval, then a fresh browser context obtained a new session on both arms; `journey-sign-up` MATCH. |
 | 1.3 | Legal acceptance gate on first sign-in | CERTIFIED | Same artifact: both status endpoints reported a blocking pending document, the unchanged UI exposed and submitted the gate, and a fresh reload proved it stayed cleared; `journey-sign-up` MATCH. |
 | 1.4 | Sign-in: existing member, tenant select | CERTIFIED | Same artifact: `login-page`, `select-community`, and `login-submit` all MATCH; each arm required real auth keys and reached the protected feed. |
-| 1.5 | Sign-out clears session both sides | OPEN | never driven |
+| 1.5 | Sign-out clears session both sides | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same-run artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T07-34-46-275Z.json`: `journey-sign-out-session-invalidation` = MATCH (7/7 MATCH overall, no failure or skip). On both configuration-only arms, the unchanged React client opened the real Navbar user menu, clicked *Log Out*, received a successful `/api/auth/logout`, reached `/login`, removed access, refresh, tenant-id and tenant-slug state, hid the authenticated menu, and returned a later protected `/dashboard` navigation to login without credential resurrection. This is the client-local half of the combined journey; row 1.36 records the server replay assertions. The committed smoke step is repeatable and every consumed API path is clean in the 550-route/315-method no-op inventory. |
 | 1.6 | Password reset: request → email → reset → sign-in | OPEN | needs mail capture in the instrument |
 | 1.7 | Token refresh across real access-token expiry | PARTIAL | forced-401 probe shows the client routes to `/login` — client behaviour, not a backend verdict |
-| 1.8 | Onboarding completion → lands in app | OPEN | smoke stops at `/onboarding` |
+| 1.8 | Onboarding completion → lands in app | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** Same-run artifact `aspnet-backend/artifacts/smoke/react-smoke-2026-08-25T07-34-46-275Z.json`: `journey-sign-up` = MATCH (7/7 MATCH overall). The unchanged React client registered one disposable member per arm, the docker-guarded instrument advanced only email verification/approval, and the member then completed the real wizard: uploaded a PNG, saved a 50-character bio, skipped optional interests/skills, traversed the tenant-configured safeguarding step when present, finished, reached `/dashboard`, accepted the blocking legal gate, reloaded, and received `onboarding_completed:true` from a fresh `/api/v2/users/me`. ASP.NET's former success-shaped `config`/`status` stubs were replaced with tenant-settings, profile, progress and preference reads; two new integration tests went RED against those stubs and the full onboarding controller class is 13/13 green. Condition 5 is clean across config, status, categories, safeguarding, avatar, profile, completion, legal and users/me paths; the inventory shrank to 550 routes/315 methods. All five ADR-0004 conditions are met. |
 | 1.9 | Dashboard renders correct panels | CERTIFIED | Same artifact: `journey-dashboard` MATCH; welcome, Upcoming Events, Quick Actions, and consumed event/wallet/message destinations were required with no error state. |
 | 1.10 | Feed browse | CERTIFIED | Same artifact: `journey-feed-browse` MATCH; both chronological post feeds contained the exact same-run persisted post inside a real article card. |
 | 1.11 | Feed infinite scroll loads page 2+ | PARTIAL | text-length heuristic only; needs `data-testid` on FeedCard (frontend change, owner approval) |
@@ -201,7 +201,7 @@ activity/nexus-score were in the same position: real member pages, no row.
 | 1.33 | Profile: view own and another member's | CERTIFIED | Same artifact: `journey-profile` MATCH; both the signed-in member and known other member rendered exact fixture identities, and the real Settings edit surface exposed 14 fields. |
 | 1.34 | Settings: edit a field and save it | OPEN | the 14-field edit surface opens; **no save is asserted**. There is no Edit control on the profile page; editing lives in Settings. 🔴 Status normalised 2026-08-21: this row read `PARTIAL→OPEN`, which is not a value in the vocabulary and made the tier uncountable. With no asserted save there is no attempted-and-blocked assertion, so it is OPEN, not PARTIAL |
 | 1.35 | Settings: theme persists across reload | CERTIFIED | Same artifact: `journey-settings-theme` MATCH; the unchanged avatar-menu control flipped the theme and the persisted preference survived reload on both arms. |
-| 1.36 | Sign-out: session cleared server-side, protected page refuses after | OPEN | distinct from 1.5, which only asks whether the client clears local state. Scope origin: 2026-08-21 R5 expansion |
+| 1.36 | Sign-out: session cleared server-side, protected page refuses after | CERTIFIED | **CERTIFIED locally 2026-08-25; banking awaits the next batched push and green CI.** The same combined `journey-sign-out-session-invalidation` MATCH copied both credentials before the UI action and replayed them afterward: old access received 401 from `/api/v2/users/me` on both arms; old refresh received a deterministic 4xx (ASP.NET 400, Laravel 401); and protected navigation returned to login. The test first went RED because both backends revoked only refresh state while their freshly issued access JWT remained usable. Both now mint a unique access-token JTI, persist device-scoped denylist state on logout, and fail closed on validation; other devices retain independent tokens. Focused regression is green: ASP.NET auth controller 19/19, Laravel auth/token 65/65, plus the paired browser evidence. All consumed paths are clean in the 550-route/315-method no-op inventory. Scope origin: 2026-08-21 R5 expansion. |
 | 1.37 | Passkey / WebAuthn: register a credential from Settings | OPEN | no ASP.NET counterpart found: `app/Http/Controllers/Api/WebAuthnController.php` is 1,994 lines; no `*WebAuthn*Controller.cs` exists under `aspnet-backend/src/`. RP-ID derivation is per tenant in Laravel, which the .NET side must reproduce. Scope origin: 2026-08-21 R5 expansion |
 | 1.38 | Passkey / WebAuthn: sign in with a registered credential | OPEN | same missing subsystem as 1.37. `aspnet-backend/CLAUDE.md` records the WebAuthn challenge store as process-local, so distributed challenge continuity is a second blocker. Scope origin: 2026-08-21 R5 expansion |
 | 1.39 | Two-factor: enrol, then satisfy the challenge at next sign-in | OPEN | the ASP.NET 2FA challenge store is process-local (architecture invariants, `aspnet-backend/CLAUDE.md`); challenges must be opaque, time-bounded and single-use. Never driven. Scope origin: 2026-08-21 R5 expansion |

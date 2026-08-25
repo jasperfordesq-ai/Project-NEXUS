@@ -1,10 +1,10 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-24 (33 journeys certified locally; 352 candidate at implementation `54f807e8f`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
+Last verified: 2026-08-25 (36 journeys certified locally; 364 candidate at implementation `a100ca1ea`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
-<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=352/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=364/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
 <!-- doc-consistency: ASPNET_RUBRIC_CATEGORY_COUNT=10 -->
 <!-- doc-consistency: ASPNET_BANKED_FLOOR=324 -->
@@ -62,7 +62,7 @@ plain-English owner view is [`ROADMAP.md`](ROADMAP.md). Rubric rules:
 Update-transaction rules:
 [`DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
 
-## Banked score calculation - Fixed Rubric Baseline 5, 352/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
+## Banked score calculation - Fixed Rubric Baseline 5, 364/1000 (`ASPNET-CONTRACT-R5`; candidate pending CI, floor 324)
 
 **Block 1 - Named baseline and SHA.** Rubric `ASPNET-CONTRACT-R5`, named
 2026-08-21: **ten** fixed-weight categories, final frozen denominator, **not
@@ -80,23 +80,22 @@ fixtures applied. Generated artifacts: `artifacts/parity/api/api-parity.*`
 regenerated 2026-08-21T07:14; `artifacts/parity/{schema,localization}` at
 2026-08-20. Denominator source:
 [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md) at 250 rows.
-Controlled runtime evidence: `artifacts/smoke/react-smoke-2026-08-23T18-29-08-811Z.json`,
-produced after rebuilding the ASP.NET image from this exact tree. Scoring-record
-SHA: the commit carrying this section. The current candidate is implemented at
-`54f807e8f`: the paired React artifact
-`artifacts/smoke/react-smoke-2026-08-24T21-52-39-523Z.json` records 22/22 MATCH
-with no failure or skip; the static condition-5 gate is clean across all 86 API
-paths it observed; and the no-op inventory shrank to 550 routes across 317
-methods. The full regression boundary is 3,900/3,900 API tests and 38/38
-messaging tests, plus 2/2 focused maps/recurrence tests against the final C#
-change, all with no failure or skip. This local evidence publishes the mechanically derived 352 candidate,
-but it does not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
+Controlled runtime evidence: `artifacts/smoke/react-smoke-2026-08-25T07-34-46-275Z.json`,
+produced after rebuilding both backends from implementation `a100ca1ea`. Its 7/7
+MATCH steps include the combined sign-out/session-invalidation journey and the
+complete first-time onboarding journey on both ASP.NET and Laravel, with no
+failure or skip. The static condition-5 gate is clean across every consumed auth
+and onboarding path, and the no-op inventory is 550 routes across 315 methods.
+The full regression boundary is 3,903/3,903 API tests and 38/38 messaging tests,
+all with no failure or skip. Scoring-record SHA: the commit carrying this section.
+This local evidence publishes the mechanically derived 364 candidate, but it does
+not move `ASPNET_BANKED_FLOOR=324` before a batched push and green CI.
 
 **Block 2 - Banked score.**
 
 | Category | Banked | Maximum |
 | --- | ---: | ---: |
-| Core member journeys certified - React | 97 | 170 |
+| Core member journeys certified - React | 109 | 170 |
 | Community and extended module journeys certified - React | 5 | 130 |
 | Member journeys certified - Web UK accessible | 56 | 120 |
 | Staff journeys certified - admin, super-admin, broker | 1 | 150 |
@@ -106,7 +105,7 @@ but it does not move `ASPNET_BANKED_FLOOR=324` before a batched push and green C
 | Auth, tenant isolation, security, and localization | 46 | 60 |
 | Background processing, providers, and integrations | 11 | 40 |
 | Build/test/CI evidence and operational readiness | 22 | 40 |
-| **Total** | **352** | **1000** |
+| **Total** | **364** | **1000** |
 
 **Derivation.** The five journey categories are computed mechanically from the
 ledger's row statuses using its published weights (CERTIFIED 100%, PROVEN 60%,
@@ -114,7 +113,7 @@ RENDERS 25%, PARTIAL 30%, OPEN/BROKEN 0%); credit = weighted sum / tier rows.
 
 | Category | Tier(s) | Rows | Credit | x weight | Banked |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Core React | 1 | 42 | 0.5690 | 170 | 97 |
+| Core React | 1 | 42 | 0.6405 | 170 | 109 |
 | Module React | 2 + 3 | 70 | 0.0407 | 130 | 5 |
 | Web UK | 4 | 32 | 0.4688 | 120 | 56 |
 | Staff | 5 | 72 | 0.0035 | 150 | 1 |
@@ -183,6 +182,18 @@ failure or skip. Full local regression: 3,900/3,900 API, 38/38 messaging and
 floor only after the batch is pushed and the required CI workflows are green;
 there is no requirement to push between individual journey jobs.
 
+🔴 **The 2026-08-25 sign-out/onboarding transaction moves Core React 97 → 109
+(+12), total 352 → 364, while the banked floor stays 324.** Rows 1.5, 1.8 and
+1.36 moved OPEN → CERTIFIED. Weighted Tier 1 credit rose 23.9 → 26.9 of 42
+rows (0.5690 → 0.6405); no row was demoted and no denominator moved. The
+unchanged React client completed a focused 7/7 MATCH run against ASP.NET and
+the same-run Laravel control. Onboarding persisted after reload; sign-out
+cleared client state, rejected copied access and refresh credentials, and
+prevented protected-page re-entry. The certification gate also removed two
+success-shaped onboarding reads, shrinking the no-op inventory to 550 routes
+across 315 methods. Implementation SHA: `a100ca1ea`. This candidate
+becomes the floor only after the batch is pushed and required CI is green.
+
 🔴 **What these ten CERTIFIED rows do NOT mean.** Two of the three faults fixed
 today were invisible to every automated comparison in this workstream. Row 4.28's
 was a *shape*: every field was individually correct and both backends answered
@@ -192,8 +203,8 @@ diff of the fields two responses share. Both were found only by filling in the
 page's own form and reading the effect. Read that as a warning about the other
 five tiers, which have not been walked this way.
 
-- **Journeys: 159 of 690 (-531).** 🔴 **Thirty-three of 250 rows are
-  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 23. The
+- **Journeys: 171 of 690 (-519).** 🔴 **Thirty-six of 250 rows are
+  CERTIFIED.** Ten are in Tier 4 (Web UK), and Tier 1 holds the other 26. The
   comprehensive 2026-08-24 core run promoted the final 17 Tier 1 PROVEN rows;
   only one PROVEN row now remains across the full ledger, in Tier 2.
   🔴 **CORRECTED 2026-08-22, same day it was written: this bullet said "the React
