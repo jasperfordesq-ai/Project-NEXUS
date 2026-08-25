@@ -335,6 +335,117 @@ class WalletControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    /**
+     * Surnames are private platform-wide — UserService::getPublicProfile and
+     * UsersController::search both strip last_name for non-admin viewers. This
+     * endpoint did not, which made it the one place an ordinary member could
+     * harvest every surname in their community two letters at a time.
+     */
+    public function test_user_search_withholds_surnames_from_ordinary_members(): void
+    {
+        $this->authenticatedUser();
+
+        User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Marzena',
+            'last_name'  => 'Kowalczyk',
+            'name'       => 'Marzena Kowalczyk',
+            'username'   => 'marzena_k',
+            'status'     => 'active',
+        ]);
+
+        $response = $this->apiGet('/v2/wallet/user-search?q=Marzena');
+
+        $response->assertStatus(200);
+
+        $users = $response->json('data.users');
+        $this->assertIsArray($users);
+        $match = collect($users)->firstWhere('first_name', 'Marzena');
+        $this->assertNotNull($match, 'The seeded member should still be findable.');
+
+        $this->assertSame('Marzena', $match['name']);
+        $this->assertArrayNotHasKey('last_name', $match);
+        $this->assertStringNotContainsString('Kowalczyk', json_encode($match));
+
+        // The username is what keeps two members called Marzena tellable apart
+        // at transfer time, so withholding the surname must not leave the list
+        // ambiguous.
+        $this->assertSame('marzena_k', $match['username']);
+    }
+
+    /**
+     * Withholding the surname from the RESPONSE must not stop a member finding
+     * someone they only know by surname — the search still matches on it.
+     */
+    public function test_user_search_still_matches_a_surname_without_echoing_it(): void
+    {
+        $this->authenticatedUser();
+
+        User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Marzena',
+            'last_name'  => 'Kowalczyk',
+            'name'       => 'Marzena Kowalczyk',
+            'username'   => 'marzena_k',
+            'status'     => 'active',
+        ]);
+
+        $response = $this->apiGet('/v2/wallet/user-search?q=Kowalczyk');
+
+        $response->assertStatus(200);
+
+        $users = $response->json('data.users');
+        $match = collect($users)->firstWhere('username', 'marzena_k');
+        $this->assertNotNull($match, 'A surname search should still find the member.');
+        $this->assertArrayNotHasKey('last_name', $match);
+        $this->assertSame('Marzena', $match['name']);
+    }
+
+    public function test_user_search_reveals_surnames_to_admins(): void
+    {
+        $this->authenticatedUser(['role' => 'admin']);
+
+        User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Marzena',
+            'last_name'  => 'Kowalczyk',
+            'name'       => 'Marzena Kowalczyk',
+            'username'   => 'marzena_k',
+            'status'     => 'active',
+        ]);
+
+        $response = $this->apiGet('/v2/wallet/user-search?q=Marzena');
+
+        $response->assertStatus(200);
+
+        $match = collect($response->json('data.users'))->firstWhere('username', 'marzena_k');
+        $this->assertNotNull($match);
+        $this->assertSame('Kowalczyk', $match['last_name']);
+        $this->assertSame('Marzena Kowalczyk', $match['name']);
+    }
+
+    /**
+     * A broker is an operational role, not a lesser admin (AdminTier returns
+     * false for it), so it must not see surnames either.
+     */
+    public function test_user_search_withholds_surnames_from_brokers(): void
+    {
+        $this->authenticatedUser(['role' => 'broker']);
+
+        User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Marzena',
+            'last_name'  => 'Kowalczyk',
+            'name'       => 'Marzena Kowalczyk',
+            'username'   => 'marzena_k',
+            'status'     => 'active',
+        ]);
+
+        $response = $this->apiGet('/v2/wallet/user-search?q=Marzena');
+
+        $response->assertStatus(200);
+
+        $match = collect($response->json('data.users'))->firstWhere('username', 'marzena_k');
+        $this->assertNotNull($match);
+        $this->assertArrayNotHasKey('last_name', $match);
+    }
+
     public function test_user_search_requires_authentication(): void
     {
         $response = $this->apiGet('/v2/wallet/user-search?q=test');

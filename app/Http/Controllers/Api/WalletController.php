@@ -8,7 +8,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\WalletService;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * WalletController - Time-credit wallet operations.
@@ -231,7 +233,11 @@ class WalletController extends BaseApiController
         $query = trim($this->query('q', ''));
         $limit = $this->queryInt('limit', 10, 1, 20);
 
-        $users = $this->walletService->searchUsers($userId, $query, $limit);
+        // Surnames are private to non-admin viewers everywhere else on the
+        // platform; this endpoint must not be the way around that.
+        $revealSurnames = AdminTier::allows(Auth::user());
+
+        $users = $this->walletService->searchUsers($userId, $query, $limit, $revealSurnames);
 
         return $this->respondWithData(['users' => $users]);
     }

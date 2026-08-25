@@ -24,7 +24,7 @@ import Search from 'lucide-react/icons/search';
 import User from 'lucide-react/icons/user';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import { api } from '@/lib/api';
-import { formatNumber, resolveAvatarUrl } from '@/lib/helpers';
+import { formatNumber, getRecipientDisplayName, resolveAvatarUrl } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { useToast } from '@/contexts';
 import { CategorySelect } from './CategorySelect';
@@ -327,13 +327,13 @@ export function TransferModal({
                   <div className="flex items-center gap-3 bg-theme-elevated rounded-lg p-3">
                     <Avatar
                       src={resolveAvatarUrl(formData.recipient.avatar) || undefined}
-                      name={`${formData.recipient.first_name} ${formData.recipient.last_name}`}
+                      name={getRecipientDisplayName(formData.recipient)}
                       size="sm"
                       className="flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-theme-primary font-medium truncate">
-                        {formData.recipient.first_name} {formData.recipient.last_name}
+                        {getRecipientDisplayName(formData.recipient)}
                       </p>
                       {formData.recipient.username && (
                         <p className="text-theme-subtle text-sm truncate">
@@ -411,12 +411,12 @@ export function TransferModal({
                             >
                               <Avatar
                                 src={resolveAvatarUrl(user.avatar) || undefined}
-                                name={`${user.first_name} ${user.last_name}`}
+                                name={getRecipientDisplayName(user)}
                                 size="sm"
                               />
                               <div className="flex-1 min-w-0">
                                 <p className="text-theme-primary font-medium truncate">
-                                  {user.first_name} {user.last_name}
+                                  {getRecipientDisplayName(user)}
                                 </p>
                                 {user.username && (
                                   <p className="text-theme-subtle text-sm truncate">
@@ -515,7 +515,7 @@ export function TransferModal({
                     {t('transfer_summary', {
                       amount: parsedAmount,
                       unit: t('hours').toLowerCase(),
-                      name: `${formData.recipient.first_name} ${formData.recipient.last_name}`,
+                      name: getRecipientDisplayName(formData.recipient),
                     })}
                   </p>
                   <p className="text-theme-subtle text-xs mt-1">

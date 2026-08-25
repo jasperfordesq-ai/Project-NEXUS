@@ -77,6 +77,7 @@
     {% for recipient in recipients %}
       <div class="nexus-alpha-card govuk-!-margin-bottom-4">
         <h4 class="govuk-heading-s govuk-!-margin-bottom-1">{{ recipient.name }}</h4>
+        {% if recipient.handle %}<p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-1">{{ recipient.handle }}</p>{% endif %}
         {% if recipient.location or recipient.memberSince %}<p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-3">{% if recipient.location %}{{ recipient.location }}{% endif %}{% if recipient.location and recipient.memberSince %} · {% endif %}{% if recipient.memberSince %}{{ t("wallet.member_since", { date: recipient.memberSince }) }}{% endif %}</p>{% endif %}
         {% set isErroredRecipient = transferForm and transferForm.recipientId == (recipient.id | string) %}
         <form method="post" action="{{ urlFor('/wallet/transfer') }}">
@@ -84,7 +85,7 @@
           <div class="govuk-form-group govuk-!-margin-bottom-3"><label class="govuk-label" for="amount-{{ recipient.id }}">{{ t("wallet.amount_label") }}</label><div id="amount-hint-{{ recipient.id }}" class="govuk-hint">{{ t("wallet.amount_hint") }}</div><input class="govuk-input govuk-input--width-5" id="amount-{{ recipient.id }}" name="amount" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" value="{{ transferForm.amount if isErroredRecipient else '' }}" aria-describedby="amount-hint-{{ recipient.id }}" required></div>
           <div class="govuk-form-group govuk-!-margin-bottom-3"><label class="govuk-label" for="note-{{ recipient.id }}">{{ t("wallet.note_label") }}</label><div id="note-hint-{{ recipient.id }}" class="govuk-hint">{{ t("wallet.note_hint") }}</div><input class="govuk-input" id="note-{{ recipient.id }}" name="note" type="text" maxlength="255" value="{{ transferForm.note if isErroredRecipient else '' }}" aria-describedby="note-hint-{{ recipient.id }}"></div>
           <div class="govuk-form-group govuk-!-margin-bottom-3"><div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="confirm-{{ recipient.id }}" name="confirm" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="confirm-{{ recipient.id }}">{{ t("ux.transfer_confirm_label") }}</label></div></div></div>
-          <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("wallet.send_button", { name: recipient.name }) }}</button>
+          <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("wallet.send_button", { name: recipient.label }) }}</button>
         </form>
       </div>
     {% endfor %}

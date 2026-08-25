@@ -24,7 +24,7 @@ import User from 'lucide-react/icons/user';
 import Search from 'lucide-react/icons/search';
 import X from 'lucide-react/icons/x';
 import { api } from '@/lib/api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { getRecipientDisplayName, resolveAvatarUrl } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { useToast } from '@/contexts';
 import type { WalletUserSearchResult } from '@/types/api';
@@ -217,13 +217,13 @@ export function DonateModal({ isOpen, onClose, currentBalance, onDonationComplet
                 <div className="flex items-center gap-3 bg-theme-elevated rounded-lg p-3">
                   <Avatar
                     src={resolveAvatarUrl(selectedRecipient.avatar) || undefined}
-                    name={`${selectedRecipient.first_name} ${selectedRecipient.last_name}`}
+                    name={getRecipientDisplayName(selectedRecipient)}
                     size="sm"
                     className="flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-theme-primary font-medium truncate">
-                      {selectedRecipient.first_name} {selectedRecipient.last_name}
+                      {getRecipientDisplayName(selectedRecipient)}
                     </p>
                     {selectedRecipient.username && (
                       <p className="text-theme-subtle text-sm truncate">
@@ -294,12 +294,12 @@ export function DonateModal({ isOpen, onClose, currentBalance, onDonationComplet
                           >
                             <Avatar
                               src={resolveAvatarUrl(user.avatar) || undefined}
-                              name={`${user.first_name} ${user.last_name}`}
+                              name={getRecipientDisplayName(user)}
                               size="sm"
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-theme-primary font-medium truncate">
-                                {user.first_name} {user.last_name}
+                                {getRecipientDisplayName(user)}
                               </p>
                               {user.username && (
                                 <p className="text-theme-subtle text-sm truncate">

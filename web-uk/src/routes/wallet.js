@@ -89,10 +89,21 @@ function normalizeRecipient(row, t = (key) => key) {
   const recipient = row && typeof row === 'object' ? row : {};
   const id = Number.parseInt(recipient.id, 10);
   if (!Number.isFinite(id) || id <= 0) return null;
+  const name = String(recipient.name || [recipient.first_name, recipient.last_name].filter(Boolean).join(' ')).trim()
+    || t('members.unknown_member');
+  // Surnames are private platform-wide, so the API hands non-admin viewers a
+  // first name only. On a members list that is fine; on a transfer form it is
+  // not — two members called Mary produce two identical "Send credits to Mary"
+  // buttons. The username disambiguates them, in the heading and in the
+  // button's accessible name.
+  const username = String(recipient.username || '').trim();
+  const handle = username ? `@${username}` : '';
   return {
     id,
-    name: String(recipient.name || [recipient.first_name, recipient.last_name].filter(Boolean).join(' ')).trim()
-      || t('members.unknown_member'),
+    name,
+    username,
+    handle,
+    label: handle ? `${name} (${handle})` : name,
     location: String(recipient.location || '').trim(),
     since: String(recipient.since || '').trim() || monthYear(recipient.created_at ?? recipient.createdAt, 'short'),
     memberSince: monthYear(recipient.created_at ?? recipient.createdAt, 'long')

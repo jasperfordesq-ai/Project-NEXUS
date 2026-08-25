@@ -221,6 +221,26 @@ export function getUserDisplayName(user: Pick<User, 'first_name' | 'last_name'>)
 }
 
 /**
+ * Display name for a wallet transfer/donation recipient.
+ *
+ * The wallet search endpoint withholds surnames from non-admin viewers —
+ * surnames are private platform-wide — so `last_name` is routinely absent
+ * here in a way it is not on a full User record. Joining with a template
+ * literal would render the literal text "undefined" beside the first name.
+ * The API's precomputed `name` is preferred when present (it is the
+ * organisation name for organisation accounts).
+ */
+export function getRecipientDisplayName(user: {
+  first_name?: string | null;
+  last_name?: string | null;
+  name?: string | null;
+}): string {
+  const explicit = (user.name ?? '').trim();
+  if (explicit) return explicit;
+  return [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+}
+
+/**
  * Get a user's initials for avatar fallback
  */
 export function getUserInitials(user: Pick<User, 'first_name' | 'last_name'>): string {

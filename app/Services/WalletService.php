@@ -881,9 +881,18 @@ class WalletService
     /**
      * Search users for wallet transfer autocomplete.
      *
+     * Surnames are private platform-wide (see UserService::getPublicProfile and
+     * UsersController::search, which both strip last_name for non-admin viewers).
+     * This endpoint used to be the one place a member could harvest every
+     * surname in their community, one two-letter query at a time. The username
+     * is returned instead so two members sharing a first name stay tellable
+     * apart at transfer time — this is money, and picking the wrong "Mary" is
+     * not a recoverable mistake.
+     *
+     * @param bool $revealSurnames True only for admin-tier viewers (AdminTier).
      * @return array Array of user summaries
      */
-    public function searchUsers(int $excludeUserId, string $query, int $limit = 10): array
+    public function searchUsers(int $excludeUserId, string $query, int $limit = 10, bool $revealSurnames = false): array
     {
         if (strlen($query) < 1) {
             return [];
@@ -907,19 +916,35 @@ class WalletService
             ->select('id', 'first_name', 'last_name', 'username', 'avatar_url', 'organization_name', 'profile_type')
             ->limit($limit)
             ->get()
-            ->map(function (User $u) {
-                $name = ($u->profile_type === 'organisation' && $u->organization_name)
-                    ? $u->organization_name
-                    : trim($u->first_name . ' ' . $u->last_name);
+            ->map(function (User $u) use ($revealSurnames) {
+                $isOrganisation = $u->profile_type === 'organisation' && $u->organization_name;
 
-                return [
+                // An organisation's registered name is its public identity, not a
+                // person's surname, so it is never truncated.
+                if ($isOrganisation) {
+                    $name = $u->organization_name;
+                } elseif ($revealSurnames) {
+                    $name = trim($u->first_name . ' ' . $u->last_name);
+                } else {
+                    $name = (string) $u->first_name;
+                }
+
+                $summary = [
                     'id'         => $u->id,
                     'username'   => $u->username,
                     'name'       => $name,
                     'first_name' => $u->first_name,
-                    'last_name'  => $u->last_name,
                     'avatar'     => $u->avatar_url,
                 ];
+
+                // An organisation row's last_name is its contact person's surname,
+                // so it stays hidden too — the organisation name already
+                // disambiguates the account.
+                if ($revealSurnames) {
+                    $summary['last_name'] = $u->last_name;
+                }
+
+                return $summary;
             })
             ->all();
     }

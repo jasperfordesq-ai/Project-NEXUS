@@ -635,7 +635,10 @@ export interface TransferResponse {
 export interface WalletUserSearchResult {
   id: number;
   first_name: string;
-  last_name: string;
+  // Withheld from non-admin viewers — surnames are private platform-wide, so
+  // this endpoint must not be a way to harvest them. Use
+  // getRecipientDisplayName() rather than joining the two by hand.
+  last_name?: string | null;
   name?: string;      // Computed display name from API
   username?: string | null;
   avatar?: string | null;
