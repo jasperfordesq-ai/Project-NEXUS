@@ -221,6 +221,28 @@ export function getUserDisplayName(user: Pick<User, 'first_name' | 'last_name'>)
 }
 
 /**
+ * RFC 8187-encode a header value that may contain non-ASCII text.
+ *
+ * HTTP header values are BYTES. `fetch()` throws "Cannot convert argument to a
+ * ByteString" for any code point above 255, so a header carrying TRANSLATED
+ * copy never leaves the browser at all — the request is never made, and the
+ * failure surfaces as a generic refusal rather than as an encoding error.
+ *
+ * The supporter message-view purpose is exactly that: its reasons come from the
+ * catalogue (English alone has a curly apostrophe in "Checking they're okay",
+ * and it is also carried in Irish, Arabic, Japanese and Polish) and the reason
+ * is joined to the supporter's free-text detail with an em dash.
+ *
+ * Laravel accepts both the encoded and the plain form
+ * (SubAccountController::decodeHeaderValue), so encode unconditionally rather
+ * than only when non-ASCII is present — a conditional would leave the ASCII
+ * path as the only one ever exercised, which is how this survived.
+ */
+export function encodeHeaderValue(value: string): string {
+  return `UTF-8''${encodeURIComponent(value ?? '')}`;
+}
+
+/**
  * Display name for a wallet transfer/donation recipient.
  *
  * The wallet search endpoint withholds surnames from non-admin viewers —

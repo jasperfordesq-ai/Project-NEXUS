@@ -41,7 +41,20 @@ async function supportedMemberName(getChildAccounts, token, childUserId) {
   for (const child of children) {
     const id = positiveInt(child?.user_id ?? child?.child_user_id ?? child?.id);
     if (id === childUserId) {
-      return child?.name || child?.child_name || null;
+      // 🔴 Compose from first/last as well. `GET /users/me/sub-accounts` returns
+      // `first_name` and `last_name` and NO composite `name`, so this returned
+      // null for every real row — and the only caller treats null as "not your
+      // supported member" and refuses the viewer. The consented message view was
+      // therefore unreachable even with consent properly granted.
+      const composed = [child?.first_name, child?.last_name]
+        .map((part) => String(part ?? '').trim())
+        .filter(Boolean)
+        .join(' ');
+      return String(child?.name ?? '').trim()
+        || String(child?.child_name ?? '').trim()
+        || composed
+        || String(child?.email ?? '').trim()
+        || null;
     }
   }
 

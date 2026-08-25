@@ -37,8 +37,15 @@
         <ol class="govuk-list">
           {% for message in messages %}
             <li class="govuk-!-margin-bottom-4">
+              {# 🔴 There is no `sender_name` on this payload - it carries a nested
+                 `sender` object with `first_name`/`last_name` - so EVERY message in
+                 the thread was attributed to "Unknown member", including the
+                 supported member's own. On a read-only safeguarding view, who said
+                 what is the whole point. #}
+              {% set sender = message.sender or {} %}
+              {% set senderName = message.sender_name or ((sender.first_name or "") + " " + (sender.last_name or "")) | trim %}
               <p class="govuk-body-s govuk-!-margin-bottom-1">
-                <strong>{{ message.sender_name or t("govuk_alpha_settings.common.unknown_member") }}</strong>
+                <strong>{{ senderName or t("govuk_alpha_settings.common.unknown_member") }}</strong>
               </p>
               {% if message.body %}
                 <p class="govuk-body govuk-!-margin-bottom-0">{{ message.body }}</p>

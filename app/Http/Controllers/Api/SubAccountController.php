@@ -472,10 +472,44 @@ class SubAccountController extends BaseApiController
     {
         $header = request()->header('X-Message-View-Purpose');
         if (is_string($header) && trim($header) !== '') {
-            return $header;
+            return $this->decodeHeaderValue($header);
         }
 
         return (string) request()->query('purpose', '');
+    }
+
+    /**
+     * Decode an RFC 8187 (`UTF-8''...`) header value, or pass a plain one through.
+     *
+     * HTTP header values are bytes, not text. The purpose a supporter states is
+     * TRANSLATED copy - English alone contains a curly apostrophe in "Checking
+     * they're okay", and the same reasons are carried in Irish, Arabic, Japanese
+     * and Polish - and both frontends join the reason to the supporter's
+     * free-text detail with an em dash. `fetch()` and `Headers` refuse to build
+     * a request whose header value contains any code point above 255 ("Cannot
+     * convert argument to a ByteString"), so the request never left either
+     * frontend, the failure surfaced as a generic refusal, and the member was
+     * told their permission "may have been withdrawn" when the feature was
+     * simply unable to run. Nothing was ever audited, because nothing arrived.
+     *
+     * Accepting the encoded form is ADDITIVE: a caller sending a plain ASCII
+     * purpose is unaffected, because a value without the `UTF-8''` prefix is
+     * returned untouched. That matters - a stated purpose is written to an
+     * immutable audit row, so silently mangling one would be worse than
+     * refusing it.
+     */
+    private function decodeHeaderValue(string $value): string
+    {
+        $trimmed = trim($value);
+        if (stripos($trimmed, "UTF-8''") !== 0) {
+            return $value;
+        }
+
+        $decoded = rawurldecode(substr($trimmed, 7));
+
+        // Refuse anything that did not survive as valid UTF-8 rather than
+        // writing replacement characters into an audit trail.
+        return mb_check_encoding($decoded, 'UTF-8') ? $decoded : '';
     }
 
     private function messageViewStatus(\App\Services\SupporterMessageViewService $service): int

@@ -43,7 +43,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Breadcrumbs } from '@/components/navigation';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
+import { resolveAvatarUrl, formatRelativeTime, encodeHeaderValue } from '@/lib/helpers';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 
@@ -119,7 +119,12 @@ export function SupportedMessagesPage() {
       // the second purpose would never reach the server and no audit row would
       // be written for it. Passing a signal takes the documented
       // do-not-share path.
-      const purposeRequest = { headers: { 'X-Message-View-Purpose': purpose }, signal };
+      // 🔴 RFC 8187-encoded. `purpose` is translated copy joined to free text, so
+      // it routinely contains characters above U+00FF — a curly apostrophe in the
+      // English reason alone — and fetch() refuses to build a request with such a
+      // header value. Every read here threw before it left the browser, and the
+      // catch surfaced it as a plain refusal, so nothing reached the audit trail.
+      const purposeRequest = { headers: { 'X-Message-View-Purpose': encodeHeaderValue(purpose) }, signal };
       if (inThread) {
         const res = await api.get<{ items: MessageRow[] }>(
           `/v2/users/me/sub-accounts/${childId}/messages/${partnerId}`,
@@ -159,7 +164,7 @@ export function SupportedMessagesPage() {
         `/v2/users/me/sub-accounts/${childId}/messages?cursor=${encodeURIComponent(nextCursor)}`,
         // Same reasoning as load(): purpose in the header, and a signal so this
         // page is never served another read's response.
-        { headers: { 'X-Message-View-Purpose': purpose }, signal: new AbortController().signal },
+        { headers: { 'X-Message-View-Purpose': encodeHeaderValue(purpose) }, signal: new AbortController().signal },
       );
       if (res.success && res.data) {
         setConversations((current) => [...(current ?? []), ...(res.data?.conversations ?? [])]);

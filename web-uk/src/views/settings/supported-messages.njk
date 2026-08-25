@@ -36,16 +36,23 @@
           {% for conversation in conversations %}
             {% set partner = conversation.other_user or {} %}
             {% set partnerId = conversation.partner_id or partner.id %}
+            {# 🔴 `other_user.name` is NULL on this endpoint - it sends `first_name`
+               and `last_name` - so reading `.name` alone labelled every single
+               conversation "Unknown member". #}
+            {% set partnerName = partner.name or ((partner.first_name or "") + " " + (partner.last_name or "")) | trim %}
+            {% set partnerName = partnerName or t("govuk_alpha_settings.common.unknown_member") %}
             <li class="govuk-!-margin-bottom-4">
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                {{ partner.name or t("govuk_alpha_settings.common.unknown_member") }}
+                {{ partnerName }}
               </h2>
               {% if conversation.last_message and conversation.last_message.body %}
                 <p class="govuk-body govuk-!-margin-bottom-1">{{ conversation.last_message.body }}</p>
               {% endif %}
               {% if partnerId %}
+                {# `open_thread` is 'Conversation with :name'. Called without the
+                   replacement it rendered the literal ':name' to the member. #}
                 <a class="govuk-link" href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId + '/' + partnerId) }}">
-                  {{ t("govuk_alpha_settings.linked_messages.open_thread") }}
+                  {{ t("govuk_alpha_settings.linked_messages.open_thread", { name: partnerName }) }}
                 </a>
               {% endif %}
             </li>
@@ -53,9 +60,11 @@
         </ul>
 
         {% if nextCursor %}
+          {# Was `open_thread` - 'Conversation with :name' - used as a pagination
+             label, so the button read "Conversation with :name". #}
           <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
              href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId) }}?cursor={{ nextCursor | urlencode }}">
-            {{ t("govuk_alpha_settings.linked_messages.open_thread") }}
+            {{ t("actions.load_more") }}
           </a>
         {% endif %}
       {% endif %}

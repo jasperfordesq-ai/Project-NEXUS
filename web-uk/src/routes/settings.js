@@ -22,11 +22,24 @@ const router = express.Router();
 
 const SETTINGS_THEMES = ['light', 'dark', 'system'];
 const SETTINGS_LINK_TYPES = ['family', 'guardian', 'carer', 'organization'];
+// 🔴 `can_view_messages` is NOT here, and must never be added back.
+//
+// It is enforced as NOTHING, at any tier — SubAccountService hard-falses it in
+// hasPermission() and SupportTiers::resolve() overwrites it to false on every
+// read. Its own docblock calls it "the fossil of a switch that saved-and-did-
+// nothing for years", kept only so historical rows parse, and warns that mapping
+// it to the real capability would retroactively grant access to every family
+// that ever ticked it.
+//
+// Offering it here put a tick box labelled "View their messages" on a carer's
+// card, under a "Save permissions" button, with the supported member never
+// asked. Real message access is CONSENT-GATED: the supporter asks, the supported
+// member agrees, every read is audited with a purpose, and either side can
+// withdraw. That flow is rendered from `relationship.messageAccess` below.
 const SETTINGS_LINK_PERMISSIONS = [
   'can_view_activity',
   'can_manage_listings',
-  'can_transact',
-  'can_view_messages'
+  'can_transact'
 ];
 // Where each linked-account permission's LABEL lives in the Laravel catalogs.
 //
@@ -70,6 +83,13 @@ const SETTINGS_STATUS_MESSAGES = {
   'link-exists': 'A link with this member already exists.',
   'link-max': 'You have reached the maximum number of linked accounts.',
   'link-failed': 'Sorry, we could not complete that request. Please try again.',
+  'message-access-requested': 'They have been asked. Viewing only starts if they say yes.',
+  'message-access-withdrawn': 'Stopped. They can no longer view your messages.',
+  // Every refusal from the read-only message viewer lands here. Its copy has
+  // existed and been translated all along; without an entry in this table the
+  // render resolves an empty statusMessage, so a member who was refused was
+  // simply bounced back to the page with nothing said.
+  'message-view-denied': "You cannot view this member's messages. The permission may have been withdrawn.",
   'link-vetting-required': 'Safeguarding check needed',
   'link-contact-restricted': 'This member has asked for a coordinator to arrange contact on their behalf. Your message has not been sent. Please contact your broker or community administrator so they can help arrange the next safe step.',
   'link-safeguarding-unavailable': 'We cannot confirm the community safeguarding policy right now. No message has been sent. Please try again shortly.',
@@ -261,6 +281,15 @@ function normalizeRelationship(row, t) {
     relationshipType: type,
     relationshipTypeLabel: t(`govuk_alpha_settings.linked.types.${type}`),
     status: trimmed(row && row.status) || 'pending',
+    // The supported member's USER id — what the read-only message viewer is
+    // keyed by. The relationship id is what the consent writes are keyed by;
+    // they are different numbers and mixing them up shows the wrong person.
+    userId: positiveInteger(row && (row.user_id || row.child_user_id || row.parent_user_id)) || 0,
+    // none | pending | active, derived server-side (SubAccountController) so
+    // both sides of the card agree with the consent machinery rather than
+    // re-deriving it here from raw tiers.
+    messageAccess: allowedValue(row && row.message_access, ['none', 'pending', 'active'], 'none'),
+    messageAccessSince: formatLongDate(row && row.message_access_granted_at),
     permissions: SETTINGS_LINK_PERMISSIONS.reduce((acc, key) => {
       acc[key] = Boolean(permissions[key]);
       return acc;
@@ -282,10 +311,20 @@ function humanizeStatus(value) {
     .join(' ');
 }
 
-function formatInsuranceDate(value) {
+// Long-form date ('17 August 2026') in the reader's locale. Named for what it
+// does rather than for insurance, which merely needed it first.
+function formatLongDate(value) {
   const text = trimmed(value);
   if (text === '') return '';
-  const date = new Date(text.includes('T') ? text : `${text}T00:00:00Z`);
+  // 🔴 Three shapes reach this: a bare date ('2026-08-25'), an ISO instant
+  // ('2026-08-25T20:47:36.000000Z') and MySQL's space-separated datetime
+  // ('2026-08-25 20:47:36'). Only the first two were handled, so the third
+  // became '2026-08-25 20:47:36T00:00:00Z', an invalid Date, and the raw
+  // database value was printed to the member.
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+    ? `${text}T00:00:00Z`
+    : text.replace(' ', 'T');
+  const date = new Date(/[zZ]$|[+-]\d{2}:?\d{2}$/.test(normalized) ? normalized : `${normalized}Z`);
   if (Number.isNaN(date.getTime())) return text;
   return new Intl.DateTimeFormat(getRequestIntlLocale(), {
     day: 'numeric',
@@ -315,7 +354,7 @@ function normalizeInsuranceCertificate(row, t) {
     insuranceType: type,
     insuranceTypeLabel: t(`govuk_alpha_settings.insurance.types.${type}`),
     providerName: trimmed(row && row.provider_name),
-    expiryLabel: formatInsuranceDate(row && row.expiry_date),
+    expiryLabel: formatLongDate(row && row.expiry_date),
     status,
     statusLabel: Object.prototype.hasOwnProperty.call(SETTINGS_INSURANCE_STATUS_TAGS, status)
       ? t(`govuk_alpha_settings.insurance.statuses.${status}`)
@@ -476,7 +515,8 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
         ? res.locals.t(SETTINGS_SAFEGUARDING_STATUS_KEYS[status])
         : res.locals.t(`govuk_alpha_settings.states.${status}`))
       : '',
-    successStatus: ['link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved'].includes(status),
+    successStatus: ['link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved',
+      'message-access-requested', 'message-access-withdrawn'].includes(status),
     // layouts/base.njk cannot see a validation failure signalled only by a status string,
     // so the "Error:" page-title prefix is passed from the route. `link-user-not-found` is
     // named explicitly because it is genuine input validation — the member typed an email
@@ -492,7 +532,11 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
       'link-failed',
       'link-vetting-required',
       'link-contact-restricted',
-      'link-safeguarding-unavailable'
+      'link-safeguarding-unavailable',
+      // Every refusal from the read-only message viewer redirects here. Without
+      // it in this list the banner block renders neither arm, so the member was
+      // bounced back to an unchanged page with no explanation.
+      'message-view-denied'
     ].includes(status),
     children,
     parents,

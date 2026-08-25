@@ -67,9 +67,21 @@ describe('SupportedMessagesPage', () => {
     expect(String(url)).toBe('/v2/users/me/sub-accounts/42/messages');
     expect(String(url)).not.toContain('purpose');
 
-    // The default reason still travels into the audit purpose.
+    // The default reason still travels into the audit purpose — RFC 8187
+    // encoded.
+    //
+    // 🔴 This assertion used to compare the RAW string, which passes against a
+    // mocked api.get and fails against the real one: header values are bytes,
+    // and `fetch()` throws "Cannot convert argument to a ByteString" for the
+    // curly apostrophe in this very sentence. The page therefore never made
+    // the request, the member was told the permission may have been withdrawn,
+    // and nothing was audited. Asserting the DECODED value keeps the intent
+    // (the reason reaches the audit trail) while pinning the encoding.
     const headers = (options as { headers?: Record<string, string> } | undefined)?.headers ?? {};
-    expect(headers['X-Message-View-Purpose']).toContain('Checking they’re okay');
+    const sent = headers['X-Message-View-Purpose'] ?? '';
+    expect(sent.startsWith("UTF-8''")).toBe(true);
+    expect(() => new Headers({ 'X-Message-View-Purpose': sent })).not.toThrow();
+    expect(decodeURIComponent(sent.slice(7))).toContain('Checking they’re okay');
 
     // A signal is required, not incidental: api.get keys its in-flight cache on
     // method + URL + tenant only, so without one two reads with different

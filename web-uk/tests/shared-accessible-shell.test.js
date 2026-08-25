@@ -4356,7 +4356,11 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('View their activity');
     expect(signed.text).toContain('Manage their listings');
     expect(signed.text).toContain('Send and receive time credits');
-    expect(signed.text).toContain('View their messages');
+    // 🔴 No longer a permission tick box. "View their messages" is now the LINK to
+    //    the consented read-only viewer, shown only once the supported member has
+    //    agreed — so it is deliberately absent from a card with no message access.
+    //    See linked-account-message-access.test.js.
+    expect(signed.text).not.toContain('perm_can_view_messages');
     expect(signed.text).toContain('Send link request');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
@@ -30137,14 +30141,16 @@ describe('shared accessible frontend shell', () => {
       perm_can_manage_listings: 'on'
     });
     expect(requestResponse.headers.location).toBe('/settings/linked-accounts?status=link-requested#children');
+    // 🔴 THREE permissions. `can_view_messages` is no longer sent: it is enforced
+    //    as nothing at any tier, and Laravel's create endpoint stopped accepting
+    //    it on 2026-08-07.
     expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'POST', '/sub-accounts', {
       email: 'child@example.org',
       relationship_type: 'guardian',
       permissions: {
         can_view_activity: true,
         can_manage_listings: true,
-        can_transact: false,
-        can_view_messages: false
+        can_transact: false
       }
     });
 
@@ -30154,6 +30160,13 @@ describe('shared accessible frontend shell', () => {
     expect(approveResponse.headers.location).toBe('/settings/linked-accounts?status=link-approved#parents');
     expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/sub-accounts/77/approve');
 
+    // 🔴 `perm_can_view_messages` is still POSTED here deliberately — a stale
+    //    bookmarked form or a crafted request can still send it — and the point
+    //    of the assertion is that it is now IGNORED. This test used to assert
+    //    `can_view_messages: true` reaching Laravel, i.e. it pinned the bug:
+    //    a tick box that told families a carer could read a supported member's
+    //    messages, when that boolean grants nothing at any tier and the member
+    //    was never asked. Message access is the consent flow instead.
     const permissionsResponse = await post('/settings/linked-accounts/permissions', {
       relationship_id: '77',
       perm_can_view_activity: 'on',
@@ -30165,8 +30178,7 @@ describe('shared accessible frontend shell', () => {
       permissions: {
         can_view_activity: true,
         can_manage_listings: false,
-        can_transact: true,
-        can_view_messages: true
+        can_transact: true
       }
     });
 

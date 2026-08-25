@@ -32,10 +32,14 @@
       <div class="govuk-warning-text">
         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
         <strong class="govuk-warning-text__text">
-          {# Blade reuses common.error_title here as the screen-reader prefix;
-             there is no separate `warning` key, and inventing one would leave it
-             untranslated in the other ten locales. #}
-          <span class="govuk-visually-hidden">{{ t("govuk_alpha_settings.common.error_title") }}</span>
+          {# 🔴 `states.warning`, not `common.error_title`. The comment that stood
+             here said there was no `warning` key and that inventing one would
+             leave it untranslated — but `states.warning` has existed all along,
+             is translated in all eleven locales, and is what every other
+             govuk-warning-text in this app uses. Announcing "There is a problem"
+             tells a screen-reader user their form has an error before they have
+             typed anything; this box is guidance, not a validation failure. #}
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
           {{ t("govuk_alpha_settings.linked_messages.purpose_warning") }}
         </strong>
       </div>

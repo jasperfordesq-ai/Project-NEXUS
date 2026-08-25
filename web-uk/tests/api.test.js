@@ -7962,7 +7962,13 @@ describe('API Request Functions', () => {
       // access logs, history and screenshots; a request header is not.
       expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/messages?limit=20');
       expect(url).not.toContain('purpose');
-      expect(options.headers['X-Message-View-Purpose']).toBe('Checking a safeguarding concern');
+      // 🔴 RFC 8187-encoded since 2026-08-25. This line asserted the RAW value,
+      //    which passes against a mocked fetch and fails against the real one:
+      //    header values are bytes, and a translated purpose is routinely above
+      //    U+00FF. See message-view-purpose-header.test.js.
+      const purposeHeader = options.headers['X-Message-View-Purpose'];
+      expect(() => new Headers({ 'X-Message-View-Purpose': purposeHeader })).not.toThrow();
+      expect(decodeURIComponent(purposeHeader.slice(7))).toBe('Checking a safeguarding concern');
     });
 
     it('passes a conversation cursor and limit through', async () => {
@@ -7982,7 +7988,7 @@ describe('API Request Functions', () => {
 
       const [url, options] = mockFetch.mock.calls[0];
       expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/messages/88');
-      expect(options.headers['X-Message-View-Purpose']).toBe('Purpose');
+      expect(decodeURIComponent(options.headers['X-Message-View-Purpose'].slice(7))).toBe('Purpose');
     });
 
     it('reads an older page of a supported thread', async () => {

@@ -250,7 +250,13 @@ describe('Laravel account and settings contract parity', () => {
       relationshipType: 'organization',
       relationshipTypeLabel: t('govuk_alpha_settings.linked.types.organization'),
       status: 'active',
-      permissions: expect.objectContaining({ can_view_activity: true, can_view_messages: false })
+      // 🔴 `can_view_messages` is deliberately NOT normalized any more. It is
+      //    enforced as nothing at any tier, so carrying it here put a tick box
+      //    on a carer's card for a power that could not be granted that way.
+      //    Message access is the consent flow — see
+      //    linked-account-message-access.test.js.
+      permissions: expect.objectContaining({ can_view_activity: true }),
+      messageAccess: 'none'
     }));
     expect(response.body.locals.parents[0]).toEqual(expect.objectContaining({
       relationshipId: 42,
@@ -267,11 +273,15 @@ describe('Laravel account and settings contract parity', () => {
     // asserted that raw key as the expected label — pinning the broken output.
     // Listing the keys explicitly keeps the test honest about where each one
     // actually comes from. See linkPermissionLabelKey in src/routes/settings.js.
+    // 🔴 THREE, not four. `can_view_messages` left this list on 2026-08-25: it is
+    // enforced as nothing at any tier, so offering it as a tick box told families
+    // a carer could read a supported member's messages when nobody had been
+    // asked and nothing had been granted. `linked_messages.view_link` is still
+    // used — as the link to the consented viewer, not as a permission label.
     expect(response.body.locals.permissions.map(({ label }) => label)).toEqual([
       'govuk_alpha_settings.linked.permissions.can_view_activity',
       'govuk_alpha_settings.linked.permissions.can_manage_listings',
-      'govuk_alpha_settings.linked.permissions.can_transact',
-      'govuk_alpha_settings.linked_messages.view_link'
+      'govuk_alpha_settings.linked.permissions.can_transact'
     ].map((key) => t(key)));
   });
 

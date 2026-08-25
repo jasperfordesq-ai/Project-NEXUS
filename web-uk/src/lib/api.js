@@ -2992,13 +2992,33 @@ async function withdrawMessageAccess(token, relationshipId) {
  * The service writes an immutable audit row containing the purpose BEFORE any
  * data is returned, so an absent or blank purpose yields no data at all.
  */
+/**
+ * RFC 8187-encode a header value that may contain non-ASCII text.
+ *
+ * 🔴 HTTP header values are BYTES. `fetch()` throws "Cannot convert argument to
+ * a ByteString" for any code point above 255, and the message-view purpose is
+ * translated copy - English alone has a curly apostrophe in "Checking they're
+ * okay", and the reason is joined to the supporter's detail with an em dash. The
+ * request therefore never left this process; the route's catch turned that into
+ * a generic refusal, and the member was told their permission "may have been
+ * withdrawn" while the viewer was simply unable to run.
+ *
+ * Laravel accepts both forms (SubAccountController::decodeHeaderValue), so this
+ * is safe to send unconditionally rather than only when non-ASCII is present -
+ * conditional encoding would mean the ASCII path was the only one ever
+ * exercised, which is how this survived in the first place.
+ */
+function encodeHeaderValue(value) {
+  return `UTF-8''${encodeURIComponent(String(value ?? ''))}`;
+}
+
 async function getSupportedConversations(token, childUserId, purpose, params = {}) {
   const query = new URLSearchParams();
   if (params.cursor) query.set('cursor', params.cursor);
   query.set('limit', String(params.limit || 20));
 
   return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/messages?${query.toString()}`, {
-    headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': purpose }
+    headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': encodeHeaderValue(purpose) }
   });
 }
 
@@ -3010,7 +3030,7 @@ async function getSupportedThread(token, childUserId, partnerUserId, purpose, pa
   const suffix = query.toString() === '' ? '' : `?${query.toString()}`;
   return request(
     `/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/messages/${encodeURIComponent(partnerUserId)}${suffix}`,
-    { headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': purpose } }
+    { headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': encodeHeaderValue(purpose) } }
   );
 }
 
@@ -3916,6 +3936,9 @@ async function updatePrivacyPreferences(token, data) {
 module.exports = {
   ApiError,
   ApiOfflineError,
+  // Exported for its own test: a header value that cannot be encoded
+  // cannot be sent, and a mocked transport will never show that.
+  encodeHeaderValue,
   // Cache
   invalidateUserCache,
   // Auth
