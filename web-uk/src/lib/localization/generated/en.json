@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "Confirm password",
                 "honeypot_website_label": "Website (leave blank)",
                 "consents_legend": "Agreements",
-                "terms_label": "I agree to the :terms and the :privacy.",
+                "terms_label": "I agree to the :terms and the :privacy, and I am 18 years of age or older.",
                 "terms_link_text": "terms of service",
                 "privacy_link_text": "privacy policy",
                 "data_protection_notice": "We use your details to operate the community and contact you about your account. See the privacy policy for the full picture.",
@@ -1485,7 +1485,7 @@
                     "breached": "This password appears in a known data breach. Please choose a different one.",
                     "strong": "Strong enough."
                 },
-                "register_terms_required": "You must accept the terms of service and privacy policy to register.",
+                "register_terms_required": "You must confirm you are 18 or older and accept the terms of service and privacy policy to register.",
                 "register_invite_required": "An invite code is required to register on this community. Ask a community administrator for one.",
                 "register_invite_invalid": "This invite code is invalid, has expired, or has already been used. Check the code and try again.",
                 "register_location_unverified": "Pick your town, city or area from the autocomplete suggestions as you type. Free-text locations are not accepted.",

@@ -1010,6 +1010,16 @@ jobs:
       - name: "BLOCKING: PHP lang/ untranslated value ratchet"
         run: node scripts/check-php-lang-untranslated.mjs
 
+      # Added 2026-08-25, and the same blind spot one level up: every sign-up key
+      # was present in every locale, so both parity gates were green while the
+      # three sign-up forms disagreed about who the platform is for. The web app
+      # said "and I am 18 years of age or older" in all eleven languages; the
+      # native app and the accessible frontend said nothing about age in any of
+      # theirs. The app is the one going to Google Play, where the target audience
+      # has to be declared and has to match what the app says.
+      - name: "BLOCKING: Sign-up age declaration on every front door"
+        run: node scripts/check-age-declaration.mjs
+
       # Added 2026-08-01. This script already existed but nothing ran it, so its
       # findings rotted: it had been reporting a corrupted Spanish feedback link
       # (a translator turned "mailto:" into "enviar correo a:") for an unknown
@@ -1940,6 +1950,22 @@ jobs:
       - name: "BLOCKING: Mobile drift — route parity and API contract"
         working-directory: mobile
         run: npm run drift:check
+
+      # Two value-level i18n gates. Both are shrink-only ratchets, and both exist
+      # because the key-set parity checks report a clean sheet on this codebase:
+      # every mobile key is present in every locale, so nothing could see that
+      # 5,671 values were still English, or that the app's sign-up said nothing
+      # about a minimum age while the web app's said 18 in all eleven languages.
+      #
+      # check:age-declaration is a ROOT script on purpose — it compares all three
+      # sign-up doors (web, native, accessible), so it also runs in the i18n job,
+      # which wakes on lang/** and the React locales. Here it covers the door that
+      # changes under mobile/**.
+      - name: "BLOCKING: Mobile translation ratchet and sign-up age declaration"
+        working-directory: mobile
+        run: |
+          npm run check:untranslated
+          node ../scripts/check-age-declaration.mjs
 
       # The bundle a release embeds, measured with the same Expo export a release
       # build uses, against the ceiling in mobile/startup-budget.json. It needs no

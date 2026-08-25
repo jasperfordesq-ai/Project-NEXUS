@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Toestemming van de voogd",
-            "description": "Toestemmingsstromen voor leden onder de 18 jaar die deelnemen aan evenementen en vrijwilligerswerk, met behulp van toestemmingslinks voor eenmalig gebruik, gecodeerde voogdgegevens en een toestemmingsgeschiedenis die alleen kan worden toegevoegd en nooit kan worden bewerkt."
+            "description": "Toestemming van de ouder of voogd voor een minderjarige vrijwilliger of deelnemer aan een evenement: eenmalige toestemmingslinks, versleutelde gegevens van de voogd en een toestemmingsgeschiedenis waaraan alleen kan worden toegevoegd, nooit gewijzigd.",
+            "note": "Project NEXUS is voor volwassenen — bij het aanmelden moet je bevestigen dat je 18 jaar of ouder bent. Dit is bedoeld voor gemeenschappen die begeleide activiteiten met jongeren organiseren, waarbij een coördinator het account aanmaakt. Het staat uit, tenzij een gemeenschap het aanzet."
           },
           "member_premium": {
             "title": "Donaties en ondersteuning",

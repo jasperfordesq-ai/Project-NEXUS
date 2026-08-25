@@ -10,6 +10,12 @@ did not exist. The source code remains authoritative.
 
 Everything here is tenant-scoped unless stated otherwise.
 
+🔴 **Read [PRODUCT-AUDIENCE.md](PRODUCT-AUDIENCE.md) first if the question is about age.**
+Project NEXUS is a platform for adults: all three sign-up forms require confirming you are
+18 or older, no date of birth is collected at sign-up, and the volunteering guardian-consent
+gate — the only place a minor check refuses an action — is off by default. The capabilities
+below are real and should not be described as offering under-18 membership.
+
 ---
 
 ## Why this page exists

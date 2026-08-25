@@ -37444,6 +37444,16 @@ export default interface Resources {
       "clear_search": "Clear search",
       "community_rank_score_tooltip": "CommunityRank score",
       "count_label": "Members shown",
+      "coverage_check_own": "Check whether you are listed",
+      "coverage_criteria": {
+        "avatar": "they have added a profile photo",
+        "bio": "they have written a short introduction",
+        "directory_opt_in": "they are happy to be found — anyone can turn this off in their privacy settings",
+        "profile_complete": "they have finished setting up their profile"
+      },
+      "coverage_intro": "Not everyone chooses to be listed. A member appears in this directory when:",
+      "coverage_outro": "Everyone else is still a full member of the community. They just are not shown here.",
+      "coverage_title": "You are seeing {{listed}} of the {{joined}} people who have joined",
       "distance_km": "{{distance}} km",
       "empty_tip_location": "Try nearby members",
       "empty_tip_profiles": "Browse complete profiles",
@@ -37479,6 +37489,7 @@ export default interface Resources {
       "results_count_one": "{{count}} members shown",
       "results_count_other": "{{count}} members shown",
       "results_matching": "{{shown}} of {{total}} members matching \"{{query}}\"",
+      "results_showing_of": "Showing {{shown}} of {{total}} members",
       "search_filter": "Search: {{query}}",
       "search_placeholder": "Search members...",
       "showcased_badges": "Showcased badges",
@@ -39355,6 +39366,8 @@ export default interface Resources {
       "save_error": "Could not save. Please try again.",
       "save_lesson": "Save lesson",
       "section_name": "Section title",
+      "transcript": "Transcript",
+      "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this.",
       "unpublished_toast": "Course unpublished — back to draft.",
       "untitled_lesson": "Untitled lesson",
       "url_placeholder": "Example: https://example.com/file",
@@ -39491,7 +39504,8 @@ export default interface Resources {
       "mark_complete": "Mark as complete",
       "next_lesson": "Next lesson",
       "prev_lesson": "Previous lesson",
-      "take_quiz": "Take quiz"
+      "take_quiz": "Take quiz",
+      "transcript": "Transcript"
     },
     "quiz": {
       "failed": "Not passed yet",
@@ -53470,7 +53484,8 @@ export default interface Resources {
               "title": "Group Exchanges"
             },
             "guardian_consent": {
-              "description": "Consent flows for members under 18 taking part in events and volunteering, using single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
+              "description": "Guardian approval for a minor volunteer or event attendee: single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
+              "note": "Project NEXUS is for adults — signing up requires confirming you are 18 or older. This is for communities that run supervised activity with young people, where a coordinator sets the account up. It is switched off unless a community turns it on.",
               "title": "Guardian Consent"
             },
             "hiring_bias_audit": {
@@ -57680,6 +57695,7 @@ export default interface Resources {
       "status_expired": "Expired",
       "status_pending": "Pending",
       "status_rejected": "Rejected",
+      "their_shift": "Their Shift",
       "to": "To:",
       "try_again": "Try Again",
       "your_shift": "Your Shift"

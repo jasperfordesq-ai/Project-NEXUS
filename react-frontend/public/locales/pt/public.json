@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Consentimento do Guardião",
-            "description": "Fluxos de consentimento para membros menores de 18 anos que participam de eventos e voluntariado, usando links de consentimento de uso único, detalhes criptografados do responsável e um histórico de consentimento que só pode ser adicionado, nunca editado."
+            "description": "Autorização do responsável para um jovem voluntário ou participante num evento: ligações de consentimento de uso único, dados do responsável cifrados e um histórico de consentimentos ao qual só é possível acrescentar, nunca editar.",
+            "note": "O Project NEXUS é para adultos — para se registar é necessário confirmar que tem 18 anos ou mais. Isto destina-se a comunidades que realizam atividades supervisionadas com jovens, em que é um coordenador que cria a conta. Está desativado, a menos que uma comunidade o ative."
           },
           "member_premium": {
             "title": "Doações e Apoio",

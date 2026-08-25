@@ -82,6 +82,9 @@ mobile:
   # say so.
   - 'react-frontend/src/routes/**'
   - 'routes/**'
+  # The mobile job runs this root script over all three sign-up doors, so a
+  # change to the script itself must re-run it here as well as in the i18n job.
+  - 'scripts/check-age-declaration.mjs'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
@@ -213,6 +216,14 @@ i18n:
   - 'scripts/check-php-lang-parity.mjs'
   - 'scripts/check-php-lang-untranslated.mjs'
   - 'scripts/php-lang-invariant-allowlist.json'
+  # The sign-up age declaration compares all three doors, so the two it reads
+  # from outside this filter's usual reach are listed explicitly. The native
+  # app's door is covered by `mobile/**` in the mobile filter, which runs the
+  # same script; without the accessible template below, a commit that deleted
+  # the label from that one form would wake only the Web UK jobs, and none of
+  # them knows what the other doors say.
+  - 'scripts/check-age-declaration.mjs'
+  - 'web-uk/src/views/register.njk'
   - 'scripts/php/dump-lang.php'
   - '.github/i18n-gap-baseline.json'
   - '.github/php-lang-untranslated-baseline.json'

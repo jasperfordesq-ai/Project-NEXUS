@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Guardian Consent",
-            "description": "Consent flows for members under 18 taking part in events and volunteering, using single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited."
+            "description": "Guardian approval for a minor volunteer or event attendee: single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
+            "note": "Project NEXUS is for adults — signing up requires confirming you are 18 or older. This is for communities that run supervised activity with young people, where a coordinator sets the account up. It is switched off unless a community turns it on."
           },
           "member_premium": {
             "title": "Donations & Support",

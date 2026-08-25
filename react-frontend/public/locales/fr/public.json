@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Consentement du tuteur",
-            "description": "Le consentement circule pour les membres de moins de 18 ans participant à des événements et faisant du bénévolat, à l'aide de liens de consentement à usage unique, de détails cryptés du tuteur et d'un historique de consentement qui ne peut être ajouté, jamais modifié."
+            "description": "Accord du tuteur pour un jeune bénévole ou participant à un événement : liens de consentement à usage unique, coordonnées du tuteur chiffrées et un historique de consentement que l'on peut seulement compléter, jamais modifier.",
+            "note": "Project NEXUS s'adresse aux adultes : l'inscription exige de confirmer que l'on a 18 ans ou plus. Cette fonction est destinée aux communautés qui encadrent des activités avec des jeunes, où un coordinateur crée le compte. Elle est désactivée tant qu'une communauté ne l'active pas."
           },
           "member_premium": {
             "title": "Dons et soutien",

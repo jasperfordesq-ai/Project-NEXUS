@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Toiliú Caomhnóra",
-            "description": "Próisis toilithe do bhaill faoi 18 atá páirteach in imeachtaí agus in obair dheonach, le naisc toilithe aonúsáide, sonraí caomhnóra criptithe agus stair toilithe nach féidir a leasú ná a scriosadh, ach cur léi."
+            "description": "Ceadú caomhnóra do dhuine óg atá ag obair go deonach nó ag freastal ar imeacht: naisc toilithe aon-úsáide, sonraí caomhnóra criptithe, agus stair toilithe nach féidir ach cur léi, riamh a chur in eagar.",
+            "note": "Ardán do dhaoine fásta is é Project NEXUS — ní mór dearbhú go bhfuil tú 18 nó níos sine chun clárú. Tá sé seo do phobail a reáchtálann gníomhaíochtaí faoi mhaoirseacht le daoine óga, áit a gcuireann comhordaitheoir an cuntas ar bun. Tá sé múchta mura gcuireann pobal ar siúl é."
           },
           "member_premium": {
             "title": "Síntiúis agus Tacaíocht",
@@ -626,7 +627,7 @@
       },
       "2": {
         "title": "Láithreach",
-      "description": "Idirbhearta tapa gan dua"
+        "description": "Idirbhearta tapa gan dua"
       }
     },
     "stats": {

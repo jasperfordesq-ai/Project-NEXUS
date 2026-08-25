@@ -3,6 +3,7 @@
   "scripts": {
     "check:admin-i18n": "node scripts/check-admin-i18n.mjs && node scripts/check-admin-ui-literals.mjs && node scripts/check-admin-api-literals.mjs && node scripts/check-admin-i18n-token-integrity.mjs",
     "check:a11y:gates": "node scripts/check-accessibility-readiness-gates.mjs",
+    "check:age-declaration": "node scripts/check-age-declaration.mjs",
     "check:i18n:baseline": "node scripts/check-i18n-gap-regression.mjs",
     "check:i18n:json-integrity": "node scripts/check-i18n-json-integrity.mjs",
     "check:i18n:drift": "node scripts/check-i18n-drift.mjs",
@@ -20,7 +21,7 @@
     "check:events:e2e-quality": "node scripts/check-events-e2e-quality.mjs",
     "check:admin:breadcrumbs": "node scripts/check-admin-breadcrumbs.mjs",
     "check:i18n:types": "npm --prefix react-frontend run i18n:types",
-    "check:i18n": "npm run check:i18n:json-integrity && npm run check:i18n:drift && npm run check:i18n:literals && npm run check:admin-i18n && npm run check:i18n:baseline && npm run check:i18n:stubs && npm run check:i18n:irish-safety && npm run check:i18n:irish-react && npm run check:i18n:coverage && npm run check:i18n:vars && npm run check:i18n:interpolation-parity && npm run check:i18n:php",
+    "check:i18n": "npm run check:i18n:json-integrity && npm run check:i18n:drift && npm run check:i18n:literals && npm run check:admin-i18n && npm run check:i18n:baseline && npm run check:i18n:stubs && npm run check:i18n:irish-safety && npm run check:i18n:irish-react && npm run check:i18n:coverage && npm run check:i18n:vars && npm run check:i18n:interpolation-parity && npm run check:i18n:php && npm run check:age-declaration",
     "check:docs": "node scripts/check-docs-hygiene.mjs",
     "check:status-colors": "node scripts/check-status-color-tokens.mjs",
     "check:version": "node scripts/check-version-consistency.mjs",

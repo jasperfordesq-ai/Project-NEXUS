@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Consentimiento del tutor",
-            "description": "El consentimiento fluye para miembros menores de 18 años que participan en eventos y son voluntarios, utilizando enlaces de consentimiento de un solo uso, detalles de tutor cifrados y un historial de consentimiento que solo se puede agregar, nunca editar."
+            "description": "Autorización del tutor para una persona menor de edad que hace voluntariado o asiste a un evento: enlaces de consentimiento de un solo uso, datos del tutor cifrados y un historial de consentimientos al que solo se puede añadir, nunca editar.",
+            "note": "Project NEXUS es para adultos: para registrarse hay que confirmar que se tienen 18 años o más. Esto es para comunidades que organizan actividades supervisadas con jóvenes, donde una persona coordinadora crea la cuenta. Está desactivado a menos que una comunidad lo active."
           },
           "member_premium": {
             "title": "Donaciones y apoyo",

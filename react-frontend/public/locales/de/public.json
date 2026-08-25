@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Einwilligung des Erziehungsberechtigten",
-            "description": "Einwilligungsflüsse für Mitglieder unter 18 Jahren, die an Veranstaltungen teilnehmen und sich ehrenamtlich engagieren, unter Verwendung von Links zur einmaligen Einwilligung, verschlüsselten Angaben zum Erziehungsberechtigten und einem Einwilligungsverlauf, der nur ergänzt, aber nie bearbeitet werden kann."
+            "description": "Zustimmung der Erziehungsberechtigten für minderjährige Freiwillige oder Veranstaltungsteilnehmende: Einmal-Zustimmungslinks, verschlüsselte Angaben der Erziehungsberechtigten und ein Zustimmungsverlauf, der nur ergänzt, aber nie bearbeitet werden kann.",
+            "note": "Project NEXUS ist für Erwachsene — bei der Registrierung muss bestätigt werden, dass man 18 Jahre oder älter ist. Dies richtet sich an Gemeinschaften, die betreute Angebote mit jungen Menschen durchführen, bei denen eine Koordinatorin oder ein Koordinator das Konto anlegt. Es ist ausgeschaltet, sofern eine Gemeinschaft es nicht aktiviert."
           },
           "member_premium": {
             "title": "Spenden & Unterstützung",

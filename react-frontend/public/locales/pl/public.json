@@ -260,7 +260,8 @@
           },
           "guardian_consent": {
             "title": "Zgoda opiekuna",
-            "description": "Przepływ zgód dla członków poniżej 18 roku życia biorących udział w wydarzeniach i wolontariacie przy użyciu jednorazowych linków do wyrażania zgody, zaszyfrowanych danych opiekunów oraz historii zgód, którą można jedynie dodawać i nigdy nie edytować."
+            "description": "Zgoda opiekuna dla niepełnoletniego wolontariusza lub uczestnika wydarzenia: jednorazowe linki do wyrażenia zgody, zaszyfrowane dane opiekuna i historia zgód, do której można tylko dopisywać, nigdy jej nie edytować.",
+            "note": "Project NEXUS jest dla osób dorosłych — przy rejestracji trzeba potwierdzić, że ma się ukończone 18 lat. Ta funkcja jest przeznaczona dla społeczności prowadzących zajęcia z młodzieżą pod opieką, gdzie konto zakłada koordynator. Jest wyłączona, dopóki społeczność jej nie włączy."
           },
           "member_premium": {
             "title": "Darowizny i wsparcie",

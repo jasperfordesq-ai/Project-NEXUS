@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "Conferma la password",
                 "honeypot_website_label": "Sito web (lascia vuoto)",
                 "consents_legend": "Accordi",
-                "terms_label": "Accetto i :terms e i :privacy.",
+                "terms_label": "Accetto i :terms e i :privacy e ho almeno 18 anni.",
                 "terms_link_text": "termini di servizio",
                 "privacy_link_text": "politica sulla privacy",
                 "data_protection_notice": "Utilizziamo i tuoi dati per gestire la community e contattarti in merito al tuo account. Consulta l'informativa sulla privacy per il quadro completo.",
@@ -1485,7 +1485,7 @@
                     "breached": "Questa password appare in una violazione dei dati nota. Scegline uno diverso.",
                     "strong": "Abbastanza forte."
                 },
-                "register_terms_required": "Per registrarti devi accettare i termini di servizio e l'informativa sulla privacy.",
+                "register_terms_required": "Per registrarti devi confermare di avere almeno 18 anni e accettare i termini di servizio e l'informativa sulla privacy.",
                 "register_invite_required": "Per registrarsi su questa community è necessario un codice di invito. Chiedine uno a un amministratore della comunità.",
                 "register_invite_invalid": "Questo codice di invito non è valido, è scaduto o è già stato utilizzato. Controlla il codice e riprova.",
                 "register_location_unverified": "Scegli la tua città, città o area dai suggerimenti di completamento automatico durante la digitazione. Non sono accettate posizioni di testo libero.",

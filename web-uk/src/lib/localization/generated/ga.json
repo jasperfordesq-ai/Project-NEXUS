@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "Deimhnigh pasfhocal",
                 "honeypot_website_label": "Suíomh Gréasáin (fág bán)",
                 "consents_legend": "Comhaontuithe",
-                "terms_label": "Aontaím leis an :terms agus an :privacy.",
+                "terms_label": "Aontaím leis an :terms agus an :privacy, agus tá mé 18 mbliana d'aois nó níos sine.",
                 "terms_link_text": "téarmaí seirbhíse",
                 "privacy_link_text": "polasaí príobháideachta",
                 "data_protection_notice": "Bainimid úsáid as do shonraí chun an pobal a oibriú agus chun teagmháil a dhéanamh leat faoi do chuntas. Féach ar an bpolasaí príobháideachais don phictiúr iomlán.",
@@ -1485,7 +1485,7 @@
                     "breached": "Tá an pasfhocal seo le feiceáil i sárú sonraí aitheanta. Roghnaigh ceann eile, le do thoil.",
                     "strong": "Sách láidir."
                 },
-                "register_terms_required": "Ní mór duit glacadh leis na téarmaí seirbhíse agus polasaí príobháideachta chun clárú.",
+                "register_terms_required": "Ní mór duit a dheimhniú go bhfuil tú 18 mbliana d'aois nó níos sine agus glacadh leis na téarmaí seirbhíse agus polasaí príobháideachta chun clárú.",
                 "register_invite_required": "Teastaíonn cód cuirí chun clárú ar an bpobal seo. Iarr ceann ar riarthóir pobail.",
                 "register_invite_invalid": "Tá cód an chuiridh seo neamhbhailí, tá sé imithe in éag, nó úsáideadh é cheana. Seiceáil an cód agus bain triail eile as.",
                 "register_location_unverified": "Roghnaigh do bhaile, do chathair nó do cheantar ó na moltaí uathchríochnaithe agus tú ag clóscríobh. Ní ghlactar le suíomhanna saor-théacs.",

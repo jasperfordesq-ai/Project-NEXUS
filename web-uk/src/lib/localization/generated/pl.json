@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "Potwierdź hasło",
                 "honeypot_website_label": "Strona internetowa (pozostaw puste)",
                 "consents_legend": "Umowy",
-                "terms_label": "Wyrażam zgodę na :terms i :privacy.",
+                "terms_label": "Wyrażam zgodę na :terms i :privacy oraz mam ukończone 18 lat.",
                 "terms_link_text": "warunki świadczenia usług",
                 "privacy_link_text": "polityka prywatności",
                 "data_protection_notice": "Używamy Twoich danych do obsługi społeczności i kontaktowania się z Tobą w sprawie Twojego konta. Zobacz politykę prywatności, aby uzyskać pełny obraz.",
@@ -1485,7 +1485,7 @@
                     "breached": "To hasło pojawia się w przypadku znanego naruszenia bezpieczeństwa danych. Proszę wybrać inny.",
                     "strong": "Wystarczająco silny."
                 },
-                "register_terms_required": "Aby się zarejestrować, musisz zaakceptować Regulamin usługi i Politykę prywatności.",
+                "register_terms_required": "Aby się zarejestrować, musisz potwierdzić, że masz ukończone 18 lat, oraz zaakceptować Regulamin usługi i Politykę prywatności.",
                 "register_invite_required": "Aby zarejestrować się w tej społeczności, wymagany jest kod zaproszenia. Poproś o nią administratora społeczności.",
                 "register_invite_invalid": "Ten kod zaproszenia jest nieprawidłowy, wygasł lub został już wykorzystany. Sprawdź kod i spróbuj ponownie.",
                 "register_location_unverified": "Wybierz swoje miasto lub obszar z sugestii autouzupełniania podczas pisania. Lokalizacje w formacie dowolnego tekstu nie są akceptowane.",

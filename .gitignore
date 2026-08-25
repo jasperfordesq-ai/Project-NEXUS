@@ -98,6 +98,7 @@ CLAUDE.md
 !/scripts/audit-performance-routes.mjs
 !/scripts/check-govuk-alpha-translations.mjs
 !/scripts/check-notification-locale.mjs
+!/scripts/check-age-declaration.mjs
 !/scripts/safe_migrate.php
 !/scripts/backfill_embeddings.php
 !/scripts/watchdog-queue.sh

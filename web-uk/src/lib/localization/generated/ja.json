@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "パスワードの確認",
                 "honeypot_website_label": "ウェブサイト (空白のまま)",
                 "consents_legend": "協定",
-                "terms_label": ":terms と :privacy に同意します。",
+                "terms_label": ":terms と :privacy に同意します。私は18歳以上です。",
                 "terms_link_text": "利用規約",
                 "privacy_link_text": "プライバシーポリシー",
                 "data_protection_notice": "当社はコミュニティを運営し、アカウントについて連絡するためにあなたの詳細を使用します。全体像については、プライバシー ポリシーをご覧ください。",
@@ -1485,7 +1485,7 @@
                     "breached": "このパスワードは既知のデータ侵害で使用されます。別のものを選択してください。",
                     "strong": "十分強い。"
                 },
-                "register_terms_required": "登録するには、サービス利用規約とプライバシー ポリシーに同意する必要があります。",
+                "register_terms_required": "登録するには、18歳以上であることを確認し、サービス利用規約とプライバシー ポリシーに同意する必要があります。",
                 "register_invite_required": "このコミュニティに登録するには招待コードが必要です。コミュニティ管理者に問い合わせてください。",
                 "register_invite_invalid": "この招待コードは無効であるか、有効期限が切れているか、すでに使用されています。コードを確認して再試行してください。",
                 "register_location_unverified": "入力時にオートコンプリート候補からあなたの町、都市、または地域を選択します。自由記述の場所は受け入れられません。",

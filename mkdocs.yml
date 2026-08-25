@@ -85,6 +85,7 @@ nav:
       - Internationalisation: I18N.md
       - Database & migrations: DATABASE.md
       - Roles & permissions: ROLES-AND-PERMISSIONS.md
+      - Who the platform is for: PRODUCT-AUDIENCE.md
       - Safeguarding & consent: SAFEGUARDING-AND-CONSENT.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md

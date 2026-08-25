@@ -1460,7 +1460,7 @@
                 "password_confirmation_label": "Bevestig wachtwoord",
                 "honeypot_website_label": "Website (leeg laten)",
                 "consents_legend": "Overeenkomsten",
-                "terms_label": "Ik ga akkoord met de :terms en de :privacy.",
+                "terms_label": "Ik ga akkoord met de :terms en de :privacy, en ik ben 18 jaar of ouder.",
                 "terms_link_text": "servicevoorwaarden",
                 "privacy_link_text": "privacybeleid",
                 "data_protection_notice": "We gebruiken uw gegevens om de community te runnen en om contact met u op te nemen over uw account. Zie het privacybeleid voor het volledige beeld.",
@@ -1485,7 +1485,7 @@
                     "breached": "Dit wachtwoord komt voor bij een bekend datalek. Kies een andere.",
                     "strong": "Sterk genoeg."
                 },
-                "register_terms_required": "Om u te kunnen registreren, moet u de servicevoorwaarden en het privacybeleid accepteren.",
+                "register_terms_required": "Om u te kunnen registreren, moet u bevestigen dat u 18 jaar of ouder bent en de servicevoorwaarden en het privacybeleid accepteren.",
                 "register_invite_required": "Om u bij deze community te registreren, is een uitnodigingscode vereist. Vraag er een aan een communitybeheerder.",
                 "register_invite_invalid": "Deze uitnodigingscode is ongeldig, verlopen of al gebruikt. Controleer de code en probeer het opnieuw.",
                 "register_location_unverified": "Kies uw stad, stad of gebied uit de suggesties voor automatisch aanvullen terwijl u typt. Locaties met vrije tekst worden niet geaccepteerd.",
