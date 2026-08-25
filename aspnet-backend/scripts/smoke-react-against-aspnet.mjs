@@ -2637,7 +2637,10 @@ async function runArm(arm) {
       const waitMs = Math.max(0, (before.claims.exp * 1000) - Date.now() + 1200);
       await measuredPage.waitForTimeout(waitMs);
       await measuredPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-      await measuredPage.waitForTimeout(3500);
+      await measuredPage.waitForFunction(({ access, refresh }) => (
+        localStorage.getItem('nexus_access_token') !== access
+          && localStorage.getItem('nexus_refresh_token') !== refresh
+      ), originalCredentials, { timeout: 30000 });
       measuredPage.off('response', onResponse);
       const afterFirst = await credentialEvidence(measuredPage);
       const refreshCalls = observed.filter((entry) => entry.path === '/api/auth/refresh-token');
