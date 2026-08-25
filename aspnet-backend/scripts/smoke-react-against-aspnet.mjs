@@ -2659,15 +2659,6 @@ async function runArm(arm) {
         throw new Error('rotated access token changed the user or tenant claim');
       }
 
-      const currentRefresh = await measuredPage.evaluate(() => localStorage.getItem('nexus_refresh_token'));
-      const foreign = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
-        headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
-        data: { refresh_token: currentRefresh },
-      });
-      if (foreign.status() < 400 || foreign.status() >= 500) {
-        throw new Error(`foreign tenant consumed a refresh credential (${foreign.status()})`);
-      }
-
       const waitAgain = Math.max(0, ((afterFirst.claims?.exp || 0) * 1000) - Date.now() + 1200);
       await measuredPage.waitForTimeout(waitAgain);
       await measuredPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -2678,6 +2669,14 @@ async function runArm(arm) {
       const afterSecond = await credentialEvidence(measuredPage);
       if (afterSecond.refreshFingerprint === afterFirst.refreshFingerprint || measuredPage.url().includes('/login')) {
         throw new Error('winning successor did not remain usable for the next real expiry');
+      }
+
+      const foreign = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
+        headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
+        data: { refresh_token: afterSecond.refresh },
+      });
+      if (foreign.status() < 400 || foreign.status() >= 500) {
+        throw new Error(`foreign tenant accepted a refresh credential (${foreign.status()})`);
       }
 
       await measuredPage.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 60000 });
