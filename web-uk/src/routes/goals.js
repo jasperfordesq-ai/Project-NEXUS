@@ -247,18 +247,41 @@ function consumeGoalForm(req) {
   };
 }
 
+/**
+ * @returns {{payload: object|null, dateError: string}} `payload` is null when the
+ *   goal itself is unusable; `dateError` is set when only the deadline is.
+ *
+ * 🔴 The deadline used to be read as `deadlineFrom(body).value` and nothing
+ * else. composeDate() returns `{ value: null, error: 'date_invalid' }` for a
+ * date that is not real — 31 February, 31 April — and its own comment says that
+ * is exactly what it is for. Taking `.value` alone threw that away, so a member
+ * who typed 31/2/2027 got "Your goal has been created" and a goal with NO
+ * deadline at all, and was never told the date had been dropped.
+ *
+ * Every other module that reads a date already surfaces this the same way
+ * (groups, jobs, marketplace, polls), through the shared
+ * `web_uk.date_input.date_invalid` — "Enter a real date".
+ */
 function goalFormPayload(body) {
   const targetValue = positiveNumber(body.target_value);
   if (trimmed(body.title) === '' || targetValue === null) {
-    return null;
+    return { payload: null, dateError: '' };
+  }
+
+  const deadline = deadlineFrom(body);
+  if (deadline.error) {
+    return { payload: null, dateError: deadline.error };
   }
 
   return {
-    title: trimmed(body.title, 255),
-    description: optionalText(body.description, 5000),
-    target_value: targetValue,
-    deadline: deadlineFrom(body).value,
-    is_public: checked(body.is_public)
+    payload: {
+      title: trimmed(body.title, 255),
+      description: optionalText(body.description, 5000),
+      target_value: targetValue,
+      deadline: deadline.value,
+      is_public: checked(body.is_public)
+    },
+    dateError: ''
   };
 }
 
@@ -493,7 +516,7 @@ function goalDetailStatus(status) {
       errorHref: ''
     };
   }
-  if (['goal-failed', 'goal-invalid', 'buddy-failed'].includes(value)) {
+  if (['goal-failed', 'goal-invalid', 'goal-deadline-invalid', 'buddy-failed'].includes(value)) {
     return {
       successStateKey: '',
       errorStateKey: `goals.states.${value}`,
@@ -622,7 +645,9 @@ function statusMessage(status, t) {
 function errorMessage(status, t) {
   const messages = {
     'goal-failed': t('goals.states.goal-failed'),
-    'goal-invalid': t('goals.states.goal-invalid')
+    'goal-invalid': t('goals.states.goal-invalid'),
+    // The shared date string every other module already uses for this.
+    'goal-deadline-invalid': t('web_uk.date_input.date_invalid')
   };
   return messages[trimmed(status)] || '';
 }
@@ -700,7 +725,8 @@ function socialStatus(status, t) {
 function editErrorMessage(status, t) {
   const messages = {
     'goal-failed': t('goals.states.goal-failed'),
-    'goal-invalid': t('goals.states.goal-invalid')
+    'goal-invalid': t('goals.states.goal-invalid'),
+    'goal-deadline-invalid': t('web_uk.date_input.date_invalid')
   };
   return messages[trimmed(status)] || '';
 }
@@ -726,10 +752,12 @@ router.post('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  const payload = goalFormPayload(req.body);
+  const { payload, dateError } = goalFormPayload(req.body);
   if (payload === null) {
     storeGoalForm(req);
-    return redirectTo(res, goalsRedirect('goal-invalid'));
+    // A deadline that is not a real date gets its own message, so the member is
+    // told which field to fix rather than being sent back to look at the title.
+    return redirectTo(res, goalsRedirect(dateError ? 'goal-deadline-invalid' : 'goal-invalid'));
   }
 
   let status = 'goal-created';
@@ -751,9 +779,14 @@ router.post('/templates/:templateId(\\d+)', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const templateId = Number(req.params.templateId);
+  // Same rule as the main create form: an unreal date is refused, never dropped.
+  const deadline = deadlineFrom(req.body);
+  if (deadline.error) {
+    return redirectTo(res, goalsSubpageStatusRedirect('templates', 'goal-deadline-invalid'));
+  }
   const payload = {
     title: optionalText(req.body.title, 255),
-    deadline: deadlineFrom(req.body).value,
+    deadline: deadline.value,
     is_public: checked(req.body.is_public)
   };
 
@@ -809,7 +842,9 @@ router.get('/templates', asyncRoute(async (req, res) => {
     category,
     meta,
     nextHref: meta.hasMore && meta.cursor ? `/goals/templates?${nextParams.toString()}` : '',
-    errorMessage: status === 'goal-failed' ? res.locals.t('goals.states.goal-failed') : ''
+    // Uses the shared errorMessage map so a refused deadline says "Enter a real
+    // date" here too, not nothing.
+    errorMessage: errorMessage(status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));
 
@@ -1101,9 +1136,9 @@ router.post('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = Number(req.params.id);
-  const payload = goalFormPayload(req.body);
+  const { payload, dateError } = goalFormPayload(req.body);
   if (payload === null) {
-    return redirectTo(res, goalSubpageRedirect(id, 'edit', 'goal-invalid'));
+    return redirectTo(res, goalSubpageRedirect(id, 'edit', dateError ? 'goal-deadline-invalid' : 'goal-invalid'));
   }
 
   payload.checkin_frequency = allowedValue(req.body.checkin_frequency, GOAL_CHECKIN_FREQUENCIES, 'none');
