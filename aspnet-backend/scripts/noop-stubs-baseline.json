@@ -1,14 +1,14 @@
 {
   "_comment": "Shrink-only, PER METRIC, enforced in both directions. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower a number in the SAME commit that fixes endpoints; never raise one without -AcceptWidenedDefinition.",
   "_unit": "routes. `total` is DISTINCT verb+path across all defect categories. Method counts are kept because the historical figure (316) was in methods.",
-  "generated_at": "2026-08-24",
-  "total": 550,
-  "total_methods": 317,
+  "generated_at": "2026-08-25",
+  "total": 548,
+  "total_methods": 315,
   "overlap_routes": 2,
   "categories": {
     "noop_method": {
-      "routes": 365,
-      "methods": 306
+      "routes": 363,
+      "methods": 304
     },
     "echo_store": {
       "routes": 177,
@@ -62,7 +62,7 @@
     },
     {
       "file": "MiscParityController.cs",
-      "count": 83
+      "count": 80
     },
     {
       "file": "ReactFrontendCompatibilityController.cs",
@@ -93,15 +93,15 @@
       "count": 11
     },
     {
-      "file": "V15SocialCompatibilityController.cs",
-      "count": 10
-    },
-    {
       "file": "CompatibilityAliasController.cs",
       "count": 10
     },
     {
       "file": "AuthParityController.cs",
+      "count": 10
+    },
+    {
+      "file": "V15SocialCompatibilityController.cs",
       "count": 10
     },
     {
@@ -113,11 +113,11 @@
       "count": 7
     },
     {
-      "file": "UsersParityController.cs",
+      "file": "MarketplaceController.cs",
       "count": 3
     },
     {
-      "file": "MarketplaceController.cs",
+      "file": "UsersParityController.cs",
       "count": 3
     },
     {
@@ -129,19 +129,7 @@
       "count": 3
     },
     {
-      "file": "EventRecurrenceController.cs",
-      "count": 2
-    },
-    {
-      "file": "HealthController.cs",
-      "count": 2
-    },
-    {
       "file": "LaravelReactUtilityCompatibilityController.cs",
-      "count": 2
-    },
-    {
-      "file": "AiController.cs",
       "count": 2
     },
     {
@@ -149,27 +137,19 @@
       "count": 2
     },
     {
-      "file": "JobsParityController.cs",
-      "count": 1
+      "file": "HealthController.cs",
+      "count": 2
     },
     {
-      "file": "CompatibilityController.cs",
-      "count": 1
-    },
-    {
-      "file": "AuthController.cs",
-      "count": 1
-    },
-    {
-      "file": "PerformanceMonitorController.cs",
-      "count": 1
+      "file": "AiController.cs",
+      "count": 2
     },
     {
       "file": "AdminToolsController.cs",
       "count": 1
     },
     {
-      "file": "RegistrationPolicyController.cs",
+      "file": "AdminAiProvidersController.cs",
       "count": 1
     },
     {
@@ -177,24 +157,32 @@
       "count": 1
     },
     {
-      "file": "AdminEmailDeliverabilityController.cs",
-      "count": 1
-    },
-    {
       "file": "AdminDiagnosticsController.cs",
       "count": 1
     },
     {
-      "file": "AdminAiProvidersController.cs",
+      "file": "AdminEmailDeliverabilityController.cs",
+      "count": 1
+    },
+    {
+      "file": "CompatibilityController.cs",
+      "count": 1
+    },
+    {
+      "file": "JobsParityController.cs",
+      "count": 1
+    },
+    {
+      "file": "PerformanceMonitorController.cs",
+      "count": 1
+    },
+    {
+      "file": "RegistrationPolicyController.cs",
+      "count": 1
+    },
+    {
+      "file": "AuthController.cs",
       "count": 1
     }
-  ],
-  "_raised": {
-    "on": "2026-08-23",
-    "reason": "Classify cryptographic CSRF generation and live realtime configuration projection as explicit defensible work while implementing four database-backed bootstrap methods.",
-    "changes": [
-      "defensible (routes): 4 -> 7",
-      "defensible (methods): 4 -> 6"
-    ]
-  }
+  ]
 }
