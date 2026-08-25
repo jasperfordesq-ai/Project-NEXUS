@@ -1,5 +1,7 @@
 # Play Store screenshots
 
+Last reviewed: 2026-08-25
+
 Captured 2026-08-25 at 1080×2400 — the real release build, running on an emulator against
 the **live Partner Demo community**, not mockups. Google accepts 320–3840 px on a side, so
 these sit comfortably inside the range and need no processing before upload.
