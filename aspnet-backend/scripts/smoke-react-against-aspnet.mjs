@@ -2608,6 +2608,14 @@ async function runArm(arm) {
   // The browser waits beyond the JWT exp claim, observes an ordinary protected 401,
   // and leaves the unchanged ApiClient to recover through its exact refresh-token path.
   await step('journey-real-token-expiry-refresh', async () => {
+    if (arm.key === 'laravel'
+      && requestedSteps.has('journey-password-reset-email')
+      && requestedSteps.has('journey-real-token-expiry-refresh')) {
+      // Recovery intentionally exercises invalidated and replayed credentials from
+      // several same-IP browser contexts. Let Laravel's normal 60-second refresh
+      // limiter close that prior journey's window before measuring continuity.
+      await page.waitForTimeout(61000);
+    }
     const otherContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const measuredContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const otherPage = await otherContext.newPage();
