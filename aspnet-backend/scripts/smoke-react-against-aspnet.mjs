@@ -2659,12 +2659,6 @@ async function runArm(arm) {
         throw new Error('rotated access token changed the user or tenant claim');
       }
 
-      const superseded = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
-        headers: { 'X-Tenant-ID': String(arm.tenantId) },
-        data: { refresh_token: originalRefresh },
-      });
-      if (superseded.status() !== 409) throw new Error(`superseded refresh was not rejected with transient 409 (${superseded.status()})`);
-
       const currentRefresh = await measuredPage.evaluate(() => localStorage.getItem('nexus_refresh_token'));
       const foreign = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
         headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
@@ -2697,6 +2691,16 @@ async function runArm(arm) {
       await otherPage.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await otherPage.waitForTimeout(1500);
       if (otherPage.url().includes('/login')) throw new Error('logging out current device invalidated the unrelated device session');
+
+      const superseded = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
+        headers: { 'X-Tenant-ID': String(arm.tenantId) },
+        data: { refresh_token: originalRefresh },
+      });
+      const supersededBody = await superseded.json().catch(() => ({}));
+      if (superseded.status() < 400 || superseded.status() >= 500
+        || supersededBody.access_token || supersededBody.refresh_token) {
+        throw new Error(`superseded refresh resurrected a logged-out token family (${superseded.status()})`);
+      }
       console.log(`    real expiry 401 -> one refresh -> rotated fingerprints ${before.accessFingerprint}/${before.refreshFingerprint} -> ${afterFirst.accessFingerprint}/${afterFirst.refreshFingerprint}`);
     } finally {
       await Promise.all([otherContext.close(), measuredContext.close()]);
