@@ -34,16 +34,26 @@ assert(eas.build?.production?.channel === 'production', 'production build must b
 // So: production uploads, and every other profile must NOT — they have no token and would
 // fail. If a production build ever fails at that step, the EAS secret SENTRY_AUTH_TOKEN is
 // missing; create it rather than re-adding the flag, or crash reports go back to gibberish.
-assert(
-  eas.build?.production?.env?.SENTRY_DISABLE_AUTO_UPLOAD === undefined,
-  'production must upload Sentry source maps — without them crash reports are minified and useless',
-);
+//
+// 🔴 `website` is on this list for a reason that is easy to miss: it is the APK on the
+// download page, so it reaches real people BEFORE anything on Play does. It resolves the
+// `preview` EAS environment, which now holds SENTRY_AUTH_TOKEN, so it can upload like
+// production. The genuinely internal profiles stay off — throwaway builds uploading source
+// maps is quota spent on nothing.
+const UPLOADS_SOURCE_MAPS = new Set(['production', 'website']);
 for (const [name, profile] of Object.entries(eas.build ?? {})) {
-  if (name === 'production') continue;
-  assert(
-    profile?.env?.SENTRY_DISABLE_AUTO_UPLOAD === 'true',
-    `build profile "${name}" must disable Sentry source-map upload — it has no credentials and the build fails without them`,
-  );
+  const disabled = profile?.env?.SENTRY_DISABLE_AUTO_UPLOAD === 'true';
+  if (UPLOADS_SOURCE_MAPS.has(name)) {
+    assert(
+      !disabled,
+      `build profile "${name}" reaches real people — it must upload Sentry source maps, or its crash reports arrive minified and useless`,
+    );
+  } else {
+    assert(
+      disabled,
+      `build profile "${name}" must disable Sentry source-map upload — it is an internal build and the upload is quota spent on nothing`,
+    );
+  }
 }
 assert(eas.build?.staging?.channel === 'staging', 'staging build must be pinned to staging OTA channel');
 assert(eas.build?.website?.channel === 'website', 'website build must be pinned to website OTA channel');

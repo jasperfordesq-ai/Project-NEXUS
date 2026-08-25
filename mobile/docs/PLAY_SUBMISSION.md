@@ -180,7 +180,7 @@ release.
 
 ---
 
-## Crash reporting — set up on 2026-08-25, with one step left
+## Crash reporting — set up and verified on 2026-08-25
 
 **Done, and verified rather than configured:**
 
@@ -204,26 +204,32 @@ release.
   token the same build FAILS at `createBundleReleaseJsAndAssets_SentryUpload`. Both halves of
   that are asserted by `npm run verify:release`, mutation-verified.
 
-**The one step left, and why it needs you.** This machine is not signed in to Expo
-(`eas whoami` → "Not logged in"), so cloud builds have no way to receive either value. After
-`npx eas-cli@latest login`:
+**The EAS side is now done too** (owner signed in 2026-08-25, variables set from this
+machine):
 
-```bash
-cd mobile
-# The DSN. Public by design — it ships inside the app — but kept out of a public repo.
-npx eas-cli@latest secret:create --scope project --name EXPO_PUBLIC_SENTRY_DSN   --value "$(grep '^SENTRY_DSN_MOBILE=' ../.secrets.local/sentry.env | cut -d= -f2-)"
+| Variable | Environments | Visibility |
+| --- | --- | --- |
+| `EXPO_PUBLIC_SENTRY_DSN` | production, preview | plaintext — it ships inside the app anyway |
+| `SENTRY_AUTH_TOKEN` | production, preview | secret — readable only by the builder, never in any UI |
 
-# The upload token. A REAL secret — it can write to the Sentry org.
-npx eas-cli@latest secret:create --scope project --name SENTRY_AUTH_TOKEN   --value "$(grep '^SENTRY_AUTH_TOKEN_RELEASES=' ../.secrets.local/sentry.env | cut -d= -f2-)"
-```
+Confirmed with `eas config --platform android --profile <name>`, which resolves a build
+without spending one: the `production` profile loads the DSN from the **production**
+environment, and `website`, `staging` and `preview` all resolve the **preview** environment
+and load it there.
 
-🔴 **If a production build ever fails at the Sentry upload step, the `SENTRY_AUTH_TOKEN`
-secret is missing.** Create it — do not re-add `SENTRY_DISABLE_AUTO_UPLOAD` to get past it.
-That flag is what made every crash report unreadable in the first place, and
-`verify:release` now refuses it.
+🔴 **`website` uploads source maps as well as production, and that is deliberate.** It is
+the APK on the download page, so it reaches real people *before* anything on Play does;
+minified crash reports from the first build members actually install would be the worst
+place to have them. `staging`, `preview`, `development` and `local-emulator` stay off —
+throwaway builds uploading source maps is quota spent on nothing. `verify:release` asserts
+both halves, mutation-verified in both directions.
 
-Until those two secrets exist, an EAS-built app reports nothing: `Sentry.init` runs with
-`enabled: false`. Partial cover in the meantime — the app posts JavaScript errors to
+While setting this up: `GOOGLE_SERVICES_JSON` is already present as a project secret, so the
+Firebase credentials behind push notifications are in place.
+
+Worth knowing for the period before any of this existed, and still true of any build made
+without the DSN: `Sentry.init` runs with `enabled: false` and reports nothing. There is
+partial cover regardless — the app posts JavaScript errors to
 `POST /api/app/log`, which the PHP project's `sentry` log channel picks up, so they surface
 in the nightly sweep under `php`. What is lost is anything that kills the app before
 JavaScript can report: native crashes and startup failures, which is precisely what a first
@@ -356,8 +362,7 @@ a wrong answer here is grounds for removal later.
 
 1. Owner: Play App Signing on, upload key created **and backed up** (Decision 1).
 2. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
-3. ~~Sentry project~~ — **done 2026-08-25**, and verified end to end. Owner: sign in to
-   Expo and create the two EAS secrets (two commands, above).
+3. ~~Sentry project and build credentials~~ — **done 2026-08-25**, verified end to end.
 4. Build a real signed bundle: `cd mobile && npm run build:android:play`
    (`eas build --platform android --profile production`, which already produces an AAB and
    increments the version code).
@@ -372,6 +377,6 @@ a wrong answer here is grounds for removal later.
 
 - A signed build, and therefore any evidence that a store build works.
 - A feature graphic, and screenshots that are not of test data.
-- Crash reporting on **cloud-built** apps, until the two EAS secrets exist. The project,
-  the DSN, the source-map upload and the nightly sweep are done and proven.
+- Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
+  the nightly sweep are all in place and verified.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.

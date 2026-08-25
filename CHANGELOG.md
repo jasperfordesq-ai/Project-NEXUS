@@ -72,8 +72,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reports arrive as gibberish, and every build profile had that switched off,
   including the one for the Play Store. Locally built releases carry crash
   reporting automatically now, and say so plainly when they cannot.
-  One step is left and it needs your login: two settings on the cloud build
-  service, both written out ready to paste.
+  Cloud builds are wired up too, now that you're signed in: the app built for the
+  Play Store and the one on the download page both report crashes, and both send
+  the file that makes those reports readable. The download-page build matters most
+  there — it reaches people before anything on the store does.
 
 - **A password-reset link from one community could be used while the browser was
   pointed at a different one.** The link itself was always tied to the community
