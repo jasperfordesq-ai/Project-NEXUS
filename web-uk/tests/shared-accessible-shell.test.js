@@ -16,6 +16,11 @@ const request = require('supertest');
 const { createChoiceTranslator, createTranslator } = require('../src/lib/localization');
 const { getApiBaseUrl } = require('../src/lib/backend-contract');
 const englishForbiddenTitle = createTranslator('en')('error_pages.403_title');
+// 🔴 A refusal because the COMMUNITY has not enabled a module reads differently
+//    from a refusal because the MEMBER lacks authority — since 2026-08-25, when
+//    the feature gate stopped telling members their account was at fault. See
+//    forbidden-page-reason.test.js.
+const englishFeatureDisabledTitle = createTranslator('en')('states.not_available');
 const englishNotFoundTitle = createTranslator('en')('error_pages.404_title');
 
 jest.mock('../src/lib/api', () => ({
@@ -1413,7 +1418,7 @@ describe('shared accessible frontend shell', () => {
         .set('Cookie', signedCookieHeader());
 
       expect(response.status).toBe(403);
-      expect(response.text).toContain(englishForbiddenTitle);
+      expect(response.text).toContain(englishFeatureDisabledTitle);
     }
   });
 
@@ -1508,7 +1513,7 @@ describe('shared accessible frontend shell', () => {
         expect(api.getVolunteeringOpportunities).not.toHaveBeenCalled();
         expect(api.callVolunteeringApi).not.toHaveBeenCalled();
       } else {
-        expect(response.text).toContain(englishForbiddenTitle);
+        expect(response.text).toContain(englishFeatureDisabledTitle);
       }
     }
 
@@ -1551,7 +1556,7 @@ describe('shared accessible frontend shell', () => {
         .set('Cookie', signedCookieHeader());
 
       expect(response.status).toBe(403);
-      expect(response.text).toContain(englishForbiddenTitle);
+      expect(response.text).toContain(englishFeatureDisabledTitle);
     }
 
     expect(api.callEventApi).not.toHaveBeenCalled();
@@ -2398,7 +2403,7 @@ describe('shared accessible frontend shell', () => {
     const response = await request(app).get('/acme/accessible/profile');
 
     expect(response.status).toBe(403);
-    expect(response.text).toContain(englishForbiddenTitle);
+    expect(response.text).toContain(englishFeatureDisabledTitle);
     expect(api.getProfile).not.toHaveBeenCalled();
   });
 
@@ -10140,9 +10145,9 @@ describe('shared accessible frontend shell', () => {
     expect(detail.status).toBe(302);
     expect(detail.headers.location).toBe('/login?status=auth-required');
     expect(mountedIndex.status).toBe(403);
-    expect(mountedIndex.text).toContain(englishForbiddenTitle);
+    expect(mountedIndex.text).toContain(englishFeatureDisabledTitle);
     expect(mountedDetail.status).toBe(403);
-    expect(mountedDetail.text).toContain(englishForbiddenTitle);
+    expect(mountedDetail.text).toContain(englishFeatureDisabledTitle);
     expect(api.callCouponApi).not.toHaveBeenCalled();
   });
 
@@ -30609,7 +30614,7 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', cookie);
 
     expect(getResponse.status).toBe(403);
-    expect(getResponse.text).toContain(englishForbiddenTitle);
+    expect(getResponse.text).toContain(englishFeatureDisabledTitle);
     expect(api.searchUsers).not.toHaveBeenCalled();
     expect(api.getUser).not.toHaveBeenCalled();
 
@@ -30625,7 +30630,7 @@ describe('shared accessible frontend shell', () => {
       });
 
     expect(postResponse.status).toBe(403);
-    expect(postResponse.text).toContain(englishForbiddenTitle);
+    expect(postResponse.text).toContain(englishFeatureDisabledTitle);
     expect(api.callConversationApi).not.toHaveBeenCalledWith(
       'test-token',
       'POST',
@@ -31518,7 +31523,7 @@ describe('shared accessible frontend shell', () => {
     const mountedResponse = await request(app).get('/acme/accessible/podcasts');
 
     expect(mountedResponse.status).toBe(403);
-    expect(mountedResponse.text).toContain(englishForbiddenTitle);
+    expect(mountedResponse.text).toContain(englishFeatureDisabledTitle);
     expect(api.callPodcastApi).not.toHaveBeenCalled();
   });
 

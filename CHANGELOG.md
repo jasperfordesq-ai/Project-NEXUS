@@ -79,6 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The accessible site blamed members for things their community had simply switched off.** Opening a page for a module the community does not use — courses, the marketplace, podcasts and others — said "You do not have permission to view this page" and "this page is not available to your account… contact your community organisers if you think this is wrong". Both are untrue: nothing is wrong with the member's account, and there is nothing for organisers to fix. It now says "Not available — this module is not enabled for this community", in the reader's own language. Genuine permission refusals, such as an ordinary member opening an organiser-only page, are unchanged.
+
 - **New members on the accessible site could not finish setting up their account, and were not told why.** On the last step of the six-step setup, pressing "Finish and go to my dashboard" said only "Something went wrong. Please try again." Trying again could never work. What was actually missing was a profile photo, which is required — the server said so clearly, and the page was looking for that answer in the wrong place. The member is now taken back to the photo step and told plainly that a photo is needed. This mattered more than it looks: a member whose setup is unfinished does not appear in the member directory at all, so they could not be found by anyone.
 
 - **The setup wizard's messages were in English for everyone.** All six of its error and confirmation messages had been translated into all eleven languages already; the page was showing hardcoded English instead. It now uses the translations — which matters most here, since this is the very first thing a new member does.

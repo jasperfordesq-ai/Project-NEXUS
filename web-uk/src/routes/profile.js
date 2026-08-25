@@ -1859,7 +1859,8 @@ function requireOwnProfileFeature(req, res, next) {
   if (tenant && typeof tenant === 'object' && !flagEnabled(tenant, 'connections', 'features', true)) {
     return res.status(403).render('errors/403', {
       title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
-      message: 'This feature is not enabled for this community.'
+      // See the note in tenant-feature-gates.js: a reason, not an English sentence.
+      reason: 'feature-disabled'
     });
   }
   return next();

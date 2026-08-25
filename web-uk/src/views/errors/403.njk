@@ -5,13 +5,35 @@
 
 {% extends "layouts/error.njk" %}
 
-{% block errorTitle %}{{ t("error_pages.403_title") }}{% endblock %}
+{#
+  🔴 Two different refusals, and they must not read the same.
+
+  `403_title` — "You do not have permission to view this page" — is right when a
+  member's ACCOUNT lacks the authority: a non-admin opening an admin-only page.
+
+  It is wrong, and misleading, when the member's community simply has not
+  switched a module on. Nothing is wrong with their account, and "contact your
+  community organisers if you think this is wrong" sends them to ask about a
+  non-problem. The gate that raises this case already knew the difference and
+  passed a message saying so — but it was hardcoded English, and this template
+  never rendered it, so every member read the account-permission wording.
+
+  Both strings below already exist and are translated in all eleven languages.
+#}
+{% set isFeatureDisabled = reason == "feature-disabled" %}
+
+{% block errorTitle %}{% if isFeatureDisabled %}{{ t("states.not_available") }}{% else %}{{ t("error_pages.403_title") }}{% endif %}{% endblock %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-xl">{{ t("error_pages.403_title") }}</h1>
-      <p class="govuk-body">{{ t("error_pages.403_body") }}</p>
+      {% if isFeatureDisabled %}
+        <h1 class="govuk-heading-xl">{{ t("states.not_available") }}</h1>
+        <p class="govuk-body">{{ t("home.module_unavailable_hint") }}</p>
+      {% else %}
+        <h1 class="govuk-heading-xl">{{ t("error_pages.403_title") }}</h1>
+        <p class="govuk-body">{{ t("error_pages.403_body") }}</p>
+      {% endif %}
       <p class="govuk-body">
         <a href="{{ urlFor('/') }}" class="govuk-link">{{ t("error_pages.home_link") }}</a>
       </p>
