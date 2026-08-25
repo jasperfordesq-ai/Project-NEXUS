@@ -71,6 +71,9 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "plugins": [
@@ -123,7 +126,14 @@
           }
         }
       ],
-      "@sentry/react-native/expo",
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "hour-timebank-clg",
+          "project": "nexus-mobile",
+          "url": "https://de.sentry.io/"
+        }
+      ],
       "./plugins/with-android-network-security",
       [
         "expo-build-properties",

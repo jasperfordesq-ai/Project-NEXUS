@@ -188,6 +188,7 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 | [HISTORY/PRODUCTION_READINESS_2026-08-21.md](docs/HISTORY/PRODUCTION_READINESS_2026-08-21.md) | HISTORICAL. The superseded readiness document, kept for its measurements. Not current state. |
 | [TESTING.md](docs/TESTING.md) | How to verify a change, what each check proves, and what cannot be tested here. |
 | [DISTRIBUTION.md](docs/DISTRIBUTION.md) | Package identity, release channels, stores, and distribution policy. |
+| [PLAY_SUBMISSION.md](docs/PLAY_SUBMISSION.md) | 🔴 Read before any Play work. Everything prepared for submission, the owner-only decisions (upload key, service account, Sentry project), drafted listing copy, Data Safety and content-rating answers — and the in-app payment policy risk. |
 | [SECURITY.md](docs/SECURITY.md) | Token handling, Android certificate pins, OTA policy, and native hardening. |
 | [NATIVE_UI_CONTRACT.md](docs/NATIVE_UI_CONTRACT.md) | Supported native UI contract and parity boundaries. |
 | [WRAPPER_POLICY.md](docs/WRAPPER_POLICY.md) | HeroUI Native wrapper-versus-primitive rules and locale guidance. |

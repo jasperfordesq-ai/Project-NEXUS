@@ -29,6 +29,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Everything that could be prepared for the Google Play Store, ahead of your
+  account being verified.** A new page,
+  [mobile/docs/PLAY_SUBMISSION.md](mobile/docs/PLAY_SUBMISSION.md), holds the
+  drafted store description, the Data Safety answers worked out from the code
+  rather than guessed, the content-rating answers, the exact commands for each
+  step, and the two decisions only you can make — the app's signing key, and the
+  Google service account. It also names the order to do things in once clearance
+  arrives.
+- **The store artwork Play insists on.** The app's own icon is 1024 pixels
+  square, which Play rejects — it wants exactly 512 — and the banner across the
+  top of a listing did not exist at all. Both now do, and both are generated from
+  source (`npm run store:assets` in `mobile/`), so anyone can change them rather
+  than being stuck with an image nobody can edit. The banner is a developer's
+  draft: it says the right things in the right colour, and a designer would still
+  do better.
+
 - **You can now delete your account from inside the phone app.** The website's
   settings page has had this since before the app existed; the app had nothing —
   no button, no screen, no request. It is also a firm Google Play rule that an app
@@ -44,6 +60,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   threw away any information attached to them. Nothing had needed it before, so
   nothing had noticed. Without the fix, the password could only have been sent in
   the web address itself, where it would be written into server logs.
+
+### Fixed
+
+- **The app was asking Android for permission to draw over other apps.** Nothing
+  in it draws over anything — the permission comes from the development tooling
+  and should never have been in a release build. Google Play lists every
+  permission an app asks for, and that one invites questions. It is now blocked,
+  and the proof is in the built file rather than in the setting: the app was
+  rebuilt and the permission is gone from the manifest that actually ships.
+- **A release build could not be produced at all without silently switching off
+  crash-report uploading.** Building one the ordinary way fails outright, because
+  the crash-reporting tool has no project configured to upload to. That is why
+  every build profile switches it off — including the one for the Play Store,
+  which means a released app would have sent crash reports nobody could read.
+  What's needed to fix it properly is written down: one Sentry project and two
+  settings, all on your side.
 
 ### Changed
 
