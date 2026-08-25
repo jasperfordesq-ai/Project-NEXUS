@@ -27,6 +27,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The listings page now spends its screen on listings.** The block at the top —
+  title, description, result count, search, type tabs, Near me, Filters and sort —
+  was not part of the list: it sat above it as a fixed panel that could never scroll
+  away, leaving the list less than half the screen and about one and a half listings
+  visible at a time. Only the search box is pinned now; everything else scrolls with
+  the list, which is what the app's five other list screens already did. Measured on
+  a phone: the fixed area dropped from 331 to 48 points, the space for listings went
+  from 48% to 79% of the screen, and you now see two and a half listings instead of
+  one and a half. Nothing was removed — every control is still there, one scroll up.
+  The line "Search by skill, category, place, or member" was dropped, because the
+  search box directly below it says the same thing.
+
+
 ### Fixed
 
 - **The ASP.NET do-nothing endpoint baseline now records the gain the sign-out and onboarding work actually made.** Implementing the tenant-aware maps configuration and onboarding endpoints removed two more placeholder routes, taking the inventory from 550 routes/317 methods to 548/315. The shrink-only ratchet is enforced in both directions, so the improvement itself failed the `Platform contracts` build until the baseline was lowered to match; `aspnet-backend/scripts/noop-stubs-baseline.json` now carries the new figures and the checker matches on all ten metrics.

@@ -318,15 +318,35 @@ export default function ExchangesScreen() {
     }
   }, []);
 
+  /**
+   * 🔴 The search field is the ONLY thing pinned.
+   *
+   * Everything else — the title, the results count, the type tabs, Near me, Filters, the
+   * sort row — scrolls with the list, which is what the app's five other list screens do.
+   * Measured at 420dpi before the change: the pinned block was 331dp and left 48% of the
+   * screen for the list, so 1.4 of a 305dp card were visible at a time. Searching is the one
+   * thing a member wants without scrolling back to the top; the rest is set once and then in
+   * the way.
+   */
+  const pinnedSearch = (
+    <SearchInput
+      testID="listings-search"
+      value={search}
+      onChangeText={setSearch}
+      placeholder={t('searchPlaceholder')}
+      clearLabel={t('clearSearch')}
+      returnKeyType="search"
+      accessibilityLabel={t('searchPlaceholder')}
+      containerClassName="mb-0"
+    />
+  );
+
   const controls = (
     <Surface variant="default" className="gap-3 rounded-panel-inner p-3">
       <View className="flex-row items-center justify-between gap-3">
         <View className="min-w-0 flex-1">
           <Text className="text-xl font-bold leading-6" style={{ color: theme.text }}>
             {t('title')}
-          </Text>
-          <Text className="mt-0.5 text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
-            {t('filtersIntro')}
           </Text>
         </View>
         <View className="flex-row items-center gap-2">
@@ -348,17 +368,6 @@ export default function ExchangesScreen() {
           </HeroButton>
         </View>
       </View>
-
-      <SearchInput
-        testID="listings-search"
-        value={search}
-        onChangeText={setSearch}
-        placeholder={t('searchPlaceholder')}
-        clearLabel={t('clearSearch')}
-        returnKeyType="search"
-        accessibilityLabel={t('searchPlaceholder')}
-        containerClassName="mb-0"
-      />
 
       <Tabs value={typeFilter} onValueChange={(value) => setTypeFilter(value as 'all' | ExchangeType)} variant="secondary">
         <Tabs.List>
@@ -525,13 +534,18 @@ export default function ExchangesScreen() {
       <OfflineBanner />
 
       <View className="px-4 pb-2 pt-3">
-        {controls}
+        {pinnedSearch}
       </View>
 
       <FlatList<Exchange>
         data={visibleItems}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <ExchangeCard exchange={item} onToggleSave={handleToggleSave} />}
+        /*
+          🔴 The controls are the list's HEADER, not a fixed block above it. As a sibling
+          they were on screen for ever and the list lived in what was left.
+        */
+        ListHeaderComponent={<View className="px-4 pb-2">{controls}</View>}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={primary} colors={[primary]} />
         }
