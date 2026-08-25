@@ -174,9 +174,14 @@ async function capturedResetEmail(email, notBeforeMs) {
     if (matches.length > 1) throw new Error(`reset flow emitted ${matches.length} emails for the exact actor`);
     if (matches.length === 1) {
       const body = matches[0]?.Content?.Body || matches[0]?.Raw?.Data || '';
-      const urls = body.match(/https?:\/\/[^\s"'<>]+\/password\/reset\?token=[^\s"'<>]+/g) || [];
+      const decodedBody = body.includes('?token=3D')
+        ? body.replace(/=\r?\n/g, '').replace(/=([0-9A-F]{2})/gi,
+          (_encoded, hex) => String.fromCharCode(Number.parseInt(hex, 16)))
+        : body;
+      const urls = [...new Set((decodedBody.match(/https?:\/\/[^\s"'<>]+\/password\/reset\?token=[^\s"'<>]+/g) || [])
+        .map((url) => url.replaceAll('&amp;', '&')))];
       if (urls.length !== 1) throw new Error(`captured reset email contained ${urls.length} reset links`);
-      return { url: urls[0].replaceAll('&amp;', '&') };
+      return { url: urls[0] };
     }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
@@ -606,20 +611,23 @@ async function runArm(arm) {
       await recoveryPage.goto(`${BASE}/${arm.tenantSlug}/password/forgot`, { waitUntil: 'networkidle', timeout: 60000 });
       await dismissConsent(recoveryPage);
       const notBefore = Date.now() - 1000;
-      await recoveryPage.getByLabel(/email address/i).fill(EMAIL);
-      const knownResponsePromise = recoveryPage.waitForResponse((response) => response.request().method() === 'POST'
-        && /\/api\/auth\/forgot-password(?:$|\?)/.test(response.url()), { timeout: 20000 });
-      await recoveryPage.getByRole('button', { name: /send reset link/i }).click();
-      const knownResponse = await knownResponsePromise;
+      const recoveryEmail = recoveryPage.getByLabel(/email address/i);
+      await recoveryEmail.fill(EMAIL);
+      const isForgotResponse = (response) => response.request().method() === 'POST'
+        && new URL(response.url()).pathname.replace(/\/+$/, '').endsWith('/auth/forgot-password');
+      const [knownResponse] = await Promise.all([
+        recoveryPage.waitForResponse(isForgotResponse, { timeout: 20000 }),
+        recoveryEmail.press('Enter'),
+      ]);
       const knownBody = await knownResponse.json();
       await recoveryPage.getByRole('heading', { name: /check your email/i }).waitFor({ timeout: 15000 });
 
-      await recoveryPage.getByRole('button', { name: /try again/i }).click();
-      await recoveryPage.getByLabel(/email address/i).fill(`unknown-${stamp}@example.invalid`);
-      const unknownResponsePromise = recoveryPage.waitForResponse((response) => response.request().method() === 'POST'
-        && /\/api\/auth\/forgot-password(?:$|\?)/.test(response.url()), { timeout: 20000 });
-      await recoveryPage.getByRole('button', { name: /send reset link/i }).click();
-      const unknownResponse = await unknownResponsePromise;
+      await recoveryPage.getByRole('button', { name: /try (?:again|another email)/i }).click();
+      await recoveryEmail.fill(`unknown-${stamp}@example.invalid`);
+      const [unknownResponse] = await Promise.all([
+        recoveryPage.waitForResponse(isForgotResponse, { timeout: 20000 }),
+        recoveryEmail.press('Enter'),
+      ]);
       const unknownBody = await unknownResponse.json();
       if (knownResponse.status() !== unknownResponse.status()
         || JSON.stringify(Object.keys(knownBody).sort()) !== JSON.stringify(Object.keys(unknownBody).sort())) {
@@ -643,8 +651,9 @@ async function runArm(arm) {
       }
 
       await recoveryPage.goto(captured.url, { waitUntil: 'networkidle', timeout: 60000 });
-      await recoveryPage.getByLabel(/^new password$/i).fill(replacementPassword);
-      await recoveryPage.getByLabel(/confirm new password/i).fill(replacementPassword);
+      const resetInputs = recoveryPage.locator('input[autocomplete="new-password"]');
+      await resetInputs.nth(0).fill(replacementPassword);
+      await resetInputs.nth(1).fill(replacementPassword);
       await recoveryPage.getByText(/strong enough/i).waitFor({ timeout: 10000 });
       await recoveryPage.getByRole('button', { name: /^reset password$/i }).click();
       await recoveryPage.getByRole('heading', { name: /password reset/i }).waitFor({ timeout: 15000 });
@@ -663,8 +672,9 @@ async function runArm(arm) {
       await replayPage.route('https://api.pwnedpasswords.com/**', (route) => route.fulfill({ status: 503, body: '' }));
       await replayPage.goto(captured.url, { waitUntil: 'networkidle', timeout: 60000 });
       const replayPassword = `Replay-${stamp}-safe-passphrase`;
-      await replayPage.getByLabel(/^new password$/i).fill(replayPassword);
-      await replayPage.getByLabel(/confirm new password/i).fill(replayPassword);
+      const replayInputs = replayPage.locator('input[autocomplete="new-password"]');
+      await replayInputs.nth(0).fill(replayPassword);
+      await replayInputs.nth(1).fill(replayPassword);
       await replayPage.getByText(/strong enough/i).waitFor({ timeout: 10000 });
       await replayPage.getByRole('button', { name: /^reset password$/i }).click();
       await replayPage.getByRole('alert').waitFor({ timeout: 15000 });
@@ -673,7 +683,8 @@ async function runArm(arm) {
       if (oldResult.ok) throw new Error('old password still signed in after reset');
       const newResult = await signInAs(newLoginPage, EMAIL, replacementPassword, arm.communityLabel);
       if (!newResult.ok) throw new Error(`new password did not sign in: ${newResult.reason}`);
-      await newLoginPage.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+      await newLoginPage.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await newLoginPage.waitForTimeout(1500);
       if (newLoginPage.url().includes('/login')) throw new Error('new password session could not reach a protected route');
       console.log('    one captured email -> tenant-bound single-use reset -> old sessions refused -> new sign-in reached dashboard');
     } finally {
@@ -2592,20 +2603,29 @@ async function runArm(arm) {
   // and leaves the unchanged ApiClient to recover through its exact refresh-token path.
   await step('journey-real-token-expiry-refresh', async () => {
     const otherContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const measuredContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const otherPage = await otherContext.newPage();
+    const measuredPage = await measuredContext.newPage();
     captureApiFrom(otherPage);
     captureClientErrorsFrom(otherPage);
+    captureApiFrom(measuredPage);
+    captureClientErrorsFrom(measuredPage);
     try {
       const otherSignedIn = await signInAs(otherPage, EMAIL, PASSWORD, arm.communityLabel, 300);
       if (!otherSignedIn.ok) throw new Error(`could not establish independent device: ${otherSignedIn.reason}`);
 
       // Establish the measured session last. A five-second token would otherwise
       // expire while the second browser is still traversing its login UI.
-      const signedIn = await signInAs(page, EMAIL, PASSWORD, arm.communityLabel, 300);
+      const signedIn = await signInAs(measuredPage, EMAIL, PASSWORD, arm.communityLabel, 300);
       if (!signedIn.ok) throw new Error(`could not establish short-lived session: ${signedIn.reason}`);
-      const before = await credentialEvidence(page);
-      const originalRefresh = await page.evaluate(() => localStorage.getItem('nexus_refresh_token'));
-      if (!before.accessFingerprint || !before.refreshFingerprint || !before.claims?.exp || !originalRefresh) {
+      const before = await credentialEvidence(measuredPage);
+      const originalCredentials = await measuredPage.evaluate(() => ({
+        access: localStorage.getItem('nexus_access_token'),
+        refresh: localStorage.getItem('nexus_refresh_token'),
+      }));
+      const originalRefresh = originalCredentials.refresh;
+      if (!before.accessFingerprint || !before.refreshFingerprint || !before.claims?.exp
+        || !originalCredentials.access || !originalRefresh) {
         throw new Error('login did not produce a complete rotating session');
       }
 
@@ -2613,18 +2633,19 @@ async function runArm(arm) {
       const onResponse = (response) => {
         if (response.url().includes('/api/')) observed.push({ path: new URL(response.url()).pathname, status: response.status() });
       };
-      page.on('response', onResponse);
+      measuredPage.on('response', onResponse);
       const waitMs = Math.max(0, (before.claims.exp * 1000) - Date.now() + 1200);
-      await page.waitForTimeout(waitMs);
-      await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
-      await page.waitForTimeout(1500);
-      page.off('response', onResponse);
-      const afterFirst = await credentialEvidence(page);
+      await measuredPage.waitForTimeout(waitMs);
+      await measuredPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      await measuredPage.waitForTimeout(3500);
+      measuredPage.off('response', onResponse);
+      const afterFirst = await credentialEvidence(measuredPage);
       const refreshCalls = observed.filter((entry) => entry.path === '/api/auth/refresh-token');
       const expired401s = observed.filter((entry) => entry.status === 401 && entry.path !== '/api/auth/refresh-token');
       if (refreshCalls.length !== 1) throw new Error(`expired burst made ${refreshCalls.length} refresh calls instead of one`);
       if (expired401s.length < 1) throw new Error('no normal protected request observed the genuine bearer expiry');
-      if (page.url().includes('/login')) throw new Error('client returned to login instead of recovering silently');
+      if (measuredPage.url().includes('/login')) throw new Error('client returned to login instead of recovering silently');
+      console.log(`    first expiry rotation: access=${before.accessFingerprint !== afterFirst.accessFingerprint} refresh=${before.refreshFingerprint !== afterFirst.refreshFingerprint}`);
       if (afterFirst.accessFingerprint === before.accessFingerprint || afterFirst.refreshFingerprint === before.refreshFingerprint) {
         throw new Error('refresh did not rotate both access and refresh credentials');
       }
@@ -2632,14 +2653,14 @@ async function runArm(arm) {
         throw new Error('rotated access token changed the user or tenant claim');
       }
 
-      const superseded = await page.request.post(`${BASE}/api/auth/refresh-token`, {
+      const superseded = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
         headers: { 'X-Tenant-ID': String(arm.tenantId) },
         data: { refresh_token: originalRefresh },
       });
       if (superseded.status() !== 409) throw new Error(`superseded refresh was not rejected with transient 409 (${superseded.status()})`);
 
-      const currentRefresh = await page.evaluate(() => localStorage.getItem('nexus_refresh_token'));
-      const foreign = await page.request.post(`${BASE}/api/auth/refresh-token`, {
+      const currentRefresh = await measuredPage.evaluate(() => localStorage.getItem('nexus_refresh_token'));
+      const foreign = await measuredPage.request.post(`${BASE}/api/auth/refresh-token`, {
         headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
         data: { refresh_token: currentRefresh },
       });
@@ -2648,22 +2669,28 @@ async function runArm(arm) {
       }
 
       const waitAgain = Math.max(0, ((afterFirst.claims?.exp || 0) * 1000) - Date.now() + 1200);
-      await page.waitForTimeout(waitAgain);
-      await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
-      await page.waitForTimeout(1200);
-      const afterSecond = await credentialEvidence(page);
-      if (afterSecond.refreshFingerprint === afterFirst.refreshFingerprint || page.url().includes('/login')) {
+      await measuredPage.waitForTimeout(waitAgain);
+      await measuredPage.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      await measuredPage.waitForTimeout(2500);
+      const afterSecond = await credentialEvidence(measuredPage);
+      if (afterSecond.refreshFingerprint === afterFirst.refreshFingerprint || measuredPage.url().includes('/login')) {
         throw new Error('winning successor did not remain usable for the next real expiry');
       }
 
-      await page.locator('[data-user-menu]').click({ timeout: 15000 });
-      await page.getByRole('menuitem', { name: /Log Out/i }).click({ timeout: 15000 });
-      await page.waitForURL(/\/login(?:$|[?#])/, { timeout: 20000 });
-      await otherPage.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+      await measuredPage.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      const currentDeviceMenu = measuredPage.locator('[data-user-menu]');
+      await currentDeviceMenu.waitFor({ state: 'visible', timeout: 20000 });
+      await currentDeviceMenu.press('Enter');
+      const currentDeviceLogout = measuredPage.getByText(/^Log Out$/i).last();
+      await currentDeviceLogout.waitFor({ state: 'visible', timeout: 15000 });
+      await currentDeviceLogout.click({ timeout: 15000 });
+      await measuredPage.waitForURL(/\/login(?:$|[?#])/, { timeout: 20000 });
+      await otherPage.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await otherPage.waitForTimeout(1500);
       if (otherPage.url().includes('/login')) throw new Error('logging out current device invalidated the unrelated device session');
       console.log(`    real expiry 401 -> one refresh -> rotated fingerprints ${before.accessFingerprint}/${before.refreshFingerprint} -> ${afterFirst.accessFingerprint}/${afterFirst.refreshFingerprint}`);
     } finally {
-      await otherContext.close();
+      await Promise.all([otherContext.close(), measuredContext.close()]);
     }
   });
 

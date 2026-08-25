@@ -621,6 +621,29 @@ class AuthControllerTest extends TestCase
         $this->assertLessThanOrEqual(2592000, (int) $response->json('refresh_expires_in'));
     }
 
+    public function test_refresh_token_cannot_be_used_from_another_tenant_context(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'email_verified_at' => now(),
+        ]);
+        $tokens = app(TokenService::class);
+        $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
+
+        $this->postJson('/api/auth/refresh-token', [
+            'refresh_token' => $refresh,
+        ], [
+            'X-Tenant-ID' => '999',
+            'Accept' => 'application/json',
+        ])->assertStatus(401);
+
+        $this->assertNotNull(
+            $tokens->validateRefreshToken($refresh),
+            'A foreign-tenant attempt must not consume the valid tenant-bound credential.'
+        );
+    }
+
     public function test_family_logout_invalidates_a_delayed_refreshed_access_token(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([

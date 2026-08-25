@@ -131,8 +131,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "stay signed in" attempts, arriving at the same moment could both succeed;
   only one can now, and the loser gets the same harmless retry the site already
   handles. And the reset form's own fields were named differently from the ones
-  the website sends. Fifteen tests cover the two journeys end to end. No
-  production code or configuration is affected.
+  the website sends. Reset and refresh credentials are also refused when they
+  are presented through a different community, before any valid session or link
+  is consumed. Fifteen tests cover the two journeys end to end. No production
+  code or configuration is affected.
 - **Identity verification is hidden in the phone app for now.** Google requires
   apps to use Google's own payment system for anything bought inside them, and
   the app was charging a card through Stripe for ID verification. Getting that

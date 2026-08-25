@@ -626,6 +626,16 @@ class AuthController extends BaseApiController
             );
         }
 
+        // A refresh token is a tenant-bound capability. Reject a valid token
+        // presented through another tenant before rotation can mutate it.
+        if ((int) TenantContext::getId() !== (int) $tenantId) {
+            return $this->authError(
+                __('api.invalid_or_expired_refresh_token'),
+                ApiErrorCodes::AUTH_TOKEN_INVALID,
+                401
+            );
+        }
+
         $isMobile = $this->tokenService->isMobileRequest();
 
         // Hold the user lock across policy re-check, refresh rotation, and

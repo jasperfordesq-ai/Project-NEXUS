@@ -59,7 +59,11 @@ public static class AuthExtensions
         var validateIssuer = !string.IsNullOrEmpty(jwtIssuer);
         var validateAudience = !string.IsNullOrEmpty(jwtAudience);
         var testClockSkew = configuration.GetValue<int?>("Jwt:TestClockSkewSeconds");
-        var clockSkew = isTestEnvironment && testClockSkew is >= 0
+        var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var allowsTestClock = isTestEnvironment
+            || string.Equals(environmentName, "Development", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(environmentName, "Testing", StringComparison.OrdinalIgnoreCase);
+        var clockSkew = allowsTestClock && testClockSkew is >= 0
                 ? TimeSpan.FromSeconds(testClockSkew.Value)
                 : TimeSpan.FromMinutes(1);
 
