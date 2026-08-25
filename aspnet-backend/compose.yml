@@ -35,6 +35,13 @@ services:
       - Jwt__Secret=${JWT_SECRET:?JWT_SECRET environment variable is required}
       - Jwt__Issuer=
       - Jwt__Audience=
+      # Certification-only controls: production ignores the seconds override.
+      - Jwt__TestAccessTokenExpirySeconds=5
+      - Jwt__TestClockSkewSeconds=0
+      - App__FrontendUrl=http://127.0.0.1:5199
+      - SmtpCapture__Enabled=true
+      - SmtpCapture__Host=nexus-e2e-mailhog
+      - SmtpCapture__Port=1025
       # 🔴 5173 is the canonical React dev server's ACTUAL port
       # (react-frontend/vite.config.ts:323) and was MISSING here until 2026-08-19, so
       # the committed `npm run dev:dotnet` could never talk to this backend directly —
@@ -55,7 +62,7 @@ services:
       - Cors__AllowedOrigins__6=http://localhost:5199
       - Cors__AllowedOrigins__7=http://127.0.0.1:5199
       # Rate limiting (relaxed for development)
-      - RateLimiting__Auth__PermitLimit=10
+      - RateLimiting__Auth__PermitLimit=1000
       - RateLimiting__Auth__WindowSeconds=60
       # 🔴 Raised from 200 on 2026-08-19. A single pass of
       # scripts/smoke-react-against-aspnet.mjs makes ~190 API calls, and the extended
@@ -105,6 +112,7 @@ services:
         condition: service_healthy
     networks:
       - nexus-aspnet-dev-net
+      - nexus-internal
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8080/health || exit 1"]
@@ -208,6 +216,8 @@ networks:
   nexus-aspnet-dev-net:
     name: nexus-aspnet-dev-net
     driver: bridge
+  nexus-internal:
+    external: true
 
 # -----------------------------------------------------------------------------
 # Volumes (persistent, isolated)

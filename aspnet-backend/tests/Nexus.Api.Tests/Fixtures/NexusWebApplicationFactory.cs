@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -147,6 +148,13 @@ public class NexusWebApplicationFactory : WebApplicationFactory<Program>, IAsync
                 // attestation summaries) must be provably ciphertext in tests.
                 ["Registration:EncryptionKey"] = "nexus-test-encryption-key"
             });
+        });
+
+        builder.ConfigureServices(services =>
+        {
+            services.PostConfigure<JwtBearerOptions>(
+                JwtBearerDefaults.AuthenticationScheme,
+                options => options.TokenValidationParameters.ClockSkew = TimeSpan.Zero);
         });
 
         builder.ConfigureServices(services =>

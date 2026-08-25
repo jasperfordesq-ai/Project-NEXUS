@@ -60,8 +60,8 @@
 SET @T := 1;         -- fixture tenant (the master tenant — TenantSeeder's id 1)
 SET @T2 := 950001;   -- second community — mirrors the ASP.NET seed's 'globex'
 SET @T3 := 950002;   -- third community — see the NON-MASTER TENANTS note below
-SET @UA := 900014;   -- e2e.user.a@project-nexus.local — the account the harness signs in as
-SET @UB := 900015;   -- e2e.user.b@project-nexus.local
+SET @UA := (SELECT id FROM users WHERE tenant_id = @T AND email = 'e2e.user.a@project-nexus.local' LIMIT 1);
+SET @UB := (SELECT id FROM users WHERE tenant_id = @T AND email = 'e2e.user.b@project-nexus.local' LIMIT 1);
 
 -- ---------------------------------------------------------------------------
 -- Clear previous fixture rows (children before parents).

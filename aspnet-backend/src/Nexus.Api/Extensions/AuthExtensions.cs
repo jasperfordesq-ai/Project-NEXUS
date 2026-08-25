@@ -58,6 +58,10 @@ public static class AuthExtensions
         var jwtAudience = configuration["Jwt:Audience"];
         var validateIssuer = !string.IsNullOrEmpty(jwtIssuer);
         var validateAudience = !string.IsNullOrEmpty(jwtAudience);
+        var testClockSkew = configuration.GetValue<int?>("Jwt:TestClockSkewSeconds");
+        var clockSkew = isTestEnvironment && testClockSkew is >= 0
+                ? TimeSpan.FromSeconds(testClockSkew.Value)
+                : TimeSpan.FromMinutes(1);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -74,7 +78,7 @@ public static class AuthExtensions
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!)),
-                    ClockSkew = TimeSpan.FromMinutes(1)
+                    ClockSkew = clockSkew
                 };
 
                 options.Events = new JwtBearerEvents

@@ -47,6 +47,7 @@ DB_CONTAINER="nexus-laravel-throwaway-db"
 APP_CONTAINER="nexus-laravel-throwaway-app"
 APP_IMAGE="staging-app"
 APP_PORT="8091"
+MAIL_CONTAINER="nexus-e2e-mailhog"
 DB_NAME="nexus"
 DB_USER="nexus"
 DB_PASS="nexus_secret"
@@ -116,6 +117,15 @@ TABLES=$(docker exec "$DB_CONTAINER" mariadb -u"$DB_USER" -p"$DB_PASS" -N -B -e 
 echo "tables created: $TABLES"
 
 say "Starting the Laravel app on :$APP_PORT (same image and source as dev)"
+if ! docker ps --filter "name=^${MAIL_CONTAINER}$" --format '{{.Names}}' | grep -q "^${MAIL_CONTAINER}$"; then
+  if docker container inspect "$MAIL_CONTAINER" >/dev/null 2>&1; then
+    docker start "$MAIL_CONTAINER" >/dev/null
+  else
+    docker run -d --name "$MAIL_CONTAINER" --network "$NETWORK" \
+      -p 127.0.0.1:1025:1025 -p 127.0.0.1:8025:8025 \
+      mailhog/mailhog:v1.0.1 >/dev/null
+  fi
+fi
 docker run -d \
   --name "$APP_CONTAINER" \
   --network "$NETWORK" \
@@ -138,11 +148,19 @@ docker run -d \
   -e APP_ENV=local \
   -e APP_DEBUG=true \
   -e APP_URL="http://127.0.0.1:$APP_PORT" \
+  -e FRONTEND_URL="http://127.0.0.1:5198" \
   -e APP_KEY="$APP_KEY_VALUE" \
   -e JWT_SECRET="$JWT_SECRET_VALUE" \
   -e CACHE_DRIVER=array \
   -e SESSION_DRIVER=array \
-  -e MAIL_MAILER=array \
+  -e MAIL_MAILER=smtp \
+  -e SMTP_HOST="$MAIL_CONTAINER" \
+  -e SMTP_PORT=1025 \
+  -e SMTP_ENCRYPTION=none \
+  -e SMTP_FROM_EMAIL=noreply@project-nexus.invalid \
+  -e SMTP_FROM_NAME="Project NEXUS certification" \
+  -e MAIL_PLATFORM_PROVIDER=smtp \
+  -e NEXUS_TEST_ACCESS_TOKEN_EXPIRY_SECONDS=5 \
   -e BROADCAST_CONNECTION=null \
   "$APP_IMAGE" >/dev/null
 

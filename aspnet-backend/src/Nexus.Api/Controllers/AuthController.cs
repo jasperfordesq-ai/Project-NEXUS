@@ -626,6 +626,27 @@ public class AuthController : ControllerBase
             return Unauthorized(new { error = "Invalid refresh token" });
         }
 
+        // Refresh credentials are tenant capabilities. The unchanged React
+        // client always supplies X-Tenant-ID, so reject a valid token presented
+        // from another tenant before any rotation/reuse mutation can occur.
+        if (Request.Headers.TryGetValue("X-Tenant-ID", out var tenantIdHeader)
+            && int.TryParse(tenantIdHeader.ToString(), out var requestTenantId)
+            && requestTenantId != refreshToken.TenantId)
+        {
+            _logger.LogWarning(
+                "Refresh failed: token tenant {TokenTenantId} did not match request tenant {RequestTenantId}",
+                refreshToken.TenantId, requestTenantId);
+            return Unauthorized(new { error = "Invalid refresh token" });
+        }
+
+        if (Request.Headers.TryGetValue("X-Tenant-Slug", out var tenantSlugHeader)
+            && !string.IsNullOrWhiteSpace(tenantSlugHeader))
+        {
+            var requestTenant = await ResolveTenantAsync(tenantSlugHeader.ToString(), null);
+            if (requestTenant == null || requestTenant.Id != refreshToken.TenantId)
+                return Unauthorized(new { error = "Invalid refresh token" });
+        }
+
         if (!refreshToken.IsValid)
         {
             // Refresh-token reuse detection (2026-05-11 audit, OAuth2 best practice).
@@ -717,9 +738,34 @@ public class AuthController : ControllerBase
             return Unauthorized(new { error = "User account is inactive" });
         }
 
-        // Revoke old refresh token (rotation)
-        refreshToken.RevokedAt = DateTime.UtcNow;
-        refreshToken.RevokedReason = "rotation";
+        // Claim rotation atomically. Two genuinely concurrent requests may both
+        // read the valid row, but only one can transition RevokedAt from null.
+        // The loser waits for the winner's transaction and receives the same
+        // transient 409 envelope the React client already preserves.
+        var rotatedAt = DateTime.UtcNow;
+        await using var rotationTransaction = await _db.Database.BeginTransactionAsync();
+        var claimed = await _db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == refreshToken.Id && t.RevokedAt == null && t.ExpiresAt > rotatedAt)
+            .ExecuteUpdateAsync(update => update
+                .SetProperty(t => t.RevokedAt, rotatedAt)
+                .SetProperty(t => t.RevokedReason, "rotation"));
+        if (claimed != 1)
+        {
+            await rotationTransaction.RollbackAsync();
+            return Conflict(new
+            {
+                success = false,
+                errors = new[]
+                {
+                    new
+                    {
+                        code = "AUTH_REFRESH_SUPERSEDED",
+                        message = "This refresh token was already rotated by a concurrent request.",
+                    },
+                },
+            });
+        }
 
         // Generate new tokens
         var accessToken = _tokenService.GenerateJwt(refreshToken.User);
@@ -737,6 +783,7 @@ public class AuthController : ControllerBase
         };
         _db.RefreshTokens.Add(newRefreshTokenEntity);
         await _db.SaveChangesAsync();
+        await rotationTransaction.CommitAsync();
 
         _logger.LogInformation("Token refreshed for user {UserId}", refreshToken.UserId);
 
@@ -1079,13 +1126,25 @@ public class AuthController : ControllerBase
         _ = request.CfTurnstileResponse;
         _ = request.TurnstileToken;
 
-        if (string.IsNullOrEmpty(request.TenantSlug) && !request.TenantId.HasValue)
+        var headerTenantSlug = Request.Headers.TryGetValue("X-Tenant-Slug", out var slugHeader)
+            ? slugHeader.ToString().Trim()
+            : null;
+        var headerTenantId = Request.Headers.TryGetValue("X-Tenant-ID", out var idHeader)
+            && int.TryParse(idHeader.ToString(), out var parsedHeaderTenantId)
+                ? parsedHeaderTenantId
+                : (int?)null;
+        var requestTenantSlug = !string.IsNullOrWhiteSpace(request.TenantSlug)
+            ? request.TenantSlug
+            : (string.IsNullOrWhiteSpace(headerTenantSlug) ? null : headerTenantSlug);
+        var requestTenantId = request.TenantId ?? headerTenantId;
+
+        if (string.IsNullOrEmpty(requestTenantSlug) && !requestTenantId.HasValue)
         {
             return BadRequest(new { error = "Tenant identifier required" });
         }
 
         // Resolve tenant
-        var tenant = await ResolveTenantAsync(request.TenantSlug, request.TenantId);
+        var tenant = await ResolveTenantAsync(requestTenantSlug, requestTenantId);
         if (tenant == null)
         {
             // Don't reveal tenant doesn't exist
@@ -1103,72 +1162,62 @@ public class AuthController : ControllerBase
             return Ok(successResponse);
         }
 
-        // Invalidate any existing reset tokens
-        var existingTokens = await _db.PasswordResetTokens
-            .IgnoreQueryFilters()
-            .Where(t => t.UserId == user.Id && t.UsedAt == null)
-            .ToListAsync();
-
-        foreach (var existingToken in existingTokens)
-        {
-            existingToken.UsedAt = DateTime.UtcNow; // Mark as used
-        }
-
         // Generate new reset token
         var (resetToken, resetTokenHash) = TokenService.GenerateRefreshToken(); // Reuse the same generation method
 
-        var passwordResetToken = new PasswordResetToken
+        // Build the URL for the real React route. Development/control runs set
+        // App:FrontendUrl to their disposable frontend. Production custom-domain
+        // tenants use their own domain and therefore remain slug-less.
+        var configuredFrontend = _config["App:FrontendUrl"]?.TrimEnd('/');
+        var useConfiguredDevelopmentFrontend =
+            HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment()
+            || HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsEnvironment("Testing");
+        var tenantBase = !useConfiguredDevelopmentFrontend && !string.IsNullOrWhiteSpace(tenant.Domain)
+            ? $"https://{tenant.Domain.Trim().TrimEnd('/')}"
+            : configuredFrontend ?? "http://localhost:5173";
+        var tenantPath = !useConfiguredDevelopmentFrontend && !string.IsNullOrWhiteSpace(tenant.Domain)
+            ? string.Empty
+            : $"/{Uri.EscapeDataString(tenant.Slug)}";
+        var resetUrl = $"{tenantBase}{tenantPath}/password/reset?token={Uri.EscapeDataString(resetToken)}";
+
+        // A reset credential becomes usable only after the dispatch boundary has
+        // accepted the email. This preserves any older valid link when delivery
+        // fails and makes the email-derived journey deterministic.
+        var accepted = false;
+        try
         {
-            TenantId = user.TenantId,
-            UserId = user.Id,
-            TokenHash = resetTokenHash,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(PasswordResetExpiryMinutes)
-        };
-        _db.PasswordResetTokens.Add(passwordResetToken);
-        await _db.SaveChangesAsync();
-
-        _logger.LogInformation("Password reset requested for user {UserId}", user.Id);
-
-        // Build reset URL from frontend base URL
-        var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-        var resetUrl = $"{frontendUrl}/reset-password?token={Uri.EscapeDataString(resetToken)}";
-
-        // Send the password reset email (fire-and-forget, don't block the response)
-        _ = Task.Run(async () =>
+            accepted = await _emailService.SendPasswordResetEmailAsync(
+                user.Email,
+                resetToken,
+                user.FirstName ?? "User",
+                resetUrl,
+                HttpContext.RequestAborted);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException)
         {
-            try
-            {
-                await _emailService.SendPasswordResetEmailAsync(
-                    user.Email,
-                    resetToken,
-                    user.FirstName ?? "User",
-                    resetUrl);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "Failed to send password reset email for user {UserId}", user.Id);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Failed to send password reset email for user {UserId}", user.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error sending password reset email for user {UserId}", user.Id);
-            }
-        });
+            _logger.LogError(ex, "Failed to dispatch password reset email for user {UserId}", user.Id);
+        }
 
-        // In development, also return the token in the response for testing
-        if (_config.GetValue<bool>("IsDevelopment", false) ||
-            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        if (accepted)
         {
-            return Ok(new
+            var now = DateTime.UtcNow;
+            await _db.PasswordResetTokens
+                .IgnoreQueryFilters()
+                .Where(t => t.UserId == user.Id && t.TenantId == user.TenantId && t.UsedAt == null)
+                .ExecuteUpdateAsync(update => update.SetProperty(t => t.UsedAt, now));
+            _db.PasswordResetTokens.Add(new PasswordResetToken
             {
-                success = true,
-                message = "Password reset token generated",
-                reset_token = resetToken, // Only in development!
-                expires_in = PasswordResetExpiryMinutes * 60
+                TenantId = user.TenantId,
+                UserId = user.Id,
+                TokenHash = resetTokenHash,
+                ExpiresAt = now.AddMinutes(PasswordResetExpiryMinutes),
             });
+            await _db.SaveChangesAsync();
+            _logger.LogInformation("Password reset email accepted for user {UserId}", user.Id);
+        }
+        else
+        {
+            _logger.LogWarning("Password reset email was not accepted for user {UserId}", user.Id);
         }
 
         return Ok(successResponse);
@@ -1188,17 +1237,23 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "Reset token is required" });
         }
 
-        if (string.IsNullOrWhiteSpace(request.NewPassword))
+        var newPassword = request.Password ?? request.NewPassword;
+        if (string.IsNullOrWhiteSpace(newPassword))
         {
             return BadRequest(new { error = "New password is required" });
         }
 
+        if (request.PasswordConfirmation is not null && request.PasswordConfirmation != newPassword)
+        {
+            return BadRequest(new { error = "Passwords do not match" });
+        }
+
         // NIST 800-63B aligned (mirror of Register rule above): length only.
-        if (request.NewPassword.Length < 12)
+        if (newPassword.Length < 12)
             return BadRequest(new { error = "Password must be at least 12 characters. A memorable passphrase is stronger than a short complex one." });
 
         // HIBP k-anonymity — same rule as Register.
-        if (await _pwnedPassword.IsPwnedAsync(request.NewPassword))
+        if (await _pwnedPassword.IsPwnedAsync(newPassword))
         {
             return BadRequest(new
             {
@@ -1209,20 +1264,24 @@ public class AuthController : ControllerBase
 
         var tokenHash = TokenService.HashToken(request.Token);
 
-        // Find the reset token
+        var requestTenantId = Request.Headers.TryGetValue("X-Tenant-ID", out var tenantHeader)
+            && int.TryParse(tenantHeader.ToString(), out var parsedTenantId)
+                ? parsedTenantId
+                : (int?)null;
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        var now = DateTime.UtcNow;
         var resetToken = await _db.PasswordResetTokens
             .IgnoreQueryFilters()
             .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash
+                && t.UsedAt == null
+                && t.ExpiresAt > now
+                && (!requestTenantId.HasValue || t.TenantId == requestTenantId.Value));
 
         if (resetToken == null)
         {
             return BadRequest(new { error = "Invalid reset token" });
-        }
-
-        if (!resetToken.IsValid)
-        {
-            return BadRequest(new { error = "Reset token expired or already used" });
         }
 
         if (resetToken.User == null)
@@ -1230,12 +1289,21 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "User not found" });
         }
 
-        // Update password
-        resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-        resetToken.User.AuthenticationInvalidatedAt = DateTime.UtcNow;
+        // Atomically claim the one-time reset capability. A concurrent loser
+        // re-evaluates the UsedAt predicate after the winner commits and gets 0.
+        var claimed = await _db.PasswordResetTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == resetToken.Id && t.UsedAt == null && t.ExpiresAt > now)
+            .ExecuteUpdateAsync(update => update.SetProperty(t => t.UsedAt, now));
+        if (claimed != 1)
+        {
+            await transaction.RollbackAsync();
+            return BadRequest(new { error = "Reset token expired or already used" });
+        }
 
-        // Mark token as used
-        resetToken.UsedAt = DateTime.UtcNow;
+        // Update password
+        resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        resetToken.User.AuthenticationInvalidatedAt = now;
 
         // Revoke all refresh tokens (force re-login)
         var refreshTokens = await _db.RefreshTokens
@@ -1245,11 +1313,12 @@ public class AuthController : ControllerBase
 
         foreach (var token in refreshTokens)
         {
-            token.RevokedAt = DateTime.UtcNow;
+            token.RevokedAt = now;
             token.RevokedReason = "password_change";
         }
 
         await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         _logger.LogInformation("Password reset completed for user {UserId}", resetToken.UserId);
 
@@ -1568,7 +1637,13 @@ public record ResetPasswordRequest
     public string Token { get; init; } = string.Empty;
 
     [System.Text.Json.Serialization.JsonPropertyName("new_password")]
-    public string NewPassword { get; init; } = string.Empty;
+    public string? NewPassword { get; init; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("password")]
+    public string? Password { get; init; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("password_confirmation")]
+    public string? PasswordConfirmation { get; init; }
 }
 
 #endregion

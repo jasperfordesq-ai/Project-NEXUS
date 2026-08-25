@@ -160,6 +160,28 @@ const PORT_LARAVEL = Number(process.env.SMOKE_PORT_LARAVEL || 5198);
 const stampSuffix = process.env.SMOKE_STAMP || String(process.hrtime.bigint() % 100000n);
 const requestedSteps = new Set((process.env.SMOKE_ONLY || '').split(',').map((value) => value.trim()).filter(Boolean));
 const prerequisiteSteps = new Set(['landing', 'dismiss-consent', 'login-page', 'select-community', 'login-submit']);
+const MAILHOG_API = process.env.SMOKE_MAILHOG_API || 'http://127.0.0.1:8025';
+
+async function capturedResetEmail(email, notBeforeMs) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const response = await fetch(`${MAILHOG_API}/api/v2/messages?limit=100`);
+    if (!response.ok) throw new Error(`MailHog query returned ${response.status}`);
+    const mailbox = await response.json();
+    const matches = (mailbox.items || []).filter((item) => {
+      const recipients = (item.To || []).map((to) => `${to.Mailbox}@${to.Domain}`.toLowerCase());
+      return recipients.includes(email.toLowerCase()) && Date.parse(item.Created) >= notBeforeMs;
+    });
+    if (matches.length > 1) throw new Error(`reset flow emitted ${matches.length} emails for the exact actor`);
+    if (matches.length === 1) {
+      const body = matches[0]?.Content?.Body || matches[0]?.Raw?.Data || '';
+      const urls = body.match(/https?:\/\/[^\s"'<>]+\/password\/reset\?token=[^\s"'<>]+/g) || [];
+      if (urls.length !== 1) throw new Error(`captured reset email contained ${urls.length} reset links`);
+      return { url: urls[0].replaceAll('&amp;', '&') };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`MailHog captured no reset email for ${email}`);
+}
 
 // ── step machinery ────────────────────────────────────────────────────────────────
 // 🔴 The old step() caught every exception, printed FAILED, and moved on with no
@@ -283,6 +305,43 @@ async function runArm(arm) {
     }
 
     throw new Error(`relationship fixture reset refused unknown arm ${arm.key}`);
+  }
+
+  function resetRecoveryFixture() {
+    if (arm.key === 'aspnet') {
+      const sql = `
+        BEGIN;
+        DELETE FROM password_reset_tokens WHERE "UserId" = ${Number(arm.selfId)} AND "TenantId" = ${Number(arm.tenantId)};
+        DELETE FROM refresh_tokens WHERE "UserId" = ${Number(arm.selfId)} AND "TenantId" = ${Number(arm.tenantId)};
+        DELETE FROM revoked_tokens WHERE user_id = ${Number(arm.selfId)};
+        UPDATE users SET "PasswordHash" = (SELECT "PasswordHash" FROM users WHERE "Id" = ${Number(arm.providerId)}),
+          "AuthenticationInvalidatedAt" = NULL
+          WHERE "Id" = ${Number(arm.selfId)} AND "TenantId" = ${Number(arm.tenantId)};
+        COMMIT;`;
+      execFileSync('docker', ['exec', '-i', 'nexus-aspnet-dev-db', 'psql', '-U', 'postgres', '-d', 'nexus_dev', '-v', 'ON_ERROR_STOP=1'], {
+        input: sql,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return;
+    }
+    if (arm.key === 'laravel') {
+      const sql = `
+        START TRANSACTION;
+        DELETE FROM password_resets WHERE email = '${arm.email.replaceAll("'", "''")}' AND tenant_id = ${Number(arm.tenantId)};
+        DELETE FROM refresh_token_sessions WHERE user_id = ${Number(arm.selfId)} AND tenant_id = ${Number(arm.tenantId)};
+        DELETE FROM revoked_tokens WHERE user_id = ${Number(arm.selfId)};
+        DELETE FROM user_password_history WHERE user_id = ${Number(arm.selfId)} AND tenant_id = ${Number(arm.tenantId)};
+        UPDATE users target JOIN users source ON source.id = ${Number(arm.providerId)}
+          SET target.password_hash = source.password_hash
+          WHERE target.id = ${Number(arm.selfId)} AND target.tenant_id = ${Number(arm.tenantId)};
+        COMMIT;`;
+      execFileSync('docker', ['exec', '-i', 'nexus-laravel-throwaway-db', 'mariadb', '-unexus', '-pnexus_secret', 'nexus'], {
+        input: sql,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return;
+    }
+    throw new Error(`recovery fixture reset refused unknown arm ${arm.key}`);
   }
 
   const api = [];
@@ -461,7 +520,7 @@ async function runArm(arm) {
   // name="username", and Sign In stays disabled until a community is chosen. A
   // second-actor login that skips any one of them times out on a disabled button
   // and reads exactly like a backend refusing the second member.
-  async function signInAs(p, email, password, communityLabel) {
+  async function signInAs(p, email, password, communityLabel, settleMs = 5000) {
     await p.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 60000 });
     // Registration returns a short-lived token even while the account is still
     // pending verification/approval. A later sign-in must prove that login issued
@@ -491,7 +550,7 @@ async function runArm(arm) {
       await p.waitForTimeout(waitMs);
       loginResponse = await submitLogin();
     }
-    await p.waitForTimeout(5000);
+    await p.waitForTimeout(settleMs);
     const keys = await p.evaluate(() => Object.keys(localStorage).filter((k) => /token|auth/i.test(k)));
     if (!keys.length) {
       const status = loginResponse ? loginResponse.status() : 'no response';
@@ -500,6 +559,128 @@ async function runArm(arm) {
     }
     return { ok: true };
   }
+
+  const credentialEvidence = (p) => p.evaluate(async () => {
+    const access = localStorage.getItem('nexus_access_token');
+    const refresh = localStorage.getItem('nexus_refresh_token');
+    const fingerprint = async (value) => value
+      ? Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
+        .slice(0, 8).map((byte) => byte.toString(16).padStart(2, '0')).join('')
+      : null;
+    let claims = null;
+    if (access) {
+      const encoded = access.split('.')[1]?.replaceAll('-', '+').replaceAll('_', '/');
+      if (encoded) {
+        const parsed = JSON.parse(atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, '=')));
+        claims = { subject: String(parsed.sub ?? parsed.user_id ?? ''), tenantId: String(parsed.tenant_id ?? ''), exp: Number(parsed.exp ?? 0) };
+      }
+    }
+    return { accessFingerprint: await fingerprint(access), refreshFingerprint: await fingerprint(refresh), claims };
+  });
+
+  // ── PASSWORD RESET (journey 1.6) ─────────────────────────────────────────────
+  // The token comes only from the captured message. The database instrument is
+  // fixture setup/cleanup and never reads a reset credential.
+  await step('journey-password-reset-email', async () => {
+    resetRecoveryFixture();
+    const recoveryContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const sessionContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const oldLoginContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const newLoginContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const recoveryPage = await recoveryContext.newPage();
+    const sessionPage = await sessionContext.newPage();
+    const oldLoginPage = await oldLoginContext.newPage();
+    const newLoginPage = await newLoginContext.newPage();
+    for (const observed of [recoveryPage, sessionPage, oldLoginPage, newLoginPage]) {
+      captureApiFrom(observed);
+      captureClientErrorsFrom(observed);
+      await observed.route('https://api.pwnedpasswords.com/**', (route) => route.fulfill({ status: 503, body: '' }));
+    }
+    const replacementPassword = `Certification-${stamp}-safe-passphrase`;
+    try {
+      const preResetSession = await signInAs(sessionPage, EMAIL, PASSWORD, arm.communityLabel);
+      if (!preResetSession.ok) throw new Error(`could not establish pre-reset session: ${preResetSession.reason}`);
+      const preResetRefresh = await sessionPage.evaluate(() => localStorage.getItem('nexus_refresh_token'));
+      if (!preResetRefresh) throw new Error('pre-reset session held no refresh credential');
+
+      await recoveryPage.goto(`${BASE}/${arm.tenantSlug}/password/forgot`, { waitUntil: 'networkidle', timeout: 60000 });
+      await dismissConsent(recoveryPage);
+      const notBefore = Date.now() - 1000;
+      await recoveryPage.getByLabel(/email address/i).fill(EMAIL);
+      const knownResponsePromise = recoveryPage.waitForResponse((response) => response.request().method() === 'POST'
+        && /\/api\/auth\/forgot-password(?:$|\?)/.test(response.url()), { timeout: 20000 });
+      await recoveryPage.getByRole('button', { name: /send reset link/i }).click();
+      const knownResponse = await knownResponsePromise;
+      const knownBody = await knownResponse.json();
+      await recoveryPage.getByRole('heading', { name: /check your email/i }).waitFor({ timeout: 15000 });
+
+      await recoveryPage.getByRole('button', { name: /try again/i }).click();
+      await recoveryPage.getByLabel(/email address/i).fill(`unknown-${stamp}@example.invalid`);
+      const unknownResponsePromise = recoveryPage.waitForResponse((response) => response.request().method() === 'POST'
+        && /\/api\/auth\/forgot-password(?:$|\?)/.test(response.url()), { timeout: 20000 });
+      await recoveryPage.getByRole('button', { name: /send reset link/i }).click();
+      const unknownResponse = await unknownResponsePromise;
+      const unknownBody = await unknownResponse.json();
+      if (knownResponse.status() !== unknownResponse.status()
+        || JSON.stringify(Object.keys(knownBody).sort()) !== JSON.stringify(Object.keys(unknownBody).sort())) {
+        throw new Error('known and unknown reset requests exposed different public response shapes');
+      }
+
+      const captured = await capturedResetEmail(EMAIL, notBefore);
+      const resetUrl = new URL(captured.url);
+      if (resetUrl.origin !== BASE || !resetUrl.pathname.endsWith('/password/reset')) {
+        throw new Error(`email reset link did not target the active tenant frontend (${resetUrl.origin}${resetUrl.pathname})`);
+      }
+      const resetToken = resetUrl.searchParams.get('token');
+      if (!resetToken) throw new Error('captured email link carried no reset credential');
+
+      const foreignAttempt = await recoveryPage.request.post(`${BASE}/api/auth/reset-password`, {
+        headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
+        data: { token: resetToken, password: replacementPassword, password_confirmation: replacementPassword },
+      });
+      if (foreignAttempt.status() < 400 || foreignAttempt.status() >= 500) {
+        throw new Error(`foreign-tenant reset presentation was not safely rejected (${foreignAttempt.status()})`);
+      }
+
+      await recoveryPage.goto(captured.url, { waitUntil: 'networkidle', timeout: 60000 });
+      await recoveryPage.getByLabel(/^new password$/i).fill(replacementPassword);
+      await recoveryPage.getByLabel(/confirm new password/i).fill(replacementPassword);
+      await recoveryPage.getByText(/strong enough/i).waitFor({ timeout: 10000 });
+      await recoveryPage.getByRole('button', { name: /^reset password$/i }).click();
+      await recoveryPage.getByRole('heading', { name: /password reset/i }).waitFor({ timeout: 15000 });
+
+      const invalidated = await recoveryPage.request.post(`${BASE}/api/auth/refresh-token`, {
+        headers: { 'X-Tenant-ID': String(arm.tenantId) },
+        data: { refresh_token: preResetRefresh },
+      });
+      if (invalidated.status() < 400 || invalidated.status() >= 500) {
+        throw new Error(`pre-reset session survived password change (${invalidated.status()})`);
+      }
+
+      const replayPage = await recoveryContext.newPage();
+      captureApiFrom(replayPage);
+      captureClientErrorsFrom(replayPage);
+      await replayPage.route('https://api.pwnedpasswords.com/**', (route) => route.fulfill({ status: 503, body: '' }));
+      await replayPage.goto(captured.url, { waitUntil: 'networkidle', timeout: 60000 });
+      const replayPassword = `Replay-${stamp}-safe-passphrase`;
+      await replayPage.getByLabel(/^new password$/i).fill(replayPassword);
+      await replayPage.getByLabel(/confirm new password/i).fill(replayPassword);
+      await replayPage.getByText(/strong enough/i).waitFor({ timeout: 10000 });
+      await replayPage.getByRole('button', { name: /^reset password$/i }).click();
+      await replayPage.getByRole('alert').waitFor({ timeout: 15000 });
+
+      const oldResult = await signInAs(oldLoginPage, EMAIL, PASSWORD, arm.communityLabel);
+      if (oldResult.ok) throw new Error('old password still signed in after reset');
+      const newResult = await signInAs(newLoginPage, EMAIL, replacementPassword, arm.communityLabel);
+      if (!newResult.ok) throw new Error(`new password did not sign in: ${newResult.reason}`);
+      await newLoginPage.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+      if (newLoginPage.url().includes('/login')) throw new Error('new password session could not reach a protected route');
+      console.log('    one captured email -> tenant-bound single-use reset -> old sessions refused -> new sign-in reached dashboard');
+    } finally {
+      await Promise.all([recoveryContext.close(), sessionContext.close(), oldLoginContext.close(), newLoginContext.close()]);
+      resetRecoveryFixture();
+    }
+  });
 
   // 🔴 `/feed` was missing from this list until 2026-08-20, which is why a feed rewrite had
   // no browser-level evidence at all. `/events` is here for the same reason: the dashboard
@@ -2405,44 +2586,85 @@ async function runArm(arm) {
     });
   }
 
-  // ── token refresh across expiry ────────────────────────────────────────────────
-  // 🔴 A short smoke lives entirely inside one access token, so it can pass while refresh
-  // is completely broken.
-  //
-  // 🔴 READ THE VERDICT CAREFULLY — this step reports CLIENT behaviour, not backend
-  // health, and on 2026-08-19 it produced a FALSE NEGATIVE that nearly went into a report
-  // as an ASP.NET fault. Deleting the access token from localStorage is NOT how expiry
-  // works: the client finds no token at all and redirects to /login without ever
-  // attempting a refresh. The backend was fine. Asked directly:
-  //
-  //     POST http://127.0.0.1:5080/api/auth/refresh  -> 200, new access token issued
-  //     the same token a second time                 -> 409 AUTH_REFRESH_SUPERSEDED
-  //                                                     (correct: refresh rotation)
-  //
-  // So "REFRESH FAILED" below means "this client did not silently recover from a missing
-  // token", which is a reasonable client behaviour, NOT evidence the backend cannot
-  // refresh. To test the backend, call the endpoint. To test true expiry, you need a
-  // short-lived access token, not a deleted one.
-  //
-  // 🔴 Laravel does not serve /api/auth/refresh at all — its routes are
-  // /auth/refresh-session and /auth/refresh-token (routes/api.php:3291, 3319). That the
-  // two backends disagree on the refresh ROUTE is a real, separate contract gap.
-  await step('token-refresh', async () => {
-    const before = await page.evaluate(() => ({
-      access: localStorage.getItem('nexus_access_token'),
-      refresh: localStorage.getItem('nexus_refresh_token'),
-    }));
-    if (!before.refresh) skip('no refresh token stored — cannot test refresh');
-    await page.evaluate(() => localStorage.removeItem('nexus_access_token'));
-    console.log('    access token removed, refresh token kept');
-    await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(5000);
-    const after = await page.evaluate(() => localStorage.getItem('nexus_access_token'));
-    const url = page.url().replace(BASE, '');
-    const recovered = !!after && !url.startsWith('/login');
-    console.log(`    new access token issued: ${!!after}`);
-    console.log(`    landed on: ${url}`);
-    console.log(`    ${recovered ? 'client recovered silently' : 'client did NOT silently recover (see the note above — not a backend verdict)'}`);
+  // ── real token expiry and refresh rotation ─────────────────────────────────────
+  // Both disposable backends mint five-second access tokens for this local control.
+  // The browser waits beyond the JWT exp claim, observes an ordinary protected 401,
+  // and leaves the unchanged ApiClient to recover through its exact refresh-token path.
+  await step('journey-real-token-expiry-refresh', async () => {
+    const otherContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const otherPage = await otherContext.newPage();
+    captureApiFrom(otherPage);
+    captureClientErrorsFrom(otherPage);
+    try {
+      const otherSignedIn = await signInAs(otherPage, EMAIL, PASSWORD, arm.communityLabel, 300);
+      if (!otherSignedIn.ok) throw new Error(`could not establish independent device: ${otherSignedIn.reason}`);
+
+      // Establish the measured session last. A five-second token would otherwise
+      // expire while the second browser is still traversing its login UI.
+      const signedIn = await signInAs(page, EMAIL, PASSWORD, arm.communityLabel, 300);
+      if (!signedIn.ok) throw new Error(`could not establish short-lived session: ${signedIn.reason}`);
+      const before = await credentialEvidence(page);
+      const originalRefresh = await page.evaluate(() => localStorage.getItem('nexus_refresh_token'));
+      if (!before.accessFingerprint || !before.refreshFingerprint || !before.claims?.exp || !originalRefresh) {
+        throw new Error('login did not produce a complete rotating session');
+      }
+
+      const observed = [];
+      const onResponse = (response) => {
+        if (response.url().includes('/api/')) observed.push({ path: new URL(response.url()).pathname, status: response.status() });
+      };
+      page.on('response', onResponse);
+      const waitMs = Math.max(0, (before.claims.exp * 1000) - Date.now() + 1200);
+      await page.waitForTimeout(waitMs);
+      await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForTimeout(1500);
+      page.off('response', onResponse);
+      const afterFirst = await credentialEvidence(page);
+      const refreshCalls = observed.filter((entry) => entry.path === '/api/auth/refresh-token');
+      const expired401s = observed.filter((entry) => entry.status === 401 && entry.path !== '/api/auth/refresh-token');
+      if (refreshCalls.length !== 1) throw new Error(`expired burst made ${refreshCalls.length} refresh calls instead of one`);
+      if (expired401s.length < 1) throw new Error('no normal protected request observed the genuine bearer expiry');
+      if (page.url().includes('/login')) throw new Error('client returned to login instead of recovering silently');
+      if (afterFirst.accessFingerprint === before.accessFingerprint || afterFirst.refreshFingerprint === before.refreshFingerprint) {
+        throw new Error('refresh did not rotate both access and refresh credentials');
+      }
+      if (afterFirst.claims?.subject !== before.claims.subject || afterFirst.claims?.tenantId !== before.claims.tenantId) {
+        throw new Error('rotated access token changed the user or tenant claim');
+      }
+
+      const superseded = await page.request.post(`${BASE}/api/auth/refresh-token`, {
+        headers: { 'X-Tenant-ID': String(arm.tenantId) },
+        data: { refresh_token: originalRefresh },
+      });
+      if (superseded.status() !== 409) throw new Error(`superseded refresh was not rejected with transient 409 (${superseded.status()})`);
+
+      const currentRefresh = await page.evaluate(() => localStorage.getItem('nexus_refresh_token'));
+      const foreign = await page.request.post(`${BASE}/api/auth/refresh-token`, {
+        headers: { 'X-Tenant-ID': String(arm.foreignTenantId) },
+        data: { refresh_token: currentRefresh },
+      });
+      if (foreign.status() < 400 || foreign.status() >= 500) {
+        throw new Error(`foreign tenant consumed a refresh credential (${foreign.status()})`);
+      }
+
+      const waitAgain = Math.max(0, ((afterFirst.claims?.exp || 0) * 1000) - Date.now() + 1200);
+      await page.waitForTimeout(waitAgain);
+      await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      const afterSecond = await credentialEvidence(page);
+      if (afterSecond.refreshFingerprint === afterFirst.refreshFingerprint || page.url().includes('/login')) {
+        throw new Error('winning successor did not remain usable for the next real expiry');
+      }
+
+      await page.locator('[data-user-menu]').click({ timeout: 15000 });
+      await page.getByRole('menuitem', { name: /Log Out/i }).click({ timeout: 15000 });
+      await page.waitForURL(/\/login(?:$|[?#])/, { timeout: 20000 });
+      await otherPage.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+      if (otherPage.url().includes('/login')) throw new Error('logging out current device invalidated the unrelated device session');
+      console.log(`    real expiry 401 -> one refresh -> rotated fingerprints ${before.accessFingerprint}/${before.refreshFingerprint} -> ${afterFirst.accessFingerprint}/${afterFirst.refreshFingerprint}`);
+    } finally {
+      await otherContext.close();
+    }
   });
 
   // ── SIGN OUT + SERVER-SIDE SESSION INVALIDATION (journeys 1.5 + 1.36) ────────
@@ -2713,6 +2935,9 @@ const ASPNET_ARM = {
   messageActorToken: process.env.SMOKE_MESSAGE_TOKEN_ASPNET || 'Alice',
   profileOriginalTagline: process.env.SMOKE_PROFILE_ORIGINAL_ASPNET || 'Handy neighbour offering repairs, gardening and mentoring.',
   crossTenantUserId: Number(process.env.SMOKE_CROSS_TENANT_ID_ASPNET || 2),
+  tenantId: Number(process.env.SMOKE_TENANT_ID_ASPNET || 1),
+  tenantSlug: process.env.SMOKE_TENANT_SLUG_ASPNET || 'acme',
+  foreignTenantId: Number(process.env.SMOKE_FOREIGN_TENANT_ID_ASPNET || 2),
 };
 
 // Each side signs in with its OWN fixture's member — the fixtures hold different users
@@ -2731,13 +2956,13 @@ const LARAVEL_ARM = {
   transferSearch: process.env.SMOKE_TRANSFER_SEARCH_LARAVEL || 'E2E UserB',
   expectedSelfName: process.env.SMOKE_SELF_NAME_LARAVEL || 'E2E UserA',
   expectedMemberName: process.env.SMOKE_MEMBER_NAME_LARAVEL || 'E2E',
-  providerId: Number(process.env.SMOKE_PROVIDER_ID_LARAVEL || 900015),
-  selfId: Number(process.env.SMOKE_SELF_ID_LARAVEL || 900014),
-  relationshipActorId: Number(process.env.SMOKE_RELATIONSHIP_ID_LARAVEL || 900015),
+  providerId: Number(process.env.SMOKE_PROVIDER_ID_LARAVEL || 900022),
+  selfId: Number(process.env.SMOKE_SELF_ID_LARAVEL || 900021),
+  relationshipActorId: Number(process.env.SMOKE_RELATIONSHIP_ID_LARAVEL || 900022),
   relationshipActorEmail: process.env.SMOKE_RELATIONSHIP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
   relationshipActorPassword: process.env.SMOKE_RELATIONSHIP_PASSWORD_LARAVEL || 'TestPassword123!',
   relationshipActorName: process.env.SMOKE_RELATIONSHIP_NAME_LARAVEL || 'E2E UserB',
-  messageActorId: Number(process.env.SMOKE_MESSAGE_ID_LARAVEL || 900015),
+  messageActorId: Number(process.env.SMOKE_MESSAGE_ID_LARAVEL || 900022),
   messageActorEmail: process.env.SMOKE_MESSAGE_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',
   messageActorPassword: process.env.SMOKE_MESSAGE_PASSWORD_LARAVEL || 'TestPassword123!',
   messageActorName: process.env.SMOKE_MESSAGE_NAME_LARAVEL || 'E2E UserB',
@@ -2745,6 +2970,9 @@ const LARAVEL_ARM = {
   messageActorToken: process.env.SMOKE_MESSAGE_TOKEN_LARAVEL || 'E2E',
   profileOriginalTagline: process.env.SMOKE_PROFILE_ORIGINAL_LARAVEL || '',
   crossTenantUserId: Number(process.env.SMOKE_CROSS_TENANT_ID_LARAVEL || 950011),
+  tenantId: Number(process.env.SMOKE_TENANT_ID_LARAVEL || 1),
+  tenantSlug: process.env.SMOKE_TENANT_SLUG_LARAVEL || 'acme',
+  foreignTenantId: Number(process.env.SMOKE_FOREIGN_TENANT_ID_LARAVEL || 950001),
   // User A owns the sole disposable-control event and correctly receives no RSVP
   // actions on it. User B is the ordinary attendee fixture for this one journey.
   rsvpActorEmail: process.env.SMOKE_RSVP_EMAIL_LARAVEL || 'e2e.user.b@project-nexus.local',

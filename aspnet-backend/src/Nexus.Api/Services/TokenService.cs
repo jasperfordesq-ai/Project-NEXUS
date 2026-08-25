@@ -21,10 +21,12 @@ namespace Nexus.Api.Services;
 public class TokenService
 {
     private readonly IConfiguration _config;
+    private readonly IHostEnvironment? _environment;
 
-    public TokenService(IConfiguration config)
+    public TokenService(IConfiguration config, IHostEnvironment? environment = null)
     {
         _config = config;
+        _environment = environment;
     }
 
     public string GenerateJwt(User user, params string[] authenticationMethods)
@@ -35,8 +37,7 @@ public class TokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var expiryMinutes = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes", 120);
-        var expires = DateTime.UtcNow.AddMinutes(expiryMinutes);
+        var expires = DateTime.UtcNow.AddSeconds(AccessTokenExpirySeconds);
 
         // Claims must match PHP structure for interoperability
         var claims = new List<Claim>
@@ -118,8 +119,23 @@ public class TokenService
         }
     }
 
-    public int AccessTokenExpirySeconds =>
-        _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes", 120) * 60;
+    public int AccessTokenExpirySeconds
+    {
+        get
+        {
+            // Certification needs to observe a genuinely expired bearer in one
+            // bounded run. The seconds override is deliberately inert outside
+            // Development/Testing, even if somebody sets it in production.
+            var testSeconds = _config.GetValue<int?>("Jwt:TestAccessTokenExpirySeconds");
+            if ((_environment?.IsDevelopment() == true || _environment?.IsEnvironment("Testing") == true)
+                && testSeconds is > 0 and <= 60)
+            {
+                return testSeconds.Value;
+            }
+
+            return _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes", 120) * 60;
+        }
+    }
 
     /// <summary>Laravel IMPERSONATION_TOKEN_EXPIRY: the proof lives 5 minutes.</summary>
     public const int ImpersonationProofExpirySeconds = 300;

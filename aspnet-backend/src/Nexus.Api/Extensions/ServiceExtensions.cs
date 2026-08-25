@@ -76,7 +76,13 @@ public static class ServiceExtensions
         // If SendGrid is disabled, we still want Gmail registered for direct use.
         services.AddScoped<SendGridEmailService>();
         services.AddHttpClient<GmailEmailService>();
-        if (configuration.GetValue("SendGrid:Enabled", false))
+        services.AddScoped<SmtpCaptureEmailService>();
+        var useLocalSmtpCapture = configuration.GetValue("SmtpCapture:Enabled", false)
+            && (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Development", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Testing", StringComparison.OrdinalIgnoreCase));
+        if (useLocalSmtpCapture)
+            services.AddScoped<IEmailService>(sp => sp.GetRequiredService<SmtpCaptureEmailService>());
+        else if (configuration.GetValue("SendGrid:Enabled", false))
             services.AddScoped<IEmailService, FallbackEmailService>();
         else
             services.AddScoped<IEmailService>(sp => sp.GetRequiredService<GmailEmailService>());
