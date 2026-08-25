@@ -29,6 +29,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Store screenshots — two full sets of eight, taken from the real app.** Not
+  mockups: the release build, running against the live Partner Demo community,
+  captured at full phone resolution with a tidied status bar. Light and dark, so
+  you can pick whichever suits the listing.
+  Getting there meant tidying the demo community itself, and it is worth knowing
+  what changed in case a partner walkthrough relied on the old wording. Every
+  listing title had begun "Timebank request:" — which the badge beside it already
+  says — and several described testing the software rather than offering anything
+  ("sanity-check the listings demo flow"). All twenty are rewritten as ordinary
+  offers and requests set across West Cork; six requests became offers, because a
+  board of nineteen requests and one offer reads as a queue of people wanting
+  things rather than a timebank; thirty-one members who lived at "Data room" or
+  "Volunteer desk" now live in real towns; and one listing whose owner was not a
+  member of the community at all has been removed. The originals are archived and
+  every field can be put back.
+
 - **Everything that could be prepared for the Google Play Store, ahead of your
   account being verified.** A new page,
   [mobile/docs/PLAY_SUBMISSION.md](mobile/docs/PLAY_SUBMISSION.md), holds the

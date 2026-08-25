@@ -285,7 +285,7 @@ public release produces.
 | --- | --- | --- |
 | App icon | 512×512 PNG, 32-bit | ✅ `store-listing/play-icon-512.png`. 🔴 `assets/icon.png` is 1024², which Play rejects — that is why this exists |
 | Feature graphic | 1024×500, no transparency | ✅ `store-listing/play-feature-graphic-1024x500.png`, drafted and verified to have zero transparent pixels |
-| Phone screenshots | 2–8, 16:9 or 9:16, 320–3840 px | ❌ **Not produced, deliberately** — see below |
+| Phone screenshots | 2–8, 16:9 or 9:16, 320–3840 px | ✅ **Two full sets of 8**, `store-listing/screenshots/{light,dark}/` |
 | Tablet screenshots | optional | ❌ Not captured; the app has never been walked at tablet width |
 
 Both graphics are generated, so they can be changed by anyone:
@@ -301,18 +301,39 @@ at 1024×500 by the Playwright chromium the repository already installs. Edit th
 the script. It is a **draft by a developer, not a designer**: it says the right things in the
 brand colour, and it will not embarrass the listing, but a designer would do better.
 
-**Why no screenshots.** The only community on this machine is the development fixture, so
-every screen shows test members and test listings ("E2E User", "Disposable Walker"). Those
-are fine for judging layout and wrong for a public shop window — and a listing screenshot is
-the single most-looked-at asset there is. Take them from a real community with real content,
-with `npm run screenshot:tour` (the harness drives the emulator through the screens and
-saves 1080×2400 PNGs, which Play accepts as-is).
+### The screenshots, and why they can be published
 
-🔴 The screenshot drafts were captured from the **development fixture community**, so they
-show test members and test listings. Fine for judging layout, wrong for a public listing:
-either populate a presentable community first or curate which screens are used.
+Captured 2026-08-25 from the **real release build against the live Partner Demo community** —
+not mockups, not a development build. Full detail in
+[`store-listing/screenshots/README.md`](../store-listing/screenshots/README.md); the essentials:
 
----
+- Every person shown is fictional. Partner Demo has no real members; its 43 accounts are
+  seeded and their photographs were generated and cleared for commercial use.
+- The logo is Timebank Ireland's, used with the directors' agreement.
+- **The privacy risk that had to be ruled out first** was cross-community content: this
+  platform can share listings between communities, which could have put a real member's post
+  into a public screenshot. It cannot happen here — sharing needs an active partnership AND
+  the listing's owner to opt in per listing, and the member directory has no federation path
+  at all. Measured on the day: zero federated listings, zero unresolvable members.
+- Light or dark, both complete. Pick one and stay with it.
+
+🔴 **The demo community was edited to make this possible**, and it is worth knowing what
+changed in case a partner walkthrough depended on the old wording:
+
+- **All 20 listings rewritten.** Every title had begun "Timebank request:" — which the card's
+  own chip already says — and several described testing the software ("sanity-check the
+  listings demo flow", "test three AI support questions"). Titles, descriptions and the
+  "Partner Demo Hub" placeholder locations are now ordinary community wording set across West
+  Cork.
+- **Six requests became offers.** A board of 19 requests and 1 offer reads as a queue of
+  people wanting things; half the point of a timebank is what people will give. Now 8 offers
+  and 12 requests.
+- **31 member locations fixed** — they had been "Data room", "Volunteer desk", "Access lab".
+- **One listing deleted**: its owner was not a member of this community, so it rendered as
+  "Unknown" whatever the app did.
+
+Originals are archived in `.local-docs-archive/partner-demo-2026-08-25/` (gitignored) and
+every field can be put back.
 
 ## Data Safety form — drafted from the code, not from memory
 
@@ -375,8 +396,13 @@ a wrong answer here is grounds for removal later.
 
 ## What is still missing, plainly
 
-- A signed build, and therefore any evidence that a store build works.
-- A feature graphic, and screenshots that are not of test data.
+- **A signed build, and therefore any evidence that a store build works.** This is the last
+  real gap. Everything captured so far came from a locally built release APK signed with the
+  debug key: correct in every respect a screenshot can show, and not the artefact Play will
+  receive.
+- **Tablet screenshots**, if the listing is to claim tablet support. The app has never been
+  walked at tablet width, so that claim should not be made yet.
+- A **designer's** feature graphic, if the developer draft is not good enough.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
   the nightly sweep are all in place and verified.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.
