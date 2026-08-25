@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Notifica segnata come letta.',
             'all-notifications-deleted' => 'Tutte le notifiche eliminate.',
             'group-marked-read' => 'Queste notifiche sono state contrassegnate come lette.',
+        'action-failed' => 'Non è stato possibile completare quell\'azione. Riprova.',
         ],
     ],
     'activity' => [

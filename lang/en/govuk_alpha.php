@@ -2052,6 +2052,7 @@ return [
             'notification-marked-read' => 'Notification marked as read.',
             'all-notifications-deleted' => 'All notifications deleted.',
             'group-marked-read' => 'These notifications have been marked as read.',
+        'action-failed' => 'We could not complete that action. Please try again.',
         ],
     ],
     'activity' => [

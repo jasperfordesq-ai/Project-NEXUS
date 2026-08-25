@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Melding als gelezen gemarkeerd.',
             'all-notifications-deleted' => 'Alle meldingen verwijderd.',
             'group-marked-read' => 'Deze meldingen zijn als gelezen gemarkeerd.',
+        'action-failed' => 'We konden die actie niet uitvoeren. Probeer het opnieuw.',
         ],
     ],
     'activity' => [

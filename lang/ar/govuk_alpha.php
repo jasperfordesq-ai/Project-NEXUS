@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'تم تحديد الإشعار كمقروء.',
             'all-notifications-deleted' => 'تم حذف جميع الإشعارات.',
             'group-marked-read' => 'تم وضع علامة على هذه الإشعارات كمقروءة.',
+        'action-failed' => 'تعذّر إتمام هذا الإجراء. يرجى المحاولة مجددًا.',
         ],
     ],
     'activity' => [

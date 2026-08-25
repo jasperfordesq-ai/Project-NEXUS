@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Notificação marcada como lida.',
             'all-notifications-deleted' => 'Todas as notificações eliminadas.',
             'group-marked-read' => 'Essas notificações foram marcadas como lidas.',
+        'action-failed' => 'Não foi possível concluir essa ação. Tente novamente.',
         ],
     ],
     'activity' => [

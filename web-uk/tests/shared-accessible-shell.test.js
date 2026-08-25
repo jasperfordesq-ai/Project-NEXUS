@@ -17157,7 +17157,10 @@ describe('shared accessible frontend shell', () => {
       .send({ _csrf: csrfMatch[1] });
 
     expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/notifications');
+    // 🔴 Carries `?status=notification-marked-read` since 2026-08-25. This line
+    //    asserted a bare '/notifications', which pinned the one action on this
+    //    page that confirmed nothing — see notifications-announce-outcome.test.js.
+    expect(response.headers.location).toBe('/notifications?status=notification-marked-read');
     expect(api.markNotificationRead).toHaveBeenCalledWith('test-token', '7');
 
     // "Mark as read and view" posts a FLAG, never a destination: the route reads
@@ -17182,7 +17185,8 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({ _csrf: csrfMatch[1], follow: '1' });
 
-    expect(refused.headers.location).toBe('/notifications');
+    // Falls back to the inbox — and still announces the mark-as-read that DID succeed.
+    expect(refused.headers.location).toBe('/notifications?status=notification-marked-read');
   });
 
   it('submits a single notification delete through the Laravel v2 API helper', async () => {

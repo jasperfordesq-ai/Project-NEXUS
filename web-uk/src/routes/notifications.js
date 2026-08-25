@@ -139,7 +139,13 @@ router.get('/', asyncRoute(async (req, res) => {
     meta,
     showUnreadOnly,
     status: typeof req.query.status === 'string' ? req.query.status : '',
-    successMessage: req.flash ? req.flash('success')[0] : null
+    successMessage: req.flash ? req.flash('success')[0] : null,
+    // 🔴 Every POST in this file flashes an `error` on failure, and until
+    // 2026-08-25 nothing rendered it — the page had a success banner and no
+    // error banner at all. A failed "mark all as read" reloaded the inbox
+    // unchanged and said nothing, which on a no-JS page a screen reader
+    // announces as nothing happening rather than as a failure.
+    errorMessage: req.flash ? req.flash('error')[0] : null
   });
 }));
 
@@ -154,7 +160,7 @@ router.post('/group/read', asyncRoute(async (req, res) => {
     await markNotificationGroupRead(req.token, groupKey);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    if (req.flash) req.flash('error', error.message || 'Unable to mark grouped notifications as read');
+    if (req.flash) req.flash('error', res.locals.t('notifications.states.action-failed'));
     // 🔴 Return HERE. Falling through to the success `?status=` below told the
     // member "marked as read" while the notifications stayed unread — the sibling
     // POST /:id/read (below) already returns inside its catch; these two did not.
@@ -179,7 +185,7 @@ router.post('/:id/read', asyncRoute(async (req, res) => {
     await markNotificationRead(req.token, id);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    if (req.flash) req.flash('error', error.message || 'Unable to mark notification as read');
+    if (req.flash) req.flash('error', res.locals.t('notifications.states.action-failed'));
     return redirectTo(res, NOTIFICATIONS_PATH);
   }
 
@@ -195,12 +201,23 @@ router.post('/:id/read', asyncRoute(async (req, res) => {
         if (error instanceof ApiError && error.status === 401) throw error;
         return '';
       });
-    if (target) {
-      return redirectTo(res, validateReturnUrl(target, NOTIFICATIONS_PATH));
+    // 🔴 Validate against an EMPTY fallback, not NOTIFICATIONS_PATH. With the
+    // inbox as the fallback a refused off-site link returned right here, so the
+    // member landed on a silent inbox with no word that the mark-as-read had
+    // actually succeeded. An empty result now falls through to the announced
+    // redirect below, which is the same outcome the plain button gives.
+    const safeTarget = validateReturnUrl(target, '');
+    if (safeTarget) {
+      return redirectTo(res, safeTarget);
     }
   }
 
-  redirectTo(res, NOTIFICATIONS_PATH);
+  // 🔴 Announce it. `notification-marked-read` and its eleven translations have
+  // existed since this page was written, and index.njk already whitelisted the
+  // status — the redirect just never carried it, so marking ONE notification
+  // read was the only action on this page that confirmed nothing. Its four
+  // siblings (read-all, delete, delete-all, group/read) all announce.
+  redirectTo(res, `${NOTIFICATIONS_PATH}?status=notification-marked-read`);
 }));
 
 // Mark all notifications as read
@@ -215,7 +232,7 @@ router.post('/read-all', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    if (req.flash) req.flash('error', error.message || 'Unable to mark notifications as read');
+    if (req.flash) req.flash('error', res.locals.t('notifications.states.action-failed'));
   }
 
   redirectTo(res, NOTIFICATIONS_PATH);
@@ -227,7 +244,7 @@ router.post('/delete-all', asyncRoute(async (req, res) => {
     await deleteAllNotificationsApi(req.token);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    if (req.flash) req.flash('error', error.message || 'Unable to delete notifications');
+    if (req.flash) req.flash('error', res.locals.t('notifications.states.action-failed'));
     // 🔴 Return HERE — see the note on group/read above. Without it a failed delete
     // still announced "all notifications deleted".
     return redirectTo(res, NOTIFICATIONS_PATH);
@@ -248,7 +265,7 @@ router.post('/:id/delete', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    if (req.flash) req.flash('error', error.message || 'Unable to delete notification');
+    if (req.flash) req.flash('error', res.locals.t('notifications.states.action-failed'));
   }
 
   redirectTo(res, NOTIFICATIONS_PATH);

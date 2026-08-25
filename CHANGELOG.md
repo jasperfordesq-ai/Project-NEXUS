@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The accessible site's Notifications page now tells you what happened.** Two silences, both found by using the page. Marking a single notification as read said nothing at all — every other button there (mark all as read, delete, delete all, mark a group read) confirms itself, and the confirmation wording for this one had already been written and translated into all eleven languages. It had simply never been switched on. Worse, when any of these actions failed, the page reloaded looking exactly the same and said nothing — so a failed "mark all as read" was indistinguishable from a successful one. Failures now say so, in the reader's own language rather than in English. This matters most for people using a screen reader, who get no visual cue that a page changed.
+
 - **Everyone reading the app in English was seeing American dates.** A listing
   posted on 17 August showed as "8/17/2026" — month first — on a platform built
   for Ireland and the UK. The app deliberately follows the language you pick in

@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Notification marquée comme lue.',
             'all-notifications-deleted' => 'Toutes les notifications ont été supprimées.',
             'group-marked-read' => 'Ces notifications ont été marquées comme lues.',
+        'action-failed' => 'Nous n\'avons pas pu effectuer cette action. Veuillez réessayer.',
         ],
     ],
     'activity' => [

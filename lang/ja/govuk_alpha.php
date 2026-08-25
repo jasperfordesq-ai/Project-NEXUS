@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => '通知を既読にしました。',
             'all-notifications-deleted' => 'すべての通知を削除しました。',
             'group-marked-read' => 'これらの通知は既読としてマークされました。',
+        'action-failed' => 'そのアクションを完了できませんでした。もう一度お試しください。',
         ],
     ],
     'activity' => [

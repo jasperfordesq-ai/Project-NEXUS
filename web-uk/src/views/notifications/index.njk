@@ -14,6 +14,19 @@
     {% include "partials/notification-banner.njk" %}
   {% endif %}
 
+  {# 🔴 The routes have always flashed an `error` on failure; nothing rendered it,
+     so every failed action on this page reloaded the inbox in silence. #}
+  {% if errorMessage %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="notification-error-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="notification-error-title">{{ t("states.important") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ errorMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
   {% if status == "marked-read" or status == "group-marked-read" or status == "notification-deleted" or status == "notification-marked-read" or status == "all-notifications-deleted" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="notification-status-title">
       <div class="govuk-notification-banner__header">

@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Powiadomienie oznaczono jako przeczytane.',
             'all-notifications-deleted' => 'Wszystkie powiadomienia zostały usunięte.',
             'group-marked-read' => 'Te powiadomienia zostały oznaczone jako przeczytane.',
+        'action-failed' => 'Nie udało się wykonać tej czynności. Spróbuj ponownie.',
         ],
     ],
     'activity' => [

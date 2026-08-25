@@ -2026,6 +2026,7 @@ return [
             'notification-marked-read' => 'Benachrichtigung als gelesen markiert.',
             'all-notifications-deleted' => 'Alle Benachrichtigungen gelöscht.',
             'group-marked-read' => 'Diese Benachrichtigungen wurden als gelesen markiert.',
+        'action-failed' => 'Diese Aktion konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
         ],
     ],
     'activity' => [

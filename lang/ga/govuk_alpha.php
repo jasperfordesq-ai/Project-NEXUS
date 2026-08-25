@@ -2028,6 +2028,7 @@ return [
             'notification-marked-read' => 'Marcáladh an fógra mar léite.',
             'all-notifications-deleted' => 'Scriosadh gach fógra.',
             'group-marked-read' => 'Tá na fógraí seo marcáilte mar léite.',
+        'action-failed' => 'Níorbh fhéidir an gníomh sin a chríochnú. Bain triail eile as.',
         ],
     ],
     'activity' => [
