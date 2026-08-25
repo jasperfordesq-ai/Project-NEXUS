@@ -110,17 +110,31 @@ function normalizeSafeguardingOption(option) {
   };
 }
 
-function statusBanner(status) {
-  const messages = {
-    'bio-too-short': { type: 'error', anchor: 'bio', message: 'Please add a short bio before continuing.' },
-    'avatar-required': { type: 'error', anchor: 'avatar', message: 'Please add a profile photo before continuing.' },
-    'avatar-failed': { type: 'error', anchor: 'avatar', message: 'We could not upload that photo. Please try again.' },
-    'safeguarding-failed': { type: 'error', anchor: null, message: 'We could not save your answers. Please try again.' },
-    'complete-failed': { type: 'error', anchor: null, message: 'Something went wrong. Please try again.' },
-    'avatar-saved': { type: 'success', message: 'Your photo has been uploaded.' }
+/**
+ * 🔴 The message comes from the CATALOGUE, not from a literal here.
+ *
+ * All six of these strings have existed under `govuk_alpha.onboarding.states.*`
+ * — translated into all eleven languages — for as long as this wizard has. The
+ * English literals that stood here were rendered straight into the page, so a
+ * member setting up their account in Irish, Polish or Arabic met English error
+ * messages on the very first thing they do here. Follows the same shape as
+ * statusBanner() in blog-posts.js and federation.js.
+ */
+function statusBanner(status, t) {
+  const banners = {
+    'bio-too-short': { type: 'error', anchor: 'bio' },
+    'avatar-required': { type: 'error', anchor: 'avatar' },
+    'avatar-failed': { type: 'error', anchor: 'avatar' },
+    'safeguarding-failed': { type: 'error', anchor: null },
+    'complete-failed': { type: 'error', anchor: null },
+    'avatar-saved': { type: 'success' }
   };
 
-  return messages[String(status || '').trim()] || null;
+  const statusKey = String(status || '').trim();
+  const banner = banners[statusKey];
+  return banner
+    ? { ...banner, message: t(`govuk_alpha.onboarding.states.${statusKey}`) }
+    : null;
 }
 
 function collectIds(value) {
@@ -185,12 +199,29 @@ function completeFailureRedirect(error) {
     return '/onboarding/confirm?status=complete-failed';
   }
 
-  const field = String(error.data?.field || '');
+  // 🔴 The field lives at `data.errors[0].field`, NOT `data.field` — that is the
+  // shape every v2 endpoint returns and the shape ApiError is handed. Reading
+  // the wrong level meant neither branch below could ever match.
+  //
+  // The message fallbacks could not save it either: the API says "Profile photo
+  // is required to complete onboarding" and "Tell us a little about yourself",
+  // neither of which contains "avatar" or "bio".
+  //
+  // The result was that a member who had not uploaded a photo pressed "Finish"
+  // on the last step, was told "Something went wrong. Please try again.", and
+  // had no way to discover that a photo was the thing missing. Retrying could
+  // never work. And onboarding that never completes is not cosmetic: it is what
+  // keeps a member's profile out of the member directory.
+  const fields = Array.isArray(error.data?.errors)
+    ? error.data.errors.map((item) => String(item?.field || '')).filter(Boolean)
+    : [];
+  if (error.data?.field) fields.push(String(error.data.field));
   const message = String(error.message || '');
-  if (field === 'avatar_url' || /avatar/i.test(message)) {
+
+  if (fields.includes('avatar_url') || fields.includes('avatar') || /avatar|profile photo/i.test(message)) {
     return '/onboarding/profile?status=avatar-required';
   }
-  if (field === 'bio' || /bio/i.test(message)) {
+  if (fields.includes('bio') || /(^|\W)bio(\W|$)|about yourself/i.test(message)) {
     return '/onboarding/profile?status=bio-too-short';
   }
   return '/onboarding/confirm?status=complete-failed';
@@ -271,7 +302,7 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       categories,
       safeguardingOptions,
       onboardingUser,
-      statusBanner: statusBanner(req.query && req.query.status)
+      statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
     });
   } catch (error) {
     if (isAuthError(error)) return redirectTo(res, '/login?status=auth-required');
@@ -380,3 +411,6 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+// Exported for its own test: the message must come from the catalogue, and
+// a wrong lookup path renders a raw key at a member.
+module.exports.onboardingStatusBanner = statusBanner;
