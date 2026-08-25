@@ -580,7 +580,13 @@ async function runArm(arm) {
         claims = { subject: String(parsed.sub ?? parsed.user_id ?? ''), tenantId: String(parsed.tenant_id ?? ''), exp: Number(parsed.exp ?? 0) };
       }
     }
-    return { accessFingerprint: await fingerprint(access), refreshFingerprint: await fingerprint(refresh), claims };
+    return {
+      access,
+      refresh,
+      accessFingerprint: await fingerprint(access),
+      refreshFingerprint: await fingerprint(refresh),
+      claims,
+    };
   });
 
   // ── PASSWORD RESET (journey 1.6) ─────────────────────────────────────────────
@@ -2619,11 +2625,8 @@ async function runArm(arm) {
       const signedIn = await signInAs(measuredPage, EMAIL, PASSWORD, arm.communityLabel, 300);
       if (!signedIn.ok) throw new Error(`could not establish short-lived session: ${signedIn.reason}`);
       const before = await credentialEvidence(measuredPage);
-      const originalCredentials = await measuredPage.evaluate(() => ({
-        access: localStorage.getItem('nexus_access_token'),
-        refresh: localStorage.getItem('nexus_refresh_token'),
-      }));
-      const originalRefresh = originalCredentials.refresh;
+      const originalCredentials = { access: before.access, refresh: before.refresh };
+      const originalRefresh = before.refresh;
       if (!before.accessFingerprint || !before.refreshFingerprint || !before.claims?.exp
         || !originalCredentials.access || !originalRefresh) {
         throw new Error('login did not produce a complete rotating session');
