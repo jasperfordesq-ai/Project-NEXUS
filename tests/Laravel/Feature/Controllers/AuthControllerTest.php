@@ -524,6 +524,30 @@ class AuthControllerTest extends TestCase
             ->assertJsonPath('refresh_token_revoked', true);
     }
 
+    public function test_logout_revokes_the_presented_access_and_refresh_credentials(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'email_verified_at' => now(),
+        ]);
+        $tokens = app(TokenService::class);
+        $access = $tokens->generateToken((int) $user->id, $this->testTenantId);
+        $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
+
+        $this->apiPost('/auth/logout', [
+            'refresh_token' => $refresh,
+        ], [
+            'Authorization' => 'Bearer ' . $access,
+        ])->assertOk();
+
+        $this->assertNull($tokens->validateToken($access));
+        $this->assertNull($tokens->validateRefreshToken($refresh));
+        $this->apiGet('/v2/users/me', [
+            'Authorization' => 'Bearer ' . $access,
+        ])->assertUnauthorized();
+    }
+
     public function test_revoke_all_fails_closed_when_session_revocation_cannot_be_persisted(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([

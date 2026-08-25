@@ -41,6 +41,72 @@ public class OnboardingControllerTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task GetV2Config_ReturnsActiveWizardStepsAndTenantSettings()
+    {
+        await AuthenticateAsMemberAsync();
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            db.TenantConfigs.Add(new TenantConfig
+            {
+                TenantId = TestData.Tenant1.Id,
+                Key = "onboarding.bio_min_length",
+                Value = "24",
+                CreatedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Client.GetAsync("/api/v2/onboarding/config");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        content.GetProperty("data").GetProperty("config").GetProperty("bio_min_length").GetInt32().Should().Be(24);
+        content.GetProperty("data").GetProperty("steps").GetArrayLength().Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task GetV2Status_ReflectsProfileAndPersistedCompletion()
+    {
+        await AuthenticateAsMemberAsync();
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            var user = await db.Users.FindAsync(TestData.MemberUser.Id);
+            user!.AvatarUrl = "/uploads/test/avatar.png";
+            user.Bio = "A complete onboarding profile.";
+            var step = new OnboardingStep
+            {
+                TenantId = TestData.Tenant1.Id,
+                Key = $"required_{Guid.NewGuid():N}",
+                Title = "Required",
+                IsRequired = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.OnboardingSteps.Add(step);
+            await db.SaveChangesAsync();
+            db.Set<OnboardingProgress>().Add(new OnboardingProgress
+            {
+                TenantId = TestData.Tenant1.Id,
+                UserId = TestData.MemberUser.Id,
+                StepId = step.Id,
+                IsCompleted = true,
+                CompletedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Client.GetAsync("/api/v2/onboarding/status");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var data = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
+        data.GetProperty("onboarding_completed").GetBoolean().Should().BeTrue();
+        data.GetProperty("has_avatar").GetBoolean().Should().BeTrue();
+        data.GetProperty("has_bio").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CompleteStep_AsMember_ReturnsOkOrBadRequest()
     {
         await AuthenticateAsMemberAsync();

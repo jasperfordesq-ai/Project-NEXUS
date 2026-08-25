@@ -1982,18 +1982,18 @@ async function runArm(arm) {
         // Verification itself normally arrives through email. The disposable runtime
         // instrument advances that external boundary in each arm's own database, then
         // removes this new user's acceptance so the unchanged UI must present and save
-        // the legal gate. Both mutations are confined to generated smoke addresses.
+        // the legal gate. Onboarding is deliberately left incomplete: the same
+        // disposable member must finish it through the unchanged React wizard below.
+        // Both mutations are confined to generated smoke addresses.
         if (arm.key === 'aspnet') {
           const sql = `UPDATE users SET "EmailVerified"=true, "EmailVerifiedAt"=now(), "IsActive"=true, "RegistrationStatus"='Active', is_approved=true WHERE "Email"='${email}';\n`
-            + `INSERT INTO onboarding_progress ("TenantId","UserId","StepId","IsCompleted","CompletedAt","CreatedAt") `
-            + `SELECT s."TenantId",u."Id",s."Id",true,now(),now() FROM onboarding_steps s JOIN users u ON u."TenantId"=s."TenantId" `
-            + `WHERE u."Email"='${email}' AND s."IsRequired"=true ON CONFLICT ("UserId","StepId") DO UPDATE SET "IsCompleted"=true,"CompletedAt"=now();\n`
+            + `DELETE FROM onboarding_progress WHERE "UserId"=(SELECT "Id" FROM users WHERE "Email"='${email}');\n`
             + `DELETE FROM legal_document_acceptances WHERE "UserId"=(SELECT "Id" FROM users WHERE "Email"='${email}');`;
           execSync('docker exec -i nexus-aspnet-dev-db psql -U postgres -d nexus_dev', {
             input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000,
           });
         } else {
-          const sql = `UPDATE users SET is_verified=1, email_verified_at=NOW(), is_active=1, is_approved=1, status='active', onboarding_completed=1 WHERE email='${email}';\n`
+          const sql = `UPDATE users SET is_verified=1, email_verified_at=NOW(), is_active=1, is_approved=1, status='active', onboarding_completed=0 WHERE email='${email}';\n`
             + `DELETE ula FROM user_legal_acceptances ula JOIN users u ON u.id=ula.user_id WHERE u.email='${email}';`;
           execSync('docker exec -i nexus-laravel-throwaway-db mariadb -unexus -pnexus_secret nexus', {
             input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000,
@@ -2026,26 +2026,87 @@ async function runArm(arm) {
             try { legalStatus = (await statusResponse.json())?.data ?? null; } catch { /* assertion below names the missing state */ }
           }
           console.log(`    legal status -> ${JSON.stringify(legalStatus)}`);
-          const acceptButton = firstSignInPage.getByRole('button', { name: /Accept all updated legal documents and continue|Accept & Continue/i }).first();
-          await acceptButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-          const gate = await acceptButton.isVisible().catch(() => false);
-          console.log(`    first sign-in of the verified NEW member -> ${firstSignInPage.url().replace(BASE, '')} | legal gate visible: ${gate}`);
+          console.log(`    first sign-in of the verified NEW member -> ${firstSignInPage.url().replace(BASE, '')}`);
           if (!legalStatus?.has_pending) {
             throw new Error('legal status did not report the deliberately pending document for the verified new member');
           }
           if (legalStatus.enforcement_blocking === false || legalStatus.blocking_pending === false) {
             throw new Error('legal status reported the pending document as non-blocking, so the acceptance gate cannot be certified');
           }
-          if (!gate) throw new Error('verified new member had a blocking pending legal document but the unchanged UI did not show its gate');
+          // ── ONBOARDING COMPLETION (journey 1.8) ────────────────────────────────
+          // The old instrument marked onboarding complete directly in each database
+          // just to get behind ProtectedRoute. That proved no member journey. Drive
+          // the mandatory photo + bio and optional skips through the real client, then
+          // prove both the navigation outcome and persisted /users/me state.
+          await firstSignInPage.waitForURL(/\/onboarding(?:$|[?#])/, { timeout: 20000 });
+          await firstSignInPage.getByRole('button', { name: /Let's Get Started/i }).click({ timeout: 15000 });
+          const avatarInput = firstSignInPage.locator('input[type="file"][aria-label="Upload profile photo"]').first();
+          await avatarInput.setInputFiles(path.join(REACT_DIR, 'public', 'icons', 'icon-192.png'));
+          await firstSignInPage.getByText('Photo uploaded', { exact: true }).last().waitFor({ state: 'visible', timeout: 30000 });
+          await firstSignInPage.getByLabel('About you').fill('Smoke member completing the full onboarding journey.');
+          await firstSignInPage.getByRole('button', { name: 'Next', exact: true }).click({ timeout: 15000 });
+          await firstSignInPage.getByRole('heading', { name: /What are you interested in/i }).waitFor({ state: 'visible', timeout: 20000 });
+          await firstSignInPage.locator('button:visible').filter({ hasText: /^Skip$/ }).last().click();
+          await firstSignInPage.getByRole('heading', { name: /I can offer/i }).waitFor({ state: 'visible', timeout: 15000 });
+          await firstSignInPage.locator('button:visible').filter({ hasText: /^Skip$/ }).last().click();
+          // Tenant configuration controls whether the optional safeguarding
+          // screen is present. Exercise it when rendered without making the two
+          // control fixtures artificially identical.
+          const safeguardingHeading = firstSignInPage.getByRole('heading', { name: /Support & Safeguarding/i }).last();
+          const reviewHeading = firstSignInPage.getByRole('heading', { name: /Review Your Setup/i }).last();
+          const nextScreen = await Promise.race([
+            safeguardingHeading.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'safeguarding'),
+            reviewHeading.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'review'),
+          ]);
+          if (nextScreen === 'safeguarding') {
+            const skipSafeguarding = firstSignInPage.getByRole('button', { name: 'Skip for now', exact: true }).last();
+            if (!(await skipSafeguarding.isVisible().catch(() => false))) {
+              throw new Error('tenant requires safeguarding onboarding but the disposable fixture has no safe automated response');
+            }
+            await skipSafeguarding.click();
+          }
+          await reviewHeading.waitFor({ state: 'visible', timeout: 15000 });
+          const completeResponsePromise = firstSignInPage.waitForResponse(
+            (response) => response.request().method() === 'POST'
+              && /\/api\/v2\/onboarding\/complete(?:$|\?)/.test(response.url()),
+            { timeout: 30000 },
+          );
+          await firstSignInPage.getByRole('button', { name: 'Finish', exact: true }).click();
+          const completeResponse = await completeResponsePromise;
+          if (!completeResponse.ok()) {
+            throw new Error(`onboarding completion endpoint returned ${completeResponse.status()}: ${(await completeResponse.text()).slice(0, 240)}`);
+          }
+          await firstSignInPage.waitForURL(/\/dashboard(?:$|[?#])/, { timeout: 15000 });
+
+          // Legal and onboarding are both blocking first-login requirements. The
+          // route guard deliberately allows the onboarding page itself, so the legal
+          // overlay appears as soon as successful onboarding reaches the dashboard.
+          const acceptButton = firstSignInPage.getByRole('button', { name: /Accept all updated legal documents and continue|Accept & Continue/i }).first();
+          await acceptButton.waitFor({ state: 'visible', timeout: 20000 });
+          console.log('    onboarding reached dashboard; blocking legal gate is now visible');
           await acceptButton.click({ timeout: 10000 });
           await firstSignInPage.waitForTimeout(3000);
           await firstSignInPage.reload({ waitUntil: 'networkidle', timeout: 60000 });
-          await firstSignInPage.waitForTimeout(1800);
+          await firstSignInPage.waitForTimeout(1500);
           const afterAccept = await firstSignInPage.locator('body').innerText();
           if (/Updated legal documents/i.test(afterAccept)) {
             throw new Error('legal acceptance gate returned after accepting and reloading');
           }
-          console.log(`    legal acceptance persisted; after reload -> ${firstSignInPage.url().replace(BASE, '')}`);
+          if (/\/onboarding(?:$|[?#])/.test(firstSignInPage.url())) {
+            throw new Error('completed onboarding redirected back to the wizard after a fresh reload');
+          }
+          const persistedOnboarding = await firstSignInPage.evaluate(async () => {
+            const accessToken = localStorage.getItem('nexus_access_token');
+            const response = await fetch('/api/v2/users/me', {
+              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+            });
+            const payload = await response.json().catch(() => null);
+            return { status: response.status, completed: payload?.data?.onboarding_completed ?? payload?.onboarding_completed ?? null };
+          });
+          console.log(`    onboarding persisted -> ${JSON.stringify(persistedOnboarding)} | route=${firstSignInPage.url().replace(BASE, '')}`);
+          if (persistedOnboarding.status !== 200 || persistedOnboarding.completed !== true) {
+            throw new Error(`fresh /users/me did not persist onboarding_completed=true: ${JSON.stringify(persistedOnboarding)}`);
+          }
         } finally {
           await firstSignInContext.close();
         }
@@ -2129,6 +2190,74 @@ async function runArm(arm) {
     console.log(`    new access token issued: ${!!after}`);
     console.log(`    landed on: ${url}`);
     console.log(`    ${recovered ? 'client recovered silently' : 'client did NOT silently recover (see the note above — not a backend verdict)'}`);
+  });
+
+  // ── SIGN OUT + SERVER-SIDE SESSION INVALIDATION (journeys 1.5 + 1.36) ────────
+  // One complete journey proves all three boundaries together: the member uses
+  // the real Navbar action, the client clears every credential/tenant key and
+  // returns to login, and the server refuses both copied credentials afterward.
+  // Re-authenticate here because the independent token-refresh diagnostic above
+  // intentionally removes the current access token from localStorage.
+  await step('journey-sign-out-session-invalidation', async () => {
+    if (!(await page.locator('[data-user-menu]').isVisible().catch(() => false))) {
+      const signedIn = await signInAs(page, EMAIL, PASSWORD, arm.communityLabel);
+      if (!signedIn.ok) throw new Error(`could not establish the session to sign out: ${signedIn.reason}`);
+      await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForTimeout(1200);
+    }
+
+    const before = await page.evaluate(() => ({
+      access: localStorage.getItem('nexus_access_token'),
+      refresh: localStorage.getItem('nexus_refresh_token'),
+      tenantId: localStorage.getItem('nexus_tenant_id'),
+      tenantSlug: localStorage.getItem('nexus_tenant_slug'),
+    }));
+    if (!before.access || !before.refresh) {
+      throw new Error('signed-in client did not hold both access and refresh credentials before logout');
+    }
+
+    await page.locator('[data-user-menu]').click({ timeout: 15000 });
+    const logoutResponsePromise = page.waitForResponse(
+      (response) => response.request().method() === 'POST'
+        && /\/api\/auth\/logout(?:$|\?)/.test(response.url()),
+      { timeout: 20000 },
+    );
+    await page.getByRole('menuitem', { name: /Log Out/i }).click({ timeout: 15000 });
+    const logoutResponse = await logoutResponsePromise;
+    if (!logoutResponse.ok()) {
+      throw new Error(`logout endpoint returned ${logoutResponse.status()}: ${(await logoutResponse.text()).slice(0, 240)}`);
+    }
+    await page.waitForURL(/\/login(?:$|[?#])/, { timeout: 20000 });
+    const after = await page.evaluate(() => ({
+      access: localStorage.getItem('nexus_access_token'),
+      refresh: localStorage.getItem('nexus_refresh_token'),
+      tenantId: localStorage.getItem('nexus_tenant_id'),
+      tenantSlug: localStorage.getItem('nexus_tenant_slug'),
+    }));
+    if (Object.values(after).some((value) => value !== null)) {
+      throw new Error(`logout left credential or tenant state in localStorage: ${JSON.stringify(after)}`);
+    }
+    if (await page.locator('[data-user-menu]').isVisible().catch(() => false)) {
+      throw new Error('authenticated user menu remained visible after logout');
+    }
+
+    const oldAccessResponse = await page.request.get(`${BASE}/api/v2/users/me`, {
+      headers: { Authorization: `Bearer ${before.access}` },
+    });
+    const oldRefreshResponse = await page.request.post(`${BASE}/api/auth/refresh-token`, {
+      data: { refresh_token: before.refresh },
+    });
+    console.log(`    copied access after logout -> ${oldAccessResponse.status()} | copied refresh -> ${oldRefreshResponse.status()}`);
+    if (oldAccessResponse.status() !== 401) {
+      throw new Error(`logged-out access token still reached /users/me (${oldAccessResponse.status()})`);
+    }
+    if (oldRefreshResponse.status() < 400 || oldRefreshResponse.status() >= 500 || oldRefreshResponse.status() === 429) {
+      throw new Error(`logged-out refresh token was not deterministically rejected (${oldRefreshResponse.status()})`);
+    }
+
+    await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForURL(/\/login(?:$|[?#])/, { timeout: 15000 });
+    console.log('    protected navigation after logout returned to login with no credential resurrection');
   });
 
   await browser.close();

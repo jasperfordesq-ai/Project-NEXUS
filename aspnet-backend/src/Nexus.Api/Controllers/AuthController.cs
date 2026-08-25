@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
 using Asp.Versioning;
@@ -558,6 +559,31 @@ public class AuthController : ControllerBase
             }
             var user = await _db.Users.IgnoreQueryFilters().SingleOrDefaultAsync(x => x.Id == userId);
             if (user is not null) user.AuthenticationInvalidatedAt = invalidatedAt;
+            await _db.SaveChangesAsync();
+        }
+
+        // Revoking the refresh credential is not enough: the access bearer used
+        // to call logout would otherwise remain valid until its normal expiry.
+        // Record its unique JWT id so every protected route refuses it from this
+        // point onward. This is device-scoped; other signed-in devices retain
+        // their independently issued access tokens.
+        var accessJti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+        if (!string.IsNullOrWhiteSpace(accessJti)
+            && !await _db.RevokedTokens.AnyAsync(token => token.Jti == accessJti))
+        {
+            DateTime? accessExpiry = null;
+            if (long.TryParse(User.FindFirst(JwtRegisteredClaimNames.Exp)?.Value, out var expiresAtUnix))
+            {
+                accessExpiry = DateTimeOffset.FromUnixTimeSeconds(expiresAtUnix).UtcDateTime;
+            }
+
+            _db.RevokedTokens.Add(new RevokedToken
+            {
+                UserId = userId,
+                Jti = accessJti,
+                RevokedAt = DateTime.UtcNow,
+                ExpiresAt = accessExpiry,
+            });
             await _db.SaveChangesAsync();
         }
 

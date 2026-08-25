@@ -513,6 +513,12 @@ class AuthController extends BaseApiController
             $refreshToken = '';
         }
         $tokenRevoked = false;
+        $accessTokenRevoked = false;
+
+        $accessToken = $request->bearerToken();
+        if (is_string($accessToken) && $accessToken !== '') {
+            $accessTokenRevoked = $this->tokenService->revokeAccessToken($accessToken, $userId);
+        }
 
         if ($refreshToken !== '') {
             $tokenRevoked = $this->tokenService->revokeToken($refreshToken, $userId);
@@ -545,6 +551,10 @@ class AuthController extends BaseApiController
 
         if ($tokenRevoked) {
             $response['refresh_token_revoked'] = true;
+        }
+
+        if ($accessTokenRevoked) {
+            $response['access_token_revoked'] = true;
         }
 
         if ($sanctumTokenRevoked) {

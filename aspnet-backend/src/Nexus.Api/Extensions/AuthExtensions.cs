@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -204,6 +205,30 @@ public static class AuthExtensions
                                 context.Fail("invalid_partner_identity_claims");
                             }
                             return;
+                        }
+
+                        var accessJti = principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                        if (!string.IsNullOrWhiteSpace(accessJti))
+                        {
+                            try
+                            {
+                                var db = context.HttpContext.RequestServices
+                                    .GetRequiredService<Data.NexusDbContext>();
+                                var revoked = await db.RevokedTokens
+                                    .AsNoTracking()
+                                    .AnyAsync(token => token.Jti == accessJti,
+                                        context.HttpContext.RequestAborted);
+                                if (revoked)
+                                {
+                                    context.Fail("access_token_revoked");
+                                    return;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                context.Fail("access_token_denylist_unavailable");
+                                return;
+                            }
                         }
 
                         if (!int.TryParse(sub, out var userId))

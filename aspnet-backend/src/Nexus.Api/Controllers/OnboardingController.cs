@@ -64,6 +64,66 @@ public class OnboardingController : ControllerBase
     }
 
     /// <summary>
+    /// GET /api/onboarding/config - Return the tenant's effective wizard configuration.
+    /// </summary>
+    [HttpGet("config")]
+    public async Task<IActionResult> GetConfig()
+    {
+        var tenantId = _tenantContext.GetTenantIdOrThrow();
+        var stored = await _db.TenantConfigs
+            .Where(setting => setting.TenantId == tenantId && setting.Key.StartsWith("onboarding."))
+            .ToDictionaryAsync(setting => setting.Key, setting => setting.Value);
+
+        var config = EffectiveConfig(stored);
+        var steps = WizardSteps
+            .Where(step => Bool(config[$"step_{step.Slug}_enabled"]))
+            .Select(step => new
+            {
+                slug = step.Slug,
+                label_code = step.Slug,
+                required = config.TryGetValue($"step_{step.Slug}_required", out var required) && Bool(required)
+            });
+
+        return Ok(new { data = new { config, steps } });
+    }
+
+    /// <summary>
+    /// GET /api/onboarding/status - Return persisted profile and onboarding state.
+    /// </summary>
+    [HttpGet("status")]
+    public async Task<IActionResult> GetStatus()
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = _tenantContext.GetTenantIdOrThrow();
+        var user = await _db.Users.FirstOrDefaultAsync(candidate => candidate.Id == userId && candidate.TenantId == tenantId);
+        if (user == null) return Unauthorized(new { error = "Invalid token" });
+
+        var requiredStepIds = await _db.OnboardingSteps
+            .Where(step => step.TenantId == tenantId && step.IsRequired)
+            .Select(step => step.Id)
+            .ToListAsync();
+        var completedRequired = requiredStepIds.Count == 0 || await _db.Set<OnboardingProgress>()
+            .CountAsync(progress => progress.UserId == userId && progress.IsCompleted && requiredStepIds.Contains(progress.StepId))
+            == requiredStepIds.Count;
+
+        var preferences = await _db.MatchPreferences
+            .FirstOrDefaultAsync(preference => preference.UserId == userId && preference.TenantId == tenantId);
+        var interests = await StatusInterestsAsync(preferences, tenantId);
+
+        return Ok(new
+        {
+            data = new
+            {
+                onboarding_completed = completedRequired,
+                has_avatar = !string.IsNullOrWhiteSpace(user.AvatarUrl),
+                has_bio = !string.IsNullOrWhiteSpace(user.Bio),
+                interests
+            }
+        });
+    }
+
+    /// <summary>
     /// POST /api/onboarding/complete - Mark a step as complete.
     /// </summary>
     [HttpPost("complete")]
@@ -255,6 +315,101 @@ public class OnboardingController : ControllerBase
                 yield return category.Name;
             }
         }
+    }
+
+    private static readonly (string Slug, bool Required)[] WizardSteps =
+    [
+        ("welcome", false),
+        ("profile", true),
+        ("interests", false),
+        ("skills", false),
+        ("safeguarding", false),
+        ("confirm", true)
+    ];
+
+    private static Dictionary<string, object?> EffectiveConfig(IReadOnlyDictionary<string, string> stored)
+    {
+        var config = new Dictionary<string, object?>
+        {
+            ["enabled"] = true,
+            ["mandatory"] = true,
+            ["step_welcome_enabled"] = true,
+            ["step_profile_enabled"] = true,
+            ["step_profile_required"] = true,
+            ["step_interests_enabled"] = true,
+            ["step_interests_required"] = false,
+            ["step_skills_enabled"] = true,
+            ["step_skills_required"] = false,
+            ["step_safeguarding_enabled"] = true,
+            ["step_safeguarding_required"] = false,
+            ["step_confirm_enabled"] = true,
+            ["avatar_required"] = true,
+            ["bio_required"] = true,
+            ["bio_min_length"] = 10,
+            ["listing_creation_mode"] = "disabled",
+            ["listing_max_auto"] = 3,
+            ["require_completion_for_visibility"] = false,
+            ["require_avatar_for_visibility"] = false,
+            ["require_bio_for_visibility"] = false,
+            ["welcome_text"] = null,
+            ["help_text"] = null,
+            ["safeguarding_intro_text"] = null,
+            ["country_preset"] = "custom"
+        };
+
+        foreach (var (fullKey, raw) in stored)
+        {
+            var key = fullKey["onboarding.".Length..];
+            if (!config.TryGetValue(key, out var fallback)) continue;
+            config[key] = fallback switch
+            {
+                bool => raw is "1" or "true" or "True",
+                int => int.TryParse(raw, out var number) ? number : fallback,
+                _ => raw
+            };
+        }
+
+        return config;
+    }
+
+    private static bool Bool(object? value) => value is true;
+
+    private async Task<List<object>> StatusInterestsAsync(MatchPreference? preferences, int tenantId)
+    {
+        var result = new List<object>();
+        if (preferences == null) return result;
+
+        try
+        {
+            foreach (var categoryId in System.Text.Json.JsonSerializer.Deserialize<int[]>(preferences.PreferredCategories ?? "[]") ?? [])
+            {
+                result.Add(new { category_id = categoryId, interest_type = "interest" });
+            }
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            // Corrupt preference JSON must not prevent onboarding recovery.
+        }
+
+        var categoryNames = new[] { preferences.SkillsOffered, preferences.SkillsWanted }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .SelectMany(value => value!.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (categoryNames.Count == 0) return result;
+
+        var categories = await _db.Categories
+            .Where(category => category.TenantId == tenantId && categoryNames.Contains(category.Name))
+            .ToDictionaryAsync(category => category.Name, category => category.Id);
+        foreach (var name in (preferences.SkillsOffered ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (categories.TryGetValue(name, out var id)) result.Add(new { category_id = id, interest_type = "skill_offer" });
+        }
+        foreach (var name in (preferences.SkillsWanted ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (categories.TryGetValue(name, out var id)) result.Add(new { category_id = id, interest_type = "skill_need" });
+        }
+        return result;
     }
 
     /// <summary>

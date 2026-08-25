@@ -49,6 +49,7 @@ public class TokenService
             BooleanClaim(NexusPrivilegeClaimTypes.IsSuperAdmin, user.IsSuperAdmin),
             BooleanClaim(NexusPrivilegeClaimTypes.IsTenantSuperAdmin, user.IsTenantSuperAdmin),
             BooleanClaim(NexusPrivilegeClaimTypes.IsGod, user.IsGod),
+            new Claim(JwtRegisteredClaimNames.Jti, Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
         claims.AddRange(authenticationMethods

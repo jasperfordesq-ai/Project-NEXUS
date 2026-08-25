@@ -1606,14 +1606,6 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public IActionResult NexusScore() => Ok(new { data = new { score = 500 } });
 
-    [HttpGet("onboarding/config")]
-    [Authorize]
-    public IActionResult OnboardingConfig() => Ok(new { data = new { steps = Array.Empty<object>() } });
-
-    [HttpGet("onboarding/status")]
-    [Authorize]
-    public IActionResult OnboardingStatus() => Ok(new { data = new { complete = false } });
-
     [HttpPost("pilot-inquiry")]
     [AllowAnonymous]
     public IActionResult PilotInquiry([FromBody] JsonElement body) => Ok(new { data = new { received = true } });

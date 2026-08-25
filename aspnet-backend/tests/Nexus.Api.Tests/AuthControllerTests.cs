@@ -343,6 +343,12 @@ public class AuthControllerTests : IntegrationTestBase
         // Assert
         logoutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // The access token used to perform logout must stop authenticating too.
+        // React clears it locally, but journey 1.36 requires the server to refuse
+        // a copied/in-flight bearer after the member has signed out.
+        var protectedResponse = await Client.GetAsync("/api/v2/users/me");
+        protectedResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
         // Try to use the refresh token after logout
         ClearAuthToken();
         var refreshResponse = await Client.PostAsJsonAsync("/api/auth/refresh", new

@@ -103,6 +103,7 @@ class TokenService
             'access_version' => self::ACCESS_TOKEN_VERSION,
             'platform' => $platform,
             ...$additionalClaims,
+            'jti' => bin2hex(random_bytes(16)),
         ], $expiry);
     }
 
@@ -227,7 +228,52 @@ class TokenService
             }
         }
 
+        $accessJti = $payload['jti'] ?? null;
+        if (is_string($accessJti) && $accessJti !== '') {
+            try {
+                $revoked = DB::selectOne('SELECT id FROM revoked_tokens WHERE jti = ?', [$accessJti]);
+            } catch (\Throwable $e) {
+                Log::error('[TokenService] Access-token revocation check failed: ' . $e->getMessage());
+                return null;
+            }
+            if ($revoked) {
+                return null;
+            }
+        }
+
         return $payload;
+    }
+
+    /**
+     * Revoke one presented access token without affecting the user's other devices.
+     */
+    public function revokeAccessToken(string $accessToken, ?int $userId = null): bool
+    {
+        $payload = $this->validateSignedToken($accessToken);
+        if (
+            $payload === null
+            || ($payload['type'] ?? null) !== 'access'
+            || !is_string($payload['jti'] ?? null)
+            || ($payload['jti'] ?? '') === ''
+        ) {
+            return false;
+        }
+
+        $tokenUserId = (int) ($payload['user_id'] ?? 0);
+        if ($tokenUserId < 1 || ($userId !== null && $tokenUserId !== $userId)) {
+            return false;
+        }
+
+        try {
+            DB::insert(
+                'INSERT IGNORE INTO revoked_tokens (user_id, jti, expires_at) VALUES (?, ?, FROM_UNIXTIME(?))',
+                [$tokenUserId, $payload['jti'], (int) $payload['exp']]
+            );
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('[TokenService] Failed to revoke access token: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
