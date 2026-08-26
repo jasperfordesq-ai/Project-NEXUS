@@ -382,7 +382,8 @@
     "platform_section_desc": "Dokumenty te regulują infrastrukturę platformy Project NEXUS i są niezależne od zasad obowiązujących w Twojej społeczności.",
     "platform_terms": "Warunki platformy",
     "platform_privacy": "Prywatność platformy",
-    "platform_disclaimer": "Zastrzeżenie"
+    "platform_disclaimer": "Zastrzeżenie",
+    "doc_updated_aug_2026": "Zaktualizowano w sierpniu 2026"
   },
   "version_history": {
     "page_title": "Historia wersji",
@@ -817,5 +818,80 @@
     "contact_cta_body": "Skontaktuj się z nami, a koordynator skontaktuje się z Tobą. Na większość wiadomości odpowiadamy w ciągu jednego dnia roboczego.",
     "contact_cta_button": "Skontaktuj się z nami",
     "community_guidelines_link": "Przeczytaj Wytyczne dla społeczności"
+  },
+  "account_deletion": {
+    "page_title": "Usuń swoje konto Timebank Global",
+    "meta_description": "Jak usunąć konto Timebank Global w aplikacji mobilnej lub złożyć wniosek o usunięcie przez internet, w tym co zostaje usunięte, a co musi zostać zachowane.",
+    "heading": "Usuń swoje konto Timebank Global",
+    "subtitle": "Możesz trwale usunąć konto z poziomu aplikacji albo przesłać nam wniosek o usunięcie, jeśli nie masz już do niego dostępu.",
+    "operator_title": "Wydawca aplikacji i administrator danych",
+    "operator_body": "Timebank Global jest prowadzona przez hOUR Timebank Company Limited by Guarantee, zarejestrowana nazwa handlowa Timebank Ireland, numer organizacji charytatywnej RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlandia.",
+    "package_id": "Ta strona dotyczy aplikacji Timebank Global na Androida, pakiet ie.project.nexus.",
+    "in_app_title": "Usuń konto w aplikacji",
+    "in_app_steps": {
+      "0": "Otwórz Timebank Global i zaloguj się.",
+      "1": "Otwórz Ustawienia.",
+      "2": "Wybierz „Konto”, a następnie „Usuń konto”.",
+      "3": "Przeczytaj konsekwencje, wpisz DELETE i podaj swoje aktualne hasło.",
+      "4": "Wybierz „Usuń moje konto”. Konto zostaje dezaktywowane, dane logowania unieważnione, a usuwanie danych osobowych rozpoczyna się natychmiast."
+    },
+    "web_request_title": "Wniosek o usunięcie bez aplikacji",
+    "web_request_body": "Skorzystaj z naszego publicznego formularza kontaktowego i podaj adres e-mail używany na koncie Timebank Global. Wybierz „Usunięcie konta”. Zanim zrealizujemy wniosek, zweryfikujemy, że konto należy do Ciebie.",
+    "web_request_timing": "Niezwłocznie potwierdzamy wpłynięcie wniosku, a zweryfikowane wnioski o usunięcie realizujemy w ciągu 30 dni, chyba że prawo dopuszcza lub wymaga dłuższego terminu.",
+    "web_request_button": "Otwórz formularz wniosku o usunięcie konta",
+    "deleted_title": "Dane, które są usuwane lub anonimizowane",
+    "deleted_items": {
+      "0": "Twoje imię i nazwisko, adres e-mail, numer telefonu, profil, lokalizacja, opis, zainteresowania i zdjęcie profilowe.",
+      "1": "Twoje hasło, klucze dostępu, sekrety uwierzytelniania dwuskładnikowego, sesje, tokeny odświeżania i zarejestrowane urządzenia.",
+      "2": "Twoje aktywne ogłoszenia, powiadomienia, zapisy zgód, historia czatu z SI oraz preferencje osobiste.",
+      "3": "Przesłane przez Ciebie pliki i materiały, w tym załączniki do wiadomości i nagrania głosowe, chyba że nieudane usunięcie z magazynu wymaga ograniczonych działań następczych administratora.",
+      "4": "Treść napisanych przez Ciebie wiadomości zostaje wyczyszczona; druga osoba zachowuje zanonimizowany zapis rozmowy.",
+      "5": "Twój profil i ogłoszenia są usuwane z indeksów wyszukiwania, a zewnętrzni partnerzy federacyjni otrzymują polecenie wycofania profilu."
+    },
+    "retained_title": "Dane, które mogą zostać zachowane",
+    "retained_items": {
+      "0": "Zanonimizowane zapisy księgowe dotyczące kredytów czasu, wymian, darowizn i organizacji mogą być przechowywane do siedmiu lat, gdy jest to potrzebne do celów audytu, działalności charytatywnej, podatkowych, przeciwdziałania oszustwom lub obowiązków prawnych.",
+      "1": "Wspólne zapisy potrzebne innej osobie członkowskiej, takie jak wymiana lub historia rozmowy, mogą pozostać po usunięciu Twojej tożsamości i napisanych przez Ciebie treści osobowych.",
+      "2": "Zapisy dotyczące ochrony, sporów lub prawnego obowiązku zachowania są przechowywane wyłącznie wtedy, gdy wymaga tego prawo lub jest to konieczne dla ochrony osób, z ograniczonym dostępem i ponowną oceną usunięcia po ustaniu obowiązku."
+    },
+    "contact_title": "Kontakt w sprawach prywatności",
+    "contact_body": "Jeśli formularz kontaktowy jest niedostępny, napisz do osoby kontaktowej Timebank Global ds. ochrony danych, używając tematu „Account deletion request”.",
+    "contact_email": "jasper@timebank.global"
+  },
+  "child_safety": {
+    "page_title": "Standardy ochrony dzieci",
+    "meta_description": "Standardy Timebank Global przeciwko wykorzystywaniu seksualnemu dzieci, w tym zgłaszanie, egzekwowanie zasad i przekazywanie spraw organom.",
+    "heading": "Standardy ochrony dzieci",
+    "subtitle": "Timebank Global to usługa wyłącznie dla osób dorosłych, ale utrzymujemy wyraźne standardy przeciwko wykorzystywaniu seksualnemu dzieci wszędzie tam, gdzie treści lub zachowania dotykają naszej platformy.",
+    "effective_date": "Obowiązuje od 26 sierpnia 2026",
+    "zero_tolerance_title": "Zero tolerancji dla wykorzystywania seksualnego dzieci",
+    "zero_tolerance_body": "Zakazujemy wykorzystywania seksualnego dzieci (CSAE), materiałów przedstawiających seksualne wykorzystywanie dzieci (CSAM) oraz wszelkich prób użycia Timebank Global do umożliwiania, promowania, nakłaniania lub ukrywania krzywdzenia dziecka.",
+    "prohibited_items": {
+      "0": "Tworzenie, przesyłanie, udostępnianie, żądanie, przechowywanie lub linkowanie CSAM, w tym materiałów syntetycznych lub generowanych komputerowo.",
+      "1": "Uwodzenie (grooming), seksualizowanie dziecka, wymuszenia seksualne, handel ludźmi lub organizowanie kontaktu seksualnego z dzieckiem.",
+      "2": "Instrukcje, zachęty, żarty lub społeczności normalizujące bądź promujące seksualne wykorzystywanie dzieci.",
+      "3": "Wykorzystywanie profili, wiadomości, ogłoszeń, grup, wydarzeń lub innych funkcji do identyfikowania dziecka, wybierania go na cel, kontaktowania się z nim lub jego wykorzystywania.",
+      "4": "Odwet wobec osoby zgłaszającej problem dotyczący ochrony dzieci, grożenie jej lub próby ustalenia jej tożsamości."
+    },
+    "reporting_title": "Jak zgłosić problem",
+    "reporting_body": "Zgłoszenia można składać w aplikacji lub przez nasz publiczny formularz. Nie przesyłaj nam podejrzewanego CSAM ani go nie przekazuj; zgłoś miejsce, w którym znajduje się treść, aby przeszkolone organy mogły bezpiecznie się nią zająć.",
+    "reporting_steps": {
+      "0": "W aplikacji użyj opcji „Zgłoś” przy danym profilu, poście, ogłoszeniu, wiadomości, wydarzeniu lub przedmiocie na rynku.",
+      "1": "Bez aplikacji otwórz poniższy formularz zgłoszenia dotyczącego ochrony dzieci i podaj konto lub miejsce treści oraz powód swojego niepokoju.",
+      "2": "Jeśli dziecku grozi bezpośrednie niebezpieczeństwo, skontaktuj się najpierw z lokalnymi służbami ratunkowymi lub właściwym organem ochrony dzieci."
+    },
+    "reporting_button": "Otwórz formularz zgłoszenia dotyczącego ochrony dzieci",
+    "response_title": "Jak reagujemy",
+    "response_items": {
+      "0": "Zgłoszenia dotyczące ochrony dzieci są traktowane priorytetowo w ocenie przez człowieka, a wpłynięcie zgłoszeń ochronnych potwierdzamy zwykle w ciągu jednego dnia roboczego.",
+      "1": "Ograniczamy dostęp do zgłoszonych treści na czas oceny, gdy jest to konieczne dla ochrony osób lub zabezpieczenia dowodów.",
+      "2": "Potwierdzone treści zakazane są usuwane, a zaangażowane konta mogą zostać zawieszone lub trwale usunięte.",
+      "3": "Zachowujemy wyłącznie dowody niezbędne do zgodnego z prawem postępowania i chronimy poufność osoby zgłaszającej w zakresie dozwolonym przez prawo.",
+      "4": "Zgłaszamy widoczne CSAM oraz wiarygodne podejrzenia wykorzystywania dzieci właściwym organom ścigania lub ochrony dzieci, a także NCMEC, gdy ma to zastosowanie lub jest wymagane prawem."
+    },
+    "contact_title": "Wyznaczona osoba kontaktowa ds. ochrony dzieci",
+    "contact_body": "Google Play, organy ścigania, organizacje ochrony dzieci oraz osoby członkowskie mogą kontaktować się z naszym wyznaczonym przedstawicielem pod adresem:",
+    "contact_email": "jasper@timebank.global",
+    "operator_body": "Timebank Global jest prowadzona przez hOUR Timebank Company Limited by Guarantee, zarejestrowana nazwa handlowa Timebank Ireland, numer organizacji charytatywnej RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlandia."
   }
 }

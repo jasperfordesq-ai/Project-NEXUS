@@ -14,7 +14,7 @@
 // Keep this as one literal: Workbox serializes route callbacks rather than
 // bundling their module scope, so vite.config.ts embeds this same self-contained
 // expression in each navigation matcher. The source-level test guards drift.
-export const CACHEABLE_PUBLIC_NAVIGATION_PATH_PATTERN = /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/;
+export const CACHEABLE_PUBLIC_NAVIGATION_PATH_PATTERN = /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|account-deletion|child-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/;
 
 export function normalizeNavigationPath(pathname: string): string {
   // Do not guess that an unknown first segment is a tenant slug. Shared-domain

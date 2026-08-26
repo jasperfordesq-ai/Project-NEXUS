@@ -393,6 +393,8 @@ const publicRuntimePrefixes = [
   'cookies',
   'community-guidelines',
   'trust-and-safety',
+  'account-deletion',
+  'child-safety',
   'acceptable-use',
   'legal',
   'platform',
@@ -433,7 +435,7 @@ function routeNeedsTenantAppRuntime(pathname: string, slugPrefix?: string): bool
 
 const publicRegistryPatterns = [
   /^$/,
-  /^(features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|acceptable-use|legal|timebanking-guide|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing)$/,
+  /^(features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|account-deletion|child-safety|acceptable-use|legal|timebanking-guide|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing)$/,
   /^pilot-apply\/status\/[^/]+$/,
   /^(terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions$/,
   /^platform\/(terms|privacy|disclaimer)$/,

@@ -71,6 +71,8 @@ describe('PWA navigation cache policy', () => {
     '/',
     '/features',
     '/about',
+    '/account-deletion',
+    '/child-safety',
     '/terms/versions',
     '/platform/privacy',
     '/developers',

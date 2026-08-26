@@ -195,7 +195,7 @@ export default defineConfig(({ command, mode }) => {
             urlPattern: ({ request, url }) => {
               if (request.mode !== 'navigate' || url.origin !== self.location.origin) return false;
               const pathname = url.pathname.toLowerCase().split('/').filter(Boolean).join('/');
-              const isCacheablePublicPath = /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/.test(pathname);
+              const isCacheablePublicPath = /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|account-deletion|child-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/.test(pathname);
               return !isCacheablePublicPath;
             },
             handler: 'NetworkOnly',
@@ -219,7 +219,7 @@ export default defineConfig(({ command, mode }) => {
               // inline unregister script.
               if (p === '/api/sw-reset') return false;
               const pathname = p.toLowerCase().split('/').filter(Boolean).join('/');
-              return /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/.test(pathname);
+              return /^(?:|features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|account-deletion|child-safety|acceptable-use|legal|timebanking-guide|regional-analytics|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing|blog(?:\/[^/]+)?|(?:terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions|platform\/(?:terms|privacy|disclaimer)|developers(?:\/(?:auth|endpoints|webhooks))?)$/.test(pathname);
             },
             handler: 'NetworkFirst',
             options: {

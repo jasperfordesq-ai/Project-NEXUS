@@ -799,12 +799,18 @@
       "subjects": {
         "general": "General Inquiry",
         "account": "Account Help",
+        "account_deletion": "Account deletion",
+        "child_safety": "Child safety report",
         "technical": "Technical Issue",
         "feedback": "Feedback / Suggestion",
         "other": "Other"
       },
       "message_label": "Message",
       "message_placeholder": "How can we help?",
+      "prefill": {
+        "account_deletion": "I want to permanently delete my Timebank Global account. The email address entered above is the address used for my account.",
+        "child_safety": "I want to report a child-safety concern. The relevant profile, content, or location is:"
+      },
       "submit": "Send Message",
       "login_prompt_before": "Already have an account?",
       "login_link": "Log in",

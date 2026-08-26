@@ -212,7 +212,9 @@
     "cookie_policy": "Cookiebeleid",
     "accessibility": "Toegankelijkheid",
     "type_community_guidelines": "Communityrichtlijnen",
-    "type_acceptable_use": "Acceptabel gebruik"
+    "type_acceptable_use": "Acceptabel gebruik",
+    "account_deletion": "Account verwijderen",
+    "child_safety": "Normen voor kinderveiligheid"
   },
   "admin_tools": {
     "section": "Beheertools",

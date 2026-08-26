@@ -29,7 +29,7 @@ interface ProtectedRouteProps {
 /** Path segments that must never be blocked by the legal gate */
 const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
   'terms', 'privacy', 'cookies', 'accessibility',
-  'community-guidelines', 'acceptable-use',
+  'community-guidelines', 'acceptable-use', 'account-deletion', 'child-safety',
   'legal', 'onboarding', 'platform',
   // 🔴 Version history and comparison. This check reads only the LAST path
   // segment, so /terms/versions had a last segment of "versions" and was blocked

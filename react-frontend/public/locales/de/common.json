@@ -212,7 +212,9 @@
     "cookie_policy": "Cookie-Richtlinie",
     "accessibility": "Barrierefreiheit",
     "type_community_guidelines": "Community-Richtlinien",
-    "type_acceptable_use": "Nutzungsrichtlinien"
+    "type_acceptable_use": "Nutzungsrichtlinien",
+    "account_deletion": "Kontolöschung",
+    "child_safety": "Kinderschutzstandards"
   },
   "admin_tools": {
     "section": "Admin-Werkzeuge",

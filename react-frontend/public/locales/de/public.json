@@ -801,14 +801,20 @@
         "account": "Kontohilfe",
         "technical": "Technisches Problem",
         "feedback": "Feedback / Vorschlag",
-        "other": "Sonstiges"
+        "other": "Sonstiges",
+        "account_deletion": "Kontolöschung",
+        "child_safety": "Meldung zum Kinderschutz"
       },
       "message_label": "Nachricht",
       "message_placeholder": "Wie können wir helfen?",
       "submit": "Nachricht senden",
       "login_prompt_before": "Haben Sie bereits ein Konto?",
       "login_link": "Anmelden",
-      "login_prompt_after": "für schnelleren Support."
+      "login_prompt_after": "für schnelleren Support.",
+      "prefill": {
+        "account_deletion": "Ich möchte mein Timebank-Global-Konto dauerhaft löschen. Die oben eingegebene E-Mail-Adresse ist die Adresse meines Kontos.",
+        "child_safety": "Ich möchte ein Anliegen zum Kinderschutz melden. Das betreffende Profil, der Inhalt oder der Ort ist:"
+      }
     },
     "turnstile_error": "Sicherheitsprüfung konnte nicht geladen werden. Aktualisieren Sie die Seite und versuchen Sie es erneut."
   },

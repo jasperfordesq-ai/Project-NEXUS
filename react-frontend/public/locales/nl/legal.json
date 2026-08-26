@@ -382,7 +382,8 @@
     "platform_section_desc": "Deze documenten zijn van toepassing op de infrastructuur van het Project NEXUS-platform en staan ​​los van het beleid van uw community.",
     "platform_terms": "Platformvoorwaarden",
     "platform_privacy": "Platformprivacy",
-    "platform_disclaimer": "Vrijwaring"
+    "platform_disclaimer": "Vrijwaring",
+    "doc_updated_aug_2026": "Bijgewerkt in augustus 2026"
   },
   "version_history": {
     "page_title": "Versiegeschiedenis",
@@ -813,5 +814,80 @@
     "contact_cta_body": "Neem contact met ons op en een coördinator neemt contact met u op. De meeste berichten worden binnen één werkdag beantwoord.",
     "contact_cta_button": "Neem contact met ons op",
     "community_guidelines_link": "Lees de communityrichtlijnen"
+  },
+  "account_deletion": {
+    "page_title": "Je Timebank Global-account verwijderen",
+    "meta_description": "Hoe je een Timebank Global-account verwijdert in de mobiele app of verwijdering aanvraagt via het web, inclusief wat er wordt verwijderd en wat bewaard moet blijven.",
+    "heading": "Je Timebank Global-account verwijderen",
+    "subtitle": "Je kunt je account definitief verwijderen vanuit de app, of ons een verwijderingsverzoek sturen als je er niet meer bij kunt.",
+    "operator_title": "App-aanbieder en verwerkingsverantwoordelijke",
+    "operator_body": "Timebank Global wordt beheerd door hOUR Timebank Company Limited by Guarantee, geregistreerde handelsnaam Timebank Ireland, goededoelennummer RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Ierland.",
+    "package_id": "Deze pagina geldt voor de Android-app Timebank Global, pakket ie.project.nexus.",
+    "in_app_title": "Je account verwijderen in de app",
+    "in_app_steps": {
+      "0": "Open Timebank Global en log in.",
+      "1": "Open Instellingen.",
+      "2": "Kies 'Account' en daarna 'Account verwijderen'.",
+      "3": "Lees de gevolgen, typ DELETE en voer je huidige wachtwoord in.",
+      "4": "Kies 'Mijn account verwijderen'. Het account wordt gedeactiveerd, inloggegevens worden ingetrokken en het wissen van persoonsgegevens begint onmiddellijk."
+    },
+    "web_request_title": "Verwijdering aanvragen zonder de app",
+    "web_request_body": "Gebruik ons openbare contactformulier en geef het e-mailadres op dat je voor je Timebank Global-account gebruikt. Kies 'Account verwijderen'. We controleren of het account van jou is voordat we het verzoek uitvoeren.",
+    "web_request_timing": "We bevestigen verzoeken snel en handelen geverifieerde verwijderingsverzoeken binnen 30 dagen af, tenzij de wet een langere termijn toestaat of vereist.",
+    "web_request_button": "Open het formulier voor een verwijderingsverzoek",
+    "deleted_title": "Gegevens die worden verwijderd of geanonimiseerd",
+    "deleted_items": {
+      "0": "Je naam, e-mailadres, telefoonnummer, profiel, locatie, biografie, interesses en profielfoto.",
+      "1": "Je wachtwoord, passkeys, geheimen voor tweefactorauthenticatie, sessies, vernieuwingstokens en geregistreerde apparaten.",
+      "2": "Je actieve advertenties, meldingen, toestemmingsregistraties, de AI-chatgeschiedenis en je persoonlijke voorkeuren.",
+      "3": "Bestanden en media die je hebt geüpload, inclusief bijlagen bij berichten en spraakopnamen, tenzij een mislukte verwijdering uit de opslag beperkte opvolging door een beheerder vereist.",
+      "4": "De inhoud van de berichten die je hebt geschreven wordt gewist; de andere deelnemer houdt een geanonimiseerd gespreksverslag.",
+      "5": "Je profiel en advertenties worden uit de zoekindexen gehaald en externe federatiepartners wordt gevraagd het profiel in te trekken."
+    },
+    "retained_title": "Gegevens die bewaard kunnen blijven",
+    "retained_items": {
+      "0": "Geanonimiseerde boekhoudkundige gegevens over tijdkrediet, uitwisselingen, donaties en organisaties kunnen tot zeven jaar worden bewaard wanneer dat nodig is voor controle, goede doelen, belastingen, fraudepreventie of wettelijke verplichtingen.",
+      "1": "Gedeelde gegevens die een ander lid nodig heeft, zoals een uitwisseling of gespreksgeschiedenis, kunnen blijven bestaan nadat je identiteit en de door jou geschreven persoonlijke inhoud zijn verwijderd.",
+      "2": "Gegevens over bescherming, geschillen of een wettelijke bewaarplicht worden alleen bewaard wanneer de wet dat vereist of dat nodig is om mensen te beschermen, met beperkte toegang en een nieuwe beoordeling van verwijdering zodra de verplichting eindigt."
+    },
+    "contact_title": "Privacycontact",
+    "contact_body": "Als het contactformulier niet bereikbaar is, mail dan het gegevensbeschermingscontact van Timebank Global met als onderwerp 'Account deletion request'.",
+    "contact_email": "jasper@timebank.global"
+  },
+  "child_safety": {
+    "page_title": "Normen voor kinderveiligheid",
+    "meta_description": "De normen van Timebank Global tegen seksueel misbruik en seksuele uitbuiting van kinderen, inclusief melden, handhaving en inschakeling van autoriteiten.",
+    "heading": "Normen voor kinderveiligheid",
+    "subtitle": "Timebank Global is een dienst uitsluitend voor volwassenen, maar we hanteren uitdrukkelijke normen tegen seksueel misbruik en seksuele uitbuiting van kinderen overal waar inhoud of gedrag ons platform raakt.",
+    "effective_date": "Van kracht op 26 augustus 2026",
+    "zero_tolerance_title": "Geen enkele tolerantie voor seksueel misbruik en seksuele uitbuiting van kinderen",
+    "zero_tolerance_body": "Wij verbieden seksueel misbruik en seksuele uitbuiting van kinderen (CSAE), materiaal van seksueel kindermisbruik (CSAM) en elke poging om Timebank Global te gebruiken om schade aan een kind mogelijk te maken, te bevorderen, uit te lokken of te verbergen.",
+    "prohibited_items": {
+      "0": "Het maken, uploaden, delen, opvragen, opslaan van of linken naar CSAM, inclusief synthetisch of door de computer gegenereerd materiaal.",
+      "1": "Grooming, het seksualiseren van een kind, sextortion, mensenhandel of het regelen van seksueel contact met een kind.",
+      "2": "Instructies, aanmoediging, grappen of gemeenschappen die seksueel misbruik of seksuele uitbuiting van kinderen normaliseren of bevorderen.",
+      "3": "Profielen, berichten, advertenties, groepen, evenementen of andere functies gebruiken om een kind te identificeren, te benaderen, te contacteren of uit te buiten.",
+      "4": "Vergelding tegen, bedreiging van of pogingen tot identificatie van iemand die een zorg over kinderveiligheid meldt."
+    },
+    "reporting_title": "Hoe je een zorg meldt",
+    "reporting_body": "Meldingen kunnen vanuit de app of via ons openbare formulier worden gedaan. Upload of stuur ons geen vermoedelijk CSAM; meld de locatie van de inhoud zodat getrainde autoriteiten die veilig kunnen behandelen.",
+    "reporting_steps": {
+      "0": "Gebruik in de app 'Melden' bij het betreffende profiel, bericht, de advertentie, het bericht, evenement of marktplaatsitem.",
+      "1": "Zonder de app open je het meldformulier voor kinderveiligheid hieronder en vermeld je het account of de locatie van de inhoud en waarom je je zorgen maakt.",
+      "2": "Als een kind in direct gevaar is, neem dan eerst contact op met de lokale hulpdiensten of de bevoegde kinderbeschermingsinstantie."
+    },
+    "reporting_button": "Open het meldformulier voor kinderveiligheid",
+    "response_title": "Hoe wij reageren",
+    "response_items": {
+      "0": "Meldingen over kinderveiligheid krijgen voorrang bij menselijke beoordeling en de ontvangst van beschermingsmeldingen wordt normaal gesproken binnen één werkdag bevestigd.",
+      "1": "We beperken de toegang tot gemelde inhoud tijdens de beoordeling wanneer dat nodig is om mensen te beschermen of bewijs veilig te stellen.",
+      "2": "Bevestigde verboden inhoud wordt verwijderd en betrokken accounts kunnen worden geschorst of definitief verwijderd.",
+      "3": "We bewaren alleen het bewijs dat nodig is voor rechtmatig onderzoek en beschermen de vertrouwelijkheid van de melder voor zover de wet dat toestaat.",
+      "4": "We melden vermoedelijk CSAM en geloofwaardige zorgen over uitbuiting van kinderen bij de bevoegde opsporings- of kinderbeschermingsinstantie, en bij NCMEC waar dat van toepassing of wettelijk vereist is."
+    },
+    "contact_title": "Aangewezen contactpersoon voor kinderveiligheid",
+    "contact_body": "Google Play, opsporingsdiensten, kinderbeschermingsorganisaties en leden kunnen onze aangewezen vertegenwoordiger bereiken op:",
+    "contact_email": "jasper@timebank.global",
+    "operator_body": "Timebank Global wordt beheerd door hOUR Timebank Company Limited by Guarantee, geregistreerde handelsnaam Timebank Ireland, goededoelennummer RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Ierland."
   }
 }

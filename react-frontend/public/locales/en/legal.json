@@ -371,6 +371,7 @@
     "doc_acceptable_use_title": "Acceptable Use Policy",
     "doc_acceptable_use_desc": "What constitutes acceptable and prohibited use of the platform, including content and conduct rules.",
     "doc_updated_feb_2026": "Updated February 2026",
+    "doc_updated_aug_2026": "Updated August 2026",
     "read_document": "Read Document",
     "cta_title": "Questions About Our Policies?",
     "cta_body": "If you have any questions about our legal documents, data practices, or want to exercise your GDPR rights, please get in touch.",
@@ -728,6 +729,81 @@
       "title": "Trust & Safety",
       "description": "How exchanges work on {{name}}, what we do to keep the community safe, what we don’t do, and how to report a concern. Plain-English trust and safeguarding."
     }
+  },
+  "account_deletion": {
+    "page_title": "Delete your Timebank Global account",
+    "meta_description": "How to delete a Timebank Global account in the mobile app or request deletion on the web, including what is deleted and what must be retained.",
+    "heading": "Delete your Timebank Global account",
+    "subtitle": "You can permanently delete your account from inside the app, or send us a deletion request if you cannot access it.",
+    "operator_title": "App and data controller",
+    "operator_body": "Timebank Global is operated by hOUR Timebank Company Limited by Guarantee, registered business name Timebank Ireland, charity number RCN 20162023, at 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Ireland.",
+    "package_id": "This page applies to the Timebank Global Android app, package ie.project.nexus.",
+    "in_app_title": "Delete your account in the app",
+    "in_app_steps": {
+      "0": "Open Timebank Global and sign in.",
+      "1": "Open Settings.",
+      "2": "Choose Account, then Delete account.",
+      "3": "Read the consequences, type DELETE, and enter your current password.",
+      "4": "Choose Delete my account. The account is deactivated, credentials are revoked, and personal data erasure begins immediately."
+    },
+    "web_request_title": "Request deletion without the app",
+    "web_request_body": "Use our public contact form and provide the email address used for your Timebank Global account. Select Account deletion. We will verify that the account belongs to you before carrying out the request.",
+    "web_request_timing": "We acknowledge requests promptly and complete verified deletion requests within 30 days, unless the law permits or requires a longer period.",
+    "web_request_button": "Open the account deletion request form",
+    "deleted_title": "Data that is deleted or anonymised",
+    "deleted_items": {
+      "0": "Your name, email address, phone number, profile, location, biography, interests, and profile image.",
+      "1": "Your password, passkeys, two-factor authentication secrets, sessions, refresh tokens, and registered devices.",
+      "2": "Your active listings, notifications, consent records, AI chat history, and personal preferences.",
+      "3": "Files and media you uploaded, including message attachments and voice recordings, unless a failed storage deletion requires restricted administrator follow-up.",
+      "4": "The content of messages you authored is scrubbed; the other participant keeps an anonymised conversation record.",
+      "5": "Your profile and listings are removed from search indexes and external federation partners are told to retract the profile."
+    },
+    "retained_title": "Data that may be retained",
+    "retained_items": {
+      "0": "Anonymised time-credit, exchange, donation, and organisation accounting records may be retained for up to seven years where needed for audit, charity, tax, fraud-prevention, or legal obligations.",
+      "1": "Shared records needed by another member, such as an exchange or conversation history, may remain with your identity and authored personal content removed.",
+      "2": "Safeguarding, dispute, or legal-hold records are retained only where required by law or necessary to protect people, with access restricted and deletion reviewed when the obligation ends."
+    },
+    "contact_title": "Privacy contact",
+    "contact_body": "If the contact form is not accessible, email the Timebank Global data protection contact and use the subject Account deletion request.",
+    "contact_email": "jasper@timebank.global"
+  },
+  "child_safety": {
+    "page_title": "Child safety standards",
+    "meta_description": "Timebank Global standards against child sexual abuse and exploitation, including reporting, enforcement, and authority escalation.",
+    "heading": "Child safety standards",
+    "subtitle": "Timebank Global is an adults-only service, but we maintain explicit standards against child sexual abuse and exploitation wherever content or conduct touches our platform.",
+    "effective_date": "Effective 26 August 2026",
+    "zero_tolerance_title": "Zero tolerance for child sexual abuse and exploitation",
+    "zero_tolerance_body": "We prohibit child sexual abuse and exploitation (CSAE), child sexual abuse material (CSAM), and any attempt to use Timebank Global to facilitate, promote, solicit, or conceal harm to a child.",
+    "prohibited_items": {
+      "0": "Creating, uploading, sharing, requesting, storing, or linking to CSAM, including synthetic or computer-generated material.",
+      "1": "Grooming, sexualising a child, sexual extortion, trafficking, or arranging sexual contact with a child.",
+      "2": "Instructions, encouragement, jokes, or communities that normalise or promote child sexual abuse or exploitation.",
+      "3": "Using profiles, messages, listings, groups, events, or any other feature to identify, target, contact, or exploit a child.",
+      "4": "Retaliating against, threatening, or attempting to identify a person who reports a child-safety concern."
+    },
+    "reporting_title": "How to report a concern",
+    "reporting_body": "Reports can be made from inside the app or through our public form. Do not upload or forward suspected CSAM to us; report the location of the content so trained authorities can handle it safely.",
+    "reporting_steps": {
+      "0": "In the app, use Report on the relevant profile, post, listing, message, event, or marketplace item.",
+      "1": "Without the app, open the child-safety report form below and include the account or content location and why you are concerned.",
+      "2": "If a child is in immediate danger, contact local emergency services or the relevant child-protection authority first."
+    },
+    "reporting_button": "Open the child-safety report form",
+    "response_title": "How we respond",
+    "response_items": {
+      "0": "Child-safety reports are prioritised for human review and safeguarding reports are normally acknowledged within one working day.",
+      "1": "We restrict access to reported content while assessing it when that is necessary to protect people or preserve evidence.",
+      "2": "Confirmed prohibited content is removed and involved accounts may be suspended or permanently removed.",
+      "3": "We preserve only the evidence necessary for lawful investigation and protect reporter confidentiality as far as the law permits.",
+      "4": "We report apparent CSAM and credible child-exploitation concerns to the competent law-enforcement or child-protection authority, and to NCMEC where applicable or legally required."
+    },
+    "contact_title": "Designated child-safety contact",
+    "contact_body": "Google Play, law-enforcement, child-protection organisations, and members may contact our designated representative at:",
+    "contact_email": "jasper@timebank.global",
+    "operator_body": "Timebank Global is operated by hOUR Timebank Company Limited by Guarantee, registered business name Timebank Ireland, charity number RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Ireland."
   },
   "trust_safety": {
     "vetting_attestation_body": "Where a community policy requires vetted contact, the community carries out its lawful checking outside Project NEXUS. An authorised broker can record a private, metadata-only community confirmation for the specific contact policy. Project NEXUS does not ask for or retain DBS, Garda Vetting, AccessNI, PVG or equivalent certificates, reference numbers, results or criminal-record details. A confirmation does not mean a person is universally safe or cleared for every role.",

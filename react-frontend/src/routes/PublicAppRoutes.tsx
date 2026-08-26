@@ -49,6 +49,8 @@ const AccessibilityPage = lazyWithRetry(() => import('@/pages/public/Accessibili
 const CookiesPage = lazyWithRetry(() => import('@/pages/public/CookiesPage'));
 const CommunityGuidelinesPage = lazyWithRetry(() => import('@/pages/public/CommunityGuidelinesPage'));
 const TrustSafetyPage = lazyWithRetry(() => import('@/pages/public/TrustSafetyPage'));
+const AccountDeletionPage = lazyWithRetry(() => import('@/pages/public/AccountDeletionPage'));
+const ChildSafetyStandardsPage = lazyWithRetry(() => import('@/pages/public/ChildSafetyStandardsPage'));
 const AcceptableUsePage = lazyWithRetry(() => import('@/pages/public/AcceptableUsePage'));
 const LegalHubPage = lazyWithRetry(() => import('@/pages/public/LegalHubPage'));
 const LegalVersionHistoryPage = lazyWithRetry(() => import('@/pages/public/LegalVersionHistoryPage'));
@@ -117,6 +119,8 @@ export function PublicAppRoutes() {
         <Route path="community-guidelines" element={<ErrorBoundary><CommunityGuidelinesPage /></ErrorBoundary>} />
         <Route path="community-guidelines/versions" element={<ErrorBoundary><LegalVersionHistoryPage /></ErrorBoundary>} />
         <Route path="trust-and-safety" element={<ErrorBoundary><TrustSafetyPage /></ErrorBoundary>} />
+        <Route path="account-deletion" element={<ErrorBoundary><AccountDeletionPage /></ErrorBoundary>} />
+        <Route path="child-safety" element={<ErrorBoundary><ChildSafetyStandardsPage /></ErrorBoundary>} />
         <Route path="acceptable-use" element={<ErrorBoundary><AcceptableUsePage /></ErrorBoundary>} />
         <Route path="acceptable-use/versions" element={<ErrorBoundary><LegalVersionHistoryPage /></ErrorBoundary>} />
         <Route path="legal" element={<ErrorBoundary><LegalHubPage /></ErrorBoundary>} />

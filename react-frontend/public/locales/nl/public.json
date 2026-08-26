@@ -801,14 +801,20 @@
         "account": "Account Hulp",
         "technical": "Technisch Probleem",
         "feedback": "Feedback / Suggestie",
-        "other": "Ander"
+        "other": "Ander",
+        "account_deletion": "Account verwijderen",
+        "child_safety": "Melding over kinderveiligheid"
       },
       "message_label": "Bericht",
       "message_placeholder": "Hoe kunnen we helpen?",
       "submit": "Stuur Bericht",
       "login_prompt_before": "Heb je al een account?",
       "login_link": "Inloggen",
-      "login_prompt_after": "voor snellere ondersteuning."
+      "login_prompt_after": "voor snellere ondersteuning.",
+      "prefill": {
+        "account_deletion": "Ik wil mijn Timebank Global-account definitief verwijderen. Het hierboven ingevulde e-mailadres is het adres van mijn account.",
+        "child_safety": "Ik wil een zorg over kinderveiligheid melden. Het betreffende profiel, de inhoud of de locatie is:"
+      }
     },
     "turnstile_error": "Beveiligingscontrole kan niet worden geladen. Vernieuw de pagina en probeer opnieuw."
   },

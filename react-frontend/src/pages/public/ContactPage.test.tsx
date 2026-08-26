@@ -98,4 +98,14 @@ describe('ContactPage', () => {
     expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/test/login');
     expect(screen.queryByText('Message Sent!')).not.toBeInTheDocument();
   });
+
+  it('prefills the public account-deletion request form from the compliance URL', () => {
+    window.history.pushState({}, '', '/contact?topic=account-deletion');
+    render(<ContactPage />);
+
+    expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue(
+      'I want to permanently delete my Timebank Global account. The email address entered above is the address used for my account.',
+    );
+    expect(screen.getByRole('button', { name: 'Account deletion Subject' })).toBeInTheDocument();
+  });
 });

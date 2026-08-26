@@ -801,14 +801,20 @@
         "account": "アカウントのヘルプ",
         "technical": "技術的な問題",
         "feedback": "フィードバック / 提案",
-        "other": "他の"
+        "other": "他の",
+        "account_deletion": "アカウントの削除",
+        "child_safety": "児童保護に関する報告"
       },
       "message_label": "メッセージ",
       "message_placeholder": "どのようにお手伝いできますか？",
       "submit": "メッセージを送信",
       "login_prompt_before": "すでにアカウントをお持ちですか？",
       "login_link": "ログイン",
-      "login_prompt_after": "より迅速なサポートのために。"
+      "login_prompt_after": "より迅速なサポートのために。",
+      "prefill": {
+        "account_deletion": "Timebank Global のアカウントを完全に削除したいです。上に入力したメールアドレスが、私のアカウントで使用しているアドレスです。",
+        "child_safety": "児童保護に関する懸念を報告します。該当するプロフィール、コンテンツ、または場所は次のとおりです："
+      }
     },
     "turnstile_error": "セキュリティチェックを読み込めませんでした。ページを更新して再試行してください。"
   },

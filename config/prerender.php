@@ -43,6 +43,8 @@ return [
         '/acceptable-use' => 30 * 24 * 3600,
         '/community-guidelines' => 30 * 24 * 3600,
         '/trust-and-safety' => 30 * 24 * 3600,
+        '/account-deletion' => 30 * 24 * 3600,
+        '/child-safety' => 30 * 24 * 3600,
         '/timebanking-guide' => 30 * 24 * 3600,
         '/changelog'    => 7 * 24 * 3600,
         '/features'     => 30 * 24 * 3600,

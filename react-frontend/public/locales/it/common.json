@@ -213,7 +213,9 @@
     "cookie_policy": "Politica sui Cookie",
     "accessibility": "Accessibilità",
     "type_community_guidelines": "Linee guida della comunità",
-    "type_acceptable_use": "Uso accettabile"
+    "type_acceptable_use": "Uso accettabile",
+    "account_deletion": "Eliminazione dell'account",
+    "child_safety": "Standard di tutela dei minori"
   },
   "admin_tools": {
     "section": "Strumenti Admin",

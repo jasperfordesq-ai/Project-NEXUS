@@ -64,6 +64,8 @@ const PUBLIC_ROUTES = [
   '/cookies',
   '/community-guidelines',
   '/trust-and-safety',
+  '/account-deletion',
+  '/child-safety',
   '/acceptable-use',
   '/legal',
   '/terms/versions',

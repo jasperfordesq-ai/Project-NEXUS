@@ -2665,6 +2665,14 @@
       "value": "Edge",
       "reason": "brand-product-or-platform-name"
     },
+    "legal.account_deletion.contact_email": {
+      "value": "jasper@timebank.global",
+      "reason": "functional-address-route-or-example"
+    },
+    "legal.child_safety.contact_email": {
+      "value": "jasper@timebank.global",
+      "reason": "functional-address-route-or-example"
+    },
     "listings.form.character_count": {
       "value": "{{count}}/{{max}}",
       "reason": "placeholder-number-or-display-format"

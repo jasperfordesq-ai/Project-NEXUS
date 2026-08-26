@@ -216,7 +216,9 @@
     "cookie_policy": "سياسة ملفات تعريف الارتباط",
     "accessibility": "إمكانية الوصول",
     "type_community_guidelines": "إرشادات المجتمع",
-    "type_acceptable_use": "الاستخدام المقبول"
+    "type_acceptable_use": "الاستخدام المقبول",
+    "account_deletion": "حذف الحساب",
+    "child_safety": "معايير حماية الأطفال"
   },
   "admin_tools": {
     "section": "أدوات الإدارة",

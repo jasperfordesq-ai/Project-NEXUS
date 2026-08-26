@@ -103,6 +103,8 @@ PUBLIC_ROUTES=(
     "/cookies"
     "/community-guidelines"
     "/trust-and-safety"
+    "/account-deletion"
+    "/child-safety"
     "/acceptable-use"
     "/legal"
     "/terms/versions"
@@ -251,7 +253,7 @@ host_is_path_safe() {
 route_is_global_explicit_safe() {
     case "$1" in
         /|/about|/faq|/contact|/help|/terms|/privacy|/accessibility|/cookies|\
-/community-guidelines|/trust-and-safety|/acceptable-use|/legal|/terms/versions|\
+/community-guidelines|/trust-and-safety|/account-deletion|/child-safety|/acceptable-use|/legal|/terms/versions|\
 /privacy/versions|/accessibility/versions|/cookies/versions|/community-guidelines/versions|\
 /acceptable-use/versions|/timebanking-guide|/regional-analytics|/platform/terms|\
 /platform/privacy|/platform/disclaimer|/features|/changelog|/developers|/developers/auth|\

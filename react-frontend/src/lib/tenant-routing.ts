@@ -55,7 +55,7 @@ export const RESERVED_PATHS = new Set([
   'how-it-works', 'guide', 'news', 'post',
   'features', 'changelog', 'development-status',
   'communities', 'local-groups', 'services',
-  'trust-and-safety', 'pilot-inquiry', 'pilot-apply', 'developers',
+  'trust-and-safety', 'account-deletion', 'child-safety', 'pilot-inquiry', 'pilot-apply', 'developers',
   'regional-analytics', 'partner-analytics', 'pricing',
   // System / admin
   'admin', 'admin-legacy', 'super-admin', 'broker', 'partner-timebanks', 'dev',

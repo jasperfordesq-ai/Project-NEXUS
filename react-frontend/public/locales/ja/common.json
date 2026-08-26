@@ -212,7 +212,9 @@
     "cookie_policy": "Cookieポリシー",
     "accessibility": "アクセシビリティ",
     "type_community_guidelines": "コミュニティガイドライン",
-    "type_acceptable_use": "利用規約"
+    "type_acceptable_use": "利用規約",
+    "account_deletion": "アカウントの削除",
+    "child_safety": "児童保護基準"
   },
   "admin_tools": {
     "section": "管理ツール",

@@ -27,6 +27,8 @@ import Hexagon from 'lucide-react/icons/hexagon';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Building from 'lucide-react/icons/building';
+import Trash2 from 'lucide-react/icons/trash-2';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -117,6 +119,26 @@ const legalDocumentDefs = [
     bg: 'bg-emerald-500/20',
     gradient: 'from-emerald-500/20 to-accent-gradient-end/20',
     updatedKey: 'hub.doc_updated_feb_2026',
+  },
+  {
+    titleKey: 'account_deletion.heading',
+    descKey: 'account_deletion.meta_description',
+    icon: Trash2,
+    path: '/account-deletion',
+    color: 'text-[var(--color-error)]',
+    bg: 'bg-red-500/20',
+    gradient: 'from-red-500/20 to-rose-500/20',
+    updatedKey: 'hub.doc_updated_aug_2026',
+  },
+  {
+    titleKey: 'child_safety.heading',
+    descKey: 'child_safety.meta_description',
+    icon: ShieldAlert,
+    path: '/child-safety',
+    color: 'text-rose-500',
+    bg: 'bg-rose-500/20',
+    gradient: 'from-rose-500/20 to-orange-500/20',
+    updatedKey: 'hub.doc_updated_aug_2026',
   },
 ];
 

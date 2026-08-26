@@ -15,7 +15,7 @@ import { motion } from '@/lib/motion';
 import { Helmet } from 'react-helmet-async';import Mail from 'lucide-react/icons/mail';
 import MessageSquare from 'lucide-react/icons/message-square';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -33,7 +33,13 @@ export function ContactPage() {
   const { t } = useTranslation('public');
   const { branding, tenantPath, tenant } = useTenant();
   const { user, isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
   usePageTitle(t('contact.title'));
+
+  const requestedTopic = searchParams.get('topic');
+  const initialTopic = requestedTopic === 'account-deletion' || requestedTopic === 'child-safety'
+    ? requestedTopic.replace('-', '_')
+    : '';
 
   // ContactPoint structured data — helps Google Knowledge Graph and Bing
   // surface the right way to reach the organisation. Only emits a contact
@@ -59,8 +65,8 @@ export function ContactPage() {
   const [formData, setFormData] = useState({
     name: user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || '',
     email: user?.email || '',
-    subject: '',
-    message: '',
+    subject: initialTopic,
+    message: initialTopic ? t(`contact.form.prefill.${initialTopic}`) : '',
   });
 
   // Cloudflare Turnstile — explicit-render hook. Required for lazy-loaded
@@ -88,7 +94,9 @@ export function ContactPage() {
       const response = await api.post('/v2/contact', {
         name: formData.name,
         email: formData.email,
-        subject: formData.subject || 'General Inquiry',
+        subject: formData.subject
+          ? t(`contact.form.subjects.${formData.subject}`)
+          : t('contact.form.subjects.general'),
         message: formData.message,
         turnstile_token: turnstileToken || undefined,
       });
@@ -201,6 +209,8 @@ export function ContactPage() {
               >
                 <SelectItem key="general" id="general">{t('contact.form.subjects.general')}</SelectItem>
                 <SelectItem key="account" id="account">{t('contact.form.subjects.account')}</SelectItem>
+                <SelectItem key="account_deletion" id="account_deletion">{t('contact.form.subjects.account_deletion')}</SelectItem>
+                <SelectItem key="child_safety" id="child_safety">{t('contact.form.subjects.child_safety')}</SelectItem>
                 <SelectItem key="technical" id="technical">{t('contact.form.subjects.technical')}</SelectItem>
                 <SelectItem key="feedback" id="feedback">{t('contact.form.subjects.feedback')}</SelectItem>
                 <SelectItem key="other" id="other">{t('contact.form.subjects.other')}</SelectItem>

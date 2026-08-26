@@ -382,7 +382,8 @@
     "platform_section_desc": "Diese Dokumente regeln die Infrastruktur der Project NEXUS-Plattform und sind von den Richtlinien Ihrer Community getrennt.",
     "platform_terms": "Plattformbedingungen",
     "platform_privacy": "Plattform-Datenschutz",
-    "platform_disclaimer": "Haftungsausschluss"
+    "platform_disclaimer": "Haftungsausschluss",
+    "doc_updated_aug_2026": "Aktualisiert im August 2026"
   },
   "version_history": {
     "page_title": "Versionshistorie",
@@ -813,5 +814,80 @@
     "contact_cta_body": "Nehmen Sie Kontakt mit uns auf und ein Koordinator wird sich bei Ihnen melden. Die meisten Nachrichten werden innerhalb eines Werktages beantwortet.",
     "contact_cta_button": "Kontaktieren Sie uns",
     "community_guidelines_link": "Lesen Sie die Community-Richtlinien"
+  },
+  "account_deletion": {
+    "page_title": "Ihr Timebank-Global-Konto löschen",
+    "meta_description": "So löschen Sie ein Timebank-Global-Konto in der mobilen App oder beantragen die Löschung im Web – einschließlich dessen, was gelöscht wird und was aufbewahrt werden muss.",
+    "heading": "Ihr Timebank-Global-Konto löschen",
+    "subtitle": "Sie können Ihr Konto direkt in der App dauerhaft löschen oder uns einen Löschantrag senden, wenn Sie keinen Zugriff mehr darauf haben.",
+    "operator_title": "App-Betreiber und Verantwortlicher",
+    "operator_body": "Timebank Global wird betrieben von hOUR Timebank Company Limited by Guarantee, eingetragener Geschäftsname Timebank Ireland, Wohltätigkeitsnummer RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irland.",
+    "package_id": "Diese Seite gilt für die Android-App Timebank Global, Paket ie.project.nexus.",
+    "in_app_title": "Ihr Konto in der App löschen",
+    "in_app_steps": {
+      "0": "Öffnen Sie Timebank Global und melden Sie sich an.",
+      "1": "Öffnen Sie die Einstellungen.",
+      "2": "Wählen Sie „Konto“ und dann „Konto löschen“.",
+      "3": "Lesen Sie die Folgen, geben Sie DELETE ein und tragen Sie Ihr aktuelles Passwort ein.",
+      "4": "Wählen Sie „Mein Konto löschen“. Das Konto wird deaktiviert, die Zugangsdaten werden widerrufen und die Löschung der personenbezogenen Daten beginnt sofort."
+    },
+    "web_request_title": "Löschung ohne die App beantragen",
+    "web_request_body": "Nutzen Sie unser öffentliches Kontaktformular und geben Sie die E-Mail-Adresse an, die Sie für Ihr Timebank-Global-Konto verwenden. Wählen Sie „Kontolöschung“. Wir prüfen, ob das Konto Ihnen gehört, bevor wir den Antrag ausführen.",
+    "web_request_timing": "Wir bestätigen Anträge zeitnah und schließen geprüfte Löschanträge innerhalb von 30 Tagen ab, sofern das Gesetz keine längere Frist erlaubt oder verlangt.",
+    "web_request_button": "Formular für den Löschantrag öffnen",
+    "deleted_title": "Daten, die gelöscht oder anonymisiert werden",
+    "deleted_items": {
+      "0": "Ihr Name, Ihre E-Mail-Adresse, Telefonnummer, Ihr Profil, Standort, Lebenslauf, Ihre Interessen und Ihr Profilbild.",
+      "1": "Ihr Passwort, Ihre Passkeys, Geheimnisse der Zwei-Faktor-Authentifizierung, Sitzungen, Aktualisierungstoken und registrierten Geräte.",
+      "2": "Ihre aktiven Angebote, Benachrichtigungen, Einwilligungsnachweise, der KI-Chatverlauf und Ihre persönlichen Einstellungen.",
+      "3": "Von Ihnen hochgeladene Dateien und Medien, einschließlich Nachrichtenanhängen und Sprachaufnahmen, sofern nicht eine fehlgeschlagene Speicherlöschung eine eingeschränkte Nachverfolgung durch Administratoren erfordert.",
+      "4": "Der Inhalt der von Ihnen verfassten Nachrichten wird bereinigt; die andere teilnehmende Person behält einen anonymisierten Gesprächsverlauf.",
+      "5": "Ihr Profil und Ihre Angebote werden aus den Suchindizes entfernt, und externe Föderationspartner werden aufgefordert, das Profil zurückzuziehen."
+    },
+    "retained_title": "Daten, die aufbewahrt werden können",
+    "retained_items": {
+      "0": "Anonymisierte Buchhaltungsdaten zu Zeitguthaben, Tauschvorgängen, Spenden und Organisationen können bis zu sieben Jahre aufbewahrt werden, soweit dies für Prüfungen, gemeinnützige Zwecke, Steuern, Betrugsprävention oder rechtliche Pflichten erforderlich ist.",
+      "1": "Gemeinsame Aufzeichnungen, die ein anderes Mitglied benötigt – etwa ein Tauschvorgang oder ein Gesprächsverlauf –, können bestehen bleiben, wobei Ihre Identität und die von Ihnen verfassten personenbezogenen Inhalte entfernt werden.",
+      "2": "Aufzeichnungen zu Kinderschutz, Streitfällen oder rechtlichen Aufbewahrungspflichten werden nur aufbewahrt, wenn das Gesetz dies verlangt oder es zum Schutz von Personen erforderlich ist; der Zugriff ist beschränkt und die Löschung wird überprüft, sobald die Pflicht endet."
+    },
+    "contact_title": "Datenschutzkontakt",
+    "contact_body": "Wenn das Kontaktformular nicht erreichbar ist, schreiben Sie an den Datenschutzkontakt von Timebank Global und verwenden Sie den Betreff „Account deletion request“.",
+    "contact_email": "jasper@timebank.global"
+  },
+  "child_safety": {
+    "page_title": "Kinderschutzstandards",
+    "meta_description": "Standards von Timebank Global gegen sexuellen Missbrauch und sexuelle Ausbeutung von Kindern, einschließlich Meldung, Durchsetzung und Einschaltung der Behörden.",
+    "heading": "Kinderschutzstandards",
+    "subtitle": "Timebank Global ist ein Dienst ausschließlich für Erwachsene. Dennoch gelten bei uns ausdrückliche Standards gegen sexuellen Missbrauch und sexuelle Ausbeutung von Kindern, wo immer Inhalte oder Verhalten unsere Plattform berühren.",
+    "effective_date": "Gültig ab 26. August 2026",
+    "zero_tolerance_title": "Null Toleranz gegenüber sexuellem Missbrauch und sexueller Ausbeutung von Kindern",
+    "zero_tolerance_body": "Wir verbieten sexuellen Missbrauch und sexuelle Ausbeutung von Kindern (CSAE), Darstellungen sexuellen Kindesmissbrauchs (CSAM) sowie jeden Versuch, Timebank Global zu nutzen, um Schaden an einem Kind zu ermöglichen, zu fördern, anzubahnen oder zu verschleiern.",
+    "prohibited_items": {
+      "0": "Das Erstellen, Hochladen, Teilen, Anfordern, Speichern oder Verlinken von CSAM, einschließlich synthetischen oder computergenerierten Materials.",
+      "1": "Grooming, die Sexualisierung eines Kindes, sexuelle Erpressung, Menschenhandel oder das Anbahnen sexuellen Kontakts mit einem Kind.",
+      "2": "Anleitungen, Ermutigung, Witze oder Gemeinschaften, die sexuellen Missbrauch oder sexuelle Ausbeutung von Kindern normalisieren oder fördern.",
+      "3": "Die Nutzung von Profilen, Nachrichten, Angeboten, Gruppen, Veranstaltungen oder anderen Funktionen, um ein Kind zu identifizieren, gezielt anzusprechen, zu kontaktieren oder auszubeuten.",
+      "4": "Vergeltung gegen, Bedrohung von oder Versuche zur Identifizierung einer Person, die ein Anliegen zum Kinderschutz meldet."
+    },
+    "reporting_title": "So melden Sie ein Anliegen",
+    "reporting_body": "Meldungen sind in der App oder über unser öffentliches Formular möglich. Laden Sie vermutetes CSAM nicht bei uns hoch und leiten Sie es nicht an uns weiter; melden Sie stattdessen den Ort des Inhalts, damit geschulte Behörden ihn sicher bearbeiten können.",
+    "reporting_steps": {
+      "0": "Nutzen Sie in der App „Melden“ beim betreffenden Profil, Beitrag, Angebot, bei der Nachricht, Veranstaltung oder beim Marktplatzartikel.",
+      "1": "Ohne die App öffnen Sie das untenstehende Kinderschutz-Meldeformular und geben das Konto oder den Ort des Inhalts an sowie den Grund Ihrer Sorge.",
+      "2": "Wenn ein Kind in unmittelbarer Gefahr ist, wenden Sie sich zuerst an den örtlichen Notruf oder die zuständige Kinderschutzbehörde."
+    },
+    "reporting_button": "Kinderschutz-Meldeformular öffnen",
+    "response_title": "So reagieren wir",
+    "response_items": {
+      "0": "Meldungen zum Kinderschutz werden vorrangig von Menschen geprüft, und der Eingang von Schutzmeldungen wird in der Regel innerhalb eines Werktags bestätigt.",
+      "1": "Wir beschränken den Zugriff auf gemeldete Inhalte während der Prüfung, sofern dies zum Schutz von Personen oder zur Beweissicherung erforderlich ist.",
+      "2": "Bestätigte verbotene Inhalte werden entfernt, und beteiligte Konten können gesperrt oder dauerhaft gelöscht werden.",
+      "3": "Wir bewahren nur die für eine rechtmäßige Untersuchung erforderlichen Beweise auf und schützen die Vertraulichkeit der meldenden Person, soweit das Gesetz es zulässt.",
+      "4": "Wir melden offensichtliches CSAM und glaubhafte Hinweise auf die Ausbeutung von Kindern der zuständigen Strafverfolgungs- oder Kinderschutzbehörde sowie NCMEC, sofern anwendbar oder gesetzlich vorgeschrieben."
+    },
+    "contact_title": "Benannter Kinderschutzkontakt",
+    "contact_body": "Google Play, Strafverfolgungsbehörden, Kinderschutzorganisationen und Mitglieder können unsere benannte Ansprechperson erreichen unter:",
+    "contact_email": "jasper@timebank.global",
+    "operator_body": "Timebank Global wird betrieben von hOUR Timebank Company Limited by Guarantee, eingetragener Geschäftsname Timebank Ireland, Wohltätigkeitsnummer RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irland."
   }
 }

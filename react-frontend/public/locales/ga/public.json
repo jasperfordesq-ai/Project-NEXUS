@@ -801,14 +801,20 @@
         "account": "Cabhair le Cuntas",
         "technical": "Fadhb Theicniúil",
         "feedback": "Aiseolas / Moladh",
-        "other": "Eile"
+        "other": "Eile",
+        "account_deletion": "Scriosadh cuntais",
+        "child_safety": "Tuairisc um shábháilteacht leanaí"
       },
       "message_label": "Teachtaireacht",
       "message_placeholder": "Conas is féidir linn cabhrú?",
       "submit": "Seol Teachtaireacht",
       "login_prompt_before": "An bhfuil cuntas agat cheana?",
       "login_link": "Logáil isteach",
-      "login_prompt_after": "chun tacaíocht níos tapa a fháil."
+      "login_prompt_after": "chun tacaíocht níos tapa a fháil.",
+      "prefill": {
+        "account_deletion": "Ba mhaith liom mo chuntas Timebank Global a scriosadh go buan. Is é an seoladh ríomhphoist a iontráladh thuas an seoladh a úsáidtear le mo chuntas.",
+        "child_safety": "Ba mhaith liom ábhar imní faoi shábháilteacht leanaí a thuairisciú. Is é seo an phróifíl, an t-ábhar nó an suíomh atá i gceist:"
+      }
     },
     "turnstile_error": "Níorbh fhéidir seiceáil slándála a lódáil. Athnuaigh an leathanach chun triail eile a bhaint as."
   },

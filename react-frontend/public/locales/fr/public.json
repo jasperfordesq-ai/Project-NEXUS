@@ -801,14 +801,20 @@
         "account": "Aide au compte",
         "technical": "Problème technique",
         "feedback": "Retour / Suggestion",
-        "other": "Autre"
+        "other": "Autre",
+        "account_deletion": "Suppression de compte",
+        "child_safety": "Signalement de protection de l'enfance"
       },
       "message_label": "Message",
       "message_placeholder": "Comment pouvons-nous vous aider ?",
       "submit": "Envoyer le message",
       "login_prompt_before": "Vous avez déjà un compte ?",
       "login_link": "Connectez-vous",
-      "login_prompt_after": "pour un support plus rapide."
+      "login_prompt_after": "pour un support plus rapide.",
+      "prefill": {
+        "account_deletion": "Je souhaite supprimer définitivement mon compte Timebank Global. L'adresse e-mail saisie ci-dessus est celle utilisée pour mon compte.",
+        "child_safety": "Je souhaite signaler un problème de protection de l'enfance. Le profil, le contenu ou l'emplacement concerné est :"
+      }
     },
     "turnstile_error": "Impossible de charger le controle de securite. Actualisez la page puis reessayez."
   },

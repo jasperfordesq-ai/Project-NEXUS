@@ -215,7 +215,9 @@
     "cookie_policy": "Polasaí Fianán",
     "accessibility": "Inrochtaineacht",
     "type_community_guidelines": "Treoirlínte an Phobail",
-    "type_acceptable_use": "Úsáid Inghlactha"
+    "type_acceptable_use": "Úsáid Inghlactha",
+    "account_deletion": "Scriosadh cuntais",
+    "child_safety": "Caighdeáin um shábháilteacht leanaí"
   },
   "admin_tools": {
     "section": "Uirlisí Riaracháin",

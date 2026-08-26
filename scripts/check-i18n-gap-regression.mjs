@@ -46,6 +46,11 @@ const NO_TRANSLATE_VALUES = new Set([
   'Community Caring',
   'Spitex',
   'member@example.com',
+  // The published data-protection / child-safety contact address on the Google
+  // Play compliance pages. A mailbox is an identifier, not copy: a locale that
+  // "translated" it would publish an address that does not deliver, and Play
+  // requires the child-safety contact to be reachable. Added 2026-08-26.
+  'jasper@timebank.global',
   'vs',
   // Tech-stack values on the public Features page: product names and version
   // numbers joined by '+'. There is nothing in them to translate, and a

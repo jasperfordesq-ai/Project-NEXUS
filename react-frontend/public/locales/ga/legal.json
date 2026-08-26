@@ -382,7 +382,8 @@
     "platform_section_desc": "Rialaíonn na doiciméid seo bonneagar ardáin Project NEXUS agus tá siad ar leith ó bheartais do phobail.",
     "platform_terms": "Téarmaí an Ardáin",
     "platform_privacy": "Príobháideachas an Ardáin",
-    "platform_disclaimer": "Séanadh"
+    "platform_disclaimer": "Séanadh",
+    "doc_updated_aug_2026": "Nuashonraithe i mí Lúnasa 2026"
   },
   "version_history": {
     "page_title": "Stair na Leaganacha",
@@ -819,5 +820,80 @@
     "contact_cta_body": "Déan teagmháil linn agus tabharfaidh comhordaitheoir freagra ort. Freagraítear formhór na dteachtaireachtaí laistigh de lá oibre amháin.",
     "contact_cta_button": "Déan teagmháil linn",
     "community_guidelines_link": "Léigh na Treoirlínte Pobail"
+  },
+  "account_deletion": {
+    "page_title": "Scrios do chuntas Timebank Global",
+    "meta_description": "Conas cuntas Timebank Global a scriosadh san aip mhóibíleach nó scriosadh a iarraidh ar an ngréasán, lena n-áirítear a bhfuil á scriosadh agus a bhfuil le coinneáil.",
+    "heading": "Scrios do chuntas Timebank Global",
+    "subtitle": "Is féidir leat do chuntas a scriosadh go buan taobh istigh den aip, nó iarratas scriosta a sheoladh chugainn mura féidir leat rochtain a fháil air.",
+    "operator_title": "Oibreoir na haipe agus rialaitheoir sonraí",
+    "operator_body": "Is é hOUR Timebank Company Limited by Guarantee a oibríonn Timebank Global, ainm gnó cláraithe Timebank Ireland, uimhir charthanais RCN 20162023, 21 Páirc Goodman, an Sciobairín, Co. Chorcaí, P81 AK26, Éire.",
+    "package_id": "Baineann an leathanach seo le haip Android Timebank Global, pacáiste ie.project.nexus.",
+    "in_app_title": "Scrios do chuntas san aip",
+    "in_app_steps": {
+      "0": "Oscail Timebank Global agus sínigh isteach.",
+      "1": "Oscail Socruithe.",
+      "2": "Roghnaigh Cuntas, ansin Scrios cuntas.",
+      "3": "Léigh na hiarmhairtí, clóscríobh DELETE, agus iontráil do phasfhocal reatha.",
+      "4": "Roghnaigh Scrios mo chuntas. Díghníomhachtaítear an cuntas, cúlghairtear na dintiúir, agus tosaíonn scriosadh na sonraí pearsanta láithreach."
+    },
+    "web_request_title": "Iarr scriosadh gan an aip",
+    "web_request_body": "Bain úsáid as ár bhfoirm teagmhála phoiblí agus tabhair an seoladh ríomhphoist a úsáidtear le do chuntas Timebank Global. Roghnaigh Scriosadh cuntais. Fíoróimid gur leatsa an cuntas sula gcuirfimid an t-iarratas i gcrích.",
+    "web_request_timing": "Admhaímid iarratais go pras agus cuirimid iarratais scriosta fíoraithe i gcrích laistigh de 30 lá, mura gceadaíonn nó mura n-éilíonn an dlí tréimhse níos faide.",
+    "web_request_button": "Oscail an fhoirm iarratais ar scriosadh cuntais",
+    "deleted_title": "Sonraí a scriostar nó a dhéantar gan ainm",
+    "deleted_items": {
+      "0": "D'ainm, do sheoladh ríomhphoist, d'uimhir ghutháin, do phróifíl, do shuíomh, do bheathaisnéis, do chuid spéiseanna, agus íomhá do phróifíle.",
+      "1": "Do phasfhocal, do phaseochracha, rúin fíordheimhnithe dhá fhachtóir, do sheisiúin, do chomharthaí athnuachana, agus na gléasanna cláraithe.",
+      "2": "Do liostaí gníomhacha, fógraí, taifid toilithe, stair chomhrá na hintleachta saorga, agus do roghanna pearsanta.",
+      "3": "Comhaid agus meáin a d'uaslódáil tú, lena n-áirítear ceangaltáin teachtaireachtaí agus taifeadtaí gutha, mura n-éilíonn scriosadh stórais a theip obair leantach shrianta ó riarthóir.",
+      "4": "Glantar ábhar na dteachtaireachtaí a scríobh tú; coinníonn an rannpháirtí eile taifead comhrá gan ainm.",
+      "5": "Baintear do phróifíl agus do liostaí de na hinnéacsanna cuardaigh agus iarrtar ar chomhpháirtithe cónaidhme seachtracha an phróifíl a tharraingt siar."
+    },
+    "retained_title": "Sonraí a d'fhéadfaí a choinneáil",
+    "retained_items": {
+      "0": "Féadfar taifid chuntasaíochta gan ainm maidir le creidmheas ama, malartuithe, síntiúis agus eagraíochtaí a choinneáil ar feadh suas le seacht mbliana nuair is gá chun críocha iniúchta, carthanais, cánach, cosc calaoise, nó oibleagáidí dlíthiúla.",
+      "1": "Féadfaidh taifid roinnte a bhfuil gá ag ball eile leo, mar shampla malartú nó stair chomhrá, fanacht ann agus d'aitheantas agus an t-ábhar pearsanta a scríobh tú bainte díobh.",
+      "2": "Ní choinnítear taifid choimirce, díospóide, nó coinneála dlíthiúla ach amháin nuair a éilíonn an dlí é nó nuair is gá chun daoine a chosaint, le rochtain shrianta agus athbhreithniú ar an scriosadh nuair a thagann deireadh leis an oibleagáid."
+    },
+    "contact_title": "Teagmhálaí príobháideachais",
+    "contact_body": "Mura bhfuil an fhoirm teagmhála inrochtana, seol ríomhphost chuig teagmhálaí cosanta sonraí Timebank Global agus bain úsáid as an ábhar «Account deletion request».",
+    "contact_email": "jasper@timebank.global"
+  },
+  "child_safety": {
+    "page_title": "Caighdeáin um shábháilteacht leanaí",
+    "meta_description": "Caighdeáin Timebank Global in aghaidh mí-úsáid agus dúshaothrú gnéasach leanaí, lena n-áirítear tuairisciú, forfheidhmiú, agus atreorú chuig na húdaráis.",
+    "heading": "Caighdeáin um shábháilteacht leanaí",
+    "subtitle": "Is seirbhís do dhaoine fásta amháin é Timebank Global, ach coinnímid caighdeáin shoiléire in aghaidh mí-úsáid agus dúshaothrú gnéasach leanaí cibé áit a mbaineann ábhar nó iompar lenár n-ardán.",
+    "effective_date": "I bhfeidhm ón 26 Lúnasa 2026",
+    "zero_tolerance_title": "Nialas caoinfhulaingthe do mhí-úsáid agus dúshaothrú gnéasach leanaí",
+    "zero_tolerance_body": "Cuirimid cosc ar mhí-úsáid agus dúshaothrú gnéasach leanaí (CSAE), ar ábhar mí-úsáide gnéasaí leanaí (CSAM), agus ar aon iarracht Timebank Global a úsáid chun díobháil do leanbh a éascú, a chur chun cinn, a lorg nó a cheilt.",
+    "prohibited_items": {
+      "0": "CSAM a chruthú, a uaslódáil, a roinnt, a iarraidh, a stóráil nó nasc a dhéanamh leis, lena n-áirítear ábhar sintéiseach nó ríomhghinte.",
+      "1": "Cluanaireacht, leanbh a ghnéasú, sracaireacht ghnéasach, gáinneáil, nó teagmháil ghnéasach le leanbh a shocrú.",
+      "2": "Treoracha, spreagadh, magadh, nó pobail a dhéanann mí-úsáid nó dúshaothrú gnéasach leanaí a normalú nó a chur chun cinn.",
+      "3": "Próifílí, teachtaireachtaí, liostaí, grúpaí, imeachtaí nó aon ghné eile a úsáid chun leanbh a aithint, a spriocdhíriú, a theagmháil nó a dhúshaothrú.",
+      "4": "Díoltas a imirt ar dhuine a thuairiscíonn ábhar imní faoi shábháilteacht leanaí, bagairt a dhéanamh air, nó iarracht a aithint."
+    },
+    "reporting_title": "Conas ábhar imní a thuairisciú",
+    "reporting_body": "Is féidir tuairiscí a dhéanamh taobh istigh den aip nó trínár bhfoirm phoiblí. Ná huaslódáil ná ná seol ar aghaidh chugainn ábhar a bhfuil amhras ann gur CSAM é; tuairiscigh suíomh an ábhair ionas gur féidir le húdaráis oilte déileáil leis go sábháilte.",
+    "reporting_steps": {
+      "0": "San aip, bain úsáid as Tuairiscigh ar an bpróifíl, an postáil, an liosta, an teachtaireacht, an t-imeacht nó an mhír mhargaidh ábhartha.",
+      "1": "Gan an aip, oscail an fhoirm tuairiscithe um shábháilteacht leanaí thíos agus luaigh an cuntas nó suíomh an ábhair agus cén fáth a bhfuil imní ort.",
+      "2": "Má tá leanbh i mbaol láithreach, déan teagmháil ar dtús leis na seirbhísí éigeandála áitiúla nó leis an údarás cosanta leanaí ábhartha."
+    },
+    "reporting_button": "Oscail an fhoirm tuairiscithe um shábháilteacht leanaí",
+    "response_title": "Conas a fhreagraímid",
+    "response_items": {
+      "0": "Tugtar tosaíocht do thuairiscí um shábháilteacht leanaí le haghaidh athbhreithnithe ag duine, agus de ghnáth admhaítear tuairiscí coimirce laistigh de lá oibre amháin.",
+      "1": "Cuirimid srian le rochtain ar ábhar tuairiscithe agus é á mheas nuair is gá sin chun daoine a chosaint nó chun fianaise a chaomhnú.",
+      "2": "Baintear ábhar toirmiscthe a dheimhnítear, agus féadfar cuntais a bhfuil baint acu leis a chur ar fionraí nó a bhaint go buan.",
+      "3": "Ní chaomhnaímid ach an fhianaise atá riachtanach le haghaidh imscrúdaithe dhlíthiúil agus cosnaímid rúndacht an té a thuairiscíonn a mhéid a cheadaíonn an dlí.",
+      "4": "Tuairiscímid CSAM dealraitheach agus ábhair imní inchreidte faoi dhúshaothrú leanaí don údarás forfheidhmithe dlí nó cosanta leanaí inniúil, agus do NCMEC nuair is infheidhme nó nuair a éilíonn an dlí é."
+    },
+    "contact_title": "Teagmhálaí ainmnithe um shábháilteacht leanaí",
+    "contact_body": "Is féidir le Google Play, le forfheidhmiú an dlí, le heagraíochtaí cosanta leanaí, agus le baill teagmháil a dhéanamh lenár n-ionadaí ainmnithe ag:",
+    "contact_email": "jasper@timebank.global",
+    "operator_body": "Is é hOUR Timebank Company Limited by Guarantee a oibríonn Timebank Global, ainm gnó cláraithe Timebank Ireland, uimhir charthanais RCN 20162023, 21 Páirc Goodman, an Sciobairín, Co. Chorcaí, P81 AK26, Éire."
   }
 }

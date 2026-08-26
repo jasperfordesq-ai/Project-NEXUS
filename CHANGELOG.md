@@ -29,6 +29,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Google Play compliance pages have been added to the maintained React frontend.**
+  Public, tenant-aware `/account-deletion` and `/child-safety` routes explain the
+  app's deletion process, retention boundaries, child-safety standards,
+  reporting routes and operator identity. The legal hub and footer link to both,
+  and their contact actions open a correctly pre-filled support form.
+  Both pages are published in all eleven languages: the 66 new keys were
+  translated into the other ten locales by hand, because the public translation
+  endpoint refused the batch and no translation API key is configured. The
+  operator's registered name, charity number, address, package id, the literal
+  `DELETE` confirmation word, the CSAE/CSAM/NCMEC terms and the published
+  contact address are held identical in every locale, and the two addresses are
+  registered as reviewed invariants so the Irish audit and the gap ratchet do
+  not read a deliberately unchanged mailbox as missing work.
+
+- **The Play submission handoff now uses the official Timebank Global domain.**
+  The prepared privacy, account-deletion, child-safety and support URLs point to
+  `timebank.global`, the Advertising ID answer is grounded in the built Android
+  manifest, and misleading no-payment/no-tracking store claims are replaced with
+  accurate Stripe marketplace and Sentry disclosure wording.
+
 - **Store screenshots — two full sets of eight, taken from the real app.** Not
   mockups: the release build, running against the live Partner Demo community,
   captured at full phone resolution with a tidied status bar. Light and dark, so
@@ -61,6 +81,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   draft: it says the right things in the right colour, and a designer would still
   do better.
 
+- **Google Play assets and production dependencies now have automated release
+  gates.** `npm run store:assets:check` validates the exact icon and feature
+  graphic formats plus every phone screenshot's dimensions, aspect ratio and
+  alpha channel. `npm run audit:production` fails for any new dependency advisory
+  while explicitly tracking the two unpatched, build-time `image-size` findings
+  inherited through Metro. The Play handoff now also contains ready-to-enter
+  support, reviewer-access, Data Safety and content-rating answers.
+
 - **You can now delete your account from inside the phone app.** The website's
   settings page has had this since before the app existed; the app had nothing —
   no button, no screen, no request. It is also a firm Google Play rule that an app
@@ -79,10 +107,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Self-service account deletion no longer leaves an untracked personal-data
+  export on disk.** A direct deletion now erases the account without first
+  generating a ZIP that had no GDPR-request record and therefore no expiry path.
+  DPO-managed deletions may still create a request-linked seven-day export, and
+  cleanup now removes historical orphan export files after the same period.
+
+- **The mobile-only EAS wrapper can now resolve Expo configuration plugins before
+  creating a Play build.** Its isolated upload context correctly omitted
+  `node_modules`, but EAS evaluates `expo-router` and the other plugins locally
+  before creating the archive, so the production AAB command stopped immediately.
+  The context now uses an upload-excluded local dependency junction, guarded by a
+  regression test, while the remote build remains mobile-only. The wrapper also
+  materializes the app-version runtime policy for the native EAS context, and EAS
+  now owns version-code auto-incrementing remotely so failed isolated builds cannot
+  repeatedly reuse the same Play version code. Finally, the Android post-install
+  hook now copies and validates the existing EAS Firebase file secret into the
+  native location before Gradle runs, instead of failing at
+  `processReleaseGoogleServices`. The repaired path produced and locally verified
+  a signed production AAB on 2026-08-26. After rotating the upload credential, a
+  quota-free local Gradle path produced and verified `1.2.0` / version-code `5`
+  against the new EAS-default certificate; generated credentials, AAB and APK
+  artifacts are ignored so they cannot be committed accidentally.
+
+- **The Google Play phone screenshots now meet the upload rules without losing
+  any app content.** The original 1080×2400 captures exceeded Play's 2:1 aspect
+  limit and contained an alpha channel. All sixteen are now opaque 24-bit
+  1080×1920 PNGs, proportionally fitted on colour-matched side gutters with no
+  cropping or stretching.
+
+- **Reaction details now open from the feed-item detail screen.** The card was
+  updating a reactor-sheet state that the screen never rendered, so tapping the
+  reaction summary did nothing. The sheet is now present and covered by a focused
+  open-and-close regression test; related production hook dependency warnings
+  in feed, events, marketplace and volunteering flows are also resolved.
+
 - **ASP.NET message media now stays playable after a conversation is reloaded.**
   Voice-message thread reads now retain the voice marker and duration, and both
   voice and ordinary attachment URLs use the participant-authorized private-media
   routes instead of owner-only generic file links.
+
+- **The Google Play feature graphic now includes the complete app icon.** Its
+  renderer previously replaced a placeholder mentioned in an HTML comment instead
+  of the image source, leaving a blue tile with a broken-image fragment. The
+  renderer now targets the image source directly and refuses to capture the banner
+  until the embedded icon has decoded successfully.
 
 - **A goal deadline that isn't a real date is no longer thrown away silently.** Setting a goal due on 31 February said "Your goal has been created" and created a goal with no deadline at all — the date the member typed simply vanished, with nothing said. The check that catches impossible dates was already there and already working; the goals page was ignoring its answer. It now says "Enter a real date", the same way every other part of the site already did.
 

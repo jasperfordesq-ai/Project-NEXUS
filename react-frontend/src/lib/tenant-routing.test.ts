@@ -73,7 +73,7 @@ describe('tenant-routing', () => {
     it('reserves top-level app route names so they are never treated as tenant slugs', () => {
       for (const route of [
         'courses', 'podcasts', 'coupons', 'clubs', 'me', 'municipality-calendar',
-        'advertise', 'join', 'trust-and-safety', 'pilot-inquiry', 'pilot-apply',
+        'advertise', 'join', 'trust-and-safety', 'account-deletion', 'child-safety', 'pilot-inquiry', 'pilot-apply',
         'developers', 'regional-analytics', 'partner-analytics', 'pricing',
         'auth', 'users', 'premium', 'donations', 'verify-identity-optional',
       ]) {

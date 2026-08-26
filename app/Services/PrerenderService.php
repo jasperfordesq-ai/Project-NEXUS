@@ -56,7 +56,7 @@ class PrerenderService
     public const EXPECTED_ROUTES = [
         '/', '/about', '/faq', '/contact', '/help', '/blog',
         '/terms', '/privacy', '/accessibility', '/cookies',
-        '/community-guidelines', '/trust-and-safety', '/acceptable-use',
+        '/community-guidelines', '/trust-and-safety', '/account-deletion', '/child-safety', '/acceptable-use',
         '/legal', '/terms/versions', '/privacy/versions', '/accessibility/versions',
         '/cookies/versions', '/community-guidelines/versions', '/acceptable-use/versions',
         '/timebanking-guide', '/regional-analytics', '/platform/terms', '/platform/privacy',
@@ -78,7 +78,7 @@ class PrerenderService
     private const ALWAYS_PUBLIC_ROUTES = [
         '/', '/about', '/faq', '/contact', '/help',
         '/terms', '/privacy', '/accessibility', '/cookies',
-        '/community-guidelines', '/trust-and-safety', '/acceptable-use',
+        '/community-guidelines', '/trust-and-safety', '/account-deletion', '/child-safety', '/acceptable-use',
         '/legal', '/terms/versions', '/privacy/versions', '/accessibility/versions',
         '/cookies/versions', '/community-guidelines/versions', '/acceptable-use/versions',
         '/timebanking-guide', '/regional-analytics',
