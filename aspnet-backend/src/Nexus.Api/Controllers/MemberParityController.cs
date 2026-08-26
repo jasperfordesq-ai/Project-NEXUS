@@ -1540,7 +1540,7 @@ public class MemberParityController : ControllerBase
             throw new InvalidOperationException("Committed voice message graph is unavailable.");
 
         await DispatchVoiceMessageEffectsAsync(tenantId, sender, recipient, conversation.Id, message);
-        var audioUrl = _fileUploadService.GetDownloadUrl(stagedUpload);
+        var audioUrl = $"/api/v2/messages/{message.Id}/voice";
         return StatusCode(StatusCodes.Status201Created, new
         {
             data = new

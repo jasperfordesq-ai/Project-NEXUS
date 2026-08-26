@@ -254,7 +254,8 @@ public sealed class DirectMessageParityCorrectionsTests : IntegrationTestBase
         attachment.GetProperty("type").GetString().Should().Be(type);
         attachment.GetProperty("size").GetInt64().Should().Be(size);
         attachment.GetProperty("file_size").GetInt64().Should().Be(size);
-        attachment.GetProperty("url").GetString().Should().StartWith("/api/files/");
+        attachment.GetProperty("url").GetString().Should()
+            .Be($"/api/v2/messages/{attachment.GetProperty("message_id").GetInt32()}/attachments/{attachment.GetProperty("id").GetInt32()}");
     }
 
     private static MultipartFormDataContent MessageForm(

@@ -417,6 +417,36 @@ public class MessagesController : ControllerBase
                 .GroupBy(attachment => attachment.MessageId)
                 .ToDictionary(group => group.Key, group => group.ToArray());
 
+        var voiceUploadsByMessage = attachmentsByMessage
+            .SelectMany(pair => pair.Value.Select(attachment => new
+            {
+                MessageId = pair.Key,
+                Upload = attachment.FileUpload!
+            }))
+            .Where(item => string.Equals(item.Upload.EntityType, "message_voice", StringComparison.Ordinal))
+            .ToArray();
+        var voiceAudioUrls = voiceUploadsByMessage
+            .Select(item => _fileUploadService.GetDownloadUrl(item.Upload))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var voiceMetadataByUrl = voiceAudioUrls.Length == 0
+            ? new Dictionary<string, VoiceMessage>(StringComparer.Ordinal)
+            : (await _db.VoiceMessages
+                .AsNoTracking()
+                .Where(voice => voiceAudioUrls.Contains(voice.AudioUrl))
+                .ToListAsync())
+                .GroupBy(voice => voice.AudioUrl, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.OrderByDescending(voice => voice.Id).First(), StringComparer.Ordinal);
+        var voiceByMessage = voiceUploadsByMessage
+            .Select(item => new
+            {
+                item.MessageId,
+                Voice = voiceMetadataByUrl.GetValueOrDefault(_fileUploadService.GetDownloadUrl(item.Upload))
+            })
+            .Where(item => item.Voice != null)
+            .GroupBy(item => item.MessageId)
+            .ToDictionary(group => group.Key, group => group.First().Voice!);
+
         // Laravel reports the unread state observed when the thread is opened,
         // before the same request marks those messages as read.
         var unreadCount = conversation == null
@@ -460,7 +490,8 @@ public class MessagesController : ControllerBase
                 message,
                 currentUserId,
                 otherUserId,
-                attachmentsByMessage.GetValueOrDefault(message.Id) ?? [])),
+                attachmentsByMessage.GetValueOrDefault(message.Id) ?? [],
+                voiceByMessage.GetValueOrDefault(message.Id))),
             meta = new
             {
                 conversation = new
@@ -491,7 +522,8 @@ public class MessagesController : ControllerBase
         Message message,
         int currentUserId,
         int otherUserId,
-        IReadOnlyCollection<MessageAttachment> attachments)
+        IReadOnlyCollection<MessageAttachment> attachments,
+        VoiceMessage? voice)
     {
         var recipientId = message.SenderId == currentUserId ? otherUserId : currentUserId;
         return new
@@ -513,6 +545,11 @@ public class MessagesController : ControllerBase
             attachments = attachments
                 .Select(attachment => MapLaravelReactAttachment(attachment, attachment.FileUpload!))
                 .ToArray(),
+            is_voice = voice != null,
+            audio_url = voice == null ? null : $"/api/v2/messages/{message.Id}/voice",
+            audio_duration = voice?.DurationSeconds,
+            transcript = (string?)null,
+            transcript_language = (string?)null,
             is_read = message.IsRead,
             is_edited = message.IsEdited,
             edited_at = message.EditedAt,
@@ -2145,7 +2182,7 @@ public class MessagesController : ControllerBase
         file_size_bytes = upload.FileSizeBytes,
         file_size = upload.FileSizeBytes,
         size = upload.FileSizeBytes,
-        url = _fileUploadService.GetDownloadUrl(upload),
+        url = $"/api/v2/messages/{attachment.MessageId}/attachments/{attachment.Id}",
         created_at = attachment.CreatedAt
     };
 }

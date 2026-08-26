@@ -38,7 +38,7 @@ public sealed class VoiceMessageParityRegressionTests : IntegrationTestBase
         var data = root.GetProperty("data");
         data.GetProperty("is_voice").GetBoolean().Should().BeTrue();
         data.GetProperty("audio_duration").GetInt32().Should().Be(1);
-        data.GetProperty("audio_url").GetString().Should().StartWith("/api/files/");
+        data.GetProperty("audio_url").GetString().Should().Be($"/api/v2/messages/{data.GetProperty("id").GetInt32()}/voice");
         var messageId = data.GetProperty("id").GetInt32();
 
         using (var scope = Factory.Services.CreateScope())
@@ -71,6 +71,34 @@ public sealed class VoiceMessageParityRegressionTests : IntegrationTestBase
         var verifyDb = verify.ServiceProvider.GetRequiredService<NexusDbContext>();
         (await verifyDb.Messages.IgnoreQueryFilters().CountAsync()).Should().Be(1);
         (await verifyDb.FileUploads.IgnoreQueryFilters().CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task V2Voice_RecipientsFreshThreadProjectsPlayablePersistedVoiceMessage()
+    {
+        await AuthenticateAsMemberAsync();
+        using var form = VoiceForm(TestData.AdminUser.Id, "fresh-thread.webm", "audio/webm",
+            [0x1a, 0x45, 0xdf, 0xa3, 0x42, 0x86, 0x81, 0x01]);
+
+        using var created = await Client.PostAsync("/api/v2/messages/voice", form);
+        created.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdData = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("data");
+        var messageId = createdData.GetProperty("id").GetInt32();
+
+        await AuthenticateAsAdminAsync();
+        using var threadResponse = await Client.GetAsync($"/api/v2/messages/{TestData.MemberUser.Id}");
+        threadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var thread = await threadResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var persisted = thread.GetProperty("data").EnumerateArray()
+            .Single(message => message.GetProperty("id").GetInt32() == messageId);
+        persisted.GetProperty("is_voice").GetBoolean().Should().BeTrue();
+        persisted.GetProperty("audio_duration").GetInt32().Should().Be(1);
+        persisted.GetProperty("audio_url").GetString().Should().Be($"/api/v2/messages/{messageId}/voice");
+
+        using var playback = await Client.GetAsync(persisted.GetProperty("audio_url").GetString());
+        playback.StatusCode.Should().Be(HttpStatusCode.OK);
+        playback.Content.Headers.ContentType!.MediaType.Should().Be("audio/webm");
+        (await playback.Content.ReadAsByteArrayAsync()).Should().StartWith([0x1a, 0x45, 0xdf, 0xa3]);
     }
 
     [Fact]
