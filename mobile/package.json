@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit",
     "doctor": "npx expo-doctor",
     "prepackage": "npm run type-check && npm test -- --runInBand --silent && npx expo-doctor",
+    "eas-build-post-install": "node scripts/prepare-eas-native-secrets.js",
     "build:android:website": "node scripts/eas-build.js --platform android --profile website",
     "build:android:play": "node scripts/eas-build.js --platform android --profile production",
     "submit:android:internal": "npx eas-cli@latest submit -p android --profile production --latest",
@@ -50,8 +51,10 @@
     "rollback:website": "node scripts/rollback-update.mjs website",
     "rollback:production": "node scripts/rollback-update.mjs production",
     "build:apk": "bash scripts/build-apk-local.sh",
-    "store:assets": "node scripts/render-store-assets.mjs",
-    "store:assets:check": "node scripts/render-store-assets.mjs --check"
+    "store:screenshots:prepare": "node scripts/prepare-play-screenshots.mjs",
+    "store:assets": "node scripts/render-store-assets.mjs && npm run store:assets:check",
+    "store:assets:check": "node scripts/render-store-assets.mjs --check && node scripts/validate-play-assets.cjs",
+    "audit:production": "node scripts/check-production-audit.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

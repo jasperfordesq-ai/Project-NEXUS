@@ -1,10 +1,13 @@
 # Play Store screenshots
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-08-26
 
-Captured 2026-08-25 at 1080×2400 — the real release build, running on an emulator against
-the **live Partner Demo community**, not mockups. Google accepts 320–3840 px on a side, so
-these sit comfortably inside the range and need no processing before upload.
+Captured 2026-08-25 at 1080×2400 from a locally built release APK, running on an emulator
+against the **live Partner Demo community**, not mockups. The original captures were too tall
+for Google's 2:1 maximum screenshot ratio and retained an alpha channel. On 2026-08-26 they
+were prepared as opaque 24-bit 1080×1920 PNGs: the complete screen is proportionally reduced
+to 864×1920 and centred on narrow, colour-matched side gutters. Nothing is cropped, stretched,
+invented or hidden.
 
 Two complete sets. **Light usually reads better as a small thumbnail in the store grid**;
 dark is the more striking image if the listing is being viewed full size. Pick one and stay
@@ -52,6 +55,17 @@ adb shell am broadcast -a com.android.systemui.demo -e command notifications -e 
 
 Build the app pointed at production first — `TENANT=partner-demo bash scripts/build-apk-local.sh` —
 because a development build carries a debug strip across the bottom of every screen.
+
+After recapturing, prepare and validate the complete Play asset set:
+
+```bash
+npm run store:screenshots:prepare
+npm run store:assets:check
+```
+
+The first command performs only the documented proportional conversion. The validator rejects
+wrong dimensions, screenshot ratios above 2:1, alpha-channel screenshots, and incorrect Play
+icon or feature-graphic formats.
 
 🔴 **One known imperfection.** Dates render US-style (8/17/2026) because the emulator would
 not accept a region change, and the app correctly follows the device. On an Irish or UK

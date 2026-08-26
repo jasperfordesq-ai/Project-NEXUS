@@ -100,8 +100,12 @@ async function writeFeatureGraphic() {
   const { chromium } = rootRequire('playwright');
 
   const icon = fs.readFileSync(ICON_OUT).toString('base64');
-  const html = fs.readFileSync(GRAPHIC_HTML, 'utf8')
-    .replace('ICON_DATA_URI', `data:image/png;base64,${icon}`);
+  const template = fs.readFileSync(GRAPHIC_HTML, 'utf8');
+  const placeholder = 'src="ICON_DATA_URI"';
+  if (!template.includes(placeholder)) {
+    throw new Error(`${path.relative(ROOT, GRAPHIC_HTML)} is missing ${placeholder}`);
+  }
+  const html = template.replace(placeholder, `src="data:image/png;base64,${icon}"`);
   const temp = path.join(OUT_DIR, '.feature-graphic.rendered.html');
   fs.writeFileSync(temp, html);
 
@@ -109,6 +113,10 @@ async function writeFeatureGraphic() {
   try {
     const page = await browser.newPage({ viewport: { width: 1024, height: 500 }, deviceScaleFactor: 1 });
     await page.goto(`file:///${temp.replace(/\\/g, '/')}`);
+    await page.locator('.icon').evaluate(async (image) => {
+      await image.decode();
+      if (image.naturalWidth === 0) throw new Error('feature graphic icon did not load');
+    });
     // Fonts and the gradient settle within a frame or two; half a second is generous.
     // 🔴 Not byte-reproducible: two runs of the same source produced 295,466 and 281,015
     // byte PNGs. The image is the same; chromium is free to encode it differently. So do

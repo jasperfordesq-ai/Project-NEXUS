@@ -7,6 +7,7 @@ const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { linkLocalNodeModules, materializeRuntimeVersion } = require('./eas-build-context');
 
 const appDir = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -150,6 +151,14 @@ try {
     recursive: true,
     filter: shouldCopy,
   });
+  // Expo evaluates config plugins locally before EAS creates the upload archive.
+  // Keep dependencies available for that phase without copying them into the
+  // isolated context; .easignore excludes this junction from the remote archive.
+  linkLocalNodeModules(appDir, contextDir);
+  // Runtime policies are a managed-workflow convenience. This app includes its
+  // native Android project, so give EAS the equivalent explicit runtime in the
+  // temporary context while keeping the source policy tied to the app version.
+  materializeRuntimeVersion(contextDir);
 
   result = runEas();
 

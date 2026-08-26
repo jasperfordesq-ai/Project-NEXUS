@@ -1,6 +1,6 @@
 # Google Play submission — everything prepared, and the parts only the owner can do
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-08-26
 
 The owner's Play developer account is submitted and awaiting identity and phone verification
 (2026-08-25). This page holds everything that could be prepared *without* that account, in
@@ -69,7 +69,9 @@ from that, not from the code's Stripe imports.
 | No dev host in the shipped JS | `10.0.2.2` and `localhost:8090` appear **0** times in the release bundle; `api.project-nexus.ie` is present |
 | Certificate pinning | 2 pins in the generated `network_security_config.xml`; the release config is fail-closed |
 | Deep links | `autoVerify` intent filter for `app.project-nexus.ie` plus the `nexus://` scheme |
-| Public privacy policy | `https://app.project-nexus.ie/privacy` → 200. 🔴 The page's text is drawn by JavaScript: a human reviewer in a browser sees it, a plain fetch sees an empty shell |
+| Public privacy policy | `https://timebank.global/privacy` → 200 and names Timebank Global, its operator, registered address, GDPR rights, retention periods, and adult-only audience |
+| Public account deletion | `https://timebank.global/account-deletion` is implemented in the release candidate; deploy it before changing the Play Console URL. It gives the in-app steps, a prefilled public request form, and exact deletion/retention disclosures |
+| Public child-safety standards | `https://timebank.global/child-safety` is implemented in the release candidate; deploy it before completing Play's child-safety declaration. It explicitly prohibits CSAE/CSAM and publishes reporting, enforcement, authority escalation, and the designated contact |
 | In-app account deletion | Built and walked on a device today — Play's hard requirement is met (ledger row 8.3) |
 | Third-party analytics SDKs | **None.** No Firebase Analytics, PostHog, Facebook, Amplitude or attribution SDK. This makes the Data Safety form much simpler than usual |
 
@@ -121,31 +123,32 @@ permission this app asks for.
 
 ---
 
-## Decision 1 (owner, one-way): the upload key
+## Signing and the AAB — plain English
 
-Release builds are currently signed with the **debug keystore** — the Expo template's
-default (`release { signingConfig signingConfigs.debug }`). Play will not accept that.
+An **AAB** is the Android App Bundle uploaded to Play. A **signed build** has a cryptographic
+identity stamp proving that future updates come from the same publisher. The production EAS
+profile now uses EAS-managed Android keystore `ElecXcPY2S` as its default. Its certificate
+SHA-256 begins `F5:0D:87:55` and is valid until 2054. A quota-free local Gradle build completed
+on 2026-08-26 as app version `1.2.0`, version code `5`; `jarsigner` verified the resulting
+`Timebank-Global-1.2.0-build-5.aab` and its signing certificate matches the EAS default.
 
-This is the one genuinely irreversible step in the whole process:
-
-- The signing identity can never be changed afterwards.
-- Losing the key file means never being able to update the app again.
-- A device refuses to install a differently-signed build over an existing one, so anyone
-  holding a sideloaded APK must uninstall before moving to a store build.
+Enable Play App Signing in the Console when prompted. Google then protects the permanent
+app-signing key; the existing EAS keystore is the credential used to sign uploads. Download
+an offline backup before relying on it for future updates. A debug-signed local APK may need
+to be uninstalled before installing the differently signed Play-distributed build.
 
 Two ways to hold the key, and the choice matters more than the commands:
 
-**A. Let EAS hold it (recommended for one maintainer).**
+**A. Keep the existing EAS-managed key (current and recommended).**
 
 ```bash
 cd mobile
-npx eas-cli@latest credentials          # Android → production → set up a new keystore
-npx eas-cli@latest credentials          # then: download a backup copy and store it offline
+npx eas-cli@latest credentials          # Android → production → download existing keystore
 ```
 
-EAS generates and stores the keystore; the backup download is the part people skip and
-regret. Put the downloaded `.jks` **and** its passwords in the same place as the other
-platform secrets, and treat it as unrecoverable-if-lost.
+EAS stores the existing upload keystore. Download an encrypted/offline backup of the
+`.jks` and its passwords. Under Play App Signing this upload key is important but replaceable;
+it is not the permanent app-signing key held by Google.
 
 **B. Generate it locally and upload it.**
 
@@ -157,10 +160,8 @@ keytool -genkeypair -v -storetype JKS -keystore nexus-upload.jks \
 Then attach it in `eas credentials`. Choose this if you want the key never to exist only on
 someone else's servers.
 
-Either way, also switch on **Play App Signing** in the console (it is the default for new
-apps): Google then holds the *app* signing key and your upload key can be replaced if it is
-ever lost. That single setting removes most of the fear above — with it on, losing the upload
-key is recoverable; without it, it is not.
+Use the local-generation route only if there is a reason not to let EAS create the upload key.
+For this one-maintainer project, option A plus an offline backup is the recommended route.
 
 ## Decision 2 (owner): the Play service account, for automated submission
 
@@ -171,12 +172,11 @@ key is recoverable; without it, it is not.
   "serviceAccountKeyPath": "./google-play-key.json", "track": "internal" } } }
 ```
 
-Once the developer account is verified: Play Console → Users and permissions → invite a
-service account created in Google Cloud, grant it release permissions, download its JSON
-key to `mobile/google-play-key.json`. **That path is gitignored — confirm it before saving
-the file, because the repository is public.** Until it exists, `eas submit` cannot run and
-the first upload has to be done by hand in the console, which is perfectly fine for a first
-release.
+This key is **not needed for the first manual upload** and can wait. After the developer
+account is verified, either upload the AAB by hand or create a narrowly permissioned service
+account for automation and save its JSON as `mobile/google-play-key.json`. That path is
+gitignored because the repository is public. Until it exists, `eas submit` cannot run; local
+builds and phone testing are unaffected.
 
 ---
 
@@ -255,7 +255,8 @@ public release produces.
 >
 > **Your time, tracked properly**
 > A wallet shows the hours you've earned and spent, with every exchange recorded on both
-> sides. No money changes hands and nothing is ever put behind a payment.
+> sides. Time-credit exchanges do not involve money. An optional second-hand marketplace
+> lets members arrange purchases of physical goods, with payments handled by Stripe.
 >
 > **A community, not a marketplace**
 > Join local groups, come to events and workshops, follow a community feed, and get to know
@@ -269,31 +270,37 @@ public release produces.
 > time.
 >
 > **Open and independent**
-> Timebank Global is free software under the AGPL-3.0 licence — no ads, no tracking, and no
-> selling of anyone's data. The source code is public.
+> Timebank Global is free software under the AGPL-3.0 licence — no advertising and no sale
+> of personal data. Essential security, push-notification and crash-diagnostic services are
+> disclosed in our Privacy Policy. The source code is public.
 >
 > Your community may need to approve your membership before you can sign in. You must be 18
 > or over to join.
 
 **Category:** Social (alternative: Lifestyle). **Tags:** community, volunteering, local.
-**Contact details:** support email and the website — owner to confirm which address.
-**Privacy policy URL:** `https://app.project-nexus.ie/privacy`
+**Support email:** use the address recorded in the gitignored private Play Console values
+file; it is the same address already published on the live contact page and was verified
+2026-08-26. **Website:** `https://timebank.global/contact`
+**Privacy policy URL:** `https://timebank.global/privacy`
+**Account deletion URL:** `https://timebank.global/account-deletion` (after deployment)
+**Child-safety standards URL:** `https://timebank.global/child-safety` (after deployment)
 
-### Graphics still needed
+### Play graphics — ready
 
 | Asset | Requirement | Status |
 | --- | --- | --- |
 | App icon | 512×512 PNG, 32-bit | ✅ `store-listing/play-icon-512.png`. 🔴 `assets/icon.png` is 1024², which Play rejects — that is why this exists |
 | Feature graphic | 1024×500, no transparency | ✅ `store-listing/play-feature-graphic-1024x500.png`, drafted and verified to have zero transparent pixels |
-| Phone screenshots | 2–8, 16:9 or 9:16, 320–3840 px | ✅ **Two full sets of 8**, `store-listing/screenshots/{light,dark}/` |
-| Tablet screenshots | optional | ❌ Not captured; the app has never been walked at tablet width |
+| Phone screenshots | 2–8, 320–3840 px, maximum 2:1 ratio, JPEG or opaque 24-bit PNG | ✅ **Two full sets of 8**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/{light,dark}/` |
+| Tablet screenshots | optional | Not required: the Expo configuration declares `supportsTablet: false`; do not claim tablet support |
 
 Both graphics are generated, so they can be changed by anyone:
 
 ```bash
 cd mobile
-npm run store:assets         # rewrite both from assets/icon.png + store-listing/feature-graphic.html
-npm run store:assets:check   # size, format and transparency only — no rewrite
+npm run store:screenshots:prepare  # make captures Play-safe without cropping or stretching
+npm run store:assets                # regenerate icon + feature graphic, then validate everything
+npm run store:assets:check          # validate all Play assets without rewriting them
 ```
 
 The feature graphic's source is `store-listing/feature-graphic.html` — ordinary HTML, rendered
@@ -316,6 +323,9 @@ not mockups, not a development build. Full detail in
   the listing's owner to opt in per listing, and the member directory has no federation path
   at all. Measured on the day: zero federated listings, zero unresolvable members.
 - Light or dark, both complete. Pick one and stay with it.
+- The original 1080×2400 captures exceeded Google's 2:1 ratio and contained an alpha
+  channel. The upload files are now 1080×1920 opaque 24-bit PNGs. The full screen was scaled
+  proportionally and centred on colour-matched gutters; no app content was cropped.
 
 🔴 **The demo community was edited to make this possible**, and it is worth knowing what
 changed in case a partner walkthrough depended on the old wording:
@@ -335,7 +345,22 @@ changed in case a partner walkthrough depended on the old wording:
 Originals are archived in `.local-docs-archive/partner-demo-2026-08-25/` (gitignored) and
 every field can be put back.
 
-## Data Safety form — drafted from the code, not from memory
+## App access / reviewer credentials — ready to enter
+
+Choose **"All or some functionality is restricted"**. Enter:
+
+> Open the app, choose **Partner Demo**, and sign in with the reviewer email and password
+> supplied in the private reviewer-credentials record. No one-time code, two-factor prompt,
+> payment, invitation or location restriction is required. The account contains fictional
+> demonstration data and has access to the member experience.
+
+The private source of truth is `.secrets.local/demo-login.env` (`DEMO_EMAIL` and
+`DEMO_PASSWORD`); never paste those values into this public document or commit them. The
+credentials were tested against the live production login endpoint on 2026-08-26, returned
+the Partner Demo tenant and an admin role, and the temporary verification session was logged
+out. Copy the values directly into Play Console when the form becomes available.
+
+## Data Safety form — ready-to-enter answers
 
 Answer "Yes" to data collection and "Yes" to encryption in transit (HTTPS everywhere, with
 certificate pinning in release builds). Answer **"Yes"** to *"Do you provide a way for users
@@ -353,15 +378,33 @@ to request that their data be deleted?"* — as of 2026-08-25 that is true in th
 | App activity | Yes | Required | Exchanges, events, groups, credits | No |
 | Payment info | Yes | Optional | Marketplace purchases only — handled by Stripe; no card details reach our servers. Identity verification is hidden in the app (see above), so no fee is charged here | Processor only |
 | Device ID (push token) | Yes | Optional | Sending push notifications | Processor only (Expo/FCM) |
-| Crash logs / diagnostics | **Only once Sentry is switched on** | Optional | Diagnosing faults | Processor only |
+| Crash logs / diagnostics | Yes | Optional | Diagnosing faults and app reliability | Processor only (Sentry) |
 
 Declare **no data is shared for advertising or marketing**, because none is. Declare that
 data is **not sold**. There is no third-party analytics SDK in the app, so nothing else needs
 mentioning — but if that ever changes, this table has to change with it before the next
-release.
+release. The public deletion route is `https://timebank.global/account-deletion`; it links
+to a prefilled public request form and discloses what is deleted and retained. Account
+deletion is also available inside the app.
 
-## Content rating questionnaire (IARC) — draft answers
+## Child-safety declaration — ready after the public page is deployed
 
+Because the app is in Play's Social category, complete this declaration even though the
+target audience is adults only. Use `https://timebank.global/child-safety` as the published
+standards URL and the verified Timebank Global contact address as the designated contact.
+
+The certifications are supported by shipped behaviour and policy:
+
+- in-app Report controls exist on profiles and user-generated content;
+- the public standard explicitly prohibits CSAE and CSAM;
+- reports are prioritised for human safeguarding review;
+- confirmed content is removed and involved accounts can be suspended or removed; and
+- apparent CSAM and credible exploitation concerns are escalated to competent authorities,
+  including NCMEC where applicable or legally required.
+
+## Content rating questionnaire (IARC) — ready-to-enter answers
+
+- App or game: **App**. Target audience: **18 and over**. Ads: **No**.
 - Violence, sexual content, profanity, drugs, gambling: **No** to all.
 - **Users can interact:** Yes — messages, comments, posts, groups.
 - **Users can share their location with other users:** Yes (approximate, and only if they
@@ -373,36 +416,53 @@ release.
   purchase and no identity-verification fee in the app (see the payments section above), and
   time-credit donations move no money.
 
-Expect a rating around PEGI 3 / ESRB Everyone with "users interact" and "shares location"
-interactive-element flags. Answer these honestly even though a stricter rating results:
-a wrong answer here is grounds for removal later.
+The rating is assigned by IARC; do not promise a particular result. Answer these honestly
+even if the interactive-element flags produce a stricter rating.
+
+## Production dependency audit — reviewed exception, new findings fail the build gate
+
+`npm audit --omit=dev` currently reports ten high-severity package entries, but they all
+trace to two denial-of-service advisories in `image-size`, inherited through Expo's Metro
+build tooling. There is no patched `image-size` release as of 2026-08-26. The affected parser
+is used while Metro processes repository-controlled assets during a build; it is not shipped
+as an app endpoint and cannot parse member-uploaded images at runtime. Forcing the suggested
+Expo 57 / React Native upgrade would be a breaking framework migration, not a responsible
+patch for this release.
+
+Run `npm run audit:production`. The gate accepts only the two reviewed advisories and their
+known Metro/Expo dependency chain; any new advisory, unexpected affected package, or critical
+finding fails. Re-review by **2026-09-30**, on the next Expo SDK 54 maintenance update, or as
+soon as a patched upstream version appears — whichever comes first. This is a documented
+risk acceptance, not a claim that `npm audit` is clean.
 
 ---
 
 ## The order of work once the account is verified
 
-1. Owner: Play App Signing on, upload key created **and backed up** (Decision 1).
-2. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
-3. ~~Sentry project and build credentials~~ — **done 2026-08-25**, verified end to end.
-4. Build a real signed bundle: `cd mobile && npm run build:android:play`
-   (`eas build --platform android --profile production`, which already produces an AAB and
-   increments the version code).
-5. **Install that exact artefact on a real phone and walk it.** Nothing store-signed has
+1. ~~Wait for Play to finish developer-identity verification~~ — **done 2026-08-26**.
+2. ~~Create and download the Play upload keystore~~ — **done 2026-08-26**. EAS default
+   `ElecXcPY2S` and its local ignored credential backup match. Copy that backup to encrypted
+   offline storage before the public production rollout; do not create another key.
+3. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
+4. ~~Sentry project and build credentials~~ — **done 2026-08-25**, verified end to end.
+5. ~~Build a real signed bundle~~ — **done 2026-08-26**: version `1.2.0`, version code `5`,
+   built locally without consuming EAS quota and verified against the new default key.
+6. **Install that exact artefact on a real phone and walk it.** Nothing store-signed has
    ever been installed; every walk so far has used development or debug-signed builds. At a
    minimum: sign in, post something, delete a throwaway account, and confirm push arrives.
-6. Listing, Data Safety, content rating, and the feature graphic.
-7. Internal testing track first — `npm run submit:android:internal` once the service account
-   key exists, or upload by hand — then closed testing, then production.
+7. Copy the prepared listing, reviewer access, Data Safety and content-rating answers into
+   Play Console; all local source material is now ready.
+8. Upload the AAB by hand to Internal testing first. Add a service account later only if
+   automated submissions are useful; then closed testing, then production.
 
 ## What is still missing, plainly
 
-- **A signed build, and therefore any evidence that a store build works.** This is the last
-  real gap. Everything captured so far came from a locally built release APK signed with the
-  debug key: correct in every respect a screenshot can show, and not the artefact Play will
-  receive.
-- **Tablet screenshots**, if the listing is to claim tablet support. The app has never been
-  walked at tablet width, so that claim should not be made yet.
-- A **designer's** feature graphic, if the developer draft is not good enough.
+- **A Play-distributed real-phone walk of the exact release.** The production AAB is signed
+  and verified locally, but the Play-generated install has not yet been exercised.
+- **An encrypted/offline copy of the local EAS credential backup.** The ignored local copy
+  is complete and verified; it still needs copying outside the working checkout.
+- **The Console entry and first Internal-testing upload.** The assets and form answers are
+  ready locally and identity is verified; they still need to be entered and submitted.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
   the nightly sweep are all in place and verified.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.
