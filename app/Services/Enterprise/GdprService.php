@@ -1152,18 +1152,23 @@ class GdprService
             // report the request as completed — PII would survive an Article 17 erasure.
             $criticalErasureFailed = false;
 
-            // 1. Generate final data export for legal retention. Best-effort:
-            // a failure here must NOT block the Article 17 erasure (the legal
-            // duty outweighs the retention copy), so log and continue rather
-            // than aborting the whole deletion.
-            try {
-                $exportPath = $this->generateDataExport($userId);
-            } catch (\Throwable $e) {
-                $exportPath = null;
-                $this->logger->warning('GDPR pre-deletion export failed; continuing with erasure', [
-                    'user_id' => $userId,
-                    'error'   => $e->getMessage(),
-                ]);
+            // 1. A DPO-managed request may need a final, seven-day export for
+            // the requester. Direct self-service deletion MUST NOT create one:
+            // the old path generated a complete ZIP without a gdpr_requests row,
+            // so cleanupExpiredExports() could never discover or delete it.
+            $exportPath = null;
+            if ($requestId !== null) {
+                try {
+                    $exportPath = $this->generateDataExport($userId, $requestId);
+                } catch (\Throwable $e) {
+                    // Erasure takes priority over supplying a final copy. The
+                    // request remains auditable and deletion continues.
+                    $this->logger->warning('GDPR request export failed; continuing with erasure', [
+                        'user_id' => $userId,
+                        'request_id' => $requestId,
+                        'error'   => $e->getMessage(),
+                    ]);
+                }
             }
 
             // 1b. Capture original email BEFORE anonymisation so we can purge
@@ -2253,6 +2258,26 @@ class GdprService
                 "UPDATE gdpr_requests SET export_file_path = NULL WHERE id = ?",
                 [$row['id']]
             );
+        }
+
+        // Historical direct self-deletions wrote exports without linking them
+        // to gdpr_requests, making the query above blind to them. Sweep only
+        // the exact generated filename shape inside the dedicated export
+        // directory, and only after the same seven-day retention window.
+        $exportsDir = self::getStoragePath('exports');
+        $orphanCutoff = time() - (7 * 24 * 60 * 60);
+        foreach (glob($exportsDir . DIRECTORY_SEPARATOR . 'nexus_data_export_*.zip') ?: [] as $candidate) {
+            $basename = basename($candidate);
+            if (!preg_match('/^nexus_data_export_\d+_\d{8}_\d{6}\.zip$/', $basename)) {
+                continue;
+            }
+            $modifiedAt = @filemtime($candidate);
+            if ($modifiedAt === false || $modifiedAt >= $orphanCutoff) {
+                continue;
+            }
+            if (@unlink($candidate)) {
+                $cleaned++;
+            }
         }
 
         if ($cleaned > 0) {

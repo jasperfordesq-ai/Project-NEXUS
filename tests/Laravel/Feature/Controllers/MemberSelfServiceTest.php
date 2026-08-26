@@ -477,90 +477,26 @@ class MemberSelfServiceTest extends TestCase
     }
 
     /**
-     * The pre-deletion "legal retention" data export must SUCCEED end-to-end,
-     * not silently fall through to the best-effort failure path.
-     *
-     * GdprService::collectUserData() historically referenced columns that don't
-     * exist in the real schema (listings.time_credits / views_count,
-     * messages.content, transactions.from_user_id/to_user_id, events.end_date,
-     * reviews.listing_id, vol_applications.reviewed_by, ...), so
-     * generateDataExport() threw on the FIRST sub-query and the best-effort
-     * wrapper in executeAccountDeletion() swallowed it — logging "GDPR
-     * pre-deletion export failed" and never producing the retention ZIP.
-     *
-     * This locks the export step: it runs to completion (recording the
-     * 'data_exported' audit row that is only written AFTER the ZIP is built),
-     * and the "export failed" warning is NOT emitted. MySQL validates every
-     * selected column at execute time even with zero matching rows, so a fresh
-     * member is enough to catch any remaining drifted reference.
+     * Direct self-service deletion must not make a second complete copy of the
+     * member's data. The former "legal retention" ZIP had no gdpr_requests row,
+     * so the seven-day cleanup query could never find it and the copy survived
+     * indefinitely after a supposedly successful Article 17 erasure.
      */
-    public function test_delete_account_produces_the_legal_retention_export(): void
+    public function test_delete_account_does_not_create_an_untracked_retention_export(): void
     {
         $user = $this->makeMember('OldPassword123!');
-
-        // Snapshot the gdpr warning log so we can assert the specific
-        // "export failed" breadcrumb is not appended by this request.
-        [$logFile, $before] = $this->snapshotGdprLog();
 
         $response = $this->apiDelete('/v2/users/me', ['password' => 'OldPassword123!']);
         $this->assertSame(200, $response->getStatusCode());
 
-        // generateDataExport() writes a 'data_exported' audit row only AFTER the
-        // export ZIP is successfully built — its presence proves collectUserData()
-        // resolved every column against the real schema.
         $exported = DB::table('gdpr_audit_log')
             ->where('user_id', $user->id)
             ->where('action', 'data_exported')
             ->exists();
-        $this->assertTrue(
+        $this->assertFalse(
             $exported,
-            'the pre-deletion legal-retention export must complete and be audited'
+            'self-service deletion must not create an untracked full-data export'
         );
-
-        // The best-effort failure breadcrumb must NOT have fired for this request.
-        $after = is_file($logFile) ? (string) file_get_contents($logFile) : '';
-        $delta = substr($after, strlen($before));
-        $this->assertStringNotContainsString(
-            'GDPR pre-deletion export failed',
-            $delta,
-            'the retention export must not fall back to the best-effort failure path'
-        );
-
-        // Workspace hygiene: remove the retention ZIP this test produced.
-        $this->cleanupExportArtifacts($user->id);
     }
 
-    /**
-     * Resolve the gdpr-channel warning log file and snapshot its current
-     * contents. The channel log path is private to the LoggerService singleton,
-     * so read it via reflection to stay correct regardless of LOG_PATH config.
-     *
-     * @return array{0:string,1:string} [absolute log file path, contents-before]
-     */
-    private function snapshotGdprLog(): array
-    {
-        $logger = \App\Services\Enterprise\LoggerService::getInstance('gdpr');
-        $prop = (new \ReflectionClass($logger))->getProperty('logPath');
-        $prop->setAccessible(true);
-        $logPath = rtrim((string) $prop->getValue($logger), '/\\');
-
-        // WARNING-level records land in "{channel}-{date}.log" (only <=ERROR
-        // goes to the error log).
-        $file = $logPath . '/gdpr-' . date('Y-m-d') . '.log';
-        $before = is_file($file) ? (string) file_get_contents($file) : '';
-
-        return [$file, $before];
-    }
-
-    /**
-     * Best-effort removal of the retention export ZIP(s) a deletion test wrote
-     * to storage/exports, so the suite does not accumulate artifacts on disk.
-     */
-    private function cleanupExportArtifacts(int $userId): void
-    {
-        $base = getenv('STORAGE_PATH') ?: dirname(__DIR__, 4) . '/storage';
-        foreach (glob(rtrim($base, '/\\') . "/exports/nexus_data_export_{$userId}_*.zip") ?: [] as $zip) {
-            @unlink($zip);
-        }
-    }
 }
