@@ -107,6 +107,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Accessible tenant routing now reserves the two Google Play compliance paths.**
+  `/account-deletion` and `/child-safety` can no longer be mistaken for child
+  tenant slugs on parent domains, keeping Web UK aligned with Laravel routing.
+
 - **The public Google Play child-safety standard now names only reporting controls that the native app actually provides.** The eleven published locales direct members to report a post, listing, exchange or marketplace item, removing unsupported claims about profile, message and event report buttons while preserving the separate public child-safety form.
 
 - **Legal-document administration now honours its selected notification
