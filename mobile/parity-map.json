@@ -24,6 +24,10 @@
   ],
   "needs_review_budget": 31,
   "routes": {
+    "account-deletion": {
+      "status": "out-of-scope",
+      "reason": "Google Play requires a publicly reachable deletion page; the app itself deletes an account natively in settings-delete-account."
+    },
     "achievements": {
       "status": "native",
       "mobile": "achievements"
@@ -43,6 +47,10 @@
     "chat": {
       "status": "native",
       "mobile": "chat"
+    },
+    "child-safety": {
+      "status": "out-of-scope",
+      "reason": "Google Play child-safety standards disclosure; web-first published policy. In-app reporting is native on each reportable surface."
     },
     "connections": {
       "status": "native",

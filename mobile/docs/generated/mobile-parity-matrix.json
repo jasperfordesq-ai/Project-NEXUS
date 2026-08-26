@@ -1,10 +1,10 @@
 {
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
-    "react_member_routes": 254,
+    "react_member_routes": 256,
     "mobile_routes": 142,
     "native": 125,
-    "out_of_scope": 65,
+    "out_of_scope": 67,
     "gap": 33,
     "needs_review": 31,
     "needs_review_budget": 31,
@@ -679,6 +679,16 @@
       ]
     },
     {
+      "route": "account-deletion",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Google Play requires a publicly reachable deletion page; the app itself deletes an account natively in settings-delete-account.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
       "route": "achievements",
       "status": "native",
       "mobile": "achievements",
@@ -1001,6 +1011,16 @@
       "reason": null,
       "sources": [
         "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "child-safety",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Google Play child-safety standards disclosure; web-first published policy. In-app reporting is native on each reportable surface.",
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
       ]
     },
     {

@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-08-26
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -131,9 +131,9 @@ and the places a contract test earns the most.
 | GET | `/api/v2/blog` | blog.ts:45 |
 | GET | `/api/v2/blog/{param}` | blog.ts:56 |
 | POST | `/api/v2/bookmarks` | feed.ts:346 |
-| GET | `/api/v2/categories` | exchanges.ts:180 |
-| GET | `/api/v2/comments` | comments.ts:74, exchanges.ts:228 |
-| POST | `/api/v2/comments` | comments.ts:86, exchanges.ts:235 |
+| GET | `/api/v2/categories` | exchanges.ts:187 |
+| GET | `/api/v2/comments` | comments.ts:74, exchanges.ts:235 |
+| POST | `/api/v2/comments` | comments.ts:86, exchanges.ts:242 |
 | DELETE | `/api/v2/comments/{param}` | comments.ts:106 |
 | PUT | `/api/v2/comments/{param}` | comments.ts:98 |
 | POST | `/api/v2/comments/{param}/reactions` | comments.ts:113 |
@@ -153,7 +153,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1237 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1223 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
-| POST | `/api/v2/exchanges` | client.ts:510, exchanges.ts:205 |
+| POST | `/api/v2/exchanges` | client.ts:510, exchanges.ts:212 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
 | GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
 | POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
@@ -162,8 +162,8 @@ and the places a contract test earns the most.
 | POST | `/api/v2/exchanges/{param}/decline` | exchangeRequests.ts:149 |
 | POST | `/api/v2/exchanges/{param}/dispute` | exchangeRequests.ts:229 |
 | POST | `/api/v2/exchanges/{param}/start` | exchangeRequests.ts:156 |
-| GET | `/api/v2/exchanges/check` | exchanges.ts:200 |
-| GET | `/api/v2/exchanges/config` | exchanges.ts:195 |
+| GET | `/api/v2/exchanges/check` | exchanges.ts:207 |
+| GET | `/api/v2/exchanges/config` | exchanges.ts:202 |
 | GET | `/api/v2/exchanges/needs-attention-count` | exchangeRequests.ts:134 |
 | GET | `/api/v2/explore` | explore.ts:184 |
 | GET | `/api/v2/federation/activity` | federation.ts:276 |
@@ -197,7 +197,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/feed/hashtags/{param}` | feed.ts:257 |
 | GET | `/api/v2/feed/hashtags/search` | feed.ts:245 |
 | GET | `/api/v2/feed/hashtags/trending` | feed.ts:239 |
-| POST | `/api/v2/feed/like` | exchanges.ts:221, feed.ts:332 |
+| POST | `/api/v2/feed/like` | exchanges.ts:228, feed.ts:332 |
 | GET | `/api/v2/feed/polls/{param}` | feed.ts:356 |
 | POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:363 |
 | POST | `/api/v2/feed/posts` | feed.ts:424 |
@@ -320,19 +320,19 @@ and the places a contract test earns the most.
 | GET | `/api/v2/legal/{param}` | legal.ts:104 |
 | POST | `/api/v2/legal/acceptance/accept-all` | legal.ts:94 |
 | GET | `/api/v2/legal/acceptance/status` | legal.ts:82 |
-| GET | `/api/v2/listings` | exchanges.ts:168 |
-| POST | `/api/v2/listings` | exchanges.ts:185 |
-| DELETE | `/api/v2/listings/{param}` | exchanges.ts:321 |
-| GET | `/api/v2/listings/{param}` | exchanges.ts:176 |
-| PUT | `/api/v2/listings/{param}` | exchanges.ts:255 |
-| DELETE | `/api/v2/listings/{param}/image` | exchanges.ts:316 |
-| POST | `/api/v2/listings/{param}/image` | exchanges.ts:305 |
-| POST | `/api/v2/listings/{param}/renew` | exchanges.ts:217 |
-| POST | `/api/v2/listings/{param}/report` | exchanges.ts:243 |
-| DELETE | `/api/v2/listings/{param}/save` | exchanges.ts:213 |
-| POST | `/api/v2/listings/{param}/save` | exchanges.ts:209 |
-| PUT | `/api/v2/listings/{param}/tags` | exchanges.ts:190 |
-| POST | `/api/v2/listings/generate-description` | exchanges.ts:247 |
+| GET | `/api/v2/listings` | exchanges.ts:175 |
+| POST | `/api/v2/listings` | exchanges.ts:192 |
+| DELETE | `/api/v2/listings/{param}` | exchanges.ts:328 |
+| GET | `/api/v2/listings/{param}` | exchanges.ts:183 |
+| PUT | `/api/v2/listings/{param}` | exchanges.ts:262 |
+| DELETE | `/api/v2/listings/{param}/image` | exchanges.ts:323 |
+| POST | `/api/v2/listings/{param}/image` | exchanges.ts:312 |
+| POST | `/api/v2/listings/{param}/renew` | exchanges.ts:224 |
+| POST | `/api/v2/listings/{param}/report` | exchanges.ts:250 |
+| DELETE | `/api/v2/listings/{param}/save` | exchanges.ts:220 |
+| POST | `/api/v2/listings/{param}/save` | exchanges.ts:216 |
+| PUT | `/api/v2/listings/{param}/tags` | exchanges.ts:197 |
+| POST | `/api/v2/listings/generate-description` | exchanges.ts:254 |
 | GET | `/api/v2/marketplace/categories` | marketplace.ts:592 |
 | GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:596 |
 | GET | `/api/v2/marketplace/collections` | marketplace.ts:980 |

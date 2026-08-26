@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-08-26
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -17,10 +17,10 @@ when a React member route exists that nobody has classified for mobile.
 
 | Measure | Count |
 | --- | --- |
-| React member routes | 254 |
+| React member routes | 256 |
 | Mobile routes (Expo Router screens) | 142 |
 | Covered natively | 125 |
-| Deliberately out of scope | 65 |
+| Deliberately out of scope | 67 |
 | **Known gaps** | **33** |
 | Awaiting review (shrink-only, budget 31) | 31 |
 | **Undeclared (blocks `--check`)** | **0** |
@@ -113,6 +113,7 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `acceptable-use/versions` | out-of-scope | — | Legal version history; web-first. |
 | `accessibility` | out-of-scope | — | Accessibility statement; web-first. |
 | `accessibility/versions` | out-of-scope | — | Legal version history; web-first. |
+| `account-deletion` | out-of-scope | — | Google Play requires a publicly reachable deletion page; the app itself deletes an account natively in settings-delete-account. |
 | `achievements` | native | `achievements` | — |
 | `activity` | native | `activity` | — |
 | `admin/*` | out-of-scope | — | Tenant administration workspace; the member app has no admin surface. |
@@ -149,6 +150,7 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `caring/*` | out-of-scope | — | Caring Community staff workspace. |
 | `changelog` | out-of-scope | — | Marketing/release page. |
 | `chat` | native | `chat` | — |
+| `child-safety` | out-of-scope | — | Google Play child-safety standards disclosure; web-first published policy. In-app reporting is native on each reportable surface. |
 | `clubs` | gap | — | Clubs have no native route. |
 | `clubs/:id/admin/dues` | out-of-scope | — | Club administration. |
 | `clubs/:id/admin/import` | out-of-scope | — | Club administration. |

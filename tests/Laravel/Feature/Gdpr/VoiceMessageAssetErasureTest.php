@@ -36,7 +36,11 @@ class VoiceMessageAssetErasureTest extends TestCase
             $method,
             'SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE'
         );
-        $exportRead = strpos($method, '$this->generateDataExport($userId)');
+        // The export is now raised only for a DPO-managed request, so it passes
+        // the request id through. A direct self-service deletion skips it
+        // entirely — but when it does run it must still run behind the lock,
+        // which is the ordering this test exists to pin.
+        $exportRead = strpos($method, '$this->generateDataExport($userId, $requestId)');
         $voiceSnapshot = strpos(
             $method,
             'SELECT id, sender_id, audio_url FROM messages'
