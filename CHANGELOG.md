@@ -79,6 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ASP.NET message media now stays playable after a conversation is reloaded.**
+  Voice-message thread reads now retain the voice marker and duration, and both
+  voice and ordinary attachment URLs use the participant-authorized private-media
+  routes instead of owner-only generic file links.
+
 - **A goal deadline that isn't a real date is no longer thrown away silently.** Setting a goal due on 31 February said "Your goal has been created" and created a goal with no deadline at all — the date the member typed simply vanished, with nothing said. The check that catches impossible dates was already there and already working; the goals page was ignoring its answer. It now says "Enter a real date", the same way every other part of the site already did.
 
 - **The accessible site blamed members for things their community had simply switched off.** Opening a page for a module the community does not use — courses, the marketplace, podcasts and others — said "You do not have permission to view this page" and "this page is not available to your account… contact your community organisers if you think this is wrong". Both are untrue: nothing is wrong with the member's account, and there is nothing for organisers to fix. It now says "Not available — this module is not enabled for this community", in the reader's own language. Genuine permission refusals, such as an ordinary member opening an organiser-only page, are unchanged.
