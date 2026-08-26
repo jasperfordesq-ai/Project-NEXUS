@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Helpers\HtmlSanitizer;
 use App\I18n\LocaleContext;
 use App\Services\LegalEnforcementService;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -40,6 +41,9 @@ class LegalDocumentService
     public const STATUS_NOT_ACCEPTED = 'not_accepted';
     public const STATUS_CURRENT = 'current';
     public const STATUS_OUTDATED = 'outdated';
+
+    public const NOTIFY_NON_ACCEPTED = 'non_accepted';
+    public const NOTIFY_ALL = 'all';
 
     /**
      * Get a legal document by type for the current tenant.
@@ -236,7 +240,9 @@ class LegalDocumentService
             'content_plain'      => $plainText,
             'summary_of_changes' => $data['summary_of_changes'] ?? null,
             'effective_date'     => $data['effective_date'],
-            'is_draft'           => $data['is_draft'] ?? 1,
+            // Publishing is a separate, audited transition. A new version can
+            // never start life as an immutable unpublished row.
+            'is_draft'           => 1,
             'created_by'         => auth()->id(),
         ]);
     }
@@ -297,7 +303,7 @@ class LegalDocumentService
     public static function publishVersion(int $vid): bool
     {
         $version = self::getVersion($vid);
-        if (! $version) {
+        if (! $version || ! (bool) $version['is_draft']) {
             return false;
         }
 
@@ -399,6 +405,8 @@ class LegalDocumentService
         $documents = DB::table('legal_documents')
             ->where('tenant_id', TenantContext::getId())
             ->where('is_active', true)
+            ->where('requires_acceptance', true)
+            ->where('acceptance_required_for', 'registration')
             ->whereNotNull('current_version_id')
             ->get();
 
@@ -576,27 +584,31 @@ class LegalDocumentService
      */
     public static function getComplianceSummary(int $tenantId): array
     {
-        $totalUsers = (int) DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->count();
+        $totalUsers = (int) self::eligibleMemberQuery($tenantId)->count();
 
         $documents = DB::table('legal_documents as ld')
             ->leftJoin('legal_document_versions as ldv', 'ld.current_version_id', '=', 'ldv.id')
-            ->leftJoin('user_legal_acceptances as ula', 'ula.version_id', '=', 'ld.current_version_id')
             ->where('ld.tenant_id', $tenantId)
             ->where('ld.is_active', true)
             ->where('ld.requires_acceptance', true)
-            ->groupBy('ld.id', 'ld.document_type', 'ld.title', 'ld.current_version_id', 'ldv.version_number', 'ldv.effective_date')
+            ->whereNotNull('ld.current_version_id')
             ->select(
                 'ld.id', 'ld.document_type', 'ld.title', 'ld.current_version_id',
-                'ldv.version_number', 'ldv.effective_date',
-                DB::raw('COUNT(DISTINCT ula.user_id) as users_accepted')
+                'ldv.version_number', 'ldv.effective_date'
             )
             ->get()
-            ->map(function ($doc) use ($totalUsers) {
+            ->map(function ($doc) use ($tenantId, $totalUsers) {
                 $doc = (array) $doc;
-                $usersAccepted = (int) $doc['users_accepted'];
+                $versionId = (int) $doc['current_version_id'];
+                $usersAccepted = (int) self::eligibleMemberQuery($tenantId)
+                    ->whereExists(function ($query) use ($versionId) {
+                        $query->select(DB::raw(1))
+                            ->from('user_legal_acceptances')
+                            ->whereColumn('user_legal_acceptances.user_id', 'users.id')
+                            ->where('user_legal_acceptances.version_id', $versionId);
+                    })
+                    ->count();
+                $doc['users_accepted'] = $usersAccepted;
                 $doc['users_not_accepted'] = $totalUsers - $usersAccepted;
                 $doc['acceptance_rate']    = $totalUsers > 0 ? round(($usersAccepted / $totalUsers) * 100, 1) : 0;
                 return $doc;
@@ -605,11 +617,31 @@ class LegalDocumentService
 
         $documentCount = count($documents);
         $totalAccepted = array_sum(array_column($documents, 'users_accepted'));
+        $currentVersionIds = array_values(array_filter(array_map(
+            static fn (array $document): int => (int) ($document['current_version_id'] ?? 0),
+            $documents
+        )));
+        $usersPending = 0;
+
+        if ($currentVersionIds !== []) {
+            $usersPending = (int) self::eligibleMemberQuery($tenantId)
+                ->where(function ($query) use ($currentVersionIds) {
+                    foreach ($currentVersionIds as $versionId) {
+                        $query->orWhereNotExists(function ($acceptance) use ($versionId) {
+                            $acceptance->select(DB::raw(1))
+                                ->from('user_legal_acceptances')
+                                ->whereColumn('user_legal_acceptances.user_id', 'users.id')
+                                ->where('user_legal_acceptances.version_id', $versionId);
+                        });
+                    }
+                })
+                ->count();
+        }
 
         return [
             'total_users'               => $totalUsers,
             'overall_compliance_rate'    => ($documentCount > 0 && $totalUsers > 0) ? round(($totalAccepted / ($totalUsers * $documentCount)) * 100, 1) : 0,
-            'users_pending_acceptance'   => ($documentCount > 0 && $totalUsers > 0) ? max(0, $totalUsers - (int) ($totalAccepted / max(1, $documentCount))) : 0,
+            'users_pending_acceptance'   => $usersPending,
             'documents'                 => $documents,
         ];
     }
@@ -666,12 +698,28 @@ class LegalDocumentService
     /**
      * Notify users of a document update.
      */
-    public static function notifyUsersOfUpdate(int $docId, int $vid, bool $sendEmail = true): int
+    public static function notifyUsersOfUpdate(
+        int $docId,
+        int $vid,
+        bool $sendEmail = true,
+        string $target = self::NOTIFY_NON_ACCEPTED
+    ): int
     {
+        if (! in_array($target, [self::NOTIFY_NON_ACCEPTED, self::NOTIFY_ALL], true)) {
+            throw new \InvalidArgumentException('Invalid legal notification target');
+        }
+
         $document = self::legacyGetById($docId);
         $version  = self::getVersion($vid);
 
-        if (! $document || ! $version || ! ($document['requires_acceptance'] ?? false)) {
+        if (
+            ! $document
+            || ! $version
+            || (int) ($version['document_id'] ?? 0) !== $docId
+            || (int) ($document['current_version_id'] ?? 0) !== $vid
+            || (bool) ($version['is_draft'] ?? true)
+            || ! ($document['requires_acceptance'] ?? false)
+        ) {
             return 0;
         }
 
@@ -680,17 +728,29 @@ class LegalDocumentService
         // Get users who need to re-accept. Include preferred_language so
         // each bell + email renders in that user's own locale rather than
         // the admin caller's locale when a new version is published.
-        $users = DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->whereNotExists(function ($q) use ($vid) {
+        $usersQuery = self::eligibleMemberQuery((int) $tenantId);
+
+        if ($target === self::NOTIFY_NON_ACCEPTED) {
+            $usersQuery->whereNotExists(function ($q) use ($vid) {
                 $q->select(DB::raw(1))
                   ->from('user_legal_acceptances')
                   ->whereColumn('user_legal_acceptances.user_id', 'users.id')
                   ->where('user_legal_acceptances.version_id', $vid);
-            })
+            });
+        }
+
+        $users = $usersQuery
             ->select('id', 'name', 'first_name', 'email', 'preferred_language')
             ->get();
+        $acceptedUserIds = [];
+        if ($target === self::NOTIFY_ALL && $users->isNotEmpty()) {
+            $acceptedUserIds = DB::table('user_legal_acceptances')
+                ->where('version_id', $vid)
+                ->whereIn('user_id', $users->pluck('id')->all())
+                ->pluck('user_id')
+                ->mapWithKeys(static fn ($id) => [(int) $id => true])
+                ->all();
+        }
 
         $docType   = $document['title'] ?? $document['document_type'] ?? 'document';
         $docPath   = self::documentPath($document);
@@ -720,8 +780,12 @@ class LegalDocumentService
                 $sentCount++;
             }
 
-            // Email notification (only if user has an email address)
-            if ($sendEmail && ! empty($user->email)) {
+            // The "all" audience is useful for a general in-app announcement,
+            // but the email copy explicitly says acceptance is required. Do not
+            // send that action-required email to somebody who has already accepted
+            // this exact current version.
+            $requiresAction = ! isset($acceptedUserIds[(int) $user->id]);
+            if ($sendEmail && $requiresAction && ! empty($user->email)) {
                 LocaleContext::withLocale($user, function () use ($user, $docType, $community, $reviewUrl, $tenantId) {
                     try {
                         $firstName = $user->first_name ?? (explode(' ', $user->name ?? '')[0] ?: __('emails.common.fallback_name'));
@@ -755,6 +819,16 @@ class LegalDocumentService
             }
         }
 
+        if ($sentCount > 0) {
+            DB::table('legal_document_versions')
+                ->where('id', $vid)
+                ->where('document_id', $docId)
+                ->update([
+                    'notification_sent' => 1,
+                    'notification_sent_at' => now(),
+                ]);
+        }
+
         return $sentCount;
     }
 
@@ -764,13 +838,18 @@ class LegalDocumentService
     public static function getUsersPendingAcceptanceCount(int $docId, int $vid): int
     {
         $document = self::legacyGetById($docId);
-        if (! $document) {
+        $version = self::getVersion($vid);
+        if (
+            ! $document
+            || ! $version
+            || (int) ($version['document_id'] ?? 0) !== $docId
+            || (int) ($document['current_version_id'] ?? 0) !== $vid
+            || ! ($document['requires_acceptance'] ?? false)
+        ) {
             return 0;
         }
 
-        return (int) DB::table('users')
-            ->where('tenant_id', $document['tenant_id'])
-            ->where('status', 'active')
+        return (int) self::eligibleMemberQuery((int) $document['tenant_id'])
             ->whereNotExists(function ($q) use ($vid) {
                 $q->select(DB::raw(1))
                   ->from('user_legal_acceptances')
@@ -778,6 +857,33 @@ class LegalDocumentService
                   ->where('user_legal_acceptances.version_id', $vid);
             })
             ->count();
+    }
+
+    /**
+     * Users who are actually subject to the member acceptance gate.
+     *
+     * Administrators are deliberately exempt in EnsureLegalAcceptance so they
+     * can always repair a broken legal document. Compliance figures and update
+     * notifications must measure the same population as the gate.
+     */
+    private static function eligibleMemberQuery(int $tenantId): Builder
+    {
+        return DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->whereNotIn('role', ['admin', 'tenant_admin', 'super_admin', 'god'])
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_super_admin')->orWhere('is_super_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_tenant_super_admin')->orWhere('is_tenant_super_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_god')->orWhere('is_god', 0);
+            });
     }
 
     /**

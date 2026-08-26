@@ -60,6 +60,20 @@ class LegalAcceptanceController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
+        // Admins are exempt from the server-side gate so they can always repair
+        // a broken legal document. Return the same verdict to every client; if we
+        // returned pending rows here, React, web-uk and mobile would interpose even
+        // though Laravel deliberately permits the request.
+        $user = request()->user();
+        if ($user && EnsureLegalAcceptance::isAdminUser($user)) {
+            return $this->respondWithData([
+                'has_pending' => false,
+                'enforcement_blocking' => false,
+                'blocking_pending' => false,
+                'documents' => [],
+            ]);
+        }
+
         $documents = $this->getUserAcceptanceStatus($userId, $tenantId);
         $hasPending = collect($documents)->contains(fn ($doc) => $doc->acceptance_status !== 'current');
 

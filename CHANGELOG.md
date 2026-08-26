@@ -107,6 +107,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Legal-document administration now honours its selected notification
+  audience.** Choosing “all active members” previously sent only to members who
+  had not accepted the selected version, while reporting success as though the
+  wider audience had been used. The API now validates and applies the chosen
+  audience, and every newly created legal version is forced to begin as an
+  editable draft so a crafted request cannot create an unpublished version that
+  cannot be edited through the administration screen. Notifications and
+  compliance figures now exclude administrators, matching their deliberate
+  acceptance-gate exemption; the pending-member total is exact across multiple
+  documents rather than an average; only the current published version can be
+  notified; notification timestamps are recorded; historical versions cannot be
+  republished as an accidental rollback; and registration records only documents
+  whose configured acceptance point is registration. “All members” may still
+  receive the neutral in-app update, but members who already accepted that exact
+  version are no longer sent a misleading action-required email.
+
 - **Self-service account deletion no longer leaves an untracked personal-data
   export on disk.** A direct deletion now erases the account without first
   generating a ZIP that had no GDPR-request record and therefore no expiry path.

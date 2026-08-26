@@ -324,6 +324,21 @@ describe('LegalDocVersionList', () => {
     });
   });
 
+  it('does not offer notifications for a historical published version', async () => {
+    mockAdminLegalDocs.getVersions.mockResolvedValue({
+      success: true,
+      data: [makeVersion({ is_current: false, is_draft: false })],
+    });
+    const LegalDocVersionList = (await import('./LegalDocVersionList')).default;
+    render(<LegalDocVersionList />);
+
+    await waitFor(() => expect(screen.getByText(/1\.0/)).toBeInTheDocument());
+    const notifyButton = screen.queryAllByRole('button').find((button) =>
+      button.textContent?.toLowerCase().includes('notify')
+    );
+    expect(notifyButton).toBeUndefined();
+  });
+
   it('shows error toast when API returns failure', async () => {
     mockAdminLegalDocs.getVersions.mockResolvedValue({
       success: false,

@@ -91,7 +91,10 @@ class AdminLegalDocController extends BaseApiController
                 'content' => $input['content'],
                 'summary_of_changes' => $input['summary_of_changes'] ?? null,
                 'effective_date' => $input['effective_date'],
-                'is_draft' => $input['is_draft'] ?? true,
+                // Every new version starts as an editable draft. Accepting a
+                // caller-supplied false here created an unpublished, non-current
+                // version that the editor then refused to edit or publish.
+                'is_draft' => true,
             ]);
 
             return $this->respondWithData(['id' => $versionId], null, 201);
@@ -110,6 +113,9 @@ class AdminLegalDocController extends BaseApiController
             $version = $this->legalDocumentService->getVersion($vid);
             if (!$version) {
                 return $this->respondWithError('NOT_FOUND', __('api.version_not_found'), null, 404);
+            }
+            if (!(bool) ($version['is_draft'] ?? false)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.only_draft_can_be_edited'), null, 400);
             }
 
             $success = $this->legalDocumentService->publishVersion($vid);
@@ -223,8 +229,12 @@ class AdminLegalDocController extends BaseApiController
         $input = $this->getAllInput();
         $target = $input['target'] ?? 'non_accepted';
 
+        if (!in_array($target, [LegalDocumentService::NOTIFY_NON_ACCEPTED, LegalDocumentService::NOTIFY_ALL], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_type'), 'target', 422);
+        }
+
         try {
-            $count = $this->legalDocumentService->notifyUsersOfUpdate($docId, $vid, true);
+            $count = $this->legalDocumentService->notifyUsersOfUpdate($docId, $vid, true, $target);
             return $this->respondWithData(['notified' => true, 'count' => $count]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminLegalDocController] notifyUsers error: " . $e->getMessage());

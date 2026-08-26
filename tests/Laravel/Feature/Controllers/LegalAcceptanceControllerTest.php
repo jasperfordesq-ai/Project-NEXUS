@@ -50,6 +50,23 @@ class LegalAcceptanceControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_admin_status_matches_the_server_side_gate_exemption(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($admin, ['*']);
+
+        $response = $this->apiGet('/v2/legal/acceptance/status');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.has_pending', false);
+        $response->assertJsonPath('data.enforcement_blocking', false);
+        $response->assertJsonPath('data.blocking_pending', false);
+        $response->assertJsonCount(0, 'data.documents');
+    }
+
     // ------------------------------------------------------------------
     //  POST /v2/legal/acceptance/accept-all
     // ------------------------------------------------------------------

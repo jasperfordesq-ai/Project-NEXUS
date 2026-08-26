@@ -7,6 +7,7 @@
 namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\User;
+use App\Services\LegalDocumentService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -36,6 +37,36 @@ class AdminLegalDocControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
+    }
+
+    public function test_compliance_stats_measure_only_users_subject_to_the_gate(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);
+        User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        Sanctum::actingAs($admin);
+
+        $expected = (int) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('status', 'active')
+            ->whereNotIn('role', ['admin', 'tenant_admin', 'super_admin', 'god'])
+            ->where(function ($query) {
+                $query->whereNull('is_admin')->orWhere('is_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_super_admin')->orWhere('is_super_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_tenant_super_admin')->orWhere('is_tenant_super_admin', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('is_god')->orWhere('is_god', 0);
+            })
+            ->count();
+
+        $response = $this->apiGet('/v2/admin/legal-documents/compliance');
+
+        $response->assertStatus(200);
+        $this->assertSame($expected, (int) $response->json('data.total_users'));
     }
 
     public function test_compliance_stats_reports_the_enforcement_mode_read_only(): void
@@ -186,6 +217,27 @@ class AdminLegalDocControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_create_version_always_starts_as_an_editable_draft(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $docId = $this->seedDocument($this->testTenantId, $admin->id);
+
+        $response = $this->apiPost("/v2/admin/legal-documents/{$docId}/versions", [
+            'version_number' => '1.1',
+            'content' => '<p>Draft content</p>',
+            'effective_date' => '2026-09-01',
+            'is_draft' => false,
+        ]);
+
+        $response->assertStatus(201);
+        $versionId = (int) $response->json('data.id');
+        $this->assertSame(
+            1,
+            (int) DB::table('legal_document_versions')->where('id', $versionId)->value('is_draft')
+        );
+    }
+
     // ================================================================
     // ACCEPTANCES — GET /v2/admin/legal-documents/versions/{vid}/acceptances
     // ================================================================
@@ -247,6 +299,112 @@ class AdminLegalDocControllerTest extends TestCase
         $response = $this->apiGet('/v2/admin/legal-documents/1/versions/1/pending-count');
 
         $response->assertStatus(403);
+    }
+
+    public function test_notify_rejects_an_unknown_target(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/legal-documents/1/versions/1/notify', [
+            'target' => 'somebody_else',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_notification_target_distinguishes_all_from_non_accepted_members(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $acceptedMember = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $pendingMember = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $docId = $this->seedDocument($this->testTenantId, $admin->id);
+        $versionId = $this->seedVersion($docId, $admin->id, [
+            'version_number' => '2.0',
+            'is_draft' => 0,
+            'is_current' => 1,
+            'published_at' => now(),
+        ]);
+        DB::table('legal_documents')->where('id', $docId)->update(['current_version_id' => $versionId]);
+        DB::table('user_legal_acceptances')->insert([
+            'user_id' => $acceptedMember->id,
+            'document_id' => $docId,
+            'version_id' => $versionId,
+            'version_number' => '2.0',
+            'acceptance_method' => 'login_prompt',
+            'accepted_at' => now(),
+        ]);
+        $eligibleUserCount = (int) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('status', 'active')
+            ->whereNotIn('role', ['admin', 'tenant_admin', 'super_admin', 'god'])
+            ->count();
+
+        $nonAcceptedCount = LegalDocumentService::notifyUsersOfUpdate(
+            $docId,
+            $versionId,
+            false,
+            LegalDocumentService::NOTIFY_NON_ACCEPTED
+        );
+        $this->assertSame($eligibleUserCount - 1, $nonAcceptedCount);
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $acceptedMember->id,
+            'type' => 'legal_update',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $pendingMember->id,
+            'type' => 'legal_update',
+        ]);
+
+        DB::table('notifications')->where('tenant_id', $this->testTenantId)->where('type', 'legal_update')->delete();
+
+        $allCount = LegalDocumentService::notifyUsersOfUpdate(
+            $docId,
+            $versionId,
+            false,
+            LegalDocumentService::NOTIFY_ALL
+        );
+        $this->assertSame($eligibleUserCount, $allCount);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $acceptedMember->id,
+            'type' => 'legal_update',
+        ]);
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $admin->id,
+            'type' => 'legal_update',
+        ]);
+        $this->assertNotNull(
+            DB::table('legal_document_versions')->where('id', $versionId)->value('notification_sent_at')
+        );
+    }
+
+    public function test_notification_refuses_a_historical_or_mismatched_version(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $docId = $this->seedDocument($this->testTenantId, $admin->id);
+        $historicalId = $this->seedVersion($docId, $admin->id, [
+            'version_number' => '1.0',
+            'is_draft' => 0,
+            'is_current' => 0,
+            'published_at' => now()->subDay(),
+        ]);
+        $currentId = $this->seedVersion($docId, $admin->id, [
+            'version_number' => '2.0',
+            'is_draft' => 0,
+            'is_current' => 1,
+            'published_at' => now(),
+        ]);
+        DB::table('legal_documents')->where('id', $docId)->update(['current_version_id' => $currentId]);
+
+        $this->assertSame(0, LegalDocumentService::notifyUsersOfUpdate($docId, $historicalId, false));
+        $this->assertSame(0, LegalDocumentService::getUsersPendingAcceptanceCount($docId, $historicalId));
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $member->id,
+            'type' => 'legal_update',
+        ]);
     }
 
     // ================================================================
@@ -402,6 +560,30 @@ class AdminLegalDocControllerTest extends TestCase
         $version = (array) DB::table('legal_document_versions')->where('id', $vid)->first();
         $this->assertSame(1, (int) $version['is_draft']);
         $this->assertSame(0, (int) $version['is_current']);
+    }
+
+    public function test_publish_version_refuses_to_republish_a_historical_version(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $docId = $this->seedDocument($this->testTenantId, $admin->id);
+        $historicalId = $this->seedVersion($docId, $admin->id, [
+            'is_draft' => 0,
+            'is_current' => 0,
+            'published_at' => now()->subDay(),
+        ]);
+        $currentId = $this->seedVersion($docId, $admin->id, [
+            'version_number' => '2.0',
+            'is_draft' => 0,
+            'is_current' => 1,
+            'published_at' => now(),
+        ]);
+        DB::table('legal_documents')->where('id', $docId)->update(['current_version_id' => $currentId]);
+
+        $this->apiPost("/v2/admin/legal-documents/versions/{$historicalId}/publish", [])->assertStatus(400);
+
+        $this->assertSame($currentId, (int) DB::table('legal_documents')->where('id', $docId)->value('current_version_id'));
+        $this->assertSame(0, (int) DB::table('legal_document_versions')->where('id', $historicalId)->value('is_current'));
     }
 
     // ================================================================

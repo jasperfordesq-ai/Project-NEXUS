@@ -315,7 +315,7 @@ export default function LegalDocVersionList() {
                     </>
                   )}
 
-                  {!version.is_draft && (
+                  {version.is_current && !version.is_draft && (
                     <Tooltip content={t('enterprise.btn_notify')}>
                       <Button
                         size="sm"

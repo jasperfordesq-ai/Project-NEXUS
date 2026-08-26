@@ -160,7 +160,7 @@ class EnsureLegalAcceptance
             return $next($request);
         }
 
-        if (self::isAdmin($user)) {
+        if (self::isAdminUser($user)) {
             return $next($request);
         }
 
@@ -310,7 +310,7 @@ class EnsureLegalAcceptance
      * `tenant_admin` and `coordinator` are never written to `users.role` by the
      * API, so a role-string-only check under-authorises a real platform admin.
      */
-    private static function isAdmin(object $user): bool
+    public static function isAdminUser(object $user): bool
     {
         $role = (string) ($user->role ?? '');
 

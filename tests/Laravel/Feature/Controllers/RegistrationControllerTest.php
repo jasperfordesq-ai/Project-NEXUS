@@ -246,6 +246,67 @@ class RegistrationControllerTest extends TestCase
         $this->assertNotNull($acceptance->accepted_at);
     }
 
+    public function test_registration_does_not_fabricate_acceptance_for_a_first_use_document(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        DB::table('legal_documents')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('document_type', 'community_guidelines')
+            ->delete();
+        $documentId = (int) DB::table('legal_documents')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'document_type' => 'community_guidelines',
+            'title' => 'Community Guidelines',
+            'slug' => 'community-guidelines-' . uniqid(),
+            'requires_acceptance' => 1,
+            'acceptance_required_for' => 'first_use',
+            'notify_on_update' => 0,
+            'is_active' => 1,
+            'created_by' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $versionId = (int) DB::table('legal_document_versions')->insertGetId([
+            'document_id' => $documentId,
+            'version_number' => '1.0',
+            'content' => 'Guidelines presented after registration.',
+            'is_current' => 1,
+            'is_draft' => 0,
+            'effective_date' => now()->toDateString(),
+            'created_by' => $admin->id,
+            'published_by' => $admin->id,
+            'published_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('legal_documents')->where('id', $documentId)->update(['current_version_id' => $versionId]);
+
+        $email = 'firstuse-' . uniqid() . '@gmail.com';
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'First',
+            'last_name' => 'Use',
+            'email' => $email,
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ]);
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+        $userId = (int) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('email', $email)
+            ->value('id');
+
+        $this->assertDatabaseMissing('user_legal_acceptances', [
+            'user_id' => $userId,
+            'version_id' => $versionId,
+        ]);
+    }
+
     public function test_register_still_succeeds_when_the_tenant_has_no_legal_documents(): void
     {
         // No version exists to pin, so nothing is recorded — that is the honest
@@ -278,6 +339,37 @@ class RegistrationControllerTest extends TestCase
     }
 
     /**
+     * Set the admin-approval gate for the test tenant.
+     *
+     * 🔴 Write the BARE `admin_approval` key, not `general.admin_approval`.
+     * TenantSettingsService::requiresAdminApproval() reads the bare key FIRST and
+     * only falls back to the prefixed one when the bare key is absent — and the
+     * local test database holds a bare `admin_approval = true` row for the test
+     * tenant. So a test that sets only `general.admin_approval` changes nothing:
+     * `requires_approval` came back true either way, which made the "off" case
+     * fail and, worse, made the "on" case pass for the wrong reason.
+     *
+     * Both keys are written so the tenant cannot disagree with itself, and the
+     * settings cache is cleared afterwards because these are raw DB writes that
+     * TenantSettingsService' Cache::remember() layer would otherwise not see.
+     */
+    private function setAdminApproval(bool $required): void
+    {
+        foreach (['admin_approval', 'general.admin_approval'] as $key) {
+            DB::table('tenant_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                [
+                    'setting_value' => $required ? 'true' : 'false',
+                    'setting_type' => 'boolean',
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        app(\App\Services\TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
+    }
+
+    /**
      * 🔴 The React app has always been built to consume `requires_approval` —
      * AuthContext reads it and RegisterPage has a dedicated "awaiting approval"
      * panel — but registration never returned it, so that panel was unreachable and
@@ -287,10 +379,7 @@ class RegistrationControllerTest extends TestCase
      */
     public function test_register_reports_that_approval_is_required(): void
     {
-        DB::table('tenant_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'general.admin_approval'],
-            ['setting_value' => '1', 'setting_type' => 'boolean', 'updated_at' => now()]
-        );
+        $this->setAdminApproval(true);
 
         $response = $this->apiPost('/v2/auth/register', [
             'first_name' => 'Pending',
@@ -315,10 +404,7 @@ class RegistrationControllerTest extends TestCase
 
     public function test_register_reports_no_approval_needed_when_the_setting_is_off(): void
     {
-        DB::table('tenant_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'general.admin_approval'],
-            ['setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now()]
-        );
+        $this->setAdminApproval(false);
 
         $response = $this->apiPost('/v2/auth/register', [
             'first_name' => 'Self',
