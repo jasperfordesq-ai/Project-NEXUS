@@ -869,7 +869,6 @@ function DeliveryOfferCard({
   onConfirm: () => void;
 }) {
   const { t } = useTranslation('marketplace');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const delivererName = offer.deliverer?.name?.trim() || t('orders.deliveryUnknown');
   const avatarUri = offer.deliverer?.avatar_url ?? null;

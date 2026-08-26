@@ -444,7 +444,6 @@ function ButtonGroup<T extends string>({
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
 }) {
-  const primary = usePrimaryColor();
   return (
     <View className="flex-row gap-2">
       {values.map((value) => (
@@ -499,7 +498,6 @@ function OpeningHoursRow({
   onChange: (field: keyof DayHours, value: string) => void;
 }) {
   const { t } = useTranslation('marketplace');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const isOpen = hours !== null;
 

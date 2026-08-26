@@ -1932,7 +1932,7 @@ function VolunteeringScreenInner() {
     if (!visibleTabs.some((tab) => tab.key === activeTab)) {
       setActiveTab('opportunities');
     }
-  }, [activeTab, visibleTabs, isAuthLoading]);
+  }, [activeTab, visibleTabs, isAuthLoading, setActiveTab]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>

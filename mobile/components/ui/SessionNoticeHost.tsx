@@ -16,8 +16,7 @@
  * whose only job is to display something.
  */
 
-import { useEffect } from 'react';
-import { useSyncExternalStore } from 'react';
+import { useEffect , useSyncExternalStore } from 'react';
 
 import { useAppToast } from './AppToast';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';

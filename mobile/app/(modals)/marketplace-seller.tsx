@@ -151,7 +151,6 @@ function SellerTabs({
   onSelect: (tab: SellerTab) => void;
 }) {
   const { t } = useTranslation('marketplace');
-  const primary = usePrimaryColor();
 
   return (
     <View className="mb-3 flex-row gap-2">

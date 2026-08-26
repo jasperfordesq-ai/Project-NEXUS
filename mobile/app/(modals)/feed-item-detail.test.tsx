@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetFeedItem = jest.fn();
 const mockUseLocalSearchParams = jest.fn();
@@ -42,10 +42,29 @@ jest.mock('@/lib/api/feed', () => ({
 }));
 
 jest.mock('@/components/FeedItem', () => {
-  const { Text } = require('react-native');
-  return ({ item, disableDetailNavigation }: { item: { title: string }; disableDetailNavigation?: boolean }) => (
-    <Text>{disableDetailNavigation ? `Detail: ${item.title}` : item.title}</Text>
+  const { Pressable, Text, View } = require('react-native');
+  return ({ item, disableDetailNavigation, onOpenReactors }: {
+    item: { id: number; title: string };
+    disableDetailNavigation?: boolean;
+    onOpenReactors?: (target: { targetType: 'post'; targetId: number; reactions: null }) => void;
+  }) => (
+    <View>
+      <Text>{disableDetailNavigation ? `Detail: ${item.title}` : item.title}</Text>
+      <Pressable onPress={() => onOpenReactors?.({ targetType: 'post', targetId: item.id, reactions: null })}>
+        <Text>Open reactors</Text>
+      </Pressable>
+    </View>
   );
+});
+
+jest.mock('@/components/reactions/ReactorsSheet', () => {
+  const { Pressable, Text, View } = require('react-native');
+  return ({ visible, targetId, onClose }: { visible: boolean; targetId: number; onClose: () => void }) => visible ? (
+    <View>
+      <Text>{`Reactors for ${targetId}`}</Text>
+      <Pressable onPress={onClose}><Text>Close reactors</Text></Pressable>
+    </View>
+  ) : null;
 });
 
 jest.mock('@/components/ui/AppTopBar', () => {
@@ -105,5 +124,26 @@ describe('FeedItemDetailScreen', () => {
 
     await waitFor(() => expect(mockGetFeedItem).not.toHaveBeenCalled());
     expect(getByText('Not found.')).toBeTruthy();
+  });
+
+  it('opens the reactors sheet from the detail card', async () => {
+    mockGetFeedItem.mockResolvedValue({
+      data: {
+        id: 42,
+        type: 'post',
+        title: 'Garden update',
+        content: 'Seeds are sprouting.',
+        reactions: null,
+      },
+    });
+
+    const { getByText, queryByText } = render(<FeedItemDetailScreen />);
+
+    await waitFor(() => expect(getByText('Open reactors')).toBeTruthy());
+    fireEvent.press(getByText('Open reactors'));
+    expect(getByText('Reactors for 42')).toBeTruthy();
+
+    fireEvent.press(getByText('Close reactors'));
+    expect(queryByText('Reactors for 42')).toBeNull();
   });
 });

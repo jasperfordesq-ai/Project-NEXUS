@@ -322,7 +322,6 @@ function FilterStrip({ label, children }: { label: string; children: ReactNode }
 }
 
 function FilterButton({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
-  const primary = usePrimaryColor();
   return (
     <HeroButton size="sm" variant={active ? 'primary' : 'secondary'} onPress={onPress}>
       <HeroButton.Label>{label}</HeroButton.Label>

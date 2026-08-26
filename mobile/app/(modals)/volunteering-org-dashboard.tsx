@@ -371,7 +371,6 @@ function WalletPanel({
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [amount, setAmount] = useState('');
@@ -482,7 +481,6 @@ function WalletPanel({
 function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | null; onRefresh: () => void }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
-  const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
   const [name, setName] = useState(org?.name ?? '');
   const [description, setDescription] = useState(org?.description ?? '');

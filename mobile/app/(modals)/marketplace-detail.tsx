@@ -176,7 +176,7 @@ function MarketplaceDetailScreen() {
     return () => {
       mounted = false;
     };
-  }, [checkoutPaymentMethod, listing?.delivery_method, listing?.id, listing?.local_pickup, listing?.price, listing?.price_type, listing?.time_credit_price, listing?.user?.id]);
+  }, [checkoutPaymentMethod, listing]);
 
   useEffect(() => {
     const sellerId = listing?.user?.id;

@@ -414,7 +414,6 @@ function ChoiceGroup<T extends string>({
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
 }) {
-  const primary = usePrimaryColor();
   const theme = useTheme();
   return (
     <View className="gap-2">
@@ -534,7 +533,6 @@ function PromotionProductRow({
   onPress: () => void;
 }) {
   const { t } = useTranslation('marketplace');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const price = product.price > 0
     ? formatCurrencyAmount(Number(product.price), product.currency)
@@ -1408,7 +1406,6 @@ export function QrScannerSheet({
   onScanned: (token: string) => void;
 }) {
   const { t } = useTranslation(['marketplace', 'common']);
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);

@@ -107,7 +107,7 @@ export default function EventRegistrationPanel({
         if (active) showToast({ title: t('messages.review_error'), variant: 'danger' });
       });
     return () => { active = false; };
-  }, [eventId, showToast, submission?.id, submission?.status, t]);
+  }, [eventId, showToast, submission, t]);
 
   async function acceptInvitation(invitationId: number) {
     setPendingAction(`invitation-${invitationId}`);

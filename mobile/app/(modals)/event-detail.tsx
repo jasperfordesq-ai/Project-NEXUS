@@ -1272,7 +1272,7 @@ function EventReminderCard({
             ))}
             <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('reminders.channels')}</Text>
             <View className="flex-row flex-wrap gap-2">
-              {(Object.keys(channels) as Array<keyof typeof channels>).map((channel) => (
+              {(Object.keys(channels) as (keyof typeof channels)[]).map((channel) => (
                 <HeroButton
                   key={channel}
                   size="sm"

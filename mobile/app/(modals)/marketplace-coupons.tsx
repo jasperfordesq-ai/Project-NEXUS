@@ -97,7 +97,6 @@ function MarketplaceCouponsScreen() {
 
 function CouponCard({ item, currency }: { item: PublicMerchantCoupon; currency?: string }) {
   const { t } = useTranslation('marketplace');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const terms = couponTerms(item, currency, t);
   return (

@@ -270,7 +270,6 @@ function CreateCollectionCard({
   onSubmit: (payload: { name: string; description: string; isPublic: boolean }) => void;
 }) {
   const { t } = useTranslation('members');
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

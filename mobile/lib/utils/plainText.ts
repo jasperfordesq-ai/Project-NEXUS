@@ -27,7 +27,7 @@
  */
 
 /** Entities the platform's stored content actually contains. */
-const ENTITIES: Array<[RegExp, string]> = [
+const ENTITIES: [RegExp, string][] = [
   [/&nbsp;/gi, ' '],
   [/&amp;/gi, '&'],
   [/&lt;/gi, '<'],

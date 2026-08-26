@@ -268,8 +268,8 @@ function PendingList({
   onStart: (item: PendingReview) => void;
 }) {
   const { t } = useTranslation(['profile']);
-  const theme = useTheme();
   const primary = usePrimaryColor();
+  const theme = useTheme();
 
   if (items.length === 0) {
     return (
@@ -349,7 +349,6 @@ function PendingReviewForm({
 }) {
   const { t } = useTranslation(['profile']);
   const theme = useTheme();
-  const primary = usePrimaryColor();
 
   return (
     <View className="gap-4 py-2">

@@ -1104,7 +1104,7 @@ export interface EventPollsResponse {
 export interface UpdateEventReminderInput {
   expected_revision: number;
   overrides: EventReminderPreferences['overrides'];
-  rules: Array<Pick<EventReminderRule, 'offset_minutes' | 'enabled' | 'email_enabled' | 'in_app_enabled' | 'web_push_enabled' | 'fcm_enabled' | 'realtime_enabled'>>;
+  rules: Pick<EventReminderRule, 'offset_minutes' | 'enabled' | 'email_enabled' | 'in_app_enabled' | 'web_push_enabled' | 'fcm_enabled' | 'realtime_enabled'>[];
 }
 
 export async function rsvpEvent(

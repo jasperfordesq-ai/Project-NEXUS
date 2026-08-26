@@ -125,6 +125,13 @@ function FeedItemDetailScreenInner() {
           </ScrollView>
         )}
       </SafeAreaView>
+      <ReactorsSheet
+        visible={Boolean(reactorsTarget)}
+        targetType={reactorsTarget?.targetType ?? 'post'}
+        targetId={reactorsTarget?.targetId ?? 0}
+        reactions={reactorsTarget?.reactions ?? null}
+        onClose={() => setReactorsTarget(null)}
+      />
     </ModalErrorBoundary>
   );
 }

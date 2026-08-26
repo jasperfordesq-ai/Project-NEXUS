@@ -321,7 +321,7 @@ export async function syncOfflineCheckinBatch(eventId: number, input: {
   deviceSecret: string;
   clientBatchId: string;
   manifestVersion: number;
-  items: Array<{
+  items: {
     client_nonce: string;
     operation: OfflineAttendanceOperation;
     observed_at: string;
@@ -329,7 +329,7 @@ export async function syncOfflineCheckinBatch(eventId: number, input: {
     credential_fingerprint: string;
     credential_hash_reference: string;
     reason?: string;
-  }>;
+  }[];
 }): Promise<MobileOfflineBatch> {
   const endpoint = `${API_V2}/events/${eventId}/offline-checkin/sync`;
   return parse(endpoint, batchSchema, await api.post<unknown>(endpoint, {

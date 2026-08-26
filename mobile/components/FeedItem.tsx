@@ -390,7 +390,6 @@ function FeedItemInner({
         holdTimerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const lastTapRef = useRef<number>(0);
@@ -463,7 +462,7 @@ function FeedItemInner({
     } finally {
       isReactingRef.current = false;
     }
-  }, [item.id, item.type, reactions]);
+  }, [item.id, item.type, reactions, showToast, t]);
 
   function showHeartOverlay() {
     overlayOpacity.setValue(1);
