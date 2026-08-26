@@ -120,7 +120,7 @@ function parsePaginated<T>(raw: unknown): PaginatedResponse<T> {
 // deduplicated by email server-side, so email is a safe stable key. The activity
 // tab is exempt: it already carries a unique numeric id and its emails can repeat.
 function withRowId<T extends { email: string }>(rows: T[]): (T & { id: string })[] {
-  return rows.map((row) => ({ ...row, id: row.email }));
+  return rows.filter((row) => !!row.email).map((row) => ({ ...row, id: row.email }));
 }
 
 function escapeCsvField(field: string): string {
