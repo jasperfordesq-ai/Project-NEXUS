@@ -148,10 +148,19 @@ public sealed class LaravelReactRealtimeContractTests : IntegrationTestBase
         var data = await ReadDataAsync(response);
         data.GetProperty("id").GetInt32().Should().BeGreaterThan(0);
         data.GetProperty("recipient_id").GetInt32().Should().Be(TestData.AdminUser.Id);
+        // 🔴 This asserted `/api/files/` until 2026-08-26 — ASP.NET's OWN former
+        // shape, pinned under a Laravel-compatibility name, the same mistake this
+        // file records correcting for `success` above. Laravel serves message
+        // attachments from the participant-authorized private-media route
+        // (routes/api.php: GET /v2/messages/{message}/attachments/{attachment});
+        // the generic file link was owner-only, so a recipient could not open an
+        // attachment sent to them. ASP.NET conforms to Laravel, so the test must
+        // assert Laravel's route, not the link ASP.NET used to emit.
         data.GetProperty("attachments").EnumerateArray().Should().ContainSingle(attachmentJson =>
             attachmentJson.GetProperty("original_filename").GetString() == "hello.txt" &&
             attachmentJson.GetProperty("content_type").GetString() == "text/plain" &&
-            attachmentJson.GetProperty("url").GetString()!.Contains("/api/files/"));
+            attachmentJson.GetProperty("url").GetString()!.Contains("/api/v2/messages/") &&
+            attachmentJson.GetProperty("url").GetString()!.Contains("/attachments/"));
     }
 
     [Fact]
@@ -172,7 +181,13 @@ public sealed class LaravelReactRealtimeContractTests : IntegrationTestBase
         data.GetProperty("id").GetInt32().Should().BeGreaterThan(0);
         data.GetProperty("recipient_id").GetInt32().Should().Be(TestData.AdminUser.Id);
         data.GetProperty("is_voice").GetBoolean().Should().BeTrue();
-        data.GetProperty("audio_url").GetString().Should().Contain("/api/files/");
+        // 🔴 Laravel's own VoiceMessageController projects
+        // `audio_url => "/api/v2/messages/{id}/voice"` (and routes/api.php serves
+        // GET /v2/messages/{message}/voice). This asserted `/api/files/`, which was
+        // ASP.NET's former owner-only link — a recipient could not play a voice
+        // message sent to them. Assert Laravel's shape.
+        data.GetProperty("audio_url").GetString().Should().Contain("/api/v2/messages/");
+        data.GetProperty("audio_url").GetString().Should().EndWith("/voice");
         data.GetProperty("audio_duration").GetInt32().Should().Be(1);
         data.GetProperty("attachments").EnumerateArray().Should().ContainSingle(attachmentJson =>
             attachmentJson.GetProperty("original_filename").GetString() == "voice-message.webm" &&
