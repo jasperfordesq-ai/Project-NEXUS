@@ -787,7 +787,7 @@
     "reporting_title": "How to report a concern",
     "reporting_body": "Reports can be made from inside the app or through our public form. Do not upload or forward suspected CSAM to us; report the location of the content so trained authorities can handle it safely.",
     "reporting_steps": {
-      "0": "In the app, use Report on the relevant profile, post, listing, message, event, or marketplace item.",
+      "0": "In the app, use Report on the relevant post, listing, exchange, or marketplace item.",
       "1": "Without the app, open the child-safety report form below and include the account or content location and why you are concerned.",
       "2": "If a child is in immediate danger, contact local emergency services or the relevant child-protection authority first."
     },

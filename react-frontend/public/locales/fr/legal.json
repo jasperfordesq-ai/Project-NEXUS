@@ -874,7 +874,7 @@
     "reporting_title": "Comment signaler un problème",
     "reporting_body": "Les signalements peuvent être effectués depuis l'application ou via notre formulaire public. Ne nous envoyez pas et ne nous transférez pas de CSAM présumé ; indiquez l'emplacement du contenu afin que des autorités formées puissent le traiter en toute sécurité.",
     "reporting_steps": {
-      "0": "Dans l'application, utilisez « Signaler » sur le profil, la publication, l'annonce, le message, l'événement ou l'article de la place de marché concerné.",
+      "0": "Dans l'application, utilisez « Signaler » sur la publication, l'annonce, l'échange ou l'article de la place de marché concerné.",
       "1": "Sans l'application, ouvrez le formulaire de signalement de protection de l'enfance ci-dessous et indiquez le compte ou l'emplacement du contenu ainsi que la raison de votre inquiétude.",
       "2": "Si un enfant est en danger immédiat, contactez d'abord les services d'urgence locaux ou l'autorité de protection de l'enfance compétente."
     },

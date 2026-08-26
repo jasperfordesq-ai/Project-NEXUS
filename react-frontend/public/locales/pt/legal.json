@@ -874,7 +874,7 @@
     "reporting_title": "Como denunciar uma preocupação",
     "reporting_body": "As denúncias podem ser feitas a partir da aplicação ou através do nosso formulário público. Não nos carregue nem reencaminhe suspeitas de CSAM; indique a localização do conteúdo para que autoridades preparadas o possam tratar em segurança.",
     "reporting_steps": {
-      "0": "Na aplicação, use «Denunciar» no perfil, publicação, anúncio, mensagem, evento ou artigo do mercado em causa.",
+      "0": "Na aplicação, use «Denunciar» na publicação, anúncio, troca ou artigo do mercado em causa.",
       "1": "Sem a aplicação, abra o formulário de denúncia de proteção de crianças abaixo e inclua a conta ou a localização do conteúdo e o motivo da sua preocupação.",
       "2": "Se uma criança estiver em perigo imediato, contacte primeiro os serviços de emergência locais ou a autoridade de proteção de crianças competente."
     },

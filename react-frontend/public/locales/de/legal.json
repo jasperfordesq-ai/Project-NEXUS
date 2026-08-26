@@ -872,7 +872,7 @@
     "reporting_title": "So melden Sie ein Anliegen",
     "reporting_body": "Meldungen sind in der App oder über unser öffentliches Formular möglich. Laden Sie vermutetes CSAM nicht bei uns hoch und leiten Sie es nicht an uns weiter; melden Sie stattdessen den Ort des Inhalts, damit geschulte Behörden ihn sicher bearbeiten können.",
     "reporting_steps": {
-      "0": "Nutzen Sie in der App „Melden“ beim betreffenden Profil, Beitrag, Angebot, bei der Nachricht, Veranstaltung oder beim Marktplatzartikel.",
+      "0": "Nutzen Sie in der App „Melden“ beim betreffenden Beitrag, Angebot, Tauschvorgang oder Marktplatzartikel.",
       "1": "Ohne die App öffnen Sie das untenstehende Kinderschutz-Meldeformular und geben das Konto oder den Ort des Inhalts an sowie den Grund Ihrer Sorge.",
       "2": "Wenn ein Kind in unmittelbarer Gefahr ist, wenden Sie sich zuerst an den örtlichen Notruf oder die zuständige Kinderschutzbehörde."
     },

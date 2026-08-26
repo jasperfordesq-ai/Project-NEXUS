@@ -107,6 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The public Google Play child-safety standard now names only reporting controls that the native app actually provides.** The eleven published locales direct members to report a post, listing, exchange or marketplace item, removing unsupported claims about profile, message and event report buttons while preserving the separate public child-safety form.
+
 - **Legal-document administration now honours its selected notification
   audience.** Choosing “all active members” previously sent only to members who
   had not accepted the selected version, while reporting success as though the

@@ -876,7 +876,7 @@
     "reporting_title": "Jak zgłosić problem",
     "reporting_body": "Zgłoszenia można składać w aplikacji lub przez nasz publiczny formularz. Nie przesyłaj nam podejrzewanego CSAM ani go nie przekazuj; zgłoś miejsce, w którym znajduje się treść, aby przeszkolone organy mogły bezpiecznie się nią zająć.",
     "reporting_steps": {
-      "0": "W aplikacji użyj opcji „Zgłoś” przy danym profilu, poście, ogłoszeniu, wiadomości, wydarzeniu lub przedmiocie na rynku.",
+      "0": "W aplikacji użyj opcji „Zgłoś” przy danym poście, ogłoszeniu, wymianie lub przedmiocie na rynku.",
       "1": "Bez aplikacji otwórz poniższy formularz zgłoszenia dotyczącego ochrony dzieci i podaj konto lub miejsce treści oraz powód swojego niepokoju.",
       "2": "Jeśli dziecku grozi bezpośrednie niebezpieczeństwo, skontaktuj się najpierw z lokalnymi służbami ratunkowymi lub właściwym organem ochrony dzieci."
     },

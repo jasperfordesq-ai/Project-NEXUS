@@ -48,6 +48,8 @@ describe('Google Play compliance pages', () => {
     expect(screen.getByText(/child sexual abuse and exploitation \(CSAE\)/)).toBeInTheDocument();
     expect(screen.getByText(/child sexual abuse material \(CSAM\)/)).toBeInTheDocument();
     expect(screen.getByText(/competent law-enforcement or child-protection authority/)).toBeInTheDocument();
+    expect(screen.getByText(/relevant post, listing, exchange, or marketplace item/)).toBeInTheDocument();
+    expect(screen.queryByText(/relevant profile, post, listing, message, event/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open the child-safety report form' }))
       .toHaveAttribute('href', '/contact?topic=child-safety');
   });

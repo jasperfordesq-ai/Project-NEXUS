@@ -874,7 +874,7 @@
     "reporting_title": "Come segnalare un problema",
     "reporting_body": "Le segnalazioni possono essere inviate dall'app o tramite il nostro modulo pubblico. Non caricare né inoltrarci presunto CSAM; segnala la posizione del contenuto affinché autorità competenti possano trattarlo in sicurezza.",
     "reporting_steps": {
-      "0": "Nell'app, usa «Segnala» sul profilo, post, annuncio, messaggio, evento o articolo del marketplace interessato.",
+      "0": "Nell'app, usa «Segnala» sul post, annuncio, scambio o articolo del marketplace interessato.",
       "1": "Senza l'app, apri il modulo di segnalazione sulla tutela dei minori qui sotto e indica l'account o la posizione del contenuto e il motivo della tua preoccupazione.",
       "2": "Se un minore è in pericolo immediato, contatta prima i servizi di emergenza locali o l'autorità competente per la protezione dei minori."
     },
