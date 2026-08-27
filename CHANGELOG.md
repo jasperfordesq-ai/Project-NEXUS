@@ -121,6 +121,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native wallet and listing feedback now reflects the real request outcome.** Wallet
+  pull-to-refresh remains active until balance, transaction, community-fund and pending-credit
+  requests have all settled instead of stopping after a fixed delay. A failed listing save or
+  unsave still rolls back its optimistic state and now also shows the translated server or
+  fallback explanation instead of relying on error haptics alone.
+
 - **Native mobile refreshes and first-install community selection now fail safely.** Older
   paginated responses can no longer overwrite a newer refresh or block a newer filter request
   across feed, listings and messages; a community that cannot load is no longer remembered;

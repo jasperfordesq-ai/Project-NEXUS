@@ -34,6 +34,8 @@ import OfflineBanner from '@/components/OfflineBanner';
 import SearchInput from '@/components/ui/SearchInput';
 import { ExchangeCardSkeleton } from '@/components/ui/Skeleton';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function extractExchangePage(response: ExchangeListResponse) {
   const seen = new Set<number>();
@@ -103,6 +105,7 @@ export default function ExchangesScreen() {
   const { t } = useTranslation(['exchanges', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { show: showToast } = useAppToast();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | ExchangeType>('all');
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -312,11 +315,16 @@ export default function ExchangesScreen() {
         await unsaveExchange(listingId);
       }
       void Haptics.selectionAsync();
-    } catch {
+    } catch (error) {
       setSavedOverrides((current) => ({ ...current, [listingId]: currentlySaved }));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: t('detail.actionFailedTitle'),
+        description: describeApiError(error, t('detail.saveFailed')),
+        variant: 'danger',
+      });
     }
-  }, []);
+  }, [showToast, t]);
 
   /**
    * 🔴 The search field is the ONLY thing pinned.

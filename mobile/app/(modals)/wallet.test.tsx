@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
 
 // --- Mocks ---
 
@@ -578,5 +579,34 @@ describe('WalletModal', () => {
     expect(transactionsState.refresh).toHaveBeenCalledTimes(1);
     expect(fundState.refresh).toHaveBeenCalledTimes(1);
     expect(pendingState.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops the pull-to-refresh indicator only when every wallet request has completed', () => {
+    const walletState = { data: { data: { balance: 23 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const fundState = { data: { data: { balance: 3 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockReset().mockImplementation(() => {
+      const states = [walletState, transactionsState, fundState, pendingState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const screen = render(<WalletModal />);
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+
+    walletState.isLoading = true;
+    transactionsState.isLoading = true;
+    fundState.isLoading = true;
+    screen.rerender(<WalletModal />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(true);
+
+    walletState.isLoading = false;
+    transactionsState.isLoading = false;
+    fundState.isLoading = false;
+    screen.rerender(<WalletModal />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
   });
 });

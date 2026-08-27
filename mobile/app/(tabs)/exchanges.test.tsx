@@ -6,6 +6,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+const mockShowToast = jest.fn();
+
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
@@ -24,6 +26,8 @@ jest.mock('react-i18next', () => ({
         'searchPlaceholder': 'Search listings\u2026',
         'newListing': 'Create new listing',
         'empty': 'No listings found.',
+        'detail.actionFailedTitle': 'Action failed',
+        'detail.saveFailed': "We couldn't update your saved listings.",
         'common:buttons.retry': 'Retry',
       };
       return map[key] ?? key;
@@ -86,9 +90,22 @@ jest.mock('expo-location', () => ({
 }));
 
 jest.mock('@/components/ExchangeCard', () => {
-  const MockExchangeCard = ({ exchange }: { exchange: { id: number; title: string } }) => {
-    const { Text } = require('react-native');
-    return <Text>{exchange.title}</Text>;
+  const MockExchangeCard = ({
+    exchange,
+    onToggleSave,
+  }: {
+    exchange: { id: number; title: string; is_favorited?: boolean };
+    onToggleSave?: (id: number, saved: boolean) => void;
+  }) => {
+    const { Pressable, Text } = require('react-native');
+    return (
+      <Pressable
+        accessibilityLabel={`Toggle save ${exchange.title}`}
+        onPress={() => onToggleSave?.(exchange.id, Boolean(exchange.is_favorited))}
+      >
+        <Text>{exchange.title}</Text>
+      </Pressable>
+    );
   };
   MockExchangeCard.displayName = 'MockExchangeCard';
   return MockExchangeCard;
@@ -96,6 +113,9 @@ jest.mock('@/components/ExchangeCard', () => {
 
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ui/AppToast', () => ({
+  useAppToast: () => ({ show: mockShowToast, hide: jest.fn(), isToastVisible: false }),
+}));
 jest.mock('@/components/ui/Skeleton', () => ({
   ExchangeCardSkeleton: () => null,
   ProfileSkeleton: () => null,
@@ -138,6 +158,7 @@ const mockExchange = {
   time_credits: 2,
   user: { id: 1, name: 'Alice Smith', avatar_url: null },
   created_at: '2026-01-10T09:00:00Z',
+  is_favorited: false,
 };
 
 describe('ExchangesScreen', () => {
@@ -185,6 +206,23 @@ describe('ExchangesScreen', () => {
 
     const { getByText } = render(<ExchangesScreen />);
     expect(getByText('Gardening Help Offered')).toBeTruthy();
+  });
+
+  it('shows visible feedback when saving a listing fails', async () => {
+    mockUsePaginatedApi.mockReturnValue({
+      ...defaultPaginatedState,
+      items: [mockExchange],
+    });
+    (saveExchange as jest.Mock).mockRejectedValueOnce(new Error('offline'));
+
+    const { getByLabelText } = render(<ExchangesScreen />);
+    fireEvent.press(getByLabelText('Toggle save Gardening Help Offered'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith({
+      title: 'Action failed',
+      description: "We couldn't update your saved listings.",
+      variant: 'danger',
+    }));
   });
 
   it('shows error text with Retry button when exchanges fail to load', () => {

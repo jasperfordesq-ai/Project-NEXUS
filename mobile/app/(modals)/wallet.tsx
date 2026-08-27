@@ -119,7 +119,6 @@ function WalletModalInner() {
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [filter, setFilter] = useState<TransactionFilter>('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeAction, setActiveAction] = useState<WalletAction>(params.to ? 'transfer' : null);
   const [extraTransactions, setExtraTransactions] = useState<TransactionItem[]>([]);
   const [extraCursor, setExtraCursor] = useState<string | null>(null);
@@ -161,7 +160,10 @@ function WalletModalInner() {
   const nextCursor = extraCursor ?? initialCursor;
   const hasMoreTransactions = extraTransactions.length > 0 ? extraHasMore : initialHasMore;
   const fund = unwrap<CommunityFundBalance>(fundQuery.data);
-  const isLoading = balanceQuery.isLoading || transactionsQuery.isLoading;
+  const isLoading = balanceQuery.isLoading
+    || transactionsQuery.isLoading
+    || fundQuery.isLoading
+    || pendingQuery.isLoading;
   const error = balanceQuery.error || transactionsQuery.error;
   const routeRecipientId = Array.isArray(params.to) ? params.to[0] : params.to;
 
@@ -197,7 +199,6 @@ function WalletModalInner() {
   }, [filter, pendingTransactions, transactions]);
 
   function refresh() {
-    setIsRefreshing(true);
     setExtraTransactions([]);
     setExtraCursor(null);
     setExtraHasMore(false);
@@ -205,7 +206,6 @@ function WalletModalInner() {
     transactionsQuery.refresh();
     fundQuery.refresh();
     pendingQuery.refresh();
-    setTimeout(() => setIsRefreshing(false), 650);
   }
 
   async function loadMoreTransactions() {
@@ -274,7 +274,7 @@ function WalletModalInner() {
       <AppTopBar title={t('title')} backLabel={t('back')} />
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={isRefreshing || isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         showsVerticalScrollIndicator={false}
       >
         <HeaderCard t={t} theme={theme} primary={primary} onRefresh={refresh} isLoading={isLoading} />
