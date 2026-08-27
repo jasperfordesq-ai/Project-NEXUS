@@ -21,13 +21,18 @@ class GroupWelcomeServiceTest extends TestCase
     /** @return array{group: Group, owner: User, member: User} */
     private function welcomeFixture(): array
     {
+        // Set the NAME PARTS, not `name`: UserObserver::saving() recomputes the
+        // stored `name` column from first_name/last_name, so a `name` passed to
+        // the factory is overwritten by the faker-generated parts beside it.
         $owner = User::factory()->forTenant($this->testTenantId)->create([
-            'name' => 'Admin Bob',
+            'first_name' => 'Admin',
+            'last_name' => 'Bob',
             'status' => 'active',
             'is_approved' => true,
         ]);
         $member = User::factory()->forTenant($this->testTenantId)->create([
-            'name' => 'Alice',
+            'first_name' => 'Alice',
+            'last_name' => '',
             'status' => 'active',
             'is_approved' => true,
         ]);

@@ -76,7 +76,12 @@ class HoursReportServiceTest extends TestCase
         DB::shouldReceive('select')->once()->andReturn([
             (object) [
                 'user_id' => 1,
-                'name' => 'Test User',
+                // Consistent with the parts, as production rows are: UserObserver
+                // keeps `users.name` in step with first_name/last_name, and
+                // UserDisplayName::resolve() reads the stored name FIRST so an
+                // organisation's trading name survives a select that omits
+                // profile_type/organization_name.
+                'name' => 'John Doe',
                 'first_name' => 'John',
                 'last_name' => 'Doe',
                 'avatar_url' => null,

@@ -12,6 +12,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\NotificationDispatcher;
+use App\Support\UserDisplayName;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -74,7 +75,20 @@ class NotifyConnectionRequest implements ShouldQueue
             // in a queue worker where config('app.locale') defaults to 'en').
             $targetLocale = $event->target->preferred_language ?? null;
             $content = LocaleContext::withLocale($targetLocale, function () use ($event) {
-                $requesterName = $event->requester->first_name ?? $event->requester->name ?? __('emails.common.fallback_someone');
+                // `?? $user->name` could never reach the fallback: User::getNameAttribute()
+                // is typed `: string` and returns '' for a nameless account, and '' is not
+                // null. A member with no first name got a notification reading " sent you
+                // a connection request". Empty must count as absent.
+                //
+                // The first name is deliberately preferred for a PERSON (the greeting is
+                // meant to be informal), but never for an ORGANISATION, whose first_name
+                // holds the contact person and must not stand in for the account.
+                $requester = $event->requester;
+                $firstName = trim((string) ($requester->first_name ?? ''));
+                $isOrganisation = ($requester->profile_type ?? null) === UserDisplayName::ORGANISATION;
+                $requesterName = (!$isOrganisation && $firstName !== '')
+                    ? $firstName
+                    : UserDisplayName::resolve($requester, __('emails.common.fallback_someone'));
                 return __('emails_misc.social.connection_request', ['name' => $requesterName]);
             });
 

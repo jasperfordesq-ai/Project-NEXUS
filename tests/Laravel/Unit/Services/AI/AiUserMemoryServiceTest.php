@@ -164,7 +164,10 @@ class AiUserMemoryServiceTest extends TestCase
     public function test_organisation_profile_uses_organisation_name(): void
     {
         $userId = $this->insertUser([
-            'profile_type'      => 'organization',
+            // BRITISH value, AMERICAN column. Seeding 'organization' here made this
+            // test pass only while the service carried the same misspelling, so its
+            // organisation branch never once ran. See App\Support\UserDisplayName.
+            'profile_type'      => 'organisation',
             'organization_name' => 'Green Thumb Co-op',
             'first_name'        => 'Bob',
             'last_name'         => 'Ignored',

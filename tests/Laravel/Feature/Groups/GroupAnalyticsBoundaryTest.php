@@ -133,8 +133,13 @@ final class GroupAnalyticsBoundaryTest extends TestCase
 
     public function test_authenticated_csv_export_is_authorized_downloadable_and_formula_safe(): void
     {
+        // The hostile value must go in a NAME PART. Passing it as `name` alone let
+        // UserObserver::saving() overwrite it with the faker's first/last, so the row
+        // reaching the CSV was harmless and this formula-injection guard was asserting
+        // against a payload that was never present.
         $member = User::factory()->forTenant($this->testTenantId)->create([
-            'name' => '=HYPERLINK("https://attacker.example")',
+            'first_name' => '=HYPERLINK("https://attacker.example")',
+            'last_name' => '',
             'status' => 'active',
             'is_approved' => true,
         ]);

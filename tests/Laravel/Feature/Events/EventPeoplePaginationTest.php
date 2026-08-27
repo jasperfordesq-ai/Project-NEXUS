@@ -253,8 +253,11 @@ final class EventPeoplePaginationTest extends TestCase
     private function member(string $name, int $index): User
     {
         return User::factory()->forTenant($this->testTenantId)->create([
-            'name' => $name,
+            // last_name must be pinned too: UserObserver::saving() recomputes the
+            // stored `name` from first_name + last_name, so leaving the faker's
+            // surname beside a set first_name appends it to the display name.
             'first_name' => $name,
+            'last_name' => '',
             'email' => sprintf('private-%02d@pagination.example.test', $index),
             'phone' => sprintf('+1 555 777 %04d', $index),
             'role' => 'member',

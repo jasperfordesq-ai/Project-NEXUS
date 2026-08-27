@@ -163,7 +163,7 @@ class JobInterviewServiceTest extends TestCase
 
         $interviewMock = Mockery::mock('alias:' . JobInterview::class);
         $interviewMock->shouldReceive('with')
-            ->with(['application.applicant:id,first_name,last_name,avatar_url'])
+            ->with(['application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->andReturn($query);
 
         $result = JobInterviewService::getForVacancy(10);
@@ -186,7 +186,7 @@ class JobInterviewServiceTest extends TestCase
 
         $interviewMock = Mockery::mock('alias:' . JobInterview::class);
         $interviewMock->shouldReceive('with')
-            ->with(['application.applicant:id,first_name,last_name,avatar_url'])
+            ->with(['application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->andReturn($query);
 
         $result = JobInterviewService::getForVacancy(10);

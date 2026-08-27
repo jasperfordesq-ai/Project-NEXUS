@@ -34,7 +34,8 @@ final class EventAgendaControllerTest extends TestCase
     public function test_owner_can_create_update_reorder_and_cancel_with_stable_contract(): void
     {
         $owner = $this->user();
-        $speaker = $this->user(['name' => 'Linked Speaker']);
+        // Name PARTS: UserObserver::saving() recomputes the stored `name` column.
+        $speaker = $this->user(['first_name' => 'Linked', 'last_name' => 'Speaker']);
         [$eventId, $start] = $this->event((int) $owner->id);
         Sanctum::actingAs($owner, ['*']);
 

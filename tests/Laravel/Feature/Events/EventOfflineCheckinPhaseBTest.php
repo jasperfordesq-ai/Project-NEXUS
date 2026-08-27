@@ -353,8 +353,11 @@ final class EventOfflineCheckinPhaseBTest extends TestCase
     private function user(string $name, array $overrides = []): User
     {
         return User::factory()->forTenant($this->testTenantId)->create(array_merge([
-            'name' => $name,
+            // last_name must be pinned too: UserObserver::saving() recomputes the
+            // stored `name` from first_name + last_name, so leaving the faker's
+            // surname beside a set first_name appends it to the display name.
             'first_name' => $name,
+            'last_name' => '',
             'status' => 'active',
             'is_approved' => true,
         ], $overrides));

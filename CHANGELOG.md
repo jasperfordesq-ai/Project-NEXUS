@@ -280,6 +280,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reason and falls back to the generic message only when none is sent, matching the
   twenty other admin screens that already did this.
 
+- **A connection request from a member with no first name arrived blank.** The
+  notification read " sent you a connection request" instead of naming anyone.
+  The line meant to fall back to "Someone" chained through the account's display
+  name, and that display name is now always a string — empty rather than absent
+  for a nameless account — so the fallback could never be reached. Empty now
+  counts as missing. The same line also preferred the first name unconditionally,
+  which for an organisation account is the contact person's name, so an
+  organisation now sends its own name and a person still gets the informal first
+  name. Alongside it, twelve tests were repaired that had quietly stopped testing
+  what they claimed: they set a member's display name directly, but the platform
+  recalculates that column from the first and last name on every save, so the
+  name each test chose was replaced by a randomly generated one. One of the twelve
+  was the spreadsheet-export safety check for group analytics, whose hostile
+  filename payload never reached the exported file — the guard itself was working
+  and is now genuinely exercised. Two others had been passing only because they
+  reproduced a known misspelling ("organization" for "organisation") that stopped
+  the organisation branch ever running.
+
 - **An organisation account now shows its organisation name everywhere, instead of
   sometimes showing the contact person's own name.** A member who signs up (or
   later switches) to an organisation in profile settings stores the trading name

@@ -267,7 +267,8 @@ class SearchMembersToolTest extends TestCase
     {
         $token = 'ORG' . uniqid();
         $id = $this->insertUser([
-            'profile_type'      => 'organization',
+            // BRITISH value, AMERICAN column. See App\Support\UserDisplayName.
+            'profile_type'      => 'organisation',
             'organization_name' => "The {$token} Society",
             'first_name'        => 'Alice',
             'last_name'         => 'Smith',

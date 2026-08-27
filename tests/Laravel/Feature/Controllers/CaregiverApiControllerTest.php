@@ -52,8 +52,11 @@ class CaregiverApiControllerTest extends TestCase
         $this->setCaringCommunityFeature(true);
 
         $caregiver = User::factory()->forTenant($this->testTenantId)->create();
+        // Name PARTS, not `name`: UserObserver::saving() recomputes the stored
+        // column from first_name/last_name.
         $careReceiver = User::factory()->forTenant($this->testTenantId)->create([
-            'name' => 'Mira Receiver',
+            'first_name' => 'Mira',
+            'last_name' => 'Receiver',
         ]);
         Sanctum::actingAs($caregiver);
 

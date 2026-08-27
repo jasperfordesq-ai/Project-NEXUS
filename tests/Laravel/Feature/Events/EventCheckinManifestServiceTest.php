@@ -314,8 +314,14 @@ final class EventCheckinManifestServiceTest extends TestCase
 
     private function user(string $name, array $overrides = []): User
     {
+        // Split into the NAME PARTS. UserObserver::saving() recomputes the stored
+        // `name` column from first_name/last_name, so passing `name` alone leaves
+        // the faker-generated parts to overwrite it.
+        [$first, $last] = array_pad(explode(' ', $name, 2), 2, '');
+
         return User::factory()->forTenant($this->testTenantId)->create(array_merge([
-            'name' => $name,
+            'first_name' => $first,
+            'last_name' => $last,
             'status' => 'active',
             'is_approved' => true,
         ], $overrides));
