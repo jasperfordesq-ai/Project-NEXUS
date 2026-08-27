@@ -64,7 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   1,986. Profile destination descriptions reduce it by another 161 entries, for a total
   reduction of 2,706 entries. Profile help, resource, policy and safety navigation reduces it
   by another 85 entries, for a total reduction of 2,791 entries and a current baseline of
-  1,740.
+  1,740. Reviewed About, Contact and Terms summaries reduce it by another 110 entries, for a
+  total reduction of 2,901 entries and a current baseline of 1,630; the summaries continue
+  to identify the published web documents as canonical.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.

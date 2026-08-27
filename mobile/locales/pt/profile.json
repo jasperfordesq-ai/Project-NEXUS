@@ -210,34 +210,34 @@
     "closeDocument": "Voltar ao apoio",
     "docs": {
       "about": {
-        "title": "About Project NEXUS",
+        "title": "Acerca do Project NEXUS",
         "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "What it does",
-        "section1Body": "The platform helps members share time, skills, opportunities, resources, events, messages, groups, and community marketplace activity.",
-        "section2Title": "Open source",
+        "section1Title": "O que faz a plataforma",
+        "section1Body": "A plataforma ajuda os membros a partilhar tempo, competências, oportunidades, recursos, eventos, mensagens, grupos e atividades do mercado comunitário.",
+        "section2Title": "Código aberto",
         "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Native app scope",
-        "section3Body": "The mobile app focuses on member workflows. Administrative, broker, and developer operations remain on the web where larger screens fit the work better."
+        "section3Title": "Âmbito da aplicação nativa",
+        "section3Body": "A aplicação móvel concentra-se nos percursos dos membros. As operações administrativas, de mediação e de desenvolvimento permanecem na Web, onde os ecrãs maiores são mais adequados ao trabalho."
       },
       "contact": {
-        "title": "Contact and support",
-        "summary": "Use the support routes that match your question, account issue, or tenant/community request.",
-        "section1Title": "Account help",
-        "section1Body": "For sign-in, profile, notification, privacy, or safety issues, include enough detail for the support team to identify the affected account and tenant.",
-        "section2Title": "Community requests",
-        "section2Body": "Community organisers should use the canonical contact page for tenant-level questions, feature requests, and operational support.",
-        "section3Title": "Urgent concerns",
-        "section3Body": "If a concern involves immediate harm or unlawful activity, contact the relevant local emergency or legal authority first, then report it through the platform."
+        "title": "Contacto e apoio",
+        "summary": "Utilize o canal de apoio adequado à sua pergunta, problema de conta ou pedido relativo à comunidade.",
+        "section1Title": "Ajuda com a conta",
+        "section1Body": "Para problemas de início de sessão, perfil, notificações, privacidade ou segurança, forneça pormenores suficientes para a equipa de apoio identificar a conta e a comunidade afetadas.",
+        "section2Title": "Pedidos da comunidade",
+        "section2Body": "Os organizadores da comunidade devem utilizar a página de contacto oficial para questões sobre o seu espaço, pedidos de funcionalidades e apoio operacional.",
+        "section3Title": "Preocupações urgentes",
+        "section3Body": "Se uma preocupação envolver perigo imediato ou atividade ilegal, contacte primeiro os serviços de emergência ou a autoridade legal local competente e, em seguida, comunique-a através da plataforma."
       },
       "terms": {
-        "title": "Terms of use summary",
-        "summary": "These points summarise expected platform use. The web terms remain the canonical legal text.",
-        "section1Title": "Use the platform responsibly",
-        "section1Body": "Members are expected to provide accurate information, respect other users, and use timebanking, marketplace, messaging, and group tools lawfully.",
-        "section2Title": "Community rules",
-        "section2Body": "Tenant and group rules may add workflow-specific expectations, especially for exchanges, volunteering, events, safeguarding, and marketplace activity.",
-        "section3Title": "Canonical terms",
-        "section3Body": "Open the web version for the full, current terms, including legal notices, attribution, liability, and licence information."
+        "title": "Resumo dos termos de utilização",
+        "summary": "Estes pontos resumem a utilização esperada da plataforma. Os termos publicados na Web continuam a ser o texto jurídico de referência.",
+        "section1Title": "Utilize a plataforma de forma responsável",
+        "section1Body": "Os membros devem fornecer informações exatas, respeitar os outros utilizadores e usar legalmente as ferramentas de banco de tempo, mercado, mensagens e grupos.",
+        "section2Title": "Regras da comunidade",
+        "section2Body": "As regras da comunidade e dos grupos podem acrescentar requisitos específicos a determinados percursos, sobretudo para trocas, voluntariado, eventos, proteção de pessoas e atividades do mercado.",
+        "section3Title": "Termos de referência",
+        "section3Body": "Abra a versão Web para consultar os termos atuais completos, incluindo avisos legais, atribuição, responsabilidade e informações sobre a licença."
       },
       "privacy": {
         "title": "Privacy summary",

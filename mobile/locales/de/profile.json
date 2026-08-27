@@ -210,34 +210,34 @@
     "closeDocument": "Zurück zur Hilfe",
     "docs": {
       "about": {
-        "title": "About Project NEXUS",
+        "title": "Über Project NEXUS",
         "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "What it does",
-        "section1Body": "The platform helps members share time, skills, opportunities, resources, events, messages, groups, and community marketplace activity.",
-        "section2Title": "Open source",
+        "section1Title": "Was die Plattform leistet",
+        "section1Body": "Die Plattform hilft Mitgliedern, Zeit, Fähigkeiten, Möglichkeiten, Ressourcen, Veranstaltungen, Nachrichten, Gruppen und Aktivitäten auf dem Gemeinschaftsmarktplatz zu teilen.",
+        "section2Title": "Open Source",
         "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Native app scope",
-        "section3Body": "The mobile app focuses on member workflows. Administrative, broker, and developer operations remain on the web where larger screens fit the work better."
+        "section3Title": "Umfang der nativen App",
+        "section3Body": "Die mobile App konzentriert sich auf Abläufe für Mitglieder. Verwaltungs-, Vermittlungs- und Entwicklungsaufgaben bleiben im Web, wo größere Bildschirme besser für diese Arbeit geeignet sind."
       },
       "contact": {
-        "title": "Contact and support",
-        "summary": "Use the support routes that match your question, account issue, or tenant/community request.",
-        "section1Title": "Account help",
-        "section1Body": "For sign-in, profile, notification, privacy, or safety issues, include enough detail for the support team to identify the affected account and tenant.",
-        "section2Title": "Community requests",
-        "section2Body": "Community organisers should use the canonical contact page for tenant-level questions, feature requests, and operational support.",
-        "section3Title": "Urgent concerns",
-        "section3Body": "If a concern involves immediate harm or unlawful activity, contact the relevant local emergency or legal authority first, then report it through the platform."
+        "title": "Kontakt und Hilfe",
+        "summary": "Nutze den Hilfeweg, der zu deiner Frage, deinem Kontoproblem oder deiner Anfrage an eine Zeitbank passt.",
+        "section1Title": "Hilfe zum Konto",
+        "section1Body": "Gib bei Problemen mit Anmeldung, Profil, Benachrichtigungen, Datenschutz oder Sicherheit genügend Einzelheiten an, damit das Hilfeteam das betroffene Konto und die Zeitbank erkennen kann.",
+        "section2Title": "Anfragen aus der Gemeinschaft",
+        "section2Body": "Organisatoren sollten für Fragen zur Zeitbank, Funktionswünsche und betriebliche Hilfe die zentrale Kontaktseite nutzen.",
+        "section3Title": "Dringende Anliegen",
+        "section3Body": "Wenn ein Anliegen unmittelbare Gefahr oder rechtswidrige Handlungen betrifft, wende dich zuerst an die zuständigen örtlichen Notfall- oder Rechtsbehörden und melde es anschließend über die Plattform."
       },
       "terms": {
-        "title": "Terms of use summary",
-        "summary": "These points summarise expected platform use. The web terms remain the canonical legal text.",
-        "section1Title": "Use the platform responsibly",
-        "section1Body": "Members are expected to provide accurate information, respect other users, and use timebanking, marketplace, messaging, and group tools lawfully.",
-        "section2Title": "Community rules",
-        "section2Body": "Tenant and group rules may add workflow-specific expectations, especially for exchanges, volunteering, events, safeguarding, and marketplace activity.",
-        "section3Title": "Canonical terms",
-        "section3Body": "Open the web version for the full, current terms, including legal notices, attribution, liability, and licence information."
+        "title": "Zusammenfassung der Nutzungsbedingungen",
+        "summary": "Diese Punkte fassen die erwartete Nutzung der Plattform zusammen. Die Bedingungen im Web bleiben der maßgebliche Rechtstext.",
+        "section1Title": "Nutze die Plattform verantwortungsvoll",
+        "section1Body": "Mitglieder sollen richtige Angaben machen, andere respektieren und die Werkzeuge für Zeitbanking, Marktplatz, Nachrichten und Gruppen rechtmäßig nutzen.",
+        "section2Title": "Regeln der Gemeinschaft",
+        "section2Body": "Regeln der Zeitbank und der Gruppen können zusätzliche Anforderungen für bestimmte Abläufe festlegen, insbesondere für Tauschvorgänge, Freiwilligenarbeit, Veranstaltungen, Schutzmaßnahmen und Marktplatzaktivitäten.",
+        "section3Title": "Maßgebliche Bedingungen",
+        "section3Body": "Öffne die Webversion für die vollständigen aktuellen Bedingungen einschließlich rechtlicher Hinweise, Namensnennung, Haftung und Lizenzinformationen."
       },
       "privacy": {
         "title": "Privacy summary",
