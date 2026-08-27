@@ -69,7 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to identify the published web documents as canonical. Privacy, cookies/storage,
   accessibility and trust/safety summaries complete the `profile` namespace in all seven
   shipped locales. Account hints, blocked-member management and data-export journeys bring
-  the total reduction to 3,196 entries and the baseline to 1,335.
+  the total reduction to 3,196 entries. Language, translation and feed-order preferences
+  bring the total reduction to 3,281 entries and the baseline to 1,250.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
