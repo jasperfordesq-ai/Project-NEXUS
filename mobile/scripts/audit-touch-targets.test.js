@@ -29,4 +29,10 @@ describe('touch-target audit route isolation', () => {
     expect(source).toMatch(/login:\s*\/Welcome back\|Sign in to your timebank\//);
     expect(source).toMatch(/'select-tenant':\s*\/Select your timebank\|Choose the community you belong to\//);
   });
+
+  it('reports scroll-viewport clipping separately from genuine undersized targets', () => {
+    expect(source).toContain('function isClippedAtScrollableEdge(node, nodes)');
+    expect(source).toContain('viewportClipped: clipped.length');
+    expect(source).toContain('not counted as target-size failures');
+  });
 });

@@ -82,12 +82,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   baseline to 442. Hiring-pipeline, application-history and job-alert journeys complete the
   `jobs` namespace in all seven shipped locales, bringing the total reduction to 4,247
   entries and the baseline to 284; every remaining entry is in the separately modified
-  `members` catalogues.
+  `members` catalogues. Member profile, trust, listing, achievement, collection and public-
+  appreciation journeys complete those catalogues, reducing all 4,531 guarded entries to
+  zero across the six non-English shipped locales. This is catalogue integrity and a
+  reviewed AI translation pass, not native-speaker certification.
+  The emulator touch-target auditor now reports partially visible controls clipped by a
+  scroll viewport separately, so a full-size card at the bottom edge is not misreported as
+  an 8dp target while genuine undersized controls still fail the audit. The screenshot gate
+  also treats its unpinned launch-state capture as inspection-only: first-install, remembered
+  signed-out and authenticated launches legitimately open different screens.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
 
 - **Apple App Store preparation now has a separate, fail-closed release path.**
+  A full Apple-source readiness audit now orders everything that can be completed before
+  enrollment, the immediate post-enrollment credential work, signed-iPhone certification,
+  TestFlight and App Review. Device notification permission is no longer requested merely by
+  signing in: members explicitly enable it in Settings, while paid promotional notifications
+  have a separate default-off opt-in and in-app opt-out. Campaign recipient selection now
+  fails closed unless that consent is exactly true. Expo ticket IDs are followed by delayed
+  receipt checks so invalid device tokens are removed, notification taps now survive cold
+  launch and accept every link key emitted by backend producers, logout can unregister a
+  stored token even after OS permission is revoked, and group-chat lock screens no longer
+  contain private message previews. The audit conservatively declares developer marketing
+  purposes and Advertising = Yes while paid radius-targeted campaigns exist, and records the
+  unresolved conflict with the published promise not to monetise user data through
+  advertising instead of silently rewriting legal copy. Camera rationale is narrowed to the
+  marketplace QR scanner actually used by the native app, and release checks protect the
+  consent-sensitive privacy declarations and maintained readiness matrix.
   The Expo app declares localized Face ID use in all seven native locales and records
   its standard exempt-encryption status; its 1024-pixel store icon is now encoded
   without an unused alpha channel; dedicated EAS preview, production and

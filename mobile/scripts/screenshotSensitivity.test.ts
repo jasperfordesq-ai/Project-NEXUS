@@ -100,4 +100,12 @@ describe('screenshot comparison sensitivity', () => {
     expect(source).toContain("const requestedSerial = argValue('--serial', null);");
     expect(source).toMatch(/activeSerial\s*\?\s*\['-s', activeSerial, \.\.\.adbArgs\]/);
   });
+
+  it('does not pixel-compare an unpinned launch state', () => {
+    const source = fs.readFileSync(SCRIPT, 'utf8');
+    const volatileBlock = /const VOLATILE_SCREENS\s*=\s*new Set\(\[([\s\S]*?)\]\);/.exec(source);
+
+    expect(volatileBlock).not.toBeNull();
+    expect(volatileBlock![1]).toContain("'01-launch.png'");
+  });
 });

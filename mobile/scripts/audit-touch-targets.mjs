@@ -149,6 +149,7 @@ function parseNodes(xml) {
     nodes.push({
       clickable: attr('clickable') === 'true',
       longClickable: attr('long-clickable') === 'true',
+      scrollable: attr('scrollable') === 'true',
       className: attr('class'),
       desc: attr('content-desc'),
       text: attr('text'),
@@ -159,6 +160,28 @@ function parseNodes(xml) {
     });
   }
   return nodes;
+}
+
+/**
+ * UIAutomator clips a partly visible child to its scroll viewport. Without recognising
+ * that, the final card at the bottom of a screen can be reported as an 8dp touch target
+ * even though its full card is hundreds of dp tall and simply needs scrolling. Keep these
+ * nodes visible in the report, but do not misclassify viewport clipping as target sizing.
+ */
+function isClippedAtScrollableEdge(node, nodes) {
+  const nodeRight = node.x + node.widthPx;
+  const nodeBottom = node.y + node.heightPx;
+  return nodes.some((container) => {
+    if (!container.scrollable) return false;
+    const containerRight = container.x + container.widthPx;
+    const containerBottom = container.y + container.heightPx;
+    const inside = node.x >= container.x && nodeRight <= containerRight
+      && node.y >= container.y && nodeBottom <= containerBottom;
+    return inside && (
+      node.x === container.x || nodeRight === containerRight
+      || node.y === container.y || nodeBottom === containerBottom
+    );
+  });
 }
 
 async function sleep(ms) {
@@ -214,6 +237,7 @@ async function main() {
 
   const belowAA = [];
   const belowGuidance = [];
+  const viewportClipped = [];
   const perScreen = [];
 
   let previousSignature = null;
@@ -241,17 +265,27 @@ async function main() {
 
     const nodes = parseNodes(xml);
     const targets = nodes.filter((node) => node.clickable || node.longClickable);
-    const small = targets.filter((node) => node.heightPx < aaMinPx || node.widthPx < aaMinPx);
+    const undersized = targets.filter((node) => node.heightPx < aaMinPx || node.widthPx < aaMinPx);
+    const clipped = undersized.filter((node) => isClippedAtScrollableEdge(node, nodes));
+    const small = undersized.filter((node) => !clipped.includes(node));
     const shortOfGuidance = targets.filter(
       (node) => (node.heightPx >= aaMinPx && node.heightPx < guidancePx)
         || (node.widthPx >= aaMinPx && node.widthPx < guidancePx),
     );
-    perScreen.push({ route, targets: targets.length, belowAA: small.length, belowGuidance: shortOfGuidance.length });
+    perScreen.push({
+      route,
+      targets: targets.length,
+      belowAA: small.length,
+      belowGuidance: shortOfGuidance.length,
+      viewportClipped: clipped.length,
+    });
     for (const node of small) belowAA.push({ route, ...node });
     for (const node of shortOfGuidance) belowGuidance.push({ route, ...node });
+    for (const node of clipped) viewportClipped.push({ route, ...node });
     console.log(
       `${route.padEnd(18)} ${String(targets.length).padStart(3)} targets  `
-      + `${String(small.length).padStart(3)} below AA  ${String(shortOfGuidance.length).padStart(3)} below 48dp`,
+      + `${String(small.length).padStart(3)} below AA  ${String(shortOfGuidance.length).padStart(3)} below 48dp  `
+      + `${String(clipped.length).padStart(3)} viewport-clipped`,
     );
   }
 
@@ -263,10 +297,12 @@ async function main() {
     console.log(`  ${node.route}: ${toDp(node.widthPx)}x${toDp(node.heightPx)}dp — ${label.slice(0, 60)}`);
   }
 
+  console.log(`\n${viewportClipped.length} undersized visible fragment(s) clipped at a scroll viewport edge (not counted as target-size failures).`);
+
   if (JSON_OUT) {
     fs.writeFileSync(
       path.resolve(JSON_OUT),
-      `${JSON.stringify({ dpi, aaMinPx, guidancePx, perScreen, belowAA, belowGuidance }, null, 2)}\n`,
+      `${JSON.stringify({ dpi, aaMinPx, guidancePx, perScreen, belowAA, belowGuidance, viewportClipped }, null, 2)}\n`,
       'utf8',
     );
     console.log(`\nWritten to ${JSON_OUT}`);

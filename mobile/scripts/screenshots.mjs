@@ -94,6 +94,16 @@ const SCROLLBAR_PX = 24;
  * the comparison, which is stated in the output rather than hidden.
  */
 const VOLATILE_SCREENS = new Set([
+  /*
+    `capture` starts the app without resetting storage. A first install opens the community
+    picker, a returning signed-out member opens their remembered community login, and a
+    signed-in member opens their remembered route. The old baseline happened to contain the
+    Listings tab, while a clean public-entry audit captured the picker and produced a valid
+    50% diff. That is state, not a pixel regression, so the launch image remains useful for
+    inspection but cannot honestly be compared until the harness pins an authentication and
+    navigation state.
+  */
+  '01-launch.png',
   '02-home-feed.png',
   '03-listings.png',
   '04-messages.png',
