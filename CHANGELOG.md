@@ -59,7 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   group collaboration, group-wiki, group-task, group-analytics, group-detail/marketplace and
   group-create/edit translation batches reduce the guarded English-identical baseline by
   2,387 entries, from 4,531 to 2,144; the large `groups` namespace is now clear in all seven
-  shipped locales.
+  shipped locales. Profile matches, reviews and marketplace navigation reduce the baseline
+  by a further 158 entries, for a total reduction of 2,545 entries and a current baseline of
+  1,986.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
