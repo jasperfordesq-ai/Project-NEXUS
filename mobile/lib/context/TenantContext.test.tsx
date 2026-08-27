@@ -70,15 +70,16 @@ describe('TenantContext', () => {
     mockGetTenantConfig.mockResolvedValue({ data: mockTenant });
   });
 
-  it('loads default tenant when no slug is stored', async () => {
+  it('uses default tenant config without remembering it before first-install selection', async () => {
     mockStorageGet.mockResolvedValue(null);
     const { result } = renderHook(() => useTenantContext(), { wrapper });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockStorageSet).toHaveBeenCalledWith('tenant_slug', 'hour-timebank');
+    expect(mockStorageSet).not.toHaveBeenCalledWith('tenant_slug', 'hour-timebank');
     expect(result.current.tenant).toEqual(mockTenant);
     expect(result.current.tenantSlug).toBe('hour-timebank');
+    expect(result.current.hasSelectedTenant).toBe(false);
   });
 
   it('restores tenant from stored slug', async () => {
@@ -88,7 +89,24 @@ describe('TenantContext', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.tenantSlug).toBe('my-community');
+    expect(result.current.hasSelectedTenant).toBe(true);
     expect(mockStorageSet).toHaveBeenCalledWith('tenant_slug', 'my-community');
+  });
+
+  it('forgets a removed remembered community and returns a signed-out install to the picker', async () => {
+    mockStorageGet.mockResolvedValue('removed-community');
+    mockGetTenantConfig
+      .mockRejectedValueOnce(Object.assign(new Error('Community not found'), { status: 404 }))
+      .mockResolvedValueOnce({ data: mockTenant });
+
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(mockStorageRemove).toHaveBeenCalledWith('tenant_slug');
+    expect(result.current.hasSelectedTenant).toBe(false);
+    expect(result.current.tenantSlug).toBe('hour-timebank');
+    expect(result.current.tenant).toEqual(mockTenant);
   });
 
   it('ignores cached config for a different tenant slug', async () => {
@@ -173,6 +191,7 @@ describe('TenantContext', () => {
 
     expect(result.current.tenantSlug).toBe('new-bank');
     expect(result.current.tenant?.name).toBe('New Bank');
+    expect(result.current.hasSelectedTenant).toBe(true);
     expect(mockGetTenantConfig).toHaveBeenCalledTimes(2);
   });
 });

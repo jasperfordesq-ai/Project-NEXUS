@@ -289,11 +289,23 @@ class VolOrgWalletService
 
             $newBalance = (float) $org->balance + $intAmount;
 
-            // Record org transaction
+            // Record both sides of the movement. vol_org_transactions is the
+            // organisation's reconciliation ledger; transactions is the
+            // member-facing wallet ledger. Keeping both inserts inside this
+            // transaction means balances and histories either all commit or all
+            // roll back together.
+            $orgDescription = $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', ['name' => $user->name]);
+            $memberDescription = $note ?: __('emails_misc.vol_org_wallet.deposit_subject', ['org' => $org->name]);
+
             DB::insert("
                 INSERT INTO vol_org_transactions (tenant_id, vol_organization_id, user_id, type, amount, balance_after, description, created_at)
                 VALUES (?, ?, ?, 'deposit', ?, ?, ?, NOW())
-            ", [$tenantId, $volOrgId, $userId, $intAmount, $newBalance, $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', ['name' => $user->name])]);
+            ", [$tenantId, $volOrgId, $userId, $intAmount, $newBalance, $orgDescription]);
+
+            DB::insert("
+                INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, transaction_type, status, created_at, updated_at)
+                VALUES (?, ?, NULL, ?, ?, 'volunteer', 'completed', NOW(), NOW())
+            ", [$tenantId, $userId, $intAmount, $memberDescription]);
 
             return ['success' => true, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'), 'new_balance' => $newBalance, '_deposit_user_id' => $userId, '_org_name' => $org->name, '_amount' => $intAmount];
         });

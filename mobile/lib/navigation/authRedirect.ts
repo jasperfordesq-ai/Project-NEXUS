@@ -64,6 +64,8 @@ export type AuthRedirect =
 export interface AuthRedirectInput {
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** False only when this installation has never chosen a community. */
+  hasSelectedTenant: boolean;
   pathname: string;
   /** A link captured before auth resolved, if any. */
   pendingDeepLink: string | null;
@@ -86,7 +88,7 @@ export interface AuthRedirectInput {
  *  5. A signed-out member is sent to login unless already on a public auth screen.
  */
 export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
-  const { isLoading, isAuthenticated, pathname, pendingDeepLink } = input;
+  const { isLoading, isAuthenticated, hasSelectedTenant, pathname, pendingDeepLink } = input;
 
   if (isLoading) {
     return { action: 'none', reason: 'auth is still resolving' };
@@ -103,6 +105,13 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
     }
 
     return { action: 'none', reason: 'signed in on a real route — preserve it' };
+  }
+
+  if (!hasSelectedTenant) {
+    if (isTenantSelectionPath(pathname)) {
+      return { action: 'none', reason: 'fresh install is choosing a community' };
+    }
+    return { action: 'replace', href: '/(auth)/select-tenant' };
   }
 
   if (!isPublicAuthPath(pathname)) {

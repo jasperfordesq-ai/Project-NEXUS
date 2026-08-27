@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import i18n, { changeLanguage as changeI18nextLanguage, use as useI18next } from 'i18next';
+import i18n, { changeLanguage as changeI18nextLanguage, use as installI18nextPlugin } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import { storage } from '@/lib/storage';
@@ -305,7 +305,7 @@ if (detectedLanguage !== 'en') {
   resources[detectedLanguage] = languageLoaders[detectedLanguage]();
 }
 
-useI18next(initReactI18next)
+installI18nextPlugin(initReactI18next)
   .init({
     resources,
     lng: detectedLanguage,

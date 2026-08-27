@@ -375,8 +375,10 @@ Honest coverage, so nobody reads this as "the app has been audited":
 - **~106 screens still have no picture of any kind.** 31 of roughly 137 are covered.
 - **"Notifications" could not be reached** from the More menu and remains
   unphotographed.
-- **Only one device size.** No small phone and no tablet. Large text has now been
-  swept at 1.3x (see above) but not at 1.5x or 2.0x, where wrapping usually gives out.
+- **The broad sweep still covers only one phone size.** Later Play-listing work added
+  genuine 7-inch and 10-inch emulator captures for Listings, Wallet and Volunteering, but
+  three tablet screens are not a tablet layout audit. Large text has been swept at 1.3x,
+  not at 1.5x or 2.0x where wrapping usually gives out.
 - **Nothing was checked against a real phone.** This is an emulator throughout.
 - **Screens behind an action are untouched** — anything reached by submitting a form,
   opening a member's profile, or entering a conversation. The sweep only walks
@@ -401,7 +403,7 @@ the work landed). What remains from the colour work is not a defect but missing
 information: ten of the eleven communities have no brand palette recorded, so they render
 in the default NEXUS blue until the owner supplies one.
 
-🔴 One finding from a later pass is still open and is not in this sweep's numbering: the
-rewards/leaderboard screen paints a blank body despite having its data and no error. It is
-recorded as row 9.1 of [CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md), with the
-evidence and what has been ruled out.
+The later rewards/leaderboard blank-body finding is closed. Its SafeAreaView came from
+`react-native-safe-area-context`, so the Uniwind `className="flex-1"` never applied and the
+child collapsed to zero height. The explicit layout fix is guarded by
+`components/safeAreaFlex.test.ts`; it is no longer part of the current backlog.

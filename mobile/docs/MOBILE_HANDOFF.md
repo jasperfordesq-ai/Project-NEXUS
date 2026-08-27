@@ -5,370 +5,103 @@ Author: Jasper Ford
 See NOTICE file for attribution and acknowledgements.
 -->
 
-# Mobile Hand-off — start here
-
-Last reviewed: 2026-08-23
-
-Status: **Maintained — the first document a new session on the mobile app should read.**
-
-## The goal
-
-Take the Expo / React Native app in `mobile/` — HeroUI-native (`heroui-native` + uniwind),
-not the Capacitor wrapper around the website — to the point where it can be **put in front of
-real members**.
-
-That is not the same as "the code is good". The code is largely good. What is missing is
-**evidence that the product works**, and the operational machinery to ship it and hear about
-it when it breaks.
-
-🔴 **There is no agreed definition of "ready", and that is the single most important thing to
-settle.** The score below is a measurement, not a gate; without a stated bar, "production
-ready" recedes for ever. **Proposed bar — needs the owner's yes or no:**
-
-1. Every Tier 1 journey (getting in: register, sign in, password reset, legal gate,
-   onboarding, force-update) **CERTIFIED**. A member who cannot get in has no opinion about
-   anything else.
-2. **Zero BROKEN rows**, or each remaining one explicitly accepted in writing by the owner.
-3. Crash reporting **on** in the profile that gets distributed, and one crash seen arriving.
-4. ~~The force-update lever proven end to end.~~ **Done 2026-08-22** — fired for the first
-   time by raising the server floor locally: the API refused the build with 426 and the app
-   replaced itself with an undismissable screen. What remains for a release is that the update
-   it demands must actually be downloadable, which is item 5.
-5. The distribution path **exercised once**: a build published, installed from that channel,
-   and opened.
-6. ~~A **screen-reader pass** over one complete journey.~~ **Part done 2026-08-23** — the first
-   screen-reader audit ever run here covered five screens and fixed three defect families.
-   What remains is the narrower thing this bullet actually asks for: one journey driven end
-   to end through TalkBack's own gestures, rather than audited screen by screen. The platform's other frontend is
-   GOV.UK-based and accessibility-led; shipping a native app with none is inconsistent with
-   the platform's own values.
-
-Nothing in that list is a score. A total of 579 or 700 is not the point.
-
-## Where the truth lives, and the rule about keeping it there
-
-| Document | What it is |
-| --- | --- |
-| [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md) | **The work list.** 140 fixed rows, one per member journey, each with a status and the evidence for it |
-| [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md) | The rubric and the score, recomputed from the ledger and machine-enforced |
-| [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) | The plan, in phases, ordered by what unblocks the most measurement |
-| [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) | How to walk a journey on a device, and every trap that has cost real time |
-| [`TESTING.md`](TESTING.md), [`DISTRIBUTION.md`](DISTRIBUTION.md), [`SECURITY.md`](SECURITY.md) | Suites and gates; release and update path; transport and storage |
-| [`NATIVE_UI_CONTRACT.md`](NATIVE_UI_CONTRACT.md), [`WRAPPER_POLICY.md`](WRAPPER_POLICY.md) | What "HeroUI-native" means here, and when a wrapper is allowed |
-
-🔴 **Every change updates the ledger row it affects, in the same commit.** A journey is not
-"done" because work happened on it; it moves status because its **effect was verified**. The
-score is recomputed from the ledger by `node scripts/check-doc-scores.mjs`, which fails the
-build when the summary counts, the arithmetic and the rows disagree — so a wrong number
-cannot be published quietly. The status document also carries a **banked floor**: a published
-total may never fall. A demotion is recorded in the ledger and the headline waits for the
-next net gain.
-
-## What proving a journey means
-
-Walk it on a device, verify the **effect** in the database or the API, then say whether a test
-guards it. Three standards that came out of getting this wrong:
-
-- 🔴 **Mutation-verify every guard.** Break the fix, watch the test go red, restore it. Several
-  tests written here could never have failed; they are worse than no test, because they read
-  as coverage.
-- 🔴 **Read the API access log before believing a screen.** Two of three "defects" in the last
-  sweep were screenshot timing — a toast caught mid-animation, a list photographed before its
-  filtered response arrived. One command settles it:
-  `docker logs --since 30s nexus-php-app | grep -oE '"(GET|POST) [^"]+"'`
-- 🔴 **Confirm the layer before fixing it.** The voice-duration bug looked like a client
-  omission; the duration handling a few methods up in the same controller made the server look
-  correct. The actual cause was `sendVoice()` passing a literal `0`. Fixing the first plausible
-  layer would have shipped a client change that did nothing.
-
-## Contract audit, 2026-08-23 — what the app assumes about the API
-
-🔴 **The API surface splits into two populations with opposite failure modes, and neither
-was checked against the server until today.**
-
-| | modules | endpoints | schemas |
-| --- | ---: | ---: | ---: |
-| Validated (zod) | 9 | 78 | **141 `.strict()` objects** |
-| Not validated at all | 37 | **416** | none |
-
-**Where a response is validated, drift throws.** A `.strict()` object rejects any field the
-server adds, and the calling screen shows that as a failed action — *after* the write has
-committed. That is exactly how event check-in came to tell an organiser their check-in had
-failed while the attendance row was already saved.
-
-**Where a response is not validated, drift is silent.** Fields the client reads simply come
-back `undefined`, and the screen either renders blanks or crashes on a property of
-`undefined`. That is exactly how the Matches screen crashed for every member: the server
-sends `module` and `listing_id`, the screen read `source_type` and `source_id`.
-
-The largest unvalidated surfaces are marketplace (89 endpoints), groups (40), volunteering
-(34), jobs (31), federation (28) and exchanges (20). **This is the biggest single pool of
-unexamined risk in the app**, and it is the recommended next piece of work.
-
-### What was built
-
-`mobile/lib/api/eventsContractDrift.test.ts` runs **19 real captured responses** — 15 reads
-and 4 writes — through the app's own client functions. `mobile/scripts/capture-events-contract.sh`
-refreshes them from a live local Laravel using the exact headers the client sends
-(`X-Events-Contract: 2`, plus `X-Event-Checkin-Contract` for the offline module).
-
-🔴 **It is mutation-verified against the original defect**: delete `credit_status` from the
-attendance schema and the gate goes red. The first version of the harness captured reads
-only and did **not** catch it — a drift on a write is the dangerous case, and a read-only
-audit would have missed the very thing that prompted it.
-
-🔴 **The gate declares its own coverage gaps** rather than implying completeness. An empty
-array satisfies any array schema, so five collections whose items were empty at capture time
-are named in the test as unverified: series occurrences, sync conflict items, registration
-product records, event templates and ticket types. Shrink-only — populate one, refresh, and
-remove it in the same commit.
-
-### Findings from running it
-
-- Every validated events envelope accepts real data. Nine modules, clean.
-- 🔴 **One false alarm of my own making, worth recording**: `GET /categories` appeared to
-  drift until I noticed my capture omitted `?type=event`, which the client does send. The
-  endpoint defaults to *listing* categories, whose `type` the event schema rightly refuses.
-  A capture that does not replay the client's request proves nothing.
-- 🔴 **A capability the server grants and the app does not offer**: the roster returns
-  `management_actions.undo_attendance: true`, the server accepts an `undo` transition, and
-  the response schema declares it — but the client's `EventAttendanceAction` type omits
-  `undo` and the online attendance screen has no undo control, while the **offline** queue
-  does. An organiser who checks in the wrong person cannot correct it from the live register.
-  Building it needs a reason field the client does not currently send, so it is recorded as
-  an owner decision rather than done.
-- The fixture community had **no event categories at all**, so the create-event category
-  picker was legitimately empty rather than broken. One has been seeded.
-
-## Where it stands, 2026-08-23
-
-**579 / 1000 on rubric M1.** Of 140 journeys: 46 CERTIFIED, 41 PROVEN, 24 RENDERS, 9 PARTIAL,
-3 BROKEN, 15 never attempted, 2 not applicable.
-
-Green: the engine. 309 test suites / 2,106 tests, TypeScript strict and clean, one blocking
-source-scan guard per failure family that has actually happened here, translations in seven
-languages, and a native release gate that passes in CI.
-
-Not green: the product has only recently begun to be walked at all, and nothing has ever been
-distributed to anybody.
-
-🔴 **Correcting my own earlier draft of this line, which said "crash reporting is off in every
-build profile".** That was copied forward from an older plan instead of checked.
-`lib/observability/report.ts` sends crashes to our own API (`POST /api/app/log`) as well as
-Sentry, so no third-party account is needed for reports to arrive. What is actually missing is
-narrower: no crash has ever been seen arriving from a real device, and there is no mobile
-Sentry project. The same draft also said the force-update lever had never been fired — it was
-fired on 2026-08-22 and works.
-
-### Walked and certified in the last two sessions
-
-Feed moderation (hide / not interested / mute / report — the capability did not exist), the
-whole exchange workflow (it was half missing), polls (create and vote), idea challenges
-(create, submit, vote), marketplace (list an item and buy it with time credits), job alerts,
-connections, listing search and filter, taking a listing down, messaging the other party about
-an exchange (also missing), voice messages, and notification counts.
-
-Defects found by walking, all fixed and guarded — the pattern is worth internalising:
-
-| What the member saw | What it actually was |
-| --- | --- |
-| "Listing not found. This item may have been sold, removed, or moved." — about the item they had just created | Moderation is on by default, so a new listing is `pending`; **both** frontends then navigated to a public read that hides it. Fixed in the shared API, so the website was repaired too |
-| "1 votes", "1 members", "1 spots left" | 129 count labels had no singular form in any of the seven languages. 903 singulars written; a shrink-only guard now blocks new ones |
-| A poll result of 0% and 0% | The server withholds tallies while a poll is open and says so in two different shapes; the app handled neither, and `null + 1` is `1` |
-| A job alert that could not be seen, paused or deleted | The list rendered below the bottom of the screen with nothing to scroll — `className` is inert on `SafeAreaView`, so 86 roots across 56 screens had no flex at all |
-| Notification cards with no heading, no timestamp, and text cut mid-word | The whole card sat inside a button, and a button caps its own height |
-| "10 unread" against 26 unread | The header counted the page it had loaded. The correct total was already served by an endpoint nothing called |
-| A 38-second voice note stored as one second, shown as "0:00" | `sendVoice()` passed a literal `0` for the duration. Every voice message ever sent from either frontend was one second long |
-
-🔴 **Read that table as a method, not a list.** Every one was invisible to a green test suite,
-and most were invisible to reading the code — they needed a device, a real second account, and
-a look at the database afterwards.
-
-### Still to walk — 29 rows, grouped by what they need
-
-**Tier 1, getting in (1 row).** The "update ready — restart" prompt, which needs a published
-over-the-air update and so cannot be walked here.
-
-🔴 Passkey sign-in turned out to be a **missing capability, not an untested one** — not one
-file under `mobile/` mentions passkey or WebAuthn, and there is no library for it. The row had
-said "never attempted on a device", which implied otherwise. The website has passkeys and the
-server has the endpoints, so this is a gap between the two frontends. It is now a third BROKEN
-row and an owner decision.
-
-🔴 The legal-acceptance gate is CERTIFIED, and how it is wired is worth knowing before
-walking anything else: it is attached **per write route**, never to a group. So an unaccepted
-member reads the app perfectly and is refused the moment they try to do something. Landing on
-the feed unblocked is correct, not a hole.
-
-🔴 Password reset is CERTIFIED, and the local seam is worth knowing: **the mail leg cannot
-complete here, and that is correct behaviour.** The reset token is stored only AFTER the mailer
-accepts the message, deliberately, so a mail outage cannot silently invalidate a link the
-member already has. With no SMTP in the container the send returns false, no token is written,
-and a warning is logged. To walk the reset screen anyway, insert a `password_resets` row whose
-stored token column holds the SHA-256 of a plaintext you keep, then open the reset deep link
-carrying that plaintext.
-
-🔴 Registration is now CERTIFIED and it was the worst offender found all day: **the account
-was created and the app said the request had timed out.** Registration does an MX lookup and a
-breach-database check before it can answer, so the ordinary 15-second mutation timeout fired on
-a request the server completed. A member who believes that message and tries again is told the
-address is taken. Expect more of this shape wherever the server does slow external work.
-🔴 Also worth knowing before walking any auth journey: **a `.local` email address cannot
-register**, because the MX check correctly refuses it. Every fixture account was seeded
-directly, which is why nobody had hit this.
-
-🔴 Journey 1.8 was the top of this list and is now CERTIFIED — reproduced deliberately by
-deleting the member's refresh sessions, and it behaves correctly: sign-in screen, "your session
-has expired", no request loop. **The BROKEN status predated the fix; the repair had landed and
-nobody had checked it.** Worth expecting more of that: a status recorded before a rewrite is a
-claim about the past, not the present.
-
-**Volunteering (2 rows).** Shift sign-up, shift swap request and response.
-
-**Events (1 row).** Attendance / check-in.
-
-**Community modules (3 rows).** Apply for a job (needs a vacancy created first — the local
-fixture has none), poll and ideation edge cases.
-
-**Money (2 rows).** Pending in / out, and the transaction detail view — which **does not
-exist on any frontend**, so the row is a question for the owner: build it, or drop the row and
-remove the tap target that implies it.
-
-**Cross-cutting (7 rows).** Screen reader, touch-target sizes, right-to-left, the offline
-check-in queue on a real dropped connection, start-up budget, and **iOS, which has never been
-built or run**.
-
-**Known-missing capabilities (3 BROKEN rows), all owner decisions:**
-
-- **2.9 Write a post to the community feed.** No composer exists. The server route and the
-  website composer both do.
-- **3.20 Report a problem with an exchange.** Not possible anywhere on the platform — the only
-  dispute route is a broker *resolving* one, and the general support report cannot name an
-  exchange. Needs an endpoint, a structured target, moderation routing and notifications, with
-  safeguarding implications.
-- **6.12 Transaction detail view.** See Money above.
-- **1.6 Passkey / biometric sign-in.** No passkey or WebAuthn code exists in the app at all.
-  The website has it and the server has the endpoints; the emulator carries Play Services, so
-  it is testable once built.
-
-## What I would add to the plan — chief-engineer view
-
-These are not journeys. They are the things I think will decide whether this ships well, and
-none of them is currently on any list.
-
-### 1. A server-side change can break the app with no mobile check running
-
-🔴 **Correcting my own first draft of this document, which said CI does not run the mobile
-suite at all. It does** — the `Android Native Release Gate` job runs `type-check`,
-`test:coverage --runInBand`, the coverage ratchet, `expo-doctor` and `drift:check`, and it
-passed on the commits from this session. The job's name says nothing about tests, which is how
-I misread it. Do not repeat that mistake: read the steps, not the job name.
-
-The real gap is narrower and worth fixing. That job only runs when `.github/ci-paths.yml`
-says a change touched `mobile/**`, `contracts/**`, `react-frontend/src/routes/**`, `routes/**`
-or the CI files themselves. **A change to shared PHP that the app depends on does not wake
-it.** This session's voice-duration fix is the proof: the defect lived in
-`app/Http/Controllers/Api/MessagesController.php`, a path that is deliberately not on the
-mobile watch list — so a one-line server change silently decided what every voice message on
-every phone was worth, and no mobile check would ever have run on the commit that introduced
-it.
-
-The path filter is right to be narrow; dragging the mobile job into every PHP commit would be
-worse. The proportionate answers are (a) add the specific API controllers the app depends on
-most to the mobile watch list, or (b) rely on the nightly sweep and accept the lag, but say so
-explicitly. Either way it should be a decision, not an accident. The same blind spot has
-already cost this platform once — `.github/ci-paths.yml` records the accessible frontend
-running 19 routes behind for over a week for exactly this reason.
-
-### 2. The local fixture is now dirty, and Phase 2 depends on it being clean
-
-Walking forty journeys has permanently changed tenant 2: balances moved, listings and orders
-and polls and challenges created, a listing deleted. Consequences already visible — the
-committed pixel baseline for the wallet screen no longer matches, because it prints balances.
-Phase 2 (automating the 41 PROVEN rows into a device flow) cannot be repeatable on a fixture
-that drifts every time someone walks a journey. **Build a reset-and-seed script for tenant 2**,
-re-capture the visual baselines against it, and treat "the fixture is a known state" as a
-precondition of automation rather than an afterthought.
-
-### 3. A systematic audit for fields the client collects but never sends
-
-The voice-duration bug has a shape worth hunting: the app measured the value, showed it to the
-member, and dropped it on the way to the server, which then substituted a plausible default.
-That is invisible to every kind of test we run. **Diff what each API endpoint accepts against
-what the mobile client actually sends.** One look found a bug that made every voice message on
-the platform one second long.
-
-### 4. Assume a mobile defect is a platform defect until checked
-
-Three of the defects above were in shared code or shared behaviour, and fixing the mobile
-symptom alone would have left the website broken. The marketplace one was repaired for both
-frontends by one change to the API. **When a walk finds a defect, check the website for the
-same fault and say so in the commit.**
-
-### 5. Accessibility is not a late polish item here
-
-Three cross-cutting rows (screen reader, touch targets, right-to-left) have never been
-attempted, and `ar` is blocked outright because no right-to-left support exists. This platform
-runs a GOV.UK-based accessible frontend precisely because accessibility is a stated value.
-Shipping a native app with no screen-reader pass would be inconsistent with that, and
-retrofitting is much more expensive than building it in. **Move at least the screen-reader and
-touch-target rows ahead of the remaining feature journeys.**
-
-### 6. iOS is a scope decision, not a journey
-
-"The app runs on iOS" sits in the ledger as one row worth the same as "vote in a poll". It is
-not one row of work: it is a second platform, a second store account, a second review process
-and a second set of layout bugs. **The owner should decide explicitly whether iOS is in scope
-for the first release.** If it is, the estimate roughly doubles and a Mac build path is needed.
-If it is not, say so in the ledger and stop counting it.
-
-### 7. Plural rules beyond one and other
-
-The 903 singulars added cover `_one` and `_other`. Irish genuinely has five plural categories
-and Arabic six. Irish currently falls back to the bare key for 2 and above, which is
-acceptable but not correct. Worth recording as known debt rather than discovering it from a
-member.
-
-### 8. The 43 remaining plural exemptions and the quarantine list are both ratchets
-
-Both shrink only, and both are enforced. Do not add to either without lowering the budget in
-the same commit — the mechanism exists precisely because a tolerance that can grow is not a
-gate.
-
-## Getting started in a new session
-
-Read [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) before touching a device — it has the
-two-emulator cold start, the fixture accounts, and the traps. The short version:
-
-```bash
-cd mobile
-export ANDROID_HOME="$LOCALAPPDATA/Android/Sdk"
-# Two emulators: nexus_test (5554) and nexus_test_b (5556) — two accounts, two devices.
-for s in emulator-5554 emulator-5556; do
-  adb -s $s reverse tcp:8090 tcp:8090   # Laravel API
-  adb -s $s reverse tcp:8081 tcp:8081   # Metro
-done
-npx expo start --port 8081
+# Mobile hand-off — start here
+
+Last reviewed: 2026-08-27
+
+Status: **Maintained — short entry point; detailed evidence lives in the linked sources.**
+
+## What this app is
+
+`mobile/` is the Expo / React Native client built with HeroUI Native and Uniwind. It is not
+the Capacitor wrapper. Android package `ie.project.nexus` is publicly installable from Google
+Play. iOS remains unbuilt and is still an explicit ledger item.
+
+## Current truth
+
+- [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md) owns the one
+  current M1 score and the risk-ordered backlog. Do not copy its number into a new report.
+- [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md) owns the fixed 140-row work list and
+  the evidence for every CERTIFIED, PROVEN, PARTIAL, OPEN and N/A status.
+- [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) retains the phased history and current release
+  handoff. It is not a second scorecard.
+- [`PLAY_SUBMISSION.md`](PLAY_SUBMISSION.md) owns signing, listing copy, Data Safety,
+  reviewer-access and Play asset evidence.
+
+The app's core journeys are real, not only mocked: community selection, authentication,
+feed posting/moderation, the complete timebanking exchange, member messaging, volunteering,
+wallet transfers, events, groups, polls, jobs and marketplace activity have all been walked
+on devices with their effects checked. Public distribution, Sentry, policy pages, signing,
+phone artwork and tablet artwork exist.
+
+The current source is **not yet the public build**. The working tree contains the neutral
+first-install community picker, tablet captures, asset validator and this audit. Existing
+installs keep their stored community; a clean install now starts unselected. These changes
+must be committed, pass CI and become a new signed version before a Play user receives them.
+
+## Before another Play build
+
+Follow the ordered backlog in the status document. The first four release gates are:
+
+1. Correct the live Play description's false absolute no-money claim; time-credit exchanges
+   use no money, while optional physical marketplace purchases may use Stripe.
+2. ~~Close the organisation-deposit money-integrity gap.~~ Fixed 2026-08-27: both ledgers
+   now commit atomically and the service regression suite checks wallet visibility and replay.
+3. Commit and push the current candidate and require green CI before changing version code.
+4. Walk the exact next Play-distributed artefact on a physical phone as both a clean install
+   and an upgrade, including push, one exchange and disposable account deletion.
+
+Do not spend an Expo cloud build merely to test JavaScript routing or artwork. The emulator
+and local Gradle path cover those; use a new Play artefact only after the candidate is banked.
+
+## Required verification baseline
+
+Run from `mobile/` unless the command says otherwise:
+
+```powershell
+npm.cmd run type-check
+npm.cmd test -- --runInBand
+npm.cmd run lint
+npm.cmd run doctor
+npm.cmd run verify:release
+npm.cmd run verify:network-security
+npm.cmd run check:cert-pins
+npm.cmd run drift:check
+npm.cmd run audit:production
+npm.cmd run budget:check
+npm.cmd run check:untranslated
+npm.cmd run store:assets:check
+node ..\scripts\check-doc-scores.mjs
 ```
 
-The debug APK loads its JavaScript from Metro at runtime, so the native build can be weeks old
-and both devices still run the source being edited. 🔴 After editing, **force-stop and relaunch**
-before believing a device result — a fast refresh does not always land, and a stale bundle
-looks exactly like a fix that did not work.
+`check:cert-pins` needs OpenSSL. On this Windows machine prepend
+`C:\Program Files\Git\usr\bin` to `PATH`; an unavailable tool is not a security pass.
 
-Before committing: `npx tsc --noEmit`, `npx jest`, `node scripts/check-doc-scores.mjs` and
-`npx --yes markdownlint-cli2@0.23.0` from the repository root. The last one is the only thing
-that checks Markdown structure and is not part of preflight — a missing table pipe failed CI
-once already.
+The current known non-failing debt is explicit: lint has warnings but no errors; the
+production dependency gate accepts only the reviewed build-time `image-size` advisories;
+the untranslated-phrase counts are shrink-only; and the startup bundle is below a blocking
+ceiling with limited headroom. Never describe those gates as clean in a stronger sense than
+their output supports.
 
-## Standing constraints
+## Evidence rules
 
-- Never deploy, and never push to the `backup` remote, without being told to.
-- Ask before every `git push`. Plan approval is not push approval.
-- Stage only the files for the task in hand; never `git add -A` or `git add -u`. Another
-  session shares this checkout and has uncommitted work in it.
-- Owner-external actions — creating a Sentry project, EAS environment variables, a Play
-  service account — are **recommended, never performed**.
-- Local fixture data may be changed freely; production never.
-- Write to the owner in plain English. Lead with the answer. Never let "it passed" stand in
-  for "it ran".
+- A rendered screen is not a completed journey. Verify the database row, API response,
+  balance movement, notification or other durable effect.
+- PROVEN means a device walk with an effect; CERTIFIED additionally requires a regression
+  guard capable of going red.
+- Preserve unrelated work in this shared checkout. Do not stash, reset, push, deploy or
+  submit to Play without the owner's explicit instruction.
+- Never commit `.env`, keystores, service-account JSON, reviewer credentials, Firebase
+  credentials or Sentry tokens. The repository is public.
+- Every release-relevant change updates `CHANGELOG.md`, refreshes the bundled changelog, and
+  updates the affected ledger row in the same commit.
+
+## Supporting guides
+
+| Need | Source |
+| --- | --- |
+| Two-account emulator/device procedure | [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) |
+| Automated suites and gates | [`TESTING.md`](TESTING.md) |
+| Build, OTA and rollback mechanics | [`DISTRIBUTION.md`](DISTRIBUTION.md) |
+| Native security boundary | [`SECURITY.md`](SECURITY.md) |
+| HeroUI Native composition rules | [`NATIVE_UI_CONTRACT.md`](NATIVE_UI_CONTRACT.md), [`WRAPPER_POLICY.md`](WRAPPER_POLICY.md) |

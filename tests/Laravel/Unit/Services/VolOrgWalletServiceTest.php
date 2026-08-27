@@ -93,6 +93,45 @@ class VolOrgWalletServiceTest extends TestCase
         $this->assertEquals(2, (int) $tx->tenant_id);
     }
 
+    public function test_deposit_writes_the_member_facing_personal_ledger_atomically(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 100]);
+        $orgId = $this->makeOrg(2, 50.00);
+        $this->pinTenant();
+
+        $result = VolOrgWalletService::depositFromUser(
+            $user->id,
+            $orgId,
+            25.0,
+            'Deposit to the volunteer organisation',
+            'personal-ledger-' . bin2hex(random_bytes(8)),
+        );
+
+        $this->assertTrue($result['success'], $result['message'] ?? '');
+
+        $personalTransaction = DB::table('transactions')
+            ->where('tenant_id', 2)
+            ->where('sender_id', $user->id)
+            ->whereNull('receiver_id')
+            ->where('transaction_type', 'volunteer')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $personalTransaction,
+            'A successful organisation deposit must appear in the member wallet history.',
+        );
+        $this->assertSame(25.0, (float) $personalTransaction->amount);
+        $this->assertSame('completed', $personalTransaction->status);
+        $this->assertSame('Deposit to the volunteer organisation', $personalTransaction->description);
+
+        $memberHistory = app(\App\Services\WalletService::class)->getTransactions($user->id);
+        $historyRow = collect($memberHistory['items'])->firstWhere('id', (int) $personalTransaction->id);
+        $this->assertNotNull($historyRow, 'The personal ledger row must be returned by the wallet API service.');
+        $this->assertSame('debit', $historyRow['type']);
+        $this->assertSame(25.0, $historyRow['amount']);
+    }
+
     public function test_fractional_deposit_is_rejected_whole_hours_only(): void
     {
         $user = User::factory()->forTenant(2)->create(['balance' => 10]);
@@ -195,6 +234,16 @@ class VolOrgWalletServiceTest extends TestCase
         $this->assertEquals(
             1,
             DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->where('type', 'deposit')->count()
+        );
+        $this->assertSame(
+            1,
+            DB::table('transactions')
+                ->where('tenant_id', 2)
+                ->where('sender_id', $user->id)
+                ->whereNull('receiver_id')
+                ->where('transaction_type', 'volunteer')
+                ->count(),
+            'An idempotent replay must not duplicate the member-facing ledger row.',
         );
     }
 

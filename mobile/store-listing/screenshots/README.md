@@ -13,6 +13,13 @@ Two complete sets. **Light usually reads better as a small thumbnail in the stor
 dark is the more striking image if the listing is being viewed full size. Pick one and stay
 with it — a listing that mixes themes looks like two different apps.
 
+The `tablet-7/` and `tablet-10/` folders contain a separate curated set captured from genuine
+Nexus 7 and Pixel Tablet Android emulators on 2026-08-26. They show Listings, Wallet and
+Volunteering—the three strongest screens that contain no internal QA fixture wording. The
+complete native tablet frame is retained: 7-inch captures are proportionally contained in
+1080×1920, while the naturally landscape Pixel Tablet captures are contained in
+2560×1440. Nothing is cropped or stretched.
+
 | | |
 | --- | --- |
 | `01-feed` | the community feed |
@@ -60,12 +67,14 @@ After recapturing, prepare and validate the complete Play asset set:
 
 ```bash
 npm run store:screenshots:prepare
+npm run store:tablets:prepare -- --device 7-inch --source <maestro-takeScreenshot-dir>
+npm run store:tablets:prepare -- --device 10-inch --source <maestro-takeScreenshot-dir>
 npm run store:assets:check
 ```
 
-The first command performs only the documented proportional conversion. The validator rejects
-wrong dimensions, screenshot ratios above 2:1, alpha-channel screenshots, and incorrect Play
-icon or feature-graphic formats.
+The preparation commands perform only the documented proportional conversion. The validator
+rejects wrong dimensions, anything other than the listing editor's exact 9:16 or 16:9 ratio,
+alpha-channel screenshots, and incorrect Play icon or feature-graphic formats.
 
 🔴 **One known imperfection.** Dates render US-style (8/17/2026) because the emulator would
 not accept a region change, and the app correctly follows the device. On an Irish or UK

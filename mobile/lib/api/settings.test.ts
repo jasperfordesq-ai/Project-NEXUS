@@ -13,8 +13,12 @@ jest.mock('@/lib/constants', () => ({
 import { api } from '@/lib/api/client';
 import {
   approveSubAccount,
+  getBlockedUsers,
+  getDataExportHistory,
   getManagedSubAccounts,
   getManagerSubAccounts,
+  getSubAccountActivity,
+  getUserPreferences,
   requestSubAccount,
   revokeSubAccount,
   updateSubAccountPermissions,
@@ -26,13 +30,72 @@ describe('settings sub-account API', () => {
   });
 
   it('loads managed and manager account relationships', async () => {
-    (api.get as jest.Mock).mockResolvedValue({ data: [] });
+    const relationship = {
+      relationship_id: 12,
+      relationship_type: 'guardian',
+      permissions: { tiers: { credits: 'co_decide' } },
+      status: 'active',
+      created_at: '2026-08-27T09:00:00Z',
+      user_id: 7,
+      email: 'member@example.com',
+    };
+    (api.get as jest.Mock).mockResolvedValue({ data: [relationship] });
 
-    await getManagedSubAccounts();
-    await getManagerSubAccounts();
+    await expect(getManagedSubAccounts()).resolves.toEqual([relationship]);
+    await expect(getManagerSubAccounts()).resolves.toEqual([relationship]);
 
     expect(api.get).toHaveBeenCalledWith('/api/v2/users/me/sub-accounts');
     expect(api.get).toHaveBeenCalledWith('/api/v2/users/me/parent-accounts');
+  });
+
+  it('unwraps the real nested export-history envelope', async () => {
+    const exportRow = {
+      id: 9,
+      format: 'zip',
+      requested_at: '2026-08-27T09:00:00Z',
+      completed_at: null,
+      file_size_bytes: null,
+    };
+    (api.get as jest.Mock).mockResolvedValue({ success: true, data: { exports: [exportRow] } });
+
+    await expect(getDataExportHistory()).resolves.toEqual([exportRow]);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/me/data-export/history');
+  });
+
+  it('preserves blocked-user and preference payloads after unwrapping', async () => {
+    const blockedUser = {
+      block_id: 4,
+      user_id: 8,
+      name: 'Blocked Member',
+      first_name: 'Blocked',
+      last_name: 'Member',
+      avatar_url: null,
+      reason: null,
+      blocked_at: '2026-08-27T09:00:00Z',
+    };
+    const preferences = {
+      feed: { prefers_chronological: true },
+      translation: { auto_translate_ugc: false, auto_translate_target_locale: null },
+    };
+    (api.get as jest.Mock)
+      .mockResolvedValueOnce({ data: [blockedUser] })
+      .mockResolvedValueOnce({ data: preferences });
+
+    await expect(getBlockedUsers()).resolves.toEqual([blockedUser]);
+    await expect(getUserPreferences()).resolves.toEqual(preferences);
+  });
+
+  it('unwraps the permission-gated sub-account activity summary', async () => {
+    const activity = {
+      hours_summary: { hours_given: 3, hours_received: 5, net_balance: 2 },
+      connection_stats: { total_connections: 4, groups_joined: 1 },
+      engagement: { posts_count: 6 },
+      timeline: [{ id: 1, activity_type: 'gave_hours', description: 'Helped', created_at: '2026-08-27T09:00:00Z' }],
+    };
+    (api.get as jest.Mock).mockResolvedValue({ data: activity });
+
+    await expect(getSubAccountActivity(7)).resolves.toEqual(activity);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/users/me/sub-accounts/7/activity');
   });
 
   it('requests a linked account by email', async () => {

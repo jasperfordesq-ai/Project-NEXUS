@@ -40,6 +40,9 @@ function validateScreenshotMeta(meta) {
   if (longest > shortest * 2) {
     problems.push('longest edge must not exceed twice the shortest edge');
   }
+  if (longest * 9 !== shortest * 16) {
+    problems.push('must use the 9:16 or 16:9 aspect ratio required by the Play listing editor');
+  }
   return problems;
 }
 
@@ -71,21 +74,31 @@ function validatePlayAssets(store = STORE) {
     colorType: 2,
   });
 
-  for (const theme of ['light', 'dark']) {
-    const directory = path.join(store, 'screenshots', theme);
+  const screenshotGroups = [
+    { directory: 'light', label: 'phone/light', minimumSide: 320 },
+    { directory: 'dark', label: 'phone/dark', minimumSide: 320 },
+    { directory: 'tablet-7', label: '7-inch tablet', minimumSide: 320 },
+    { directory: 'tablet-10', label: '10-inch tablet', minimumSide: 1080 },
+  ];
+
+  for (const group of screenshotGroups) {
+    const directory = path.join(store, 'screenshots', group.directory);
     if (!fs.existsSync(directory)) {
-      problems.push(`screenshots/${theme}: missing directory`);
+      problems.push(`screenshots/${group.directory}: missing directory`);
       continue;
     }
     const files = fs.readdirSync(directory).filter((file) => file.toLowerCase().endsWith('.png')).sort();
     if (files.length < 2 || files.length > 8) {
-      problems.push(`screenshots/${theme}: has ${files.length} PNGs; Play accepts 2–8 per device type`);
+      problems.push(`screenshots/${group.directory}: has ${files.length} PNGs; Play accepts 2–8 per device type`);
     }
     for (const name of files) {
-      const relative = path.join('screenshots', theme, name);
+      const relative = path.join('screenshots', group.directory, name);
       const meta = inspectPng(path.join(store, relative));
       report.push(meta);
       for (const problem of validateScreenshotMeta(meta)) problems.push(`${relative}: ${problem}`);
+      if (Math.min(meta.width, meta.height) < group.minimumSide) {
+        problems.push(`${relative}: ${group.label} screenshots require both sides to be at least ${group.minimumSide}px`);
+      }
     }
   }
 
@@ -106,4 +119,3 @@ if (require.main === module) {
 }
 
 module.exports = { inspectPng, validateScreenshotMeta, validatePlayAssets };
-

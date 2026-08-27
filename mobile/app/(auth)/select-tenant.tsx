@@ -26,12 +26,14 @@ export default function SelectTenantScreen() {
   const { t } = useTranslation(['auth', 'common']);
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthContext();
-  const { setTenantSlug, tenantSlug } = useTenant();
+  const { setTenantSlug, tenantSlug, hasSelectedTenant } = useTenant();
   const primary = usePrimaryColor();
   const { data, isLoading, error, refresh } = useApi(() => listTenants());
 
   const tenants = data?.data ?? [];
-  const activeTenant = tenants.find((tenant) => tenant.slug === tenantSlug);
+  const activeTenant = hasSelectedTenant
+    ? tenants.find((tenant) => tenant.slug === tenantSlug)
+    : undefined;
   const [pendingSwitch, setPendingSwitch] = useState<TenantListItem | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
 
@@ -96,19 +98,21 @@ export default function SelectTenantScreen() {
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
         ListHeaderComponent={
           <View className="gap-4 mb-5">
-            <View className="flex-row items-center justify-between">
-              <HeroButton
-                variant="ghost"
-                size="sm"
-                onPress={() => router.replace(isAuthenticated ? '/home' : '/login')}
-                accessibilityLabel={t(
-                  isAuthenticated ? 'selectTenant.backToHome' : 'selectTenant.backToLogin',
-                )}
-              >
-                <Ionicons name="arrow-back" size={18} color={primary} />
-                <HeroButton.Label>{t('selectTenant.back')}</HeroButton.Label>
-              </HeroButton>
-            </View>
+            {hasSelectedTenant ? (
+              <View className="flex-row items-center justify-between">
+                <HeroButton
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => router.replace(isAuthenticated ? '/home' : '/login')}
+                  accessibilityLabel={t(
+                    isAuthenticated ? 'selectTenant.backToHome' : 'selectTenant.backToLogin',
+                  )}
+                >
+                  <Ionicons name="arrow-back" size={18} color={primary} />
+                  <HeroButton.Label>{t('selectTenant.back')}</HeroButton.Label>
+                </HeroButton>
+              </View>
+            ) : null}
 
             <HeroCard className="overflow-hidden">
               <View className="h-1.5 bg-accent" />
@@ -139,7 +143,7 @@ export default function SelectTenantScreen() {
           </View>
         }
         renderItem={({ item }) => {
-          const isActive = item.slug === tenantSlug;
+          const isActive = hasSelectedTenant && item.slug === tenantSlug;
 
           /**
            * 🔴 NativePressable, NOT HeroButton. Wrapping a full-width card in a

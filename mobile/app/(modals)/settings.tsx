@@ -14,7 +14,8 @@ import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Chip, ListGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, ListGroup, Text } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 
 import { api } from '@/lib/api/client';
 import { useApi } from '@/lib/hooks/useApi';

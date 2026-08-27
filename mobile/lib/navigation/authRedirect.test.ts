@@ -11,7 +11,13 @@
 
 import { decideAuthRedirect, isPublicAuthPath, isTenantSelectionPath } from './authRedirect';
 
-const LOADING = { isLoading: true, isAuthenticated: false, pathname: '/', pendingDeepLink: null };
+const LOADING = {
+  isLoading: true,
+  isAuthenticated: false,
+  hasSelectedTenant: false,
+  pathname: '/',
+  pendingDeepLink: null,
+};
 
 describe('while authentication is still resolving', () => {
   it('does nothing at all', () => {
@@ -32,7 +38,12 @@ describe('while authentication is still resolving', () => {
 });
 
 describe('signed in', () => {
-  const signedIn = { isLoading: false, isAuthenticated: true, pendingDeepLink: null };
+  const signedIn = {
+    isLoading: false,
+    isAuthenticated: true,
+    hasSelectedTenant: true,
+    pendingDeepLink: null,
+  };
 
   it('follows a queued deep link INSTEAD of going home', () => {
     // 🔴 The ordering is the whole point. The deep link used to be checked after the
@@ -52,6 +63,13 @@ describe('signed in', () => {
 
   it('goes home from the root path', () => {
     expect(decideAuthRedirect({ ...signedIn, pathname: '/' })).toEqual({
+      action: 'replace',
+      href: '/(tabs)/home',
+    });
+  });
+
+  it('goes home when a valid stored session exists even if tenant selection metadata is missing', () => {
+    expect(decideAuthRedirect({ ...signedIn, hasSelectedTenant: false, pathname: '/' })).toEqual({
       action: 'replace',
       href: '/(tabs)/home',
     });
@@ -89,7 +107,12 @@ describe('signed in', () => {
 });
 
 describe('signed out', () => {
-  const signedOut = { isLoading: false, isAuthenticated: false, pendingDeepLink: null };
+  const signedOut = {
+    isLoading: false,
+    isAuthenticated: false,
+    hasSelectedTenant: true,
+    pendingDeepLink: null,
+  };
 
   it.each(['/members', '/wallet', '/', '/messages/3', '/legal-acceptance'])(
     'sends %s to login',
@@ -121,6 +144,32 @@ describe('signed out', () => {
     expect(
       decideAuthRedirect({ ...signedOut, pathname: '/members', pendingDeepLink: 'nexus://wallet' })
     ).toEqual({ action: 'replace', href: '/(auth)/login' });
+  });
+});
+
+describe('first installation with no selected community', () => {
+  const freshInstall = {
+    isLoading: false,
+    isAuthenticated: false,
+    hasSelectedTenant: false,
+    pendingDeepLink: null,
+  };
+
+  it.each(['/', '/login', '/register', '/members'])(
+    'sends %s to the community picker before tenant-specific authentication',
+    (pathname) => {
+      expect(decideAuthRedirect({ ...freshInstall, pathname })).toEqual({
+        action: 'replace',
+        href: '/(auth)/select-tenant',
+      });
+    },
+  );
+
+  it('leaves the community picker in place', () => {
+    expect(decideAuthRedirect({ ...freshInstall, pathname: '/select-tenant' })).toEqual({
+      action: 'none',
+      reason: 'fresh install is choosing a community',
+    });
   });
 });
 

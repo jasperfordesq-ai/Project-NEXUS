@@ -14,6 +14,7 @@ const mockLogout = jest.fn().mockResolvedValue(undefined);
 /** Order matters in one of the cases below, so record the sequence, not just the calls. */
 const callOrder: string[] = [];
 let mockIsAuthenticated = false;
+let mockHasSelectedTenant = true;
 let mockApiState: {
   data: { data: Array<{ id: number; slug: string; name: string; logo_url: string | null }> } | null;
   isLoading: boolean;
@@ -49,6 +50,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
   useTenant: () => ({
     tenantSlug: 'hour-timebank',
+    hasSelectedTenant: mockHasSelectedTenant,
     setTenantSlug: mockSetTenantSlug,
   }),
 }));
@@ -107,6 +109,7 @@ describe('SelectTenantScreen', () => {
       callOrder.push('setTenantSlug');
     });
     mockIsAuthenticated = false;
+    mockHasSelectedTenant = true;
     mockApiState = {
       data: {
         data: [
@@ -127,6 +130,15 @@ describe('SelectTenantScreen', () => {
     expect(getByText('West Cork Timebank')).toBeTruthy();
     expect(getByText('Current community: hOUR Timebank')).toBeTruthy();
     expect(getByText('Selected community')).toBeTruthy();
+  });
+
+  it('does not present the fallback tenant as selected on a fresh installation', () => {
+    mockHasSelectedTenant = false;
+    const { queryByText } = render(<SelectTenantScreen />);
+
+    expect(queryByText('Current community: hOUR Timebank')).toBeNull();
+    expect(queryByText('Selected community')).toBeNull();
+    expect(queryByText('Back')).toBeNull();
   });
 
   it('selects a community and returns to login', async () => {

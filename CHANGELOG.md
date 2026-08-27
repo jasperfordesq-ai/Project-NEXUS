@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Google Play tablet artwork is now captured from genuine Android tablet
+  emulators and checked automatically.** The mobile release tooling prepares a
+  curated three-screen set for both 7-inch (1080x1920) and 10-inch
+  (2560x1440) listings without cropping or stretching the app, and the Play
+  asset validator now checks phone and tablet counts, dimensions, colour mode
+  and the exact 9:16 or 16:9 listing ratio.
+
 - **Google Play compliance pages have been added to the maintained React frontend.**
   Public, tenant-aware `/account-deletion` and `/child-safety` routes explain the
   app's deletion process, retention boundaries, child-safety standards,
@@ -106,6 +113,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the web address itself, where it would be written into server logs.
 
 ### Fixed
+
+- **Mobile organisation deposits now reconcile both sides of the movement.**
+  Funding a volunteering organisation writes the organisation ledger and the
+  member-facing wallet transaction in the same database transaction, with
+  idempotency coverage preventing a replay from duplicating either entry.
+
+- **Mobile startup and accessibility guards cover more real failure modes.** A
+  removed remembered community now clears the stale selection and returns the
+  installation to the neutral picker, while goals, organisations and settings
+  use the non-interactive status-chip wrapper so informational labels are not
+  exposed to assistive technology as undersized buttons. Response-contract tests
+  now pin the nested settings, linked-account, export and activity payloads, and
+  the two actionable production hook-lint warnings have been removed.
+
+- **The maintained mobile release status now describes the app that actually ships.**
+  Rubric M1 is reconciled to a machine-checked 708/1000 local candidate (with
+  629 retained as the committed/CI-backed floor) from the current 140-row journey
+  ledger, live Google Play distribution, Sentry, policy pages, tablet
+  evidence and release gates. The roadmap and Play handoff no longer claim that
+  identity verification, signing, listing assets, Sentry or distribution are
+  missing, and one risk-ordered pre-build backlog replaces their contradictory
+  historical task lists.
+
+- **Fresh mobile installations now start with an unselected community picker.**
+  A community is remembered only after the member chooses it, then signed-out
+  returning members go directly to that community's login while authenticated
+  members continue directly to the app. Existing stored community selections
+  are preserved. Android shipping-manifest validation also ignores generated
+  debug manifests while continuing to inspect generated release manifests.
 
 - **Accessible tenant routing now reserves the two Google Play compliance paths.**
   `/account-deletion` and `/child-safety` can no longer be mistaken for child

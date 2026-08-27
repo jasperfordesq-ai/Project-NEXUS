@@ -24,5 +24,9 @@ describe('Google Play image-asset validation', () => {
     expect(validateScreenshotMeta({ width: 1080, height: 1920, bitDepth: 8, colorType: 2 }))
       .toEqual([]);
   });
-});
 
+  it('rejects a tablet capture that has not been framed to Play\'s 9:16 ratio', () => {
+    expect(validateScreenshotMeta({ width: 1200, height: 1920, bitDepth: 8, colorType: 2 }))
+      .toContain('must use the 9:16 or 16:9 aspect ratio required by the Play listing editor');
+  });
+});

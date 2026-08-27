@@ -7,19 +7,21 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Roadmap to Production
 
-Last reviewed: 2026-08-22
+Last reviewed: 2026-08-26
 
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **537 / 1000 on rubric M1** — see
+Current position: **708 / 1000 local candidate on rubric M1** (629 remains the
+committed/CI-backed floor until this candidate is pushed and green) — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md). Session hand-off, including what this
 plan is missing: [`MOBILE_HANDOFF.md`](MOBILE_HANDOFF.md).
 
-🔴 **This figure is quoted in prose and nothing enforces it here.** It read 513 while the
-status document said 537, because a prose number is not a marker. Update it with the status
-document or delete it.
+The score is owned and enforced by the status document; this line is only a pointer. The
+short current backlog is now also maintained there under “Ordered backlog before another
+Play build”. The phases below retain the history and exit criteria that explain how the app
+got here; where a phase's old plan differs from measured reality, the measured result wins.
 
 ## Why this order
 
@@ -123,7 +125,7 @@ requester's own wallet on the device showing "Exchange #61 … −1h".
 
 | Planned | Result |
 | --- | --- |
-| Rows 3.6–3.12 at PROVEN or better | 3.6 PROVEN, 3.7 CERTIFIED, 3.10 CERTIFIED, 3.11 PROVEN, 3.12 PROVEN. **3.8 (decline) and 3.9 (message about an exchange) are still OPEN** — the decline path exists and is unit-tested but has never been walked |
+| Rows 3.6–3.12 at PROVEN or better | Achieved. 3.8 decline is PROVEN and 3.9 messaging is CERTIFIED; the later device walks are recorded in the ledger rather than retrofitted into the original 2026-08-21 plan |
 | Credits demonstrably move, both ledgers checked | ✅ balances, `transactions`, `exchange_requests.transaction_id`, both members' wallet views |
 | Any dead end found is fixed or recorded | ✅ the notification link dead end ("Listing not found") is fixed; two findings recorded in the status document — the workflow being off by default, and stale two-party screens |
 
@@ -132,10 +134,9 @@ requester's own wallet on the device showing "Exchange #61 … −1h".
 group exchanges, skills matching, reporting). Journey certification 86 → **94** (planned
 ≥ 130, which assumed all of Tier 3).
 
-**What is left here, and it is small:** decline is now walked too (request 62 → `cancelled`,
-2026-08-22). Remaining: cancel from the requester's side, messaging the other party about an
-exchange, and a `broker_approval_required` pass so `pending_broker` is exercised at least
-once.
+**Current state:** every in-scope Tier 3 row is at least PROVEN; eight are CERTIFIED and
+eleven are PROVEN. The next movement is automation that converts repeatable PROVEN walks to
+CERTIFIED, not rediscovery of the old missing workflow.
 
 ## Phase 4 — The remaining two-party journeys (Tier 5) — **STARTED 2026-08-21**
 
@@ -164,51 +165,63 @@ the app being sized by its own content — fixed once in `components/ui/Input.ts
 that names what publishing triggers, and RSVP'd by the second member (`events` 162,
 `event_rsvps` 1009).
 
-**Still to do here:** poll voting and creating a poll (5.21, 5.22), voice messages, the
-marketplace buy/sell pair, applying for a job, event check-in. Nine of thirty-four.
+**Current state:** all 34 Tier 5 rows are at least PROVEN; 18 are CERTIFIED and 16 are
+PROVEN. Poll creation/voting, voice messaging, marketplace buy/sell, job application and
+event check-in were all walked after this phase began. As in Phase 2, the remaining work is
+to automate the 16 PROVEN effects so they can regress loudly.
 
 **Exit criteria:** Tier 5 credit 0.400 → ≥ 0.50.
 
 ## Phase 5 — Money integrity
 
-**Problem (Blocker 3).** A member's balance moves with nothing in their own history to
-explain it. Measured: 90.00 → 85.00 while the wallet reported `transaction_count: 1`.
+**Problem (Blocker 3) — FIXED 2026-08-27.** A member's balance moved with nothing in their
+own history to explain it. Measured: 90.00 → 85.00 while the wallet reported
+`transaction_count: 1`.
 
-**Approach.** Decide first whether the member-side ledger row is written by the deposit
-endpoint or derived for display. Then fix `total_earned`, which reports 0 after a paid
-credit — the arithmetic wants review before anything writes to it. A regression test per
-movement type: volunteer payment, organisation deposit, member-to-member transfer.
+**Resolution.** The deposit endpoint now writes the personal `transactions` debit and the
+organisation reconciliation row in the same database transaction. The focused service suite
+passes 19 tests / 107 assertions and checks member wallet visibility plus idempotent replay.
+The separate `total_earned` arithmetic observation remains a future investigation rather
+than being silently bundled into this correction.
 
 **Exit criteria:** every balance movement produces a member-visible row; a test fails if a
 balance changes without one; row 6.2 moves PARTIAL → CERTIFIED.
 
 ## Phase 6 — Width, accessibility and language
 
-- **Width.** Sweep the remaining screens at 360dp (31 of ~137 done). The sweep flow and the
-  density recipe are in the harness document. Expect more finds: five defects came out of
-  the first two screens looked at.
-- **Accessibility.** A screen-reader pass over one certified journey end to end; a
-  touch-target audit; label the 2 remaining unlabelled controls.
+- **Width.** The 360dp and 411dp phone checks remain; genuine 7-inch and 10-inch tablet
+  captures now cover Listings, Wallet and Volunteering. Sweep the remaining screens and
+  interact with forms/sheets at tablet sizes rather than treating listing captures as full
+  layout certification.
+- **Accessibility.** The live accessibility tree and touch targets have been audited across
+  24 screens and all measured sub-24dp targets were fixed. A TalkBack-operated journey end
+  to end and the remaining screen breadth are still open.
 - **Error messages.** 186 sites across 57 files discard the server's explanation.
   `lib/api/describeApiError.ts` exists and is applied on walked paths. Sweep deliberately,
   a module at a time, judging each site's wording — not with a blind replacement.
-- **Language.** See the owner decision below.
+- **Language.** The shrink-only gate currently records 4,638 phrases still identical to
+  English across ga/de/fr/it/pt/es. Arabic remains deliberately out of native scope.
 
 **Exit criteria:** Layout 45 → ≥ 65; Accessibility 20 → ≥ 40; Interaction integrity ≥ 80.
 
-## Phase 7 — Distribution and the store
+## Phase 7 — Distribution and the store — **PUBLIC 2026-08-26**
 
 Only after Phases 1–3. Shipping an app whose core exchange is unproven is the one thing
 this plan will not do.
 
-- Real signing keystore (owner decision below) and the backup of it.
-- Public privacy-policy URL; store listing copy; screenshots; Data Safety answers.
-- Play Families policy analysis — child sub-accounts likely trigger it; flag early.
-- Narrow `ACCESS_FINE_LOCATION` or justify it in writing.
-- iOS: never built or run. A separate decision, not a task.
+- Google Play production distribution, Play App Signing, a real upload keystore, listing,
+  screenshots, Data Safety, content rating and public policy pages are live.
+- The remaining signing task is an encrypted offline copy of the verified upload-key backup.
+- The live description must distinguish money-free time-credit exchanges from optional
+  physical marketplace purchases; its current absolute no-money claim is false.
+- The exact next Play-signed build needs a clean-install and upgrade walk on a physical
+  phone. The public build does not contain the fresh-install picker correction in the
+  working tree.
+- iOS remains row 7.18 OPEN under the owner's explicit all-platform target.
 
-**Exit criteria:** Store readiness 4 → ≥ 30; Distribution 40 → 55; a first install by
-someone who is not the owner.
+**Exit criteria:** the numeric targets are achieved (Store readiness 36, Distribution 55).
+The first-install-by-another-person and next-artefact physical-phone walk remain operational
+release criteria, not grounds to pretend public distribution has not happened.
 
 ## Owner decisions to schedule
 
@@ -218,8 +231,8 @@ These are not engineering tasks and no phase depends on guessing them.
 | --- | --- | --- |
 | **Write a post from the phone?** The website has a composer; the app has none | New feature, product scope | Members will ask for it the day the app ships |
 | **Translations: 3,232 phrases across five languages** | Machine translation is cheap and imperfect; a person is slower and better | Every new string added meanwhile widens the gap |
-| **Signing keystore** | Losing the file means never updating the app again | Blocks any store submission; the debug key cannot be used |
-| **Mobile Sentry project** | An external account | Crash reports currently land in our own API with no grouping |
+| **Signing keystore backup location** | The upload key exists and is verified; only the owner can choose encrypted offline custody | A lost upload key is replaceable under Play App Signing, but recovery causes avoidable release delay |
+| **Mobile Sentry real-crash acceptance** | Project, DSN and source maps are configured; deliberately crashing a public build needs a controlled test | Without it, native-crash and cold-start observability are configured but not proved end to end |
 | **iOS at all?** | Doubles the surface | Nothing in this plan assumes it |
 | **Review composer on mobile** | Currently a recorded "read-only on mobile" decision | Fine to leave; just don't rediscover it as a gap |
 
@@ -253,5 +266,7 @@ That is reached when:
 - Crash reports from a real device have been seen arriving.
 - The rubric total is **≥ 700 / 1000** with Journey certification ≥ 200 / 300.
 
-513 today. The gap is now mostly Tier 5, and most of it is walking journeys rather than
-writing features.
+708 today. The remaining gap is no longer “get into a store”; it is converting 62 PROVEN
+journeys into durable certification, expanding response-shape/accessibility/visual evidence,
+completing translations and proving
+the exact next Play artefact before upload.

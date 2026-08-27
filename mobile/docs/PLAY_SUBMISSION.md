@@ -2,12 +2,12 @@
 
 Last reviewed: 2026-08-26
 
-The owner's Play developer account is submitted and awaiting identity and phone verification
-(2026-08-25). This page holds everything that could be prepared *without* that account, in
-the order it will be needed, plus the exact commands and the two decisions that cannot be
-made on someone else's behalf.
+The developer identity is verified and Timebank Global is publicly installable from Google
+Play as of 2026-08-26. This page is now the evidence source for the next Android release:
+signing, policy answers, listing copy, reviewer access, screenshots and the checks that must
+be repeated before another build is uploaded.
 
-Nothing here is a claim that the app is ready to publish. Read
+Nothing here is a claim that the *next working-tree state* is ready to upload. Read
 [the store-readiness row in CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md)
 for the score, and the checklist at the end of this page for what is genuinely outstanding.
 
@@ -149,6 +149,13 @@ npx eas-cli@latest credentials          # Android → production → download ex
 EAS stores the existing upload keystore. Download an encrypted/offline backup of the
 `.jks` and its passwords. Under Play App Signing this upload key is important but replaceable;
 it is not the permanent app-signing key held by Google.
+
+**Verified local state (2026-08-27).** The downloaded JKS is present at
+`C:\platforms\htdocs\staging\mobile\@timebank-global__nexus-mobile.jks` and `*.jks` is
+ignored by Git. No second copy exists elsewhere in this checkout. This proves a usable local
+download, not disaster recovery: copy it to encrypted offline storage, keep its passwords in
+a separate password manager, and test that the copy can be read before deleting nothing.
+Never attach the JKS or its passwords to an issue, commit, chat or public repository.
 
 **B. Generate it locally and upload it.**
 
@@ -292,13 +299,16 @@ file; it is the same address already published on the live contact page and was 
 | App icon | 512×512 PNG, 32-bit | ✅ `store-listing/play-icon-512.png`. 🔴 `assets/icon.png` is 1024², which Play rejects — that is why this exists |
 | Feature graphic | 1024×500, no transparency | ✅ `store-listing/play-feature-graphic-1024x500.png`, drafted and verified to have zero transparent pixels |
 | Phone screenshots | 2–8, 320–3840 px, maximum 2:1 ratio, JPEG or opaque 24-bit PNG | ✅ **Two full sets of 8**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/{light,dark}/` |
-| Tablet screenshots | optional | Not required: the Expo configuration declares `supportsTablet: false`; do not claim tablet support |
+| 7-inch tablet screenshots | 2–8, 320–3840 px, 16:9 or 9:16 | ✅ **3 genuine emulator captures**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/tablet-7/` |
+| 10-inch tablet screenshots | 2–8, 1080–7680 px, 16:9 or 9:16 | ✅ **3 genuine emulator captures**, prepared as opaque 2560×1440 PNGs in `store-listing/screenshots/tablet-10/` |
 
 Both graphics are generated, so they can be changed by anyone:
 
 ```bash
 cd mobile
 npm run store:screenshots:prepare  # make captures Play-safe without cropping or stretching
+npm run store:tablets:prepare -- --device 7-inch --source <maestro-takeScreenshot-dir>
+npm run store:tablets:prepare -- --device 10-inch --source <maestro-takeScreenshot-dir>
 npm run store:assets                # regenerate icon + feature graphic, then validate everything
 npm run store:assets:check          # validate all Play assets without rewriting them
 ```
@@ -307,6 +317,9 @@ The feature graphic's source is `store-listing/feature-graphic.html` — ordinar
 at 1024×500 by the Playwright chromium the repository already installs. Edit the HTML, re-run
 the script. It is a **draft by a developer, not a designer**: it says the right things in the
 brand colour, and it will not embarrass the listing, but a designer would do better.
+
+`ios.supportsTablet: false` in `app.json` applies only to the future iOS build. It does not
+disable Android tablets and is not a reason to omit Android tablet listing artwork.
 
 ### The screenshots, and why they can be published
 
@@ -437,32 +450,40 @@ risk acceptance, not a claim that `npm audit` is clean.
 
 ---
 
-## The order of work once the account is verified
+## First-submission history and the next-release handoff
 
 1. ~~Wait for Play to finish developer-identity verification~~ — **done 2026-08-26**.
 2. ~~Create and download the Play upload keystore~~ — **done 2026-08-26**. EAS default
-   `ElecXcPY2S` and its local ignored credential backup match. Copy that backup to encrypted
-   offline storage before the public production rollout; do not create another key.
+   `ElecXcPY2S` and its local ignored credential backup match. The local JKS was re-verified
+   at the ignored path above on 2026-08-27. Copy it to encrypted offline storage; do not
+   create another key.
 3. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
 4. ~~Sentry project and build credentials~~ — **done 2026-08-25**, verified end to end.
 5. ~~Build a real signed bundle~~ — **done 2026-08-26**: version `1.2.0`, version code `5`,
    built locally without consuming EAS quota and verified against the new default key.
-6. **Install that exact artefact on a real phone and walk it.** Nothing store-signed has
-   ever been installed; every walk so far has used development or debug-signed builds. At a
-   minimum: sign in, post something, delete a throwaway account, and confirm push arrives.
-7. Copy the prepared listing, reviewer access, Data Safety and content-rating answers into
-   Play Console; all local source material is now ready.
-8. Upload the AAB by hand to Internal testing first. Add a service account later only if
-   automated submissions are useful; then closed testing, then production.
+6. ~~Upload through Internal and Closed testing, then release to Production~~ — **done
+   2026-08-26**. The public Play page shows an Install action, production listing, rating,
+   Data Safety panel and 24 screenshot entries.
+7. **Before the next upload:** bank the community-picker and tablet-asset work in green CI,
+   produce a new signed version, then walk that exact Play-distributed artefact on a physical
+   phone as both a clean install and an upgrade from the public version.
+8. Add a submission service account only if automated uploads become useful; it is not needed
+   for manual Play Console releases.
 
 ## What is still missing, plainly
 
-- **A Play-distributed real-phone walk of the exact release.** The production AAB is signed
-  and verified locally, but the Play-generated install has not yet been exercised.
+- **A Play-distributed real-phone walk of the exact next release.** The public build predates
+  the neutral first-install community picker. The next artefact must prove clean install,
+  remembered-community upgrade, signed-in return, push, one exchange and disposable account
+  deletion before rollout.
 - **An encrypted/offline copy of the local EAS credential backup.** The ignored local copy
   is complete and verified; it still needs copying outside the working checkout.
-- **The Console entry and first Internal-testing upload.** The assets and form answers are
-  ready locally and identity is verified; they still need to be entered and submitted.
+- **Correct the live full description before another release.** It currently says “No money
+  changes hands and nothing is ever put behind a payment”, which contradicts optional
+  purchases of physical marketplace goods. Use the truthful prepared paragraph above:
+  time-credit exchanges involve no money; physical-goods payments may use Stripe.
+- **Bank the current working tree and confirm CI.** The community-picker, tablet captures,
+  validator and reconciliation are local changes, not yet evidence from a committed build.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
   the nightly sweep are all in place and verified.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.

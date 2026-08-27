@@ -43,7 +43,7 @@ const SEARCH_DIRS = ['app', 'components'];
  * jobs, marketplace, notifications, profile, resources, polls, events and volunteering
  * screens.
  */
-const BUDGET = 77;
+const BUDGET = 73;
 
 function collectTsx(dir: string, out: string[] = []): string[] {
   const abs = path.join(MOBILE_ROOT, dir);
@@ -94,6 +94,10 @@ describe('Chip migration onto the accessibility-aware wrapper', () => {
       'components/FeedItem.tsx',
       'components/ExchangeCard.tsx',
       'app/(modals)/exchange-requests.tsx',
+      'app/(modals)/goals.tsx',
+      'app/(modals)/goal-detail.tsx',
+      'app/(modals)/organisations.tsx',
+      'app/(modals)/settings.tsx',
     ];
     for (const file of verified) {
       const source = fs.readFileSync(path.join(MOBILE_ROOT, file), 'utf8');

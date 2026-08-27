@@ -7,12 +7,12 @@ See NOTICE file for attribution and acknowledgements.
 
 # Current Mobile Production Status
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-08-27
 
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=629/1000 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=708/1000 -->
 <!-- doc-consistency: MOBILE_BANKED_FLOOR=629 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
@@ -22,62 +22,102 @@ competing score anywhere.
 
 ## The headline
 
-**629 / 1000 on rubric M1.** The app is well-built code around a largely unproven product.
+**708 / 1000 local candidate on rubric M1; 629 remains the committed/CI-backed floor.** The
+candidate becomes banked only after this reconciliation and its underlying mobile changes
+are committed, pushed and green. The Android app is publicly installable from Google Play and
+its core timebanking, messaging, volunteering and marketplace journeys have been walked on
+devices. The public listing, Data Safety panel, content rating, policy URLs, production
+signing, Sentry project and source-map path now exist. Genuine 7-inch and 10-inch emulator
+captures also prove that three high-value screens render at tablet sizes.
 
-It builds, signs, installs on a real phone, and the volunteering journey works end to end
-with the credits reconciling in both ledgers. **Bottom sheets now open** — fixed and walked
-on 2026-08-21, with a comment and a threaded reply written from the app and found in the
-database — which returns comments, card menus, the reactor list and every other sheet across
-sixteen screens to service. **The core timebanking exchange now works end to end** — request,
-accept, start, complete, both confirm, credits move — walked across two phones on 2026-08-21,
-with the balances and the transaction row checked in the database. Half of it had to be built
-first: the app could send a request and could do nothing else with it.
+This is not a claim that the next build is ready to upload. The public build predates the
+fresh-install community-picker correction in the working tree; the exact next signed Play
+artefact still needs a clean-install and upgrade walk on a physical phone. The live store
+description also says that no money changes hands anywhere, while the app supports purchases
+of physical marketplace goods. That wording must be corrected before another release is
+submitted. Internationalisation, response-contract coverage, accessibility breadth and
+end-to-end device automation remain material gaps.
 
-Against that: a member still cannot write a post to the community feed, because no such
-capability exists; a member's own wallet statement does not reconcile with their balance when
-they fund an organisation; and of the 140 journeys in the ledger, 31 have still never been
-attempted. Member-to-member messaging was walked on 2026-08-21 too — sent, received with the
-unread badge, read receipt, and replied to.
-
-🔴 **Why the score is not higher, given 306 green test files and 2,057 passing tests.**
-Those tests run in Node against mocks. They have never demonstrated that a member can
-complete anything. Rubric M1 exists because the previous readiness document scored code
-thoroughly and the product barely at all, and the app reached that state of green while
-three separate controls sat unreachable on the first screen a member sees.
+🔴 **Why the score is not higher, given 332 green test suites and 2,372 passing tests.**
+Most tests still run in Node against mocks. The ledger deliberately gives journey credit
+only when a device walk verifies the effect, and only gives full credit when an automated
+guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
+size of the test suite or the fact that the app has reached production distribution.
 
 ## Banked score
 
-Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every figure re-measured on
-2026-08-20/21; none is inherited from the previous readiness document.
+Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every category was reconciled
+against current evidence on 2026-08-26; journey credit remains formula-driven from the
+ledger, while non-journey increases below name the new evidence that earned them.
+The table keeps the rubric's historical `Banked` column name because the score checker reads
+that contract; its 708 total is a working-tree candidate until CI banks it, as stated above.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
 | Journey certification | 300 | 214 | 300 | Ledger overall credit **0.712** × 300 = 213.6. 58 CERTIFIED, 62 PROVEN, 0 RENDERS, 8 PARTIAL of 137 scoring rows — no row is left at "it renders" for the first time — thirteen screens that had only ever been looked at were walked on a device on 2026-08-24, and one of them (resources) turned out never to re-read its own list — 137, not 138, because Arabic is now an excluded owner decision rather than an open gap. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row. 🔴 **+2 on 2026-08-25**: RESERVE row 8.3 claimed by in-app account deletion, which the website has had all along and the app did not have at all — walked end to end on a device, including a wrong-password refusal that left the account intact and the member signed in. Capability parity is deliberately NOT moved for it: closing one gap does not license a number without redoing the whole hand-comparison, and that comparison is exactly what missed two absent capabilities last time |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
-| Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away — a sheet renders through a portal, so one was found sitting on top of an unrelated screen after a deep link. Walked on four sheet families plus swipe-to-dismiss. Deep links fixed three times over: parameter names, `?tab=`, and `/exchanges/:id`, which answered "Listing not found". Error messages are no longer among the gaps: all 165 sites that reported a failure without the server's reason now pass it on, walked on a device against a real 409. Still unmeasured: touch-target sizes beyond the five audited screens |
-| Layout across device sizes | 80 | 52 | 80 | Two widths exercised (411dp, 360dp); 5 defects found and guarded on 2026-08-20, and on 2026-08-22 **every text field in the app** was found sized to its own content rather than its container — the wallet's recipient search and the group discussion title shipped as pills. Fixed once in `components/ui/Input.tsx`; guarded. Still only two widths, still no tablet |
-| Accessibility | 60 | 34 | 60 | Contrast gated. 🔴 **First screen-reader audit ever run, 2026-08-23**, with TalkBack over five screens: every control now carries a meaningful name, no accessible name contains an icon glyph, informational chips are no longer announced as buttons, and touch targets were measured at the real device density with the nine below the WCAG 2.2 AA 24dp minimum fixed. Raised by 14 for that. Still short of full: it was an audit rather than a journey driven end to end through the screen reader, five screens of roughly 137, a large group of controls sits at 40dp (above the AA floor, below Android's 48dp guidance), 91 files still take `Chip` straight from heroui-native, and there is no RTL |
-| Internationalisation | 70 | 25 | 70 | 7 of the platform's 11 locales; ≥3,232 multi-word phrases still English across six — now IN scope by owner decision (2026-08-24) rather than parked. 🔴 Arabic and right-to-left are OUT of scope for the native app entirely, by the same decision: Arabic speakers are served by the web app and the accessible frontend, so the seven-locale set is deliberate and `ar` is not a gap to be counted |
-| Automated test depth | 100 | 74 | 100 | 322 suites / 2,266 tests (`npm test`, 2026-08-24), 0 skipped, 0 quarantined, 28 coverage floors, 14 source-scanning guards — and the nine nightly Maestro device flows, which now all pass for the first time. 🔴 Raised by 4 for that, and the reason is worth reading: **six of the nine were failing, and none of them was a defect in the app.** A LogBox error banner sits over the bottom of the screen, on top of the tab bar, and swallows the tap — so every flow that taps a tab failed an assertion afterwards. Two had been red for days and four went red on 2026-08-24, while `npm test` was green and the whole CI pipeline was green. The banner came from a missing theme variable (`--border-strong`), now carried into the generated community themes; LogBox is also suppressed for the device-test build, because a suite an unrelated warning can break cannot report on the app. Still short of full: nine flows is a thin slice of 137 screens, and a suite that stayed green through the sheet outage and a missing half of the core exchange has not earned more than this. Unchanged from 70: the new tests are real, but a suite that stayed green through the sheet outage AND through a missing half of the core exchange has not earned more credit |
-| Observability and operations | 70 | 40 | 70 | Crash reports reach our own API as well as Sentry, so no account is needed; never verified from a real crash; no mobile Sentry project |
-| Distribution and update lever | 60 | 40 | 60 | Local APK build, verified byte-for-byte through the public link; force-update, rollback and update-ready all exist. Nothing has been distributed to a member |
-| Store readiness | 40 | 4 | 40 | No listing, screenshots, public privacy URL or Data Safety answers; signing keystore still a decision |
-| **Total** | **1000** | **629** | **1000** | — |
+| Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
+| Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
+| Accessibility | 60 | 38 | 60 | Contrast is gated. TalkBack and the live accessibility tree have been audited across five core screens, and the automated touch-target tool was widened to 24 screens; every measured target below the WCAG 2.2 AA 24dp minimum was fixed. Still short of full: no journey has been operated end to end using TalkBack gestures, most screens remain unaudited, and 88 measured targets remain above WCAG AA but below Android's 48dp guidance |
+| Internationalisation | 70 | 25 | 70 | Seven locales ship, but the current shrink-only gate reports **4,638** multi-word phrases still identical to English: ga 107, de 916, fr 911, it 915, pt 896 and es 893. Arabic and right-to-left are excluded from the native app by owner decision; the remaining six-locale gap is in scope and holds this category at 25 |
+| Automated test depth | 100 | 74 | 100 | `npm test -- --runInBand` passed **332 suites / 2,372 tests** on 2026-08-27, with type checking, 28 coverage floors, source guards and nine device flows. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
+| Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
+| Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the next source state is uncommitted and the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
+| Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
+| **Total** | **1000** | **708** | **1000** | — |
 
-**Provenance.** Evidence SHAs `edcee0ba9` (push fix), `38a0c65a8` (mobile fixes) and `b3e9047c6` (findings), on a
-dirty tree with this documentation restructure in flight. Laravel API at the same commit.
-Two emulators, `nexus_test` (411dp) and `nexus_test_b`, against the local Laravel API and —
-for the release build — the live API. The bottom-sheet fix and the two categories it moved
-were measured on `nexus_test` on 2026-08-21 against the local Laravel API.
+**Provenance.** Journey status comes only from the 140-row ledger below. Current gates were
+re-run on 2026-08-27: 332/332 Jest suites and 2,372/2,372 tests, TypeScript, Expo Doctor
+18/18, release policy, route/API/theme drift, production dependency acceptance, startup
+budget, asset validation, network policy and the live TLS certificate chain. The public Play
+listing was inspected directly while signed in and the five public policy/support routes were
+requested independently. Tablet evidence is the genuine emulator output under
+`store-listing/screenshots/tablet-{7,10}/`. A 2026-08-27 fixture-dependent API probe checked
+106 typed getters and found no required field missing from a response it could inspect. The
+same day's submitted-artefact accessibility pass found additional informational chips in
+Goals, Organisations and Settings; their source fixes are tested but cannot become device
+evidence until the next build. No uncommitted evidence is described as banked CI.
 
-🔴 **The floor is 629 and it ratchets.** A published total may never fall. If scope is
-rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower the
-headline. A new rubric id legitimately resets the floor — M1 → M2 would.
+🔴 **The banked floor remains 629 until this candidate is committed and green.** Once 708 is
+banked, the floor ratchets to 708 and a published total may never fall. If scope is
+rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower a
+banked headline. A new rubric id legitimately resets the floor — M1 → M2 would.
+
+## Ordered backlog before another Play build
+
+1. **Correct the live Play description.** Replace the absolute “No money changes hands and
+   nothing is ever put behind a payment” claim with the prepared distinction: time-credit
+   exchanges use no money; optional marketplace purchases are physical goods and may use
+   Stripe. This is a Console wording change, not an app build.
+2. ~~**Close the organisation-deposit ledger gap.**~~ **Fixed and regression-tested
+   2026-08-27.** `depositFromUser()` now writes the member's personal `transactions` row and
+   the organisation ledger inside the same database transaction; the 19-test service suite
+   (107 assertions) checks wallet visibility and idempotent replay. A device walk of the next
+   artefact remains part of release acceptance below, not a reason to leave the defect.
+3. **Bank the current release candidate.** Commit and push the community-picker, tablet
+   captures, asset validator and this reconciliation; require green CI before changing a
+   version code or producing another signed artefact.
+4. **Walk the exact next Play artefact on a physical phone.** Prove clean install → neutral
+   picker → community login, upgrade from the public build → remembered community, signed-in
+   return → home, messaging, one exchange, push arrival and disposable account deletion.
+5. **Increase response-contract evidence.** Re-run the field-coverage instrument against
+   current fixtures, then prioritise money, authentication, messaging and exchange responses;
+   the last banked measurement covered 115 of 494 typed getters. The 2026-08-27 rerun checked
+   106 with today's fixtures, found no inspected missing required field, and is not treated as
+   a regression because empty collections and addressable fixture ids change the denominator.
+6. **Reduce member-facing quality debt.** The guarded translation baseline is 4,638 English
+   phrases across six non-English locales; TalkBack has not driven a complete journey; the
+   target audit covers 24 of roughly 137 screens; and pixel assertions cover only a small
+   stable subset.
+7. **Pay down engineering headroom.** Lint passes with 529 warnings and the Hermes startup
+   bundle has only 1.28 MB below its blocking ceiling. Treat both as ratchets, not reasons to
+   delay the two correctness items above.
 
 ## The blockers, in the order they hurt
 
-Four were listed on 2026-08-21. **Blocker 1 is cleared**; three remain. The numbering is kept
-so that references from other documents and from the roadmap still resolve.
+Four were listed on 2026-08-21. **All four are now cleared; Blocker 3 was fixed on
+2026-08-27.** The
+numbering and historical accounts are kept so references from the ledger still resolve.
 
 ### Blocker 1 — Bottom sheets never open — **CLEARED 2026-08-21**
 
@@ -162,39 +202,43 @@ Built: `lib/api/exchangeRequests.ts`, `(modals)/exchange-requests.tsx`,
    **No other screen in the app does**: there was no `useFocusEffect` anywhere before these
    two, so every screen showing shared state has the same property. Not swept.
 
-Still open in Tier 3: declining and cancelling have never been walked, nor messaging the
-other party about an exchange, nor skills-driven matching. Seven of twenty rows.
+The later walks closed the old Tier 3 list: decline is PROVEN, messaging and skills-driven
+matching are CERTIFIED, and the ledger now records 8 CERTIFIED plus 11 PROVEN of 19 in-scope
+rows. The text above remains the diagnosis of the original blocker, not the current backlog.
 
-### Blocker 3 — A member's wallet statement does not reconcile
+### Blocker 3 — A member's wallet statement does not reconcile — **CLEARED 2026-08-27**
 
 Funding an organisation wallet debits the organiser correctly (measured 90.00 → 85.00) and
 the organisation records receiving it, but **no row is written to the member's own
-history** — their wallet still reports `transaction_count: 1`. Nothing is lost or minted and
-an admin can trace it, but a member watching their balance fall has nothing to explain it.
-Not patched: it is a money path, and `total_earned` already reports 0 after a paid credit,
-so the arithmetic wants review before anyone writes to it.
+history** — their wallet still reported `transaction_count: 1`. Nothing was lost or minted,
+but the member statement was incomplete. The endpoint now writes both ledger entries inside
+the same database transaction. The focused 19-test / 107-assertion service suite checks the
+personal debit returned by wallet history and prevents idempotent replay from duplicating it.
+The separate `total_earned` observation remains future investigation rather than being
+silently mixed into this repair.
 
-### Blocker 4 — You cannot write a post from the phone
+### Blocker 4 — You cannot write a post from the phone — **CLEARED 2026-08-23**
 
-No `createPost` in the client, no composer screen, and none of the Create sheet's eight
-entries. The server has `POST /v2/feed/posts`; the website has a full composer. An owner
-decision, not a repair — see the roadmap.
+The native composer was built and walked: `POST /v2/feed/posts` returned 201, the post opened
+on its detail screen and the feed re-read it on focus. Ledger row 2.9 is CERTIFIED. Images,
+polls and a visibility picker remain deliberate parity boundaries, not evidence that the
+basic post journey is absent.
 
 ## What a green pipeline actually proves
 
 | Gate | Command | What it proves | What it does not |
 | --- | --- | --- | --- |
-| Unit/component suite | `npm run test:ci` | 302 suites / 2,027 tests, 0 skipped, 0 quarantined | Runs in Node against mocks. Has never shown the app starts |
+| Unit/component suite | `npm test -- --runInBand` | 332 suites / 2,372 tests on 2026-08-27 | Runs primarily in Node against mocks; the emulator walk, not Jest, proved startup |
 | Coverage ratchet | `npm run coverage:check` | 28 area floors plus a global floor, shrink-only | Nothing about whether covered code is reachable |
 | Types | `npm run type-check` | `tsc --noEmit` strict, clean | Nothing about layout or runtime |
 | Lint | `npm run lint` | 0 errors under a warning cap | — |
-| API contract | `npm run api:check` | **402 endpoints, 0 missing** — every statically resolvable call exists in Laravel's routes | Dynamic calls; response shapes |
-| Route parity | `npm run drift:check` | 254 React routes vs 137 mobile, every gap carries a decision | 🔴 Compares **routes**. A capability without a URL — the website's composer — is invisible |
+| API contract | `npm run api:check` | **421 endpoints, 0 missing or method-mismatched** across 510 call sites | 74 dynamic calls and response shapes |
+| Route parity | `npm run drift:check` | 256 React routes vs 142 mobile; every route has a recorded decision | 🔴 Compares **routes**. A capability without a URL can remain invisible |
 | Release policy | `npm run verify:release` | 11 assertions incl. channel pinning | — |
 | Network policy | `npm run verify:network-security` | certificate pins present and not expiring | — |
 | Certificate pins | `npm run check:cert-pins` | pins match what the server presents | — |
 | Themes | `npm run themes:check` | generated tenant palettes match source | — |
-| Pixel gate | `node scripts/screenshots.mjs compare` | 3 screens, one fixed size, threshold 0.02 | 🔴 134 screens ungated, and one size only |
+| Play asset gate | `npm run store:assets:check` | Icon, feature graphic, 16 phone and 6 tablet files meet Play's format/dimension rules | It does not prove the screenshots are attractive or that every app screen fits a tablet |
 | Doc scores | `node scripts/check-doc-scores.mjs` | this rubric's arithmetic, its floor, and the ledger's own row counts | Nothing about the product |
 
 🔴 **Two ways a suite goes green while the product is broken**, both observed here: a test

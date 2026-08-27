@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import '@/lib/i18n'; // initialise i18next before any screen renders
 import { validateEnv } from '@/lib/env';
 import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
-import { TenantProvider } from '@/lib/context/TenantContext';
+import { TenantProvider, useTenantContext } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import BiometricLockGate from '@/components/BiometricLockGate';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -281,6 +281,10 @@ function RootNavigator() {
     'wallet',
   ]);
   const { isLoading, isAuthenticated } = useAuthContext();
+  const {
+    isLoading: isTenantLoading,
+    hasSelectedTenant,
+  } = useTenantContext();
   const theme = useTheme();
   const pathname = usePathname();
   // Path classification and the redirect decision both live in
@@ -344,8 +348,9 @@ function RootNavigator() {
   // fires before the deep link effect has a chance to navigate.
   useEffect(() => {
     const decision = decideAuthRedirect({
-      isLoading,
+      isLoading: isLoading || isTenantLoading,
       isAuthenticated,
+      hasSelectedTenant,
       pathname,
       pendingDeepLink: pendingDeepLinkRef.current,
     });
@@ -360,7 +365,7 @@ function RootNavigator() {
     if (decision.action === 'replace') {
       router.replace(decision.href);
     }
-  }, [isLoading, isAuthenticated, pathname]);
+  }, [isLoading, isTenantLoading, isAuthenticated, hasSelectedTenant, pathname]);
 
   // Shared options for regular modal screens: slide up from bottom, swipe-to-dismiss
   const modalOptions = {

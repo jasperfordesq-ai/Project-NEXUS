@@ -259,7 +259,12 @@ describe('native app configuration', () => {
     // merged manifest did not turn this test red. Searching for the file survives AGP
     // moving it again.
     const mergedRoot = path.join(root, 'android/app/build/intermediates/merged_manifests');
-    const merged = findFiles(mergedRoot, 'AndroidManifest.xml');
+    // Debug manifests intentionally contain the development overlay permission
+    // supplied by React Native. They are never uploaded to Play and must not make
+    // this shipping-artifact assertion fail merely because a developer built an
+    // emulator APK before running Jest.
+    const merged = findFiles(mergedRoot, 'AndroidManifest.xml')
+      .filter((file) => /[\\/]release[\\/]/i.test(file));
     for (const file of merged) {
       expect({ file: path.relative(root, file), overlay: read(path.relative(root, file)).includes('android.permission.SYSTEM_ALERT_WINDOW') })
         .toEqual({ file: path.relative(root, file), overlay: false });
