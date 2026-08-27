@@ -280,6 +280,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reason and falls back to the generic message only when none is sent, matching the
   twenty other admin screens that already did this.
 
+- **The platform's own release checks disagreed with the iOS build they were
+  checking.** Preparing the App Store submission correctly dropped the
+  permission that asks to save photos to your library — the app never saves
+  photos, and Apple rejects an app that asks for something it does not use — but
+  one check still insisted the permission be present while two others insisted it
+  be gone. The same submission added an iPhone-simulator build, which a second
+  check mistook for a build that could never be sent a fix, because it recognised
+  the exempt kind of build by its name rather than by what it is. The privacy
+  policy also gained new App Store disclosures and a new date without its check
+  being told. All three now agree with what actually ships. Separately, the
+  Enterprise role screen's delete message is now marked as already-translated
+  text, so the translation check stops reporting it as untranslated English.
+
 - **A connection request from a member with no first name arrived blank.** The
   notification read " sent you a connection request" instead of naming anyone.
   The line meant to fall back to "Someone" chained through the account's display
