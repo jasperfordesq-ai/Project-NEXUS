@@ -200,6 +200,7 @@ const baseStrings = {
   like: 'Like',
   editFailed: 'Could not update comment',
   deleteFailed: 'Could not delete comment',
+  reactionFailed: 'Could not update comment reaction',
 };
 
 function makeComment(overrides: Record<string, unknown> = {}) {
@@ -597,6 +598,26 @@ describe('CommentSheet', () => {
 
     expect(mockToggleCommentReaction).toHaveBeenCalledWith(7, 'like');
     expect(queryByText('1')).toBeNull();
+  });
+
+  it('shows visible feedback and reloads comments when a reaction fails', async () => {
+    mockToggleCommentReaction.mockRejectedValueOnce(new Error('Network failed'));
+    const { getByTestId } = await openSheetWithComments([
+      makeComment({ reactions: {}, user_reactions: [] }),
+    ]);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('comment-like-7'));
+    });
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Comment failed',
+        description: 'Could not update comment reaction',
+        variant: 'danger',
+      }));
+      expect(mockGetComments).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('renders the edited indicator on edited comments', async () => {

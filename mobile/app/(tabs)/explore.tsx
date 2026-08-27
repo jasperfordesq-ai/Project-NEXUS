@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -104,7 +104,6 @@ export default function ExploreScreen() {
   const theme = useTheme();
   const { hasFeature } = useTenant();
   const [activeTab, setActiveTab] = useState<ExploreTab>('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const { data: response, isLoading, error, refresh } = useApi(() => getExplore(), []);
   const data = response?.data ?? null;
 
@@ -115,12 +114,6 @@ export default function ExploreScreen() {
     [activeTab, data, hasFeature],
   );
 
-  const onRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refresh();
-    setTimeout(() => setIsRefreshing(false), 650);
-  }, [refresh]);
-
   const stats = data?.community_stats;
 
   return (
@@ -130,7 +123,7 @@ export default function ExploreScreen() {
         className="flex-1"
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={<RefreshControl refreshing={isRefreshing && isLoading} onRefresh={onRefresh} tintColor={primary} />}
+        refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={refresh} tintColor={primary} />}
       >
         <View className="px-4 pb-4 pt-3">
           <HeroCard className="overflow-hidden rounded-panel">

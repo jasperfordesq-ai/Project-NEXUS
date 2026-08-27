@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { RefreshControl, StyleSheet } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
@@ -230,6 +230,31 @@ describe('ExchangeDetailModal', () => {
 
     const { getByText } = render(<ExchangeDetailModal />);
     expect(getByText('Homemade Bread Baking Lessons')).toBeTruthy();
+  });
+
+  it('keeps pull-to-refresh active until the exchange request completes', () => {
+    jest.useFakeTimers();
+    const apiState = {
+      data: { data: mockExchange },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    mockUseApi.mockImplementation(() => apiState);
+
+    const screen = render(<ExchangeDetailModal />);
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+
+    apiState.isLoading = true;
+    screen.rerender(<ExchangeDetailModal />);
+    jest.advanceTimersByTime(2000);
+    screen.rerender(<ExchangeDetailModal />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(true);
+
+    apiState.isLoading = false;
+    screen.rerender(<ExchangeDetailModal />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
+    jest.useRealTimers();
   });
 
   it('renders the not found state when data is null after loading', () => {

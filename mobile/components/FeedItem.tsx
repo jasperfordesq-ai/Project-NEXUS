@@ -1214,6 +1214,7 @@ function FeedItemInner({
             loadFailed: t('exchanges:detail.commentsFailed'),
             submitFailed: t('exchanges:detail.commentFailed'),
             actionFailedTitle: t('exchanges:detail.actionFailedTitle'),
+            reactionFailed: t('exchanges:detail.likeFailed'),
             send: t('common:buttons.send'),
             authorFallback: t('common:labels.member'),
             reply: t('exchanges:detail.commentReply'),

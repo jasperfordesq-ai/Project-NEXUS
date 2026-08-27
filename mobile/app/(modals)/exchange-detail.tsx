@@ -99,7 +99,6 @@ function ExchangeDetailModalInner() {
   const { user: currentUser } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
@@ -175,16 +174,6 @@ function ExchangeDetailModalInner() {
     }
   }, [exchange]);
 
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refresh();
-    // refresh() triggers a state update that re-runs the fetch effect;
-    // isLoading will become true then false once data arrives.
-    // Use a short timer to clear the refreshing indicator since refresh()
-    // is synchronous (just bumps a counter).
-    setTimeout(() => setIsRefreshing(false), 1200);
-  }, [refresh]);
-
   const handleAction = useCallback(
     (recipientId: number, recipientName: string) => {
       if (isSubmitting) return;
@@ -211,7 +200,7 @@ function ExchangeDetailModalInner() {
     );
   }
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading && !exchange) return <LoadingSpinner />;
 
   if (error || !exchange) {
     return (
@@ -437,8 +426,8 @@ function ExchangeDetailModalInner() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: footerReservedSpace, gap: 12 }}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => void handleRefresh()}
+            refreshing={isLoading && Boolean(exchange)}
+            onRefresh={refresh}
             tintColor={primary}
             colors={[primary]}
           />
@@ -727,6 +716,7 @@ function ExchangeDetailModalInner() {
           loadFailed: t('detail.commentsFailed'),
           submitFailed: t('detail.commentFailed'),
           actionFailedTitle: t('detail.actionFailedTitle'),
+          reactionFailed: t('detail.likeFailed'),
           send: t('common:buttons.send'),
           authorFallback: t('common:labels.member'),
           reply: t('detail.commentReply'),

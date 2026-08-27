@@ -38,7 +38,7 @@ of physical marketplace goods. That wording must be corrected before another rel
 submitted. Internationalisation, response-contract coverage, accessibility breadth and
 end-to-end device automation remain material gaps.
 
-🔴 **Why the score is not higher, given 332 green test suites and 2,381 passing tests.**
+🔴 **Why the score is not higher, given 332 green test suites and 2,384 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
@@ -72,6 +72,13 @@ are now fixed in source and guarded: the wallet pull indicator follows request c
 a failed listing save rolls back and gives visible translated feedback. They remain explicitly
 unverified on a distributed device until the next-artifact walk.
 
+A follow-up non-build sweep removed the last two fixed-duration pull-to-refresh indicators:
+Explore no longer stops after 650 ms, and Exchange Detail no longer stops after 1.2 seconds or
+replaces already-loaded content with a full-page spinner. The same sweep found the sole
+remaining error-haptic-only mutation path: failed comment reactions now reload authoritative
+state and show a translated danger toast. All three guards were observed RED before the source
+fix and GREEN afterwards. They remain source evidence, not distributed-device evidence.
+
 ## Banked score
 
 Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every category was reconciled
@@ -88,14 +95,15 @@ that contract; its 708 total is now committed and CI-backed.
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
 | Accessibility | 60 | 38 | 60 | Contrast is gated. TalkBack and the live accessibility tree have been audited across five core screens, and the automated touch-target tool was widened to 24 screens; every measured target below the WCAG 2.2 AA 24dp minimum was fixed. Still short of full: no journey has been operated end to end using TalkBack gestures, most screens remain unaudited, and 88 measured targets remain above WCAG AA but below Android's 48dp guidance |
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, but the current shrink-only gate reports **4,638** multi-word phrases still identical to English: ga 107, de 916, fr 911, it 915, pt 896 and es 893. Arabic and right-to-left are excluded from the native app by owner decision; the remaining six-locale gap is in scope and holds this category at 25 |
-| Automated test depth | 100 | 74 | 100 | `npm test -- --runInBand` passed **332 suites / 2,381 tests** on 2026-08-27, with type checking, 28 coverage floors, source guards and nine device flows. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
+| Automated test depth | 100 | 74 | 100 | `npm test -- --runInBand` passed **332 suites / 2,384 tests** on 2026-08-27 for the isolated Android candidate, with type checking, 28 coverage floors, source guards and nine device flows. The concurrent Apple worktree contains additional tests and is not included in this banked number. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
 | **Total** | **1000** | **708** | **1000** | — |
 
-**Provenance.** Journey status comes only from the 140-row ledger below. Current gates were
-re-run on 2026-08-27: 332/332 Jest suites and 2,381/2,381 tests, TypeScript, Expo Doctor
+**Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
+candidate now contains 332 Jest suites and 2,384 tests; its non-build Jest, TypeScript and lint
+checks were re-run on 2026-08-27. The pre-review release baseline separately passed Expo Doctor
 18/18, release policy, route/API/theme drift, production dependency acceptance, startup
 budget, asset validation, network policy and the live TLS certificate chain. The public Play
 listing was inspected directly while signed in and the five public policy/support routes were
@@ -132,7 +140,10 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    that same exact artefact, throttle the connection and prove Wallet pull-to-refresh stays
    active until the last balance/history/fund/pending request settles, then force both a listing
    save and unsave request to fail and prove the optimistic icon rolls back while a visible
-   translated error is announced. Do not mark either check complete from Jest or an emulator.
+   translated error is announced. Also throttle Explore and Exchange Detail independently and
+   prove each refresh indicator follows its request without blanking loaded detail content;
+   force a comment reaction to fail and prove authoritative state returns with a visible
+   translated error. Do not mark any of these checks complete from Jest or an emulator.
 5. **Increase response-contract evidence.** Re-run the field-coverage instrument against
    current fixtures, then prioritise money, authentication, messaging and exchange responses;
    the last banked measurement covered 115 of 494 typed getters. The 2026-08-27 rerun checked
@@ -264,7 +275,7 @@ basic post journey is absent.
 
 | Gate | Command | What it proves | What it does not |
 | --- | --- | --- | --- |
-| Unit/component suite | `npm test -- --runInBand` | 332 suites / 2,381 tests on 2026-08-27 | Runs primarily in Node against mocks; the emulator walk, not Jest, proved startup |
+| Unit/component suite | `npm test -- --runInBand` | 332 suites / 2,384 tests on 2026-08-27 for the isolated Android candidate | Runs primarily in Node against mocks; the emulator walk, not Jest, proved startup |
 | Coverage ratchet | `npm run coverage:check` | 28 area floors plus a global floor, shrink-only | Nothing about whether covered code is reachable |
 | Types | `npm run type-check` | `tsc --noEmit` strict, clean | Nothing about layout or runtime |
 | Lint | `npm run lint` | 0 errors under a warning cap | — |

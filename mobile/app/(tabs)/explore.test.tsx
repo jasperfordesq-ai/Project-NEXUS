@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
 
 const mockRouterPush = jest.fn();
 const mockRefresh = jest.fn();
@@ -174,5 +175,30 @@ describe('ExploreScreen', () => {
     expect(queryByText('Upcoming events')).toBeNull();
     expect(queryByText('People to meet')).toBeNull();
     expect(queryByText('Popular listings')).toBeTruthy();
+  });
+
+  it('keeps pull-to-refresh active until the Explore request completes', () => {
+    jest.useFakeTimers();
+    const apiState = {
+      data: explorePayload,
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    };
+    mockUseApi.mockImplementation(() => apiState);
+
+    const screen = render(<ExploreScreen />);
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+
+    apiState.isLoading = true;
+    screen.rerender(<ExploreScreen />);
+    jest.advanceTimersByTime(2000);
+    screen.rerender(<ExploreScreen />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(true);
+
+    apiState.isLoading = false;
+    screen.rerender(<ExploreScreen />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
+    jest.useRealTimers();
   });
 });

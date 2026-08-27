@@ -62,6 +62,7 @@ interface CommentSheetStrings {
   like: string;
   editFailed: string;
   deleteFailed: string;
+  reactionFailed: string;
 }
 
 interface CommentSheetProps {
@@ -236,8 +237,13 @@ export default function CommentSheet({
       return { ...c, reactions, user_reactions: userReactions };
     }));
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    toggleCommentReaction(comment.id, 'like').catch(() => {
+    toggleCommentReaction(comment.id, 'like').catch((err) => {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: strings.actionFailedTitle,
+        description: describeApiError(err, strings.reactionFailed),
+        variant: 'danger',
+      });
       void loadSheetComments(true);
     });
   }

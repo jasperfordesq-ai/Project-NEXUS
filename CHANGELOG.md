@@ -121,6 +121,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native refresh controls and comment reactions now report real outcomes.** Explore and
+  Exchange Detail pull-to-refresh indicators follow the underlying request instead of fixed
+  650 ms and 1.2 second timers; Exchange Detail keeps its existing content visible during a
+  refresh. A failed comment reaction now restores authoritative state and shows the translated
+  server or fallback explanation instead of relying on error haptics alone.
+
 - **Native wallet and listing feedback now reflects the real request outcome.** Wallet
   pull-to-refresh remains active until balance, transaction, community-fund and pending-credit
   requests have all settled instead of stopping after a fixed delay. A failed listing save or
