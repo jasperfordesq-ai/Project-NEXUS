@@ -1,0 +1,15 @@
+{
+  "name": "Timebank Global",
+  "subtitle": "Give time. Get help. Connect.",
+  "promotionalText": "Swap skills, earn time credits and connect with people in your local community. Everyone's time is valued equally.",
+  "description": "Timebank Global is where a community trades time instead of money. Give someone an hour of help and you earn an hour of credit, then spend it on help you need. Everyone's hour is worth the same, whatever the skill.\n\nOFFER AND FIND HELP\nPost what you can do, from gardening and lifts to IT help, language practice or a listening ear. Browse what neighbours are offering, ask for what you need, agree the details privately and record the hours when the exchange is complete.\n\nYOUR TIME, TRACKED PROPERLY\nYour wallet shows the hours you have earned and spent, with each exchange recorded on both sides. Time-credit exchanges do not involve money. An optional second-hand marketplace lets members arrange purchases of physical goods, with card payments handled by Stripe.\n\nA COMMUNITY, NOT JUST A MARKETPLACE\nJoin local groups, attend events and workshops, follow your community feed and get to know the people you exchange with. Volunteering opportunities from local organisations sit alongside member offers, with shifts you can join and hours that count.\n\nBUILT FOR EVERYONE\nTimebank Global supports screen readers, system text sizing and dark mode. The app is available in English, Irish, German, French, Italian, Portuguese and Spanish. You control who can see your profile, and account deletion is available inside the app.\n\nOPEN AND INDEPENDENT\nTimebank Global is free software under the AGPL-3.0 licence and does not sell personal data. Optional promotional notifications require explicit consent and can be switched off in the app. Essential payment, notification and crash-diagnostic services are disclosed in the Privacy Policy, and the source code is public.\n\nA community may need to approve membership before a member can sign in. Members must be 18 or over to join.",
+  "keywords": "timebank,community,volunteering,neighbours,skills,local,mutual aid,time credits",
+  "supportUrl": "https://timebank.global/contact",
+  "marketingUrl": "https://timebank.global",
+  "privacyPolicyUrl": "https://timebank.global/privacy",
+  "privacyChoicesUrl": "https://timebank.global/account-deletion",
+  "primaryCategory": "SOCIAL_NETWORKING",
+  "secondaryCategory": "LIFESTYLE",
+  "version": "1.2.0",
+  "releaseMode": "MANUAL"
+}

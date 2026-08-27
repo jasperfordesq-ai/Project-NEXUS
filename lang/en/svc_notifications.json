@@ -172,7 +172,8 @@
   "group_chatroom": {
     "preview": ":sender · :group: :preview",
     "fallback_sender": "Someone",
-    "fallback_group": "a group"
+    "fallback_group": "a group",
+    "push_body": "Open the app to read the new group message."
   },
   "support_action": {
     "pending": "{{name}} prepared {{what}} for you to approve",

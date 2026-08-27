@@ -62,7 +62,7 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
-const mockRegisterForPushNotifications = jest.fn().mockResolvedValue(undefined);
+const mockRegisterForPushNotifications = jest.fn().mockResolvedValue('registered');
 const mockUnregisterPushNotifications = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@/lib/notifications', () => ({

@@ -139,7 +139,14 @@ class NotifyGroupChatroomMessageTest extends TestCase
 
         $this->dispatcherAlias
             ->shouldReceive('fanOutPush')
-            ->twice();  // once per non-sender member
+            ->twice()
+            ->withArgs(function (int $userId, string $type, string $body, string $link): bool {
+                return in_array($userId, [$this->member1Id, $this->member2Id], true)
+                    && $type === 'group_chatroom_message'
+                    && $body === 'Open the app to read the new group message.'
+                    && ! str_contains($body, 'Hello group!')
+                    && $link === '/groups/' . $this->groupId . '/chat';
+            });  // once per non-sender member, without private message content
 
         $event = new GroupChatroomMessagePosted(
             tenantId: 2,

@@ -20,9 +20,10 @@
   "emailNotifications": "Fógraí Ríomhphoist",
   "emailHint": "Roghnaigh cé na nuashonruithe ar cheart dóibh teacht trí ríomhphost freisin.",
   "push": {
-    "messages": "Teachtaireachtaí nua",
-    "transactions": "Idirbhearta creidmheasa ama",
-    "social": "Gníomhaíocht shóisialta"
+    "device": "Ceadaigh fógraí ar an ngléas seo",
+    "promotions": "Fógraí cur chun cinn",
+    "permissionNeeded": "Níl fógraí cumasaithe",
+    "permissionNeededHint": "Ceadaigh fógraí nuair a iarrann do ghléas ort. Is féidir é seo a athrú níos déanaí i socruithe an chórais."
   },
   "email": {
     "messages": "Teachtaireachtaí",

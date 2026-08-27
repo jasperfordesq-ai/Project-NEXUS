@@ -181,6 +181,7 @@ return [
     'push_hot_match'                 => 'Hot Match Found',
     'push_mutual_match'              => 'Mutual Match Found',
     'push_default'                   => 'New Notification',
+    'push_private_body'              => 'Open Timebank Global to view this private update.',
 
     'push_marketplace_enforcement' => 'Update on your listing',
     'push_feed_report_created' => 'New content report',

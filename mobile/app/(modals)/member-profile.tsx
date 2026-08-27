@@ -53,6 +53,7 @@ import {
 import type { Exchange } from '@/lib/api/exchanges';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { blockUser } from '@/lib/api/settings';
 import AccentIcon from '@/components/ui/AccentIcon';
 import {
   getBadges,
@@ -163,6 +164,7 @@ function MemberProfileScreenInner() {
   const [connId, setConnId] = useState<number | null>(null);
   const [connLoading, setConnLoading] = useState(false);
   const [connActionLoading, setConnActionLoading] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const [showFederationTransfer, setShowFederationTransfer] = useState(false);
 
   const loadConnectionStatus = useCallback(async () => {
@@ -290,6 +292,38 @@ function MemberProfileScreenInner() {
     } catch {
       // Native share cancellation is not an error state.
     }
+  }
+
+  function handleBlock() {
+    if (!safeMemberId || isOwnProfile || isFederatedProfile || isBlocking) return;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    confirm({
+      title: t('profile.blockConfirmTitle', { name: member ? getMemberDisplayName(member) : '' }),
+      message: t('profile.blockConfirmMessage'),
+      confirmLabel: t('profile.block'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: async () => {
+        setIsBlocking(true);
+        try {
+          await blockUser(safeMemberId);
+          showToast({
+            title: t('profile.blockSuccessTitle'),
+            description: t('profile.blockSuccessMessage'),
+            variant: 'success',
+          });
+          router.replace('/(modals)/members' as Href);
+        } catch (err) {
+          showToast({
+            title: t('profile.blockFailed'),
+            description: describeApiError(err, t('profile.blockFailed')),
+            variant: 'danger',
+          });
+        } finally {
+          setIsBlocking(false);
+        }
+      },
+    });
   }
 
   if (isExternalFederatedProfile && rawMemberId) {
@@ -550,6 +584,21 @@ function MemberProfileScreenInner() {
 
           {!isFederatedProfile ? (
             <ProfileExtrasCard member={member} displayName={displayName} isOwnProfile={isOwnProfile} primary={primary} theme={theme} t={t} />
+          ) : null}
+
+          {!isOwnProfile && !isFederatedProfile ? (
+            <HeroCard variant="secondary" className="mt-3">
+              <HeroCard.Body className="gap-3 px-4 py-4">
+                <SectionTitle icon="shield-checkmark-outline" title={t('profile.safety')} primary={primary} theme={theme} />
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                  {t('profile.safetyHint')}
+                </Text>
+                <HeroButton variant="danger" isDisabled={isBlocking} onPress={handleBlock}>
+                  {isBlocking ? <Spinner size="sm" /> : <Ionicons name="ban-outline" size={18} color="#ffffff" />}
+                  <HeroButton.Label>{t('profile.block')}</HeroButton.Label>
+                </HeroButton>
+              </HeroCard.Body>
+            </HeroCard>
           ) : null}
 
           <HeroCard variant="secondary" className="mt-3">

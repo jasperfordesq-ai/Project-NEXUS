@@ -118,6 +118,7 @@ return [
     'push_hot_match' => 'Znaleziono gorący mecz',
     'push_mutual_match' => 'Znaleziono wzajemne dopasowanie',
     'push_default' => 'Nowe powiadomienie',
+    'push_private_body' => 'Otwórz Timebank Global, aby wyświetlić tę prywatną aktualizację.',
     'push_marketplace_enforcement' => 'Aktualizacja Twojego ogłoszenia',
     'push_feed_report_created' => 'Nowe zgłoszenie',
     'push_social_report_created' => 'Nowe zgłoszenie',

@@ -115,6 +115,7 @@ return [
     'push_hot_match' => 'Coincidencia caliente encontrada',
     'push_mutual_match' => 'Coincidencia mutua encontrada',
     'push_default' => 'Nueva Notificación',
+    'push_private_body' => 'Abre Timebank Global para ver esta actualización privada.',
     'push_marketplace_enforcement' => 'Actualización sobre tu anuncio',
     'push_feed_report_created' => 'Nuevo informe',
     'push_social_report_created' => 'Nuevo informe',

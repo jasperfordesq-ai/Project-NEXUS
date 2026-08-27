@@ -29,6 +29,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The native iOS release path now has an evidence-backed App Store submission pack.**
+  Apple store copy, privacy and age-rating worksheets, reviewer notes, screenshot rules,
+  owner/legal decisions and a release-candidate freeze record now sit alongside automated
+  iOS release checks and EAS build/submit wrappers. Paid promotional pushes require a
+  separate default-off preference, while ordinary native pushes now use generic lock-screen
+  wording and replace sensitive payload detail with one generic authenticated notification-
+  centre link; the in-app notification retains the useful detail. The protected Partner Demo review account has
+  also been re-verified against production without placing its credentials in Git. A signed
+  device build, App Store Connect record and real-iPhone/TestFlight proof remain gated on
+  active Apple enrolment and explicit owner approval. Production EAS builds now refuse a
+  dirty mobile tree and embed the exact Git source commit in their temporary build config.
+
 - **The GDPR audit trail now names what actually happened, in all eleven languages.**
   Every action the platform records — consent given, data exported, the six member
   rights requests, processing started, request assigned, note added, export

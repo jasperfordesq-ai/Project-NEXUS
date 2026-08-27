@@ -19,11 +19,16 @@ web-build/
 
 # Native build output. Keep native source directories available for EAS.
 android/.gradle/
+android/**/.cxx/
 android/build/
 android/app/build/
 android/**/build/
 ios/build/
 ios/Pods/
+
+# Device-test evidence and store artwork are not compiler inputs.
+screenshots/
+store-listing/screenshots/
 
 # Local secrets. Use EAS secret or file environment variables instead.
 .env

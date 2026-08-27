@@ -115,6 +115,7 @@ return [
     'push_hot_match' => 'Heiße Übereinstimmung gefunden',
     'push_mutual_match' => 'Gegenseitige Übereinstimmung gefunden',
     'push_default' => 'Neue Benachrichtigung',
+    'push_private_body' => 'Öffnen Sie Timebank Global, um dieses private Update anzusehen.',
     'push_marketplace_enforcement' => 'Update zu Ihrem Inserat',
     'push_feed_report_created' => 'Neue Inhaltsmeldung',
     'push_social_report_created' => 'Neue Inhaltsmeldung',

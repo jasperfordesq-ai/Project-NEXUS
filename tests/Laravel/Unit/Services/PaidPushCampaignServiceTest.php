@@ -453,6 +453,31 @@ class PaidPushCampaignServiceTest extends TestCase
         $this->assertSame(0, $count);
     }
 
+    public function test_promotional_push_audience_requires_explicit_campaign_opt_in(): void
+    {
+        $optedIn = $this->insertUser('campaign-opted-in');
+        $notOptedIn = $this->insertUser('campaign-not-opted-in');
+
+        DB::table('users')->where('id', $optedIn)->update([
+            'notification_preferences' => json_encode([
+                'push_enabled' => true,
+                'push_campaigns_opted_in' => true,
+            ], JSON_THROW_ON_ERROR),
+        ]);
+        DB::table('users')->where('id', $notOptedIn)->update([
+            'notification_preferences' => json_encode([
+                'push_enabled' => true,
+                'push_campaigns_opted_in' => false,
+            ], JSON_THROW_ON_ERROR),
+        ]);
+
+        $method = new \ReflectionMethod(PaidPushCampaignService::class, 'resolveRecipientIds');
+        $recipients = $method->invoke(null, self::TENANT_ID, []);
+
+        $this->assertContains($optedIn, $recipients);
+        $this->assertNotContains($notOptedIn, $recipients);
+    }
+
     // ─── dispatchCampaign ─────────────────────────────────────────────────────
 
     public function test_dispatchCampaign_throws_when_status_is_not_sending_or_scheduled(): void

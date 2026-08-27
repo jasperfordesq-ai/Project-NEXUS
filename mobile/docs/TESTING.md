@@ -23,8 +23,9 @@ not:
 2. **Jest mocks exactly the parts that break.** Storage, sockets, payments, push
    and navigation are all replaced with stubs, so the suite is strongest where
    the risk is lowest. *Fixable — see the missing layers below.*
-3. **iOS cannot be built here at all.** The workstation is Windows. *Not fixable
-   without a Mac or a cloud build.*
+3. **iOS cannot be built locally here.** The workstation is Windows. EAS can perform
+   the Apple build in the cloud, but Xcode, the iOS Simulator and local signing still
+   require macOS. *Use an EAS build and a real iPhone for release evidence.*
 
 Reason 1 is now much less painful than it was: the Android toolchain is installed
 and an emulator boots headless in about a minute (see below). It was previously
@@ -329,10 +330,12 @@ this is the live members' database.
 
 ### iOS
 
-🔴 **Not possible on this workstation.** iOS builds need macOS with Xcode. The
-options are a Mac, or an EAS cloud build (`eas.json` has iOS resource classes
-defined, though `submit.production.ios.ascAppId` is still a placeholder). Until
-one of those happens, no iOS claim is verified by anything — see
+🔴 **Not possible locally on this workstation.** iOS builds need macOS with
+Xcode, but this PC can request an EAS cloud build. Run `npm run
+verify:ios-release` first; it intentionally remains red while
+`submit.production.ios.ascAppId` is a placeholder. A cloud build alone does not prove
+the app works: the signed binary must be installed and walked on a real iPhone. Until
+that happens, no iOS runtime claim is verified — see
 [CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md) §10.
 
 ---

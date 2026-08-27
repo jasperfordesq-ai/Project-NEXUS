@@ -20,9 +20,10 @@
   "emailNotifications": "Notificaciones por correo electrónico",
   "emailHint": "Elija qué actualizaciones también deberían llegar correo electrónico.",
   "push": {
-    "messages": "Mensajes nuevos",
-    "transactions": "Transacciones de crédito de tiempo",
-    "social": "Actividad social"
+    "device": "Permitir notificaciones en este dispositivo",
+    "promotions": "Notificaciones promocionales",
+    "permissionNeeded": "Las notificaciones no están activadas",
+    "permissionNeededHint": "Permite las notificaciones cuando el dispositivo lo solicite. Puedes cambiarlo más tarde en los ajustes del sistema."
   },
   "email": {
     "messages": "Mensajes",

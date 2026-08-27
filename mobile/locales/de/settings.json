@@ -20,9 +20,10 @@
   "emailNotifications": "E-Mail-Benachrichtigungen",
   "emailHint": "Wählen Sie aus, welche Updates auch per E-Mail eingehen sollen.",
   "push": {
-    "messages": "Neue Nachrichten",
-    "transactions": "Zeitguthabentransaktionen",
-    "social": "Soziale Aktivität"
+    "device": "Benachrichtigungen auf diesem Gerät erlauben",
+    "promotions": "Werbliche Benachrichtigungen",
+    "permissionNeeded": "Benachrichtigungen sind nicht aktiviert",
+    "permissionNeededHint": "Erlauben Sie Benachrichtigungen, wenn Ihr Gerät danach fragt. Sie können dies später in den Systemeinstellungen ändern."
   },
   "email": {
     "messages": "Nachrichten",

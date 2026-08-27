@@ -1,10 +1,10 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Ní úsáideann Timebank Global an ceamara ach amháin nuair a roghnaíonn tú grianghraf a ghlacadh nó cód QR a scanadh.",
+    "NSCameraUsageDescription": "Scan cód QR margaidh nuair a roghnaíonn tú an scanóir a úsáid.",
     "NSPhotoLibraryUsageDescription": "Roghnaigh grianghraf ó do leabharlann do do phróifíl nó do phostáil.",
-    "NSPhotoLibraryAddUsageDescription": "Sábháil grianghraif i do leabharlann.",
     "NSMicrophoneUsageDescription": "Taifead teachtaireacht ghutha nuair a roghnaíonn tú ceann a sheoladh.",
+    "NSFaceIDUsageDescription": "Bain úsáid as Face ID chun an seisiún Timebank Global atá sábháilte ar an ngléas seo cheana a dhíghlasáil.",
     "NSLocationWhenInUseUsageDescription": "Ní úsáideann Timebank Global do shuíomh ach amháin nuair a roghnaíonn tú liostálacha margaidh in aice láimhe a chuardach."
   },
   "android": {

@@ -1,6 +1,6 @@
 # Timebank Global - Mobile App
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-27
 
 React Native (Expo) mobile client for the [Project NEXUS](https://github.com/jasperfordesq-ai/Project-NEXUS) timebanking platform.
 
@@ -188,6 +188,16 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 | [HISTORY/PRODUCTION_READINESS_2026-08-21.md](docs/HISTORY/PRODUCTION_READINESS_2026-08-21.md) | HISTORICAL. The superseded readiness document, kept for its measurements. Not current state. |
 | [TESTING.md](docs/TESTING.md) | How to verify a change, what each check proves, and what cannot be tested here. |
 | [DISTRIBUTION.md](docs/DISTRIBUTION.md) | Package identity, release channels, stores, and distribution policy. |
+| [APPLE_SUBMISSION.md](docs/APPLE_SUBMISSION.md) | 🔴 Read before any Apple work. Current enrollment, signing, App Store Connect, universal-link, privacy, TestFlight and review gates. |
+| [Apple readiness audit](store-listing/apple/readiness-audit.md) | Ordered source, signing, device, TestFlight and review readiness matrix with current evidence. |
+| [Apple build evidence](store-listing/apple/build-evidence.md) | Inspected EAS Simulator compile, artifact hash and the limits of unsigned evidence. |
+| [Apple App Privacy worksheet](store-listing/apple/app-privacy.md) | Conservative App Store Connect data collection and purpose answers. |
+| [Apple age-rating worksheet](store-listing/apple/age-rating.md) | Current-questionnaire answers and the 18+ developer override rationale. |
+| [Apple owner/legal answers](store-listing/apple/owner-legal-answers.md) | Account Holder decisions that cannot be inferred from source. |
+| [Apple review notes](store-listing/apple/review-notes.md) | Credential-free App Review instructions and policy explanations. |
+| [Apple reviewer journey evidence](store-listing/apple/reviewer-journey-evidence.md) | Live-verified fictional Partner Demo records for report, block, physical checkout and deletion review. |
+| [Apple screenshot plan](store-listing/apple/screenshots.md) | Genuine iPhone capture storyboard and prohibited substitutions. |
+| [Apple release-candidate freeze](store-listing/apple/release-candidate-freeze.md) | Immutable commit, build, artifact and approval record for the exact submitted candidate. |
 | [PLAY_SUBMISSION.md](docs/PLAY_SUBMISSION.md) | 🔴 Read before any Play work. Current signing, public-listing, policy, Data Safety, reviewer-access, screenshot and next-release evidence, including the live description's physical-marketplace payment wording correction. |
 | [SECURITY.md](docs/SECURITY.md) | Token handling, Android certificate pins, OTA policy, and native hardening. |
 | [NATIVE_UI_CONTRACT.md](docs/NATIVE_UI_CONTRACT.md) | Supported native UI contract and parity boundaries. |
@@ -211,6 +221,10 @@ npm run prepackage             # TypeScript, Jest, Expo Doctor
 npm run build:android:website  # APK for website/internal tester downloads
 npm run build:android:play     # AAB for Google Play
 npm run submit:android:internal # Submit latest AAB to Play internal testing
+npm run verify:ios-release     # Apple-specific configuration gate
+npm run build:ios:preview      # EAS cloud build for registered iOS devices
+npm run build:ios:production   # EAS cloud App Store build
+npm run submit:ios:testflight  # Upload latest build after explicit approval
 ```
 
 Configure `eas.json` before submitting. See [Expo EAS docs](https://docs.expo.dev/eas/).
@@ -221,7 +235,7 @@ Configure `eas.json` before submitting. See [Expo EAS docs](https://docs.expo.de
 
 - **No business logic in the app**: all logic lives in the PHP API.
 - **Real-time messaging**: Pusher WebSocket channels are established after login and torn down on logout. Private channels use server-side auth (`/api/v2/pusher/auth`).
-- **Push notifications**: FCM tokens are registered on login via `POST /api/v2/notifications/device-token` and deregistered on logout. Requires `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) in the project root before any EAS build.
+- **Push notifications**: native device tokens are registered on login via `POST /api/v2/notifications/device-token` and deregistered on logout. Android builds require the gitignored `google-services.json` and EAS FCM credentials. iOS builds use APNs credentials configured through EAS; this Expo setup does not require a Firebase `GoogleService-Info.plist` for iOS push.
 - **AGPL-3.0 attribution** is rendered by [`components/SourceRepositoryLink.tsx`](components/SourceRepositoryLink.tsx), which is the single definition of the notice and of the repository URL — screens must not inline either. There is no dedicated About screen in this app; the component is mounted at the foot of the Profile hub (`app/(tabs)/profile.tsx`) and of the settings-family modals (`settings`, `settings-blocked-users`, `settings-data-export`, `settings-translation`) and `goal-detail`, so the notice stays reachable from ordinary navigation as Section 7(b) and Section 13 require. It renders three things together: the licence notice, the copyright notice (`Copyright © 2024–<year> Jasper Ford`), and a tappable source repository link to <https://github.com/jasperfordesq-ai/Project-NEXUS>. All wording goes through the `common` translation namespace in all seven locales; the URL itself is never translated. Removing any of the three is a licence violation — `components/SourceRepositoryLink.test.tsx` fails if they disappear.
 - Replace `assets/` placeholder images before any public build. When the generated notification icon is ready, save it as `assets/notification-icon.png` (96x96, white on transparent). The dynamic Expo config will use it automatically when the file exists.
 - Add `google-services.json` at the project root before push-notification production builds. It is gitignored and will be added to native config automatically when present.

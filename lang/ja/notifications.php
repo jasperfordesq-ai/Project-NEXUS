@@ -118,6 +118,7 @@ return [
     'push_hot_match' => 'ホットマッチが見つかりました',
     'push_mutual_match' => '相互一致が見つかりました',
     'push_default' => '新しい通知',
+    'push_private_body' => 'この非公開の更新を表示するにはTimebank Globalを開いてください。',
     'push_marketplace_enforcement' => '出品に関する更新',
     'push_feed_report_created' => '新しい通報',
     'push_social_report_created' => '新しい通報',

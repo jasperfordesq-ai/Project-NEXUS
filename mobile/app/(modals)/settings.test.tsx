@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -48,9 +48,8 @@ jest.mock('react-i18next', () => ({
         'editProfileHint': 'Edit profile details.',
         'pushNotifications': 'Push Notifications',
         'emailNotifications': 'Email Notifications',
-        'push.messages': 'Messages',
-        'push.transactions': 'Transactions',
-        'push.social': 'Social Activity',
+        'push.device': 'Allow notifications on this device',
+        'push.promotions': 'Promotional notifications',
         'email.messages': 'Email Messages',
         'email.connections': 'Connections',
         'email.transactions': 'Email Transactions',
@@ -120,6 +119,15 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
+const mockIsPushPermissionGranted = jest.fn().mockResolvedValue(true);
+const mockRegisterForPushNotifications = jest.fn().mockResolvedValue('registered');
+const mockUnregisterPushNotifications = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/lib/notifications', () => ({
+  isPushPermissionGranted: (...args: unknown[]) => mockIsPushPermissionGranted(...args),
+  registerForPushNotifications: (...args: unknown[]) => mockRegisterForPushNotifications(...args),
+  unregisterPushNotifications: (...args: unknown[]) => mockUnregisterPushNotifications(...args),
+}));
+
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
   // dependency array don't re-run their effects on every render.
@@ -159,9 +167,8 @@ const notificationState = {
       email_connections: true,
       email_transactions: false,
       email_reviews: true,
-      push_messages: true,
-      push_transactions: true,
-      push_social: false,
+      push_enabled: true,
+      push_campaigns_opted_in: false,
     },
   },
   isLoading: false,
@@ -201,6 +208,22 @@ describe('SettingsScreen', () => {
   it('renders the Push Notifications section heading', () => {
     const { getByText } = render(<SettingsScreen />);
     expect(getByText('Push Notifications')).toBeTruthy();
+  });
+
+  it('offers explicit device and promotional push controls', () => {
+    const { getByText } = render(<SettingsScreen />);
+    expect(getByText('Allow notifications on this device')).toBeTruthy();
+    expect(getByText('Promotional notifications')).toBeTruthy();
+  });
+
+  it('requests system permission only when the member enables device push', async () => {
+    mockIsPushPermissionGranted.mockResolvedValueOnce(false);
+    const { getByLabelText } = render(<SettingsScreen />);
+
+    await waitFor(() => expect(mockIsPushPermissionGranted).toHaveBeenCalled());
+    fireEvent(getByLabelText('Allow notifications on this device'), 'valueChange', true);
+
+    await waitFor(() => expect(mockRegisterForPushNotifications).toHaveBeenCalledWith(true));
   });
 
   it('renders the Email Notifications section heading', () => {

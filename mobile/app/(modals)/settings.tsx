@@ -35,15 +35,19 @@ import {
   isBiometricLockEnabled,
   setBiometricLockEnabled,
 } from '@/lib/biometricLock';
+import {
+  isPushPermissionGranted,
+  registerForPushNotifications,
+  unregisterPushNotifications,
+} from '@/lib/notifications';
 
 interface NotificationPrefs {
   email_messages: boolean;
   email_connections: boolean;
   email_transactions: boolean;
   email_reviews: boolean;
-  push_messages: boolean;
-  push_transactions: boolean;
-  push_social: boolean;
+  push_enabled: boolean;
+  push_campaigns_opted_in: boolean;
 }
 
 type PrivacyVisibility = 'public' | 'members' | 'connections';
@@ -134,6 +138,7 @@ export default function SettingsScreen() {
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
   const [privacyPrefs, setPrivacyPrefs] = useState<PrivacyPrefs | null>(null);
   const [saving, setSaving] = useState(false);
+  const [devicePushEnabled, setDevicePushEnabled] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const constants = Constants as typeof Constants & { default?: typeof Constants };
   const appVersion = Constants.expoConfig?.version ?? constants.default?.expoConfig?.version ?? t('unknownVersion');
@@ -141,6 +146,14 @@ export default function SettingsScreen() {
   // Use server data as initial state once loaded
   const current = prefs ?? data?.data ?? null;
   const currentPrivacy = privacyPrefs ?? preferencesData?.data?.privacy ?? null;
+
+  useEffect(() => {
+    let cancelled = false;
+    void isPushPermissionGranted().then((granted) => {
+      if (!cancelled) setDevicePushEnabled(granted);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   async function toggle(key: keyof NotificationPrefs) {
     if (!current) return;
@@ -153,6 +166,38 @@ export default function SettingsScreen() {
     } catch (err) {
       // Revert
       setPrefs(current);
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggleDevicePush() {
+    if (!current) return;
+    const currentlyEnabled = current.push_enabled && devicePushEnabled;
+    setSaving(true);
+    try {
+      if (currentlyEnabled) {
+        await savePrefs({ push_enabled: false });
+        await unregisterPushNotifications();
+        setPrefs({ ...current, push_enabled: false });
+        setDevicePushEnabled(false);
+        return;
+      }
+
+      const result = await registerForPushNotifications(true);
+      if (result !== 'registered') {
+        showToast({
+          title: t('push.permissionNeeded'),
+          description: t('push.permissionNeededHint'),
+          variant: 'warning',
+        });
+        return;
+      }
+      await savePrefs({ push_enabled: true });
+      setPrefs({ ...current, push_enabled: true });
+      setDevicePushEnabled(true);
+    } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
       setSaving(false);
@@ -424,21 +469,15 @@ export default function SettingsScreen() {
             theme={theme}
           >
             <SettingRow
-              label={t('push.messages')}
-              value={current?.push_messages ?? true}
-              onToggle={() => void toggle('push_messages')}
+              label={t('push.device')}
+              value={Boolean(current?.push_enabled && devicePushEnabled)}
+              onToggle={() => void toggleDevicePush()}
               disabled={isLoading || saving}
             />
             <SettingRow
-              label={t('push.transactions')}
-              value={current?.push_transactions ?? true}
-              onToggle={() => void toggle('push_transactions')}
-              disabled={isLoading || saving}
-            />
-            <SettingRow
-              label={t('push.social')}
-              value={current?.push_social ?? true}
-              onToggle={() => void toggle('push_social')}
+              label={t('push.promotions')}
+              value={current?.push_campaigns_opted_in ?? false}
+              onToggle={() => void toggle('push_campaigns_opted_in')}
               disabled={isLoading || saving}
             />
           </Section>

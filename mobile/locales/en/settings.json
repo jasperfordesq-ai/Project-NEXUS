@@ -20,9 +20,10 @@
   "emailNotifications": "Email Notifications",
   "emailHint": "Choose which updates should also arrive by email.",
   "push": {
-    "messages": "New messages",
-    "transactions": "Time credit transactions",
-    "social": "Social activity"
+    "device": "Allow notifications on this device",
+    "promotions": "Promotional notifications",
+    "permissionNeeded": "Notifications are not enabled",
+    "permissionNeededHint": "Allow notifications when your device asks. You can change this later in system settings."
   },
   "email": {
     "messages": "Messages",

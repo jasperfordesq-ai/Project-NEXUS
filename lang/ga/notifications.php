@@ -115,6 +115,7 @@ return [
     'push_hot_match' => 'Cluiche Te Aimsithe',
     'push_mutual_match' => 'Comhoiriúnacht Aimsithe',
     'push_default' => 'Fógra Nua',
+    'push_private_body' => 'Oscail Timebank Global chun an nuashonrú príobháideach seo a fheiceáil.',
     'push_marketplace_enforcement' => 'Nuashonrú ar do liostú',
     'push_feed_report_created' => 'Tuairisc nua',
     'push_social_report_created' => 'Tuairisc nua',

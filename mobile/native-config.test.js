@@ -117,6 +117,97 @@ describe('native app configuration', () => {
     expect(common.buttons.back).toBe('Back');
   });
 
+  it('configures Face ID and localizes its usage description in every native locale', () => {
+    const app = readJson('app.json').expo;
+    const localAuthenticationPlugin = app.plugins.find((plugin) => {
+      return Array.isArray(plugin) && plugin[0] === 'expo-local-authentication';
+    });
+
+    expect(localAuthenticationPlugin).toEqual([
+      'expo-local-authentication',
+      {
+        faceIDPermission: 'Use Face ID to unlock the Timebank Global session already saved on this device.',
+      },
+    ]);
+
+    const localeFiles = Object.values(app.locales);
+    expect(localeFiles).toHaveLength(7);
+    for (const localeFile of localeFiles) {
+      const locale = readJson(localeFile);
+      expect(locale.ios.NSFaceIDUsageDescription).toEqual(expect.any(String));
+      expect(locale.ios.NSFaceIDUsageDescription.trim()).not.toBe('');
+    }
+  });
+
+  it('declares that the app uses only exempt standard encryption on iOS', () => {
+    const app = readJson('app.json').expo;
+
+    expect(app.ios.config.usesNonExemptEncryption).toBe(false);
+  });
+
+  it('declares only the native permissions exercised by the app', () => {
+    const app = readJson('app.json').expo;
+    const locationPlugin = app.plugins.find((plugin) => {
+      return Array.isArray(plugin) && plugin[0] === 'expo-location';
+    });
+
+    expect(locationPlugin[1]).toEqual(expect.objectContaining({
+      locationAlwaysAndWhenInUsePermission: false,
+      locationAlwaysPermission: false,
+      isIosBackgroundLocationEnabled: false,
+      isAndroidBackgroundLocationEnabled: false,
+    }));
+    expect(locationPlugin[1].locationWhenInUsePermission).toEqual(expect.any(String));
+    expect(app.ios.infoPlist.NSPhotoLibraryAddUsageDescription).toBeUndefined();
+
+    for (const localeFile of Object.values(app.locales)) {
+      const locale = readJson(localeFile);
+      expect(locale.ios.NSLocationWhenInUseUsageDescription).toEqual(expect.any(String));
+      expect(locale.ios.NSPhotoLibraryAddUsageDescription).toBeUndefined();
+    }
+  });
+
+  it('declares app-collected iOS data without tracking and aggregates SDK manifests', () => {
+    const app = readJson('app.json').expo;
+    const manifest = app.ios.privacyManifests;
+    const collectedTypes = manifest.NSPrivacyCollectedDataTypes;
+    const typeNames = collectedTypes.map((entry) => entry.NSPrivacyCollectedDataType);
+
+    expect(manifest.NSPrivacyTracking).toBe(false);
+    expect(manifest.NSPrivacyTrackingDomains).toEqual([]);
+    expect(typeNames).toEqual(expect.arrayContaining([
+      'NSPrivacyCollectedDataTypeName',
+      'NSPrivacyCollectedDataTypeEmailAddress',
+      'NSPrivacyCollectedDataTypePhoneNumber',
+      'NSPrivacyCollectedDataTypePreciseLocation',
+      'NSPrivacyCollectedDataTypePurchaseHistory',
+      'NSPrivacyCollectedDataTypeUserID',
+      'NSPrivacyCollectedDataTypeDeviceID',
+      'NSPrivacyCollectedDataTypePhotosorVideos',
+      'NSPrivacyCollectedDataTypeAudioData',
+      'NSPrivacyCollectedDataTypeEmailsOrTextMessages',
+      'NSPrivacyCollectedDataTypeOtherUserContent',
+      'NSPrivacyCollectedDataTypeSearchHistory',
+      'NSPrivacyCollectedDataTypeProductInteraction',
+      'NSPrivacyCollectedDataTypeSensitiveInfo',
+    ]));
+    expect(collectedTypes).not.toContainEqual(expect.objectContaining({
+      NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypePaymentInfo',
+    }));
+    for (const entry of collectedTypes) {
+      expect(entry.NSPrivacyCollectedDataTypeLinked).toBe(true);
+      expect(entry.NSPrivacyCollectedDataTypeTracking).toBe(false);
+      expect(entry.NSPrivacyCollectedDataTypePurposes.length).toBeGreaterThan(0);
+    }
+
+    const buildProperties = app.plugins.find((plugin) => {
+      return Array.isArray(plugin) && plugin[0] === 'expo-build-properties';
+    });
+    expect(buildProperties[1].ios.deploymentTarget).toBe('15.1');
+    expect(buildProperties[1].ios.useFrameworks).toBeUndefined();
+    expect(buildProperties[1].ios.privacyManifestAggregationEnabled).toBe(true);
+  });
+
   it('places native providers and system UI at the root', () => {
     const layout = read('app/_layout.tsx');
     const gestureIndex = layout.indexOf('<GestureHandlerRootView');

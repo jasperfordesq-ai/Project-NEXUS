@@ -607,6 +607,20 @@ class PaidPushCampaignService
             $query->where('trust_tier', '>=', $tierMin);
         }
 
-        return $query->pluck('id')->map(fn ($id) => (int) $id)->all();
+        // App Review Guideline 4.5.4 requires explicit opt-in before promotional
+        // push. A general push permission is not marketing consent, so campaigns
+        // fail closed when the preference is absent, malformed, or false.
+        return $query
+            ->get(['id', 'notification_preferences'])
+            ->filter(static function (object $user): bool {
+                $raw = $user->notification_preferences ?? null;
+                $preferences = is_array($raw) ? $raw : json_decode((string) $raw, true);
+
+                return is_array($preferences)
+                    && ($preferences['push_campaigns_opted_in'] ?? false) === true;
+            })
+            ->map(static fn (object $user): int => (int) $user->id)
+            ->values()
+            ->all();
     }
 }

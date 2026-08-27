@@ -33,10 +33,10 @@ complete native tablet frame is retained: 7-inch captures are proportionally con
 
 ## Why these are safe to publish
 
-Every person shown is fictional. Partner Demo contains no real members — its 43 accounts are
-seeded, and their photographs were generated (owner-confirmed as cleared for commercial use
-on 2026-08-25). The community logo is Timebank Ireland's, used with the directors'
-agreement.
+Every person shown is fictional. Partner Demo contains no real members — the directory has
+43 seeded fictional members in addition to the dedicated reviewer account, and their
+photographs were generated (owner-confirmed as cleared for commercial use on 2026-08-25).
+The community logo is Timebank Ireland's, used with the directors' agreement.
 
 The privacy risk that had to be ruled out first was **cross-community content**: this
 platform can share listings between communities, which could have put a real member's post

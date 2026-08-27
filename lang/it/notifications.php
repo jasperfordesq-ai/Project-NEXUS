@@ -115,6 +115,7 @@ return [
     'push_hot_match' => 'Partita calda trovata',
     'push_mutual_match' => 'Corrispondenza reciproca trovata',
     'push_default' => 'Nuova notifica',
+    'push_private_body' => 'Apri Timebank Global per visualizzare questo aggiornamento privato.',
     'push_marketplace_enforcement' => 'Aggiornamento sul tuo annuncio',
     'push_feed_report_created' => 'Nuova segnalazione',
     'push_social_report_created' => 'Nuova segnalazione',

@@ -153,7 +153,13 @@ const sections: PlatformLegalSection[] = [
           <strong>Note:</strong> Member profile data, messages, time credit exchanges, group
           memberships, event registrations, metadata-only safeguarding vetting confirmations, and
           other community-level content are processed by the Platform on behalf of your Community
-          Operator. Safeguarding confirmations contain a controlled decision, purpose, scope,
+          Operator. If a Community Operator enables local promotional notifications, the Platform
+          uses an adult member's separate promotional-notification preference and, where the
+          campaign requests it, their stored location, interests or trust tier to select and deliver
+          that Community Operator's campaign. This processing occurs only after the member has
+          opted in and stops when they opt out in notification settings. It does not use cross-app
+          tracking or disclose the targeting data to the advertiser. Safeguarding confirmations
+          contain a controlled decision, purpose, scope,
           decision-maker, timestamp, reason code and policy version only; they do not contain a
           criminal-record certificate or its contents. The collection and use of community-level
           data is governed by your Community Operator's privacy policy, not this document.
@@ -194,6 +200,13 @@ const sections: PlatformLegalSection[] = [
             or lawful requests from law enforcement authorities.
           </li>
         </ul>
+        <p>
+          For community-level data, the Community Operator is responsible for identifying and
+          documenting the applicable lawful basis. Regardless of that assessment, Project NEXUS
+          enforces a separate, affirmative opt-in before delivering a local promotional
+          notification. That choice is independent of operating-system notification permission and
+          can be withdrawn in the app at any time without affecting ordinary platform use.
+        </p>
       </>
     ),
   },
@@ -232,8 +245,13 @@ const sections: PlatformLegalSection[] = [
           </li>
         </ul>
         <p>
-          We do <strong>not</strong> sell personal data to third parties. We will never monetise user
-          data through advertising, data brokerage, or any other commercial arrangement.
+          We do <strong>not</strong> sell personal data, provide member data to data brokers, or use
+          cross-app tracking. A Community Operator may offer paid, local promotional notifications
+          to adult members who separately opt in. Project NEXUS processes the minimum targeting
+          criteria needed to select and deliver those community-local messages on the Community
+          Operator's behalf; advertisers do not receive the member list, location, interests, trust
+          tier, device token, or other targeting data. Members can withdraw promotional consent in
+          the app at any time while continuing to use the platform and ordinary notifications.
         </p>
         <p>
           Data may be disclosed to third parties if we are required to do so by law, regulation, or
@@ -517,7 +535,7 @@ export function PlatformPrivacyPage() {
         title={t('platform_privacy.title')}
         subtitle={t('platform_privacy.subtitle')}
         icon={Shield}
-        effectiveDate="11 July 2026"
+        effectiveDate="27 August 2026"
         sections={localizedSections}
         crossLinks={[
           { label: t('platform_privacy.link_terms'), to: '/platform/terms' },

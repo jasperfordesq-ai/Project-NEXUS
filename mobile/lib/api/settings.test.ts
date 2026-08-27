@@ -13,6 +13,7 @@ jest.mock('@/lib/constants', () => ({
 import { api } from '@/lib/api/client';
 import {
   approveSubAccount,
+  blockUser,
   getBlockedUsers,
   getDataExportHistory,
   getManagedSubAccounts,
@@ -83,6 +84,16 @@ describe('settings sub-account API', () => {
 
     await expect(getBlockedUsers()).resolves.toEqual([blockedUser]);
     await expect(getUserPreferences()).resolves.toEqual(preferences);
+  });
+
+  it('blocks an abusive member through the tenant-scoped service endpoint', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { success: true } });
+
+    await blockUser(8);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/users/8/block', {
+      reason: 'safety_concern',
+    });
   });
 
   it('unwraps the permission-gated sub-account activity summary', async () => {

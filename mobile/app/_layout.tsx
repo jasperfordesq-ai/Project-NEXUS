@@ -5,7 +5,7 @@
 
 import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogBox, View } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import * as Notifications from 'expo-notifications';
@@ -16,6 +16,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
 import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
+import { getNotificationLink } from '@/lib/notifications';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -294,20 +295,29 @@ function RootNavigator() {
 
 
   // Queue deep link from push notification taps — only navigate once auth resolves.
-  const pendingDeepLinkRef = useRef<string | null>(null);
+  const [pendingDeepLink, setPendingDeepLink] = useState<string | null>(null);
   const legalScreenOpenRef = useRef(false);
 
   useEffect(() => {
-    void Linking.getInitialURL().then((url) => {
-      if (url) pendingDeepLinkRef.current = url;
+    void Promise.all([
+      Linking.getInitialURL(),
+      Notifications.getLastNotificationResponseAsync(),
+    ]).then(([initialUrl, notificationResponse]) => {
+      const notificationLink = getNotificationLink(notificationResponse?.notification.request.content.data);
+      if (notificationLink) {
+        setPendingDeepLink(notificationLink);
+        void Notifications.clearLastNotificationResponseAsync();
+      } else if (initialUrl) {
+        setPendingDeepLink(initialUrl);
+      }
     });
     const linkSubscription = Linking.addEventListener('url', ({ url }) => {
-      pendingDeepLinkRef.current = url;
+      setPendingDeepLink(url);
     });
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data as { link?: string } | undefined;
-      if (data?.link) {
-        pendingDeepLinkRef.current = data.link;
+      const notificationLink = getNotificationLink(response.notification.request.content.data);
+      if (notificationLink) {
+        setPendingDeepLink(notificationLink);
       }
     });
     return () => {
@@ -352,12 +362,12 @@ function RootNavigator() {
       isAuthenticated,
       hasSelectedTenant,
       pathname,
-      pendingDeepLink: pendingDeepLinkRef.current,
+      pendingDeepLink,
     });
 
     if (decision.action === 'deep-link') {
       // Cleared before navigating so a re-render cannot follow the same link twice.
-      pendingDeepLinkRef.current = null;
+      setPendingDeepLink(null);
       navigateToLink(decision.url);
       return;
     }
@@ -365,7 +375,7 @@ function RootNavigator() {
     if (decision.action === 'replace') {
       router.replace(decision.href);
     }
-  }, [isLoading, isTenantLoading, isAuthenticated, hasSelectedTenant, pathname]);
+  }, [isLoading, isTenantLoading, isAuthenticated, hasSelectedTenant, pathname, pendingDeepLink]);
 
   // Shared options for regular modal screens: slide up from bottom, swipe-to-dismiss
   const modalOptions = {

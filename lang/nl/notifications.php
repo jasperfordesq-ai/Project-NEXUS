@@ -118,6 +118,7 @@ return [
     'push_hot_match' => 'Hotmatch gevonden',
     'push_mutual_match' => 'Wederzijdse match gevonden',
     'push_default' => 'Nieuwe melding',
+    'push_private_body' => 'Open Timebank Global om deze privé-update te bekijken.',
     'push_marketplace_enforcement' => 'Update over je advertentie',
     'push_feed_report_created' => 'Nieuwe melding',
     'push_social_report_created' => 'Nieuwe melding',

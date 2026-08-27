@@ -43,6 +43,23 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
+    "ios-simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "preview",
+      "ios": {
+        "simulator": true,
+        "resourceClass": "m-medium"
+      },
+      "cache": {
+        "key": "nexus-ios-simulator-v1"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.project-nexus.ie",
+        "EXPO_PUBLIC_DEFAULT_TENANT": "hour-timebank",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
@@ -115,7 +132,8 @@
         "track": "internal"
       },
       "ios": {
-        "ascAppId": "APPLE_APP_STORE_CONNECT_APP_ID"
+        "ascAppId": "APPLE_APP_STORE_CONNECT_APP_ID",
+        "metadataPath": "./store.config.js"
       }
     }
   }

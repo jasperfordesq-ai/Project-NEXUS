@@ -168,7 +168,14 @@ class NotifyGroupChatroomMessage implements ShouldQueue
                         false,
                         $event->tenantId
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'group_chatroom_message', $content, $link);
+                    // Keep the private message preview inside the authenticated app.
+                    // Lock-screen push payloads carry only a generic localized body.
+                    \App\Services\NotificationDispatcher::fanOutPush(
+                        (int) $userId,
+                        'group_chatroom_message',
+                        __('svc_notifications.group_chatroom.push_body'),
+                        $link
+                    );
                 });
             }
 

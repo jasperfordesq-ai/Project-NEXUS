@@ -118,6 +118,7 @@ return [
     'push_hot_match' => 'تم العثور على مباراة ساخنة',
     'push_mutual_match' => 'تم العثور على تطابق متبادل',
     'push_default' => 'إشعار جديد',
+    'push_private_body' => 'افتح Timebank Global لعرض هذا التحديث الخاص.',
     'push_marketplace_enforcement' => 'تحديث بشأن إعلانك',
     'push_feed_report_created' => 'بلاغ جديد',
     'push_social_report_created' => 'بلاغ جديد',

@@ -170,7 +170,8 @@
   "group_chatroom": {
     "preview": ":sender · :group: :preview",
     "fallback_sender": "Qualcuno",
-    "fallback_group": "un gruppo"
+    "fallback_group": "un gruppo",
+    "push_body": "Apri l’app per leggere il nuovo messaggio del gruppo."
   },
   "vetting_renewal": "Revisione della certificazione di tutela in scadenza per :name",
   "vetting_expired": "Certificazione di tutela di :name scaduta; contatto protetto bloccato",

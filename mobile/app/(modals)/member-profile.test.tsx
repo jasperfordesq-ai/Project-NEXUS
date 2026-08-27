@@ -86,6 +86,14 @@ jest.mock('react-i18next', () => ({
         'federation:reviews.fromPartner': opts ? `via ${String(opts.partner ?? '')}` : 'via partner',
         'federation:reviews.verified': 'Verified',
         'profile.sendMessage': 'Send Message',
+        'profile.safety': 'Safety',
+        'profile.safetyHint': 'Block this member if they should not contact you.',
+        'profile.block': 'Block member',
+        'profile.blockConfirmTitle': opts ? `Block ${String(opts.name ?? '')}?` : 'Block member?',
+        'profile.blockConfirmMessage': 'You will not be able to contact each other.',
+        'profile.blockSuccessTitle': 'Member blocked',
+        'profile.blockSuccessMessage': 'This member can no longer contact you.',
+        'profile.blockFailed': 'Could not block this member',
         'profile.memberSince': opts ? `Member since ${String(opts.date ?? '')}` : 'Member since',
         'federation:directory.members.title': 'Federated Members',
         'federation:directory.members.memberFallback': 'Member',
@@ -142,6 +150,10 @@ jest.mock('@/lib/api/members', () => ({
   getMember: jest.fn(),
   getMemberListings: jest.fn().mockResolvedValue({ data: [] }),
   getMemberReviews: jest.fn().mockResolvedValue({ data: [] }),
+}));
+
+jest.mock('@/lib/api/settings', () => ({
+  blockUser: jest.fn().mockResolvedValue({ data: { success: true } }),
 }));
 
 jest.mock('@/lib/api/federation', () => ({
@@ -208,6 +220,7 @@ import {
   sendFederationTransaction,
 } from '@/lib/api/federation';
 import { getMember } from '@/lib/api/members';
+import { blockUser } from '@/lib/api/settings';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -313,6 +326,33 @@ describe('MemberProfileScreen', () => {
 
     const { getByText } = render(<MemberProfileScreen />);
     expect(getByText('Send Message')).toBeTruthy();
+  });
+
+  it('blocks a same-community member from their profile and leaves the hidden profile', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+    const { router } = require('expo-router');
+    const { getByText } = render(<MemberProfileScreen />);
+
+    fireEvent.press(getByText('Block member'));
+
+    await waitFor(() => {
+      expect(blockUser).toHaveBeenCalledWith(7);
+      expect(router.replace).toHaveBeenCalledWith('/(modals)/members');
+    });
+  });
+
+  it('does not offer the local block endpoint on federated profiles', () => {
+    mockParams = { id: '272', tenant_id: '5' };
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockMember, id: 272, tenant_id: 5, timebank: { id: 5, name: 'Partner Demo' } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { queryByText } = render(<MemberProfileScreen />);
+
+    expect(queryByText('Block member')).toBeNull();
   });
 
   it('opens same-community wallet transfers from member profiles', () => {

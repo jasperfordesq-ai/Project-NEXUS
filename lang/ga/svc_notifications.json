@@ -170,7 +170,8 @@
   "group_chatroom": {
     "preview": ":sender · :group: :preview",
     "fallback_sender": "Duine éigin",
-    "fallback_group": "grúpa"
+    "fallback_group": "grúpa",
+    "push_body": "Oscail an aip chun an teachtaireacht ghrúpa nua a léamh."
   },
   "vetting_renewal": "Athbhreithni? deimhnithe cosanta dlite do :name",
   "vetting_expired": "Deimhni? cosanta :name imithe in ?ag; teagmh?il chosanta bactha",

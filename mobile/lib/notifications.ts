@@ -4,10 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Push notification setup for Expo + FCM.
+ * Push notification setup for Expo Push Service (APNs on iOS, FCM on Android).
  *
  * Flow:
- * 1. Request permission via Expo Notifications
+ * 1. Read permission, requesting it only after an explicit user action
  * 2. Get the Expo push token (which maps to an FCM token on Android)
  * 3. POST /api/push/register-device with the token + platform
  *
@@ -23,14 +23,29 @@ import Constants from 'expo-constants';
 import { reportSentryMessage, reportException } from '@/lib/observability/report';
 
 import { api } from '@/lib/api/client';
+import { STORAGE_KEYS } from '@/lib/constants';
+import { storage } from '@/lib/storage';
 import i18n from 'i18next';
 
-/** Callback registered by RealtimeContext to handle background data pushes. */
+export type PushRegistrationResult = 'registered' | 'permission-denied' | 'unavailable' | 'failed';
+
+/** Normalise the link keys emitted by the platform's notification producers. */
+export function getNotificationLink(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const record = data as Record<string, unknown>;
+  for (const key of ['link', 'url', 'cta_url'] as const) {
+    const value = record[key];
+    if (typeof value === 'string' && value.trim() !== '') return value;
+  }
+  return null;
+}
+
+/** Callback registered by RealtimeContext to refresh foreground notification state. */
 let onRefreshCallback: (() => void) | null = null;
 
 /**
- * Register a callback that fires when a notification arrives (including silent
- * data-only pushes). RealtimeContext uses this to refresh unread counts.
+ * Register a callback that fires when a foreground notification arrives.
+ * RealtimeContext uses this to refresh unread counts.
  */
 export function registerRefreshCallback(cb: () => void): void {
   onRefreshCallback = cb;
@@ -66,11 +81,12 @@ Notifications.setNotificationHandler({
  * Safe to call multiple times — subsequent calls are no-ops if already registered.
  * Never throws; errors are logged silently.
  */
-export async function registerForPushNotifications(): Promise<void> {
+export async function registerForPushNotifications(
+  requestPermission = false,
+): Promise<PushRegistrationResult> {
   try {
     if (!Device.isDevice) {
-      // Push notifications require a physical device
-      return;
+      return 'unavailable';
     }
 
     if (Platform.OS === 'android') {
@@ -86,13 +102,13 @@ export async function registerForPushNotifications(): Promise<void> {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== 'granted' && requestPermission) {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
     if (finalStatus !== 'granted') {
-      return;
+      return 'permission-denied';
     }
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
@@ -103,11 +119,21 @@ export async function registerForPushNotifications(): Promise<void> {
       token_type: 'expo',
       platform: Platform.OS === 'ios' ? 'ios' : 'android',
     });
+    await storage.set(STORAGE_KEYS.PUSH_TOKEN, tokenData.data);
+    return 'registered';
   } catch (err) {
     // Non-critical — app works fine without push notifications
     console.warn('[Notifications] Failed to register device:', err);
     reportException(err, { tags: { module: 'push-notifications' } });
+    return 'failed';
   }
+}
+
+/** Whether this device has already granted notification permission. Never prompts. */
+export async function isPushPermissionGranted(): Promise<boolean> {
+  if (!Device.isDevice) return false;
+  const { status } = await Notifications.getPermissionsAsync();
+  return status === 'granted';
 }
 
 /**
@@ -116,11 +142,15 @@ export async function registerForPushNotifications(): Promise<void> {
 export async function unregisterPushNotifications(): Promise<void> {
   try {
     if (!Device.isDevice) return;
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status !== 'granted') return;
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    const tokenData = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
-    await api.post<void>('/api/push/unregister-device', { token: tokenData.data, token_type: 'expo' });
+    let token = await storage.get(STORAGE_KEYS.PUSH_TOKEN);
+    if (!token && await isPushPermissionGranted()) {
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      const tokenData = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
+      token = tokenData.data;
+    }
+    if (!token) return;
+    await api.post<void>('/api/push/unregister-device', { token, token_type: 'expo' });
+    await storage.remove(STORAGE_KEYS.PUSH_TOKEN);
   } catch (err) {
     // Best effort on logout — log to Sentry for visibility
     if (err instanceof Error) {

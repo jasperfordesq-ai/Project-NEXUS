@@ -80,6 +80,8 @@ export const STORAGE_KEYS = {
   THEME_MODE: 'nexus_theme_mode',
   /** Last language explicitly chosen by the user in Settings (restored at boot) */
   LANGUAGE: 'nexus_language',
+  /** Last Expo push token registered with the API, retained for reliable opt-out/logout. */
+  PUSH_TOKEN: 'nexus_expo_push_token',
 } as const;
 
 /** App-wide timing constants */
@@ -124,6 +126,17 @@ export const API_V2 = '/api/v2';
 /** Web app URL for share links and deep linking */
 export const APP_URL: string =
   process.env.EXPO_PUBLIC_APP_URL ?? 'https://app.project-nexus.ie';
+
+/**
+ * Native URL scheme registered in app.json.
+ *
+ * Stripe expects the scheme name here (for example `nexus`), while each
+ * PaymentSheet `returnURL` remains the complete callback URL produced by
+ * Expo Linking (for example `nexus://marketplace-payment-return`). Passing the
+ * complete callback as Stripe's `urlScheme` breaks the contract used by 3-D
+ * Secure and bank-app redirects on iOS.
+ */
+export const APP_SCHEME = 'nexus';
 
 /**
  * Whether identity verification can be started from inside the app.

@@ -9,7 +9,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { router } from 'expo-router';
@@ -72,7 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   /** Track whether push notifications were successfully registered */
-  const isPushRegisteredRef = useRef(false);
 
   /**
    * Called by the API client when a session has genuinely ENDED.
@@ -114,7 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const registerPushBestEffort = useCallback(() => {
     registerForPushNotifications()
-      .then(() => { isPushRegisteredRef.current = true; })
       .catch(() => { /* best-effort */ });
   }, []);
 
@@ -232,13 +229,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     // Unregister push token BEFORE server logout — the server call invalidates the
     // auth token, so push unregister must happen first to avoid a silent 401 failure.
-    if (isPushRegisteredRef.current) {
-      try {
-        await unregisterPushNotifications();
-        isPushRegisteredRef.current = false;
-      } catch {
-        // Best-effort — continue with logout even if push unregister fails
-      }
+    try {
+      await unregisterPushNotifications();
+    } catch {
+      // Best-effort — continue with logout even if push unregister fails
     }
 
     try {

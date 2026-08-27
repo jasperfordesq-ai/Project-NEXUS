@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2233 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 49 |
-| Call sites | 510 |
-| Distinct method + endpoint pairs | 421 |
-| Verified against openapi.json | 421 |
+| Call sites | 511 |
+| Distinct method + endpoint pairs | 422 |
+| Verified against openapi.json | 422 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -106,7 +106,7 @@ and the places a contract test earns the most.
 | events.ts:1435 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1441 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1492 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
-| feed.ts:235 | GET | variable "path" is not a literal endpoint in this module |
+| feed.ts:269 | GET | variable "path" is not a literal endpoint in this module |
 | marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:835 | GET | variable "endpoint" is assigned more than one endpoint in this module |
@@ -130,7 +130,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/auth/register` | auth.ts:152 |
 | GET | `/api/v2/blog` | blog.ts:45 |
 | GET | `/api/v2/blog/{param}` | blog.ts:56 |
-| POST | `/api/v2/bookmarks` | feed.ts:346 |
+| POST | `/api/v2/bookmarks` | feed.ts:380 |
 | GET | `/api/v2/categories` | exchanges.ts:187 |
 | GET | `/api/v2/comments` | comments.ts:74, exchanges.ts:235 |
 | POST | `/api/v2/comments` | comments.ts:86, exchanges.ts:242 |
@@ -193,14 +193,14 @@ and the places a contract test earns the most.
 | POST | `/api/v2/federation/setup` | federation.ts:367 |
 | GET | `/api/v2/federation/status` | federation.ts:257, federation.ts:272 |
 | POST | `/api/v2/federation/transactions` | federation.ts:333 |
-| GET | `/api/v2/feed` | feed.ts:226 |
-| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:257 |
-| GET | `/api/v2/feed/hashtags/search` | feed.ts:245 |
-| GET | `/api/v2/feed/hashtags/trending` | feed.ts:239 |
-| POST | `/api/v2/feed/like` | exchanges.ts:228, feed.ts:332 |
-| GET | `/api/v2/feed/polls/{param}` | feed.ts:356 |
-| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:363 |
-| POST | `/api/v2/feed/posts` | feed.ts:424 |
+| GET | `/api/v2/feed` | feed.ts:260 |
+| GET | `/api/v2/feed/hashtags/{param}` | feed.ts:291 |
+| GET | `/api/v2/feed/hashtags/search` | feed.ts:279 |
+| GET | `/api/v2/feed/hashtags/trending` | feed.ts:273 |
+| POST | `/api/v2/feed/like` | exchanges.ts:228, feed.ts:366 |
+| GET | `/api/v2/feed/polls/{param}` | feed.ts:390 |
+| POST | `/api/v2/feed/polls/{param}/vote` | feed.ts:397 |
+| POST | `/api/v2/feed/posts` | feed.ts:458 |
 | POST | `/api/v2/feed/posts/{param}/hide` | feedModeration.ts:42 |
 | POST | `/api/v2/feed/posts/{param}/not-interested` | feedModeration.ts:53 |
 | POST | `/api/v2/feed/posts/{param}/report` | feedModeration.ts:69 |
@@ -445,8 +445,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/polls` | events.ts:1255 |
 | POST | `/api/v2/polls` | polls.ts:20 |
 | POST | `/api/v2/polls/{param}/vote` | events.ts:1263 |
-| POST | `/api/v2/reactions` | feed.ts:287 |
-| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:312 |
+| POST | `/api/v2/reactions` | feed.ts:321 |
+| GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:346 |
 | GET | `/api/v2/resources` | resources.ts:90 |
 | GET | `/api/v2/resources/categories` | resources.ts:95 |
 | POST | `/api/v2/reviews` | reviews.ts:98 |
@@ -469,7 +469,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users` | client.ts:509, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
-| DELETE | `/api/v2/users/{param}/block` | settings.ts:119 |
+| DELETE | `/api/v2/users/{param}/block` | settings.ts:130 |
+| POST | `/api/v2/users/{param}/block` | settings.ts:126 |
 | GET | `/api/v2/users/{param}/listings` | members.ts:86 |
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
 | GET | `/api/v2/users/blocked` | settings.ts:114 |
@@ -478,20 +479,20 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/users/me` | profile.ts:24 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:94 |
-| GET | `/api/v2/users/me/parent-accounts` | settings.ts:137 |
-| PUT | `/api/v2/users/me/parent-accounts/{param}/permissions` | settings.ts:178 |
+| GET | `/api/v2/users/me/parent-accounts` | settings.ts:148 |
+| PUT | `/api/v2/users/me/parent-accounts/{param}/permissions` | settings.ts:189 |
 | POST | `/api/v2/users/me/password` | profile.ts:37 |
-| GET | `/api/v2/users/me/preferences` | settings.ts:123 |
-| PUT | `/api/v2/users/me/preferences` | settings.ts:128 |
+| GET | `/api/v2/users/me/preferences` | settings.ts:134 |
+| PUT | `/api/v2/users/me/preferences` | settings.ts:139 |
 | GET | `/api/v2/users/me/skills` | endorsements.ts:171 |
 | POST | `/api/v2/users/me/skills` | endorsements.ts:198 |
 | DELETE | `/api/v2/users/me/skills/{param}` | endorsements.ts:211 |
-| GET | `/api/v2/users/me/sub-accounts` | settings.ts:132 |
-| POST | `/api/v2/users/me/sub-accounts` | settings.ts:142 |
-| DELETE | `/api/v2/users/me/sub-accounts/{param}` | settings.ts:209 |
-| GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:250 |
-| PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:146 |
-| PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:153, settings.ts:169 |
+| GET | `/api/v2/users/me/sub-accounts` | settings.ts:143 |
+| POST | `/api/v2/users/me/sub-accounts` | settings.ts:153 |
+| DELETE | `/api/v2/users/me/sub-accounts/{param}` | settings.ts:220 |
+| GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:261 |
+| PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:157 |
+| PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:164, settings.ts:180 |
 | GET | `/api/v2/volunteering/applications` | volunteering.ts:470 |
 | DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:501 |
 | PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:493 |

@@ -44,6 +44,7 @@ jest.mock('react-native', () => ({
 
 jest.mock('@/lib/constants', () => ({
   APP_URL: 'https://app.example.test',
+  APP_SCHEME: 'nexus',
 }));
 
 import { presentIdentityPayment as presentIdentityNative } from './identityPayment.native';
@@ -96,7 +97,7 @@ describe('identity verification payment on a device', () => {
     expect(mockCreateURL).toHaveBeenCalledWith('stripe-redirect');
     expect(mockInitStripe).toHaveBeenCalledWith({
       publishableKey: 'pk_test_123',
-      urlScheme: 'nexus://stripe-redirect',
+      urlScheme: 'nexus',
     });
     expect(mockInitPaymentSheet).toHaveBeenCalledWith({
       merchantDisplayName: 'hOUR Timebank',
@@ -186,7 +187,7 @@ describe('marketplace payment on a device', () => {
 
     expect(mockInitStripe).toHaveBeenCalledWith({
       publishableKey: 'pk_test_marketplace',
-      urlScheme: 'nexus://marketplace-payment-return',
+      urlScheme: 'nexus',
     });
   });
 

@@ -1,10 +1,10 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Timebank Global usa la cámara solo cuando eliges hacer una foto o escanear un código QR.",
+    "NSCameraUsageDescription": "Escanea un código QR del mercado cuando elijas usar el escáner.",
     "NSPhotoLibraryUsageDescription": "Elige una foto de tu biblioteca para tu perfil o una publicación.",
-    "NSPhotoLibraryAddUsageDescription": "Guarda fotos en tu biblioteca.",
     "NSMicrophoneUsageDescription": "Graba un mensaje de voz cuando elijas enviar uno.",
+    "NSFaceIDUsageDescription": "Usa Face ID para desbloquear la sesión de Timebank Global que ya está guardada en este dispositivo.",
     "NSLocationWhenInUseUsageDescription": "Timebank Global usa tu ubicación solo cuando eliges buscar anuncios cercanos en el mercado."
   },
   "android": {

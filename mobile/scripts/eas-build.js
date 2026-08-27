@@ -7,7 +7,13 @@ const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { linkLocalNodeModules, materializeRuntimeVersion } = require('./eas-build-context');
+const {
+  assertProductionContextClean,
+  createBuildContextFilter,
+  linkLocalNodeModules,
+  materializeReleaseIdentity,
+  materializeRuntimeVersion,
+} = require('./eas-build-context');
 
 const appDir = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -43,71 +49,23 @@ const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'nexus-mobile-eas-'));
 const contextDir = path.join(tempRoot, 'mobile');
 const inspectOutputDir = path.join(tempRoot, 'archive-inspect');
 
-const skipSegmentNames = new Set([
-  'node_modules',
-  '.expo',
-  '.codex-logs',
-  '.apk-audit',
-  'audit-screenshots',
-  'coverage',
-  'dist',
-  'web-build',
-  '.gradle',
-  '.idea',
-  '.maestro',
-  'Pods',
-]);
+const shouldCopy = createBuildContextFilter(appDir, platform);
 
-const skipExactPaths = new Set([
-  'android/build',
-  'android/app/build',
-  'ios/build',
-]);
-
-const skipFilePatterns = [
-  /^\.env$/,
-  /^\.env\.local$/,
-  /^\.env\..*\.local$/,
-  /^\.expo-.*\.log$/,
-  /^expo-web-.*\.log$/,
-  /^npm-debug\.log.*$/,
-  /^yarn-debug\.log.*$/,
-  /^yarn-error\.log.*$/,
-  /^google-services\.json$/,
-  /^GoogleService-Info\.plist$/,
-  /^google-play-key\.json$/,
-  /^fcm-service-account.*\.json$/,
-  /^firebase-service-account.*\.json$/,
-  /^.*-service-account.*\.json$/,
-  /^.*\.apk$/,
-  /^.*\.aab$/,
-  /^.*\.keystore$/,
-  /^.*\.jks$/,
-];
-
-function toPosix(relativePath) {
-  return relativePath.split(path.sep).join('/');
+function readGit(args) {
+  const result = spawnSync('git', args, {
+    cwd: path.resolve(appDir, '..'),
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr?.trim() || `git ${args.join(' ')} failed`);
+  }
+  return result.stdout.trim();
 }
 
-function shouldCopy(sourcePath) {
-  const relativePath = toPosix(path.relative(appDir, sourcePath));
-
-  if (!relativePath) {
-    return true;
-  }
-
-  const segments = relativePath.split('/');
-  if (segments.some((segment) => skipSegmentNames.has(segment))) {
-    return false;
-  }
-
-  if (skipExactPaths.has(relativePath)) {
-    return false;
-  }
-
-  const fileName = segments[segments.length - 1] ?? '';
-  return !skipFilePatterns.some((pattern) => pattern.test(fileName));
-}
+const sourceCommit = readGit(['rev-parse', 'HEAD']);
+const mobileStatus = readGit(['status', '--porcelain', '--untracked-files=all', '--', 'mobile']);
+assertProductionContextClean(profile, mobileStatus);
 
 function runEas() {
   const npx = 'npx';
@@ -159,6 +117,9 @@ try {
   // native Android project, so give EAS the equivalent explicit runtime in the
   // temporary context while keeping the source policy tied to the app version.
   materializeRuntimeVersion(contextDir);
+  materializeReleaseIdentity(contextDir, sourceCommit);
+
+  console.log(`Release source commit: ${sourceCommit}`);
 
   result = runEas();
 

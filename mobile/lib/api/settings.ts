@@ -115,6 +115,17 @@ export async function getBlockedUsers(): Promise<BlockedUser[]> {
   return unwrap(response, []);
 }
 
+/**
+ * Block a member in the signed-in member's current community.
+ *
+ * The server also removes any connection between the two members. Feed, search and
+ * messaging queries use the resulting bilateral block relationship, so this is the
+ * service-level safety control Apple expects rather than a local UI-only mute.
+ */
+export function blockUser(userId: number, reason = 'safety_concern'): Promise<unknown> {
+  return api.post<unknown>(`${API_V2}/users/${userId}/block`, { reason });
+}
+
 export function unblockUser(userId: number): Promise<unknown> {
   return api.delete<unknown>(`${API_V2}/users/${userId}/block`);
 }

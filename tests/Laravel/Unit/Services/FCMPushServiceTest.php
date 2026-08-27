@@ -11,6 +11,8 @@ use App\Services\FCMPushService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\CheckExpoPushReceipts;
 
 class FCMPushServiceTest extends TestCase
 {
@@ -49,6 +51,7 @@ class FCMPushServiceTest extends TestCase
 
     public function test_sendToUser_sends_expo_tokens_through_expo_push_api_without_fcm_credentials(): void
     {
+        Queue::fake();
         config([
             'services.fcm.server_key' => null,
             'services.fcm.project_id' => null,
@@ -75,16 +78,54 @@ class FCMPushServiceTest extends TestCase
 
         $this->assertSame(1, $result['sent']);
         $this->assertSame(0, $result['failed']);
+        Queue::assertPushed(CheckExpoPushReceipts::class, function (CheckExpoPushReceipts $job): bool {
+            return $job->ticketTokens === ['ticket-1' => 'ExponentPushToken[abc123]'];
+        });
 
         Http::assertSent(function ($request) {
             $payload = $request->data();
 
             return $request->url() === 'https://exp.host/--/api/v2/push/send'
                 && $payload['to'] === 'ExponentPushToken[abc123]'
-                && $payload['title'] === 'New message'
-                && $payload['body'] === 'You have a new message.'
-                && $payload['data']['link'] === '/messages/123';
+                && $payload['title'] === 'New Notification'
+                && $payload['body'] === 'Open Timebank Global to view this private update.'
+                && $payload['data'] === ['link' => '/notifications'];
         });
+    }
+
+    public function test_native_payload_removes_confidential_content_and_non_navigation_data(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [$title, $body, $data] = $method->invoke(null, 'GDPR request from Jane Doe', 'Delete Jane Doe account', [
+            'type' => 'gdpr_account_deletion',
+            'member_name' => 'Jane Doe',
+            'link' => '/admin/gdpr',
+            'priority' => 'high',
+            'alert_type' => 'emergency',
+            'alert_id' => '91',
+        ]);
+
+        $this->assertSame('New Notification', $title);
+        $this->assertSame('Open Timebank Global to view this private update.', $body);
+        $this->assertSame(['link' => '/notifications'], $data);
+    }
+
+    public function test_separately_opted_in_paid_campaign_keeps_its_promotional_copy(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+        $payload = [
+            'campaign_type' => 'paid_push',
+            'campaign_id' => '42',
+            'cta_url' => '/marketplace/42',
+        ];
+
+        $this->assertSame(
+            ['Local repair café', 'Book a place this Saturday.', $payload],
+            $method->invoke(null, 'Local repair café', 'Book a place this Saturday.', $payload),
+        );
     }
 
     // =========================================================================

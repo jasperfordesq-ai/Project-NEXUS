@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Jobs\CheckExpoPushReceipts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -233,6 +234,8 @@ class FCMPushService
      */
     private static function sendToTokens(array $tokens, string $title, string $body, array $data): array
     {
+        [$title, $body, $data] = self::lockScreenSafePresentation($title, $body, $data);
+
         $sent = 0;
         $failed = 0;
         $errors = [];
@@ -409,6 +412,37 @@ class FCMPushService
     }
 
     /**
+     * Keep confidential application data out of native lock-screen payloads.
+     *
+     * The authenticated in-app notification retains its full localized content.
+     * Native push is only a wake-up/tap surface, so ordinary notifications use
+     * generic presentation text and a single generic notification-centre link.
+     * The original destination can itself reveal the category of a confidential
+     * event (for example an emergency or GDPR request), so it is not forwarded.
+     * Paid
+     * promotional campaigns are the one explicit exception: their copy is the
+     * notification's purpose and recipients have separately opted in.
+     *
+     * Apple App Review Guideline 4.5.4:
+     * https://developer.apple.com/app-store/review/guidelines/#apple-sites-and-services
+     *
+     * @param array<string,mixed> $data
+     * @return array{0:string,1:string,2:array<string,mixed>}
+     */
+    private static function lockScreenSafePresentation(string $title, string $body, array $data): array
+    {
+        if (($data['campaign_type'] ?? null) === 'paid_push') {
+            return [$title, $body, $data];
+        }
+
+        return [
+            __('notifications.push_default'),
+            __('notifications.push_private_body'),
+            ['link' => '/notifications'],
+        ];
+    }
+
+    /**
      * Get the Firebase project ID from service account or env.
      */
     private static function getProjectId(): ?string
@@ -543,11 +577,15 @@ class FCMPushService
             $sent = 0;
             $failed = 0;
             $errors = [];
+            $ticketTokens = [];
 
             foreach ($tokens as $index => $token) {
                 $ticket = $tickets[$index] ?? null;
                 if (($ticket['status'] ?? null) === 'ok') {
                     $sent++;
+                    if (is_string($ticket['id'] ?? null) && $ticket['id'] !== '') {
+                        $ticketTokens[$ticket['id']] = $token;
+                    }
                     continue;
                 }
 
@@ -559,6 +597,10 @@ class FCMPushService
                 if ($detailsError === 'DeviceNotRegistered') {
                     DB::table('fcm_device_tokens')->where('token', $token)->delete();
                 }
+            }
+
+            if (! empty($ticketTokens)) {
+                CheckExpoPushReceipts::dispatch($ticketTokens)->delay(now()->addMinutes(15));
             }
 
             return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];

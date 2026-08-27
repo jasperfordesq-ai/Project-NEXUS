@@ -1,6 +1,6 @@
 # Timebank Global mobile distribution
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-27
 
 This file records the release identity and distribution decisions for the native mobile app.
 
@@ -46,6 +46,32 @@ npm run build:android:play
 
 The profile name describes the distribution channel, not the target device. The `website` profile is still an Android build; it produces a signed APK because website/direct Android installs need APK files. The `production` profile produces an AAB because Google Play expects Android App Bundles.
 
+## Apple packaging
+
+The same Expo/React Native source is used for Android and iOS, but Apple receives a
+separately compiled and signed iOS binary. The Windows workstation can prepare and
+test shared source, inspect generated native configuration, and request an EAS cloud
+build; it cannot run Xcode or an iOS Simulator.
+
+| Channel | Purpose | EAS profile |
+|---------|---------|-------------|
+| Registered-device preview | Physical-device testing before TestFlight | `preview` |
+| App Store / TestFlight | Signed archive uploaded to App Store Connect | `production` |
+
+Commands:
+
+```bash
+cd mobile
+npm run verify:ios-release
+npm run build:ios:preview
+npm run build:ios:production
+npm run submit:ios:testflight
+```
+
+`verify:ios-release` must pass before requesting a production build. Uploading to
+TestFlight and submitting for App Review are distinct actions; neither authorizes a
+public App Store release. See [APPLE_SUBMISSION.md](APPLE_SUBMISSION.md).
+
 ## EAS project and credentials
 
 | Item | Value |
@@ -71,6 +97,7 @@ Configured EAS credentials:
 - Push Notifications (FCM V1): Google Service Account Key assigned to `ie.project.nexus`.
 - Push Notifications (FCM Legacy): intentionally empty.
 - Play Store submissions Google Service Account: not configured yet. Configure this later when submitting directly from EAS to Google Play.
+- Apple distribution certificate, provisioning profile and APNs key: not configured or verified yet; complete after the Apple Developer Program enrollment is approved.
 
 EAS environment variables:
 
@@ -88,7 +115,7 @@ npx eas-cli@latest env:create --environment production --name GOOGLE_SERVICES_JS
 npx eas-cli@latest env:create --environment preview --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json
 ```
 
-## Push notification prerequisites
+## Android push notification prerequisites
 
 Before release builds:
 
@@ -98,6 +125,10 @@ Before release builds:
 4. Configure EAS Android FCM credentials.
 5. Confirm the EAS project ID is available through `EAS_PROJECT_ID` or `EXPO_PUBLIC_EAS_PROJECT_ID`.
 6. Build a new native binary; push, camera, and location changes cannot be delivered by OTA alone.
+
+For iOS, configure APNs credentials through EAS after Apple enrollment is approved,
+then prove delivery on a real iPhone. Firebase's `GoogleService-Info.plist` is not an
+iOS prerequisite for this Expo notification path.
 
 ## Where a built APK can be put on the live server
 

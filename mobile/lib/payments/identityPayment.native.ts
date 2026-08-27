@@ -5,6 +5,7 @@
 
 import * as ExpoLinking from 'expo-linking';
 import { initPaymentSheet, initStripe, presentPaymentSheet } from '@stripe/stripe-react-native';
+import { APP_SCHEME } from '@/lib/constants';
 
 type PaymentResult =
   | { status: 'completed' }
@@ -29,7 +30,7 @@ export async function presentIdentityPayment({
   const returnURL = ExpoLinking.createURL('stripe-redirect');
   await initStripe({
     publishableKey,
-    urlScheme: returnURL,
+    urlScheme: APP_SCHEME,
   });
 
   const initResult = await initPaymentSheet({
