@@ -55,9 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   community-picker layouts are also capped to a readable width on landscape tablets.
   Coherent authentication, endorsements, Explore, notification-group, saved-search,
   messaging attachment/voice, home activity/poll, gamification, goals, group-exchange,
-  ideation, nearby-marketplace, federation, event, quick-create, residual terminology and
-  group collaboration translation batches reduce the guarded English-identical baseline by
-  1,609 entries, from 4,531 to 2,922.
+  ideation, nearby-marketplace, federation, event, quick-create, residual terminology,
+  group collaboration and group-wiki translation batches reduce the guarded
+  English-identical baseline by 1,724 entries, from 4,531 to 2,807.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
