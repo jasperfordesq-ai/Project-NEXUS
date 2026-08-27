@@ -1,104 +1,104 @@
 {
-  "eyebrow": "Discover",
-  "title": "Explore your community",
-  "subtitle": "Find recommendations, popular listings, people, events, groups, and useful updates from your timebank.",
-  "loading": "Loading discovery...",
-  "errorTitle": "Could not load Explore",
-  "emptyTitle": "Nothing to explore yet",
-  "emptySubtitle": "Try search, or check back when your community has more activity.",
+  "eyebrow": "Découvrir",
+  "title": "Explorez votre communauté",
+  "subtitle": "Découvrez des recommandations, des annonces populaires, des personnes, des événements, des groupes et les actualités utiles de votre banque du temps.",
+  "loading": "Chargement des découvertes...",
+  "errorTitle": "Impossible de charger l’espace Explorer",
+  "emptyTitle": "Rien à explorer pour le moment",
+  "emptySubtitle": "Essayez la recherche ou revenez lorsque votre communauté sera plus active.",
   "actions": {
-    "search": "Search",
-    "forYou": "For you",
-    "seeAll": "See all"
+    "search": "Rechercher",
+    "forYou": "Pour vous",
+    "seeAll": "Tout afficher"
   },
   "tabs": {
-    "all": "All",
-    "forYou": "For you",
-    "listings": "Listings",
-    "people": "People",
-    "events": "Events",
-    "groups": "Groups"
+    "all": "Tout",
+    "forYou": "Pour vous",
+    "listings": "Annonces",
+    "people": "Personnes",
+    "events": "Événements",
+    "groups": "Groupes"
   },
   "stats": {
-    "members": "Members",
-    "exchanges": "Exchanges",
-    "hours": "Hours",
-    "listings": "Listings"
+    "members": "Membres",
+    "exchanges": "Échanges",
+    "hours": "Heures",
+    "listings": "Annonces"
   },
   "sections": {
     "recommended": {
       "title": "Recommandé pour vous",
-      "subtitle": "Listings and opportunities matched to your activity."
+      "subtitle": "Annonces et possibilités correspondant à votre activité."
     },
     "popularListings": {
-      "title": "Popular listings",
-      "subtitle": "Offers and requests getting attention right now."
+      "title": "Annonces populaires",
+      "subtitle": "Offres et demandes qui suscitent actuellement de l’intérêt."
     },
     "nearYou": {
-      "title": "Near you",
-      "subtitle": "Listings with nearby location signals."
+      "title": "Près de chez vous",
+      "subtitle": "Annonces indiquées à proximité."
     },
     "events": {
-      "title": "Upcoming events",
-      "subtitle": "Workshops, meetups, and community gatherings."
+      "title": "Événements à venir",
+      "subtitle": "Ateliers, rencontres et rassemblements communautaires."
     },
     "groups": {
-      "title": "Active groups",
-      "subtitle": "Community spaces with recent membership activity."
+      "title": "Groupes actifs",
+      "subtitle": "Espaces communautaires dont les membres ont récemment été actifs."
     },
     "people": {
-      "title": "People to meet",
-      "subtitle": "New members and suggested connections."
+      "title": "Personnes à rencontrer",
+      "subtitle": "Nouveaux membres et relations suggérées."
     },
     "contributors": {
-      "title": "Top contributors",
-      "subtitle": "Members helping the community grow."
+      "title": "Principaux contributeurs",
+      "subtitle": "Membres qui aident la communauté à grandir."
     },
     "posts": {
-      "title": "Trending posts",
-      "subtitle": "Community conversations with recent engagement."
+      "title": "Publications populaires",
+      "subtitle": "Discussions communautaires ayant suscité une participation récente."
     },
     "volunteering": {
-      "title": "Volunteering",
-      "subtitle": "Opportunities from local organisations and partners."
+      "title": "Bénévolat",
+      "subtitle": "Possibilités proposées par des organisations locales et partenaires."
     },
     "organisations": {
       "title": "Organisations",
-      "subtitle": "Active partners and local community groups."
+      "subtitle": "Partenaires actifs et groupes communautaires locaux."
     },
     "blog": {
       "title": "Histoires de la communauté",
-      "subtitle": "Latest blog posts and platform updates."
+      "subtitle": "Derniers articles du blog et actualités de la plateforme."
     },
     "jobs": {
-      "title": "Jobs",
-      "subtitle": "Recent vacancies and application opportunities."
+      "title": "Emplois",
+      "subtitle": "Offres d’emploi récentes et possibilités de candidature."
     },
     "polls": {
-      "title": "Open polls",
-      "subtitle": "Questions where members can share their view."
+      "title": "Sondages ouverts",
+      "subtitle": "Questions sur lesquelles les membres peuvent donner leur avis."
     },
     "resources": {
-      "title": "Featured resources",
-      "subtitle": "Useful documents, links, and community reference material."
+      "title": "Ressources à la une",
+      "subtitle": "Documents, liens et supports de référence utiles à la communauté."
     }
   },
   "itemTypes": {
-    "default": "Explore",
-    "recommended": "Match",
-    "popularListings": "Listing",
-    "nearYou": "Nearby",
-    "events": "Event",
-    "groups": "Group",
-    "people": "Member",
-    "contributors": "Contributor",
-    "posts": "Post",
-    "volunteering": "Volunteer",
+    "default": "Explorer",
+    "recommended": "Correspondance",
+    "popularListings": "Annonce",
+    "nearYou": "À proximité",
+    "events": "Événement",
+    "groups": "Groupe",
+    "people": "Membre",
+    "contributors": "Contributeur",
+    "posts": "Publication",
+    "volunteering": "Bénévolat",
     "organisations": "Organisation",
     "blog": "Blog",
-    "jobs": "Job",
-    "polls": "Poll",
-    "resources": "Resource"
+    "jobs": "Emploi",
+    "polls": "Sondage",
+    "resources": "Ressource"
   },
   "itemMeta": {
     "level": "Niveau {{level}}"

@@ -23,24 +23,24 @@
   "errorTitle": "Búsqueda fallida",
   "error": "La búsqueda falló. Inténtalo de nuevo.",
   "saved": {
-    "title": "Saved searches",
-    "subtitle": "Save useful searches and run them again later.",
-    "saveThis": "Save search",
-    "namePlaceholder": "Search name",
+    "title": "Búsquedas guardadas",
+    "subtitle": "Guarda búsquedas útiles para volver a ejecutarlas más adelante.",
+    "saveThis": "Guardar búsqueda",
+    "namePlaceholder": "Nombre de la búsqueda",
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
     "run": "Run",
     "delete": "Delete",
     "deleteNamed": "Eliminar{{name}}",
-    "empty": "No saved searches yet.",
+    "empty": "Todavía no hay búsquedas guardadas.",
     "noQuery": "Sin consulta",
     "resultCount": "{{count}} resultado",
     "resultCount_one": "{{count}} resultado",
     "resultCount_other": "{{count}} resultados",
-    "saveFailedTitle": "Could not save search",
-    "saveFailedMessage": "Please check the search name and try again.",
-    "deleteFailedTitle": "Could not delete search",
-    "deleteFailedMessage": "Please try again."
+    "saveFailedTitle": "No se pudo guardar la búsqueda",
+    "saveFailedMessage": "Comprueba el nombre de la búsqueda e inténtalo de nuevo.",
+    "deleteFailedTitle": "No se pudo eliminar la búsqueda",
+    "deleteFailedMessage": "Inténtalo de nuevo."
   }
 }

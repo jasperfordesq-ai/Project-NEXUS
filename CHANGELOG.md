@@ -42,8 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   more than one emulator is attached. A live public-entry accessibility-tree pass found
   and removed one more informational chip exposed as a tiny button; the login and
   community-picker layouts are also capped to a readable width on landscape tablets.
-  A coherent authentication and endorsements translation batch reduces the guarded
-  English-identical baseline by 254 entries, from 4,531 to 4,277. Protected TalkBack
+  Coherent authentication, endorsements, Explore, notification-group and saved-search
+  translation batches reduce the guarded English-identical baseline by 531 entries,
+  from 4,531 to 4,000. Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
 
