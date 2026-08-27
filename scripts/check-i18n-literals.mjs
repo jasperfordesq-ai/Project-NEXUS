@@ -41,8 +41,14 @@ const REQUIRED_NATIVE_IOS_KEYS = [
   'CFBundleDisplayName',
   'NSCameraUsageDescription',
   'NSPhotoLibraryUsageDescription',
-  'NSPhotoLibraryAddUsageDescription',
   'NSMicrophoneUsageDescription',
+  // Face ID replaced the photo-library WRITE permission in the App Store
+  // release candidate (e0882204e): the app never saves to the library, and
+  // Apple rejects a permission string for a capability the binary does not
+  // use. mobile/native-config.test.js and verify-ios-release-config.mjs both
+  // assert NSPhotoLibraryAddUsageDescription is ABSENT — requiring it here
+  // too made the two gates contradict each other.
+  'NSFaceIDUsageDescription',
   'NSLocationWhenInUseUsageDescription',
 ];
 const LITERAL_PATTERN = /Error: Found hardcoded string:/;

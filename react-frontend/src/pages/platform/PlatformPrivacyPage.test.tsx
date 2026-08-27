@@ -120,7 +120,7 @@ describe('PlatformPrivacyPage', () => {
 
   it('renders the effective date', () => {
     render(<PlatformPrivacyPage />);
-    expect(screen.getByText('11 July 2026')).toBeInTheDocument();
+    expect(screen.getByText('27 August 2026')).toBeInTheDocument();
   });
 
   it('renders key sections', () => {

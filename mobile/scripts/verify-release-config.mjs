@@ -67,12 +67,18 @@ assert(eas.build?.website?.channel === 'website', 'website build must be pinned 
 //
 // `preview` is deliberately excluded: it is for internal testers who reinstall, so it is
 // exempt by intent rather than by omission.
+//
+// 🔴 That exemption must key on the CHANNEL, not the profile name. It filtered on the
+// profile name until the App Store release candidate added a second profile —
+// `ios-simulator` — pinned to the same `preview` channel: the name no longer matched, the
+// exempt channel was demanded to have a publisher, and this gate failed on a build config
+// that was correct. Any number of profiles may share one channel; only the channel decides.
 const publisher = fs.readFileSync(new URL('./publish-update.mjs', import.meta.url), 'utf8');
 const publishableChannels = new Set(
   [...publisher.matchAll(/^\s{2}(\w+):\s*'(?:staging|production)',$/gm)].map((m) => m[1])
 );
 const pinnedChannels = Object.entries(eas.build ?? {})
-  .filter(([name, profile]) => profile?.channel && name !== 'preview')
+  .filter(([, profile]) => profile?.channel && profile.channel !== 'preview')
   .map(([, profile]) => profile.channel);
 for (const channel of pinnedChannels) {
   assert(
