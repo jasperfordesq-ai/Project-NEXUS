@@ -76,6 +76,9 @@ export function RoleList() {
         // particular role may not be deleted -- and fall back to the generic
         // message only when it sends none. This is the house pattern used by
         // every other admin page that reports a failed write.
+        // admin-i18n-ignore: localized server message - AdminEnterpriseController
+        // returns __('api.role_delete_failed') and the role-in-use reasons already
+        // rendered in the caller's locale.
         toast.error(res.error || t('enterprise.failed_to_delete_role'));
       }
     } catch {
