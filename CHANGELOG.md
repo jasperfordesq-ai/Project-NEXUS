@@ -61,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   2,387 entries, from 4,531 to 2,144; the large `groups` namespace is now clear in all seven
   shipped locales. Profile matches, reviews and marketplace navigation reduce the baseline
   by a further 158 entries, for a total reduction of 2,545 entries and a current baseline of
-  1,986.
+  1,986. Profile destination descriptions reduce it by another 161 entries, for a total
+  reduction of 2,706 entries and a current baseline of 1,825.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
