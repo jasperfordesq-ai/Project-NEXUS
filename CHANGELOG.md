@@ -62,7 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shipped locales. Profile matches, reviews and marketplace navigation reduce the baseline
   by a further 158 entries, for a total reduction of 2,545 entries and a current baseline of
   1,986. Profile destination descriptions reduce it by another 161 entries, for a total
-  reduction of 2,706 entries and a current baseline of 1,825.
+  reduction of 2,706 entries. Profile help, resource, policy and safety navigation reduces it
+  by another 85 entries, for a total reduction of 2,791 entries and a current baseline of
+  1,740.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.

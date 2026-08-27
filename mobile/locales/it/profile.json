@@ -163,51 +163,51 @@
   "organisations": "Organisations",
   "blog": "Blog",
   "support": {
-    "title": "Support & legal",
-    "heading": "Help, resources, and policies",
+    "title": "Assistenza e informazioni legali",
+    "heading": "Aiuto, risorse e informative",
     "description": "Read key policy summaries in the app or open the canonical web pages for the full current text.",
     "open": "Apri pagina",
     "items": {
       "help": {
-        "title": "Help center",
-        "description": "Guides and answers for common platform tasks."
+        "title": "Centro assistenza",
+        "description": "Guide e risposte per le attività più comuni sulla piattaforma."
       },
       "resources": {
         "title": "Resources",
-        "description": "Community documents, links, and useful reference materials."
+        "description": "Documenti, link e materiali di riferimento utili della comunità."
       },
       "about": {
-        "title": "About Project NEXUS",
-        "description": "Learn about the platform, mission, and open-source project."
+        "title": "Informazioni su Project NEXUS",
+        "description": "Scopri la piattaforma, la sua missione e il progetto open source."
       },
       "contact": {
         "title": "Contact",
-        "description": "Find the right support route for questions and feedback."
+        "description": "Trova il canale di assistenza giusto per domande e commenti."
       },
       "terms": {
         "title": "Terms",
-        "description": "Read the terms that apply to platform use."
+        "description": "Leggi i termini applicabili all’uso della piattaforma."
       },
       "privacy": {
         "title": "Privacy",
-        "description": "Review how personal data is handled."
+        "description": "Scopri come vengono trattati i dati personali."
       },
       "cookies": {
         "title": "Cookies",
-        "description": "Understand cookie and local storage use."
+        "description": "Scopri come vengono usati cookie e memoria locale."
       },
       "accessibility": {
         "title": "Accessibility",
-        "description": "Review accessibility commitments and support options."
+        "description": "Consulta gli impegni e le opzioni di assistenza per l’accessibilità."
       },
       "trust": {
-        "title": "Trust & safety",
-        "description": "Review safety, moderation, and community protection guidance."
+        "title": "Fiducia e sicurezza",
+        "description": "Consulta le indicazioni su sicurezza, moderazione e protezione della comunità."
       }
     },
-    "openWeb": "Open web",
-    "readInApp": "Read in app",
-    "closeDocument": "Back to support",
+    "openWeb": "Apri sul Web",
+    "readInApp": "Leggi nell’app",
+    "closeDocument": "Torna all’assistenza",
     "docs": {
       "about": {
         "title": "About Project NEXUS",
