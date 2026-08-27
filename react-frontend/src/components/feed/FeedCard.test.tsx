@@ -293,4 +293,31 @@ describe('FeedCard', () => {
     expect(screen.queryByText(/likes?$/)).not.toBeInTheDocument();
     expect(screen.queryByText(/comments?$/)).not.toBeInTheDocument();
   });
+
+  /*
+   * Gamification milestones were removed from the feed on the owner's
+   * instruction (2026-08-27). They used to render as a full-width celebratory
+   * card with an oversized icon and a confetti burst, and they crowded out
+   * member content.
+   *
+   * The API no longer serves them and the feed lists filter them out, so this
+   * asserts the last line of defence: handed one directly (a cached payload, a
+   * stale service-worker response), the card renders NOTHING — not a smaller
+   * card, not an empty shell.
+   */
+  describe('gamification milestones are not rendered', () => {
+    it.each(['badge_earned', 'level_up'] as const)('renders nothing for a %s item', (type) => {
+      const item = {
+        ...baseFeedItem,
+        type,
+        title: type === 'level_up' ? 'Level 3' : 'Gift Giver',
+        badge_name: 'Gift Giver',
+        new_level: 3,
+      } as unknown as FeedItem;
+
+      const { container } = render(<FeedCard {...defaultProps} item={item} />);
+
+      expect(container).toBeEmptyDOMElement();
+    });
+  });
 });

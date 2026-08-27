@@ -73,6 +73,10 @@ vi.mock('@/components/feed/FeedCard', () => ({
 
 vi.mock('@/components/feed/types', () => ({
   getAuthor: vi.fn((item) => ({ id: item.author_id || 99 })),
+  // Real behaviour, not a stub: the page must actually drop gamification
+  // milestones, and a pass-through mock would hide a regression.
+  excludeGamificationMilestones: (items: { type: string }[]) =>
+    items.filter((item) => item.type !== 'badge_earned' && item.type !== 'level_up'),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -80,7 +84,16 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useParams: () => ({ tag: 'gardening' }),
-    Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+    /*
+     * 🔴 Forwards the REMAINING props. This stub used to take only
+     * `{ children, to }` and throw the rest away, which silently deleted the
+     * `aria-label` on `<Button as={Link}>` — so the back-to-feed control rendered
+     * as an anonymous `<a>` with no accessible name, and the test that looked for
+     * it failed against working code. That is what quarantined this suite.
+     */
+    Link: ({ children, to, ...rest }: { children: React.ReactNode; to: string }) => (
+      <a href={to} {...rest}>{children}</a>
+    ),
   };
 });
 
@@ -123,13 +136,21 @@ describe('HashtagPage', () => {
     });
   });
 
-  it('renders back to feed button link', async () => {
+  /*
+   * 🔴 Role `link`, not `button`. `<Button as={Link}>` renders an `<a href>`,
+   * whose implicit ARIA role is `link` — the correct element for a control that
+   * navigates, so the page is right and the query was wrong. Asserting the href
+   * too, because a named link that goes nowhere is the real failure to catch.
+   */
+  it('renders a back link to the feed', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: mockFeedItems, meta: { has_more: false } });
     render(<HashtagPage />);
 
     await waitFor(() => {
-      const backButton = screen.getByRole('button', { name: 'Back to feed' });
-      expect(backButton).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Back to feed' })).toHaveAttribute(
+        'href',
+        '/test/feed',
+      );
     });
   });
 

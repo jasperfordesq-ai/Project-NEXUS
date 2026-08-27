@@ -70,7 +70,7 @@ import { MobileFAB } from '@/components/feed/MobileFAB';
 import type { AdItem } from '@/components/feed/FeedAdCard';
 import { FeedEmptyIllustration } from '@/components/illustrations';
 import type { FeedItem, FeedFilter, PollData } from '@/components/feed/types';
-import { getAuthor } from '@/components/feed/types';
+import { getAuthor, excludeGamificationMilestones } from '@/components/feed/types';
 import type { ReactionType } from '@/components/social';
 
 const ComposeHub = lazy(() => import('@/components/compose').then((mod) => ({ default: mod.ComposeHub })));
@@ -1235,7 +1235,7 @@ export function FeedPage() {
               className="space-y-4"
             >
               <AnimatePresence>
-                {items.map((item, index) => (
+                {excludeGamificationMilestones(items).map((item, index) => (
                   <React.Fragment key={`${item.type}-${item.id}`}>
                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, overflow: 'hidden' }} transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.4) }}>
                       <FeedCard

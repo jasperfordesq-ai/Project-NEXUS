@@ -104,6 +104,10 @@ jest.mock('@/lib/api/feed', () => ({
     name: item.author_name ?? item.author?.name ?? item.user?.name ?? fallbackName,
     avatar: item.author_avatar ?? item.author?.avatar_url ?? item.user?.avatar_url ?? item.user?.avatar ?? null,
   }),
+  // Real behaviour, not a stub: the feed page must actually drop gamification
+  // milestones, and a pass-through mock would hide a regression.
+  excludeGamificationMilestones: <T extends { type: string }>(items: T[]) =>
+    items.filter((item) => item.type !== 'badge_earned' && item.type !== 'level_up'),
 }));
 
 jest.mock('@/lib/api/wallet', () => ({
@@ -424,6 +428,34 @@ describe('HomeScreen', () => {
     const last = extractor({ data: [{ type: 'badge_earned', id: 677 }], meta: { per_page: 20, has_more: false, cursor: null } });
     expect(last.hasMore).toBe(false);
     expect(last.cursor).toBeNull();
+    /*
+     * …and that page's only row is a gamification badge card, which is no longer
+     * feed content (owner instruction, 2026-08-27). It is dropped here rather
+     * than left to render as nothing, because a row that renders nothing still
+     * leaves a FlatList row and its separator behind. A phone can hold a cached
+     * page for days, so a stale payload has to be filtered, not trusted.
+     */
+    expect(last.items).toHaveLength(0);
+  });
+
+  it('drops gamification milestone cards from a feed page and keeps the real content', () => {
+    render(<HomeScreen />);
+
+    const extractor = mockUsePaginatedApi.mock.calls[0]?.[1] as (r: unknown) => {
+      items: { type: string; id: number }[]; cursor: string | null; hasMore: boolean;
+    };
+
+    const page = extractor({
+      data: [
+        { type: 'post', id: 1 },
+        { type: 'badge_earned', id: 2 },
+        { type: 'listing', id: 3 },
+        { type: 'level_up', id: 4 },
+      ],
+      meta: { per_page: 20, has_more: false, cursor: null },
+    });
+
+    expect(page.items.map((item) => item.type)).toEqual(['post', 'listing']);
   });
 
   it('says the list has ended, rather than looking like it is still loading', () => {

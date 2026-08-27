@@ -106,13 +106,21 @@ describe('HashtagsDiscoveryPage', () => {
     expect(screen.getByText('#music')).toBeInTheDocument();
   });
 
-  it('renders search input', async () => {
+  /*
+   * 🔴 Queried as `searchbox`, NOT `textbox`.
+   *
+   * This suite was quarantined for exactly this: it asked for `role="textbox"`
+   * and found nothing, so it read as "the search box is missing" when the search
+   * box was there and working. `SearchField` renders `<input type="search">`,
+   * whose implicit ARIA role is `searchbox` — a `textbox` query can never match
+   * it. The page is correct; the query was wrong.
+   */
+  it('renders the search box', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: mockTrendingHashtags });
     render(<HashtagsDiscoveryPage />);
 
     await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBeGreaterThan(0);
+      expect(screen.getByRole('searchbox', { name: 'Search hashtags...' })).toBeInTheDocument();
     });
   });
 
@@ -179,9 +187,9 @@ describe('HashtagsDiscoveryPage', () => {
     });
   });
 
-  it('initiates search when user types 2+ characters', async () => {
+  it('searches after two characters and shows what came back', async () => {
     mockApiGet.mockResolvedValueOnce({ success: true, data: mockTrendingHashtags });
-    // Search API call
+    // The debounced search call.
     mockApiGet.mockResolvedValueOnce({ success: true, data: [{ tag: 'garden', post_count: 5 }] });
 
     render(<HashtagsDiscoveryPage />);
@@ -190,10 +198,40 @@ describe('HashtagsDiscoveryPage', () => {
       expect(screen.getByText('#gardening')).toBeInTheDocument();
     });
 
-    const searchInput = screen.getAllByRole('textbox')[0];
+    const searchInput = screen.getByRole('searchbox', { name: 'Search hashtags...' });
     fireEvent.change(searchInput, { target: { value: 'ga' } });
 
-    // After debounce (300ms) the search API is called — but we only need to check state
-    expect(searchInput).toBeInTheDocument();
+    /*
+     * 🔴 This assertion replaces `expect(searchInput).toBeInTheDocument()`, which
+     * re-asserted the element the line above had just found — it passed whether
+     * or not typing searched anything. The search is debounced by 300ms, well
+     * inside waitFor's default 1s, so waiting for the real request is both
+     * honest and reliable.
+     */
+    await waitFor(() => {
+      expect(mockApiGet).toHaveBeenCalledWith('/v2/feed/hashtags/search?q=ga');
+    });
+    await waitFor(() => {
+      expect(screen.getByText('#garden')).toBeInTheDocument();
+    });
+  });
+
+  it('does not search on a single character', async () => {
+    mockApiGet.mockResolvedValue({ success: true, data: mockTrendingHashtags });
+    render(<HashtagsDiscoveryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('#gardening')).toBeInTheDocument();
+    });
+    mockApiGet.mockClear();
+
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search hashtags...' }), {
+      target: { value: 'g' },
+    });
+
+    // The other half of the guard: searching on every keystroke would hammer the
+    // API. Waiting past the 300ms debounce proves nothing was sent.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockApiGet).not.toHaveBeenCalled();
   });
 });

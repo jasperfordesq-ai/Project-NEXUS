@@ -143,6 +143,40 @@ export interface FeedItem {
   }[];
 }
 
+/**
+ * Gamification milestone feed types — never shown in the feed.
+ *
+ * `badge_earned` and `level_up` used to render as a full-width celebratory panel
+ * on every feed card list. Removed on the owner's instruction (2026-08-27)
+ * because they crowded out member content.
+ *
+ * The API no longer serves them (`GamificationService` stops recording the rows
+ * and `FeedService::EXCLUDED_SOURCE_TYPES` hides historical ones). These helpers
+ * are the app's own belt and braces: a phone can hold a cached page for days, so
+ * a stale payload must be filtered rather than trusted. The types stay in
+ * `FeedItemType` on purpose so such a payload is still type-checkable.
+ *
+ * Nothing else about gamification changes — badges and levels are still awarded,
+ * notified, and shown on the achievements and profile screens.
+ */
+export const GAMIFICATION_MILESTONE_TYPES: readonly FeedItemType[] = ['badge_earned', 'level_up'];
+
+/** True when a feed item is a gamification milestone card. */
+export function isGamificationMilestone(item: { type: string }): boolean {
+  return (GAMIFICATION_MILESTONE_TYPES as readonly string[]).includes(item.type);
+}
+
+/**
+ * Drop gamification milestones from a feed page.
+ *
+ * Filtering the list (rather than relying only on the card rendering nothing)
+ * keeps the list clean: a row that renders nothing still leaves a FlatList row
+ * and its separator behind.
+ */
+export function excludeGamificationMilestones<T extends { type: string }>(items: T[]): T[] {
+  return items.filter((item) => !isGamificationMilestone(item));
+}
+
 export function getFeedAuthor(item: FeedItem, fallbackName: string) {
   return {
     id: item.user_id ?? item.author_id ?? item.author?.id ?? item.user?.id ?? 0,

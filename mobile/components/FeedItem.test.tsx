@@ -58,6 +58,10 @@ jest.mock('@/lib/api/feed', () => ({
   toggleBookmark: jest.fn(),
   toggleLike: jest.fn(),
   toggleReaction: jest.fn(),
+  // Real behaviour, not a stub: the card must actually refuse to render a
+  // gamification milestone, and a stub returning false would hide a regression.
+  isGamificationMilestone: (item: { type?: string }) =>
+    item?.type === 'badge_earned' || item?.type === 'level_up',
 }));
 
 const mockHide = jest.fn();
@@ -601,6 +605,63 @@ describe('the heart on cards nothing can be reacted to', () => {
     const { queryByLabelText } = render(<FeedItem item={item} />);
 
     expect(queryByLabelText('likePost')).not.toBeNull();
+  });
+});
+
+describe('gamification milestone cards are not rendered at all', () => {
+  /*
+   * Removed on the owner's instruction (2026-08-27). A `badge_earned` /
+   * `level_up` item used to render a full-width celebratory panel — a large
+   * circular icon and a bold headline — inside an otherwise normal card, and on
+   * a gamification-heavy feed that was most of the screen.
+   *
+   * The API no longer serves them and `extractFeedPage` filters them out, so
+   * this pins the last line of defence: a phone can hold a cached page for days,
+   * and handed a milestone directly the card must render NOTHING — not a
+   * smaller card, not an empty shell.
+   *
+   * The two describes below (no react control, no detail link) are now
+   * trivially satisfied by this. They are kept deliberately: if milestone cards
+   * are ever brought back, those two guarantees must come back with them.
+   */
+  it.each(['level_up', 'badge_earned'] as const)('renders nothing for a %s item', (type) => {
+    const item = {
+      id: 674,
+      type,
+      title: type === 'level_up' ? 'Level 3' : 'Gift Giver',
+      content: 'Reached Level 3!',
+      user_id: 1,
+      author_name: 'E2E UserA',
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-08-12T10:00:00Z',
+    } as unknown as FeedItemType;
+
+    const { toJSON } = render(<FeedItem item={item} />);
+
+    expect(toJSON()).toBeNull();
+  });
+
+  it('still renders a real post', () => {
+    // The other direction: a guard that removed every card would be a far worse
+    // bug than the clutter it was meant to fix.
+    const item = {
+      id: 675,
+      type: 'post',
+      title: null,
+      content: 'A real post from a real member',
+      user_id: 1,
+      author_name: 'E2E UserA',
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-08-12T10:00:00Z',
+    } as unknown as FeedItemType;
+
+    const { toJSON } = render(<FeedItem item={item} />);
+
+    expect(toJSON()).not.toBeNull();
   });
 });
 

@@ -77,14 +77,14 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // and SsoButtons import, and Vitest's missing-export throw collapsed the entire
 // render. Adding that one export makes all 6 tests pass, which matters because the
 // consent-tickbox and terms-link fix (0e01d325f) otherwise had no CI coverage.
-// Lowered 52 -> 49 on 2026-08-27 by un-quarantining the last three enterprise-admin
-// suites (LegalDocComplianceDashboard, RoleForm, RoleList), leaving that module fully
-// un-quarantined. Two were stale assertions — a '95.0%' expectation written against a
-// hand-rolled formatter the page had already replaced with Intl percent formatting, and
-// a RoleForm fixture using permission slugs the API has never issued. The third was a
-// real product fault: RoleList discarded the API's error message, so an admin was never
-// told why a role deletion was refused.
-const BASELINE = 49;
+// Lowered 49 -> 46 on 2026-08-27 by un-quarantining the three feed suites
+// (HashtagPage, HashtagsDiscoveryPage, PostDetailPage). One cause across all three:
+// the tests queried the WRONG ARIA ROLE, so they matched nothing and read as missing
+// controls. `<Button as={Link}>` renders an <a href> (role `link`, not `button`), and
+// SearchField renders <input type="search"> (role `searchbox`, not `textbox`). No page
+// changed. This matters beyond the count: these three cover the hashtag feed, hashtag
+// discovery and the single-post page, which had no shard coverage at all while listed.
+const BASELINE = 46;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

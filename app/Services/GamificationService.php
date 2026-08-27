@@ -27,7 +27,6 @@ use App\Models\VolLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\BadgeDefinitionService;
-use App\Services\FeedActivityService;
 use App\Services\GamificationRealtimeService;
 
 /**
@@ -543,28 +542,20 @@ class GamificationService
             ]);
         }
 
-        // Create feed activity post for badge earned. source_id = user id: the
-        // uq_tenant_source unique key then collapses to ONE card per user
-        // (their latest badge) instead of one per tenant. A literal 0 here
-        // collapsed every member's badge into a single shared row whose author
-        // was silently rewritten by each award, and the feed served it with
-        // id=0, which no UI action (admin delete included) could address.
-        try {
-            $tenantId = TenantContext::getId();
-            /** @var FeedActivityService $feedActivityService */
-            $feedActivityService = app(FeedActivityService::class);
-            $feedActivityService->recordActivity($tenantId, $userId, 'badge_earned', $userId, [
-                'title' => $badge['name'],
-                'content' => "Earned the \"{$badge['name']}\" badge!",
-                'metadata' => [
-                    'badge_key' => $badge['key'],
-                    'badge_name' => $badge['name'],
-                    'badge_icon' => $badge['icon'],
-                ],
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('GamificationService: feed activity for badge_earned failed: ' . $e->getMessage());
-        }
+        /*
+         * NO FEED CARD IS WRITTEN FOR A BADGE.
+         *
+         * A `badge_earned` row used to be recorded in `feed_activity` here, which
+         * every client rendered as a full-width celebratory card. Removed on the
+         * owner's instruction (2026-08-27): the badge cards dominated the feed and
+         * crowded out member content. `feed_activity` exists only to be read by
+         * the feed, so recording the row would write data nothing can display —
+         * FeedService::EXCLUDED_SOURCE_TYPES filters historical rows out.
+         *
+         * The award itself is untouched: the badge is granted above, the member is
+         * notified (in-app, push, email) and XP is awarded below. Badges remain
+         * visible on the achievements page and the member's profile.
+         */
 
         // Award XP for earning badge
         self::awardXP($userId, self::XP_VALUES['earn_badge'], 'earn_badge', "Badge: {$badge['name']}");
@@ -707,23 +698,13 @@ class GamificationService
                     ]);
                 }
 
-                // Create feed activity post for level up. source_id = user id
-                // so each user has their own card (latest level) — see the
-                // matching comment in awardBadge() for why 0 was a bug.
-                try {
-                    $tenantId = TenantContext::getId();
-                    /** @var FeedActivityService $feedActivityService */
-                    $feedActivityService = app(FeedActivityService::class);
-                    $feedActivityService->recordActivity($tenantId, $userId, 'level_up', $userId, [
-                        'title' => "Level $newLevel",
-                        'content' => "Reached Level $newLevel!",
-                        'metadata' => [
-                            'new_level' => $newLevel,
-                        ],
-                    ]);
-                } catch (\Throwable $e) {
-                    Log::warning('GamificationService: feed activity for level_up failed: ' . $e->getMessage());
-                }
+                /*
+                 * NO FEED CARD IS WRITTEN FOR A LEVEL-UP — same reason as the
+                 * badge card in awardBadge(): gamification milestones are no
+                 * longer feed content (owner instruction, 2026-08-27). The level
+                 * itself, its notification, its email and the milestone bonus XP
+                 * below are all unchanged.
+                 */
 
                 // Milestone bonus XP
                 $milestones = [5 => 50, 10 => 100, 15 => 150, 20 => 200, 25 => 300, 30 => 400, 50 => 500, 100 => 1000];

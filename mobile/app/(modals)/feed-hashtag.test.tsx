@@ -52,6 +52,10 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 jest.mock('@/lib/api/feed', () => ({
   getHashtagFeed: (...args: unknown[]) => mockGetHashtagFeed(...args),
+  // Real behaviour, not a stub: the hashtag feed must actually drop gamification
+  // milestones, and a pass-through mock would hide a regression.
+  excludeGamificationMilestones: <T extends { type: string }>(items: T[]) =>
+    items.filter((item) => item.type !== 'badge_earned' && item.type !== 'level_up'),
 }));
 
 jest.mock('@/components/FeedItem', () => {

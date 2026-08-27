@@ -15,25 +15,34 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
- * Regression tests for the gamification feed-card collapse bug.
+ * Gamification milestones are NOT feed content.
  *
- * badge_earned / level_up feed_activity rows were written with a literal
- * source_id = 0. The uq_tenant_source unique key + the recordActivity upsert
- * then collapsed EVERY award in a tenant into one shared row per type: the
- * author was overwritten by each event (rendering nameless/mis-attributed
- * cards) and the feed served the card with id = 0, which the admin delete
- * endpoint could not address — deleting one card wiped the whole tenant's
- * and the row was re-created by the next award.
+ * `badge_earned` / `level_up` rows used to be written to `feed_activity` by
+ * GamificationService, and every client rendered them as a full-width
+ * celebratory card. They were removed on the owner's instruction (2026-08-27)
+ * because they crowded member content out of the feed.
  *
- * The fix records source_id = user_id: one card per user per type, stable
- * attribution, and a real id the moderation surfaces can target.
+ * Two things must hold, and this file pins both:
+ *
+ *  1. No new milestone row is written, and no milestone (new OR historical) is
+ *     ever served by the feed. Production databases still hold the rows written
+ *     before this change, so the read filter matters as much as the write.
+ *  2. Everything ELSE about gamification still works — the badge is granted, the
+ *     XP is awarded, the level is raised. "Remove the feed cards" must not
+ *     become "quietly disable gamification".
+ *
+ * Historical context worth keeping: these rows were originally written with a
+ * literal source_id = 0, which the uq_tenant_source unique key collapsed into
+ * ONE shared row per tenant per type — its author overwritten by each award, and
+ * served with id = 0 so no admin action could address it. The fix was
+ * source_id = user_id. If milestone cards are ever brought back, they must be
+ * per-user rows, never source_id 0.
  */
 class GamificationFeedCardsTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private const BADGE_A = ['key' => 'test_badge_a', 'name' => 'Test Badge A', 'icon' => '🏅'];
-    private const BADGE_B = ['key' => 'test_badge_b', 'name' => 'Test Badge B', 'icon' => '🎖️'];
+    private const BADGE_A = ['key' => 'test_badge_a', 'name' => 'Test Badge A', 'icon' => 'A'];
 
     protected function setUp(): void
     {
@@ -61,135 +70,165 @@ class GamificationFeedCardsTest extends TestCase
         TenantContext::setById($this->testTenantId);
     }
 
-    private function badgeCardFor(int $userId): ?object
+    private function milestoneRowCount(string $sourceType, int $userId): int
     {
         return DB::table('feed_activity')
             ->where('tenant_id', $this->testTenantId)
-            ->where('source_type', 'badge_earned')
+            ->where('source_type', $sourceType)
             ->where('source_id', $userId)
-            ->first();
+            ->count();
     }
 
-    // =========================================================================
-    // Write path — per-user cards, no tenant-wide collapse
-    // =========================================================================
-
-    public function test_badge_awards_for_two_users_create_two_feed_cards(): void
+    /**
+     * Insert a milestone row the way GamificationService used to, bypassing
+     * FeedActivityService (whose VALID_TYPES now rejects these types). This is
+     * the state of every production database that ran the old code.
+     */
+    private function insertHistoricalMilestone(string $sourceType, int $userId, string $title): void
     {
-        $userA = User::factory()->forTenant($this->testTenantId)->create();
-        $userB = User::factory()->forTenant($this->testTenantId)->create();
-
-        $this->pinTenant();
-        GamificationService::awardBadge($userA->id, self::BADGE_A);
-        $this->pinTenant();
-        GamificationService::awardBadge($userB->id, self::BADGE_B);
-
-        $cardA = $this->badgeCardFor($userA->id);
-        $cardB = $this->badgeCardFor($userB->id);
-
-        $this->assertNotNull($cardA, 'User A should have their own badge feed card (source_id = user id)');
-        $this->assertNotNull($cardB, 'User B should have their own badge feed card (source_id = user id)');
-        $this->assertSame($userA->id, (int) $cardA->user_id, 'Card A must stay attributed to user A');
-        $this->assertSame($userB->id, (int) $cardB->user_id, 'Card B must stay attributed to user B');
-        $this->assertStringContainsString(self::BADGE_A['name'], (string) $cardA->content);
-        $this->assertStringContainsString(self::BADGE_B['name'], (string) $cardB->content);
-    }
-
-    public function test_second_badge_for_same_user_updates_only_their_card(): void
-    {
-        $userA = User::factory()->forTenant($this->testTenantId)->create();
-        $userB = User::factory()->forTenant($this->testTenantId)->create();
-
-        $this->pinTenant();
-        GamificationService::awardBadge($userA->id, self::BADGE_A);
-        $this->pinTenant();
-        GamificationService::awardBadge($userB->id, self::BADGE_A);
-        $this->pinTenant();
-        GamificationService::awardBadge($userA->id, self::BADGE_B);
-
-        $cardA = $this->badgeCardFor($userA->id);
-        $cardB = $this->badgeCardFor($userB->id);
-
-        // User A's card upserted in place to the latest badge…
-        $this->assertNotNull($cardA);
-        $this->assertStringContainsString(self::BADGE_B['name'], (string) $cardA->content);
-        // …without touching user B's card or its attribution.
-        $this->assertNotNull($cardB);
-        $this->assertSame($userB->id, (int) $cardB->user_id);
-        $this->assertStringContainsString(self::BADGE_A['name'], (string) $cardB->content);
-    }
-
-    public function test_level_up_creates_per_user_feed_card(): void
-    {
-        $user = User::factory()->forTenant($this->testTenantId)->create(['xp' => 0, 'level' => 1]);
-
-        // 150 XP crosses the level-2 threshold (100) — checkLevelUp records the card.
-        $this->pinTenant();
-        GamificationService::awardXP($user->id, 150, 'test_action', 'Regression test XP');
-
-        $card = DB::table('feed_activity')
-            ->where('tenant_id', $this->testTenantId)
-            ->where('source_type', 'level_up')
-            ->where('source_id', $user->id)
-            ->first();
-
-        $this->assertNotNull($card, 'Level-up feed card should exist with source_id = user id');
-        $this->assertSame($user->id, (int) $card->user_id);
-        $this->assertNotSame(0, (int) $card->source_id, 'Gamification cards must never be written with source_id 0');
-    }
-
-    // =========================================================================
-    // Delete path — admin can remove exactly one user's card
-    // =========================================================================
-
-    public function test_admin_delete_removes_one_users_card_and_spares_others(): void
-    {
-        $userA = User::factory()->forTenant($this->testTenantId)->create();
-        $userB = User::factory()->forTenant($this->testTenantId)->create();
-        $this->pinTenant();
-        GamificationService::awardBadge($userA->id, self::BADGE_A);
-        $this->pinTenant();
-        GamificationService::awardBadge($userB->id, self::BADGE_B);
-
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiDelete("/v2/admin/feed/posts/{$userA->id}?type=badge_earned");
-
-        $response->assertStatus(200);
-        $this->assertNull($this->badgeCardFor($userA->id), 'Deleted card must be gone');
-        $this->assertNotNull($this->badgeCardFor($userB->id), 'Other users\' cards must survive the delete');
-    }
-
-    // =========================================================================
-    // Read path — empty users.name must not render a nameless card
-    // =========================================================================
-
-    public function test_feed_author_name_falls_back_when_name_column_is_empty(): void
-    {
-        $user = User::factory()->forTenant($this->testTenantId)->create([
-            'first_name' => 'Sarah',
-            'last_name'  => 'Bird',
+        DB::table('feed_activity')->insert([
+            'tenant_id'   => $this->testTenantId,
+            'user_id'     => $userId,
+            'source_type' => $sourceType,
+            'source_id'   => $userId,
+            'title'       => $title,
+            'content'     => $title,
+            'metadata'    => json_encode(['legacy' => true]),
+            'is_visible'  => 1,
+            'created_at'  => now(),
         ]);
-        // users.name is NOT NULL — an empty string is the state that used to
-        // slip through COALESCE and render a nameless post.
-        DB::table('users')->where('id', $user->id)->update(['name' => '']);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function feedItems(string $query): array
+    {
+        $response = $this->apiGet($query);
+        $response->assertStatus(200);
+
+        return $response->json('data.items') ?? $response->json('data') ?? [];
+    }
+
+    // =========================================================================
+    // Write path — nothing is recorded any more
+    // =========================================================================
+
+    public function test_badge_award_writes_no_feed_card(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
 
         $this->pinTenant();
         GamificationService::awardBadge($user->id, self::BADGE_A);
 
+        $this->assertSame(
+            0,
+            $this->milestoneRowCount('badge_earned', $user->id),
+            'Awarding a badge must not create a feed card',
+        );
+    }
+
+    public function test_level_up_writes_no_feed_card(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['xp' => 0, 'level' => 1]);
+
+        // 150 XP crosses the level-2 threshold (100).
+        $this->pinTenant();
+        GamificationService::awardXP($user->id, 150, 'test_action', 'Regression test XP');
+
+        $this->assertSame(
+            0,
+            $this->milestoneRowCount('level_up', $user->id),
+            'Levelling up must not create a feed card',
+        );
+    }
+
+    // =========================================================================
+    // The rest of gamification must be untouched
+    // =========================================================================
+
+    public function test_badge_is_still_granted_and_xp_still_awarded(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['xp' => 0, 'level' => 1]);
+
+        $this->pinTenant();
+        GamificationService::awardBadge($user->id, self::BADGE_A);
+
+        $this->assertNotNull(
+            DB::table('user_badges')
+                ->where('user_id', $user->id)
+                ->where('badge_key', self::BADGE_A['key'])
+                ->first(),
+            'The badge itself must still be granted',
+        );
+        $this->assertGreaterThan(
+            0,
+            (int) DB::table('users')->where('id', $user->id)->value('xp'),
+            'Earning a badge must still award XP',
+        );
+    }
+
+    public function test_level_is_still_raised(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['xp' => 0, 'level' => 1]);
+
+        $this->pinTenant();
+        GamificationService::awardXP($user->id, 150, 'test_action', 'Regression test XP');
+
+        $this->assertGreaterThan(
+            1,
+            (int) DB::table('users')->where('id', $user->id)->value('level'),
+            'Crossing the XP threshold must still raise the level',
+        );
+    }
+
+    // =========================================================================
+    // Read path — historical rows stay out of every feed
+    // =========================================================================
+
+    public function test_historical_milestone_rows_are_never_served_by_the_feed(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $this->insertHistoricalMilestone('badge_earned', $author->id, 'Legacy Badge');
+        $this->insertHistoricalMilestone('level_up', $author->id, 'Level 7');
+
         $viewer = User::factory()->forTenant($this->testTenantId)->create();
         Sanctum::actingAs($viewer);
 
-        $response = $this->apiGet('/v2/feed?type=all&limit=50');
-        $response->assertStatus(200);
+        $types = collect($this->feedItems('/v2/feed?type=all&limit=100'))
+            ->pluck('type')
+            ->all();
 
-        $items = $response->json('data.items') ?? $response->json('data') ?? [];
-        $card = collect($items)->first(
-            fn ($item) => ($item['type'] ?? '') === 'badge_earned' && (int) ($item['id'] ?? 0) === $user->id
-        );
+        $this->assertNotContains('badge_earned', $types, 'A historical badge card must not reach the feed');
+        $this->assertNotContains('level_up', $types, 'A historical level-up card must not reach the feed');
+    }
 
-        $this->assertNotNull($card, 'Badge card should appear in the feed with id = user id');
-        $this->assertSame('Sarah Bird', $card['author']['name'] ?? null, 'Empty users.name must fall back to first + last name');
+    public function test_type_filter_cannot_request_milestone_cards(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $this->insertHistoricalMilestone('badge_earned', $author->id, 'Legacy Badge');
+
+        $viewer = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($viewer);
+
+        // The filter is not on the allowlist, so it falls back to 'all' — which
+        // still excludes milestones. Asking for them by name yields none.
+        $types = collect($this->feedItems('/v2/feed?type=badge_earned&limit=100'))
+            ->pluck('type')
+            ->all();
+
+        $this->assertNotContains('badge_earned', $types);
+    }
+
+    public function test_profile_feed_never_serves_milestone_rows(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $this->insertHistoricalMilestone('badge_earned', $author->id, 'Legacy Badge');
+
+        Sanctum::actingAs($author);
+
+        $types = collect($this->feedItems("/v2/feed?type=all&limit=100&user_id={$author->id}"))
+            ->pluck('type')
+            ->all();
+
+        $this->assertNotContains('badge_earned', $types, 'A profile feed must not show milestone cards either');
     }
 }

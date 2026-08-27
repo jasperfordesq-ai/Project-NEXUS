@@ -1505,8 +1505,7 @@
       "TS2741": 9
     },
     "src/pages/feed/HashtagsDiscoveryPage.test.tsx": {
-      "TS2322": 1,
-      "TS2345": 1
+      "TS2322": 1
     },
     "src/pages/goals/GoalDetailPage.test.tsx": {
       "TS2322": 1
@@ -1982,6 +1981,6 @@
   },
   "totals": {
     "fileCount": 583,
-    "errorCount": 1809
+    "errorCount": 1808
   }
 }

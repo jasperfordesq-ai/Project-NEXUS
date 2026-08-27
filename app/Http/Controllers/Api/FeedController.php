@@ -50,10 +50,12 @@ class FeedController extends BaseApiController
         ];
 
         // Allowlist for the type (feed filter) param
+        // 'badge_earned' / 'level_up' were listed here and are deliberately gone:
+        // gamification milestones are no longer feed content, so there is no
+        // filter that can select them (see FeedService::EXCLUDED_SOURCE_TYPES).
         $allowedFilters = ['all', 'posts', 'listings', 'events', 'polls', 'goals', 'jobs',
                            'challenges', 'volunteering', 'blogs', 'discussions',
-                           'following', 'trending', 'for_you', 'groups', 'saved',
-                           'badge_earned', 'level_up'];
+                           'following', 'trending', 'for_you', 'groups', 'saved'];
         $typeParam = $this->query('type', 'all');
         if (!in_array($typeParam, $allowedFilters, true)) {
             $typeParam = 'all';

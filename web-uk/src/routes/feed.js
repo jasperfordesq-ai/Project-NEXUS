@@ -90,6 +90,28 @@ function feedMedia(row) {
   }).filter((item) => item.fileUrl);
 }
 
+/**
+ * Gamification milestone cards are not feed content.
+ *
+ * `badge_earned` and `level_up` were rendered as ordinary feed cards here.
+ * Removed on the owner's instruction (2026-08-27): the feed carries member
+ * content, and gamification lives on the achievements and profile surfaces.
+ *
+ * The API no longer serves them (FeedService::EXCLUDED_SOURCE_TYPES), so this is
+ * this frontend's own guard against an older or cached API response. The type
+ * names survive in the label maps above only as a defensive fallback label —
+ * nothing reaches them.
+ */
+const GAMIFICATION_MILESTONE_TYPES = new Set(['badge_earned', 'level_up']);
+
+/**
+ * A normalized feed row worth rendering: a real id, and not a gamification
+ * milestone. Both feed listings filter through this.
+ */
+function isRenderableFeedPost(post) {
+  return post.id > 0 && !GAMIFICATION_MILESTONE_TYPES.has(post.type);
+}
+
 function normalizeFeedPost(row) {
   const id = positiveInteger(row && row.id, 0, 0, Number.MAX_SAFE_INTEGER);
   const type = trimmed(row && row.type, 40) || 'post';
@@ -492,7 +514,7 @@ router.get('/hashtag/:tag([A-Za-z0-9_]{1,100})', asyncRoute(async (req, res) => 
   try {
     const result = await getFeedHashtagPosts(tokenFrom(req), tag, query);
     const meta = collectionMeta(result);
-    items = feedCollectionRows(result).map(normalizeFeedPost).filter((item) => item.id > 0);
+    items = feedCollectionRows(result).map(normalizeFeedPost).filter(isRenderableFeedPost);
     totalCount = positiveInteger(meta.total_items, items.length, 0, Number.MAX_SAFE_INTEGER);
     hasMore = !!meta.has_more;
     nextCursor = trimmed(meta.cursor, 500);
@@ -551,7 +573,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     })
     : { data: [], meta: { per_page: perPage, has_more: false } };
 
-  const posts = feedCollectionRows(feedResult).map(normalizeFeedPost).filter((post) => post.id > 0);
+  const posts = feedCollectionRows(feedResult).map(normalizeFeedPost).filter(isRenderableFeedPost);
   await Promise.all(posts.map(async (post) => {
     post.isCommentable = COMMENTABLE_FEED_TYPES.has(post.type);
     post.comments = post.isCommentable

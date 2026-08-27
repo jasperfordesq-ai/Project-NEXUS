@@ -21,11 +21,18 @@ class FeedActivityService
 {
     /**
      * Valid source types that can appear in the feed.
+     *
+     * 'badge_earned' and 'level_up' were listed here and are deliberately gone
+     * (owner instruction, 2026-08-27): gamification milestones are no longer feed
+     * content, so recording one would write a row nothing can display. Anything
+     * that still tries is now logged as an invalid source_type rather than
+     * silently accumulating dead rows. See FeedService::EXCLUDED_SOURCE_TYPES,
+     * which hides the historical rows from every read.
      */
     private const VALID_TYPES = [
         'post', 'listing', 'event', 'poll', 'goal',
         'review', 'job', 'challenge', 'volunteer', 'volunteer_hours',
-        'blog', 'discussion', 'badge_earned', 'level_up',
+        'blog', 'discussion',
         'course', 'podcast_show', 'podcast_episode',
     ];
 

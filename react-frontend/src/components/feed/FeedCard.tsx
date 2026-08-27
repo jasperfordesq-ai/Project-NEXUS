@@ -19,7 +19,6 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
-import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Separator } from '@/components/ui/Separator';
@@ -45,8 +44,6 @@ import MapPin from 'lucide-react/icons/map-pin';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import BookOpen from 'lucide-react/icons/book-open';
 import Users from 'lucide-react/icons/users';
-import Trophy from 'lucide-react/icons/trophy';
-import Zap from 'lucide-react/icons/zap';
 import Pencil from 'lucide-react/icons/pencil';
 import ThumbsDown from 'lucide-react/icons/thumbs-down';
 import Landmark from 'lucide-react/icons/landmark';
@@ -63,7 +60,7 @@ import { useLongPress } from '@/hooks/useLongPress';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
 import type { FeedItem, PollData } from './types';
-import { getAuthor, getItemDetailPath, getItemDetailLabel } from './types';
+import { getAuthor, getItemDetailPath, getItemDetailLabel, isGamificationMilestone } from './types';
 import { WhyShown } from './WhyShown';
 import { FeedContentRenderer } from './FeedContentRenderer';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
@@ -302,20 +299,6 @@ const typeConfig = {
     softGradient: 'from-teal-500/10 to-cyan-500/10',
     accentGradient: 'from-teal-500 via-cyan-500 to-teal-500',
   },
-  badge_earned: {
-    labelKey: 'card.type_badge_earned',
-    color: 'warning' as const,
-    icon: <Trophy className="w-3 h-3" aria-hidden="true" />,
-    softGradient: 'from-yellow-500/10 to-amber-500/10',
-    accentGradient: 'from-yellow-500 via-amber-500 to-yellow-500',
-  },
-  level_up: {
-    labelKey: 'card.type_level_up',
-    color: 'success' as const,
-    icon: <Zap className="w-3 h-3" aria-hidden="true" />,
-    softGradient: 'from-emerald-500/10 to-teal-500/10',
-    accentGradient: 'from-emerald-500 via-teal-500 to-emerald-500',
-  },
   course: {
     labelKey: 'card.type_course',
     color: 'primary' as const,
@@ -383,7 +366,7 @@ function useDoubleTap(onDoubleTap: () => void, delay = 300) {
 
 /* ───────────────────────── Feed Card ───────────────────────── */
 
-const FeedCard = React.memo(function FeedCard({
+const FeedCardInner = React.memo(function FeedCardInner({
   item,
   onToggleLike,
   onReact,
@@ -475,19 +458,6 @@ const FeedCard = React.memo(function FeedCard({
   // Post analytics modal
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  // Confetti celebration for milestone feed items (badge_earned, level_up)
-  const [showConfetti, setShowConfetti] = useState(false);
-  const confettiTriggeredRef = useRef(false);
-  const confettiTimeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  // H6: Mounted guard — prevents setState calls after unmount
-  // Clean up confetti timeouts on unmount
-  useEffect(() => {
-    return () => {
-      confettiTimeoutRefs.current.forEach(clearTimeout);
-    };
-  }, []);
-
   // View tracking — fire once per session per post when entering viewport.
   // Uses the shared IntersectionObserver so a 50-card feed registers ONE observer
   // for all view-tracking instead of 50 separate ones.
@@ -505,18 +475,6 @@ const FeedCard = React.memo(function FeedCard({
       if (item.type === 'post') {
         api.post(`/v2/feed/posts/${item.id}/view`).catch(() => {});
       }
-
-      // Trigger confetti for milestone items on first view
-      const isMilestone = item.type === 'badge_earned' || item.type === 'level_up';
-      if (isMilestone && !confettiTriggeredRef.current) {
-        confettiTriggeredRef.current = true;
-        const t1 = setTimeout(() => { setShowConfetti(true); }, 300);
-        const t2 = setTimeout(() => {
-          setShowConfetti(false);
-          confettiTimeoutRefs.current = confettiTimeoutRefs.current.filter(id => id !== t1 && id !== t2);
-        }, 2000);
-        confettiTimeoutRefs.current.push(t1, t2);
-      }
     },
     [item.id, item.type]
   );
@@ -529,8 +487,12 @@ const FeedCard = React.memo(function FeedCard({
   const isCommentable = COMMENTABLE_TYPES.has(item.type);
   // Keep the route usable if an API feed type arrives before a cached client
   // learns its presentation. Unknown items render neutrally instead of taking
-  // down the whole feed through an undefined configuration lookup.
-  const config = typeConfig[item.type] ?? fallbackTypeConfig;
+  // down the whole feed through an undefined configuration lookup. `badge_earned`
+  // and `level_up` are deliberately absent from typeConfig and reach this
+  // fallback, but a milestone never gets this far — FeedCard returns null first.
+  const config = item.type in typeConfig
+    ? typeConfig[item.type as keyof typeof typeConfig]
+    : fallbackTypeConfig;
   const typeLabel = config.labelKey ? t(config.labelKey) : null;
   const detailPath = getItemDetailPath(item);
   const detailLabel = getItemDetailLabel(item);
@@ -587,9 +549,6 @@ const FeedCard = React.memo(function FeedCard({
     <GlassCard ref={(el: HTMLDivElement | null) => { trackingRef(el); setViewRef(el); }} role="article" hoverable className="overflow-visible group relative">
       {/* Long-press touch target for mobile context menu */}
       <div onTouchStart={longPressHandlers.onTouchStart} onTouchMove={longPressHandlers.onTouchMove} onTouchEnd={longPressHandlers.onTouchEnd}>
-      {/* Confetti celebration overlay for milestones */}
-      <ConfettiCelebration show={showConfetti} />
-
       {/*
         Accent strip on every card. Typed cards use their saturated type colour
         (green=event, amber=poll, etc.); native posts use a neutral border-coloured
@@ -1492,48 +1451,6 @@ const FeedCard = React.memo(function FeedCard({
           </Card>
         )}
 
-        {/* Badge Earned — celebratory "moment" framing with oversized icon */}
-        {item.type === 'badge_earned' && (
-          <Card shadow="none" className="mb-4 bg-gradient-to-br from-yellow-500/20 via-amber-500/15 to-orange-500/10 border border-yellow-500/30 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(251,191,36,0.18),_transparent_70%)] pointer-events-none" aria-hidden="true" />
-            <CardBody className="p-6 text-center relative">
-              <div className="mx-auto mb-3 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-lg shadow-amber-500/30 text-5xl" aria-hidden="true">
-                {item.badge_icon || '\uD83C\uDFC6'}
-              </div>
-              <p className="text-xs font-semibold text-theme-warning uppercase tracking-[0.2em] mb-1">
-                {t('card.milestone.badge_unlocked')}
-              </p>
-              <p className="text-base font-bold text-theme-primary leading-snug">
-                {t('card.badge_earned_message', {
-                  name: author.name,
-                  badge: item.badge_name || item.title || '',
-                })}
-              </p>
-            </CardBody>
-          </Card>
-        )}
-
-        {/* Level Up — celebratory "moment" framing with oversized icon */}
-        {item.type === 'level_up' && (
-          <Card shadow="none" className="mb-4 bg-gradient-to-br from-emerald-500/20 via-teal-500/15 to-cyan-500/10 border border-emerald-500/30 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.18),_transparent_70%)] pointer-events-none" aria-hidden="true" />
-            <CardBody className="p-6 text-center relative">
-              <div className="mx-auto mb-3 inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30" aria-hidden="true">
-                <Zap className="w-10 h-10 text-white fill-white" />
-              </div>
-              <p className="text-xs font-semibold text-theme-success uppercase tracking-[0.2em] mb-1">
-                {t('card.milestone.level_reached')}
-              </p>
-              <p className="text-base font-bold text-theme-primary leading-snug">
-                {t('card.level_up_message', {
-                  name: author.name,
-                  level: item.new_level || item.title?.replace('Level ', '') || '',
-                })}
-              </p>
-            </CardBody>
-          </Card>
-        )}
-
         {/* View detail CTA — for listings, events, goals, reviews */}
         {detailPath && detailLabel && (
           <div className="mb-3">
@@ -1788,6 +1705,29 @@ const FeedCard = React.memo(function FeedCard({
     </GlassCard>
   );
 });
+
+/**
+ * Gamification milestone cards are never rendered.
+ *
+ * `badge_earned` and `level_up` used to render here as full-width celebratory
+ * cards (an oversized icon, a gradient panel and a confetti burst). They
+ * dominated the feed, so they were removed on the owner's instruction
+ * (2026-08-27).
+ *
+ * The API no longer serves them, and the lists filter them out
+ * (`excludeGamificationMilestones`). This guard is the last line: a cached
+ * payload or a stale service-worker response can still hand one to a card
+ * directly, and nothing should be drawn for it. Rendering `null` rather than a
+ * slimmer card is deliberate — "no more gamification badges on the feed" means
+ * no card at all.
+ *
+ * The rest of gamification is untouched. Badges and levels are still awarded,
+ * still notified, and still shown on the achievements page and member profiles.
+ */
+function FeedCard(props: FeedCardProps) {
+  if (isGamificationMilestone(props.item)) return null;
+  return <FeedCardInner {...props} />;
+}
 
 export { FeedCard };
 export default FeedCard;

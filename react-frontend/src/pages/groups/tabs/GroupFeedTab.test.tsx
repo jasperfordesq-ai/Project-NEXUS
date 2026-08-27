@@ -55,6 +55,10 @@ vi.mock('@/components/feed/FeedCard', () => ({
 
 vi.mock('@/components/feed/types', () => ({
   getAuthor: (item: { author?: { id: number } }) => item.author ?? { id: 0 },
+  // Real behaviour, not a stub: the tab must actually drop gamification
+  // milestones, and a pass-through mock would hide a regression.
+  excludeGamificationMilestones: (items: { type: string }[]) =>
+    items.filter((item) => item.type !== 'badge_earned' && item.type !== 'level_up'),
 }));
 
 vi.mock('@/components/feedback', () => ({

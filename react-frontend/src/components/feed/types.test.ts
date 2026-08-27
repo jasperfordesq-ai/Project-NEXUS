@@ -8,7 +8,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAuthor, getItemDetailPath, getItemDetailLabel } from './types';
+import {
+  getAuthor,
+  getItemDetailPath,
+  getItemDetailLabel,
+  isGamificationMilestone,
+  excludeGamificationMilestones,
+} from './types';
 import type { FeedItem } from './types';
 
 describe('getAuthor', () => {
@@ -200,5 +206,54 @@ describe('getItemDetailLabel', () => {
   it('returns null for post and poll', () => {
     expect(getItemDetailLabel({ ...base, type: 'post' })).toBeNull();
     expect(getItemDetailLabel({ ...base, type: 'poll' })).toBeNull();
+  });
+});
+
+/*
+ * Gamification milestones were removed from the feed on the owner's instruction
+ * (2026-08-27). Every feed list filters through excludeGamificationMilestones,
+ * so this is the shared guard the whole React client depends on.
+ */
+describe('gamification milestone helpers', () => {
+  const base: FeedItem = {
+    id: 1,
+    content: 'test',
+    created_at: '2026-01-01',
+    type: 'post',
+    likes_count: 0,
+    comments_count: 0,
+    is_liked: false,
+  };
+
+  it('identifies badge and level milestones', () => {
+    expect(isGamificationMilestone({ ...base, type: 'badge_earned' })).toBe(true);
+    expect(isGamificationMilestone({ ...base, type: 'level_up' })).toBe(true);
+  });
+
+  it('leaves real content types alone', () => {
+    expect(isGamificationMilestone({ ...base, type: 'post' })).toBe(false);
+    expect(isGamificationMilestone({ ...base, type: 'challenge' })).toBe(false);
+    expect(isGamificationMilestone({ ...base, type: 'goal' })).toBe(false);
+  });
+
+  it('drops milestones from a feed list and keeps the order of the rest', () => {
+    const items: FeedItem[] = [
+      { ...base, id: 1, type: 'post' },
+      { ...base, id: 2, type: 'badge_earned' },
+      { ...base, id: 3, type: 'listing' },
+      { ...base, id: 4, type: 'level_up' },
+      { ...base, id: 5, type: 'event' },
+    ];
+
+    expect(excludeGamificationMilestones(items).map((item) => item.id)).toEqual([1, 3, 5]);
+  });
+
+  it('returns an empty list when every item is a milestone', () => {
+    const items: FeedItem[] = [
+      { ...base, id: 1, type: 'badge_earned' },
+      { ...base, id: 2, type: 'level_up' },
+    ];
+
+    expect(excludeGamificationMilestones(items)).toEqual([]);
   });
 });

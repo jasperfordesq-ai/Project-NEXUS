@@ -13,7 +13,7 @@ import { Chip } from '@/components/ui/StatusChip';
 
 import { reportException } from '@/lib/observability/report';
 import { useTranslation } from 'react-i18next';
-import { getFeed, type FeedFilter, type FeedItem as FeedItemType, type FeedMode, type FeedResponse } from '@/lib/api/feed';
+import { excludeGamificationMilestones, getFeed, type FeedFilter, type FeedItem as FeedItemType, type FeedMode, type FeedResponse } from '@/lib/api/feed';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -38,7 +38,10 @@ function extractFeedPage(response: FeedResponse) {
     return { items: [], cursor: null, hasMore: false };
   }
   const seen = new Set<string>();
-  const unique = response.data.filter((item) => {
+  // Gamification milestone cards are not feed content — see
+  // excludeGamificationMilestones. Dropped before dedupe so a stale cached page
+  // cannot leave a blank row behind.
+  const unique = excludeGamificationMilestones(response.data).filter((item) => {
     const key = `${item.type}-${item.id}`;
     if (seen.has(key)) return false;
     seen.add(key);

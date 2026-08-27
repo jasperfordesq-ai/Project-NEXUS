@@ -29,6 +29,7 @@ import { api } from '@/lib/api';
 import { applyFeedSyncToItem, dispatchFeedSync, FEED_SYNC_EVENT, type FeedSyncPayload } from '@/lib/feedSync';
 import { logError } from '@/lib/logger';
 import type { FeedItem, PollData } from '@/components/feed/types';
+import { excludeGamificationMilestones } from '@/components/feed/types';
 import type { ReactionType } from '@/components/social';
 
 interface ProfileFeedProps {
@@ -397,7 +398,7 @@ export function ProfileFeed({ userId, isOwnProfile = false }: ProfileFeedProps) 
       )}
 
       <AnimatePresence mode="popLayout">
-        {items.map((item) => (
+        {excludeGamificationMilestones(items).map((item) => (
           <motion.div key={`${item.type}-${item.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} layout>
             <FeedCard
               item={item}

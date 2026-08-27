@@ -90,14 +90,35 @@ class FeedService
 
     /**
      * Map plural filter names to source_type values (matches legacy).
+     *
+     * 'badge_earned' / 'level_up' were mapped here and are deliberately gone:
+     * gamification milestones are no longer feed content (see
+     * self::EXCLUDED_SOURCE_TYPES), so there is no filter that can select them.
      */
     private const TYPE_MAP = [
         'posts' => 'post', 'listings' => 'listing', 'events' => 'event',
         'polls' => 'poll', 'goals' => 'goal', 'jobs' => 'job',
         'challenges' => 'challenge', 'volunteering' => 'volunteer',
         'blogs' => 'blog', 'discussions' => 'discussion',
-        'badge_earned' => 'badge_earned', 'level_up' => 'level_up',
     ];
+
+    /**
+     * Source types that never appear in any feed read.
+     *
+     * Gamification milestone cards ('badge_earned', 'level_up') were rendered as
+     * full-width celebratory cards in every client and dominated the feed.
+     * Removed on the owner's instruction (2026-08-27): the feed carries member
+     * content, and gamification lives on the achievements/profile surfaces.
+     *
+     * GamificationService no longer WRITES these rows, so this is the guard for
+     * historical rows already in feed_activity. It is applied in getFeed(), which
+     * is the single read path behind the main feed, profile feeds, group feeds
+     * and the single-item lookups — so no client can request them back.
+     *
+     * The rest of gamification (XP, levels, badge awards, notifications, emails,
+     * leaderboards, the achievements page) is untouched.
+     */
+    public const EXCLUDED_SOURCE_TYPES = ['badge_earned', 'level_up'];
 
     public function __construct(
         private readonly FeedActivity $feedActivity,
@@ -192,6 +213,8 @@ class FeedService
                      ->where('u.tenant_id', '=', $tenantId);
             })
             ->where('feed_activity.is_visible', true)
+            // Gamification milestones are not feed content — see EXCLUDED_SOURCE_TYPES.
+            ->whereNotIn('feed_activity.source_type', self::EXCLUDED_SOURCE_TYPES)
             ->select([
                 'feed_activity.id as activity_id',
                 'feed_activity.source_type',

@@ -29,7 +29,7 @@ import { useCallback } from 'react';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { FeedCard } from '@/components/feed/FeedCard';
 import type { FeedItem } from '@/components/feed/types';
-import { getAuthor } from '@/components/feed/types';
+import { getAuthor, excludeGamificationMilestones } from '@/components/feed/types';
 import type { ReactionType } from '@/components/social';
 
 interface GroupFeedTabProps {
@@ -199,7 +199,7 @@ export function GroupFeedTab({
       ) : (
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {feedItems.map((item) => (
+            {excludeGamificationMilestones(feedItems).map((item) => (
               <motion.div key={`${item.type}-${item.id}`} layout>
                 <FeedCard
                   item={item}

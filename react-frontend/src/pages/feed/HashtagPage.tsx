@@ -31,7 +31,7 @@ import { EmptyState } from '@/components/feedback';
 import { FeedCard } from '@/components/feed/FeedCard';
 import { FeedSkeleton } from '@/components/feed/FeedSkeleton';
 import type { FeedItem, PollData } from '@/components/feed/types';
-import { getAuthor } from '@/components/feed/types';
+import { getAuthor, excludeGamificationMilestones } from '@/components/feed/types';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -415,7 +415,7 @@ export function HashtagPage() {
           ) : (
             <div className="space-y-4">
               <AnimatePresence mode="popLayout">
-                {items.map((item) => (
+                {excludeGamificationMilestones(items).map((item) => (
                   <motion.div key={`${item.type}-${item.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} layout>
                     <FeedCard
                       item={item}

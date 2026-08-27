@@ -14,7 +14,7 @@ import * as Haptics from '@/lib/haptics';
 
 import { useTranslation } from 'react-i18next';
 
-import { getFeedAuthor, toggleBookmark, toggleLike, toggleReaction, type FeedItem as FeedItemType, type PollData, type ReactionsSummary, type ReactionType } from '@/lib/api/feed';
+import { getFeedAuthor, isGamificationMilestone, toggleBookmark, toggleLike, toggleReaction, type FeedItem as FeedItemType, type PollData, type ReactionsSummary, type ReactionType } from '@/lib/api/feed';
 import {
   hideFeedItem,
   markFeedItemNotInterested,
@@ -77,8 +77,18 @@ type ChipColor = 'accent' | 'default' | 'success' | 'warning' | 'danger';
 const REPORT_REASONS = ['safety_concern', 'inappropriate', 'misleading', 'spam', 'other'] as const;
 type ReportReason = (typeof REPORT_REASONS)[number];
 
+/**
+ * Feed types that are drawn as a card.
+ *
+ * `badge_earned` / `level_up` are excluded: gamification milestones are no longer
+ * feed content (owner instruction, 2026-08-27) and never reach a card. Keeping
+ * this as an exhaustive Record means a NEW feed type still has to be given a
+ * presentation here rather than silently falling back.
+ */
+type FeedCardVisualType = Exclude<FeedItemType['type'], 'badge_earned' | 'level_up'>;
+
 const TYPE_CONFIG: Record<
-  FeedItemType['type'],
+  FeedCardVisualType,
   {
     chipColor: ChipColor;
     icon: keyof typeof Ionicons.glyphMap;
@@ -144,16 +154,6 @@ const TYPE_CONFIG: Record<
     chipColor: 'accent',
     icon: 'library-outline',
     strip: ['#14B8A6', '#06B6D4', '#14B8A6'],
-  },
-  badge_earned: {
-    chipColor: 'warning',
-    icon: 'ribbon-outline',
-    strip: ['#EAB308', '#F59E0B', '#EAB308'],
-  },
-  level_up: {
-    chipColor: 'success',
-    icon: 'flash-outline',
-    strip: ['#10B981', '#14B8A6', '#10B981'],
   },
 };
 
@@ -241,7 +241,7 @@ const REACTABLE_TYPES = new Set<FeedItemType['type']>([
 ]);
 
 function getTypeConfig(type: FeedItemType['type'] | string) {
-  return TYPE_CONFIG[type as FeedItemType['type']] ?? DEFAULT_TYPE_CONFIG;
+  return TYPE_CONFIG[type as FeedCardVisualType] ?? DEFAULT_TYPE_CONFIG;
 }
 
 function getTypeColor(type: FeedItemType['type'] | string): ChipColor {
@@ -789,22 +789,6 @@ function FeedItemInner({
           </HeroCard.Header>
 
           <HeroCard.Body className="gap-3 px-4 pb-4 pt-1">
-            {item.type === 'badge_earned' || item.type === 'level_up' ? (
-              <Surface variant="secondary" className="items-center gap-2 rounded-panel-inner p-5">
-                <View className="h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: primary }}>
-                  <Ionicons name={item.type === 'badge_earned' ? 'ribbon' : 'flash'} size={34} color="#fff" />
-                </View>
-                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
-                  {item.type === 'badge_earned' ? t('milestone.badgeUnlocked') : t('milestone.levelReached')}
-                </Text>
-                <Text className="text-center text-base font-bold" style={{ color: theme.text }}>
-                  {item.type === 'badge_earned'
-                    ? t('milestone.badgeMessage', { name: authorName, badge: item.badge_name || item.title || '' })
-                    : t('milestone.levelMessage', { name: authorName, level: item.new_level || item.title || '' })}
-                </Text>
-              </Surface>
-            ) : null}
-
             {item.title ? (
               <Text className="text-base font-bold leading-6" style={{ color: theme.text }}>
                 {toPlainText(item.title)}
@@ -1243,7 +1227,28 @@ function FeedItemInner({
  * memo every visible card re-rendered (animations re-initialised, images
  * re-evaluated). Rows only re-render when their own item or count changes.
  */
-const FeedItem = memo(FeedItemInner, (prev, next) =>
+/**
+ * Gamification milestone cards are never rendered.
+ *
+ * `badge_earned` and `level_up` used to render as a full-width celebratory panel
+ * (a large circular icon and a bold headline) inside the card. They dominated the
+ * feed, so they were removed on the owner's instruction (2026-08-27).
+ *
+ * The API no longer serves them and the lists filter them out
+ * (`excludeGamificationMilestones`). This guard is the last line: a phone can
+ * hold a cached page for days, and nothing should be drawn for a stale milestone.
+ * Rendering `null` rather than a slimmer card is deliberate — "no more
+ * gamification badges on the feed" means no card at all.
+ *
+ * The rest of gamification is untouched. Badges and levels are still awarded,
+ * still notified, and still shown on the achievements and profile screens.
+ */
+function FeedItemGuarded(props: FeedItemProps) {
+  if (isGamificationMilestone(props.item)) return null;
+  return <FeedItemInner {...props} />;
+}
+
+const FeedItem = memo(FeedItemGuarded, (prev, next) =>
   prev.item === next.item &&
   prev.commentsCountOverride === next.commentsCountOverride &&
   prev.disableDetailNavigation === next.disableDetailNavigation &&

@@ -135,18 +135,33 @@ describe('PostDetailPage', () => {
     });
   });
 
-  it('renders error state on API failure', async () => {
+  /*
+   * 🔴 The back controls are LINKS, not buttons.
+   *
+   * This suite was quarantined for exactly this: it asked for
+   * `getAllByRole('button')` and found none, so it read as "there is no way back
+   * from a missing post" when the way back was there and working. The page
+   * renders `<Button as={Link} to={tenantPath('/feed')}>`, which produces an
+   * `<a href>` — implicit ARIA role `link`. That is the correct element for a
+   * control that navigates, so the page stays as it is and the query is fixed.
+   *
+   * The `expect(allText).toBeTruthy()` line that stood here is also gone: the
+   * body always has some text, so it asserted nothing. The error message itself
+   * is now checked.
+   */
+  it('renders the error state and a way back when the post cannot be loaded', async () => {
     mockApi.get.mockResolvedValue({ success: false, data: null });
     render(<PostDetailPage />);
+
     await waitFor(() => {
-      // Error text from translation key post_detail.not_found
-      // In test env i18n returns key name or English fallback
-      const allText = document.body.innerText + document.body.textContent;
-      expect(allText).toBeTruthy(); // rendered something
-      // Should show a back button
-      const backBtns = screen.getAllByRole('button').filter((b) => b.textContent?.toLowerCase().includes('back') || b.textContent?.includes('←'));
-      expect(backBtns.length).toBeGreaterThan(0);
+      expect(screen.getByText('Item not found')).toBeInTheDocument();
     });
+
+    const backLinks = screen.getAllByRole('link', { name: /back to feed/i });
+    expect(backLinks.length).toBeGreaterThan(0);
+    for (const link of backLinks) {
+      expect(link).toHaveAttribute('href', '/test/feed');
+    }
   });
 
   it('calls POST /v2/feed/like on like button click', async () => {
@@ -225,10 +240,14 @@ describe('PostDetailPage', () => {
     });
   });
 
-  it('renders back link to feed', async () => {
+  it('renders a back link to the feed above a loaded post', async () => {
     render(<PostDetailPage />);
     await waitFor(() => expect(screen.getByText('Hello World from the feed!')).toBeInTheDocument());
-    const backBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('back'));
-    expect(backBtn).toBeDefined();
+
+    // Role `link`, not `button` — see the note on the error-state test above.
+    expect(screen.getByRole('link', { name: /back to feed/i })).toHaveAttribute(
+      'href',
+      '/test/feed',
+    );
   });
 });

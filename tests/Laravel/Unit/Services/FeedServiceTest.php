@@ -403,8 +403,6 @@ class FeedServiceTest extends TestCase
             'volunteering' => 'volunteer',
             'blogs' => 'blog',
             'discussions' => 'discussion',
-            'badge_earned' => 'badge_earned',
-            'level_up' => 'level_up',
         ];
 
         $reflection = new \ReflectionClass(FeedService::class);

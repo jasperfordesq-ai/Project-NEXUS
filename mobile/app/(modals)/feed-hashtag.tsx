@@ -11,7 +11,7 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
-import { getHashtagFeed, type FeedItem as FeedItemType } from '@/lib/api/feed';
+import { excludeGamificationMilestones, getHashtagFeed, type FeedItem as FeedItemType } from '@/lib/api/feed';
 import ReactorsSheet from '@/components/reactions/ReactorsSheet';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -59,7 +59,8 @@ export default function FeedHashtagScreen() {
 
     try {
       const response = await getHashtagFeed(tag, append ? cursor : null);
-      const nextItems = response.data ?? [];
+      // Gamification milestones are not feed content — see excludeGamificationMilestones.
+      const nextItems = excludeGamificationMilestones(response.data ?? []);
       setItems((previous) => (append ? [...previous, ...nextItems] : nextItems));
       setCursor(response.meta?.cursor ?? null);
       setHasMore(response.meta?.has_more ?? false);

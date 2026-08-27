@@ -273,3 +273,40 @@ export function getItemDetailLabel(item: FeedItem): string | null {
       return null;
   }
 }
+
+/**
+ * Gamification milestone feed types — never shown in the feed.
+ *
+ * `badge_earned` and `level_up` used to render as full-width celebratory cards
+ * in every client. Removed on the owner's instruction (2026-08-27) because they
+ * crowded out member content.
+ *
+ * The API no longer serves them (`GamificationService` stops recording the rows,
+ * `FeedService::EXCLUDED_SOURCE_TYPES` hides historical ones), so these helpers
+ * are the client's own belt and braces against a cached or stale payload. The
+ * type stays in the union above on purpose: a stale response must still be
+ * type-checkable so it can be filtered, rather than cast away.
+ *
+ * Nothing else about gamification changes — badges and levels are still awarded,
+ * notified, and shown on the achievements page and member profiles.
+ */
+export const GAMIFICATION_MILESTONE_TYPES: ReadonlySet<string> = new Set([
+  'badge_earned',
+  'level_up',
+]);
+
+/** True when a feed item is a gamification milestone card. */
+export function isGamificationMilestone(item: { type: string }): boolean {
+  return GAMIFICATION_MILESTONE_TYPES.has(item.type);
+}
+
+/**
+ * Drop gamification milestones from a feed list.
+ *
+ * Filtering the list (rather than relying only on `FeedCard` rendering `null`)
+ * keeps the surrounding layout clean: a card that renders nothing still leaves
+ * its animation wrapper and the list's row gap behind.
+ */
+export function excludeGamificationMilestones<T extends { type: string }>(items: T[]): T[] {
+  return items.filter((item) => !isGamificationMilestone(item));
+}
