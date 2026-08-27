@@ -28,10 +28,7 @@ import { adminEnterprise } from '../../api/adminApi';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
 import type { EnterpriseDashboardStats } from '../../api/types';
-
-function translationToken(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-}
+import { translationToken } from './gdprAuditTranslations';
 
 export function EnterpriseDashboard() {
   const { t } = useTranslation('admin_enterprise');

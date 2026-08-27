@@ -23,6 +23,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { DataTable } from '../../components/DataTable';
 import type { Column } from '../../components/DataTable';
 import type { GdprAuditEntry } from '../../api/types';
+import { translationToken } from './gdprAuditTranslations';
 import { useTranslation } from 'react-i18next';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,10 +39,6 @@ function getActionColor(action: string): ActionColor {
   if (lower.includes('create') || lower.includes('approve') || lower.includes('grant')) return 'success';
   if (lower.includes('view') || lower.includes('export') || lower.includes('access')) return 'primary';
   return 'default';
-}
-
-function translationToken(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
 interface AuditFilters {

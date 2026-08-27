@@ -1033,9 +1033,13 @@ export interface GdprBreach {
 export interface GdprAuditEntry {
   id: number;
   admin_id: number;
-  user_name: string;
+  // 🔴 Nullable in the database, and the API passes both straight through.
+  // user_name comes from a LEFT JOIN that misses whenever the acting admin is
+  // gone; entity_type is null by design on an account deletion. Never call a
+  // string method on either without a guard -- see gdprAuditTranslations.ts.
+  user_name: string | null;
   action: string;
-  entity_type: string;
+  entity_type: string | null;
   entity_id: number;
   old_value: string | null;
   new_value: string | null;
@@ -1053,12 +1057,13 @@ export interface EnterpriseDashboardStats {
   redis_connected: boolean;
   memory_percent: number;
   disk_percent: number;
+  // Same nullable columns as GdprAuditEntry above, same reason.
   recent_gdpr_activity: Array<{
     id: number;
     action: string;
-    entity_type: string;
+    entity_type: string | null;
     created_at: string;
-    user_name: string;
+    user_name: string | null;
   }>;
 }
 

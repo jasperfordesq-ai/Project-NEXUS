@@ -72,8 +72,11 @@ export function RoleList() {
         setDeleteTarget(null);
         loadRoles();
       } else {
-        const error = t('enterprise.failed_to_delete_role');
-        toast.error(error);
+        // Surface the API's own (server-translated) reason -- e.g. why a
+        // particular role may not be deleted -- and fall back to the generic
+        // message only when it sends none. This is the house pattern used by
+        // every other admin page that reports a failed write.
+        toast.error(res.error || t('enterprise.failed_to_delete_role'));
       }
     } catch {
       toast.error(t('enterprise.failed_to_delete_role'));

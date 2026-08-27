@@ -162,6 +162,43 @@ describe('GdprAuditLog', () => {
     });
   });
 
+  // Regression: same nullable column as EnterpriseDashboard (production support
+  // report NXR-260827-ND1UJA). This page keeps its own copy of the token
+  // builder and renders entity_type in a table cell AND in the detail modal, so
+  // it fell over on exactly the same rows -- and it lists every entry, not just
+  // the five most recent. Asserted on data-action rather than the chip's text,
+  // per this file's convention: the label is a t() lookup.
+  it('renders a row whose entity_type is null without crashing', async () => {
+    mockGetGdprAudit.mockResolvedValue({
+      success: true,
+      data: {
+        data: [
+          {
+            id: 304,
+            action: 'account_deleted',
+            entity_type: null,
+            entity_id: 0,
+            admin_id: 7,
+            user_name: null,
+            ip_address: null,
+            created_at: '2026-08-26T14:09:56Z',
+            old_value: null,
+            new_value: null,
+          },
+        ],
+        meta: { total: 1 },
+      },
+    });
+    render(<GdprAuditLog />);
+
+    await waitFor(() => {
+      const actions = screen
+        .getAllByTestId('audit-action-chip')
+        .map((chip) => chip.getAttribute('data-action'));
+      expect(actions).toContain('account_deleted');
+    });
+  });
+
   it('calls getGdprAudit on mount', async () => {
     render(<GdprAuditLog />);
     await waitFor(() => {

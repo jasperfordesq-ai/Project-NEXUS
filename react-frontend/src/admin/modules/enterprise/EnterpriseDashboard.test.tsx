@@ -144,6 +144,109 @@ describe('EnterpriseDashboard', () => {
     expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
   });
 
+  // Regression: production support report NXR-260827-ND1UJA (/admin/enterprise
+  // on timebank.global). A GDPR audit row for a DELETED account carries
+  // entity_type = null -- GdprService::logAction() passes null on purpose,
+  // because the entity it would point at no longer exists. translationToken()
+  // was typed `(value: string)` and called .toLowerCase() on it, so a single
+  // such row threw during render and took the whole admin page down to the
+  // top-level error boundary. The API response itself was a clean 200.
+  it('renders a GDPR activity row whose entity_type is null without crashing', async () => {
+    mockGetDashboard.mockResolvedValue({
+      success: true,
+      data: {
+        ...STATS_PAYLOAD,
+        recent_gdpr_activity: [
+          {
+            id: 304,
+            action: 'account_deleted',
+            entity_type: null,
+            user_name: null,
+            created_at: '2026-08-26T14:09:56Z',
+          },
+        ],
+      },
+    });
+    render(<EnterpriseDashboard />);
+
+    // The missing entity type falls back to the "unknown" label...
+    await waitFor(() => {
+      expect(screen.getByText('Unknown entity')).toBeInTheDocument();
+    });
+    // ...the action itself is named properly rather than also reading
+    // "Unknown action", which is what every recorded action did until the
+    // wording for the real action names was added...
+    expect(screen.getByText('Account deleted')).toBeInTheDocument();
+    // ...and the rest of the page is still standing.
+    expect(screen.getByText('42')).toBeInTheDocument();
+  });
+
+  // Every action name GdprService and AdminEnterpriseController actually write
+  // must resolve to real wording. Before these keys existed the audit list read
+  // "Unknown action" for all of them -- including consent_given, which is 256 of
+  // the 280 rows in production.
+  it.each([
+    ['consent_given', 'Consent given'],
+    ['data_exported', 'Data exported'],
+    ['access_requested', 'Access requested'],
+    ['erasure_requested', 'Erasure requested'],
+    ['rectification_requested', 'Rectification requested'],
+    ['restriction_requested', 'Restriction requested'],
+    ['portability_requested', 'Portability requested'],
+    ['objection_requested', 'Objection requested'],
+    ['request_processing_started', 'Processing started'],
+    ['create_request', 'Request created'],
+    ['assign_request', 'Request assigned'],
+    ['add_note', 'Note added'],
+    ['generate_export', 'Export generated'],
+    ['update_breach', 'Breach updated'],
+    ['notify_dpa', 'Data protection authority notified'],
+  ])('names the %s action instead of falling back to "Unknown action"', async (action, label) => {
+    mockGetDashboard.mockResolvedValue({
+      success: true,
+      data: {
+        ...STATS_PAYLOAD,
+        recent_gdpr_activity: [
+          { id: 1, action, entity_type: 'gdpr_request', user_name: null, created_at: '2026-08-26T14:09:56Z' },
+        ],
+      },
+    });
+    render(<EnterpriseDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Unknown action')).not.toBeInTheDocument();
+  });
+
+  it('names the gdpr_export entity type', async () => {
+    mockGetDashboard.mockResolvedValue({
+      success: true,
+      data: {
+        ...STATS_PAYLOAD,
+        recent_gdpr_activity: [
+          { id: 1, action: 'data_exported', entity_type: 'gdpr_export', user_name: null, created_at: '2026-08-26T14:09:56Z' },
+        ],
+      },
+    });
+    render(<EnterpriseDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Data export')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Unknown entity')).not.toBeInTheDocument();
+  });
+
+  it('still renders a GDPR activity row whose entity_type is present', async () => {
+    mockGetDashboard.mockResolvedValue({ success: true, data: STATS_PAYLOAD });
+    render(<EnterpriseDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('User')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Unknown entity')).not.toBeInTheDocument();
+  });
+
   it('does not render GDPR activity section when list is empty', async () => {
     mockGetDashboard.mockResolvedValue({
       success: true,

@@ -52,9 +52,13 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Sample data ─────────────────────────────────────────────────────────────
 // permissionLabel() converts "users" → "Users" and "users.view" → "Users View"
+// Mirrors AdminEnterpriseController::PERMISSIONS. These slugs must be REAL:
+// the form looks each one up as enterprise.permissions.<token> and falls back to
+// "Unknown permission" for anything it does not recognise, so a made-up slug
+// (the previous `reports.*` / `content.view`) renders no usable label at all.
 const PERMISSIONS: Record<string, string[]> = {
-  content: ['content.view', 'content.edit', 'content.delete'],
-  reports: ['reports.view', 'reports.export'],
+  content: ['content.blog.manage', 'content.pages.manage'],
+  users: ['users.view', 'users.create'],
 };
 
 import { RoleForm } from './RoleForm';
@@ -99,11 +103,13 @@ describe('RoleForm — create mode (no :id param)', () => {
     render(<RoleForm />);
 
     await waitFor(() => {
-      // permissionLabel("content") → "Content"
+      // enterprise.permission_categories.content → "Content"
       // The category checkbox wraps a <span> with label text, find by text content
       expect(screen.getByText('Content')).toBeInTheDocument();
-      expect(screen.getByText('Reports')).toBeInTheDocument();
+      expect(screen.getByText('Users')).toBeInTheDocument();
     });
+    // A recognised slug must not fall through to the unknown-category label.
+    expect(screen.queryByText('Other permissions')).not.toBeInTheDocument();
   });
 
   it('shows error toast when permissions fail to load', async () => {
@@ -152,8 +158,8 @@ describe('RoleForm — create mode (no :id param)', () => {
 
     await user.type(screen.getByRole('textbox', { name: /Role Name/i }), 'Coordinator');
 
-    // permissionLabel("content.view") → "Content View"
-    const viewCheck = screen.getByRole('checkbox', { name: /Content View/i });
+    // enterprise.permissions.content_blog_manage → "Manage blog content"
+    const viewCheck = screen.getByRole('checkbox', { name: /Manage blog content/i });
     await user.click(viewCheck);
 
     const saveBtn = screen.getByRole('button', { name: /^Create Role$/i });
@@ -163,7 +169,7 @@ describe('RoleForm — create mode (no :id param)', () => {
       expect(mockAdminEnterprise.createRole).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Coordinator',
-          permissions: expect.arrayContaining(['content.view']),
+          permissions: expect.arrayContaining(['content.blog.manage']),
         })
       );
       expect(mockToast.success).toHaveBeenCalled();
@@ -190,8 +196,8 @@ describe('RoleForm — create mode (no :id param)', () => {
     // The first checkbox in the DOM is the "Content" category because PERMISSIONS
     // has "content" first. Individual permission checkboxes follow it.
     const allCheckboxes = screen.getAllByRole('checkbox');
-    // Category checkboxes: index 0 = Content, index 3 = Reports
-    // (3 individual content.* checkboxes follow the category one)
+    // Category checkboxes: index 0 = Content, index 3 = Users
+    // (2 individual content.* checkboxes follow the category one)
     await user.click(allCheckboxes[0]);
 
     await user.type(screen.getByRole('textbox', { name: /Role Name/i }), 'Manager');
@@ -200,7 +206,7 @@ describe('RoleForm — create mode (no :id param)', () => {
     await waitFor(() => {
       const payload = mockAdminEnterprise.createRole.mock.calls[0][0];
       expect(payload.permissions).toEqual(
-        expect.arrayContaining(['content.view', 'content.edit', 'content.delete'])
+        expect.arrayContaining(['content.blog.manage', 'content.pages.manage'])
       );
     });
   });
@@ -229,7 +235,7 @@ describe('RoleForm — edit mode (:id param present)', () => {
     mockAdminEnterprise.getPermissions.mockResolvedValue({ success: true, data: PERMISSIONS });
     mockAdminEnterprise.getRole.mockResolvedValue({
       success: true,
-      data: { name: 'Moderator', description: 'Can moderate content', permissions: ['content.view'] },
+      data: { name: 'Moderator', description: 'Can moderate content', permissions: ['content.blog.manage'] },
     });
 
     render(<RoleForm />);
@@ -239,8 +245,8 @@ describe('RoleForm — edit mode (:id param present)', () => {
       expect(nameInput.value).toBe('Moderator');
     });
 
-    // content.view should be checked
-    expect(screen.getByRole('checkbox', { name: /Content View/i })).toBeChecked();
+    // content.blog.manage should be checked
+    expect(screen.getByRole('checkbox', { name: /Manage blog content/i })).toBeChecked();
   });
 
   it('calls updateRole (not createRole) on submit', async () => {

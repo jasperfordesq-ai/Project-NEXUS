@@ -29,6 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The GDPR audit trail now names what actually happened, in all eleven languages.**
+  Every action the platform records — consent given, data exported, the six member
+  rights requests, processing started, request assigned, note added, export
+  generated, breach updated and data-protection-authority notification — plus the
+  data-export record type had no wording at all, so the admin audit list read
+  "Unknown action" for all 280 recorded entries, 256 of them consent records. All
+  seventeen labels are added and translated, with Irish hand-written rather than
+  machine-filled. Six neighbouring Irish labels are corrected at the same time,
+  including one that rendered withdrawn consent as "baptised permission" and two
+  that called a data breach a physical break.
+
 - **Mobile quality gates now cover more real failure modes without creating a build.**
   The Irish catalogue's remaining 107 English-identical phrases are translated or
   narrowly allowlisted as product/unit invariants; the API response-contract audit
@@ -48,6 +59,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   baseline by 1,298 entries, from 4,531 to 3,233. Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
+
+- **Apple App Store preparation now has a separate, fail-closed release path.**
+  The Expo app declares localized Face ID use in all seven native locales and records
+  its standard exempt-encryption status; its 1024-pixel store icon is now encoded
+  without an unused alpha channel; dedicated EAS preview, production and
+  TestFlight commands are documented alongside an iOS configuration gate that remains
+  red until the real App Store Connect numeric app ID is available. The maintained
+  Apple handoff keeps enrollment, signing, APNs, universal links, privacy inspection,
+  cloud builds and real-iPhone testing explicitly open rather than treating shared
+  Android source as proof of an iOS app. The handoff also records the initial Apple
+  policy assessment for first-party login, physical-goods Stripe payments, user-generated
+  content controls, account deletion, privacy declarations and iPhone-only artwork. A
+  machine-checked English (UK) store record, official EAS Metadata mapping, conservative
+  App Privacy worksheet, current Apple age-rating worksheet, real-iPhone screenshot
+  storyboard and credential-free reviewer notes now prepare the App Store
+  Connect fields while keeping manual release mandatory. The generated app privacy
+  manifest now conservatively declares Project NEXUS data collection and linkage with
+  tracking disabled, keeps Stripe-held card details distinct from purchase history, and
+  explicitly aggregates third-party SDK manifests. The native member profile now also
+  exposes the existing tenant-scoped Block member control—with confirmation, translated
+  copy, connection removal and a reversible Settings entry—so Apple Guideline 1.2's abusive
+  user blocking requirement is a real member journey rather than an inaccurate review-note
+  claim. The production and preview EAS environments now also carry the public Stripe
+  publishable key, and native PaymentSheet initialization passes the registered `nexus`
+  scheme separately from its complete return URL so iOS 3-D Secure and bank redirects can
+  return to the app correctly. A fail-closed AASA generator is ready to publish Universal
+  Links from the genuine Apple Team ID while excluding staff consoles and browser-owned
+  authentication callbacks; the release gate refuses a placeholder or missing association
+  file. Expo's generated iOS metadata is also narrowed to the permissions the app really
+  exercises: foreground location only, with no `Always`/background-location declaration
+  and no unused photo-library write permission. The EAS upload wrapper now strips the
+  Android native tree from iOS archives and excludes stale `.cxx` products and local
+  screenshot evidence on every platform, preventing hundreds of megabytes of irrelevant
+  machine output from being sent to the cloud builder. The iOS deployment target is pinned
+  to Expo SDK 54's supported minimum of 15.1, and an unnecessary static-framework override
+  is removed to avoid the documented React Native 0.81 / Stripe 0.50.3 header conflict. A
+  production-like unsigned iOS Simulator profile now provides real macOS compile evidence
+  before Apple enrollment, without pretending that a simulator `.app` is a signed device or
+  TestFlight build. Its first EAS run completed successfully; inspection of the final app
+  verified the bundle/version, iOS 15.1 target, URL schemes, narrowed permissions, seven
+  native locales and 21 aggregated app/Stripe/Sentry privacy manifests, with the artifact
+  identity, hash and remaining signed-device limits preserved in the Apple build record.
+  The authoritative journey ledger now records iOS as PARTIAL rather than OPEN: a real
+  Apple-toolchain compile was attempted and succeeded, but the app has not yet run on an
+  iPhone, so the signed-device journey remains deliberately uncredited beyond that step.
+  TestFlight submission is now fail-closed around an explicitly named EAS build instead of
+  “latest”: it verifies the finished production profile, store distribution, non-simulator
+  target, bundle identifier and app version, then still requires an owner-approval flag
+  before starting the upload.
 
 - **Google Play upload-key recovery is now independently backed up and tested.** The current
   production JKS and credential metadata have a byte-verified unencrypted offline copy plus
@@ -140,6 +200,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the web address itself, where it would be written into server logs.
 
 ### Fixed
+
+- **The three feed pages that had no automated safety net now have one.** The
+  tests for the hashtag feed, the hashtag discovery page and the single-post page
+  had been switched off because they were failing, so nothing was checking those
+  three screens. All three failed for the same reason, and it was the tests that
+  were wrong, not the pages: each was looking for the wrong kind of control. The
+  "back to feed" control is a link, and the tests demanded a button; the hashtag
+  search box is a search box, and the tests demanded a plain text box. Neither
+  page was changed. Two checks that could never have failed were also replaced
+  with real ones, so the search test now proves a search actually happens. All 31
+  tests pass, and the count of switched-off test files drops from 49 to 46.
+
+- **A failed role deletion now explains itself.** The admin role list discarded the
+  reason the API gave and always showed the same generic failure, so an admin was
+  never told why a delete was refused. It now shows the server's own translated
+  reason and falls back to the generic message only when none is sent, matching the
+  twenty other admin screens that already did this.
+
+- **An organisation account now shows its organisation name everywhere, instead of
+  sometimes showing the contact person's own name.** A member who signs up (or
+  later switches) to an organisation in profile settings stores the trading name
+  separately from the person's first and last name. The person's name was leaking
+  through into the members directory, group creators, the explore lists, the feed
+  sidebar and the AI assistant's memory. There were three underlying causes, all
+  fixed: the stored display-name column was written from the person's name when an
+  account was created, was never written at all by self-registration, and was never
+  recalculated when a member switched their profile to an organisation. A migration
+  repairs existing accounts. The decision about what an account is called now lives
+  in exactly one place on each side (`App\Support\UserDisplayName` and
+  `resolveUserDisplayName()`), roughly 700 hand-rolled name assemblies across the
+  API and the React app were routed through it, and a new blocking check
+  (`npm run check:display-name`, ceiling zero) stops them coming back. Two services
+  also compared the profile type against the American spelling, which never matched,
+  so their organisation branch had never once run.
+
+- **The admin Enterprise pages no longer go blank after an account is deleted.**
+  A GDPR audit entry recorded for a deleted account carries no entity type — by
+  design, because the record it would point at is gone. The Enterprise dashboard
+  and the GDPR audit log both assumed that value was always present and crashed
+  the entire page to the error boundary when it was not, even though the API had
+  answered normally. Both now fall back to their existing "Unknown entity" label
+  via a single shared helper, the affected columns are typed as nullable so the
+  assumption cannot be reintroduced silently, and regression tests cover the null
+  value at both the helper and the rendered-page level. Reported from production
+  as support report NXR-260827-ND1UJA; three communities were affected.
+
 
 - **Native refresh controls and comment reactions now report real outcomes.** Explore and
   Exchange Detail pull-to-refresh indicators follow the underlying request instead of fixed
@@ -329,6 +435,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   settings, all on your side.
 
 ### Changed
+
+- **Gamification badges and level-ups no longer appear as posts in the feed.**
+  Earning a badge or reaching a new level used to publish a full-width
+  celebratory card into the community feed — an oversized icon, a coloured
+  gradient panel and, on the web, a confetti burst. On an active community that
+  was a large share of the screen, and it pushed real member content down. The
+  feed now carries member content only, on all three clients: the React web app,
+  the accessible (GOV.UK-based) frontend, and the mobile app.
+
+  Everything else about gamification is unchanged. Badges and levels are still
+  awarded, XP is still counted, level bonuses still apply, and members are still
+  told about a new badge or level by in-app notification, push and email. Badges
+  remain visible on the achievements page and on member profiles, and the admin
+  gamification tools are untouched.
+
+  Removal happens in four places so no client can bring the cards back: the
+  service stops recording the activity row, the feed query excludes the two
+  types (which also hides the rows already in the database), the feed filter
+  cannot be asked for them by name, and each client both filters its list and
+  refuses to draw a milestone card handed to it by a stale or cached response.
 
 - **The .NET edition now handles forgotten passwords and staying signed in the
   same way the live site does.** This is the second edition of the server, the one

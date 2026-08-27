@@ -92,6 +92,10 @@ describe('LegalDocComplianceDashboard', () => {
     });
   });
 
+  // The compliance rate is rendered through formatPercentValue(), i.e. Intl
+  // percent formatting for the active locale with maximumFractionDigits: 1 --
+  // not the hand-rolled `toFixed(1) + '%'` this assertion was written against.
+  // A whole number therefore has no trailing '.0'.
   it('renders stat cards with correct values', async () => {
     mockGetComplianceStats.mockResolvedValue({ success: true, data: makeStats() });
     render(<LegalDocComplianceDashboard />);
@@ -99,7 +103,18 @@ describe('LegalDocComplianceDashboard', () => {
       expect(screen.getByText('500')).toBeInTheDocument();
     });
     expect(screen.getByText('25')).toBeInTheDocument();
-    expect(screen.getByText('95.0%')).toBeInTheDocument();
+    expect(screen.getByText('95%')).toBeInTheDocument();
+  });
+
+  it('keeps one decimal place on a fractional compliance rate', async () => {
+    mockGetComplianceStats.mockResolvedValue({
+      success: true,
+      data: makeStats({ overall_compliance_rate: 95.42 }),
+    });
+    render(<LegalDocComplianceDashboard />);
+    await waitFor(() => {
+      expect(screen.getByText('95.4%')).toBeInTheDocument();
+    });
   });
 
   it('renders empty state when no documents are present', async () => {
