@@ -14,6 +14,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * IdeationChallengeService — Laravel DI-based service for ideation challenges.
@@ -53,7 +54,7 @@ class IdeationChallengeService
         $query = DB::table('ideation_challenges as c')
             ->leftJoin('users as u', 'c.user_id', '=', 'u.id')
             ->where('c.tenant_id', $tenantId)
-            ->select('c.*', 'u.first_name', 'u.last_name', 'u.avatar_url');
+            ->select('c.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url');
 
         $requestedStatus = !empty($filters['status']) ? (string) $filters['status'] : null;
         if ($canManage) {
@@ -140,7 +141,7 @@ class IdeationChallengeService
             ->select(
                 'c.*',
                 'u.first_name as creator_first_name',
-                'u.last_name as creator_last_name',
+                'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
                 'u.avatar_url as creator_avatar'
             )
             ->first();
@@ -179,7 +180,7 @@ class IdeationChallengeService
         // Format creator
         $data['creator'] = [
             'id'         => (int) ($data['user_id'] ?? 0),
-            'name'       => trim(($data['creator_first_name'] ?? '') . ' ' . ($data['creator_last_name'] ?? '')),
+            'name'       => UserDisplayName::resolvePrefixed($data, 'creator_'),
             'avatar_url' => $data['creator_avatar'] ?? null,
         ];
 
@@ -448,7 +449,7 @@ class IdeationChallengeService
         $query = DB::table('challenge_ideas as i')
             ->leftJoin('users as u', 'i.user_id', '=', 'u.id')
             ->where('i.challenge_id', $challengeId)
-            ->select('i.*', 'u.first_name', 'u.last_name', 'u.avatar_url');
+            ->select('i.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url');
 
         // Add vote count subquery
         $query->selectSub(
@@ -477,7 +478,7 @@ class IdeationChallengeService
                 $item = (array) $i;
                 $item['creator'] = [
                     'id'         => (int) ($item['user_id'] ?? 0),
-                    'name'       => trim(($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')),
+                    'name'       => UserDisplayName::resolve($item),
                     'avatar_url' => $item['avatar_url'] ?? null,
                 ];
                 unset($item['first_name'], $item['last_name'], $item['avatar_url']);
@@ -503,7 +504,7 @@ class IdeationChallengeService
             ->select(
                 'i.*',
                 'u.first_name as creator_first_name',
-                'u.last_name as creator_last_name',
+                'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
                 'u.avatar_url as creator_avatar'
             )
             ->first();
@@ -515,7 +516,7 @@ class IdeationChallengeService
         $data = (array) $idea;
         $data['creator'] = [
             'id'         => (int) ($data['user_id'] ?? 0),
-            'name'       => trim(($data['creator_first_name'] ?? '') . ' ' . ($data['creator_last_name'] ?? '')),
+            'name'       => UserDisplayName::resolvePrefixed($data, 'creator_'),
             'avatar_url' => $data['creator_avatar'] ?? null,
         ];
 
@@ -888,7 +889,7 @@ class IdeationChallengeService
             ->select(
                 'c.*',
                 'u.first_name as author_first_name',
-                'u.last_name as author_last_name',
+                'u.last_name as author_last_name', 'u.profile_type as author_profile_type', 'u.organization_name as author_organization_name',
                 'u.avatar_url as author_avatar'
             );
 
@@ -911,7 +912,7 @@ class IdeationChallengeService
             $data = (array) $item;
             $data['author'] = [
                 'id'         => (int) $item->user_id,
-                'name'       => trim(($item->author_first_name ?? '') . ' ' . ($item->author_last_name ?? '')),
+                'name'       => UserDisplayName::resolvePrefixed($item, 'author_'),
                 'avatar_url' => $item->author_avatar ?? null,
             ];
             unset($data['author_first_name'], $data['author_last_name'], $data['author_avatar']);

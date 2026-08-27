@@ -170,6 +170,8 @@ class NewsletterSubscriber extends Model
             ->get([
                 'email',
                 'first_name',
+                // newsletter_subscribers has its own first_name/last_name and no
+                // organisation columns -- this is not a users query.
                 'last_name',
                 'status',
                 'source',
@@ -217,7 +219,7 @@ class NewsletterSubscriber extends Model
             ->where('newsletter_opt_in', 1)
             ->whereNotNull('email')
             ->where('email', '!=', '')
-            ->get(['id', 'email', 'first_name', 'last_name', 'status']);
+            ->get(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'status']);
 
         $synced = 0;
         $alreadySubscribed = 0;

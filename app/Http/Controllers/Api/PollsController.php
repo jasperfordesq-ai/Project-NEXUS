@@ -17,6 +17,7 @@ use App\Services\PollRankingService;
 use App\Services\PollExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use App\Support\UserDisplayName;
 
 /**
  * PollsController — Eloquent-powered community polls with voting support.
@@ -218,7 +219,7 @@ class PollsController extends BaseApiController
                 $voter = User::find($userId);
                 $recipient = User::find((int) $pollModel->user_id);
                 LocaleContext::withLocale($recipient, function () use ($voter, $pollModel, $id) {
-                    $voterName = $voter ? trim(($voter->first_name ?? '') . ' ' . ($voter->last_name ?? '')) : __('emails.common.fallback_someone');
+                    $voterName = $voter ? UserDisplayName::resolve($voter) : __('emails.common.fallback_someone');
                     $pollTitle = $pollModel->question ?? 'your poll';
                     $message = __('api_controllers_3.polls.vote_received', ['name' => $voterName, 'title' => $pollTitle]);
                     Notification::createNotification((int) $pollModel->user_id, $message, "/polls/{$id}", 'poll_vote');
@@ -266,7 +267,7 @@ class PollsController extends BaseApiController
                 $ranker = User::find($userId);
                 $recipient = User::find((int) $pollModel->user_id);
                 LocaleContext::withLocale($recipient, function () use ($ranker, $pollModel, $id) {
-                    $rankerName = $ranker ? trim(($ranker->first_name ?? '') . ' ' . ($ranker->last_name ?? '')) : __('emails.common.fallback_someone');
+                    $rankerName = $ranker ? UserDisplayName::resolve($ranker) : __('emails.common.fallback_someone');
                     $pollTitle = $pollModel->question ?? 'your poll';
                     $message = __('api_controllers_3.polls.ranking_received', ['name' => $rankerName, 'title' => $pollTitle]);
                     Notification::createNotification((int) $pollModel->user_id, $message, "/polls/{$id}", 'poll_vote');

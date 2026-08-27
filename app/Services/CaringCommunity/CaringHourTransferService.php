@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /**
  * CaringHourTransferService — cooperative-to-cooperative banked-hour transfer.
@@ -584,14 +585,14 @@ class CaringHourTransferService
                 't.id', 't.member_user_id', 't.counterpart_tenant_slug',
                 't.counterpart_member_email', 't.hours_transferred', 't.status',
                 't.reason', 't.created_at',
-                'u.first_name', 'u.last_name', 'u.email',
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email',
             ]);
 
         return $rows->map(function (object $r) {
             return [
                 'id'                       => (int) $r->id,
                 'member_user_id'           => (int) $r->member_user_id,
-                'member_name'              => trim(((string) ($r->first_name ?? '')) . ' ' . ((string) ($r->last_name ?? ''))),
+                'member_name'              => UserDisplayName::resolve($r),
                 'member_email'             => (string) ($r->email ?? ''),
                 'destination_tenant_slug'  => (string) $r->counterpart_tenant_slug,
                 'destination_member_email' => (string) $r->counterpart_member_email,
@@ -630,14 +631,14 @@ class CaringHourTransferService
                 't.id', 't.member_user_id', 't.counterpart_tenant_slug',
                 't.counterpart_member_email', 't.hours_transferred', 't.status',
                 't.reason', 't.created_at',
-                'u.first_name', 'u.last_name', 'u.email',
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email',
             ]);
 
         return $rows->map(function (object $r) {
             return [
                 'id'                  => (int) $r->id,
                 'member_user_id'      => (int) $r->member_user_id,
-                'member_name'         => trim(((string) ($r->first_name ?? '')) . ' ' . ((string) ($r->last_name ?? ''))),
+                'member_name'         => UserDisplayName::resolve($r),
                 'member_email'        => (string) ($r->email ?? ''),
                 'source_tenant_slug'  => (string) $r->counterpart_tenant_slug,
                 'hours'               => round((float) $r->hours_transferred, 2),

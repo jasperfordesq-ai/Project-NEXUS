@@ -14,6 +14,7 @@ use App\Services\MentionService;
 use App\Support\FeedItemTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CommentService — Eloquent-based service for comment operations.
@@ -43,7 +44,7 @@ class CommentService
             return [];
         }
 
-        $rows = Comment::with(['user:id,first_name,last_name,avatar_url'])
+        $rows = Comment::with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('tenant_id', TenantContext::getId())
             ->where('target_type', $targetType)
             ->where('target_id', $targetId)
@@ -99,7 +100,7 @@ class CommentService
                 'is_own' => (int) $comment->user_id === $currentUserId,
                 'author' => [
                     'id' => (int) $comment->user_id,
-                    'name' => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                    'name' => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                     'avatar' => $user->avatar_url ?? null,
                 ],
                 'reactions' => $reactions[$cid] ?? (object) [],

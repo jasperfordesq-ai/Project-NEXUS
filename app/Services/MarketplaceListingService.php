@@ -18,6 +18,7 @@ use App\Services\SearchService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceListingService — Standalone service for marketplace listings.
@@ -145,7 +146,7 @@ class MarketplaceListingService
 
                 $q = MarketplaceListing::query()
                     ->with([
-                        'user:id,first_name,last_name,avatar_url,is_verified',
+                        'user:id,first_name,last_name,profile_type,organization_name,avatar_url,is_verified',
                         'category:id,name,slug,icon',
                         'images' => fn ($qq) => $qq->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
                     ])
@@ -188,7 +189,7 @@ class MarketplaceListingService
 
         $query = MarketplaceListing::query()
             ->with([
-                'user:id,first_name,last_name,avatar_url,is_verified',
+                'user:id,first_name,last_name,profile_type,organization_name,avatar_url,is_verified',
                 'category:id,name,slug,icon',
                 'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
             ])
@@ -531,7 +532,7 @@ class MarketplaceListingService
     {
         return MarketplaceListing::query()
             ->with([
-                'user:id,first_name,last_name,avatar_url,is_verified,created_at',
+                'user:id,first_name,last_name,profile_type,organization_name,avatar_url,is_verified,created_at',
                 'category:id,name,slug,icon',
                 'images' => fn ($q) => $q->orderBy('sort_order'),
             ]);
@@ -571,7 +572,7 @@ class MarketplaceListingService
     {
         $query = MarketplaceListing::query()
             ->with([
-                'user:id,first_name,last_name,avatar_url',
+                'user:id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'category:id,name,slug,icon',
                 'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
             ])
@@ -1027,7 +1028,7 @@ class MarketplaceListingService
         $listingIds = $saved->pluck('marketplace_listing_id');
         $listingsQuery = MarketplaceListing::query()
             ->with([
-                'user:id,first_name,last_name,avatar_url',
+                'user:id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'category:id,name,slug,icon',
                 'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
             ])
@@ -1167,7 +1168,7 @@ class MarketplaceListingService
             ] : null,
             'user' => $listing->user ? [
                 'id' => $listing->user->id,
-                'name' => trim($listing->user->first_name . ' ' . $listing->user->last_name),
+                'name' => UserDisplayName::resolve($listing->user),
                 'avatar_url' => $listing->user->avatar_url,
                 'is_verified' => $listing->user->is_verified ?? false,
             ] : null,
@@ -1230,7 +1231,7 @@ class MarketplaceListingService
             'images' => $images,
             'user' => $listing->user ? [
                 'id' => $listing->user->id,
-                'name' => trim($listing->user->first_name . ' ' . $listing->user->last_name),
+                'name' => UserDisplayName::resolve($listing->user),
                 'avatar_url' => $listing->user->avatar_url,
                 'is_verified' => $listing->user->is_verified ?? false,
                 'member_since' => $listing->user->created_at?->toISOString(),

@@ -13,6 +13,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
+use App\Support\UserDisplayName;
 
 /**
  * Fired when a new listing (offer or request) is created.
@@ -68,9 +69,7 @@ class ListingCreated implements ShouldBroadcast, ShouldRescue
             'type'        => $this->listing->type,
             'description' => \Illuminate\Support\Str::limit($this->listing->description ?? '', 200),
             'user_id'     => $this->user->id,
-            'user_name'   => trim(
-                ($this->user->first_name ?? '') . ' ' . ($this->user->last_name ?? '')
-            ) ?: ($this->user->name ?? 'Member'),
+            'user_name'   => UserDisplayName::resolve($this->user) ?: ($this->user->name ?? 'Member'),
             'created_at'  => $this->listing->created_at?->toISOString(),
         ];
     }

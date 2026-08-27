@@ -17,6 +17,7 @@ use App\Services\ReactionService;
 use App\Services\SocialNotificationService;
 use App\Support\FeedItemTables;
 use Illuminate\Http\JsonResponse;
+use App\Support\UserDisplayName;
 
 /**
  * CommentsController — Eloquent-powered threaded comments with reactions.
@@ -110,7 +111,7 @@ class CommentsController extends BaseApiController
             return $this->safeguardingPolicyError($e);
         }
 
-        $comment->load('user:id,first_name,last_name,avatar_url');
+        $comment->load('user:id,first_name,last_name,profile_type,organization_name,avatar_url');
         $user = $comment->user;
 
         return $this->respondWithData([
@@ -121,7 +122,7 @@ class CommentsController extends BaseApiController
             'is_own'         => true,
             'author'         => [
                 'id'     => $userId,
-                'name'   => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                'name'   => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                 'avatar' => $user->avatar_url ?? null,
             ],
             'reactions'      => (object) [],
@@ -222,7 +223,7 @@ class CommentsController extends BaseApiController
                     $reactor = User::find($userId);
                     $recipient = User::find((int) $comment->user_id);
                     LocaleContext::withLocale($recipient, function () use ($reactor, $comment) {
-                        $reactorName = $reactor ? trim(($reactor->first_name ?? '') . ' ' . ($reactor->last_name ?? '')) : __('emails.common.fallback_someone');
+                        $reactorName = $reactor ? UserDisplayName::resolve($reactor) : __('emails.common.fallback_someone');
                         $message = __('api_controllers_3.comments.reaction', ['name' => $reactorName]);
                         $pushLink = SocialNotificationService::getContentLink('comment', (int) $comment->id);
                         Notification::createNotification(

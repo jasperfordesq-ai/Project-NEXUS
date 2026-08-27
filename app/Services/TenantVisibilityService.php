@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\SuperPanelAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * TenantVisibilityService — Native Laravel implementation.
@@ -191,7 +192,7 @@ class TenantVisibilityService
             $query = DB::table('users')
                 ->join('tenants', 'users.tenant_id', '=', 'tenants.id')
                 ->select([
-                    'users.id', 'users.first_name', 'users.last_name', 'users.email',
+                    'users.id', 'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name', 'users.email',
                     'users.role', 'users.tenant_id', 'users.is_approved',
                     'users.is_super_admin', 'users.is_tenant_super_admin',
                     'users.location', 'users.phone',
@@ -239,7 +240,7 @@ class TenantVisibilityService
 
             return $users->map(function ($user) {
                 $row = (array) $user;
-                $row['name'] = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+                $row['name'] = UserDisplayName::resolve($row);
                 $row['is_approved'] = (bool) $row['is_approved'];
                 $row['is_super_admin'] = (bool) $row['is_super_admin'];
                 $row['is_tenant_super_admin'] = (bool) $row['is_tenant_super_admin'];
@@ -266,13 +267,13 @@ class TenantVisibilityService
                       ->orWhere('is_tenant_super_admin', 1)
                       ->orWhere('is_super_admin', 1);
                 })
-                ->select(['id', 'first_name', 'last_name', 'email', 'role', 'is_tenant_super_admin', 'is_super_admin', 'last_login_at'])
+                ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'role', 'is_tenant_super_admin', 'is_super_admin', 'last_login_at'])
                 ->orderBy('role')
                 ->get();
 
             return $admins->map(function ($admin) {
                 $row = (array) $admin;
-                $row['name'] = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+                $row['name'] = UserDisplayName::resolve($row);
                 return $row;
             })->all();
         } catch (\Throwable $e) {

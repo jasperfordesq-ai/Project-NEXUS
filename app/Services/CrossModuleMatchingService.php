@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CrossModuleMatchingService — Aggregates match results across listings, groups,
@@ -154,7 +155,7 @@ class CrossModuleMatchingService
                     'type' => $match['type'] ?? 'offer',
                     'category_name' => $match['category_name'] ?? null,
                     'user_id' => (int) ($match['user_id'] ?? 0),
-                    'user_name' => trim(($match['first_name'] ?? '') . ' ' . ($match['last_name'] ?? '')),
+                    'user_name' => UserDisplayName::resolve($match),
                     'avatar_url' => $match['avatar_url'] ?? null,
                     'match_score' => (float) ($match['match_score'] ?? 0),
                     'match_type' => $match['match_type'] ?? 'one_way',

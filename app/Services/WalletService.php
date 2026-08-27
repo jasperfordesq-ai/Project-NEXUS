@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * WalletService — Laravel DI-based service for time credit wallet operations.
@@ -533,9 +534,7 @@ class WalletService
 
             $items = [];
             foreach ($rows as $r) {
-                $senderName = (($r->profile_type ?? null) === 'organisation' && !empty($r->organization_name))
-                    ? (string) $r->organization_name
-                    : trim(((string) ($r->first_name ?? '')) . ' ' . ((string) ($r->last_name ?? '')));
+                $senderName = UserDisplayName::resolve($r);
                 if ($senderName === '') {
                     $senderName = __('api.external_user_fallback');
                 }
@@ -924,7 +923,7 @@ class WalletService
                 if ($isOrganisation) {
                     $name = $u->organization_name;
                 } elseif ($revealSurnames) {
-                    $name = trim($u->first_name . ' ' . $u->last_name);
+                    $name = UserDisplayName::resolve($u);
                 } else {
                     $name = (string) $u->first_name;
                 }
@@ -980,7 +979,7 @@ class WalletService
             }
             $name = ($u->profile_type === 'organisation' && $u->organization_name)
                 ? $u->organization_name
-                : trim($u->first_name . ' ' . $u->last_name);
+                : UserDisplayName::resolve($u);
             return [
                 'id'         => $u->id,
                 'name'       => $name,

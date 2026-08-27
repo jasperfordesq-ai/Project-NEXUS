@@ -17,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Alerts tenant safeguarding staff when a direct message is blocked.
@@ -209,7 +210,7 @@ class NotifySafeguardingContactAttemptBlocked implements ShouldQueue
             return $fallback;
         }
 
-        $name = trim((string) (($user->first_name ?? '') . ' ' . ($user->last_name ?? '')));
+        $name = UserDisplayName::resolve($user);
         if ($name !== '') {
             return $name;
         }

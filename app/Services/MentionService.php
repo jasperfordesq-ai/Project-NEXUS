@@ -11,6 +11,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MentionService — Handles @mention extraction, resolution, storage, and notifications.
@@ -61,7 +62,7 @@ class MentionService
                   ->orWhereIn('name', $usernames)
                   ->orWhereIn('last_name', $usernames);
             })
-            ->select(['id', 'username', 'first_name', 'name', 'last_name'])
+            ->select(['id', 'username', 'first_name', 'name', 'last_name', 'profile_type', 'organization_name'])
             ->get();
 
         // Map each mentioned username to the best matching user
@@ -194,7 +195,7 @@ class MentionService
                 'm.id',
                 'm.mentioned_user_id as user_id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.name',
                 'u.username',
                 'u.avatar_url',
@@ -328,7 +329,7 @@ class MentionService
         return array_map(function ($user) {
             return [
                 'id'            => (int) $user->id,
-                'name'          => $user->name ?? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'name'          => $user->name ?? UserDisplayName::resolve($user),
                 'username'      => $user->username,
                 'avatar_url'    => $user->avatar_url,
                 'is_connection' => (bool) ($user->is_connection ?? false),

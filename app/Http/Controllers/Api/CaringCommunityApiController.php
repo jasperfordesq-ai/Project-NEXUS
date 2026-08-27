@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\UserDisplayName;
 
 /**
  * Member-facing API for the Caring Community module.
@@ -778,11 +779,15 @@ class CaringCommunityApiController extends BaseApiController
                 supporter.name            AS supporter_name,
                 supporter.first_name      AS supporter_first_name,
                 supporter.last_name       AS supporter_last_name,
+                supporter.profile_type AS supporter_profile_type,
+                supporter.organization_name AS supporter_organization_name,
                 supporter.avatar_url      AS supporter_avatar,
                 {$dobSelectSupporter}
                 recipient.name            AS recipient_name,
                 recipient.first_name      AS recipient_first_name,
                 recipient.last_name       AS recipient_last_name,
+                recipient.profile_type AS recipient_profile_type,
+                recipient.organization_name AS recipient_organization_name,
                 recipient.avatar_url      AS recipient_avatar,
                 {$dobSelectRecipient}
                 1 AS _ok
@@ -911,6 +916,8 @@ class CaringCommunityApiController extends BaseApiController
                         u.name            AS user_name,
                         u.first_name      AS user_first_name,
                         u.last_name       AS user_last_name,
+                        u.profile_type AS user_profile_type,
+                        u.organization_name AS user_organization_name,
                         u.avatar_url      AS user_avatar,
                         c.name            AS category_name,
                         {$haversineSelect}
@@ -942,6 +949,8 @@ class CaringCommunityApiController extends BaseApiController
                         u.name            AS user_name,
                         u.first_name      AS user_first_name,
                         u.last_name       AS user_last_name,
+                        u.profile_type AS user_profile_type,
+                        u.organization_name AS user_organization_name,
                         u.avatar_url      AS user_avatar,
                         c.name            AS category_name
                      FROM listings l
@@ -1004,6 +1013,8 @@ class CaringCommunityApiController extends BaseApiController
                         u.name            AS user_name,
                         u.first_name      AS user_first_name,
                         u.last_name       AS user_last_name,
+                        u.profile_type AS user_profile_type,
+                        u.organization_name AS user_organization_name,
                         u.avatar_url      AS user_avatar,
                         mc.name           AS category_name,
                         mi.image_url      AS primary_image_url,
@@ -1039,6 +1050,8 @@ class CaringCommunityApiController extends BaseApiController
                         u.name            AS user_name,
                         u.first_name      AS user_first_name,
                         u.last_name       AS user_last_name,
+                        u.profile_type AS user_profile_type,
+                        u.organization_name AS user_organization_name,
                         u.avatar_url      AS user_avatar,
                         mc.name           AS category_name,
                         mi.image_url      AS primary_image_url
@@ -1612,12 +1625,7 @@ class CaringCommunityApiController extends BaseApiController
 
     private function displayName(object $row, string $prefix): string
     {
-        $full = trim(
-            (string) ($row->{$prefix . '_first_name'} ?? '')
-            . ' '
-            . (string) ($row->{$prefix . '_last_name'} ?? '')
-        );
-        return $full !== '' ? $full : (string) ($row->{$prefix . '_name'} ?? '');
+        return UserDisplayName::resolvePrefixed($row, $prefix . '_');
     }
 
     /**
@@ -1625,11 +1633,7 @@ class CaringCommunityApiController extends BaseApiController
      */
     private function buildDisplayName(object $row): string
     {
-        $full = trim(
-            (string) ($row->user_first_name ?? '')
-            . ' '
-            . (string) ($row->user_last_name ?? '')
-        );
+        $full = UserDisplayName::resolvePrefixed($row, 'user_');
         return $full !== '' ? $full : (string) ($row->user_name ?? '');
     }
 

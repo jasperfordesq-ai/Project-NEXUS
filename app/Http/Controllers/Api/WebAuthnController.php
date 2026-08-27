@@ -27,6 +27,7 @@ use Illuminate\Database\QueryException;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use lbuchs\WebAuthn\WebAuthnException;
+use App\Support\UserDisplayName;
 
 /**
  * WebAuthnController -- WebAuthn/Passkey authentication.
@@ -773,7 +774,7 @@ class WebAuthnController extends BaseApiController
                     ->first([
                         'id',
                         'first_name',
-                        'last_name',
+                        'last_name', 'profile_type', 'organization_name',
                         'email',
                         'role',
                         'tenant_id',
@@ -1524,7 +1525,7 @@ class WebAuthnController extends BaseApiController
     private function getWebAuthnUser(int $userId): ?array
     {
         $row = DB::selectOne(
-            "SELECT id, CONCAT(first_name, ' ', last_name) as name, email FROM users WHERE id = ? AND tenant_id = ?",
+            "SELECT id, " . UserDisplayName::sql('', 'name') . ", email FROM users WHERE id = ? AND tenant_id = ?",
             [$userId, TenantContext::getId()]
         );
         return $row ? (array)$row : null;

@@ -16,6 +16,7 @@ use App\Services\EmailDispatchService;
 use Illuminate\Http\JsonResponse;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * ConnectionsController - Member connections (friend requests).
@@ -226,7 +227,7 @@ class ConnectionsController extends BaseApiController
                 $tenantName = TenantContext::get()['name'] ?? __('emails.common.platform_name');
 
                 LocaleContext::withLocale($requester, function () use ($decliner, $requester, $requesterId, $tenantName, $tenantId) {
-                    $declinerName = trim(($decliner->first_name ?? '') . ' ' . ($decliner->last_name ?? ''))
+                    $declinerName = UserDisplayName::resolve($decliner)
                         ?: ($decliner->name ?? __('emails.common.fallback_someone'));
 
                     // Bell notification

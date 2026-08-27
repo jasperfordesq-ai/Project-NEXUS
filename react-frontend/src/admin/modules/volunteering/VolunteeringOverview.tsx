@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { formatNumber, getFormattingLocale } from '@/lib/helpers';
+import { formatNumber, getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Button, Chip, Avatar, Skeleton, Select, SelectItem } from '@/components/ui';
 import { useState, useCallback, useEffect } from 'react';
 import { ButtonGroup } from '@/components/ui';
@@ -684,7 +684,7 @@ export function VolunteeringOverview() {
                   <div>
                     <p className="font-medium">{opp.title}</p>
                       <p className="text-xs text-muted">
-                        {t('volunteering.by_name', { name: [opp.first_name, opp.last_name].filter(Boolean).join(' ') || t('volunteering.unknown_org') })}
+                        {t('volunteering.by_name', { name: resolveUserDisplayName(opp) || t('volunteering.unknown_org') })}
                       </p>
                   </div>
                   <Chip size="sm" variant="soft" color={['active', 'open'].includes(opp.status) ? 'success' : 'default'} className="capitalize">

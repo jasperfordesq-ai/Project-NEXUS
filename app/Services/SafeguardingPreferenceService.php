@@ -15,6 +15,7 @@ use App\Models\UserSafeguardingPreference;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * CRUD for tenant safeguarding options and member preferences.
@@ -1010,7 +1011,7 @@ class SafeguardingPreferenceService
         try {
             $revoker = \App\Models\User::find($userId);
             $hasName = $revoker
-                && trim(($revoker->first_name ?? '') . ' ' . ($revoker->last_name ?? '')) !== '';
+                && UserDisplayName::resolve($revoker) !== '';
             $legacyName = $revoker ? ($revoker->name ?? null) : null;
 
             $staffUsers = DB::select(
@@ -1027,7 +1028,7 @@ class SafeguardingPreferenceService
                         $optionLabel,
                     );
                     if ($hasName) {
-                        $revokerName = trim(($revoker->first_name ?? '') . ' ' . ($revoker->last_name ?? ''));
+                        $revokerName = UserDisplayName::resolve($revoker);
                     } elseif (!empty($legacyName)) {
                         $revokerName = $legacyName;
                     } else {

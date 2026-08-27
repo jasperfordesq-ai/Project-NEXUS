@@ -12,6 +12,7 @@ use App\Events\VolLogStatusChanged;
 use App\Services\CaringCommunity\CaringRegionalPointService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * Aggregates KISS-style coordinator workflow signals for caring communities.
@@ -287,6 +288,8 @@ class CaringCommunityWorkflowService
                 u.name AS member_name,
                 u.first_name,
                 u.last_name,
+                u.profile_type,
+                u.organization_name,
                 assigned.name AS assigned_name,
                 vo.name AS organisation_name,
                 opp.title AS opportunity_title
@@ -325,6 +328,8 @@ class CaringCommunityWorkflowService
                 u.name AS member_name,
                 u.first_name,
                 u.last_name,
+                u.profile_type,
+                u.organization_name,
                 assigned.name AS assigned_name,
                 vo.name AS organisation_name,
                 opp.title AS opportunity_title
@@ -342,7 +347,7 @@ class CaringCommunityWorkflowService
 
     private function formatReviewRow(object $row, int $reviewSlaDays, int $escalationSlaDays): array
     {
-            $fullName = trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? ''));
+            $fullName = UserDisplayName::resolve($row);
             $createdAt = strtotime((string) $row->created_at) ?: time();
             $ageDays = max(0, (int) floor((time() - $createdAt) / 86400));
             return [
@@ -379,6 +384,8 @@ class CaringCommunityWorkflowService
                 u.name AS member_name,
                 u.first_name,
                 u.last_name,
+                u.profile_type,
+                u.organization_name,
                 vo.name AS organisation_name
              FROM vol_logs vl
              LEFT JOIN users u ON u.id = vl.user_id AND u.tenant_id = vl.tenant_id
@@ -390,7 +397,7 @@ class CaringCommunityWorkflowService
         );
 
         return array_map(function ($row) {
-            $fullName = trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? ''));
+            $fullName = UserDisplayName::resolve($row);
             return [
                 'id' => (int) $row->id,
                 'member_name' => $fullName !== '' ? $fullName : (string) ($row->member_name ?? ''),
@@ -473,7 +480,7 @@ class CaringCommunityWorkflowService
         );
 
         return array_map(function ($row) {
-            $fullName = trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? ''));
+            $fullName = UserDisplayName::resolve($row);
             return [
                 'id' => (int) $row->id,
                 'name' => $fullName !== '' ? $fullName : (string) $row->name,

@@ -37,7 +37,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
 // Direct hook paths, never the '@/hooks' barrel: page tests partial-mock the barrel,
 // so a barrel import would resolve to undefined and crash every test.
@@ -711,7 +711,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
                     <Avatar
                       key={member.id}
                       src={resolveAvatarUrl(member.avatar_url || member.avatar)}
-                      name={member.name || `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()}
+                      name={resolveUserDisplayName(member)}
                       className="ring-2 ring-black/50"
                     />
                   ))}

@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * BlockUserService — manages user blocking/unblocking.
@@ -150,7 +151,7 @@ class BlockUserService
             ->map(function ($row) {
                 $name = ($row->profile_type === 'organisation' && !empty($row->organization_name))
                     ? $row->organization_name
-                    : trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                    : UserDisplayName::resolve($row);
                 return [
                     'block_id' => $row->block_id,
                     'user_id' => $row->user_id,

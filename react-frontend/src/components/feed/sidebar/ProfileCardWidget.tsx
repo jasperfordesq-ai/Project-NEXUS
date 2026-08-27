@@ -18,7 +18,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface ProfileStats {
@@ -59,7 +59,7 @@ export function ProfileCardWidget() {
   if (!isAuthenticated || !user) return null;
 
   const displayName = user.first_name && user.last_name
-    ? `${user.first_name} ${user.last_name}`
+    ? resolveUserDisplayName(user)
     : user.first_name || user.username || 'Member';
 
   const handle = user.username ? `@${user.username}` : user.first_name || '';

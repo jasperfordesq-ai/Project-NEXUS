@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Admin Newsletter API Controller
@@ -1387,7 +1388,9 @@ class AdminNewsletterController extends BaseApiController
         try {
             // Get newsletter with author info
             $newsletter = DB::selectOne(
-                "SELECT n.*, u.first_name as author_first_name, u.last_name as author_last_name
+                "SELECT n.*, u.first_name as author_first_name, u.last_name as author_last_name,
+ u.profile_type as author_profile_type,
+ u.organization_name as author_organization_name
                  FROM newsletters n
                  LEFT JOIN users u ON n.created_by = u.id
                  WHERE n.id = ? AND n.tenant_id = ?",
@@ -1398,7 +1401,7 @@ class AdminNewsletterController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.newsletter_not_found'), null, 404);
             }
 
-            $authorName = trim(($newsletter->author_first_name ?? '') . ' ' . ($newsletter->author_last_name ?? ''));
+            $authorName = UserDisplayName::resolvePrefixed($newsletter, 'author_');
 
             // ── Delivery stats ──
             $delivery = [
@@ -2413,7 +2416,7 @@ class AdminNewsletterController extends BaseApiController
                 'email' => $admin->email,
                 'first_name' => $admin->first_name ?? 'Admin',
                 'last_name' => $admin->last_name ?? 'User',
-                'name' => trim(($admin->first_name ?? '') . ' ' . ($admin->last_name ?? '')),
+                'name' => UserDisplayName::resolve($admin),
             ];
 
             // Test email is sent to the admin themselves — render in their preferred language.
@@ -2516,7 +2519,7 @@ class AdminNewsletterController extends BaseApiController
             'email' => $admin->email ?? 'preview@example.com',
             'first_name' => $admin->first_name ?? 'there',
             'last_name' => $admin->last_name ?? '',
-            'name' => trim(($admin->first_name ?? '') . ' ' . ($admin->last_name ?? '')) ?: 'Member',
+            'name' => UserDisplayName::resolve($admin) ?: 'Member',
         ];
 
         $tenantName = TenantContext::get()['name'] ?? 'Community';
@@ -2835,7 +2838,7 @@ class AdminNewsletterController extends BaseApiController
                 );
 
                 $items = array_map(function ($row) {
-                    $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                    $name = UserDisplayName::resolve($row);
                     return [
                         // Distinct sent emails — email is the stable row key the admin
                         // UI's dynamic table needs (mirrors the id activity() guarantees).
@@ -2899,7 +2902,7 @@ class AdminNewsletterController extends BaseApiController
                 );
 
                 $items = array_map(function ($row) {
-                    $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                    $name = UserDisplayName::resolve($row);
                     return [
                         // Deduplicated by email — email is the stable row key the admin
                         // UI's dynamic table needs (mirrors the id activity() guarantees).

@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Models\PartnerVenue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * PartnerVenueService — tenant-managed directory of partner premises, plus the
@@ -233,11 +234,11 @@ class PartnerVenueService
             ->where('om.org_type', self::ORG_TYPE)
             ->where('om.organization_id', $venueId)
             ->orderBy('u.first_name')
-            ->get(['om.id', 'om.user_id', 'om.role', 'om.status', 'u.first_name', 'u.last_name', 'u.avatar_url'])
+            ->get(['om.id', 'om.user_id', 'om.role', 'om.status', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url'])
             ->map(static fn ($row): array => [
                 'id' => (int) $row->id,
                 'user_id' => (int) $row->user_id,
-                'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'name' => UserDisplayName::resolve($row),
                 'avatar_url' => $row->avatar_url ?? null,
                 'role' => (string) $row->role,
                 'status' => (string) $row->status,

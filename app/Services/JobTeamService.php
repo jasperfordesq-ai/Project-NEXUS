@@ -121,7 +121,7 @@ class JobTeamService
         $tenantId = TenantContext::getId();
 
         try {
-            return JobVacancyTeam::with(['user:id,first_name,last_name,avatar_url,email'])
+            return JobVacancyTeam::with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url,email'])
                 ->where('tenant_id', $tenantId)
                 ->where('vacancy_id', $vacancyId)
                 ->get()

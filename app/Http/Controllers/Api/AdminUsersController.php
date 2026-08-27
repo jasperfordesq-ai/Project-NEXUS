@@ -24,6 +24,7 @@ use App\Services\TenantSettingsService;
 use App\Services\TokenService;
 use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * AdminUsersController — Admin user management (list, view, create, update, approve, suspend, ban, etc.).
@@ -250,7 +251,8 @@ class AdminUsersController extends BaseApiController
 
         return $this->respondWithData([
             'id' => (int) $user->id,
-            'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+            // Organisation accounts are identified by their trading name.
+            'name' => UserDisplayName::resolve($user),
             'first_name' => $user->first_name ?? '',
             'last_name' => $user->last_name ?? '',
             'email' => $user->email,
@@ -506,6 +508,12 @@ class AdminUsersController extends BaseApiController
         $password = $input['password'] ?? '';
         $role = $input['role'] ?? 'member';
         $location = trim($input['location'] ?? '');
+        // An admin can already switch an existing account to an organisation via
+        // the user-edit screen, so creation accepts the same two fields rather
+        // than forcing a create-then-edit round trip that leaves `users.name`
+        // holding the contact person in between.
+        $profileType = $input['profile_type'] ?? 'individual';
+        $organizationName = trim((string) ($input['organization_name'] ?? ''));
 
         // SECURITY: Restrict role to prevent privilege escalation via user creation (SEC-009)
         $allowedRoles = ['member', 'admin', 'broker'];
@@ -534,6 +542,12 @@ class AdminUsersController extends BaseApiController
         if (strlen($password) < 8) {
             $errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.password_min_length'), 'field' => 'password'];
         }
+        if (!in_array($profileType, ['individual', UserDisplayName::ORGANISATION], true)) {
+            $errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.invalid_profile_type'), 'field' => 'profile_type'];
+        }
+        if ($profileType === UserDisplayName::ORGANISATION && $organizationName === '') {
+            $errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.organization_name_required'), 'field' => 'organization_name'];
+        }
 
         if (!empty($errors)) {
             return $this->respondWithErrors($errors, 422);
@@ -554,6 +568,8 @@ class AdminUsersController extends BaseApiController
             'location' => $location ?: null,
             'role' => $role,
             'is_approved' => 1,
+            'profile_type' => $profileType,
+            'organization_name' => $organizationName ?: null,
         ], $tenantId);
 
         if (!$newUserId) {
@@ -626,7 +642,7 @@ class AdminUsersController extends BaseApiController
 
         return $this->respondWithData([
             'id' => $newUserId,
-            'name' => trim($firstName . ' ' . $lastName),
+            'name' => UserDisplayName::forStorage($profileType, $organizationName, $firstName, $lastName),
             'email' => $email,
             'role' => $role,
             'status' => 'active',
@@ -1501,7 +1517,7 @@ class AdminUsersController extends BaseApiController
             $responseData = [
                 'token'        => $token,
                 'user_id'      => $id,
-                'user_name'    => trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')),
+                'user_name'    => UserDisplayName::resolve($user),
                 'tenant_id'    => $userTenantId,
                 'tenant_slug'  => $tenantSlug,
             ];

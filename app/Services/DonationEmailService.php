@@ -10,6 +10,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * DonationEmailService - Sends email notifications for credit donations.
@@ -53,7 +54,7 @@ class DonationEmailService
                 if (!empty($donor->email)) {
                     $result['donor_sent'] = (bool) LocaleContext::withLocale($donor, function () use ($tenantId, $donor, $recipient, $amount, $messageText, $walletUrl): bool {
                         $donorName = $donor->first_name ?? $donor->name ?? __('emails.common.fallback_name');
-                        $recipientFullName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''))
+                        $recipientFullName = UserDisplayName::resolve($recipient)
                             ?: ($recipient->name ?? __('emails.common.fallback_member_name'));
 
                         $html = EmailTemplateBuilder::make()
@@ -100,7 +101,7 @@ class DonationEmailService
                 if (!empty($recipient->email)) {
                     $result['recipient_sent'] = (bool) LocaleContext::withLocale($recipient, function () use ($tenantId, $donor, $recipient, $amount, $messageText, $walletUrl): bool {
                         $recipientName = $recipient->first_name ?? $recipient->name ?? __('emails.common.fallback_name');
-                        $donorFullName = trim(($donor->first_name ?? '') . ' ' . ($donor->last_name ?? ''))
+                        $donorFullName = UserDisplayName::resolve($donor)
                             ?: ($donor->name ?? __('emails.common.fallback_member_name'));
 
                         $html = EmailTemplateBuilder::make()

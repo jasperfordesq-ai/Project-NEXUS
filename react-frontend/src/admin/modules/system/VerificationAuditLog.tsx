@@ -1,4 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Button, Spinner, Chip, Select, SelectItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 
@@ -144,7 +144,7 @@ export function VerificationAuditLog() {
                 {events.map((event) => {
                   const typeInfo = EVENT_TYPE_LABELS[event.event_type] || { color: 'default' as const };
                   const typeLabel = t(`verification.event_type_${event.event_type}`);
-                  const userName = [event.first_name, event.last_name].filter(Boolean).join(' ') || t('verification.user_with_id', { id: event.user_id });
+                  const userName = resolveUserDisplayName(event) || t('verification.user_with_id', { id: event.user_id });
                   let details = '';
                   if (event.details) {
                     try {

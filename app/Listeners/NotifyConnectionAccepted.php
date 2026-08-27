@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies the original requester when their connection request is accepted.
@@ -67,7 +68,7 @@ class NotifyConnectionAccepted implements ShouldQueue
             $receiver = DB::table('users')
                 ->where('id', $receiverId)
                 ->where('tenant_id', $event->tenantId)
-                ->select(['first_name', 'last_name', 'name'])
+                ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                 ->first();
 
             if (!$receiver) {
@@ -81,7 +82,7 @@ class NotifyConnectionAccepted implements ShouldQueue
                 ->value('preferred_language');
 
             $content = LocaleContext::withLocale($requesterLocale, function () use ($receiver) {
-                $receiverName = trim(($receiver->first_name ?? '') . ' ' . ($receiver->last_name ?? ''))
+                $receiverName = UserDisplayName::resolve($receiver)
                     ?: ($receiver->name ?? __('emails.common.fallback_someone'));
                 return __('emails_misc.social.connection_accepted', ['name' => $receiverName]);
             });

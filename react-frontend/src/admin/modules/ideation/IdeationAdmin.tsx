@@ -8,7 +8,7 @@
  * List, search, filter, change status, and delete ideation challenges.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useState, useCallback, useEffect } from 'react';
 
 import Lightbulb from 'lucide-react/icons/lightbulb';
@@ -76,7 +76,7 @@ const statusColors: Record<ChallengeStatus, 'success' | 'warning' | 'default' | 
 
 function normalizeChallenge(item: RawChallenge): Challenge {
   const creatorName = item.creator_name
-    ?? [item.first_name, item.last_name].filter(Boolean).join(' ').trim()
+    ?? resolveUserDisplayName(item)
     ?? '';
 
   return {

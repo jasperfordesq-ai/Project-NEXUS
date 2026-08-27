@@ -44,7 +44,7 @@ import { usePresenceOptional } from '@/contexts/PresenceContext';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
-import { formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
+import { formatRelativeTime, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import type { Conversation, User } from '@/types/api';
 
@@ -54,7 +54,7 @@ function getOtherUser(conv: Conversation) {
   if (conv.other_user) {
     return {
       id: conv.other_user.id,
-      name: conv.other_user.name || `${conv.other_user.first_name || ''} ${conv.other_user.last_name || ''}`.trim(),
+      name: resolveUserDisplayName(conv.other_user),
       avatar: conv.other_user.avatar_url || conv.other_user.avatar,
       is_online: conv.other_user.is_online,
     };
@@ -64,7 +64,7 @@ function getOtherUser(conv: Conversation) {
   if (!p) return { id: 0, name: '', avatar: null, is_online: false };
   return {
     id: p.id,
-    name: p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim(),
+    name: resolveUserDisplayName(p),
     avatar: p.avatar,
     is_online: p.is_online,
   };

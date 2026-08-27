@@ -14,7 +14,7 @@
  * Parity: PHP BrokerControlsController::dashboard()
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -414,7 +414,7 @@ export function BrokerDashboard() {
                     // load-bearing here. Falling back to action_type+id keeps
                     // older API responses (pre-source) from breaking.
                     const rowKey = `${entry.source ?? entry.action_type}-${entry.id}`;
-                    const fullName = `${entry.first_name ?? ''} ${entry.last_name ?? ''}`.trim();
+                    const fullName = resolveUserDisplayName(entry);
                     const actorName = fullName || t('dashboard.deleted_user');
                     const isLast = idx === (stats.recent_activity?.length ?? 0) - 1;
                     const dotColor = actionChipColorMap[entry.action_type] ?? 'default';

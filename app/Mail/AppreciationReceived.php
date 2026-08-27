@@ -14,6 +14,7 @@ use App\I18n\LocaleContext;
 use App\Services\EmailDispatchService;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /**
  * SOC14 — Appreciation received email (sent to receiver).
@@ -45,7 +46,7 @@ class AppreciationReceived
                 TenantContext::runForTenant($tenantId, function () use ($recipient, $senderName, $message, $isPublic, $tenantId): void {
                     $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/users/' . ($recipient->id ?? 'me') . '/appreciations';
 
-                    $name = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                    $name = UserDisplayName::resolve($recipient);
                     if ($name === '') {
                         $name = (string) ($recipient->name ?? __('emails.common.fallback_name'));
                     }

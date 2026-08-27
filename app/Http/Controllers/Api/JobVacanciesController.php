@@ -42,6 +42,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * JobVacanciesController — Community job vacancy listings.
@@ -634,7 +635,7 @@ class JobVacanciesController extends BaseApiController
                         $community     = TenantContext::getName();
                         $jobTitle      = htmlspecialchars($job->title, ENT_QUOTES, 'UTF-8');
                         $applicantName = $applicant
-                            ? trim(($applicant->first_name ?? '') . ' ' . ($applicant->last_name ?? '')) ?: ($applicant->name ?? __('emails.common.fallback_someone'))
+                            ? UserDisplayName::resolve($applicant) ?: ($applicant->name ?? __('emails.common.fallback_someone'))
                             : __('emails.common.fallback_someone');
                         $reviewUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/jobs/' . $id . '#applications';
                         $html = EmailTemplateBuilder::make()
@@ -2312,7 +2313,7 @@ class JobVacanciesController extends BaseApiController
         }
 
         // Get applications with applicant data + community trust signals
-        $applications = JobApplication::with(['applicant:id,first_name,last_name,bio,skills,xp,level'])
+        $applications = JobApplication::with(['applicant:id,first_name,last_name,profile_type,organization_name,bio,skills,xp,level'])
             ->where('vacancy_id', $id)
             ->whereNotIn('status', ['withdrawn', 'rejected'])
             ->get();
@@ -2351,7 +2352,7 @@ class JobVacanciesController extends BaseApiController
 
             $candidateProfiles[] = [
                 'application_id' => $app->id,
-                'name' => trim(($applicant->first_name ?? '') . ' ' . ($applicant->last_name ?? '')),
+                'name' => UserDisplayName::resolve($applicant),
                 'bio' => $applicant->bio ?? '',
                 'skills' => $applicant->skills ?? '',
                 'xp' => (int) ($applicant->xp ?? 0),
@@ -2577,7 +2578,7 @@ class JobVacanciesController extends BaseApiController
             ->where('receiver_id', $userId)
             ->where('review_type', 'employer')
             ->where('status', 'approved')
-            ->with('reviewer:id,first_name,last_name,avatar_url')
+            ->with('reviewer:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->orderByDesc('created_at')
             ->limit(50)
             ->get()
@@ -2588,7 +2589,7 @@ class JobVacanciesController extends BaseApiController
                 'dimensions' => $r->dimensions,
                 'reviewer' => $r->reviewer ? [
                     'id' => $r->reviewer->id,
-                    'name' => trim(($r->reviewer->first_name ?? '') . ' ' . ($r->reviewer->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($r->reviewer),
                     'avatar_url' => $r->reviewer->avatar_url,
                 ] : null,
                 'created_at' => $r->created_at?->toIso8601String(),
@@ -2862,14 +2863,14 @@ class JobVacanciesController extends BaseApiController
 
         // 1. Application history events
         $appHistory = \App\Models\JobApplicationHistory::whereHas('application', fn($q) => $q->where('vacancy_id', $id))
-            ->with(['changer:id,first_name,last_name', 'application:id,user_id', 'application.applicant:id,first_name,last_name'])
+            ->with(['changer:id,first_name,last_name,profile_type,organization_name', 'application:id,user_id', 'application.applicant:id,first_name,last_name,profile_type,organization_name'])
             ->orderByDesc('changed_at')
             ->limit(200)
             ->get();
 
         foreach ($appHistory as $h) {
-            $actorName = $h->changer ? trim(($h->changer->first_name ?? '') . ' ' . ($h->changer->last_name ?? '')) : __('api.job_audit_actor_system');
-            $candidateName = ($h->application && $h->application->applicant) ? trim(($h->application->applicant->first_name ?? '') . ' ' . ($h->application->applicant->last_name ?? '')) : __('api.job_audit_unknown_candidate');
+            $actorName = $h->changer ? UserDisplayName::resolve($h->changer) : __('api.job_audit_actor_system');
+            $candidateName = ($h->application && $h->application->applicant) ? UserDisplayName::resolve($h->application->applicant) : __('api.job_audit_unknown_candidate');
             $events->push([
                 'type' => 'status_change',
                 'timestamp' => $h->changed_at,
@@ -2886,12 +2887,12 @@ class JobVacanciesController extends BaseApiController
         // 2. Interview events
         $interviews = \App\Models\JobInterview::where('vacancy_id', $id)
             ->where('tenant_id', $tenantId)
-            ->with(['application.applicant:id,first_name,last_name'])
+            ->with(['application.applicant:id,first_name,last_name,profile_type,organization_name'])
             ->orderByDesc('created_at')
             ->get();
 
         foreach ($interviews as $iv) {
-            $candidateName = ($iv->application && $iv->application->applicant) ? trim(($iv->application->applicant->first_name ?? '') . ' ' . ($iv->application->applicant->last_name ?? '')) : __('api.job_audit_unknown_candidate');
+            $candidateName = ($iv->application && $iv->application->applicant) ? UserDisplayName::resolve($iv->application->applicant) : __('api.job_audit_unknown_candidate');
             $events->push([
                 'type' => 'interview',
                 'timestamp' => $iv->created_at,
@@ -2910,12 +2911,12 @@ class JobVacanciesController extends BaseApiController
         // 3. Offer events
         $offers = \App\Models\JobOffer::where('vacancy_id', $id)
             ->where('tenant_id', $tenantId)
-            ->with(['application.applicant:id,first_name,last_name'])
+            ->with(['application.applicant:id,first_name,last_name,profile_type,organization_name'])
             ->orderByDesc('created_at')
             ->get();
 
         foreach ($offers as $offer) {
-            $candidateName = ($offer->application && $offer->application->applicant) ? trim(($offer->application->applicant->first_name ?? '') . ' ' . ($offer->application->applicant->last_name ?? '')) : __('api.job_audit_unknown_candidate');
+            $candidateName = ($offer->application && $offer->application->applicant) ? UserDisplayName::resolve($offer->application->applicant) : __('api.job_audit_unknown_candidate');
             $salary = $offer->salary_offered ? '$' . number_format($offer->salary_offered, 0) : '';
             $events->push([
                 'type' => 'offer',

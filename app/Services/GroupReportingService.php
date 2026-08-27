@@ -13,6 +13,7 @@ use App\I18n\LocaleContext;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * GroupReportingService — Sends monthly digest emails to group owners/admins.
@@ -202,7 +203,7 @@ class GroupReportingService
                     ->where('status', 'active')
                     ->whereNotNull('email')
                     ->where('email', '!=', '')
-                    ->first(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'preferred_language']);
+                    ->first(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
 
                 if (!$user) {
                     continue;
@@ -212,7 +213,7 @@ class GroupReportingService
                 // recipient's preferred_language. Each admin/owner gets the digest
                 // in their own language.
                 $success = LocaleContext::withLocale($user, function () use ($user, $group, $stats, $tenant) {
-                    $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                    $name = UserDisplayName::resolve($user);
                     $subject = __('emails.group_digest.subject', ['group' => $group->name]);
                     $body = self::buildDigestEmailBody($name, $stats, $tenant->name ?? __('emails.common.fallback_tenant_name'));
 

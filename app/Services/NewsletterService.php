@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 // Define rate limit constant globally for cron/test access
 if (!defined('NEWSLETTER_EMAIL_DELAY_MICROSECONDS')) {
@@ -97,7 +98,7 @@ class NewsletterService
         $cursor = $filters['cursor'] ?? null;
 
         $query = $this->newsletter->newQuery()
-            ->with(['creator:id,first_name,last_name']);
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name']);
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -1273,7 +1274,7 @@ HTML;
                         'email' => $sub->email,
                         'user_id' => $sub->user_id,
                         'unsubscribe_token' => $sub->unsubscribe_token,
-                        'name' => trim(($sub->first_name ?? '') . ' ' . ($sub->last_name ?? '')),
+                        'name' => UserDisplayName::resolve($sub),
                         'first_name' => $sub->first_name ?? '',
                         'last_name' => $sub->last_name ?? '',
                     ];
@@ -1311,7 +1312,7 @@ HTML;
                         'email' => $sub->email,
                         'user_id' => $sub->user_id,
                         'unsubscribe_token' => $sub->unsubscribe_token,
-                        'name' => trim(($sub->first_name ?? '') . ' ' . ($sub->last_name ?? '')),
+                        'name' => UserDisplayName::resolve($sub),
                         'first_name' => $sub->first_name ?? '',
                         'last_name' => $sub->last_name ?? '',
                     ];
@@ -1326,7 +1327,7 @@ HTML;
                     ->where('status', 'active')
                     ->whereNotNull('email')
                     ->where('email', '!=', '')
-                    ->get(['id', 'email', 'name', 'first_name', 'last_name']);
+                    ->get(['id', 'email', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name']);
 
                 foreach ($users as $user) {
                     $email = strtolower($user->email);
@@ -1341,7 +1342,7 @@ HTML;
                         'email' => $user->email,
                         'user_id' => $user->id,
                         'unsubscribe_token' => null,
-                        'name' => $user->name ?? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                        'name' => $user->name ?? UserDisplayName::resolve($user),
                         'first_name' => $user->first_name ?? '',
                         'last_name' => $user->last_name ?? '',
                     ];
@@ -1365,7 +1366,7 @@ HTML;
                     ->where('status', 'active')
                     ->whereNotNull('email')
                     ->where('email', '!=', '')
-                    ->get(['id', 'email', 'name', 'first_name', 'last_name']);
+                    ->get(['id', 'email', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name']);
 
                 foreach ($users as $user) {
                     // Skip users who have unsubscribed from newsletters
@@ -1387,7 +1388,7 @@ HTML;
                         'email' => $user->email,
                         'user_id' => $user->id,
                         'unsubscribe_token' => $subscriber->unsubscribe_token ?? null,
-                        'name' => $user->name ?? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                        'name' => $user->name ?? UserDisplayName::resolve($user),
                         'first_name' => $user->first_name ?? '',
                         'last_name' => $user->last_name ?? '',
                     ];
@@ -1452,7 +1453,7 @@ HTML;
                 'email' => $user->email,
                 'user_id' => $user->id,
                 'unsubscribe_token' => $subscriber->unsubscribe_token ?? null,
-                'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'name' => UserDisplayName::resolve($user),
                 'first_name' => $user->first_name ?? '',
                 'last_name' => $user->last_name ?? '',
             ];
@@ -2180,7 +2181,7 @@ HTML;
                 });
             }
 
-            return $query->get(['id', 'email', 'name', 'first_name', 'last_name'])
+            return $query->get(['id', 'email', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name'])
                 ->map(fn ($u) => (array) $u)
                 ->toArray();
         } catch (\Exception $e) {

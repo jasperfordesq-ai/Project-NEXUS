@@ -262,7 +262,7 @@ class ConnectionService
     {
         /** @var Connection|null $connection */
         $connection = Connection::query()
-            ->with(['requester:id,first_name,last_name,avatar_url', 'receiver:id,first_name,last_name,avatar_url'])
+            ->with(['requester:id,first_name,last_name,profile_type,organization_name,avatar_url', 'receiver:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('id', $connectionId)
             ->where(fn (Builder $q) => $q->where('requester_id', $userId)->orWhere('receiver_id', $userId))
             ->first();

@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\CommunityFundAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CommunityFundService — Eloquent/DB query builder service for the community fund.
@@ -246,9 +247,9 @@ class CommunityFundService
                 'cft.user_id',
                 'cft.admin_id',
                 'cft.created_at',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as user_name"),
+                DB::raw(UserDisplayName::sql('u', 'user_name')),
                 'u.avatar_url as user_avatar',
-                DB::raw("CONCAT(admin.first_name, ' ', admin.last_name) as admin_name")
+                DB::raw(UserDisplayName::sql('admin', 'admin_name'))
             )
             ->get();
 

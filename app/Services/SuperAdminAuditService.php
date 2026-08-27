@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\SuperPanelAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * SuperAdminAuditService — Native Laravel implementation.
@@ -143,7 +144,7 @@ class SuperAdminAuditService
             }
 
             $actorName = $actor
-                ? trim(($actor->first_name ?? '') . ' ' . ($actor->last_name ?? ''))
+                ? UserDisplayName::resolve($actor)
                 : 'System';
             $actorEmail = $actor->email ?? 'system@project-nexus.ie';
 

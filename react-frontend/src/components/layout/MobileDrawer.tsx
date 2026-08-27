@@ -35,7 +35,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { hasAdminPanelAccess, hasBrokerPanelAccess } from '@/lib/access';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -270,7 +270,7 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
                 className="flex items-center gap-3 w-full text-start min-h-9 p-2 min-h-[56px] justify-start rounded-xl hover:bg-theme-hover"
               >
                 <Avatar
-                  name={`${user.first_name} ${user.last_name}`}
+                  name={resolveUserDisplayName(user)}
                   src={resolveAvatarUrl(user.avatar_url || user.avatar)}
                   size="lg"
                   showFallback

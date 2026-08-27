@@ -85,7 +85,7 @@ class ListingExpiryReminderService
                 ->whereNull('lers.id')
                 ->select([
                     'l.id', 'l.tenant_id', 'l.title', 'l.type', 'l.user_id', 'l.expires_at',
-                    'u.name', 'u.first_name', 'u.last_name', 'u.email', 'u.preferred_language',
+                    'u.name', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.preferred_language',
                 ])
                 ->get();
         } catch (\Exception $e) {
@@ -152,7 +152,7 @@ class ListingExpiryReminderService
                 ->whereNull('lers.id')
                 ->select([
                     'l.id', 'l.tenant_id', 'l.title', 'l.type', 'l.user_id', 'l.expires_at',
-                    'u.name', 'u.first_name', 'u.last_name', 'u.email', 'u.preferred_language',
+                    'u.name', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.preferred_language',
                 ])
                 ->get();
         } catch (\Exception $e) {

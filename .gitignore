@@ -83,6 +83,7 @@ CLAUDE.md
 !/scripts/check-docs-hygiene.mjs
 !/scripts/check-status-color-tokens.mjs
 !/scripts/check-db-column-references.mjs
+!/scripts/check-display-name.mjs
 !/scripts/check-openapi-route-contract.mjs
 !/scripts/check-version-consistency.mjs
 !/scripts/check-doc-scores.mjs

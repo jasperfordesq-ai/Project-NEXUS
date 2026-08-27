@@ -31,6 +31,7 @@
     "check:docs:site": "bash scripts/check-docs-site-build.sh",
     "check:changelog": "node scripts/check-changelog-updated.mjs",
     "check:db-columns": "node scripts/check-db-column-references.mjs",
+    "check:display-name": "node scripts/check-display-name.mjs",
     "check:licenses": "node scripts/check-licenses.mjs",
     "licenses:write": "node scripts/check-licenses.mjs --write",
     "translate:i18n:gaps": "node scripts/translate-i18n-gaps.mjs",

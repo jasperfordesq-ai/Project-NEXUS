@@ -54,7 +54,7 @@ class PeerEndorsementController extends BaseApiController
         $targetUser = DB::table('users')
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
-            ->select('id', 'first_name', 'last_name')
+            ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name')
             ->first();
 
         if (!$targetUser) {

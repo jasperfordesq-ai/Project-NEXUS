@@ -45,7 +45,7 @@ import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { fetchUserFederationOptIn } from '@/lib/federationStatus';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import type { FederatedMember } from '@/types/api';
 
@@ -186,7 +186,7 @@ export function FederationMemberProfilePage() {
   };
 
   const displayName = member
-    ? (member.name?.trim() || `${member.first_name || ''} ${member.last_name || ''}`.trim() || t('member_profile.member_fallback'))
+    ? (resolveUserDisplayName(member) || t('member_profile.member_fallback'))
     : t('member_profile.member_fallback');
 
   const reachKey = member?.service_reach ?? 'local_only';

@@ -11,6 +11,7 @@ use App\Models\AbuseAlert;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * AbuseDetectionService
@@ -69,8 +70,8 @@ class AbuseDetectionService
             })
             ->select([
                 't.*',
-                DB::raw("CONCAT(s.first_name, ' ', s.last_name) as sender_name"),
-                DB::raw("CONCAT(r.first_name, ' ', r.last_name) as receiver_name"),
+                DB::raw(UserDisplayName::sql('s', 'sender_name')),
+                DB::raw(UserDisplayName::sql('r', 'receiver_name')),
             ])
             ->get();
 
@@ -136,7 +137,7 @@ class AbuseDetectionService
             : collect();
         foreach ($highVelocityUsers as $row) {
             $user = $users->get((int) $row->user_id);
-            $userName = $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : 'Unknown';
+            $userName = $user ? UserDisplayName::resolve($user) : 'Unknown';
 
             $this->createAlert(
                 'high_velocity',
@@ -208,9 +209,9 @@ class AbuseDetectionService
                 $circular->first_txn_id,
                 [
                     'user_a_id' => $circular->user_a,
-                    'user_a_name' => $userA ? trim(($userA->first_name ?? '') . ' ' . ($userA->last_name ?? '')) : 'Unknown',
+                    'user_a_name' => $userA ? UserDisplayName::resolve($userA) : 'Unknown',
                     'user_b_id' => $circular->user_b,
-                    'user_b_name' => $userB ? trim(($userB->first_name ?? '') . ' ' . ($userB->last_name ?? '')) : 'Unknown',
+                    'user_b_name' => $userB ? UserDisplayName::resolve($userB) : 'Unknown',
                     'first_amount' => $circular->first_amount,
                     'return_amount' => $circular->return_amount,
                     'first_txn_id' => $circular->first_txn_id,
@@ -263,7 +264,7 @@ class AbuseDetectionService
                 null,
                 [
                     'user_id' => $user->id,
-                    'user_name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                    'user_name' => UserDisplayName::resolve($user),
                     'balance' => $user->balance,
                     'last_transaction' => $user->last_transaction,
                     'inactive_days' => $inactiveDays,

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * TenantHierarchyService — Native Laravel implementation.
@@ -1095,7 +1096,7 @@ class TenantHierarchyService
                 'is_tenant_super_admin' => 1,
             ]);
 
-            $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $userName = UserDisplayName::resolve($user);
 
             SuperAdminAuditService::log(
                 'super_admin_granted',
@@ -1131,7 +1132,7 @@ class TenantHierarchyService
                 'is_tenant_super_admin' => 0,
             ]);
 
-            $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $userName = UserDisplayName::resolve($user);
 
             SuperAdminAuditService::log(
                 'super_admin_revoked',

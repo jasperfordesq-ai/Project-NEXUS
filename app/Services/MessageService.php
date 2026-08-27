@@ -17,6 +17,7 @@ use App\Support\EmojiConstants;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MessageService — Laravel DI-based service for messaging operations.
@@ -260,8 +261,8 @@ class MessageService
 
         $query = Message::query()
             ->with([
-                'sender:id,first_name,last_name,avatar_url',
-                'receiver:id,first_name,last_name,avatar_url',
+                'sender:id,first_name,last_name,profile_type,organization_name,avatar_url',
+                'receiver:id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'attachments:id,message_id,file_url,file_name,file_size,mime_type,created_at',
             ])
             ->betweenUsers($userId, $partnerId);
@@ -1049,7 +1050,7 @@ class MessageService
             'id' => $otherUserId,
             'other_user' => [
                 'id'         => $otherUser->id,
-                'name'       => $otherUser->name ?? trim(($otherUser->first_name ?? '') . ' ' . ($otherUser->last_name ?? '')),
+                'name'       => $otherUser->name ?? UserDisplayName::resolve($otherUser),
                 'first_name' => $otherUser->first_name,
                 'last_name'  => $otherUser->last_name,
                 'avatar_url' => $otherUser->avatar_url,

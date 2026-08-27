@@ -15,6 +15,7 @@ use App\Models\PartnerVenueVisit;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * PartnerVenueVisitService — member passes and the visit ledger.
@@ -335,8 +336,8 @@ class PartnerVenueVisitService
             ->get([
                 'v.id', 'v.visited_on', 'v.visited_at', 'v.source',
                 'pv.name as venue_name',
-                'v.user_id', 'm.first_name as member_first_name', 'm.last_name as member_last_name',
-                's.first_name as staff_first_name', 's.last_name as staff_last_name',
+                'v.user_id', 'm.first_name as member_first_name', 'm.last_name as member_last_name', 'm.profile_type as member_profile_type', 'm.organization_name as member_organization_name',
+                's.first_name as staff_first_name', 's.last_name as staff_last_name', 's.profile_type as staff_profile_type', 's.organization_name as staff_organization_name',
             ])
             ->map(static fn ($row): array => [
                 'id' => (int) $row->id,
@@ -344,8 +345,8 @@ class PartnerVenueVisitService
                 'visited_at' => $row->visited_at,
                 'venue_name' => (string) $row->venue_name,
                 'member_id' => (int) $row->user_id,
-                'member_name' => trim(($row->member_first_name ?? '') . ' ' . ($row->member_last_name ?? '')),
-                'recorded_by' => trim(($row->staff_first_name ?? '') . ' ' . ($row->staff_last_name ?? '')),
+                'member_name' => UserDisplayName::resolvePrefixed($row, 'member_'),
+                'recorded_by' => UserDisplayName::resolvePrefixed($row, 'staff_'),
                 'source' => (string) $row->source,
             ])
             ->all();
@@ -367,12 +368,12 @@ class PartnerVenueVisitService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', TenantContext::getId())
-            ->first(['id', 'first_name', 'last_name', 'avatar_url']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url']);
 
         return [
             'id' => $userId,
             'name' => $user !== null
-                ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''))
+                ? UserDisplayName::resolve($user)
                 : '',
             'avatar_url' => $user->avatar_url ?? null,
         ];

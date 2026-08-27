@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\SkillEndorsement;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * EndorsementService — Laravel DI-based service for skill endorsements.
@@ -51,7 +52,7 @@ class EndorsementService
         // Check endorsed user exists in the same tenant
         $endorsed = User::where('id', $endorsedId)
             ->where('tenant_id', TenantContext::getId())
-            ->first(['id', 'first_name', 'last_name']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name']);
         if (!$endorsed) {
             self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api_controllers_2.endorsement.member_not_found')];
             return null;
@@ -113,7 +114,7 @@ class EndorsementService
     public static function getEndorsements(int $userId): array
     {
         $rows = SkillEndorsement::query()
-            ->with(['endorser:id,first_name,last_name,avatar_url'])
+            ->with(['endorser:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('endorsed_id', $userId)
             ->orderBy('skill_name')
             ->orderByDesc('created_at')
@@ -128,7 +129,7 @@ class EndorsementService
             $grouped[$skill]['count']++;
             $grouped[$skill]['endorsers'][] = [
                 'id' => $row->endorser_id,
-                'name' => $row->endorser ? trim(($row->endorser->first_name ?? '') . ' ' . ($row->endorser->last_name ?? '')) : null,
+                'name' => $row->endorser ? UserDisplayName::resolve($row->endorser) : null,
                 'avatar_url' => $row->endorser->avatar_url ?? null,
                 'comment' => $row->comment,
             ];
@@ -163,7 +164,7 @@ class EndorsementService
     public static function getSkillEndorsements(int $userId, string $skillName): array
     {
         return SkillEndorsement::query()
-            ->with(['endorser:id,first_name,last_name,avatar_url'])
+            ->with(['endorser:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('endorsed_id', $userId)
             ->where('skill_name', $skillName)
             ->orderByDesc('created_at')
@@ -173,7 +174,7 @@ class EndorsementService
                 'comment' => $se->comment,
                 'created_at' => $se->created_at?->toDateTimeString(),
                 'endorser_id' => $se->endorser_id,
-                'endorser_name' => $se->endorser ? trim(($se->endorser->first_name ?? '') . ' ' . ($se->endorser->last_name ?? '')) : null,
+                'endorser_name' => $se->endorser ? UserDisplayName::resolve($se->endorser) : null,
                 'endorser_avatar' => $se->endorser->avatar_url ?? null,
             ])
             ->all();
@@ -249,7 +250,7 @@ class EndorsementService
             ->where('se.tenant_id', $tenantId)
             ->select(
                 'se.endorsed_id as user_id',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"),
+                DB::raw(UserDisplayName::sql('u', 'name')),
                 'u.avatar_url',
                 DB::raw('COUNT(*) as total_endorsements'),
                 DB::raw('COUNT(DISTINCT se.skill_name) as skills_endorsed')

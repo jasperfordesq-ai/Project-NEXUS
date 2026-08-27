@@ -16,6 +16,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Annual review of member safeguarding preferences (Tier 2b governance).
@@ -94,7 +95,7 @@ class SafeguardingReviewFlagsCommand extends Command
                 'o.option_type',
                 'u.email',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.name as display_name',
                 'u.preferred_language',
                 't.name as community_name',
@@ -115,7 +116,7 @@ class SafeguardingReviewFlagsCommand extends Command
                     'tenant_id' => (int) $row->tenant_id,
                     'user_id' => (int) $row->user_id,
                     'email' => $row->email,
-                    'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''))
+                    'name' => UserDisplayName::resolve($row)
                         ?: ($row->display_name ?? ''),
                     'community' => $row->community_name ?? '',
                     'preferred_language' => $row->preferred_language ?? null,
@@ -176,7 +177,7 @@ class SafeguardingReviewFlagsCommand extends Command
                 'p.selected_value',
                 'o.option_type',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.name as display_name',
             ])
             ->get();
@@ -194,7 +195,7 @@ class SafeguardingReviewFlagsCommand extends Command
                 $byUser[$key] = [
                     'tenant_id' => (int) $row->tenant_id,
                     'user_id' => (int) $row->user_id,
-                    'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''))
+                    'name' => UserDisplayName::resolve($row)
                         ?: ($row->display_name ?? __('emails.common.fallback_member_name')),
                     'preference_ids' => [],
                 ];
@@ -304,7 +305,7 @@ class SafeguardingReviewFlagsCommand extends Command
             ->where('tenant_id', $userBatch['tenant_id'])
             ->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin'])
             ->where('status', 'active')
-            ->select(['id', 'email', 'first_name', 'last_name', 'name', 'preferred_language'])
+            ->select(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'preferred_language'])
             ->get();
 
         if ($staff->isEmpty()) {

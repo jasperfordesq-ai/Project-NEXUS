@@ -209,12 +209,16 @@ class AdminAnalyticsService
             ->select(
                 'u.id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.email',
                 DB::raw('SUM(t.amount) as total_earned'),
                 DB::raw('COUNT(t.id) as transaction_count')
             )
-            ->groupBy('u.id', 'u.first_name', 'u.last_name', 'u.email')
+            // profile_type/organization_name are grouped too: they are
+            // functionally dependent on u.id so MariaDB's default mode does not
+            // require it, but a server with ONLY_FULL_GROUP_BY would reject the
+            // query outright.
+            ->groupBy('u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email')
             ->orderByDesc('total_earned')
             ->limit($limit)
             ->get()
@@ -236,12 +240,12 @@ class AdminAnalyticsService
             ->select(
                 'u.id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.email',
                 DB::raw('SUM(t.amount) as total_spent'),
                 DB::raw('COUNT(t.id) as transaction_count')
             )
-            ->groupBy('u.id', 'u.first_name', 'u.last_name', 'u.email')
+            ->groupBy('u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email')
             ->orderByDesc('total_spent')
             ->limit($limit)
             ->get()

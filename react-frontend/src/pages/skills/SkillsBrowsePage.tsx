@@ -39,7 +39,7 @@ import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import type { SkillCategory } from '@/components/skills/SkillSelector';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -597,7 +597,7 @@ export function SkillsBrowsePage() {
                                             >
                                               <Avatar
                                                 src={resolveAvatarUrl(member.avatar)}
-                                                name={`${member.first_name} ${member.last_name}`}
+                                                name={resolveUserDisplayName(member)}
                                                 size="sm"
                                                 className="shrink-0"
                                               />

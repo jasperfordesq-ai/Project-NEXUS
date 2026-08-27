@@ -83,7 +83,7 @@ final class EventLifecycleHistoryQueryService
             ->with(['actor' => static function ($query) use ($tenantId): void {
                 $query->withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
-                    ->select(['id', 'tenant_id', 'first_name', 'last_name']);
+                    ->select(['id', 'tenant_id', 'first_name', 'last_name', 'profile_type', 'organization_name']);
             }])
             ->orderByDesc('id');
         if ($cursorId !== null) {

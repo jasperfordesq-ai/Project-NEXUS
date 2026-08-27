@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\UserDisplayName;
 
 /**
  * ReviewService — Laravel DI-based service for review operations.
@@ -72,7 +73,7 @@ class ReviewService
             $reviewer = $r->reviewer;
             $reviewerName = ($reviewer && $reviewer->profile_type === 'organisation' && $reviewer->organization_name)
                 ? $reviewer->organization_name
-                : trim(($reviewer->first_name ?? '') . ' ' . ($reviewer->last_name ?? ''));
+                : UserDisplayName::resolve($reviewer);
 
             return [
                 'id'           => $r->id,
@@ -163,7 +164,7 @@ class ReviewService
             $receiver = $r->receiver;
             $receiverName = ($receiver && $receiver->profile_type === 'organisation' && $receiver->organization_name)
                 ? $receiver->organization_name
-                : trim(($receiver->first_name ?? '') . ' ' . ($receiver->last_name ?? ''));
+                : UserDisplayName::resolve($receiver);
 
             return [
                 'id'          => $r->id,
@@ -283,7 +284,7 @@ class ReviewService
 
             $name = ($u->profile_type === 'organisation' && $u->organization_name)
                 ? $u->organization_name
-                : trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                : UserDisplayName::resolve($u);
             if ($name === '') {
                 continue; // no displayable name — skip rather than show a blank prompt
             }

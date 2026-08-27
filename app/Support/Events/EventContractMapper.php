@@ -18,6 +18,7 @@ use App\Enums\EventRegistrationState;
 use App\Enums\EventScheduleState;
 use Illuminate\Support\Carbon;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /**
  * Pure compatibility mapper for the negotiated Events v2 read contract.
@@ -847,11 +848,7 @@ final class EventContractMapper
             return $organizationName;
         }
 
-        $name = trim(
-            (string) self::nullableString($source['first_name'] ?? null)
-            . ' '
-            . (string) self::nullableString($source['last_name'] ?? null)
-        );
+        $name = UserDisplayName::resolve($source);
 
         return $name !== '' ? $name : null;
     }

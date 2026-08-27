@@ -67,6 +67,7 @@ import { LinkedAccountsTab } from './tabs/LinkedAccountsTab';
 import { ConnectedAccountsTab } from './tabs/ConnectedAccountsTab';
 import { SafeguardingTab } from './tabs/SafeguardingTab';
 import { TranslationTab } from './tabs/TranslationTab';
+import { buildStoredUserName } from '@/lib/helpers';
 
 const SETTINGS_TABS = [
   'profile',
@@ -582,9 +583,10 @@ export function SettingsPage() {
       const payload: Record<string, unknown> = {
         first_name: profileData.first_name,
         last_name: profileData.last_name,
-        name: profileData.first_name && profileData.last_name
-          ? `${profileData.first_name} ${profileData.last_name}`
-          : profileData.name,
+        // A SAVE, so build the name from the parts being saved rather than
+        // reusing the display name (which would prefer the pre-edit value).
+        // The API recomputes `users.name` itself; this keeps the payload honest.
+        name: buildStoredUserName(profileData) || profileData.name,
         phone: profileData.phone,
         tagline: profileData.tagline,
         bio: sanitizedBio,

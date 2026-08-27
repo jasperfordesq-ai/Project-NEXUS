@@ -1,4 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { CardBody, Card, Progress, Button, Chip, Spinner, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -90,9 +90,7 @@ function statusLabelKey(status: Goal['status']): string {
 }
 
 function normalizeGoal(item: RawGoal): Goal {
-  const memberName = item.user?.name
-    ?? [item.user?.first_name, item.user?.last_name].filter(Boolean).join(' ').trim()
-    ?? '';
+  const memberName = resolveUserDisplayName(item.user);
 
   return {
     id: item.id,

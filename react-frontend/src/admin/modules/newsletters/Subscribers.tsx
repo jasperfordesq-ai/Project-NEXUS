@@ -1,4 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Button, Chip, Card, CardBody, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tooltip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -535,14 +535,14 @@ export function Subscribers() {
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar
-                    name={`${sub.first_name || ''} ${sub.last_name || ''}`.trim() || sub.email}
+                    name={resolveUserDisplayName(sub) || sub.email}
                     size="sm"
                     className="shrink-0"
                   />
                   <div className="min-w-0">
                     <p className="truncate font-medium text-foreground">
                       {sub.first_name || sub.last_name
-                        ? `${sub.first_name || ''} ${sub.last_name || ''}`.trim()
+                        ? resolveUserDisplayName(sub)
                         : '--'}
                     </p>
                     <p className="truncate text-xs text-muted">{sub.email}</p>

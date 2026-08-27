@@ -11,6 +11,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * FederatedConnectionService — Manages cross-tenant connection requests between federated members.
@@ -141,7 +142,7 @@ class FederatedConnectionService
                     "SELECT name FROM tenants WHERE id = ?",
                     [$requesterTenantId]
                 );
-                $senderName = $sender ? trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')) : __('emails.common.fallback_someone');
+                $senderName = $sender ? UserDisplayName::resolve($sender) : __('emails.common.fallback_someone');
                 $communityName = $community->name ?? __('emails.common.fallback_partner_community');
 
                 // Render the bell message in the RECEIVER's preferred locale
@@ -249,7 +250,7 @@ class FederatedConnectionService
                     "SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?",
                     [$userId, $tenantId]
                 );
-                $accepterName = $accepter ? trim(($accepter->first_name ?? '') . ' ' . ($accepter->last_name ?? '')) : __('emails.common.fallback_someone');
+                $accepterName = $accepter ? UserDisplayName::resolve($accepter) : __('emails.common.fallback_someone');
 
                 // Render the bell message in the ORIGINAL REQUESTER's preferred locale
                 // (cross-tenant: they live on connection->requester_tenant_id).
@@ -459,6 +460,12 @@ class FederatedConnectionService
                         fc.receiver_user_id, fc.receiver_tenant_id,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.first_name ELSE qu.first_name END as other_first_name,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.last_name ELSE qu.last_name END as other_last_name,
+                        -- These MUST mirror the CASE above: the 'other' party is the
+                        -- requester on an outgoing connection, so taking the
+                        -- receiver's columns unconditionally would label an
+                        -- outgoing connection with the wrong account's type.
+                        CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.profile_type ELSE qu.profile_type END as other_profile_type,
+                        CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.organization_name ELSE qu.organization_name END as other_organization_name,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.avatar_url ELSE qu.avatar_url END as other_avatar,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.id ELSE qu.id END as other_user_id,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN fc.receiver_tenant_id ELSE fc.requester_tenant_id END as other_tenant_id,
@@ -470,7 +477,12 @@ class FederatedConnectionService
                  LEFT JOIN tenants rt ON fc.receiver_tenant_id = rt.id
                  WHERE ";
 
+            // One pair per CASE above, in SQL order. Every pair is identical, so
+            // only the COUNT matters -- but it must match, or every placeholder
+            // after the mismatch binds the wrong value.
             $params = [
+                $userId, $tenantId,
+                $userId, $tenantId,
                 $userId, $tenantId,
                 $userId, $tenantId,
                 $userId, $tenantId,
@@ -510,7 +522,7 @@ class FederatedConnectionService
                 return [
                     'id' => (int) $row->id,
                     'user_id' => (int) $row->other_user_id,
-                    'name' => trim(($row->other_first_name ?? '') . ' ' . ($row->other_last_name ?? '')),
+                    'name' => UserDisplayName::resolvePrefixed($row, 'other_'),
                     'avatar_url' => $row->other_avatar,
                     'tenant_id' => (int) $row->other_tenant_id,
                     'tenant_name' => $row->other_tenant_name,

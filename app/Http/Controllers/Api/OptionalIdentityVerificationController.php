@@ -317,7 +317,7 @@ class OptionalIdentityVerificationController extends BaseApiController
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['id', 'first_name', 'last_name', 'date_of_birth']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'date_of_birth']);
 
         if (!$user) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.identity.user_not_found'), null, 404);
@@ -443,7 +443,7 @@ class OptionalIdentityVerificationController extends BaseApiController
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['first_name', 'last_name', 'date_of_birth']);
+            ->first(['first_name', 'last_name', 'profile_type', 'organization_name', 'date_of_birth']);
 
         if (!$user) {
             return null; // Can't check — allow through

@@ -51,7 +51,7 @@ import type {
 } from '@/admin/api/types';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { formatServerDateTime } from '@/lib/serverTime';
 import {
   BrokerEmptyState,
@@ -93,7 +93,7 @@ interface VettingListMeta {
 }
 
 function memberName(item: VettingRecord): string {
-  return `${item.first_name} ${item.last_name}`.trim();
+  return resolveUserDisplayName(item);
 }
 
 function rowStatus(item: VettingRecord): string {

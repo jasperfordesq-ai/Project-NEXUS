@@ -9,6 +9,7 @@ import Search from 'lucide-react/icons/search';
 import { adminUsers } from '../api/adminApi';
 import type { AdminUser } from '../api/types';
 import { Button, Spinner, Input, Avatar } from '@/components/ui';
+import { resolveUserDisplayName } from '@/lib/helpers';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -34,7 +35,7 @@ interface MemberSearchPickerProps {
 }
 
 function mapAdminUser(user: Partial<AdminUser> & { id: number }): MemberSearchMember {
-  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+  const fullName = resolveUserDisplayName(user);
 
   return {
     id: user.id,

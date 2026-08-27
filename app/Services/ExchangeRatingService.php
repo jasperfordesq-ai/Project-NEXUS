@@ -134,7 +134,9 @@ class ExchangeRatingService
 
         $rows = DB::select(
             "SELECT er.id, er.exchange_id, er.rater_id, er.rated_id, er.rating, er.comment, er.role, er.created_at,
-                    u.first_name AS rater_first_name, u.last_name AS rater_last_name, u.username AS rater_username
+                    u.first_name AS rater_first_name, u.last_name AS rater_last_name,
+ u.profile_type AS rater_profile_type,
+ u.organization_name AS rater_organization_name, u.username AS rater_username
              FROM exchange_ratings er
              LEFT JOIN users u ON u.id = er.rater_id
              WHERE er.exchange_id = ? AND er.tenant_id = ?

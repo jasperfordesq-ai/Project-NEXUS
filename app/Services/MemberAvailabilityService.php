@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\MemberAvailability;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * MemberAvailabilityService — Laravel DI-based service for member availability.
@@ -378,7 +379,7 @@ class MemberAvailabilityService
                 'member_availability.user_id',
                 'member_availability.start_time',
                 'member_availability.end_time',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as member_name"),
+                DB::raw(UserDisplayName::sql('u', 'member_name')),
                 'u.avatar_url'
             )
             ->distinct();

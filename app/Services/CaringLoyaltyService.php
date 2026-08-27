@@ -536,7 +536,7 @@ class CaringLoyaltyService
                 'merchant.id as merchant_id',
                 'merchant.name as merchant_name',
                 'merchant.first_name as merchant_first_name',
-                'merchant.last_name as merchant_last_name',
+                'merchant.last_name as merchant_last_name', 'merchant.profile_type as merchant_profile_type', 'merchant.organization_name as merchant_organization_name',
                 'l.title as listing_title',
             ])
             ->get();
@@ -586,11 +586,11 @@ class CaringLoyaltyService
                 'member.id as member_id',
                 'member.name as member_name',
                 'member.first_name as member_first_name',
-                'member.last_name as member_last_name',
+                'member.last_name as member_last_name', 'member.profile_type as member_profile_type', 'member.organization_name as member_organization_name',
                 'merchant.id as merchant_id',
                 'merchant.name as merchant_name',
                 'merchant.first_name as merchant_first_name',
-                'merchant.last_name as merchant_last_name',
+                'merchant.last_name as merchant_last_name', 'merchant.profile_type as merchant_profile_type', 'merchant.organization_name as merchant_organization_name',
                 'l.title as listing_title',
             ])
             ->get();

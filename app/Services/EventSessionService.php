@@ -2119,7 +2119,7 @@ final class EventSessionService
     private function speakerRelations(): array
     {
         return [
-            'speakers.user:id,tenant_id,name,first_name,last_name,avatar_url',
+            'speakers.user:id,tenant_id,name,first_name,last_name,profile_type,organization_name,avatar_url',
             'resources',
         ];
     }

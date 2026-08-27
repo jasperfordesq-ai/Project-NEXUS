@@ -27,7 +27,7 @@ import { EmptyState } from '@/components/feedback';
 import { useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
+import { formatRelativeTime, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { SupportPrepareModal, type PrepareActionType } from './SupportPrepareModal';
 import { SupportActivityModal } from './SupportActivityModal';
 
@@ -194,10 +194,7 @@ function normalizeRelationship(row: AccountRelationshipRow): NormalizedRelations
 }
 
 function getDisplayName(account: NormalizedRelationship, unknownLabel: string): string {
-  const name = [account.first_name, account.last_name]
-    .map((part) => part?.trim())
-    .filter(Boolean)
-    .join(' ');
+  const name = resolveUserDisplayName(account);
 
   return name || account.email || unknownLabel;
 }

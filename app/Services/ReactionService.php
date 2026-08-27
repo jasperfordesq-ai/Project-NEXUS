@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Support\FeedItemTables;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * ReactionService — Manages emoji reactions on posts and comments.
@@ -226,7 +227,7 @@ class ReactionService
             ->where('r.target_id', $entityId)
             ->orderByDesc('r.created_at')
             ->limit(3)
-            ->select('u.id', DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"), 'u.avatar_url')
+            ->select('u.id', DB::raw(UserDisplayName::sql('u', 'name')), 'u.avatar_url')
             ->get()
             ->map(fn ($r) => [
                 'id' => (int) $r->id,
@@ -274,7 +275,7 @@ class ReactionService
             ->limit($perPage)
             ->select(
                 'u.id',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"),
+                DB::raw(UserDisplayName::sql('u', 'name')),
                 'u.avatar_url',
                 'r.created_at as reacted_at'
             )
@@ -393,7 +394,7 @@ class ReactionService
             $reactorRows = DB::select(
                 "SELECT target_id, user_id, name, avatar_url FROM (
                     SELECT r.target_id, r.user_id,
-                           CONCAT(u.first_name, ' ', u.last_name) AS name,
+                           " . UserDisplayName::sql('u', 'name') . ",
                            u.avatar_url,
                            ROW_NUMBER() OVER (PARTITION BY r.target_id ORDER BY r.created_at DESC) AS rn
                     FROM reactions r

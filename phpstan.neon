@@ -51,6 +51,20 @@ parameters:
         - '#Access to an undefined property#'
         - identifier: missingType.iterableValue
 
+        # User::$appends deliberately lists `name`, which IS a real column.
+        # larastan reads that as redundant; it is not. `users.name` is a stored
+        # NOT NULL column AND has an organisation-aware accessor
+        # (getNameAttribute -> App\Support\UserDisplayName). Well over a hundred
+        # constrained eager loads select the name PARTS without `name`
+        # (`with(['creator:id,first_name,last_name,...'])`), and those rows would
+        # otherwise serialise with no `name` key at all — every front end then
+        # falls back to concatenating first+last, which for an ORGANISATION
+        # account is its contact person rather than the account. Appending forces
+        # the accessor to run for those rows. Removing this entry means removing
+        # the append, which reopens the bug fixed on 2026-08-27.
+        - message: '#Property .name. is not a computed property, remove from \$appends#'
+          path: app/Models/User.php
+
         # ActivityLog: Optional service class that may not be present in all deployments.
         # DeliverabilityTrackingService and Review model call it wrapped in class_exists checks.
         - message: '#Call to static method log\(\) on an unknown class Nexus\\Services\\ActivityLog#'

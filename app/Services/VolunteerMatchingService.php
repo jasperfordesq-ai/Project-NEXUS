@@ -57,7 +57,7 @@ class VolunteerMatchingService
         $query = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
-            ->select('id', 'first_name', 'last_name', 'avatar_url');
+            ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url');
 
         if (!empty($alreadyApplied)) {
             $query->whereNotIn('id', $alreadyApplied);

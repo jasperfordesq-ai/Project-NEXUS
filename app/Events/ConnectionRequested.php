@@ -14,6 +14,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
+use App\Support\UserDisplayName;
 
 /**
  * Fired when one user sends a connection request to another.
@@ -70,9 +71,7 @@ class ConnectionRequested implements ShouldBroadcast, ShouldRescue
         return [
             'id'           => $this->connectionModel->id,
             'requester_id' => $this->requester->id,
-            'requester_name' => trim(
-                ($this->requester->first_name ?? '') . ' ' . ($this->requester->last_name ?? '')
-            ) ?: ($this->requester->name ?? $fallbackName),
+            'requester_name' => UserDisplayName::resolve($this->requester) ?: ($this->requester->name ?? $fallbackName),
             'created_at'   => $this->connectionModel->created_at?->toISOString(),
         ];
     }

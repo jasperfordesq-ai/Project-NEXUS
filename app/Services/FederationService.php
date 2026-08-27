@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * FederationService — Laravel DI-based service for federation/multi-community operations.
@@ -74,7 +75,7 @@ class FederationService
             ->where('fus.federation_optin', 1)
             ->where('fus.appear_in_federated_search', 1)
             ->where('fus.profile_visible_federated', 1)
-            ->select('u.id', DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"), 'u.location', 'u.bio', 'u.avatar_url as avatar')
+            ->select('u.id', DB::raw(UserDisplayName::sql('u', 'name')), 'u.location', 'u.bio', 'u.avatar_url as avatar')
             ->limit(min($limit, 100))
             ->get()
             ->map(fn ($r) => (array) $r)

@@ -202,7 +202,7 @@ class FeedSocialController extends BaseApiController
             ->where('ps.tenant_id', $tenantId)
             ->orderByDesc('ps.created_at')
             ->limit($limit)
-            ->select('u.id', 'u.first_name', 'u.last_name', 'u.avatar_url', 'ps.comment', 'ps.created_at')
+            ->select('u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url', 'ps.comment', 'ps.created_at')
             ->get()
             ->map(fn ($r) => (array) $r)
             ->all();

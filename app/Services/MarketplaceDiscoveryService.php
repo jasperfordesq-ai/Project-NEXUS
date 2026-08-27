@@ -14,6 +14,7 @@ use App\Models\MarketplaceSavedSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceDiscoveryService — Saved searches and collections/wishlists.
@@ -273,7 +274,7 @@ class MarketplaceDiscoveryService
                 'listing' => static function ($q) use ($listingConstraint): void {
                     $listingConstraint($q);
                     $q->with([
-                    'user:id,first_name,last_name,avatar_url',
+                    'user:id,first_name,last_name,profile_type,organization_name,avatar_url',
                     'category:id,name,slug,icon',
                     'images' => fn ($iq) => $iq->where('is_primary', true)->limit(1),
                     ]);
@@ -328,7 +329,7 @@ class MarketplaceDiscoveryService
                     ] : null,
                     'user' => $listing->user ? [
                         'id' => $listing->user->id,
-                        'name' => trim($listing->user->first_name . ' ' . $listing->user->last_name),
+                        'name' => UserDisplayName::resolve($listing->user),
                         'avatar_url' => $listing->user->avatar_url,
                     ] : null,
                     'created_at' => $listing->created_at?->toISOString(),

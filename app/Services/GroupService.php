@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * GroupService — Laravel DI-based service for group operations.
@@ -55,7 +56,7 @@ class GroupService
 
         $query = Group::query()
             ->active()
-            ->with(['creator:id,first_name,last_name,avatar_url'])
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->withCount('activeMembers');
 
         // Show featured groups (regardless of hierarchy) + top-level non-featured groups
@@ -245,7 +246,7 @@ class GroupService
                 'id'         => $creator->id,
                 'name'       => ($creator->profile_type === 'organisation' && $creator->organization_name)
                                     ? $creator->organization_name
-                                    : trim($creator->first_name . ' ' . $creator->last_name),
+                                    : UserDisplayName::resolve($creator),
                 'avatar'     => $creator->avatar_url,
                 'avatar_url' => $creator->avatar_url,
             ];
@@ -338,14 +339,14 @@ class GroupService
                     ->where('group_members.status', 'active')
                     ->orderByDesc('group_members.created_at')
                     ->limit(5)
-                    ->select(['users.id', 'users.first_name', 'users.last_name', 'users.avatar_url'])
+                    ->select(['users.id', 'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name', 'users.avatar_url'])
                     ->get();
 
                 $data['recent_members'] = $recentMembers->map(fn($m) => [
                     'id'         => (int) $m->id,
                     'first_name' => $m->first_name,
                     'last_name'  => $m->last_name,
-                    'name'       => trim(($m->first_name ?? '') . ' ' . ($m->last_name ?? '')),
+                    'name'       => UserDisplayName::resolve($m),
                     'avatar_url' => $m->avatar_url,
                     'avatar'     => $m->avatar_url,
                 ])->all();
@@ -1796,7 +1797,7 @@ class GroupService
 
             return [
                 'id' => $targetUserId,
-                'name' => trim(($m->first_name ?? '') . ' ' . ($m->last_name ?? '')),
+                'name' => UserDisplayName::resolve($m),
                 'avatar_url' => $m->avatar_url,
                 'role' => $targetRole,
                 'joined_at' => $m->joined_at,
@@ -2142,14 +2143,14 @@ class GroupService
             ->select([
                 'users.id',
                 'users.first_name',
-                'users.last_name',
+                'users.last_name', 'users.profile_type', 'users.organization_name',
                 'users.avatar_url',
                 'group_members.created_at as requested_at',
             ])
             ->get();
 
         return $pending->map(function ($p) {
-            $name = trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? ''));
+            $name = UserDisplayName::resolve($p);
 
             return [
                 // Legacy flat keys (kept for backward compatibility with existing clients)
@@ -2480,7 +2481,7 @@ class GroupService
         }
 
         $query = GroupDiscussion::query()
-            ->with(['user:id,first_name,last_name,avatar_url'])
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->withCount('posts')
             ->withMax('posts as last_post_at', 'created_at')
             ->where('group_id', $groupId);
@@ -2521,7 +2522,7 @@ class GroupService
                 'title'         => (string) $d->title,
                 'author'        => [
                     'id'         => (int) $d->user_id,
-                    'name'       => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                    'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                     'avatar_url' => $user?->avatar_url,
                 ],
                 'reply_count'   => $replyCount,
@@ -2628,7 +2629,7 @@ class GroupService
                 'content'       => $content,
             ]);
 
-            $discussion->load('user:id,first_name,last_name,avatar_url');
+            $discussion->load('user:id,first_name,last_name,profile_type,organization_name,avatar_url');
             $user = $discussion->user;
 
             // Fire integrations
@@ -2646,7 +2647,7 @@ class GroupService
                 'content'       => $content,
                 'author'        => [
                     'id'         => (int) $discussion->user_id,
-                    'name'       => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                    'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                     'avatar_url' => $user?->avatar_url,
                 ],
                 'reply_count'   => 0,
@@ -2670,7 +2671,7 @@ class GroupService
 
         // Verify discussion belongs to group
         $discussion = GroupDiscussion::query()
-            ->with(['user:id,first_name,last_name,avatar_url'])
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('group_id', $groupId)
             ->find($discussionId);
 
@@ -2706,7 +2707,7 @@ class GroupService
         $totalReplies = (clone $replyBase)->count();
         $lastReplyAt = (clone $replyBase)->max('created_at');
 
-        $query = (clone $replyBase)->with(['user:id,first_name,last_name,avatar_url']);
+        $query = (clone $replyBase)->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url']);
         if ($cursorPayload !== null) {
             $query->where(static function (Builder $older) use ($cursorPayload): void {
                 $older->where('created_at', '<', $cursorPayload['created_at'])
@@ -2733,7 +2734,7 @@ class GroupService
                 'content'    => (string) $p->content,
                 'author'     => [
                     'id'         => (int) $p->user_id,
-                    'name'       => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                    'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                     'avatar_url' => $user?->avatar_url,
                 ],
                 'is_own'     => (int) $p->user_id === $userId,
@@ -2750,7 +2751,7 @@ class GroupService
                 'content'       => (string) ($rootPost?->content ?? ''),
                 'author'        => [
                     'id'         => (int) $discussion->user_id,
-                    'name'       => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                    'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                     'avatar_url' => $user?->avatar_url,
                 ],
                 'reply_count'   => (int) $totalReplies,
@@ -2858,7 +2859,7 @@ class GroupService
         try { GroupChallengeService::incrementProgress($groupId, 'posts'); } catch (\Throwable $e) { \Log::warning('GroupService: failed to increment challenge progress for posts', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
         try { GroupMentionService::notifyMentioned($groupId, $userId, $content, 'post', $post->id); } catch (\Throwable $e) { \Log::warning('GroupService: failed to notify mentioned users in post', ['group_id' => $groupId, 'post_id' => $post->id, 'error' => $e->getMessage()]); }
 
-        $post->load('user:id,first_name,last_name,avatar_url');
+        $post->load('user:id,first_name,last_name,profile_type,organization_name,avatar_url');
         $user = $post->user;
 
         return [
@@ -2866,7 +2867,7 @@ class GroupService
             'content'    => (string) $post->content,
             'author'     => [
                 'id'         => (int) $post->user_id,
-                'name'       => $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : __('api.unknown_user'),
+                'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
                 'avatar_url' => $user?->avatar_url,
             ],
             'is_own'     => true,

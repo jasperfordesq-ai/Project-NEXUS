@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * TeamTaskService — Native Eloquent/DB implementation for team task management.
@@ -539,14 +540,13 @@ class TeamTaskService
         $users = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $assigneeIds)
-            ->get(['id', 'name', 'first_name', 'last_name', 'avatar_url']);
+            ->get(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url']);
 
         $result = [];
         foreach ($users as $user) {
             $result[(int) $user->id] = [
                 'id' => (int) $user->id,
-                'name' => trim((string) ($user->name
-                    ?: trim((string) $user->first_name . ' ' . (string) $user->last_name))),
+                'name' => UserDisplayName::resolve($user),
                 'avatar_url' => $user->avatar_url !== null ? (string) $user->avatar_url : null,
             ];
         }

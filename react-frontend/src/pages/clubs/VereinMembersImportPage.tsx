@@ -39,6 +39,7 @@ import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { resolveUserDisplayName } from '@/lib/helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -318,7 +319,7 @@ export default function VereinMembersImportPage() {
                       <TableCell>{actionChip(row.action)}</TableCell>
                       <TableCell>{row.email || t('empty_dash')}</TableCell>
                       <TableCell className="hidden md:table-cell">
-                        {[row.first_name, row.last_name].filter(Boolean).join(' ') || t('empty_dash')}
+                        {resolveUserDisplayName(row) || t('empty_dash')}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">{row.role}</TableCell>
                       <TableCell className="text-danger-700">

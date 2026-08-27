@@ -9,6 +9,7 @@ namespace App\Services\Identity;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\UserDisplayName;
 
 /**
  * RegistrationOrchestrationService — Central coordinator for the registration flow.
@@ -444,11 +445,11 @@ class RegistrationOrchestrationService
             $user = \Illuminate\Support\Facades\DB::table('users')
                 ->where('id', $userId)
                 ->where('tenant_id', $tenantId)
-                ->select(['first_name', 'last_name', 'name', 'email'])
+                ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'email'])
                 ->first();
 
             if ($user) {
-                $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                $userName = UserDisplayName::resolve($user);
                 if (empty($userName)) {
                     $userName = $user->name ?? 'Unknown';
                 }

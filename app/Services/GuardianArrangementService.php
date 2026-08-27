@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Staff-proposed guardian arrangements, and the member's own answers to them:
@@ -445,7 +446,7 @@ class GuardianArrangementService
             ->select([
                 'ar.id', 'ar.status', 'ar.created_at', 'ar.approved_at', 'ar.declined_at',
                 'ar.withdrawn_at', 'ar.response_reason', 'ar.staff_notes', 'ar.permissions',
-                'g.first_name', 'g.last_name',
+                'g.first_name', 'g.last_name', 'g.profile_type', 'g.organization_name',
             ])
             ->get()
             ->map(function ($r) {
@@ -453,7 +454,7 @@ class GuardianArrangementService
 
                 return [
                     'id'                   => (int) $r->id,
-                    'guardian_name'        => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                    'guardian_name'        => UserDisplayName::resolve($r),
                     'assigned_at'          => $r->created_at,
                     'consent_given_at'     => $r->approved_at,
                     'consent_declined_at'  => $r->declined_at,
@@ -488,12 +489,12 @@ class GuardianArrangementService
             ->orderByDesc('ar.created_at')
             ->select([
                 'ar.id', 'ar.status', 'ar.created_at', 'ar.declined_at', 'ar.withdrawn_at',
-                'w.first_name', 'w.last_name',
+                'w.first_name', 'w.last_name', 'w.profile_type', 'w.organization_name',
             ])
             ->get()
             ->map(fn ($r) => [
                 'id'          => (int) $r->id,
-                'ward_name'   => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                'ward_name'   => UserDisplayName::resolve($r),
                 'assigned_at' => $r->created_at,
                 'state'       => self::stateOf($r),
             ])

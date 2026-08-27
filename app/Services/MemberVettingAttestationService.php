@@ -500,7 +500,7 @@ class MemberVettingAttestationService
             ->select([
                 'u.id as user_id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.email',
                 'u.avatar_url',
                 'a.id as attestation_id',
@@ -637,7 +637,7 @@ class MemberVettingAttestationService
                 'a.review_due_at', 'a.authority_expires_at', 'a.decision', 'a.confirmed_at',
                 'a.revoked_at', 'a.revocation_reason_code', 'a.policy_version',
                 'confirmer.first_name as confirmer_first_name',
-                'confirmer.last_name as confirmer_last_name',
+                'confirmer.last_name as confirmer_last_name', 'confirmer.profile_type as confirmer_profile_type', 'confirmer.organization_name as confirmer_organization_name',
             ])
             ->orderByDesc('a.updated_at')
             ->get()
@@ -663,11 +663,11 @@ class MemberVettingAttestationService
             ->select([
                 'a.*',
                 'member.first_name',
-                'member.last_name',
+                'member.last_name', 'member.profile_type', 'member.organization_name',
                 'member.email',
                 'member.avatar_url',
                 'confirmer.first_name as confirmer_first_name',
-                'confirmer.last_name as confirmer_last_name',
+                'confirmer.last_name as confirmer_last_name', 'confirmer.profile_type as confirmer_profile_type', 'confirmer.organization_name as confirmer_organization_name',
             ])
             ->first();
 

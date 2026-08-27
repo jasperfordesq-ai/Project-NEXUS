@@ -129,7 +129,7 @@ class CommunityProjectService
             ->select(
                 'p.*',
                 'u.first_name as proposer_first_name',
-                'u.last_name as proposer_last_name',
+                'u.last_name as proposer_last_name', 'u.profile_type as proposer_profile_type', 'u.organization_name as proposer_organization_name',
                 'u.avatar_url as proposer_avatar'
             );
 
@@ -267,7 +267,7 @@ class CommunityProjectService
             ->select(
                 'p.*',
                 'u.first_name as proposer_first_name',
-                'u.last_name as proposer_last_name',
+                'u.last_name as proposer_last_name', 'u.profile_type as proposer_profile_type', 'u.organization_name as proposer_organization_name',
                 'u.avatar_url as proposer_avatar'
             )
             ->first();

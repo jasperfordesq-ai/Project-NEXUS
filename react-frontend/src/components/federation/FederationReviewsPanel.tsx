@@ -22,7 +22,7 @@ import StarHalf from 'lucide-react/icons/star-half';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 export interface FederationReviewItem {
@@ -98,8 +98,7 @@ function StarRating({ rating, ariaLabel }: { rating: number; ariaLabel: string }
 
 function reviewerName(r: FederationReviewItem['reviewer']): string {
   return (
-    r.name?.trim() ||
-    `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() ||
+    resolveUserDisplayName(r) ||
     ''
   );
 }

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * UserService — Laravel DI-based service for user/profile operations.
@@ -48,9 +49,7 @@ class UserService
         }
 
         $data = $user->toArray();
-        $data['name'] = ($user->profile_type === 'organisation' && $user->organization_name)
-            ? $user->organization_name
-            : trim($user->first_name . ' ' . $user->last_name);
+        $data['name'] = UserDisplayName::resolve($user);
 
         return $data;
     }
@@ -1054,7 +1053,7 @@ class UserService
                 'id'                   => $user->id,
                 'name'                 => ($user->profile_type === 'organisation' && $user->organization_name)
                                               ? $user->organization_name
-                                              : trim($user->first_name . ' ' . $user->last_name),
+                                              : UserDisplayName::resolve($user),
                 'first_name'           => $user->first_name,
                 'last_name'            => $user->last_name,
                 'avatar'               => $user->avatar_url,
@@ -1130,7 +1129,7 @@ class UserService
             'id'                => $user->id,
             'name'              => ($user->profile_type === 'organisation' && $user->organization_name)
                                     ? $user->organization_name
-                                    : trim($user->first_name . ' ' . $user->last_name),
+                                    : UserDisplayName::resolve($user),
             'first_name'        => $user->first_name,
             'last_name'         => $user->last_name,
             'avatar_url'        => $user->avatar_url,

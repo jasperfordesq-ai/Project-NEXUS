@@ -53,7 +53,7 @@ import Pencil from 'lucide-react/icons/pencil';
 import ExternalLink from 'lucide-react/icons/external-link';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { resolveAssetUrl, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, resolveUserDisplayNameFromPrefix } from '@/lib/helpers';
 import { parseServerTimestamp, formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { adminInsurance, adminUsers, adminBroker } from '@/admin/api/adminApi';
 import { DataTable, ConfirmModal, type Column } from '@/admin/components';
@@ -552,7 +552,7 @@ export function InsuranceCertificates() {
         <div className="flex items-center gap-2">
           <Avatar
             src={resolveAvatarUrl(item.avatar_url) || undefined}
-            name={`${item.first_name} ${item.last_name}`}
+            name={resolveUserDisplayName(item)}
             size="sm"
             className="shrink-0"
           />
@@ -879,7 +879,7 @@ export function InsuranceCertificates() {
             {selectedUser ? (
               <div className="flex items-center justify-between rounded-lg border border-border bg-surface-secondary p-3">
                 <div className="flex items-center gap-2">
-                  <Avatar name={`${selectedUser.first_name} ${selectedUser.last_name}`} size="sm" />
+                  <Avatar name={resolveUserDisplayName(selectedUser)} size="sm" />
                   <div>
                     <p className="text-sm font-medium">{selectedUser.first_name} {selectedUser.last_name}</p>
                     <p className="text-xs text-muted">{selectedUser.email}</p>
@@ -923,7 +923,7 @@ export function InsuranceCertificates() {
                           setUserSearchResults([]);
                         }}
                       >
-                        <Avatar name={`${u.first_name} ${u.last_name}`} size="sm" className="shrink-0" />
+                        <Avatar name={resolveUserDisplayName(u)} size="sm" className="shrink-0" />
                         <div className="min-w-0 text-left">
                           <p className="truncate text-sm font-medium">{u.first_name} {u.last_name}</p>
                           <p className="truncate text-xs text-muted">{u.email}</p>
@@ -1036,7 +1036,7 @@ export function InsuranceCertificates() {
               <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary p-3">
                 <Avatar
                   src={resolveAvatarUrl(editItem.avatar_url) || undefined}
-                  name={`${editItem.first_name} ${editItem.last_name}`}
+                  name={resolveUserDisplayName(editItem)}
                   size="sm"
                 />
                 <div>
@@ -1188,7 +1188,7 @@ export function InsuranceCertificates() {
               <div className="mb-4 flex items-center gap-3">
                 <Avatar
                   src={resolveAvatarUrl(viewItem.avatar_url) || undefined}
-                  name={`${viewItem.first_name} ${viewItem.last_name}`}
+                  name={resolveUserDisplayName(viewItem)}
                   size="lg"
                 />
                 <div>
@@ -1230,7 +1230,10 @@ export function InsuranceCertificates() {
                   <p className="text-muted">{t('insurance.label_verified_by')}</p>
                   <p className="font-medium">
                     {viewItem.verifier_first_name
-                      ? `${viewItem.verifier_first_name} ${viewItem.verifier_last_name}`
+                      ? resolveUserDisplayNameFromPrefix(
+                          viewItem as unknown as Record<string, unknown>,
+                          'verifier_',
+                        )
                       : '—'}
                   </p>
                 </div>

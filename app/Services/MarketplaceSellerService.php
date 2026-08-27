@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\MarketplaceListing;
 use App\Models\MarketplaceSellerProfile;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceSellerService — Seller profile management for the marketplace module.
@@ -129,7 +130,7 @@ class MarketplaceSellerService
     public static function getMemberProfile(int $sellerId): ?array
     {
         $profile = MarketplaceSellerProfile::with(
-            'user:id,first_name,last_name,avatar_url,is_verified,created_at,location,status'
+            'user:id,first_name,last_name,profile_type,organization_name,avatar_url,is_verified,created_at,location,status'
         )
             ->where(function ($query) {
                 $query->whereNull('is_suspended')->orWhere('is_suspended', false);
@@ -148,9 +149,7 @@ class MarketplaceSellerService
         return [
             'id' => $profile->id,
             'user_id' => $profile->user_id,
-            'display_name' => $profile->display_name ?? trim(
-                ($profile->user->first_name ?? '') . ' ' . ($profile->user->last_name ?? '')
-            ),
+            'display_name' => $profile->display_name ?? UserDisplayName::resolve($profile->user),
             'bio' => $profile->bio,
             'avatar_url' => $profile->avatar_url ?? $profile->user->avatar_url ?? null,
             'cover_image_url' => $profile->cover_image_url,

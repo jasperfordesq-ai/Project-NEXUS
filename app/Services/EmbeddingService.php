@@ -8,6 +8,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * EmbeddingService — Semantic Vector Embeddings
@@ -393,7 +394,7 @@ class EmbeddingService
 
     private function userToText(array $user): string
     {
-        $name = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+        $name = UserDisplayName::resolve($user);
         $parts = array_filter([$name, $user['bio'] ?? '', $user['skills'] ?? '']);
 
         return implode('. ', $parts);

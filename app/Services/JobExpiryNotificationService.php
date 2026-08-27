@@ -49,7 +49,7 @@ class JobExpiryNotificationService
                         ->where('created_at', '<', now()->subHour())
                         ->delete();
 
-                    $vacancies = JobVacancy::with(['creator:id,first_name,last_name,email,preferred_language'])
+                    $vacancies = JobVacancy::with(['creator:id,first_name,last_name,profile_type,organization_name,email,preferred_language'])
                         ->where('status', 'open')
                         ->whereNotNull('deadline')
                         ->whereBetween('deadline', [now(), now()->addDays(7)])

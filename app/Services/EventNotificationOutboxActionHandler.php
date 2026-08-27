@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /** Recipient, locale, preference, and channel dispatcher for authoritative Event facts. */
 final class EventNotificationOutboxActionHandler implements EventNotificationOutboxHandler
@@ -151,7 +152,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
         $users = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->whereIn('id', array_keys($plans))
-            ->get(['id', 'tenant_id', 'email', 'name', 'first_name', 'last_name', 'preferred_language', 'status', 'deleted_at'])
+            ->get(['id', 'tenant_id', 'email', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language', 'status', 'deleted_at'])
             ->keyBy('id');
 
         $delivered = 0;
@@ -274,7 +275,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             ->where('id', $minorUserId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->first(['id', 'name', 'first_name', 'last_name', 'preferred_language']);
+            ->first(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
         if ($consent === null || $event === null || $minor === null) {
             throw new RuntimeException('event_guardian_delivery_scope_invalid');
         }
@@ -363,7 +364,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             }
             $envelopeClaim = ($this->guardianEnvelope ?? new EventGuardianConsentDeliveryEnvelope())
                 ->claimOrResume((int) $outbox['id'], $deliveryKey);
-            $minorName = trim((string) ($minor->first_name ?? '') . ' ' . (string) ($minor->last_name ?? ''))
+            $minorName = UserDisplayName::resolve($minor)
                 ?: trim((string) ($minor->name ?? ''));
             $grantUrl = TenantContext::getFrontendUrl()
                 . TenantContext::getSlugPrefix()
@@ -1462,9 +1463,11 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             $subjectUser = DB::table('users')
                 ->where('tenant_id', (int) $event->tenant_id)
                 ->where('id', $subjectUserId)
-                ->first(['name', 'first_name', 'last_name']);
-            $params['name'] = trim((string) ($subjectUser?->first_name ?? '') . ' ' . (string) ($subjectUser?->last_name ?? ''))
-                ?: (string) ($subjectUser?->name ?? __('emails.common.fallback_member_name'));
+                ->first(['name', 'first_name', 'last_name', 'profile_type', 'organization_name']);
+            $params['name'] = UserDisplayName::resolve(
+                $subjectUser,
+                __('emails.common.fallback_member_name'),
+            );
             $params['state'] = __("event_notifications.states.{$descriptor['state']}");
             $message = __("event_notifications.{$descriptor['kind']}.organizer", $params);
         } elseif ($descriptor['kind'] === 'staff_role') {

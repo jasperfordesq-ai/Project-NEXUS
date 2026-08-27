@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\UserDisplayName;
 
 /**
  * ListingService — Laravel DI-based service for listing operations.
@@ -397,7 +398,7 @@ class ListingService
         $authorName = $user
             ? (($user->profile_type === 'organisation' && $user->organization_name)
                 ? $user->organization_name
-                : trim($user->first_name . ' ' . $user->last_name))
+                : UserDisplayName::resolve($user))
             : '';
 
         // `author_name` / `author_avatar` are part of the listing contract every
@@ -674,7 +675,7 @@ class ListingService
         if ($user) {
             $data['author_name'] = ($user->profile_type === 'organisation' && $user->organization_name)
                 ? $user->organization_name
-                : trim($user->first_name . ' ' . $user->last_name);
+                : UserDisplayName::resolve($user);
             $data['author_avatar'] = $user->avatar_url ?? null;
             $data['user'] = [
                 'id'         => $user->id,
@@ -897,7 +898,7 @@ class ListingService
             $user = $listing->user;
             $data['author_name'] = ($user && $user->profile_type === 'organisation' && $user->organization_name)
                 ? $user->organization_name
-                : trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                : UserDisplayName::resolve($user);
             $data['author_avatar'] = $user->avatar_url ?? null;
             $data['author_verified'] = (bool) ($user->is_verified ?? false);
             $data['user'] = $user ? [
@@ -959,7 +960,7 @@ class ListingService
                 $user = $listing->user;
                 $data['author_name'] = ($user && $user->profile_type === 'organisation' && $user->organization_name)
                     ? $user->organization_name
-                    : trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                    : UserDisplayName::resolve($user);
                 $data['author_avatar'] = $user->avatar_url ?? null;
                 $cat = $listing->relationLoaded('category') ? $listing->getRelation('category') : null;
                 $data['category_name'] = $cat?->name;

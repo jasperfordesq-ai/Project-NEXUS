@@ -16,7 +16,7 @@ import MessageCircle from 'lucide-react/icons/message-circle';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
-import { cn } from '@/lib/helpers';
+import { cn, resolveUserDisplayName } from '@/lib/helpers';
 import { CommentsSection } from './CommentsSection';
 import { LikersModal } from './LikersModal';
 import { ShareButton } from './ShareButton';
@@ -62,7 +62,7 @@ function hasCommentHash() {
 
 function getUserName(user: ReturnType<typeof useAuth>['user'], fallback: string): string {
   if (!user) return fallback;
-  return user.name || `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || fallback;
+  return resolveUserDisplayName(user) || fallback;
 }
 
 export function SocialInteractionPanel({

@@ -12,6 +12,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { useTranslation } from 'react-i18next';
 import { TeamTasks } from '@/components/ideation';
 import type { GroupMember } from './GroupMembersTab';
+import { resolveUserDisplayName } from '@/lib/helpers';
 
 interface GroupTasksTabProps {
   groupId: number;
@@ -23,7 +24,7 @@ export function GroupTasksTab({ groupId, isGroupAdmin, members }: GroupTasksTabP
   const { t } = useTranslation('groups');
   const taskMembers = (members || []).map((m) => ({
     id: m.id,
-    name: m.first_name && m.last_name ? `${m.first_name} ${m.last_name}` : m.name ?? t('member_fallback'),
+    name: resolveUserDisplayName(m, t('member_fallback')),
     avatar_url: m.avatar_url ?? m.avatar ?? null,
   }));
 

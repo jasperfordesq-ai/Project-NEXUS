@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
+use App\Support\UserDisplayName;
 
 /**
  * AuthController — Authentication: login, logout, token refresh, session management.
@@ -882,10 +883,10 @@ class AuthController extends BaseApiController
             'impersonation' => [
                 'active' => true,
                 'user_id' => $targetId,
-                'user_name' => trim((string) ($target->first_name ?? '') . ' ' . (string) ($target->last_name ?? '')),
+                'user_name' => UserDisplayName::resolve($target),
                 'tenant_id' => $tokenTenantId,
                 'admin_id' => $adminId,
-                'admin_name' => trim((string) ($admin->first_name ?? '') . ' ' . (string) ($admin->last_name ?? '')),
+                'admin_name' => UserDisplayName::resolve($admin),
                 'expires_in' => $session['expires_in'],
             ],
         ]);
@@ -1239,7 +1240,7 @@ class AuthController extends BaseApiController
         }
 
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+        $_SESSION['user_name'] = UserDisplayName::resolve($user);
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'] ?? 'member';
         $_SESSION['role'] = $user['role'] ?? 'member';
@@ -1478,7 +1479,7 @@ class AuthController extends BaseApiController
             return $this->authError(__('api.invalid_or_expired_token'), ApiErrorCodes::AUTH_TOKEN_INVALID, 401);
         }
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+        $_SESSION['user_name'] = UserDisplayName::resolve($user);
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'] ?? 'member';
         $_SESSION['role'] = $user['role'] ?? 'member';

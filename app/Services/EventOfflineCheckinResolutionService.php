@@ -21,6 +21,7 @@ use App\Policies\EventPolicy;
 use App\Support\Events\EventCheckinSecurity;
 use App\Support\Events\EventOfflineSyncDecisionResult;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /** Organizer-only projection and append-only resolution of offline conflicts. */
 final class EventOfflineCheckinResolutionService
@@ -105,7 +106,7 @@ final class EventOfflineCheckinResolutionService
                 'device.label as device_label',
                 'member.name as member_name',
                 'member.first_name as member_first_name',
-                'member.last_name as member_last_name',
+                'member.last_name as member_last_name', 'member.profile_type as member_profile_type', 'member.organization_name as member_organization_name',
                 'member.username as member_username',
                 'attendance.attendance_status',
                 'attendance.attendance_version',
@@ -340,8 +341,7 @@ final class EventOfflineCheckinResolutionService
         if ($name !== '') {
             return $name;
         }
-        $full = trim((string) ($row->member_first_name ?? '')
-            . ' ' . (string) ($row->member_last_name ?? ''));
+        $full = UserDisplayName::resolvePrefixed($row, 'member_');
         if ($full !== '') {
             return $full;
         }

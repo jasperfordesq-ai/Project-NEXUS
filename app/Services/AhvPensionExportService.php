@@ -21,7 +21,7 @@ class AhvPensionExportService
         $member = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->where('id', $userId)
-            ->first(['id', 'name', 'first_name', 'last_name']);
+            ->first(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name']);
 
         $rows = $this->approvedContributionRows($tenantId, $userId, $fromDate, $toDate);
         $totalHours = array_reduce(

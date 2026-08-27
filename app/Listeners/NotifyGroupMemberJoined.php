@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies the group owner when a new member joins their group.
@@ -80,7 +81,7 @@ class NotifyGroupMemberJoined implements ShouldQueue
             $joiner = DB::table('users')
                 ->where('id', $event->userId)
                 ->where('tenant_id', $event->tenantId)
-                ->select(['first_name', 'last_name', 'name'])
+                ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                 ->first();
 
             if (!$joiner) {
@@ -94,7 +95,7 @@ class NotifyGroupMemberJoined implements ShouldQueue
                 ->value('preferred_language');
 
             LocaleContext::withLocale($ownerLocale, function () use ($joiner, $group, $event, $ownerId) {
-                $joinerName = trim(($joiner->first_name ?? '') . ' ' . ($joiner->last_name ?? ''))
+                $joinerName = UserDisplayName::resolve($joiner)
                     ?: ($joiner->name ?? __('emails.common.fallback_someone'));
 
                 $groupName = $group->name ?? '';

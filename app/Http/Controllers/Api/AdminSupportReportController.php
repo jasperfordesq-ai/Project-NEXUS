@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Support\UserDisplayName;
 
 class AdminSupportReportController extends BaseApiController
 {
@@ -164,7 +165,7 @@ class AdminSupportReportController extends BaseApiController
 
         $assignees = $query
             ->orderBy('name')
-            ->get(['id', 'name', 'first_name', 'last_name', 'email', 'avatar_url', 'role'])
+            ->get(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'avatar_url', 'role'])
             ->map(fn ($user): array => $this->formatUser($user))
             ->all();
 
@@ -225,12 +226,12 @@ class AdminSupportReportController extends BaseApiController
             'tenant.name as tenant_name',
             'reporter.name as reporter_name',
             'reporter.first_name as reporter_first_name',
-            'reporter.last_name as reporter_last_name',
+            'reporter.last_name as reporter_last_name', 'reporter.profile_type as reporter_profile_type', 'reporter.organization_name as reporter_organization_name',
             'reporter.email as reporter_email',
             'reporter.avatar_url as reporter_avatar_url',
             'assignee.name as assignee_name',
             'assignee.first_name as assignee_first_name',
-            'assignee.last_name as assignee_last_name',
+            'assignee.last_name as assignee_last_name', 'assignee.profile_type as assignee_profile_type', 'assignee.organization_name as assignee_organization_name',
             'assignee.email as assignee_email',
             'assignee.avatar_url as assignee_avatar_url',
         ];
@@ -377,7 +378,7 @@ class AdminSupportReportController extends BaseApiController
     private function formatRelatedUser(object $row, string $prefix): array
     {
         $idField = $prefix === 'reporter' ? 'user_id' : 'assigned_user_id';
-        $name = $row->{$prefix . '_name'} ?: trim((string) (($row->{$prefix . '_first_name'} ?? '') . ' ' . ($row->{$prefix . '_last_name'} ?? '')));
+        $name = UserDisplayName::resolvePrefixed($row, $prefix . '_');
 
         return [
             'id' => (int) $row->{$idField},
@@ -389,7 +390,7 @@ class AdminSupportReportController extends BaseApiController
 
     private function formatUser(object $user): array
     {
-        $name = $user->name ?: trim((string) (($user->first_name ?? '') . ' ' . ($user->last_name ?? '')));
+        $name = UserDisplayName::resolve($user);
 
         return [
             'id' => (int) $user->id,

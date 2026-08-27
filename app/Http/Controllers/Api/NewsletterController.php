@@ -146,6 +146,9 @@ class NewsletterController extends BaseApiController
                     'q.email',
                     'q.user_id',
                     'q.first_name',
+                    // NOT widened with profile_type/organization_name: `q` is
+                    // newsletter_queue, which carries its own first_name/last_name
+                    // snapshot and has no organisation columns.
                     'q.last_name',
                     'q.unsubscribe_token',
                     'n.tenant_id',

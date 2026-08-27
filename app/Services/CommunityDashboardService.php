@@ -136,7 +136,7 @@ class CommunityDashboardService
                 })
                 ->orderByRaw('RAND(' . ((int) now()->format('Ymd')) . ')')
                 ->limit($limit)
-                ->get(['id', 'first_name', 'last_name', 'avatar_url', 'bio', 'xp', 'level', 'created_at']);
+                ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'bio', 'xp', 'level', 'created_at']);
 
             if ($activeUsers->isEmpty()) {
                 return [];

@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Support\SafeguardingInteractionDecision;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * GroupChatroomService — Native Laravel implementation for group chatroom operations.
@@ -316,7 +317,7 @@ class GroupChatroomService
                 'm.created_at',
                 'm.updated_at',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
             ]);
 
@@ -341,7 +342,7 @@ class GroupChatroomService
             'user_id'    => (int) $m->user_id,
             'author'     => [
                 'id'         => (int) $m->user_id,
-                'name'       => trim(($m->first_name ?? '') . ' ' . ($m->last_name ?? '')),
+                'name'       => UserDisplayName::resolve($m),
                 'avatar_url' => $m->avatar_url,
             ],
             'created_at' => $m->created_at,
@@ -688,7 +689,7 @@ class GroupChatroomService
                 'm.user_id',
                 'm.created_at as message_created_at',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
                 'p.pinned_by',
                 'p.created_at as pinned_at',
@@ -702,7 +703,7 @@ class GroupChatroomService
             'user_id'    => (int) $row->user_id,
             'author'     => [
                 'id'         => (int) $row->user_id,
-                'name'       => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'name'       => UserDisplayName::resolve($row),
                 'avatar_url' => $row->avatar_url,
             ],
             'created_at' => $row->message_created_at,

@@ -58,7 +58,7 @@ class FeedSidebarService
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNotIn('id', $connectedIds)
-            ->select('id', 'first_name', 'last_name', 'avatar_url', 'tagline')
+            ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'tagline')
             ->inRandomOrder()
             ->limit($limit)
             ->get()

@@ -25,6 +25,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { partnerVenuesApi, type MemberPass, type MyVisit } from '@/lib/partner-venues-api';
+import { resolveUserDisplayName } from '@/lib/helpers';
 
 export default function MyPassPage() {
   const { t } = useTranslation('venues');
@@ -71,7 +72,7 @@ export default function MyPassPage() {
     setRotating(false);
   }
 
-  const memberName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
+  const memberName = resolveUserDisplayName(user);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">

@@ -12,6 +12,7 @@ import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { resolveUserDisplayName } from '@/lib/helpers';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -160,7 +161,7 @@ export function VereinDuesManagementPage() {
     if (!searchTerm.trim()) return rows;
     const q = searchTerm.toLowerCase();
     return rows.filter((r) => {
-      const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.toLowerCase();
+      const name = resolveUserDisplayName(r).toLowerCase();
       return name.includes(q) || (r.email ?? '').toLowerCase().includes(q);
     });
   }, [rows, searchTerm]);

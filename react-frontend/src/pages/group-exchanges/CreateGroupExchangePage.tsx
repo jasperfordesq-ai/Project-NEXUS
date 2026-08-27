@@ -52,7 +52,7 @@ import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -203,7 +203,7 @@ export function CreateGroupExchangePage() {
   }, [participants, user?.id, searchTimeout]);
 
   const addParticipant = useCallback((result: SearchResult, role: 'provider' | 'receiver') => {
-    const displayName = result.name || [result.first_name, result.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const displayName = result.name || resolveUserDisplayName(result) || 'Unknown';
     const avatarUrl = result.avatar_url || result.avatar || null;
 
     setParticipants((prev) => [
@@ -618,7 +618,7 @@ export function CreateGroupExchangePage() {
                     {searchResults.length > 0 ? (
                       <div className="max-h-96 overflow-y-auto rounded-xl border border-theme-default divide-y divide-theme-default/60">
                         {searchResults.map((result) => {
-                          const displayName = result.name || [result.first_name, result.last_name].filter(Boolean).join(' ') || 'Unknown';
+                          const displayName = result.name || resolveUserDisplayName(result) || 'Unknown';
                           return (
                             <div
                               key={result.id}

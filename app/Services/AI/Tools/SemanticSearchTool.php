@@ -11,6 +11,7 @@ use App\Services\EmbeddingService;
 use App\Support\Events\EventSearchVisibility;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * Semantic search across all indexed content types using OpenAI embeddings.
@@ -220,7 +221,7 @@ class SemanticSearchTool extends AbstractTool
                     'url' => $slugPrefix . '/listings/' . (int) $row->id,
                 ];
             case 'user':
-                $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                $name = UserDisplayName::resolve($row);
                 return [
                     'id' => (int) $row->id,
                     'name' => $name !== '' ? $name : ('Member #' . $row->id),

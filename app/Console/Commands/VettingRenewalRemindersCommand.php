@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 class VettingRenewalRemindersCommand extends Command
 {
@@ -46,7 +47,7 @@ class VettingRenewalRemindersCommand extends Command
                 'a.renewal_reminder_90_sent_at', 'a.renewal_reminder_30_sent_at',
                 'a.renewal_reminder_7_sent_at', 'a.renewal_due_notified_at',
                 'a.expiry_notified_at',
-                'member.first_name', 'member.last_name', 'member.name as display_name',
+                'member.first_name', 'member.last_name', 'member.profile_type', 'member.organization_name', 'member.name as display_name',
                 'tenant.name as community_name',
             ])
             ->orderBy('a.tenant_id')
@@ -146,7 +147,7 @@ class VettingRenewalRemindersCommand extends Command
             return false;
         }
 
-        $memberName = trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? ''))
+        $memberName = UserDisplayName::resolve($row)
             ?: (string) ($row->display_name ?? '');
         $safeMemberName = htmlspecialchars($memberName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $safeCommunityName = htmlspecialchars((string) $row->community_name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

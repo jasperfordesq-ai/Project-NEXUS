@@ -65,7 +65,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { GoalTemplatePickerModal } from './components/GoalTemplatePickerModal';
 import { GoalCheckinModal } from './components/GoalCheckinModal';
 import { GoalReminderToggle } from './components/GoalReminderToggle';
@@ -427,7 +427,7 @@ export function GoalsPage() {
         setGoals((prev) =>
           prev.map((g) =>
             g.id === goal.id
-              ? { ...g, buddy_id: user?.id ?? null, buddy_name: user ? `${user.first_name} ${user.last_name}` : null, is_buddy: true }
+              ? { ...g, buddy_id: user?.id ?? null, buddy_name: user ? resolveUserDisplayName(user) : null, is_buddy: true }
               : g
           )
         );

@@ -12,6 +12,7 @@ use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Legal-basis attestation for support relationships (guardian redesign,
@@ -213,8 +214,8 @@ class SupportAuthorityAttestationService
     {
         $relationships = AccountRelationship::query()
             ->with([
-                'parentUser:id,first_name,last_name',
-                'childUser:id,first_name,last_name',
+                'parentUser:id,first_name,last_name,profile_type,organization_name',
+                'childUser:id,first_name,last_name,profile_type,organization_name',
             ])
             ->where('status', 'active')
             ->orderByDesc('created_at')
@@ -239,10 +240,10 @@ class SupportAuthorityAttestationService
             return [
                 'relationship_id' => (int) $rel->id,
                 'supporter_name' => $rel->parentUser
-                    ? trim($rel->parentUser->first_name . ' ' . $rel->parentUser->last_name)
+                    ? UserDisplayName::resolve($rel->parentUser)
                     : null,
                 'supported_name' => $rel->childUser
-                    ? trim($rel->childUser->first_name . ' ' . $rel->childUser->last_name)
+                    ? UserDisplayName::resolve($rel->childUser)
                     : null,
                 'relationship_type' => $rel->relationship_type,
                 'tiers' => SupportTiers::resolve(is_array($rel->permissions) ? $rel->permissions : []),

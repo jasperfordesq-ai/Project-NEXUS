@@ -15,6 +15,7 @@ use App\Models\UserStreak;
 use App\Models\UserXpLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * GamificationEmailService — Sends weekly progress digests and achievement notifications.
@@ -86,7 +87,7 @@ class GamificationEmailService
                     ->where('status', 'active')
                     ->whereNotNull('email')
                     ->where('email', '!=', '')
-                    ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'preferred_language']);
+                    ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
 
                 foreach ($users as $user) {
                     try {
@@ -113,7 +114,7 @@ class GamificationEmailService
                         }
 
                         $success = LocaleContext::withLocale($user, function () use ($user, $digest, $tenant) {
-                            $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                            $name = UserDisplayName::resolve($user);
                             $subject = __('emails.gamification_digest.subject');
                             $body = $this->buildDigestEmailBody($name, $digest, $tenant->name ?? __('emails.common.fallback_tenant_name'));
 
@@ -252,7 +253,7 @@ class GamificationEmailService
             $user = User::withoutGlobalScopes()
                 ->where('id', $userId)
                 ->where('status', 'active')
-                ->first(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'preferred_language']);
+                ->first(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
 
             if (!$user || empty($user->email)) {
                 return false;
@@ -273,7 +274,7 @@ class GamificationEmailService
                 }
 
             return LocaleContext::withLocale($user, function () use ($user, $type, $data) {
-                $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                $name = UserDisplayName::resolve($user);
                 [$subject, $body] = $this->buildMilestoneEmail($name, $type, $data);
 
                 return EmailDispatchService::sendRaw($user->email, $subject, $body, null, null, null, 'gamification_milestone', ['tenant_id' => (int) $user->tenant_id]);

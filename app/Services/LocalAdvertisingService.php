@@ -12,6 +12,7 @@ use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * LocalAdvertisingService — AG56 Local Advertising Platform.
@@ -78,7 +79,7 @@ class LocalAdvertisingService
             ->where('c.tenant_id', $tenantId)
             ->select([
                 'c.*',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) AS advertiser_name"),
+                DB::raw(UserDisplayName::sql('u', 'advertiser_name')),
                 'u.email AS advertiser_email',
                 DB::raw('COALESCE(cr.creative_count, 0) AS creative_count'),
             ])
@@ -110,7 +111,7 @@ class LocalAdvertisingService
             ->where('c.tenant_id', $tenantId)
             ->select([
                 'c.*',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) AS advertiser_name"),
+                DB::raw(UserDisplayName::sql('u', 'advertiser_name')),
                 'u.email AS advertiser_email',
             ])
             ->first();

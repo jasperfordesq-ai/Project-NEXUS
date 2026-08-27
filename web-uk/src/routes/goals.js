@@ -383,8 +383,13 @@ function normalizeTemplate(item, t) {
 function ownerNameFrom(raw, t) {
   const user = raw && typeof raw.user === 'object' && raw.user !== null ? raw.user : {};
   const explicit = trimmed(raw.owner_name || raw.ownerName || raw.user_name || raw.userName || raw.owner);
+  // An ORGANISATION account is identified by its organisation name; first_name
+  // and last_name hold the CONTACT PERSON. This preferred `joined` over
+  // `user.name`, so an organisation's goal was labelled with its contact.
+  // Every other route in web-uk already prefers the API's resolved `name`.
+  const organisation = user.profile_type === 'organisation' ? trimmed(user.organization_name) : '';
   const joined = trimmed(`${trimmed(user.first_name || user.firstName)} ${trimmed(user.last_name || user.lastName)}`);
-  const name = explicit || joined || trimmed(user.name);
+  const name = organisation || explicit || trimmed(user.name) || joined;
   return name || (t ? t('goals.a_member') : 'A member');
 }
 

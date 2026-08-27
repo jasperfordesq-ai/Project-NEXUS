@@ -21,6 +21,7 @@ use App\Models\JobOffer;
 use App\Models\JobTemplate;
 use App\Models\JobVacancy;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * AdminJobsController -- Admin job vacancy management.
@@ -348,7 +349,7 @@ class AdminJobsController extends BaseApiController
 
         $query = JobInterview::with([
                 'application:id,user_id,vacancy_id,status',
-                'application.applicant:id,first_name,last_name,avatar_url,email',
+                'application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url,email',
                 'vacancy:id,title,user_id',
             ])
             ->where('tenant_id', $tenantId)
@@ -366,7 +367,7 @@ class AdminJobsController extends BaseApiController
             $arr['job_title'] = $interview->vacancy->title ?? null;
             if ($interview->application && $interview->application->applicant) {
                 $a = $interview->application->applicant;
-                $arr['candidate_name'] = trim(($a->first_name ?? '') . ' ' . ($a->last_name ?? ''));
+                $arr['candidate_name'] = UserDisplayName::resolve($a);
                 $arr['candidate_email'] = $a->email ?? null;
             }
             return $arr;
@@ -387,7 +388,7 @@ class AdminJobsController extends BaseApiController
 
         $query = JobOffer::with([
                 'application:id,user_id,vacancy_id,status',
-                'application.applicant:id,first_name,last_name,avatar_url,email',
+                'application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url,email',
                 'vacancy:id,title,user_id',
             ])
             ->where('tenant_id', $tenantId)
@@ -405,7 +406,7 @@ class AdminJobsController extends BaseApiController
             $arr['job_title'] = $offer->vacancy->title ?? null;
             if ($offer->application && $offer->application->applicant) {
                 $a = $offer->application->applicant;
-                $arr['candidate_name'] = trim(($a->first_name ?? '') . ' ' . ($a->last_name ?? ''));
+                $arr['candidate_name'] = UserDisplayName::resolve($a);
                 $arr['candidate_email'] = $a->email ?? null;
             }
             return $arr;
@@ -427,7 +428,7 @@ class AdminJobsController extends BaseApiController
         $page = $this->queryInt('page', 1, 1);
         $limit = $this->queryInt('limit', 50, 1, 200);
 
-        $query = JobTemplate::with('creator:id,first_name,last_name')
+        $query = JobTemplate::with('creator:id,first_name,last_name,profile_type,organization_name')
             ->where('tenant_id', $tenantId)
             ->orderByDesc('use_count')
             ->orderByDesc('updated_at');
@@ -446,7 +447,7 @@ class AdminJobsController extends BaseApiController
         $items = $query->skip(($page - 1) * $limit)->take($limit)->get()->map(function ($t) {
             $arr = $t->toArray();
             $arr['creator_name'] = $t->creator
-                ? trim(($t->creator->first_name ?? '') . ' ' . ($t->creator->last_name ?? ''))
+                ? UserDisplayName::resolve($t->creator)
                 : null;
             return $arr;
         })->toArray();

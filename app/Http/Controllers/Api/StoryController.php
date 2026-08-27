@@ -14,6 +14,7 @@ use App\Services\StoryService;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * StoryController — API endpoints for the Stories feature (24-hour disappearing content).
@@ -273,7 +274,7 @@ class StoryController extends BaseApiController
 
                     LocaleContext::withLocale($recipient, function () use ($reactor, $story) {
                         $reactorName = $reactor
-                            ? trim($reactor->first_name . ' ' . $reactor->last_name)
+                            ? UserDisplayName::resolve($reactor)
                             : __('emails.common.fallback_someone');
 
                         Notification::createNotification(
@@ -502,7 +503,7 @@ class StoryController extends BaseApiController
 
                     LocaleContext::withLocale($recipient, function () use ($replier, $story) {
                         $replierName = $replier
-                            ? trim($replier->first_name . ' ' . $replier->last_name)
+                            ? UserDisplayName::resolve($replier)
                             : __('emails.common.fallback_someone');
 
                         Notification::createNotification(

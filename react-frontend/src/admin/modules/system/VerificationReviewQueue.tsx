@@ -1,4 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Button, Spinner, Chip, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 
@@ -114,7 +114,7 @@ export function VerificationReviewQueue() {
   };
 
   const getUserName = (session: PendingSession): string => {
-    return [session.first_name, session.last_name].filter(Boolean).join(' ') || t('verification.user_with_id', { id: session.user_id });
+    return resolveUserDisplayName(session) || t('verification.user_with_id', { id: session.user_id });
   };
 
   return (

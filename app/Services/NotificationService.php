@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Support\Events\EventNotificationType;
 use Illuminate\Database\Eloquent\Builder;
+use App\Support\UserDisplayName;
 
 /**
  * NotificationService — Laravel DI-based service for notification operations.
@@ -154,7 +155,7 @@ class NotificationService
             $actorUsers = \Illuminate\Support\Facades\DB::table('users')
                 ->where('tenant_id', \App\Core\TenantContext::getId())
                 ->whereIn('id', array_keys($allActorIds))
-                ->get(['id', 'name', 'first_name', 'last_name', 'avatar_url']);
+                ->get(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url']);
             foreach ($actorUsers as $u) {
                 $userMap[(int) $u->id] = $u;
             }
@@ -186,7 +187,7 @@ class NotificationService
                 if ($u) {
                     $actors[] = [
                         'id' => (int) $u->id,
-                        'name' => $u->name ?: trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')),
+                        'name' => $u->name ?: UserDisplayName::resolve($u),
                         'avatar_url' => $u->avatar_url,
                     ];
                 }

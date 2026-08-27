@@ -1,4 +1,4 @@
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Button, Textarea, Card, CardBody, Chip, Avatar } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -625,7 +625,7 @@ export default function AiChatPage() {
                   <MessageBubble
                     key={msg.id}
                     message={msg}
-                    userName={user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : undefined}
+                    userName={user ? resolveUserDisplayName(user) : undefined}
                     userAvatar={userAvatarUrl}
                     onFeedback={handleFeedback}
                   />

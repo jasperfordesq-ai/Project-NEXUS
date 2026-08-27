@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * StripeDonationService — Stripe payment processing for monetary donations.
@@ -127,7 +128,7 @@ class StripeDonationService
         // tenant-scoped.
         $user = DB::table('users')
             ->where('id', $userId)
-            ->first(['id', 'first_name', 'last_name', 'email', 'stripe_customer_id']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'stripe_customer_id']);
 
         if (!$user) {
             throw new \RuntimeException('User not found.');
@@ -146,7 +147,7 @@ class StripeDonationService
             try {
                 $customer = $client->customers->create([
                     'email' => $user->email,
-                    'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($user),
                     'metadata' => [
                         'nexus_user_id' => $userId,
                         'nexus_tenant_id' => $tenantId,
@@ -232,7 +233,7 @@ class StripeDonationService
                 'payment_method' => 'stripe',
                 'payment_reference' => '',
                 'payment_route' => $paymentRoute,
-                'donor_name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'donor_name' => UserDisplayName::resolve($user),
                 'donor_email' => $user->email ?? '',
                 'message' => trim($data['message'] ?? ''),
                 'is_anonymous' => !empty($data['is_anonymous']) ? 1 : 0,
@@ -471,13 +472,13 @@ class StripeDonationService
                 $userRow = DB::table('users')
                     ->where('id', $donation->user_id)
                     ->where('tenant_id', $donation->tenant_id)
-                    ->select(['email', 'first_name', 'last_name', 'name', 'preferred_language'])
+                    ->select(['email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'preferred_language'])
                     ->first();
                 if ($userRow) {
                     $donorLocale = $userRow->preferred_language ?? null;
                     if (empty($donorEmail)) {
                         $donorEmail = $userRow->email ?? '';
-                        $donorName  = $donorName ?: (trim(($userRow->first_name ?? '') . ' ' . ($userRow->last_name ?? '')) ?: ($userRow->name ?? ''));
+                        $donorName  = $donorName ?: (UserDisplayName::resolve($userRow) ?: ($userRow->name ?? ''));
                     }
                 }
             }

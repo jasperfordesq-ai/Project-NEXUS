@@ -14,6 +14,7 @@ use App\Support\SafeguardingInteractionDecision;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * GroupConversationService — manages group DM conversations.
@@ -375,7 +376,7 @@ class GroupConversationService
             ->map(function ($p) {
                 $name = ($p->profile_type === 'organisation' && !empty($p->organization_name))
                     ? $p->organization_name
-                    : trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? ''));
+                    : UserDisplayName::resolve($p);
                 return [
                     'id' => $p->user_id,
                     'name' => $name,
@@ -509,7 +510,7 @@ class GroupConversationService
         if (!empty($senderIds)) {
             $senders = User::withoutGlobalScopes()
                 ->whereIn('id', $senderIds)
-                ->get(['id', 'first_name', 'last_name', 'avatar_url'])
+                ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url'])
                 ->keyBy('id');
         }
 
@@ -532,7 +533,7 @@ class GroupConversationService
                     'id' => $sender->id,
                     'first_name' => $sender->first_name,
                     'last_name' => $sender->last_name,
-                    'name' => trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($sender),
                     'avatar_url' => $sender->avatar_url,
                 ] : null,
             ];
@@ -640,7 +641,7 @@ class GroupConversationService
                 'id' => $sender->id,
                 'first_name' => $sender->first_name,
                 'last_name' => $sender->last_name,
-                'name' => trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')),
+                'name' => UserDisplayName::resolve($sender),
                 'avatar_url' => $sender->avatar_url,
             ] : null,
         ];
@@ -733,14 +734,14 @@ class GroupConversationService
                 'conversation_participants.user_id',
                 'conversation_participants.role',
                 'users.first_name',
-                'users.last_name',
+                'users.last_name', 'users.profile_type', 'users.organization_name',
                 'users.avatar_url',
             ])
             ->get()
             ->map(function ($p) {
                 return [
                     'id' => $p->user_id,
-                    'name' => trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($p),
                     'avatar_url' => $p->avatar_url,
                     'role' => $p->role,
                 ];

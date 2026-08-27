@@ -42,7 +42,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMenuContext } from '@/contexts/MenuContextCore';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess, isPlatformSuperAdminUser } from '@/lib/access';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -891,7 +891,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           className="group h-10 w-10 min-w-10 overflow-visible rounded-full bg-transparent p-0 text-theme-primary hover:bg-theme-hover focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           <Avatar
-                            name={`${user?.first_name} ${user?.last_name}`}
+                            name={resolveUserDisplayName(user)}
                             src={resolveAvatarUrl(user?.avatar_url || user?.avatar)}
                             size="sm"
                             className="pointer-events-none size-9 ring-2 ring-transparent transition-all group-hover:ring-accent/50"

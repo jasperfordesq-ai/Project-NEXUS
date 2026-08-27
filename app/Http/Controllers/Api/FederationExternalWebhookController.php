@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * FederationExternalWebhookController — Receives webhook events from
@@ -1112,7 +1113,7 @@ class FederationExternalWebhookController extends BaseApiController
         foreach ($users as $user) {
             $member = [
                 'id' => $user->id,
-                'username' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'username' => UserDisplayName::resolve($user),
                 'tags' => '',
             ];
             if ($includeBalance) {
@@ -1164,8 +1165,8 @@ class FederationExternalWebhookController extends BaseApiController
             $user = DB::table('users')
                 ->where('tenant_id', $tenantId)
                 ->where('id', $row->user_id)
-                ->first(['first_name', 'last_name']);
-            $username = $user ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) : null;
+                ->first(['first_name', 'last_name', 'profile_type', 'organization_name']);
+            $username = $user ? UserDisplayName::resolve($user) : null;
 
             $listings[] = [
                 'id' => $row->id,

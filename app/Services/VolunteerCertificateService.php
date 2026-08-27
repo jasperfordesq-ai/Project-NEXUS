@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * VolunteerCertificateService — generates and verifies volunteer impact certificates.
@@ -155,7 +156,7 @@ class VolunteerCertificateService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select('first_name', 'last_name')
+            ->select('first_name', 'last_name', 'profile_type', 'organization_name')
             ->first();
 
         $result = [
@@ -165,7 +166,7 @@ class VolunteerCertificateService
             'date_range' => ['start' => $dateRangeStart, 'end' => $dateRangeEnd],
             'verification_url' => config('app.url', 'https://api.project-nexus.ie') . '/api/v2/volunteering/certificates/verify/' . $verificationCode,
             'organizations' => $orgs,
-            'user_name' => $user ? trim($user->first_name . ' ' . $user->last_name) : __('api.vol_certificate_volunteer_fallback'),
+            'user_name' => $user ? UserDisplayName::resolve($user) : __('api.vol_certificate_volunteer_fallback'),
             'generated_at' => now()->toIso8601String(),
         ];
 
@@ -223,7 +224,7 @@ class VolunteerCertificateService
                 'vc.organizations',
                 'vc.generated_at',
                 'u.first_name',
-                'u.last_name'
+                'u.last_name', 'u.profile_type', 'u.organization_name'
             );
 
         $tenantId = TenantContext::getId();
@@ -244,7 +245,7 @@ class VolunteerCertificateService
             'date_range' => ['start' => $cert->date_range_start, 'end' => $cert->date_range_end],
             'verification_url' => config('app.url', 'https://api.project-nexus.ie') . '/api/v2/volunteering/certificates/verify/' . $cert->verification_code,
             'organizations' => json_decode($cert->organizations, true) ?? [],
-            'user_name' => trim($cert->first_name . ' ' . $cert->last_name),
+            'user_name' => UserDisplayName::resolve($cert),
             'generated_at' => $cert->generated_at,
             'verified' => true,
         ];

@@ -179,12 +179,12 @@ final class EventSafetyProjectionService
                 'denial.reviewed_by_user_id',
                 'member.name as member_name',
                 'member.first_name as member_first_name',
-                'member.last_name as member_last_name',
+                'member.last_name as member_last_name', 'member.profile_type as member_profile_type', 'member.organization_name as member_organization_name',
                 'member.username as member_username',
                 'member.avatar_url as member_avatar_url',
                 'reviewer.name as reviewer_name',
                 'reviewer.first_name as reviewer_first_name',
-                'reviewer.last_name as reviewer_last_name',
+                'reviewer.last_name as reviewer_last_name', 'reviewer.profile_type as reviewer_profile_type', 'reviewer.organization_name as reviewer_organization_name',
                 'reviewer.username as reviewer_username',
             ]);
 
@@ -518,7 +518,7 @@ final class EventSafetyProjectionService
                 'history.reviewer_user_id',
                 'reviewer.name as reviewer_name',
                 'reviewer.first_name as reviewer_first_name',
-                'reviewer.last_name as reviewer_last_name',
+                'reviewer.last_name as reviewer_last_name', 'reviewer.profile_type as reviewer_profile_type', 'reviewer.organization_name as reviewer_organization_name',
                 'reviewer.username as reviewer_username',
             ]);
 

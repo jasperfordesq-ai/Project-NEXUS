@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { formatNumber, getFormattingLocale } from '@/lib/helpers';
+import { formatNumber, getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Button, Chip, Input, Card, CardBody, CardHeader, Select, SelectItem, Tab, Tabs, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
@@ -341,7 +341,7 @@ export function VolunteerHoursAudit() {
         t('volunteering.export_columns.paid_amount'),
       ];
       const exportRows = rows.map((item) => [
-        `${item.first_name} ${item.last_name}`,
+        resolveUserDisplayName(item),
         item.org_name || '',
         item.hours,
         t(`volunteering.status_${item.status}`, { defaultValue: t('volunteering.status_unknown') }),
@@ -722,7 +722,7 @@ export function VolunteerHoursAudit() {
         title={t('volunteering.decline_hours_title')}
         message={t('volunteering.decline_hours_confirm', {
           hours: declineTarget?.hours ?? 0,
-          name: [declineTarget?.first_name, declineTarget?.last_name].filter(Boolean).join(' '),
+          name: resolveUserDisplayName(declineTarget),
         })}
         confirmLabel={t('volunteering.decline')}
         cancelLabel={t('volunteering.cancel')}

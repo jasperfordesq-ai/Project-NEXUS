@@ -12,6 +12,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /**
  * AG90 — Personalised Civic Digest email.
@@ -77,10 +78,7 @@ class CivicDigestMail
                 $digestUrl = $base . '/caring-community/civic-digest';
                 $prefsUrl = $digestUrl;
 
-                $name = trim(((string) ($recipient->first_name ?? '')) . ' ' . ((string) ($recipient->last_name ?? '')));
-                if ($name === '') {
-                    $name = (string) ($recipient->name ?? __('emails.common.fallback_name'));
-                }
+                $name = UserDisplayName::resolve($recipient, __('emails.common.fallback_name'));
 
                 $count = count($items);
                 $subjectKey = $cadence === 'monthly' ? 'civic_digest.email.subject_monthly' : 'civic_digest.email.subject_daily';

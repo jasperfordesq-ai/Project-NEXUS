@@ -68,7 +68,7 @@ final class EventRoleService
 
         return EventStaffAssignment::withoutGlobalScopes()
             ->with([
-                'user:id,tenant_id,first_name,last_name,avatar_url',
+                'user:id,tenant_id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'history',
             ])
             ->where('tenant_id', $tenantId)
@@ -97,7 +97,7 @@ final class EventRoleService
 
         return EventStaffAssignment::withoutGlobalScopes()
             ->with([
-                'user:id,tenant_id,first_name,last_name,avatar_url',
+                'user:id,tenant_id,first_name,last_name,profile_type,organization_name,avatar_url',
                 'history',
             ])
             ->where('tenant_id', $tenantId)
@@ -698,7 +698,7 @@ final class EventRoleService
             throw new EventRoleAssignmentException('event_staff_role_persistence_failed');
         }
         $assignment->load([
-            'user:id,tenant_id,first_name,last_name,avatar_url',
+            'user:id,tenant_id,first_name,last_name,profile_type,organization_name,avatar_url',
             'history',
         ]);
 

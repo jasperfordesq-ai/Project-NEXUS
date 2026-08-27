@@ -8,6 +8,7 @@ namespace App\Services\AI\Tools;
 
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * Search active members by skill, location, or free-text bio match.
@@ -93,9 +94,9 @@ class SearchMembersTool extends AbstractTool
 
         $slugPrefix = TenantContext::getSlugPrefix();
         $results = $rows->map(function ($r) use ($slugPrefix) {
-            $displayName = $r->profile_type === 'organization'
-                ? ((string) ($r->organization_name ?? '') ?: trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')))
-                : trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? ''));
+            // Was comparing against 'organization' (AMERICAN spelling), which
+            // never matches the stored 'organisation'.
+            $displayName = UserDisplayName::resolve($r);
             return [
                 'id' => (int) $r->id,
                 'name' => $displayName !== '' ? $displayName : ($r->username ?? ('Member #' . $r->id)),

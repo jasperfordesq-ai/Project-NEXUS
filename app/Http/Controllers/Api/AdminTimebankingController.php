@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Services\AbuseDetectionService;
+use App\Support\UserDisplayName;
 
 /**
  * AdminTimebankingController -- Admin timebanking stats, alerts, balance adjustments, org wallets, user reports.
@@ -40,14 +41,14 @@ class AdminTimebankingController extends BaseApiController
         );
 
         $topEarners = DB::select(
-            "SELECT u.id as user_id, CONCAT(u.first_name, ' ', u.last_name) as user_name, COALESCE(SUM(t.amount), 0) as amount
+            "SELECT u.id as user_id, " . UserDisplayName::sql('u', 'user_name') . ", COALESCE(SUM(t.amount), 0) as amount
              FROM transactions t JOIN users u ON t.receiver_id = u.id
              WHERE t.tenant_id = ? AND t.status = 'completed' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
             [$tenantId]
         );
 
         $topSpenders = DB::select(
-            "SELECT u.id as user_id, CONCAT(u.first_name, ' ', u.last_name) as user_name, COALESCE(SUM(t.amount), 0) as amount
+            "SELECT u.id as user_id, " . UserDisplayName::sql('u', 'user_name') . ", COALESCE(SUM(t.amount), 0) as amount
              FROM transactions t JOIN users u ON t.sender_id = u.id
              WHERE t.tenant_id = ? AND t.status = 'completed' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
             [$tenantId]
@@ -95,7 +96,7 @@ class AdminTimebankingController extends BaseApiController
             $total = (int) DB::selectOne($countSql, $countParams)->cnt;
 
             $sql = "SELECT a.id, a.user_id, a.alert_type, a.severity, a.status, a.details, a.created_at, a.resolved_at, a.resolution_notes,
-                           CONCAT(u.first_name, ' ', u.last_name) as user_name
+                           " . UserDisplayName::sql('u', 'user_name') . "
                     FROM abuse_alerts a LEFT JOIN users u ON a.user_id = u.id WHERE a.tenant_id = ?";
             $params = [$tenantId];
             if ($status && $status !== 'all') {
@@ -274,7 +275,7 @@ class AdminTimebankingController extends BaseApiController
                 return [
                     'previous_balance' => $currentBalance,
                     'new_balance' => $newBalance,
-                    'user_name' => trim($lockedUser->first_name . ' ' . $lockedUser->last_name),
+                    'user_name' => UserDisplayName::resolve($lockedUser),
                 ];
             });
         } catch (\DomainException $e) {
@@ -428,7 +429,7 @@ class AdminTimebankingController extends BaseApiController
 
         $formatted = array_map(fn($row) => [
             'id' => (int) $row['id'],
-            'name' => trim($row['first_name'] . ' ' . $row['last_name']),
+            'name' => UserDisplayName::resolve($row),
             'first_name' => $row['first_name'],
             'last_name' => $row['last_name'],
             'email' => $row['email'],
@@ -470,7 +471,11 @@ class AdminTimebankingController extends BaseApiController
         $txResults = DB::select(
             "SELECT t.*,
                     sender.first_name as sender_first_name, sender.last_name as sender_last_name,
+ sender.profile_type as sender_profile_type,
+ sender.organization_name as sender_organization_name,
                     receiver.first_name as receiver_first_name, receiver.last_name as receiver_last_name,
+ receiver.profile_type as receiver_profile_type,
+ receiver.organization_name as receiver_organization_name,
                     l.title as listing_title
              FROM transactions t
              LEFT JOIN users sender ON sender.id = t.sender_id

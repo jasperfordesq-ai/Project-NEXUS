@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\AdminAnalyticsService;
+use App\Support\UserDisplayName;
 
 /**
  * AdminCommunityAnalyticsController -- Admin community-level analytics and export.
@@ -55,7 +56,7 @@ class AdminCommunityAnalyticsController extends BaseApiController
         $topEarners = array_map(function ($row) {
             return [
                 'id' => (int) ($row['id'] ?? 0),
-                'name' => trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? '')),
+                'name' => UserDisplayName::resolve($row),
                 'total' => round((float) ($row['total_earned'] ?? 0), 1),
             ];
         }, $topEarners);
@@ -63,7 +64,7 @@ class AdminCommunityAnalyticsController extends BaseApiController
         $topSpenders = array_map(function ($row) {
             return [
                 'id' => (int) ($row['id'] ?? 0),
-                'name' => trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? '')),
+                'name' => UserDisplayName::resolve($row),
                 'total' => round((float) ($row['total_spent'] ?? 0), 1),
             ];
         }, $topSpenders);

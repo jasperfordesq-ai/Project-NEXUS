@@ -25,6 +25,7 @@ use App\Services\ListingSkillTagService;
 use App\Services\ListingFeaturedService;
 use App\Services\PersonalisedFeedService;
 use App\Models\ListingReport;
+use App\Support\UserDisplayName;
 
 /**
  * ListingsController - Listings CRUD, search, favorites, tags, analytics, renewal.
@@ -635,7 +636,7 @@ class ListingsController extends BaseApiController
                 $saver = DB::table('users')
                     ->where('id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->select(['first_name', 'last_name', 'name'])
+                    ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                     ->first();
 
                 $owner = DB::table('users')
@@ -647,7 +648,7 @@ class ListingsController extends BaseApiController
                 LocaleContext::withLocale($owner, function () use ($saver, $listing, $id) {
                     $saverName = __('emails.common.fallback_someone');
                     if ($saver) {
-                        $saverName = trim(($saver->first_name ?? '') . ' ' . ($saver->last_name ?? ''));
+                        $saverName = UserDisplayName::resolve($saver);
                         if (empty($saverName)) {
                             $saverName = $saver->name ?? __('emails.common.fallback_someone');
                         }

@@ -534,7 +534,7 @@ class SkillTaxonomyService
             ->orderBy('u.first_name')
             ->limit($limit)
             ->select(
-                'u.id', 'u.first_name', 'u.last_name', 'u.avatar_url as avatar',
+                'u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url as avatar',
                 'us.proficiency as proficiency_level',
                 'us.is_offering', 'us.is_requesting'
             )

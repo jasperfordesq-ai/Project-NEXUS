@@ -22,6 +22,7 @@ use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
 use App\Services\MessageService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\UserDisplayName;
 
 /**
  * FederationController -- Federation cross-tenant features.
@@ -418,7 +419,7 @@ class FederationController extends BaseApiController
 
         $formatted = array_map(fn($m) => [
             'id' => (int) $m['id'], 'username' => $m['username'],
-            'name' => trim($m['first_name'] . ' ' . $m['last_name']),
+            'name' => UserDisplayName::resolve($m),
             'avatar' => $m['avatar'] ?: null, 'bio' => $m['bio'],
             'skills' => $m['skills'] ? explode(',', $m['skills']) : [],
             'location' => $m['location'],
@@ -466,7 +467,7 @@ class FederationController extends BaseApiController
 
         return $this->fedSuccess(['data' => [
             'id' => (int) $member['id'], 'username' => $member['username'],
-            'name' => trim($member['first_name'] . ' ' . $member['last_name']),
+            'name' => UserDisplayName::resolve($member),
             'avatar' => $member['avatar'] ?: null, 'bio' => $member['bio'],
             'skills' => $member['skills'] ? explode(',', $member['skills']) : [],
             'location' => $member['location'],
@@ -528,7 +529,7 @@ class FederationController extends BaseApiController
         $formatted = array_map(fn($l) => [
             'id' => (int) $l['id'], 'title' => $l['title'], 'description' => $l['description'],
             'type' => $l['type'], 'category' => $l['category_name'] ?? null, 'category_id' => $l['category_id'] ? (int) $l['category_id'] : null, 'rate' => $l['rate'],
-            'owner' => ['id' => (int) $l['user_id'], 'name' => trim($l['first_name'] . ' ' . $l['last_name']), 'avatar' => $l['avatar'] ?: null],
+            'owner' => ['id' => (int) $l['user_id'], 'name' => UserDisplayName::resolve($l), 'avatar' => $l['avatar'] ?: null],
             'timebank' => ['id' => (int) $l['tenant_id'], 'name' => $l['timebank_name']],
             'created_at' => $l['created_at'],
         ], $rows);
@@ -572,7 +573,7 @@ class FederationController extends BaseApiController
         return $this->fedSuccess(['data' => [
             'id' => (int) $listing['id'], 'title' => $listing['title'], 'description' => $listing['description'],
             'type' => $listing['type'], 'category' => $listing['category_name'] ?? null, 'category_id' => $listing['category_id'] ? (int) $listing['category_id'] : null, 'rate' => $listing['rate'] ?? $listing['price'] ?? null,
-            'owner' => ['id' => (int) $listing['user_id'], 'name' => trim($listing['first_name'] . ' ' . $listing['last_name']), 'avatar' => $listing['avatar'] ?: null, 'location' => $listing['location']],
+            'owner' => ['id' => (int) $listing['user_id'], 'name' => UserDisplayName::resolve($listing), 'avatar' => $listing['avatar'] ?: null, 'location' => $listing['location']],
             'timebank' => ['id' => (int) $listing['tenant_id'], 'name' => $listing['timebank_name']],
             'created_at' => $listing['created_at'], 'updated_at' => $listing['updated_at'] ?? null,
         ]]);
@@ -730,7 +731,7 @@ class FederationController extends BaseApiController
                 $sRow = $db->prepare("SELECT u.name, u.first_name, u.last_name, t.name as tenant_name FROM users u JOIN tenants t ON u.tenant_id = t.id WHERE u.id = ?");
                 $sRow->execute([$input['sender_id']]);
                 $sr = $sRow->fetch(\PDO::FETCH_ASSOC);
-                if ($sr) { $senderName = $sr['name'] ?: trim($sr['first_name'] . ' ' . $sr['last_name']); $senderTenantName = $sr['tenant_name'] ?: 'Partner Timebank'; }
+                if ($sr) { $senderName = $sr['name'] ?: UserDisplayName::resolve($sr); $senderTenantName = $sr['tenant_name'] ?: 'Partner Timebank'; }
             }
         } catch (\Exception $e) {
             \Log::warning('[Federation] sender name lookup failed', ['sender_id' => $input['sender_id'] ?? null, 'error' => $e->getMessage()]);
@@ -1207,7 +1208,9 @@ class FederationController extends BaseApiController
         $total = (int) $countStmt->fetchColumn();
 
         $sql = "SELECT r.id, r.reviewer_id, r.reviewer_tenant_id, r.receiver_id, r.receiver_tenant_id, r.rating, r.comment, r.review_type, r.status, r.transaction_id, r.created_at,
-                       u.first_name as reviewer_first_name, u.last_name as reviewer_last_name, u.avatar_url as reviewer_avatar,
+                       u.first_name as reviewer_first_name, u.last_name as reviewer_last_name,
+ u.profile_type as reviewer_profile_type,
+ u.organization_name as reviewer_organization_name, u.avatar_url as reviewer_avatar,
                        t.name as reviewer_tenant_name " . $baseCondition;
         $sql .= " ORDER BY r.created_at DESC LIMIT ?, ?";
         $paginatedParams = array_merge($params, [(int) (($page - 1) * $perPage), (int) $perPage]);
@@ -1224,7 +1227,7 @@ class FederationController extends BaseApiController
             'transaction_id' => $r['transaction_id'] ? (int) $r['transaction_id'] : null,
             'reviewer' => [
                 'id' => (int) $r['reviewer_id'],
-                'name' => trim($r['reviewer_first_name'] . ' ' . $r['reviewer_last_name']),
+                'name' => UserDisplayName::resolvePrefixed($r, 'reviewer_'),
                 'avatar' => $r['reviewer_avatar'] ?: null,
                 'tenant_name' => $r['reviewer_tenant_name'] ?? null,
             ],
@@ -1284,8 +1287,12 @@ class FederationController extends BaseApiController
         $total = (int) $countStmt->fetchColumn();
 
         $sql = "SELECT m.id, m.sender_id, m.receiver_id, m.subject, m.body, m.created_at, m.is_read,
-                       su.first_name as sender_first_name, su.last_name as sender_last_name, su.tenant_id as sender_tenant_id,
-                       ru.first_name as receiver_first_name, ru.last_name as receiver_last_name, ru.tenant_id as receiver_tenant_id,
+                       su.first_name as sender_first_name, su.last_name as sender_last_name,
+ su.profile_type as sender_profile_type,
+ su.organization_name as sender_organization_name, su.tenant_id as sender_tenant_id,
+                       ru.first_name as receiver_first_name, ru.last_name as receiver_last_name,
+ ru.profile_type as receiver_profile_type,
+ ru.organization_name as receiver_organization_name, ru.tenant_id as receiver_tenant_id,
                        st.name as sender_tenant_name, rt.name as receiver_tenant_name " . $baseCondition;
         $sql .= " ORDER BY m.created_at DESC LIMIT ?, ?";
         $paginatedParams = array_merge($params, [(int) (($page - 1) * $perPage), (int) $perPage]);
@@ -1300,13 +1307,13 @@ class FederationController extends BaseApiController
             'body' => $m['body'],
             'sender' => [
                 'id' => (int) $m['sender_id'],
-                'name' => trim($m['sender_first_name'] . ' ' . $m['sender_last_name']),
+                'name' => UserDisplayName::resolvePrefixed($m, 'sender_'),
                 'tenant_id' => (int) $m['sender_tenant_id'],
                 'tenant_name' => $m['sender_tenant_name'] ?? null,
             ],
             'receiver' => [
                 'id' => (int) $m['receiver_id'],
-                'name' => trim($m['receiver_first_name'] . ' ' . $m['receiver_last_name']),
+                'name' => UserDisplayName::resolvePrefixed($m, 'receiver_'),
                 'tenant_id' => (int) $m['receiver_tenant_id'],
                 'tenant_name' => $m['receiver_tenant_name'] ?? null,
             ],
@@ -1330,7 +1337,11 @@ class FederationController extends BaseApiController
             SELECT t.id, t.amount, t.status, t.description, t.created_at, t.is_federated,
                    t.sender_id, t.receiver_id, t.sender_tenant_id, t.receiver_tenant_id,
                    su.first_name as sender_first_name, su.last_name as sender_last_name,
+ su.profile_type as sender_profile_type,
+ su.organization_name as sender_organization_name,
                    ru.first_name as receiver_first_name, ru.last_name as receiver_last_name,
+ ru.profile_type as receiver_profile_type,
+ ru.organization_name as receiver_organization_name,
                    st.name as sender_tenant_name, rt.name as receiver_tenant_name
             FROM transactions t
             JOIN users su ON su.id = t.sender_id
@@ -1354,13 +1365,13 @@ class FederationController extends BaseApiController
             'description' => $transaction['description'],
             'sender' => [
                 'id' => (int) $transaction['sender_id'],
-                'name' => trim($transaction['sender_first_name'] . ' ' . $transaction['sender_last_name']),
+                'name' => UserDisplayName::resolvePrefixed($transaction, 'sender_'),
                 'tenant_id' => $transaction['sender_tenant_id'] ? (int) $transaction['sender_tenant_id'] : null,
                 'tenant_name' => $transaction['sender_tenant_name'] ?? null,
             ],
             'receiver' => [
                 'id' => (int) $transaction['receiver_id'],
-                'name' => trim($transaction['receiver_first_name'] . ' ' . $transaction['receiver_last_name']),
+                'name' => UserDisplayName::resolvePrefixed($transaction, 'receiver_'),
                 'tenant_id' => $transaction['receiver_tenant_id'] ? (int) $transaction['receiver_tenant_id'] : null,
                 'tenant_name' => $transaction['receiver_tenant_name'] ?? null,
             ],

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
+use App\Support\UserDisplayName;
 
 /**
  * FeedSidebarController — Feed sidebar widgets (stats, suggestions, combined sidebar).
@@ -112,6 +113,10 @@ class FeedSidebarController extends BaseApiController
                 $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
                 return [
                     'id'                => (int) $m->id,
+                    // Emit the resolved display name: without it a client has to
+                    // concatenate first+last, which is the contact person rather
+                    // than the account for an organisation.
+                    'name'              => UserDisplayName::resolve($m),
                     'first_name'        => $m->first_name ?? '',
                     'last_name'         => $m->last_name ?? '',
                     'organization_name' => $m->organization_name,
@@ -331,6 +336,7 @@ class FeedSidebarController extends BaseApiController
                     ->get()
                     ->map(function ($m) use ($now) {
                         $arr = (array) $m;
+                        $arr['name'] = UserDisplayName::resolve($m);
                         $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());

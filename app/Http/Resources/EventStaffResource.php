@@ -14,6 +14,7 @@ use App\Models\EventStaffAssignment;
 use App\Models\EventStaffAssignmentHistory;
 use BackedEnum;
 use DateTimeInterface;
+use App\Support\UserDisplayName;
 
 /** Canonical, audit-bearing representation of one delegated Events role. */
 final class EventStaffResource
@@ -31,7 +32,7 @@ final class EventStaffResource
         $user = $assignment->relationLoaded('user') ? $assignment->user : null;
         $name = $user === null
             ? null
-            : trim((string) $user->first_name . ' ' . (string) $user->last_name);
+            : UserDisplayName::resolve($user);
 
         return [
             'id' => (int) $assignment->getKey(),

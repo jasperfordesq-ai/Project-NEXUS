@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * HoursReportService — Native Eloquent implementation for admin hours reporting.
@@ -102,6 +103,8 @@ class HoursReportService
                 u.name,
                 u.first_name,
                 u.last_name,
+                u.profile_type,
+                u.organization_name,
                 u.avatar_url,
                 COALESCE(g.hours_given, 0) AS hours_given,
                 COALESCE(r.hours_received, 0) AS hours_received,
@@ -146,7 +149,7 @@ class HoursReportService
         $total = (int) ($totalResult->total ?? 0);
 
         $members = array_map(function ($row) {
-            $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+            $name = UserDisplayName::resolve($row);
             if (empty($name)) {
                 $name = $row->name ?? 'Unknown';
             }

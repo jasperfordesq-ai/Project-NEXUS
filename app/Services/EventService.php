@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\UserDisplayName;
 /**
  * EventService — Laravel DI-based service for event operations.
  *
@@ -916,7 +917,7 @@ class EventService
                 'id'         => $eventUser->id,
                 'name'       => ($eventUser->profile_type === 'organisation' && $eventUser->organization_name)
                                     ? $eventUser->organization_name
-                                    : trim($eventUser->first_name . ' ' . $eventUser->last_name),
+                                    : UserDisplayName::resolve($eventUser),
                 'avatar'     => $eventUser->avatar_url,
                 'avatar_url' => $eventUser->avatar_url,
             ];
@@ -3216,7 +3217,7 @@ class EventService
             $lastId = $att['rsvp_id'];
             $items[] = [
                 'id' => (int) $att['user_id'],
-                'name' => $att['name'] ?? trim(($att['first_name'] ?? '') . ' ' . ($att['last_name'] ?? '')),
+                'name' => $att['name'] ?? UserDisplayName::resolve($att),
                 'first_name' => $att['first_name'] ?? null,
                 'last_name' => $att['last_name'] ?? null,
                 'avatar' => $att['avatar_url'],
@@ -4351,7 +4352,7 @@ class EventService
         foreach ($items as $item) {
             $formatted[] = [
                 'id' => (int) $item['user_id'],
-                'name' => $item['name'] ?? trim(($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')),
+                'name' => $item['name'] ?? UserDisplayName::resolve($item),
                 'first_name' => $item['first_name'] ?? null,
                 'last_name' => $item['last_name'] ?? null,
                 'avatar_url' => $item['avatar_url'],
@@ -4660,7 +4661,7 @@ class EventService
             foreach ($rows as $r) {
                 $items[] = [
                     'user_id'        => (int) $r->user_id,
-                    'name'           => $r->name ?? trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                    'name'           => $r->name ?? UserDisplayName::resolve($r),
                     'first_name'     => $r->first_name ?? null,
                     'last_name'      => $r->last_name ?? null,
                     'avatar_url'     => $r->avatar_url,

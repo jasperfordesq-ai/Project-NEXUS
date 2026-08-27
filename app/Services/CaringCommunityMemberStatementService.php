@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Support\CsvExportSanitizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * Builds KISS-style member statements from timebank and verified support activity.
@@ -27,7 +28,7 @@ class CaringCommunityMemberStatementService
         $user = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->where('id', $userId)
-            ->select(['id', 'name', 'first_name', 'last_name', 'email', 'balance'])
+            ->select(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'balance'])
             ->first();
 
         if (!$user) {
@@ -295,7 +296,7 @@ class CaringCommunityMemberStatementService
 
     private function displayName(object $user): string
     {
-        $fullName = trim((string) ($user->first_name ?? '') . ' ' . (string) ($user->last_name ?? ''));
+        $fullName = UserDisplayName::resolve($user);
         return $fullName !== '' ? $fullName : (string) ($user->name ?? $user->email);
     }
 

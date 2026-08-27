@@ -31,7 +31,7 @@ class ResourceService
         $cursor = $filters['cursor'] ?? null;
 
         $query = $this->resource->newQuery()
-            ->with(['user:id,first_name,last_name,avatar_url', 'category:id,name,color']);
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'category:id,name,color']);
 
         if (! empty($filters['category_id'])) {
             $query->where('category_id', (int) $filters['category_id']);

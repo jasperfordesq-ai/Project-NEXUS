@@ -16,6 +16,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
+use App\Support\UserDisplayName;
 
 /**
  * Fired when the receiver of a connection request accepts it.
@@ -68,9 +69,7 @@ class ConnectionAccepted implements ShouldBroadcast, ShouldRescue
         return [
             'id'           => $this->connectionModel->id,
             'acceptor_id'  => $this->acceptor->id,
-            'acceptor_name' => trim(
-                ($this->acceptor->first_name ?? '') . ' ' . ($this->acceptor->last_name ?? '')
-            ) ?: ($this->acceptor->name ?? $fallbackName),
+            'acceptor_name' => UserDisplayName::resolve($this->acceptor) ?: ($this->acceptor->name ?? $fallbackName),
             'created_at'   => $this->connectionModel->created_at?->toISOString(),
         ];
     }

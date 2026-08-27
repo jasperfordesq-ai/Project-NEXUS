@@ -24,7 +24,7 @@ import { EmptyState } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 
 interface SpotlightMember {
   id: number;
@@ -132,7 +132,7 @@ export default function MemberSpotlightTab() {
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar
                     src={resolveAvatarUrl(member.avatar_url)}
-                    name={`${member.first_name} ${member.last_name}`}
+                    name={resolveUserDisplayName(member)}
                     size="lg"
                     className="ring-2 ring-amber-500/30"
                   />

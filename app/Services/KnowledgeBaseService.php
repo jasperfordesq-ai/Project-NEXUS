@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * KnowledgeBaseService — Laravel DI-based service for knowledge base articles.
@@ -81,7 +82,7 @@ class KnowledgeBaseService
             'a.views_count', 'a.helpful_yes', 'a.helpful_no',
             'a.created_by', 'a.created_at', 'a.updated_at',
             'u.first_name as author_first_name',
-            'u.last_name as author_last_name',
+            'u.last_name as author_last_name', 'u.profile_type as author_profile_type', 'u.organization_name as author_organization_name',
             'rc.name as category_name'
         );
 
@@ -109,7 +110,7 @@ class KnowledgeBaseService
                 'updated_at'        => $a->updated_at ?? null,
                 'author'            => $a->created_by ? [
                     'id'   => (int) $a->created_by,
-                    'name' => trim(($a->author_first_name ?? '') . ' ' . ($a->author_last_name ?? '')),
+                    'name' => UserDisplayName::resolvePrefixed($a, 'author_'),
                 ] : null,
             ];
         })->all();
@@ -136,7 +137,7 @@ class KnowledgeBaseService
             ->select(
                 'a.*',
                 'u.first_name as author_first_name',
-                'u.last_name as author_last_name',
+                'u.last_name as author_last_name', 'u.profile_type as author_profile_type', 'u.organization_name as author_organization_name',
                 'u.avatar_url as author_avatar',
                 'rc.name as category_name'
             )
@@ -201,7 +202,7 @@ class KnowledgeBaseService
             'updated_at'        => $article->updated_at,
             'author'            => $article->created_by ? [
                 'id'         => (int) $article->created_by,
-                'name'       => trim(($article->author_first_name ?? '') . ' ' . ($article->author_last_name ?? '')),
+                'name'       => UserDisplayName::resolvePrefixed($article, 'author_'),
                 'avatar_url' => $article->author_avatar ?? null,
             ] : null,
             'children' => $children->map(function ($c) {

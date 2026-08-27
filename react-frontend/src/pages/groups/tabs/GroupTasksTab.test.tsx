@@ -239,6 +239,11 @@ describe('GroupTasksTab', () => {
       id: 21,
       avatar_url: null,
       avatar: 'fallback.jpg',
+      // `name` is overridden alongside the parts on purpose: the API always
+      // ships a resolved `name` (the organisation name for an organisation
+      // account) and resolveUserDisplayName() prefers it, so a fixture whose
+      // `name` contradicts its own first/last cannot occur in real data.
+      name: 'Dan Dean',
       first_name: 'Dan',
       last_name: 'Dean',
     });

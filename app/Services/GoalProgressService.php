@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\Goal;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * GoalProgressService — Eloquent-based service for goal progress history.
@@ -178,11 +179,11 @@ class GoalProgressService
             ->limit(5)
             ->get([
                 'gbn.id', 'gbn.type', 'gbn.message', 'gbn.created_at',
-                'u.first_name', 'u.last_name', 'u.avatar_url',
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url',
             ])
             ->map(function ($row) {
                 $data = (array) $row;
-                $data['buddy_name'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+                $data['buddy_name'] = UserDisplayName::resolve($data);
                 unset($data['first_name'], $data['last_name']);
                 return $data;
             })

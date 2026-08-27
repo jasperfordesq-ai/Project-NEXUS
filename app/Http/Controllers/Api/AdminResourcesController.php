@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * AdminResourcesController -- Admin resource / knowledge base management.
@@ -64,12 +65,12 @@ class AdminResourcesController extends BaseApiController
                 'a.is_published', 'a.views_count', 'a.helpful_yes',
                 'a.created_at', 'a.updated_at',
                 'u.first_name as author_first_name',
-                'u.last_name as author_last_name',
+                'u.last_name as author_last_name', 'u.profile_type as author_profile_type', 'u.organization_name as author_organization_name',
                 'rc.name as category_name'
             )
             ->get()
             ->map(static function ($row): array {
-                $authorName = trim(($row->author_first_name ?? '') . ' ' . ($row->author_last_name ?? ''));
+                $authorName = UserDisplayName::resolvePrefixed($row, 'author_');
 
                 return [
                 'id'            => (int) $row->id,

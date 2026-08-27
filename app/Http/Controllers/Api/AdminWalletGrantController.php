@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\I18n\LocaleContext;
 use App\Models\ActivityLog;
+use App\Support\UserDisplayName;
 
 /**
  * AdminWalletGrantController -- Admin time credit grants.
@@ -40,7 +41,9 @@ class AdminWalletGrantController extends BaseApiController
         $offset = ($page - 1) * $perPage;
 
         $query = "SELECT t.*, u.first_name, u.last_name, u.email,
-                  admin.first_name as admin_first_name, admin.last_name as admin_last_name
+                  admin.first_name as admin_first_name, admin.last_name as admin_last_name,
+ admin.profile_type as admin_profile_type,
+ admin.organization_name as admin_organization_name
                   FROM transactions t
                   JOIN users u ON t.receiver_id = u.id
                   LEFT JOIN users admin ON t.sender_id = admin.id
@@ -85,9 +88,9 @@ class AdminWalletGrantController extends BaseApiController
                 'description' => $row->description ?? '',
                 'status' => $row->status ?? 'completed',
                 'created_at' => $row->created_at,
-                'recipient_name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'recipient_name' => UserDisplayName::resolve($row),
                 'recipient_email' => $row->email ?? '',
-                'admin_name' => trim(($row->admin_first_name ?? '') . ' ' . ($row->admin_last_name ?? '')),
+                'admin_name' => UserDisplayName::resolvePrefixed($row, 'admin_'),
             ];
         }, $rows);
 
@@ -161,7 +164,7 @@ class AdminWalletGrantController extends BaseApiController
             return $id;
         });
 
-        $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $userName = UserDisplayName::resolve($user);
         ActivityLog::log($adminId, 'admin_grant_credits', "Granted {$amount} credits to user #{$userId} ({$userName}). Reason: " . ($reason ?? 'Admin credit grant'));
 
         // Notify user of credit grant — rendered in the recipient's preferred

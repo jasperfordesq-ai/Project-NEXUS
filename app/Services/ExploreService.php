@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * ExploreService — Aggregates discovery data for the Explore/Discover page.
@@ -177,6 +178,8 @@ class ExploreService
                     fp.created_at,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar,
                     (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
                     (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?) AS comments_count,
@@ -224,7 +227,7 @@ class ExploreService
                     'excerpt' => $row->excerpt,
                     'image_url' => $row->image_url,
                     'created_at' => $row->created_at,
-                    'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                    'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                     'likes_count' => (int) $row->likes_count,
                     'comments_count' => (int) $row->comments_count,
@@ -327,6 +330,8 @@ class ExploreService
                     cat.color AS category_color,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM listings l
                 LEFT JOIN categories cat ON cat.id = l.category_id
@@ -353,7 +358,7 @@ class ExploreService
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
                 'category_color' => $row->category_color,
-                'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
             ], $rows);
         } catch (\Throwable $e) {
@@ -466,6 +471,8 @@ class ExploreService
                     u.id,
                     COALESCE(u.first_name, '') AS first_name,
                     COALESCE(u.last_name, '') AS last_name,
+                    u.profile_type,
+                    u.organization_name,
                     u.avatar_url AS avatar,
                     COALESCE(u.xp, 0) AS xp,
                     COALESCE(u.level, 1) AS level,
@@ -502,7 +509,7 @@ class ExploreService
 
             return array_map(fn($row) => [
                 'id' => $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'avatar' => $row->avatar,
                 'xp' => (int) $row->xp,
                 'level' => (int) $row->level,
@@ -556,6 +563,8 @@ class ExploreService
                     u.id,
                     COALESCE(u.first_name, '') AS first_name,
                     COALESCE(u.last_name, '') AS last_name,
+                    u.profile_type,
+                    u.organization_name,
                     u.avatar_url AS avatar,
                     u.tagline,
                     u.created_at
@@ -591,7 +600,7 @@ class ExploreService
 
             return array_map(fn($row) => [
                 'id' => $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'avatar' => $row->avatar,
                 'tagline' => $row->tagline,
                 'created_at' => $row->created_at,
@@ -872,6 +881,8 @@ class ExploreService
                     cat.slug AS category_slug,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM listings l
                 LEFT JOIN categories cat ON cat.id = l.category_id
@@ -943,7 +954,7 @@ class ExploreService
                     'location' => $row->location,
                     'category_name' => $row->category_name,
                     'category_slug' => $row->category_slug,
-                    'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                    'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                     'match_reason' => $matchReason,
                     'match_score' => round($score, 1),
@@ -974,6 +985,8 @@ class ExploreService
                     cat.slug AS category_slug,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM listings l
                 LEFT JOIN categories cat ON cat.id = l.category_id
@@ -1003,7 +1016,7 @@ class ExploreService
                 'location' => $row->location,
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
-                'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
                 'match_reason' => null,
                 'match_score' => null,
@@ -1105,6 +1118,8 @@ class ExploreService
                     cat.slug AS category_slug,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar,
                     (6371 * acos(
                         cos(radians(?)) * cos(radians(COALESCE(u.latitude, 0))) *
@@ -1132,7 +1147,7 @@ class ExploreService
                 'location' => $row->location,
                 'category_name' => $row->category_name,
                 'category_slug' => $row->category_slug,
-                'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
                 'distance_km' => round((float) $row->distance_km, 1),
             ], $rows);
@@ -1249,6 +1264,8 @@ class ExploreService
                 SELECT
                     u.id, COALESCE(u.first_name, '') AS first_name,
                     COALESCE(u.last_name, '') AS last_name,
+                    u.profile_type,
+                    u.organization_name,
                     u.avatar_url AS avatar, u.tagline
                 FROM users u
                 WHERE u.tenant_id = ? AND u.status = 'active' AND u.id IN ({$placeholders})
@@ -1262,7 +1279,7 @@ class ExploreService
 
             return array_map(fn($row) => [
                 'id' => $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'avatar' => $row->avatar,
                 'tagline' => $row->tagline,
                 'reason' => in_array((int) $row->id, $knnMemberIds) ? 'Recommended for you'
@@ -1299,6 +1316,8 @@ class ExploreService
                     COALESCE(bp.views, 0) AS view_count,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM blog_posts bp
                 JOIN users u ON u.id = bp.author_id AND u.tenant_id = ? AND u.status = 'active'
@@ -1317,7 +1336,7 @@ class ExploreService
                 'image_url' => $row->image_url,
                 'published_at' => $row->published_at,
                 'view_count' => (int) $row->view_count,
-                'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'author_avatar' => $row->author_avatar,
             ], $rows);
         } catch (\Throwable $e) {
@@ -1419,6 +1438,8 @@ class ExploreService
                     p.id, p.question, p.description, p.created_at, p.end_date,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     (SELECT COUNT(*) FROM poll_options po WHERE po.poll_id = p.id) AS option_count,
                     (SELECT COUNT(DISTINCT pv.user_id) FROM poll_votes pv WHERE pv.poll_id = p.id) AS vote_count
                 FROM polls p
@@ -1434,7 +1455,7 @@ class ExploreService
                 'id' => $row->id,
                 'question' => $row->question,
                 'description' => $row->description ? mb_substr($row->description, 0, 100) : null,
-                'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                 'option_count' => (int) $row->option_count,
                 'vote_count' => (int) $row->vote_count,
                 'closes_at' => $row->end_date,
@@ -2067,6 +2088,8 @@ class ExploreService
                     fp.created_at,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar,
                     (SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'post' AND lk.target_id = fp.id AND lk.tenant_id = ?) AS likes_count,
                     (SELECT COUNT(*) FROM comments c WHERE c.target_type = 'post' AND c.target_id = fp.id AND c.tenant_id = ?) AS comments_count
@@ -2097,7 +2120,7 @@ class ExploreService
                     'excerpt' => $row->excerpt,
                     'image_url' => $row->image_url,
                     'created_at' => $row->created_at,
-                    'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                    'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                     'likes_count' => (int) $row->likes_count,
                     'comments_count' => (int) $row->comments_count,
@@ -2142,6 +2165,8 @@ class ExploreService
                     cat.color AS category_color,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM listings l
                 LEFT JOIN categories cat ON cat.id = l.category_id
@@ -2167,7 +2192,7 @@ class ExploreService
                     'category_name' => $row->category_name,
                     'category_slug' => $row->category_slug,
                     'category_color' => $row->category_color,
-                    'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                    'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                 ], $rows),
                 'total' => (int) ($total->cnt ?? 0),
@@ -2215,6 +2240,8 @@ class ExploreService
                     COALESCE(l.view_count, 0) AS view_count,
                     COALESCE(u.first_name, '') AS author_first_name,
                     COALESCE(u.last_name, '') AS author_last_name,
+                    u.profile_type AS author_profile_type,
+                    u.organization_name AS author_organization_name,
                     u.avatar_url AS author_avatar
                 FROM listings l
                 JOIN users u ON u.id = l.user_id AND u.tenant_id = ? AND u.status = 'active'
@@ -2236,7 +2263,7 @@ class ExploreService
                     'estimated_hours' => $row->estimated_hours,
                     'created_at' => $row->created_at,
                     'view_count' => (int) $row->view_count,
-                    'author_name' => trim($row->author_first_name . ' ' . $row->author_last_name),
+                    'author_name' => UserDisplayName::resolvePrefixed($row, 'author_'),
                     'author_avatar' => $row->author_avatar,
                 ], $rows),
                 'total' => (int) ($total->cnt ?? 0),

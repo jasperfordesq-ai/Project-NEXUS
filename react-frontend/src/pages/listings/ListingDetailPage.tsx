@@ -59,7 +59,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSocialInteractions } from '@/hooks/useSocialInteractions';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, resolveAssetUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import type { Listing, ListingDetail, ExchangeConfig } from '@/types/api';
 
 interface ListingStructuredDataOptions {
@@ -89,8 +89,7 @@ function isGenuineNotFound(code: string | undefined | null): boolean {
 
 function buildListingStructuredData(listing: Listing, options: ListingStructuredDataOptions) {
   const category = listing.category?.name || listing.category_name;
-  const authorName = listing.user?.name
-    || `${listing.user?.first_name ?? ''} ${listing.user?.last_name ?? ''}`.trim()
+  const authorName = resolveUserDisplayName(listing.user)
     || listing.author_name
     || options.communityMemberLabel;
   const hoursEstimate = listing.estimated_hours ?? listing.hours_estimate;
@@ -1023,7 +1022,7 @@ export function ListingDetailPage() {
 
       {/* User Card */}
       {(listing.user || listing.author_name) && (() => {
-        const userName = listing.user?.name || listing.author_name || `${listing.user?.first_name ?? ''} ${listing.user?.last_name ?? ''}`.trim();
+        const userName = resolveUserDisplayName(listing.user) || listing.author_name;
         const userId = listing.user?.id || listing.user_id;
         const userAvatar = resolveAvatarUrl(listing.user?.avatar || listing.author_avatar);
 

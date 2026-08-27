@@ -167,11 +167,11 @@ class CaringRegionalPointService
                 't.*',
                 'u.name as user_name',
                 'u.first_name as user_first_name',
-                'u.last_name as user_last_name',
+                'u.last_name as user_last_name', 'u.profile_type as user_profile_type', 'u.organization_name as user_organization_name',
                 'u.email as user_email',
                 'actor.name as actor_name',
                 'actor.first_name as actor_first_name',
-                'actor.last_name as actor_last_name',
+                'actor.last_name as actor_last_name', 'actor.profile_type as actor_profile_type', 'actor.organization_name as actor_organization_name',
             ])
             ->get()
             ->map(fn ($row): array => $this->formatTransaction($row) + [

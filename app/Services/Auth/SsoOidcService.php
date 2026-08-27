@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * SSO engine (IT-Sec-05) — generic OpenID Connect relying party.
@@ -673,6 +674,9 @@ class SsoOidcService
             'tenant_id' => $tenantId,
             'first_name' => $names['first'],
             'last_name' => $names['last'],
+            // `users.name` is NOT NULL and feeds most display paths; SSO
+            // provisioning never wrote it, leaving an empty stored name.
+            'name' => UserDisplayName::forStorage(null, null, $names['first'], $names['last']),
             'email' => $email,
             'password' => password_hash(Str::random(48), PASSWORD_BCRYPT),
             // Provisioning is reachable only after a signed literal-boolean

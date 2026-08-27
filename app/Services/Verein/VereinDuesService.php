@@ -394,7 +394,7 @@ class VereinDuesService
                 'd.generated_email_sent_at', 'd.generated_email_failed_at',
                 'd.paid_email_sent_at', 'd.paid_email_failed_at',
                 'd.reminder_email_failed_at', 'd.reminder_email_last_error',
-                'd.waived_reason', 'u.first_name', 'u.last_name', 'u.email',
+                'd.waived_reason', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email',
             ])
             ->orderBy('d.due_date')
             ->offset(max(0, ($page - 1) * $perPage))

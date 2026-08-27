@@ -22,6 +22,11 @@ import {
   cn,
   getUserDisplayName,
   getUserInitials,
+  resolveUserDisplayName,
+  resolveUserDisplayNameFromPrefix,
+  buildStoredUserName,
+  isOrganisationAccount,
+  ORGANISATION_PROFILE_TYPE,
 } from './helpers';
 
 describe('application-locale formatting', () => {
@@ -176,6 +181,128 @@ describe('cn', () => {
   });
 });
 
+describe('resolveUserDisplayName', () => {
+  const organisation = {
+    profile_type: 'organisation',
+    organization_name: 'Northside Community Trust',
+    first_name: 'Zephyrine',
+    last_name: 'Quilbrook',
+    name: 'Zephyrine Quilbrook',
+  };
+
+  it('shows an organisation its own name, never its contact person', () => {
+    expect(resolveUserDisplayName(organisation)).toBe('Northside Community Trust');
+  });
+
+  it('prefers the organisation name over a stale precomputed name', () => {
+    // `users.name` was stored as first+last on insert and never recomputed when
+    // a member switched their profile to an organisation, so an older payload
+    // can still carry the personal name.
+    expect(
+      resolveUserDisplayName({
+        profile_type: 'organisation',
+        organization_name: 'Acme Co-op',
+        name: 'John Smith',
+      }),
+    ).toBe('Acme Co-op');
+  });
+
+  it('falls back to the contact person when the organisation name is blank', () => {
+    expect(
+      resolveUserDisplayName({
+        profile_type: 'organisation',
+        organization_name: '   ',
+        first_name: 'Ada',
+        last_name: 'Lovelace',
+      }),
+    ).toBe('Ada Lovelace');
+  });
+
+  it('prefers an explicit name over rebuilding from the parts', () => {
+    // Surname-withholding endpoints drop last_name entirely; rebuilding would
+    // return "Ada" and lose half the name.
+    expect(resolveUserDisplayName({ first_name: 'Ada', name: 'Ada Lovelace' })).toBe('Ada Lovelace');
+  });
+
+  it('builds the person name when there is no explicit name', () => {
+    expect(resolveUserDisplayName({ first_name: 'Ada', last_name: 'Lovelace' })).toBe('Ada Lovelace');
+  });
+
+  it('uses the fallback for an empty or missing record', () => {
+    expect(resolveUserDisplayName(null, 'A member')).toBe('A member');
+    expect(resolveUserDisplayName(undefined, 'A member')).toBe('A member');
+    expect(resolveUserDisplayName({}, 'A member')).toBe('A member');
+    expect(resolveUserDisplayName({})).toBe('');
+  });
+
+  it('does not treat the American spelling as an organisation', () => {
+    // users.profile_type only ever holds the British spelling; comparing
+    // against 'organization' silently never matches.
+    expect(ORGANISATION_PROFILE_TYPE).toBe('organisation');
+    expect(
+      resolveUserDisplayName({
+        profile_type: 'organization',
+        organization_name: 'Acme',
+        first_name: 'Ada',
+        last_name: 'L',
+      }),
+    ).toBe('Ada L');
+  });
+});
+
+describe('isOrganisationAccount', () => {
+  it('needs both the flag and a usable name', () => {
+    expect(isOrganisationAccount({ profile_type: 'organisation', organization_name: 'Acme' })).toBe(true);
+    expect(isOrganisationAccount({ profile_type: 'organisation', organization_name: '' })).toBe(false);
+    expect(isOrganisationAccount({ profile_type: 'individual', organization_name: 'Acme' })).toBe(false);
+    expect(isOrganisationAccount(null)).toBe(false);
+  });
+});
+
+describe('buildStoredUserName', () => {
+  it('rebuilds from the parts rather than echoing the old name', () => {
+    // A SAVE must not post the name the account had before the edit.
+    expect(buildStoredUserName({ first_name: 'Ada', last_name: 'Byron', name: 'Ada Lovelace' })).toBe('Ada Byron');
+  });
+
+  it('stores the organisation name for an organisation', () => {
+    expect(
+      buildStoredUserName({
+        profile_type: 'organisation',
+        organization_name: 'Northside Community Trust',
+        first_name: 'Zephyrine',
+        last_name: 'Quilbrook',
+      }),
+    ).toBe('Northside Community Trust');
+  });
+
+  it('is empty when there is nothing to store', () => {
+    expect(buildStoredUserName({ name: 'Ada Lovelace' })).toBe('');
+  });
+});
+
+describe('resolveUserDisplayNameFromPrefix', () => {
+  it('reads prefixed join columns', () => {
+    expect(
+      resolveUserDisplayNameFromPrefix(
+        {
+          author_profile_type: 'organisation',
+          author_organization_name: 'Riverside Care Collective',
+          author_first_name: 'Thurman',
+          author_last_name: 'Schroeder',
+        },
+        'author_',
+      ),
+    ).toBe('Riverside Care Collective');
+  });
+
+  it('falls back to the prefixed person, then the fallback', () => {
+    const row = { sender_first_name: 'Ada', sender_last_name: 'Lovelace' };
+    expect(resolveUserDisplayNameFromPrefix(row, 'sender_')).toBe('Ada Lovelace');
+    expect(resolveUserDisplayNameFromPrefix(row, 'receiver_', 'nobody')).toBe('nobody');
+  });
+});
+
 describe('getUserDisplayName', () => {
   it('returns full name', () => {
     expect(getUserDisplayName({ first_name: 'John', last_name: 'Doe' })).toBe('John Doe');
@@ -189,6 +316,17 @@ describe('getUserDisplayName', () => {
 describe('getUserInitials', () => {
   it('returns initials', () => {
     expect(getUserInitials({ first_name: 'John', last_name: 'Doe' })).toBe('JD');
+  });
+
+  it('uses the organisation name, not the contact person', () => {
+    expect(
+      getUserInitials({
+        profile_type: 'organisation',
+        organization_name: 'Northside Community Trust',
+        first_name: 'Zephyrine',
+        last_name: 'Quilbrook',
+      }),
+    ).toBe('NT');
   });
 
   it('handles missing names', () => {

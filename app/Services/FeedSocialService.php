@@ -114,7 +114,7 @@ class FeedSocialService
                 $q->whereNull('fp.visibility')
                     ->orWhere('fp.visibility', 'public');
             })
-            ->select('fp.*', 'u.first_name', 'u.last_name', 'u.avatar_url');
+            ->select('fp.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url');
 
         if ($cursor !== null) {
             $decoded = base64_decode($cursor, true);

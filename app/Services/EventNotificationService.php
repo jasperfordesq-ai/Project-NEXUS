@@ -12,6 +12,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * EventNotificationService — handles in-app and email notifications for event actions.
@@ -430,14 +431,14 @@ class EventNotificationService
             $user = DB::table('users')
                 ->where('id', $userId)
                 ->where('tenant_id', $tenantId)
-                ->select(['id', 'name', 'first_name', 'last_name', 'preferred_language'])
+                ->select(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language'])
                 ->first();
 
             if (!$user) {
                 return;
             }
 
-            $userName = $user->name ?? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $userName = $user->name ?? UserDisplayName::resolve($user);
             $eventTitle = $event->title;
             $organizerId = (int) $event->user_id;
             $policy = app(SafeguardingInteractionPolicy::class);
@@ -965,7 +966,7 @@ HTML;
     private function buildRsvpEmailHtml(object $event, object $rsvpUser, string $status, object $organizer): string
     {
         $organizerName = htmlspecialchars($organizer->first_name ?? $organizer->name ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
-        $rsvpUserName = htmlspecialchars($rsvpUser->name ?? trim(($rsvpUser->first_name ?? '') . ' ' . ($rsvpUser->last_name ?? '')), ENT_QUOTES, 'UTF-8');
+        $rsvpUserName = htmlspecialchars($rsvpUser->name ?? UserDisplayName::resolve($rsvpUser), ENT_QUOTES, 'UTF-8');
         $eventTitle = htmlspecialchars($event->title, ENT_QUOTES, 'UTF-8');
         $statusLabel = $status === 'going'
             ? __('emails.events.rsvp_status_going')

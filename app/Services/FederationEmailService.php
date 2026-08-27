@@ -13,6 +13,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * FederationEmailService — Email notifications for cross-tenant federation events.
@@ -57,11 +58,11 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $sender, $senderTenant, $messagePreview) {
-                $senderName = $sender ? trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')) : __('emails.common.fallback_federation_member');
+                $senderName = $sender ? UserDisplayName::resolve($sender) : __('emails.common.fallback_federation_member');
                 $tenantName = $senderTenant->name ?? __('emails.common.fallback_partner_community');
                 $preview = mb_substr(strip_tags($messagePreview), 0, 200);
 
-                $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                $recipientName = UserDisplayName::resolve($recipient);
                 $safeSenderName = htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8');
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
                 $safePreview = htmlspecialchars($preview, ENT_QUOTES, 'UTF-8');
@@ -137,10 +138,10 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $sender, $senderTenant, $amount, $description) {
-                $senderName = $sender ? trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')) : __('emails.common.fallback_federation_member');
+                $senderName = $sender ? UserDisplayName::resolve($sender) : __('emails.common.fallback_federation_member');
                 $tenantName = $senderTenant->name ?? __('emails.common.fallback_partner_community');
 
-                $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                $recipientName = UserDisplayName::resolve($recipient);
                 $safeSenderName = htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8');
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
                 $safeDescription = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
@@ -209,7 +210,7 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $senderName, $partnerName, $messagePreview) {
-                    $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                    $recipientName = UserDisplayName::resolve($recipient);
                     $preview = mb_substr(strip_tags($messagePreview), 0, 200);
                     $safeSenderName = htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8');
                     $safePartnerName = htmlspecialchars($partnerName, ENT_QUOTES, 'UTF-8');
@@ -273,7 +274,7 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $senderName, $partnerName, $amount, $description) {
-                    $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                    $recipientName = UserDisplayName::resolve($recipient);
                     $safeSenderName = htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8');
                     $safePartnerName = htmlspecialchars($partnerName, ENT_QUOTES, 'UTF-8');
                     $safeDescription = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
@@ -335,7 +336,7 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $externalUserName, $partnerName, $status) {
-                    $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                    $recipientName = UserDisplayName::resolve($recipient);
                     $safeExternalUserName = htmlspecialchars($externalUserName, ENT_QUOTES, 'UTF-8');
                     $safePartnerName = htmlspecialchars($partnerName, ENT_QUOTES, 'UTF-8');
                     $isAccepted = $status === 'accepted';
@@ -399,10 +400,10 @@ class FederationEmailService
 
             $sent = false;
             LocaleContext::withLocale($sender, function () use (&$sent, $sender, $senderTenantId, $recipient, $recipientTenant, $amount, $description, $newBalance) {
-                $recipientName = $recipient ? trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? '')) : __('emails.common.fallback_federation_member');
+                $recipientName = $recipient ? UserDisplayName::resolve($recipient) : __('emails.common.fallback_federation_member');
                 $tenantName = $recipientTenant->name ?? __('emails.common.fallback_partner_community');
 
-                $senderName = trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? ''));
+                $senderName = UserDisplayName::resolve($sender);
                 $safeRecipientName = htmlspecialchars($recipientName, ENT_QUOTES, 'UTF-8');
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
                 $safeDescription = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
@@ -495,7 +496,7 @@ class FederationEmailService
 
             $sent = false;
             LocaleContext::withLocale($user, function () use (&$sent, $user, $tenantId, $tenantName, $messageCount, $transactionCount, $connectionCount) {
-                $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                $userName = UserDisplayName::resolve($user);
 
                 $subject = __('emails.federation.digest_subject', ['community' => $tenantName]);
 
@@ -577,7 +578,7 @@ class FederationEmailService
                         ];
                         $levelName = $levelNames[$requestedLevel] ?? __('emails.common.fallback_federation_level', ['level' => $requestedLevel]);
 
-                        $adminName = trim(($admin->first_name ?? '') . ' ' . ($admin->last_name ?? ''));
+                        $adminName = UserDisplayName::resolve($admin);
 
                         $subject = __('emails.federation.partnership_subject', ['community' => $requestingTenantName]);
 
@@ -657,10 +658,10 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($recipient, function () use (&$sent, $recipient, $recipientTenantId, $sender, $senderTenant, $senderUserId) {
-                $senderName = $sender ? trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? '')) : __('emails.common.fallback_federation_member');
+                $senderName = $sender ? UserDisplayName::resolve($sender) : __('emails.common.fallback_federation_member');
                 $tenantName = $senderTenant->name ?? __('emails.common.fallback_partner_community');
 
-                $recipientName = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                $recipientName = UserDisplayName::resolve($recipient);
                 $safeSenderName = htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8');
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
 
@@ -732,10 +733,10 @@ class FederationEmailService
             $sent = false;
             try {
                 LocaleContext::withLocale($sender, function () use (&$sent, $sender, $senderTenantId, $recipient, $recipientTenant, $recipientUserId) {
-                $recipientName = $recipient ? trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? '')) : __('emails.common.fallback_federation_member');
+                $recipientName = $recipient ? UserDisplayName::resolve($recipient) : __('emails.common.fallback_federation_member');
                 $tenantName = $recipientTenant->name ?? __('emails.common.fallback_partner_community');
 
-                $senderName = trim(($sender->first_name ?? '') . ' ' . ($sender->last_name ?? ''));
+                $senderName = UserDisplayName::resolve($sender);
                 $safeRecipientName = htmlspecialchars($recipientName, ENT_QUOTES, 'UTF-8');
                 $safeTenantName = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
 

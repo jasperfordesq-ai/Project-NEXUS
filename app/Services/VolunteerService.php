@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * VolunteerService — Laravel DI-based service for volunteering operations.
@@ -77,7 +78,7 @@ class VolunteerService
         $federationColumnExists = self::opportunitiesHaveFederatedColumn();
 
         $query = VolOpportunity::query()
-            ->with(['creator:id,first_name,last_name,avatar_url', 'organization:id,name,logo_url', 'category:id,name,color'])
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url', 'organization:id,name,logo_url', 'category:id,name,color'])
             ->where('is_active', true)
             ->whereIn('status', self::PUBLIC_OPPORTUNITY_STATUSES)
             ->where(function (Builder $outer) use ($federationColumnExists) {
@@ -707,7 +708,7 @@ class VolunteerService
         $cursor = $filters['cursor'] ?? null;
 
         $query = VolOrganization::query()
-            ->with('owner:id,first_name,last_name,avatar_url')
+            ->with('owner:id,first_name,last_name,profile_type,organization_name,avatar_url')
             // Orgs are created/admin-toggled with status 'active' but legacy rows
             // hold 'approved' — the directory must show both.
             ->whereIn('status', ['approved', 'active']);
@@ -818,7 +819,7 @@ class VolunteerService
      */
     public static function getOrganisationById(int $id, bool $includeNonApproved = false): ?array
     {
-        $org = VolOrganization::with('owner:id,first_name,last_name,avatar_url')
+        $org = VolOrganization::with('owner:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->find($id);
 
         if (! $org) {
@@ -2644,11 +2645,11 @@ class VolunteerService
                 'comment' => $r->comment,
                 'author'  => [
                     'id'     => (int) ($r->user_id ?? $r->reviewer_id ?? 0),
-                    'name'   => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                    'name'   => UserDisplayName::resolve($r),
                     'avatar' => $r->avatar_url ?? null,
                 ],
                 'reviewer' => [
-                    'name'       => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                    'name'       => UserDisplayName::resolve($r),
                     'avatar_url' => $r->avatar_url ?? null,
                 ],
                 'created_at' => $r->created_at,

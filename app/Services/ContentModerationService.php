@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * ContentModerationService — Laravel DI-based service for content moderation.
@@ -71,7 +72,7 @@ class ContentModerationService
         $status = $filters['status'] ?? null;
 
         $query = ContentModerationQueue::query()
-            ->with(['author:id,first_name,last_name,name,avatar_url', 'reviewer:id,first_name,last_name,name']);
+            ->with(['author:id,first_name,last_name,profile_type,organization_name,name,avatar_url', 'reviewer:id,first_name,last_name,profile_type,organization_name,name']);
 
         if ($status !== null) {
             $query->where('status', $status);
@@ -85,10 +86,10 @@ class ContentModerationService
             ->map(function (ContentModerationQueue $item) {
                 $data = $item->toArray();
                 $data['author_name'] = $item->author
-                    ? trim(($item->author->first_name ?? '') . ' ' . ($item->author->last_name ?? ''))
+                    ? UserDisplayName::resolve($item->author)
                     : null;
                 $data['reviewer_name'] = $item->reviewer
-                    ? trim(($item->reviewer->first_name ?? '') . ' ' . ($item->reviewer->last_name ?? ''))
+                    ? UserDisplayName::resolve($item->reviewer)
                     : null;
                 return $data;
             })
@@ -163,7 +164,7 @@ class ContentModerationService
         $offset = max(0, $offset);
 
         $query = ContentModerationQueue::query()
-            ->with(['author:id,first_name,last_name,email,avatar_url', 'reviewer:id,first_name,last_name']);
+            ->with(['author:id,first_name,last_name,profile_type,organization_name,email,avatar_url', 'reviewer:id,first_name,last_name,profile_type,organization_name']);
 
         if (!empty($filters['status']) && in_array($filters['status'], [self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_FLAGGED], true)) {
             $query->where('status', $filters['status']);
@@ -201,7 +202,7 @@ class ContentModerationService
                     'status' => $item->status,
                     'author' => [
                         'id' => (int) $item->author_id,
-                        'name' => $item->author ? trim(($item->author->first_name ?? '') . ' ' . ($item->author->last_name ?? '')) : null,
+                        'name' => $item->author ? UserDisplayName::resolve($item->author) : null,
                         'email' => $item->author->email ?? null,
                         'avatar' => $item->author->avatar_url ?? null,
                     ],
@@ -209,7 +210,7 @@ class ContentModerationService
                     'flag_reason' => $item->flag_reason,
                     'reviewer' => $item->reviewer_id ? [
                         'id' => (int) $item->reviewer_id,
-                        'name' => $item->reviewer ? trim(($item->reviewer->first_name ?? '') . ' ' . ($item->reviewer->last_name ?? '')) : null,
+                        'name' => $item->reviewer ? UserDisplayName::resolve($item->reviewer) : null,
                     ] : null,
                     'reviewed_at' => $item->reviewed_at?->toDateTimeString(),
                     'rejection_reason' => $item->rejection_reason,

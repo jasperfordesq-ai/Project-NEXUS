@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /** Manages tenant-scoped group invitations, previews, acceptance, and revocation. */
 final class GroupInviteService
@@ -512,13 +513,13 @@ final class GroupInviteService
                 'gi.invited_by',
                 'gi.created_at',
                 'u.first_name as inviter_first_name',
-                'u.last_name as inviter_last_name',
+                'u.last_name as inviter_last_name', 'u.profile_type as inviter_profile_type', 'u.organization_name as inviter_organization_name',
                 'u.name as inviter_name',
             ])
             ->orderByDesc('gi.created_at')
             ->get()
             ->map(function ($row): array {
-                $inviterName = trim((string) ($row->inviter_first_name ?? '') . ' ' . (string) ($row->inviter_last_name ?? ''));
+                $inviterName = UserDisplayName::resolvePrefixed($row, 'inviter_');
                 if ($inviterName === '') {
                     $inviterName = (string) ($row->inviter_name ?? '');
                 }
@@ -892,7 +893,7 @@ final class GroupInviteService
         if ($user === null) {
             return __('emails.common.fallback_member_name');
         }
-        $name = trim((string) $user->first_name . ' ' . (string) $user->last_name);
+        $name = UserDisplayName::resolve($user);
         return $name !== '' ? $name : (string) ($user->name ?: __('emails.common.fallback_member_name'));
     }
 

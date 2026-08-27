@@ -7,6 +7,7 @@
 namespace App\Services\AI;
 
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * Compact "who am I" snapshot of the calling user, injected into every
@@ -33,10 +34,11 @@ class AiUserMemoryService
             return '';
         }
 
-        $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
-        $displayName = ($user->profile_type === 'organization' && !empty($user->organization_name))
-            ? (string) $user->organization_name
-            : ($name !== '' ? $name : null);
+        // This compared profile_type against 'organization' (AMERICAN spelling),
+        // which never matches the stored value 'organisation' -- so an
+        // organisation's AI memory carried its contact person's name.
+        $name = UserDisplayName::resolve($user);
+        $displayName = $name !== '' ? $name : null;
 
         $recentListingTitles = DB::table('listings')
             ->where('tenant_id', $tenantId)

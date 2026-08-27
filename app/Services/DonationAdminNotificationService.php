@@ -78,7 +78,7 @@ class DonationAdminNotificationService
                     ->orWhere('is_tenant_super_admin', 1)
                     ->orWhere('is_god', 1);
             })
-            ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'name', 'preferred_language']);
+            ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'preferred_language']);
     }
 
     private static function notifyAdmin(

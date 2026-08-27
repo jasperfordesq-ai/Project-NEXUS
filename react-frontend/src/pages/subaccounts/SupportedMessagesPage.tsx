@@ -43,7 +43,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Breadcrumbs } from '@/components/navigation';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, formatRelativeTime, encodeHeaderValue } from '@/lib/helpers';
+import { encodeHeaderValue, formatRelativeTime, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 
@@ -199,7 +199,7 @@ export function SupportedMessagesPage() {
   const partnerName = useMemo(() => {
     if (!inThread || !messages || messages.length === 0) return '';
     const sample = messages.find((m) => m.sender && m.sender.id !== Number(childId))?.sender;
-    return sample ? `${sample.first_name ?? ''} ${sample.last_name ?? ''}`.trim() : '';
+    return sample ? resolveUserDisplayName(sample) : '';
   }, [inThread, messages, childId]);
 
   return (
@@ -291,8 +291,7 @@ export function SupportedMessagesPage() {
                   {conversations.map((conversation, index) => {
                     const partnerUserId = conversation.partner_id ?? conversation.other_user?.id;
                     const partner = conversation.other_user;
-                    const name = partner?.name
-                      ?? `${partner?.first_name ?? ''} ${partner?.last_name ?? ''}`.trim();
+                    const name = resolveUserDisplayName(partner);
                     const preview = conversation.last_message?.body;
                     const previewAt = conversation.last_message?.created_at ?? conversation.created_at;
                     return (
@@ -335,7 +334,7 @@ export function SupportedMessagesPage() {
                         <p className="text-xs font-medium text-theme-muted">
                           {/* Prefer the sender's real name on BOTH sides — "Them"
                               is ambiguous when the reader is a third party. */}
-                          {`${message.sender?.first_name ?? ''} ${message.sender?.last_name ?? ''}`.trim()
+                          {resolveUserDisplayName(message.sender)
                             || (fromMember ? t('supported_messages.from_member') : '')}
                           {message.created_at ? ` · ${formatRelativeTime(message.created_at)}` : ''}
                         </p>

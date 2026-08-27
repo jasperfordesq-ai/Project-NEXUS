@@ -10,6 +10,7 @@ use App\Exceptions\SafeguardingPolicyException;
 use App\Models\SupportPendingAction;
 use App\Services\SupportPendingActionService;
 use Illuminate\Http\JsonResponse;
+use App\Support\UserDisplayName;
 
 /**
  * SupportActionController — the co_decide confirm loop (guardian redesign,
@@ -152,7 +153,7 @@ class SupportActionController extends BaseApiController
             'action_type' => $action->action_type,
             'status' => $expired ? SupportPendingAction::STATUS_EXPIRED : $action->status,
             'supporter_name' => $action->supporterUser
-                ? trim($action->supporterUser->first_name . ' ' . $action->supporterUser->last_name)
+                ? UserDisplayName::resolve($action->supporterUser)
                 : null,
             'expires_at' => $action->expires_at?->toIso8601String(),
         ]);

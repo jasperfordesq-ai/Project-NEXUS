@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\Poll;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * PollService — Eloquent-based service for poll operations.
@@ -32,7 +33,7 @@ class PollService
         $cursor = $filters['cursor'] ?? null;
 
         $query = Poll::query()
-            ->with(['user:id,first_name,last_name,avatar_url']);
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url']);
 
         if (($filters['status'] ?? null) === 'open') {
             $query->where(function ($q) {
@@ -98,7 +99,7 @@ class PollService
                 'id'         => $pollUser->id,
                 'name'       => ($pollUser->profile_type === 'organisation' && $pollUser->organization_name)
                                     ? $pollUser->organization_name
-                                    : trim($pollUser->first_name . ' ' . $pollUser->last_name),
+                                    : UserDisplayName::resolve($pollUser),
                 'avatar'     => $pollUser->avatar_url,
                 'avatar_url' => $pollUser->avatar_url,
             ];
@@ -199,7 +200,7 @@ class PollService
         $user = $poll->user;
         $data['creator'] = $user ? [
             'id'         => (int) $user->id,
-            'name'       => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+            'name'       => UserDisplayName::resolve($user),
             'avatar_url' => $user->avatar_url ?? null,
         ] : ['id' => (int) $poll->user_id, 'name' => __('api.unknown_user'), 'avatar_url' => null];
 

@@ -17,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies tenant admins (bell + push + email) when a member initiates a GDPR
@@ -169,11 +170,11 @@ class NotifyAdminOfGdprAction implements ShouldQueue
         $row = DB::table('users')
             ->where('id', $event->userId)
             ->where('tenant_id', $tenantId)
-            ->select(['first_name', 'last_name', 'name'])
+            ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
             ->first();
 
         if ($row) {
-            $full = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+            $full = UserDisplayName::resolve($row);
             if ($full !== '') {
                 return $full;
             }

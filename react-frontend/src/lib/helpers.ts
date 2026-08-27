@@ -214,10 +214,125 @@ export function responsiveThumbnailProps(
 }
 
 /**
- * Get a user's display name from their first and last name
+ * The `users.profile_type` value that marks an ORGANISATION account.
+ *
+ * Note the two spellings, both deliberate and neither safe to "tidy":
+ * the VALUE is British (`organisation`) while the COLUMN is American
+ * (`organization_name`). Comparing against `'organization'` silently never
+ * matches anything.
  */
-export function getUserDisplayName(user: Pick<User, 'first_name' | 'last_name'>): string {
-  return `${user.first_name} ${user.last_name}`.trim();
+export const ORGANISATION_PROFILE_TYPE = 'organisation';
+
+/** The loose shape every display-name helper here accepts. */
+export interface DisplayNameFields {
+  name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  profile_type?: string | null;
+  organization_name?: string | null;
+}
+
+/** True when this record is an organisation account with a usable trading name. */
+export function isOrganisationAccount(user: DisplayNameFields | null | undefined): boolean {
+  return (
+    user?.profile_type === ORGANISATION_PROFILE_TYPE &&
+    (user?.organization_name ?? '').trim() !== ''
+  );
+}
+
+/**
+ * The single place the frontend decides what a user account is CALLED.
+ *
+ * An account created through the general sign-up -- or switched later in
+ * profile settings -- can be an organisation, in which case `first_name` and
+ * `last_name` hold the CONTACT PERSON. Showing that person is wrong: the
+ * account's identity is its organisation name. This mirrors the API-side
+ * App/Support/UserDisplayName helper, and the two must agree.
+ *
+ * Precedence, and why:
+ *  1. `organization_name` when this is an organisation -- authoritative, and
+ *     it beats a stale precomputed `name` from an older payload;
+ *  2. the API's own `name`, which is already resolved for most endpoints and
+ *     is often the ONLY name field present (surname-withholding endpoints drop
+ *     `last_name` entirely, so concatenating would lose half the name);
+ *  3. first + last name;
+ *  4. the caller's fallback.
+ */
+export function resolveUserDisplayName(
+  user: DisplayNameFields | null | undefined,
+  fallback = '',
+): string {
+  if (!user) return fallback;
+
+  if (isOrganisationAccount(user)) {
+    return (user.organization_name ?? '').trim();
+  }
+
+  const explicit = (user.name ?? '').trim();
+  if (explicit) return explicit;
+
+  const person = [user.first_name, user.last_name]
+    .map((part) => (part ?? '').trim())
+    .filter(Boolean)
+    .join(' ');
+
+  return person || fallback;
+}
+
+/**
+ * Resolve a display name from PREFIXED fields on a joined payload.
+ *
+ * Joins alias a user's columns to tell the two ends of a relationship apart --
+ * `verifier_first_name`, `author_organization_name`. Mirrors the API-side
+ * UserDisplayName::resolvePrefixed().
+ */
+export function resolveUserDisplayNameFromPrefix(
+  row: Record<string, unknown> | null | undefined,
+  prefix: string,
+  fallback = '',
+): string {
+  if (!row) return fallback;
+  const pick = (key: string): string | null => {
+    const value = row[prefix + key];
+    return typeof value === 'string' ? value : null;
+  };
+  return resolveUserDisplayName(
+    {
+      name: pick('name'),
+      first_name: pick('first_name'),
+      last_name: pick('last_name'),
+      profile_type: pick('profile_type'),
+      organization_name: pick('organization_name'),
+    },
+    fallback,
+  );
+}
+
+/**
+ * The value to STORE as a user's name, as opposed to the value to DISPLAY.
+ *
+ * The difference matters: resolveUserDisplayName() prefers an existing `name`
+ * over the name parts, which is right for rendering but wrong for a save --
+ * editing your first name would post the name you had before the edit. This
+ * mirrors the API-side UserDisplayName::forStorage(), which deliberately
+ * ignores any stored value.
+ */
+export function buildStoredUserName(user: DisplayNameFields): string {
+  if (isOrganisationAccount(user)) {
+    return (user.organization_name ?? '').trim();
+  }
+
+  return [user.first_name, user.last_name]
+    .map((part) => (part ?? '').trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Get a user's display name. Organisation-aware -- see resolveUserDisplayName().
+ */
+export function getUserDisplayName(user: DisplayNameFields): string {
+  return resolveUserDisplayName(user);
 }
 
 /**
@@ -252,21 +367,21 @@ export function encodeHeaderValue(value: string): string {
  * The API's precomputed `name` is preferred when present (it is the
  * organisation name for organisation accounts).
  */
-export function getRecipientDisplayName(user: {
-  first_name?: string | null;
-  last_name?: string | null;
-  name?: string | null;
-}): string {
-  const explicit = (user.name ?? '').trim();
-  if (explicit) return explicit;
-  return [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+export function getRecipientDisplayName(user: DisplayNameFields): string {
+  return resolveUserDisplayName(user);
 }
 
 /**
- * Get a user's initials for avatar fallback
+ * Get a user's initials for an avatar fallback.
+ *
+ * An organisation gets the initials of its OWN name, not its contact person's.
  */
-export function getUserInitials(user: Pick<User, 'first_name' | 'last_name'>): string {
-  return `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase();
+export function getUserInitials(user: DisplayNameFields): string {
+  const words = resolveUserDisplayName(user).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '';
+  const first = words[0]?.[0] ?? '';
+  const second = words.length > 1 ? (words[words.length - 1]?.[0] ?? '') : '';
+  return `${first}${second}`.toUpperCase();
 }
 
 /**

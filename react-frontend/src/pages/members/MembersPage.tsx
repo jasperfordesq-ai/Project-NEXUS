@@ -57,7 +57,7 @@ import { useAuth, useToast, useTenant, useFeature } from '@/contexts';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
 import { MAPS_ENABLED } from '@/lib/map-config';
 import { usePageTitle } from '@/hooks';
@@ -993,7 +993,7 @@ export function MembersPage() {
                   }
                   getMarkerConfig={(m: User) => ({
                     id: m.id,
-                    title: m.name?.trim() || `${m.first_name || ''} ${m.last_name || ''}`.trim() || t('members.fallback_name'),
+                    title: resolveUserDisplayName(m) || t('members.fallback_name'),
                   })}
                   renderInfoContent={(m: User) => (
                     <div className="p-2 max-w-[200px]">
@@ -1001,14 +1001,14 @@ export function MembersPage() {
                         {(m.avatar || m.avatar_url) && (
                           <Avatar
                             src={resolveAvatarUrl(m.avatar ?? m.avatar_url)}
-                            alt={t('members.avatar_alt', { name: m.name || `${m.first_name || ''} ${m.last_name || ''}`.trim() || t('members.fallback_name') })}
-                            name={m.name || `${m.first_name || ''} ${m.last_name || ''}`.trim() || t('members.fallback_name')}
+                            alt={t('members.avatar_alt', { name: resolveUserDisplayName(m) || t('members.fallback_name') })}
+                            name={resolveUserDisplayName(m) || t('members.fallback_name')}
                             size="sm"
                           />
                         )}
                         <div>
                           <h4 className="font-semibold text-sm text-theme-primary">
-                            {m.name || `${m.first_name || ''} ${m.last_name || ''}`.trim()}
+                            {resolveUserDisplayName(m)}
                           </h4>
                           {m.tagline && (
                             <p className="text-xs text-theme-muted">{m.tagline}</p>
@@ -1091,8 +1091,7 @@ const MemberCard = memo(function MemberCard({ member, viewMode, sortBy }: Member
   const hasGamification = useFeature('gamification');
 
   // Handle empty names gracefully - fallback to "Member" or first_name/last_name
-  const displayName = member.name?.trim()
-    || `${member.first_name || ''} ${member.last_name || ''}`.trim()
+  const displayName = resolveUserDisplayName(member)
     || t('members.fallback_name');
 
   // Resolve avatar from either field (index returns 'avatar', nearby may return 'avatar_url')

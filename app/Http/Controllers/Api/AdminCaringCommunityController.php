@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\UserDisplayName;
 
 class AdminCaringCommunityController extends BaseApiController
 {
@@ -945,7 +946,9 @@ class AdminCaringCommunityController extends BaseApiController
                 cf.created_at,
                 u.name        AS offerer_name,
                 u.first_name  AS offerer_first_name,
-                u.last_name   AS offerer_last_name
+                u.last_name   AS offerer_last_name,
+                u.profile_type AS offerer_profile_type,
+                u.organization_name AS offerer_organization_name
              FROM caring_favours cf
              LEFT JOIN users u
                     ON u.id = cf.offered_by_user_id
@@ -964,7 +967,7 @@ class AdminCaringCommunityController extends BaseApiController
             $isAnon = (bool) $row->is_anonymous;
             $name = '';
             if (!$isAnon) {
-                $full = trim((string) ($row->offerer_first_name ?? '') . ' ' . (string) ($row->offerer_last_name ?? ''));
+                $full = UserDisplayName::resolvePrefixed($row, 'offerer_');
                 $name = $full !== '' ? $full : (string) ($row->offerer_name ?? '');
             }
 
@@ -1371,12 +1374,9 @@ class AdminCaringCommunityController extends BaseApiController
         }
 
         $recipientName = '';
-        if (!empty($recipient->name)) {
-            $recipientName = (string) $recipient->name;
-        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name')) {
-            $recipientName = trim(
-                ((string) ($recipient->first_name ?? '')) . ' ' . ((string) ($recipient->last_name ?? ''))
-            );
+        $resolvedRecipientName = UserDisplayName::resolve($recipient);
+        if ($resolvedRecipientName !== '') {
+            $recipientName = $resolvedRecipientName;
         }
 
         $memberSince = null;
@@ -1417,7 +1417,7 @@ class AdminCaringCommunityController extends BaseApiController
                     'csr.status',
                     'u.name as supporter_name',
                     'u.first_name as supporter_first_name',
-                    'u.last_name as supporter_last_name',
+                    'u.last_name as supporter_last_name', 'u.profile_type as supporter_profile_type', 'u.organization_name as supporter_organization_name',
                     'u.trust_tier as supporter_trust_tier',
                 ];
                 $select[] = $typeColumn !== null
@@ -1450,14 +1450,7 @@ class AdminCaringCommunityController extends BaseApiController
                 $totalHoursReceived += $hoursForRel;
 
                 // Supporter name
-                $supporterName = '';
-                if (!empty($row->supporter_name)) {
-                    $supporterName = (string) $row->supporter_name;
-                } else {
-                    $supporterName = trim(
-                        ((string) ($row->supporter_first_name ?? '')) . ' ' . ((string) ($row->supporter_last_name ?? ''))
-                    );
-                }
+                $supporterName = UserDisplayName::resolvePrefixed($row, 'supporter_', '');
 
                 $lastActivityAt = null;
                 if (!empty($row->last_activity_at)) {

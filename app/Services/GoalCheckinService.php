@@ -122,7 +122,7 @@ class GoalCheckinService
         $cursor = $filters['cursor'] ?? null;
 
         $query = GoalCheckin::where('goal_id', $goalId)
-            ->with(['user:id,first_name,last_name,avatar_url']);
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url']);
 
         if ($cursor !== null && ($cid = base64_decode($cursor, true)) !== false) {
             $query->where('id', '<', (int) $cid);

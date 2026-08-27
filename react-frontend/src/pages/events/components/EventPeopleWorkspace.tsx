@@ -35,7 +35,7 @@ import {
   type EventPeoplePerson,
   type EventPeopleQueryParams,
 } from '@/lib/events-api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const PAGE_SIZE = 25;
@@ -283,7 +283,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
     last_name?: string | null;
   }): string => member.display_name?.trim()
     || member.name?.trim()
-    || [member.first_name, member.last_name].filter(Boolean).join(' ').trim()
+    || resolveUserDisplayName(member)
     || t('manage.people.member_fallback', { id: member.id });
 
   const executeBulk = async (

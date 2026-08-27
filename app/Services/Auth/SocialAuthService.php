@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * SOC13 — Social login (OAuth).
@@ -384,6 +385,10 @@ class SocialAuthService
                 'tenant_id' => $tenantId,
                 'first_name' => $names['first'],
                 'last_name' => $names['last'],
+                // `users.name` is NOT NULL and is the column most display paths
+                // read. Social sign-up never set it, so every such account
+                // stored an empty string and rendered as a blank name.
+                'name' => UserDisplayName::forStorage(null, null, $names['first'], $names['last']),
                 'email' => $providerEmail,
                 'password' => password_hash(Str::random(48), PASSWORD_BCRYPT),
                 'email_verified_at' => now(),

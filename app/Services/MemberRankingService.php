@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * MemberRankingService — CommunityRank algorithm for ranking members.
@@ -291,7 +292,7 @@ class MemberRankingService
                 'user_id'      => $user->id,
                 'name'         => ($user->profile_type === 'organisation' && !empty($user->organization_name))
                     ? $user->organization_name
-                    : trim($user->first_name . ' ' . $user->last_name),
+                    : UserDisplayName::resolve($user),
                 'avatar_url'   => $user->avatar_url,
                 'score'        => $displayScore,
                 'global_score' => $displayGlobal,

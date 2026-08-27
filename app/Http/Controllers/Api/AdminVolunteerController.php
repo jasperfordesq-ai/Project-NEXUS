@@ -866,6 +866,8 @@ class AdminVolunteerController extends BaseApiController
             "SELECT om.id, om.user_id,
                     COALESCE(u.first_name, SUBSTRING_INDEX(u.name, ' ', 1), '') as first_name,
                     COALESCE(u.last_name, TRIM(SUBSTRING(u.name, LENGTH(SUBSTRING_INDEX(u.name, ' ', 1)) + 1)), '') as last_name,
+                    u.profile_type,
+                    u.organization_name,
                     om.role,
                     COALESCE(SUM(CASE WHEN vl.status = 'approved' THEN vl.hours ELSE 0 END), 0) as total_hours
              FROM org_members om

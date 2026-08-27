@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 class HourEstateService
 {
@@ -121,9 +122,13 @@ class HourEstateService
             'm.name as member_name',
             'm.first_name as member_first_name',
             'm.last_name as member_last_name',
+            'm.profile_type as member_profile_type',
+            'm.organization_name as member_organization_name',
             'b.name as beneficiary_name',
             'b.first_name as beneficiary_first_name',
             'b.last_name as beneficiary_last_name',
+            'b.profile_type as beneficiary_profile_type',
+            'b.organization_name as beneficiary_organization_name',
         ])->map(fn ($row) => $this->formatEstate($row))->all();
     }
 
@@ -259,7 +264,7 @@ class HourEstateService
 
     private function displayName(object $row, string $prefix): ?string
     {
-        $name = trim((string) ($row->{$prefix . '_first_name'} ?? '') . ' ' . (string) ($row->{$prefix . '_last_name'} ?? ''));
+        $name = UserDisplayName::resolvePrefixed($row, $prefix . '_');
         if ($name !== '') {
             return $name;
         }

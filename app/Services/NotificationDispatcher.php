@@ -14,6 +14,7 @@ use App\Models\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * NotificationDispatcher — Native Laravel service for dispatching notifications.
@@ -1477,14 +1478,14 @@ class NotificationDispatcher
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select(['first_name', 'last_name', 'email'])
+            ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'email'])
             ->first();
 
         if (!$user) {
             return;
         }
 
-        $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $userName = UserDisplayName::resolve($user);
         $email = $user->email ?? '';
         $isPassed = $status === 'passed';
         $link = "/admin/members";
@@ -1945,7 +1946,7 @@ HTML;
         foreach (array_slice($matches, 0, 5) as $match) {
             $title = htmlspecialchars($match['title'] ?? __('emails.common.fallback_listing'));
             $score = (int) ($match['match_score'] ?? 0);
-            $matchUserName = !empty($match['user_name']) ? $match['user_name'] : trim(($match['first_name'] ?? '') . ' ' . ($match['last_name'] ?? ''));
+            $matchUserName = !empty($match['user_name']) ? $match['user_name'] : UserDisplayName::resolve($match);
             $posterName = htmlspecialchars($matchUserName ?: __('emails.common.fallback_member_name'));
             $scoreColor = $score >= 85 ? '#ef4444' : ($score >= 70 ? '#6366f1' : '#64748b');
             $byPosterText = __('emails_notifications.match_digest.by_poster', ['name' => $posterName]);

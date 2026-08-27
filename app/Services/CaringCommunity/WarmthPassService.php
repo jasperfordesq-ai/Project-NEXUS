@@ -10,6 +10,7 @@ namespace App\Services\CaringCommunity;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * WarmthPass — Community trust credential for Tier 2+ members.
@@ -60,12 +61,9 @@ class WarmthPassService
         // 3. Member name
         $memberName = '';
         if ($userRow !== null) {
-            if (!empty($userRow->name)) {
-                $memberName = (string) $userRow->name;
-            } elseif (Schema::hasColumn('users', 'first_name') && Schema::hasColumn('users', 'last_name')) {
-                $memberName = trim(
-                    ((string) ($userRow->first_name ?? '')) . ' ' . ((string) ($userRow->last_name ?? ''))
-                );
+            $resolvedMemberName = UserDisplayName::resolve($userRow);
+            if ($resolvedMemberName !== '') {
+                $memberName = $resolvedMemberName;
             }
         }
 

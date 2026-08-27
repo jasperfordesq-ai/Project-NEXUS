@@ -54,7 +54,7 @@ import { PageMeta } from '@/components/seo';
 import { useVerificationBadges, VerificationBadgeRow } from '@/components/verification/VerificationBadge';
 import { api, type ApiErrorDetail, type ApiResponse } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { formatDate, resolveAvatarUrl } from '@/lib/helpers';
+import { formatDate, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '@/lib/safeStorage';
 import type { Message, User } from '@/types/api';
 import { MessageContextCard } from '@/components/messages/MessageContextCard';
@@ -686,7 +686,7 @@ export function ConversationPage() {
             id: userIdToLoad,
             other_user: {
               id: userData.id,
-              name: userData.name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+              name: resolveUserDisplayName(userData),
               first_name: userData.first_name,
               last_name: userData.last_name,
               avatar_url: userData.avatar_url,

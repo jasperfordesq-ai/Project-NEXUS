@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceOrderService — Order lifecycle management for the marketplace module.
@@ -1359,7 +1360,7 @@ class MarketplaceOrderService
         $query = MarketplaceOrder::with([
             'listing:id,title,price,price_currency,status,delivery_method',
             'listing.images' => fn ($q) => $q->where('is_primary', true)->limit(1),
-            'seller:id,first_name,last_name,avatar_url',
+            'seller:id,first_name,last_name,profile_type,organization_name,avatar_url',
         ])
             ->forBuyer($userId)
             ->orderBy('id', 'desc');
@@ -1397,7 +1398,7 @@ class MarketplaceOrderService
         $query = MarketplaceOrder::with([
             'listing:id,title,price,price_currency,status,delivery_method',
             'listing.images' => fn ($q) => $q->where('is_primary', true)->limit(1),
-            'buyer:id,first_name,last_name,avatar_url',
+            'buyer:id,first_name,last_name,profile_type,organization_name,avatar_url',
         ])
             ->forSeller($userId)
             ->orderBy('id', 'desc');
@@ -1435,8 +1436,8 @@ class MarketplaceOrderService
         return MarketplaceOrder::with([
             'listing:id,title,price,price_currency,status,delivery_method',
             'listing.images' => fn ($q) => $q->where('is_primary', true)->limit(1),
-            'buyer:id,first_name,last_name,avatar_url',
-            'seller:id,first_name,last_name,avatar_url',
+            'buyer:id,first_name,last_name,profile_type,organization_name,avatar_url',
+            'seller:id,first_name,last_name,profile_type,organization_name,avatar_url',
             'ratings',
             'dispute',
         ])->find($id);
@@ -1810,12 +1811,12 @@ class MarketplaceOrderService
             ] : null,
             'buyer' => $order->relationLoaded('buyer') && $order->buyer ? [
                 'id' => $order->buyer->id,
-                'name' => trim($order->buyer->first_name . ' ' . $order->buyer->last_name),
+                'name' => UserDisplayName::resolve($order->buyer),
                 'avatar_url' => $order->buyer->avatar_url,
             ] : null,
             'seller' => $order->relationLoaded('seller') && $order->seller ? [
                 'id' => $order->seller->id,
-                'name' => trim($order->seller->first_name . ' ' . $order->seller->last_name),
+                'name' => UserDisplayName::resolve($order->seller),
                 'avatar_url' => $order->seller->avatar_url,
             ] : null,
             'ratings' => $order->relationLoaded('ratings')

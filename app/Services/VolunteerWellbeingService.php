@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * VolunteerWellbeingService — detects burnout risk and manages wellbeing alerts
@@ -319,13 +320,13 @@ class VolunteerWellbeingService
                 $user = DB::table('users')
                     ->where('id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->select('id', 'first_name', 'last_name')
+                    ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name')
                     ->first();
 
                 if ($user) {
                     $atRiskUsers[] = [
                         'user_id' => (int) $user->id,
-                        'name' => trim($user->first_name . ' ' . $user->last_name),
+                        'name' => UserDisplayName::resolve($user),
                         'risk_level' => $level,
                         'risk_score' => $assessment['risk_score'],
                     ];
@@ -366,7 +367,7 @@ class VolunteerWellbeingService
                     'wa.id', 'wa.user_id', 'wa.risk_level', 'wa.risk_score',
                     'wa.indicators', 'wa.coordinator_notified', 'wa.coordinator_notes',
                     'wa.status', 'wa.created_at', 'wa.updated_at',
-                    'u.first_name', 'u.last_name', 'u.avatar_url'
+                    'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url'
                 )
                 ->orderByDesc('wa.risk_score')
                 ->get();
@@ -374,7 +375,7 @@ class VolunteerWellbeingService
             return $alerts->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'user_id' => (int) $row->user_id,
-                'user_name' => trim($row->first_name . ' ' . $row->last_name),
+                'user_name' => UserDisplayName::resolve($row),
                 'avatar_url' => $row->avatar_url,
                 'risk_level' => $row->risk_level,
                 'risk_score' => round((float) $row->risk_score, 2),

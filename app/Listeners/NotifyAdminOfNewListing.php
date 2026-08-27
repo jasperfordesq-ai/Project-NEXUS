@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies all admins, brokers, and coordinators when a new listing is posted.
@@ -65,7 +66,7 @@ class NotifyAdminOfNewListing implements ShouldQueue
             $basePath   = TenantContext::getSlugPrefix();
             $listingUrl = $baseUrl . $basePath . '/listings/' . $listing->id;
 
-            $posterName   = trim(($poster->first_name ?? '') . ' ' . ($poster->last_name ?? ''))
+            $posterName   = UserDisplayName::resolve($poster)
                 ?: ($poster->name ?? __('emails.common.fallback_member_name'));
             $listingTitle = $listing->title ?? 'Untitled';
             $listingType  = ucfirst($listing->type ?? 'listing');

@@ -11,6 +11,7 @@ use App\Enums\GroupStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Meilisearch\Client as MeilisearchClient;
+use App\Support\UserDisplayName;
 
 /**
  * GroupSearchService — indexes group discussions and posts into Meilisearch
@@ -111,7 +112,7 @@ class GroupSearchService
         $discussions = DB::select(
             "SELECT gd.id, gd.tenant_id, gd.group_id, gd.title,
                     UNIX_TIMESTAMP(gd.created_at) as created_at,
-                    CONCAT(u.first_name, ' ', u.last_name) as author_name
+                    " . UserDisplayName::sql('u', 'author_name') . "
              FROM group_discussions gd
              LEFT JOIN users u ON gd.user_id = u.id
              WHERE gd.group_id = ? AND gd.tenant_id = ?
@@ -137,7 +138,7 @@ class GroupSearchService
             "SELECT gp.id, gp.tenant_id, gd.group_id, gp.content,
                     gd.title as discussion_title,
                     UNIX_TIMESTAMP(gp.created_at) as created_at,
-                    CONCAT(u.first_name, ' ', u.last_name) as author_name
+                    " . UserDisplayName::sql('u', 'author_name') . "
              FROM group_posts gp
              INNER JOIN group_discussions gd ON gp.discussion_id = gd.id
              LEFT JOIN users u ON gp.user_id = u.id

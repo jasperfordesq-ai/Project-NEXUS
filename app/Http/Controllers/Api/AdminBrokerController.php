@@ -18,6 +18,7 @@ use App\Services\ListingRiskTagService;
 use App\Services\BrokerMessageVisibilityService;
 use App\Services\NotificationDispatcher;
 use App\Models\Notification;
+use App\Support\UserDisplayName;
 
 /**
  * AdminBrokerController -- Admin time-broker exchange monitoring and risk management.
@@ -448,8 +449,8 @@ class AdminBrokerController extends BaseApiController
             $queryParams = array_merge($params, [$perPage, $offset]);
             $items = DB::select(
                 "SELECT er.*,
-                    CONCAT(req.first_name, ' ', req.last_name) as requester_name,
-                    CONCAT(prov.first_name, ' ', prov.last_name) as provider_name,
+                    " . UserDisplayName::sql('req', 'requester_name') . ",
+                    " . UserDisplayName::sql('prov', 'provider_name') . ",
                     l.title as listing_title,
                     t.name as tenant_name
                 FROM exchange_requests er
@@ -486,9 +487,9 @@ class AdminBrokerController extends BaseApiController
             if ($isSuperAdmin) {
                 $exchange = DB::selectOne(
                     "SELECT er.*,
-                        CONCAT(req.first_name, ' ', req.last_name) as requester_name,
+                        " . UserDisplayName::sql('req', 'requester_name') . ",
                         req.email as requester_email, req.avatar_url as requester_avatar,
-                        CONCAT(prov.first_name, ' ', prov.last_name) as provider_name,
+                        " . UserDisplayName::sql('prov', 'provider_name') . ",
                         prov.email as provider_email, prov.avatar_url as provider_avatar,
                         l.title as listing_title, l.type as listing_type, l.hours_estimate as hours_offered,
                         t.name as tenant_name
@@ -503,9 +504,9 @@ class AdminBrokerController extends BaseApiController
             } else {
                 $exchange = DB::selectOne(
                     "SELECT er.*,
-                        CONCAT(req.first_name, ' ', req.last_name) as requester_name,
+                        " . UserDisplayName::sql('req', 'requester_name') . ",
                         req.email as requester_email, req.avatar_url as requester_avatar,
-                        CONCAT(prov.first_name, ' ', prov.last_name) as provider_name,
+                        " . UserDisplayName::sql('prov', 'provider_name') . ",
                         prov.email as provider_email, prov.avatar_url as provider_avatar,
                         l.title as listing_title, l.type as listing_type, l.hours_estimate as hours_offered,
                         t.name as tenant_name
@@ -530,7 +531,7 @@ class AdminBrokerController extends BaseApiController
             $history = [];
             try {
                 $history = DB::select(
-                    "SELECT eh.*, CONCAT(u.first_name, ' ', u.last_name) as actor_name
+                    "SELECT eh.*, " . UserDisplayName::sql('u', 'actor_name') . "
                     FROM exchange_history eh
                     LEFT JOIN users u ON eh.actor_id = u.id
                     WHERE eh.exchange_id = ?
@@ -1063,8 +1064,8 @@ class AdminBrokerController extends BaseApiController
 
             $queryParams = array_merge($params, [$perPage, $offset]);
             $items = DB::select(
-                "SELECT bmc.*, CONCAT(s.first_name, ' ', s.last_name) as sender_name,
-                    CONCAT(r.first_name, ' ', r.last_name) as receiver_name,
+                "SELECT bmc.*, " . UserDisplayName::sql('s', 'sender_name') . ",
+                    " . UserDisplayName::sql('r', 'receiver_name') . ",
                     l.title as listing_title, t.name as tenant_name
                 FROM broker_message_copies bmc
                 LEFT JOIN users s ON bmc.sender_id = s.id
@@ -1098,8 +1099,8 @@ class AdminBrokerController extends BaseApiController
         $tenantId = TenantContext::getId();
 
         try {
-            $baseSelect = "SELECT bmc.*, CONCAT(s.first_name, ' ', s.last_name) as sender_name,
-                CONCAT(r.first_name, ' ', r.last_name) as receiver_name,
+            $baseSelect = "SELECT bmc.*, " . UserDisplayName::sql('s', 'sender_name') . ",
+                " . UserDisplayName::sql('r', 'receiver_name') . ",
                 l.title as listing_title, t.name as tenant_name
                 FROM broker_message_copies bmc
                 LEFT JOIN users s ON bmc.sender_id = s.id
@@ -1124,7 +1125,7 @@ class AdminBrokerController extends BaseApiController
 
             $thread = DB::select(
                 "SELECT m.id, m.sender_id, m.receiver_id, m.body, m.created_at, m.is_deleted,
-                    CONCAT(u.first_name, ' ', u.last_name) as sender_name
+                    " . UserDisplayName::sql('u', 'sender_name') . "
                 FROM messages m LEFT JOIN users u ON m.sender_id = u.id
                 WHERE m.tenant_id = ?
                   AND ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
@@ -1201,8 +1202,8 @@ class AdminBrokerController extends BaseApiController
 
         // Always operate on caller's tenant — see approveExchange comment.
         try {
-            $baseSelect = "SELECT bmc.*, CONCAT(s.first_name, ' ', s.last_name) as sender_name,
-                CONCAT(r.first_name, ' ', r.last_name) as receiver_name, l.title as listing_title
+            $baseSelect = "SELECT bmc.*, " . UserDisplayName::sql('s', 'sender_name') . ",
+                " . UserDisplayName::sql('r', 'receiver_name') . ", l.title as listing_title
                 FROM broker_message_copies bmc
                 LEFT JOIN users s ON bmc.sender_id = s.id
                 LEFT JOIN users r ON bmc.receiver_id = r.id
@@ -1221,12 +1222,12 @@ class AdminBrokerController extends BaseApiController
                 return $this->respondWithError('ALREADY_ARCHIVED', __('api.already_archived'), null, 409);
             }
 
-            $adminRow = DB::selectOne("SELECT CONCAT(first_name, ' ', last_name) as name FROM users WHERE id = ? AND tenant_id = ?", [$adminId, $tenantId]);
+            $adminRow = DB::selectOne("SELECT " . UserDisplayName::sql('', 'name') . " FROM users WHERE id = ? AND tenant_id = ?", [$adminId, $tenantId]);
             $adminName = $adminRow->name ?? 'Unknown';
 
             $conversationRows = DB::select(
                 "SELECT m.id, m.sender_id, m.body, m.created_at, m.is_deleted,
-                    CONCAT(u.first_name, ' ', u.last_name) as sender_name
+                    " . UserDisplayName::sql('u', 'sender_name') . "
                 FROM messages m LEFT JOIN users u ON m.sender_id = u.id
                 WHERE m.tenant_id = ?
                   AND ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
@@ -1357,7 +1358,7 @@ class AdminBrokerController extends BaseApiController
             $where = implode(' AND ', $conditions);
 
             $items = DB::select(
-                "SELECT umr.*, CONCAT(u.first_name, ' ', u.last_name) as user_name, t.name as tenant_name
+                "SELECT umr.*, " . UserDisplayName::sql('u', 'user_name') . ", t.name as tenant_name
                 FROM user_messaging_restrictions umr
                 LEFT JOIN users u ON umr.user_id = u.id
                 LEFT JOIN tenants t ON umr.tenant_id = t.id
@@ -1405,7 +1406,7 @@ class AdminBrokerController extends BaseApiController
             }
 
             $userTenantId = (int) $user->tenant_id;
-            $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $userName = UserDisplayName::resolve($user);
 
             $existing = DB::selectOne("SELECT id FROM user_messaging_restrictions WHERE user_id = ? AND tenant_id = ?", [$userId, $userTenantId]);
 

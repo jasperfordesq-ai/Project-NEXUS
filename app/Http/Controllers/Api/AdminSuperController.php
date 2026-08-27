@@ -20,6 +20,7 @@ use App\Services\SuperAdminAuditService;
 use App\Services\TenantBillingService;
 use App\Services\TenantHierarchyService;
 use App\Services\TenantVisibilityService;
+use App\Support\UserDisplayName;
 
 /**
  * AdminSuperController -- Super-admin tenant and cross-tenant user management.
@@ -750,7 +751,7 @@ class AdminSuperController extends BaseApiController
 
         return $this->respondWithData(array_merge($user, [
             'tenant_name' => $tenant['name'] ?? null,
-            'name' => trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')),
+            'name' => UserDisplayName::resolve($user),
         ]));
     }
 
@@ -970,7 +971,7 @@ class AdminSuperController extends BaseApiController
             'global_super_admin_granted',
             'user',
             $id,
-            ($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''),
+            UserDisplayName::resolve($user),
             ['is_super_admin' => 0],
             ['is_super_admin' => 1],
             "Granted global super admin to user #{$id}"
@@ -1008,7 +1009,7 @@ class AdminSuperController extends BaseApiController
             'global_super_admin_revoked',
             'user',
             $id,
-            ($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''),
+            UserDisplayName::resolve($user),
             ['is_super_admin' => 1],
             ['is_super_admin' => 0],
             "Revoked global super admin from user #{$id}"
@@ -1086,7 +1087,7 @@ class AdminSuperController extends BaseApiController
 
         $tenantSlug = DB::table('tenants')->where('id', $targetTenantId)->value('slug');
 
-        $userName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: $user['email'];
+        $userName = UserDisplayName::resolve($user) ?: $user['email'];
 
         // Audited through the same path as the tenant-scoped endpoint rather than
         // superAdminAuditService: 'user_impersonated' is not a member of the
@@ -1158,7 +1159,7 @@ class AdminSuperController extends BaseApiController
         }
 
         // Audit
-        $userName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: $user['email'];
+        $userName = UserDisplayName::resolve($user) ?: $user['email'];
         $this->superAdminAuditService->log(
             'user_moved',
             'user',
@@ -1254,7 +1255,7 @@ class AdminSuperController extends BaseApiController
         );
 
         // Audit
-        $userName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: $user['email'];
+        $userName = UserDisplayName::resolve($user) ?: $user['email'];
         $this->superAdminAuditService->log(
             'user_moved',
             'user',

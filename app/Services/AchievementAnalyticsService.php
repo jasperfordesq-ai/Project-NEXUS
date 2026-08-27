@@ -201,7 +201,7 @@ class AchievementAnalyticsService
             ->where('u.tenant_id', $tenantId)
             ->leftJoinSub($badgeCounts, 'bc', 'bc.user_id', '=', 'u.id')
             ->select([
-                'u.id', 'u.first_name', 'u.last_name', 'u.avatar_url', 'u.xp', 'u.level',
+                'u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url', 'u.xp', 'u.level',
                 DB::raw('COALESCE(bc.badge_count, 0) as badge_count'),
             ])
             ->orderByDesc('u.xp')

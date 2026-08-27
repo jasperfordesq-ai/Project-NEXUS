@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /** Admin review and resolution for marketplace order disputes. */
 final class MarketplaceDisputeService
@@ -27,11 +28,11 @@ final class MarketplaceDisputeService
     public function paginate(?string $status, int $page, int $perPage): array
     {
         $query = MarketplaceDispute::query()->with([
-            'openedBy:id,first_name,last_name,avatar_url',
+            'openedBy:id,first_name,last_name,profile_type,organization_name,avatar_url',
             'order:id,order_number,buyer_id,seller_id,marketplace_listing_id,total_price,currency,time_credits_used,status',
             'order.listing:id,title',
-            'order.buyer:id,first_name,last_name,avatar_url',
-            'order.seller:id,first_name,last_name,avatar_url',
+            'order.buyer:id,first_name,last_name,profile_type,organization_name,avatar_url',
+            'order.seller:id,first_name,last_name,profile_type,organization_name,avatar_url',
         ]);
 
         if ($status !== null && $status !== '') {
@@ -260,7 +261,7 @@ final class MarketplaceDisputeService
             'resolved_at' => $dispute->resolved_at?->toISOString(),
             'opened_by' => $dispute->openedBy ? [
                 'id' => (int) $dispute->openedBy->id,
-                'name' => trim($dispute->openedBy->first_name . ' ' . $dispute->openedBy->last_name),
+                'name' => UserDisplayName::resolve($dispute->openedBy),
                 'avatar_url' => $dispute->openedBy->avatar_url,
             ] : null,
             'order' => $order ? [
@@ -289,7 +290,7 @@ final class MarketplaceDisputeService
 
         return [
             'id' => (int) $user->id,
-            'name' => trim($user->first_name . ' ' . $user->last_name),
+            'name' => UserDisplayName::resolve($user),
             'avatar_url' => $user->avatar_url,
         ];
     }

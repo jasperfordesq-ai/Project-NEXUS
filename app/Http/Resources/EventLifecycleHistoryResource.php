@@ -12,6 +12,7 @@ use App\Models\EventStatusHistory;
 use App\Models\User;
 use BackedEnum;
 use DateTimeInterface;
+use App\Support\UserDisplayName;
 
 /** Allowlisted manager projection of immutable Event lifecycle evidence. */
 final class EventLifecycleHistoryResource
@@ -24,7 +25,7 @@ final class EventLifecycleHistoryResource
             : null;
         $displayName = $actor === null
             ? null
-            : trim((string) $actor->first_name . ' ' . (string) $actor->last_name);
+            : UserDisplayName::resolve($actor);
 
         return [
             'id' => (int) $history->getKey(),

@@ -14,6 +14,7 @@ use App\Services\StripeService;
 use App\Services\TenantSettingsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * IdentityVerificationPaymentService — Handles the one-time verification fee.
@@ -58,7 +59,7 @@ class IdentityVerificationPaymentService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['id', 'first_name', 'last_name', 'email', 'stripe_customer_id']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'stripe_customer_id']);
 
         if (!$user) {
             throw new \RuntimeException('User not found.');
@@ -72,7 +73,7 @@ class IdentityVerificationPaymentService
             try {
                 $customer = $client->customers->create([
                     'email' => $user->email,
-                    'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($user),
                     'metadata' => [
                         'nexus_user_id' => (string) $userId,
                         'nexus_tenant_id' => (string) $tenantId,

@@ -9,6 +9,7 @@ namespace App\Http\Resources;
 use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use App\Support\UserDisplayName;
 
 final class PublicJobResource
 {
@@ -95,7 +96,7 @@ final class PublicJobResource
                 $organizationProfileName = self::nullableString($user->organization_name ?? null);
                 $creatorName = $profileType === 'organisation' && $organizationProfileName
                     ? $organizationProfileName
-                    : trim((string) $user->first_name . ' ' . (string) $user->last_name);
+                    : UserDisplayName::resolve($user);
                 $creator['avatar_url'] = $user->avatar_url;
             }
         }

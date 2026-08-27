@@ -36,7 +36,7 @@ import {
   type EventStaffCapability,
   type EventStaffRole,
 } from '@/lib/events-api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const ALL_STAFF_ROLES = [
@@ -162,14 +162,14 @@ export function EventStaffWorkspace({
 
   const memberName = (member: EventMemberSearchResult): string => {
     const name = member.name?.trim()
-      || [member.first_name, member.last_name].filter(Boolean).join(' ').trim();
+      || resolveUserDisplayName(member);
 
     return name || t('manage.team.member_fallback', { id: member.id });
   };
 
   const assignmentName = (assignment: EventStaffAssignment): string => (
     assignment.member.name?.trim()
-    || [assignment.member.first_name, assignment.member.last_name].filter(Boolean).join(' ').trim()
+    || resolveUserDisplayName(assignment.member)
     || t('manage.team.member_fallback', { id: assignment.member.id })
   );
 

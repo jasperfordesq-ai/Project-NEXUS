@@ -14,6 +14,7 @@ use App\Services\EventCreditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * Setting and reviewing an event's attendance reward.
@@ -201,7 +202,7 @@ class AdminEventAttendanceRewardController extends BaseApiController
             'claims' => $rows->map(static function ($row): array {
                 $memberName = ((string) $row->profile_type === 'organisation' && $row->organization_name)
                     ? (string) $row->organization_name
-                    : trim((string) $row->first_name . ' ' . (string) $row->last_name);
+                    : UserDisplayName::resolve($row);
 
                 return [
                     'id' => (int) $row->id,

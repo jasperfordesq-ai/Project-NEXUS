@@ -110,6 +110,8 @@ return [
     'password_special_char' => 'Caithfidh carachtar speisialta amháin ar a laghad a bheith sa phasfhocal',
     'invalid_role' => 'Luach róil neamhbhailí',
     'invalid_role_allowed' => 'Ról neamhbhailí. Ceadaithe: :roles',
+    'invalid_profile_type'          => 'Cineál próifíle neamhbhailí. Ceadaithe: duine aonair, eagraíocht',
+    'organization_name_required'    => 'Tá ainm na heagraíochta riachtanach do chuntas eagraíochta',
     'title_required' => 'Tá teideal ag teastáil',
     'name_required' => 'Tá ainm ag teastáil',
     'label_required' => 'Tá lipéad ag teastáil',

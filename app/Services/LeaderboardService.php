@@ -136,7 +136,7 @@ class LeaderboardService
                 $user = DB::table('users')
                     ->where('id', $userId)
                     ->where('tenant_id', $tenantId)
-                    ->select('id as user_id', 'name', 'first_name', 'last_name', 'avatar_url', DB::raw('COALESCE(xp, 0) as score'))
+                    ->select('id as user_id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', DB::raw('COALESCE(xp, 0) as score'))
                     ->first();
 
                 if (!$user) {

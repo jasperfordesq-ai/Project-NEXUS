@@ -19,6 +19,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /**
  * Tenant-safe, lifecycle-aware collective challenges for Groups.
@@ -51,7 +52,7 @@ final class GroupChallengeService
     public static function getActive(int $groupId): array
     {
         return GroupChallenge::query()
-            ->with('creator:id,name,first_name,last_name,avatar_url')
+            ->with('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('group_id', $groupId)
             ->whereIn('metric', self::ALLOWED_METRICS)
             ->where('status', 'active')
@@ -67,7 +68,7 @@ final class GroupChallengeService
     public static function getAll(int $groupId, int $limit = 20): array
     {
         return GroupChallenge::query()
-            ->with('creator:id,name,first_name,last_name,avatar_url')
+            ->with('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('group_id', $groupId)
             ->whereIn('metric', self::ALLOWED_METRICS)
             ->orderByDesc('created_at')
@@ -81,7 +82,7 @@ final class GroupChallengeService
     public static function getById(int $groupId, int $challengeId): array|null
     {
         $challenge = GroupChallenge::query()
-            ->with('creator:id,name,first_name,last_name,avatar_url')
+            ->with('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('group_id', $groupId)
             ->whereIn('metric', self::ALLOWED_METRICS)
             ->find($challengeId);
@@ -145,7 +146,7 @@ final class GroupChallengeService
             return $challenge;
         });
 
-        $challenge->load('creator:id,name,first_name,last_name,avatar_url');
+        $challenge->load('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url');
 
         return self::toDto($challenge);
     }
@@ -283,7 +284,7 @@ final class GroupChallengeService
                 );
             }
 
-            $challenge->load('creator:id,name,first_name,last_name,avatar_url');
+            $challenge->load('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url');
 
             return [
                 'challenge' => self::toDto($challenge),
@@ -461,7 +462,7 @@ final class GroupChallengeService
     {
         $creator = $challenge->creator;
         $creatorName = $creator instanceof User
-            ? trim((string) ($creator->name ?: (($creator->first_name ?? '') . ' ' . ($creator->last_name ?? ''))))
+            ? UserDisplayName::resolve($creator)
             : '';
         $target = max(1, (int) $challenge->target_value);
         $current = max(0, (int) $challenge->current_value);

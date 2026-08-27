@@ -155,6 +155,8 @@ return [
     'password_special_char'        => 'Password must contain at least one special character',
     'invalid_role'                 => 'Invalid role value',
     'invalid_role_allowed'         => 'Invalid role. Allowed: :roles',
+    'invalid_profile_type'          => 'Invalid profile type. Allowed: individual, organisation',
+    'organization_name_required'    => 'Organisation name is required for an organisation account',
 
     // ============================================
     // VALIDATION — CONTENT

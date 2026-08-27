@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * FederationAuditService — Comprehensive audit logging for federation operations.
@@ -69,11 +70,11 @@ class FederationAuditService
             try {
                 $actor = DB::table('users')
                     ->where('id', $actorUserId)
-                    ->select('first_name', 'last_name', 'email')
+                    ->select('first_name', 'last_name', 'profile_type', 'organization_name', 'email')
                     ->first();
 
                 if ($actor) {
-                    $actorName = trim(($actor->first_name ?? '') . ' ' . ($actor->last_name ?? ''));
+                    $actorName = UserDisplayName::resolve($actor);
                     if (!empty($actor->email)) {
                         $parts = explode('@', $actor->email);
                         $actorEmail = '***@' . ($parts[1] ?? 'unknown');

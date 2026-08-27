@@ -238,7 +238,7 @@ class FederationUserService
                 ->where('u.tenant_id', $tenantId)
                 ->where('u.status', 'active')
                 ->where('fus.federation_optin', 1)
-                ->select(['u.id', 'u.first_name', 'u.last_name', 'u.avatar_url', 'u.skills', 'u.location',
+                ->select(['u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url', 'u.skills', 'u.location',
                            'fus.service_reach', 'fus.messaging_enabled_federated', 'fus.transactions_enabled_federated']);
 
             if (!empty($filters['service_reach'])) {

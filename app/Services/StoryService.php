@@ -14,6 +14,7 @@ use App\Services\NotificationDispatcher;
 use App\Services\RealtimeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * StoryService — Manages 24-hour disappearing stories (Instagram-style).
@@ -154,6 +155,8 @@ class StoryService
                 s.user_id,
                 u.first_name,
                 u.last_name,
+                u.profile_type,
+                u.organization_name,
                 u.avatar_url,
                 COUNT(s.id) as story_count,
                 MAX(s.created_at) as latest_story_at,
@@ -202,7 +205,7 @@ class StoryService
 
             $result[] = [
                 'user_id' => (int) $row->user_id,
-                'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'name' => UserDisplayName::resolve($row),
                 'first_name' => $row->first_name ?? '',
                 'avatar_url' => $row->avatar_url,
                 'story_count' => (int) $row->story_count,
@@ -353,7 +356,7 @@ class StoryService
 
         return array_map(fn($v) => [
             'id' => (int) $v->id,
-            'name' => trim(($v->first_name ?? '') . ' ' . ($v->last_name ?? '')),
+            'name' => UserDisplayName::resolve($v),
             'avatar_url' => $v->avatar_url,
             'viewed_at' => $v->viewed_at,
         ], $viewers);
@@ -437,7 +440,7 @@ class StoryService
                     'SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?',
                     [$userId, $tenantId]
                 );
-                $reactorName = $reactor ? trim($reactor->first_name . ' ' . $reactor->last_name) : __('emails.common.fallback_someone');
+                $reactorName = $reactor ? UserDisplayName::resolve($reactor) : __('emails.common.fallback_someone');
 
                 $emojiMap = [
                     'heart' => "\u{2764}\u{FE0F}",
@@ -1235,7 +1238,7 @@ class StoryService
             return;
         }
 
-        $userName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $userName = UserDisplayName::resolve($user);
 
         // Get all accepted connections for this user (tenant-scoped) with their preferred_language
         // so the notification body renders in each recipient's own locale.
@@ -1357,7 +1360,7 @@ class StoryService
         if (isset($story->first_name)) {
             $result['user'] = [
                 'id' => (int) $story->user_id,
-                'name' => trim(($story->first_name ?? '') . ' ' . ($story->last_name ?? '')),
+                'name' => UserDisplayName::resolve($story),
                 'first_name' => $story->first_name ?? '',
                 'avatar_url' => $story->avatar_url ?? null,
             ];

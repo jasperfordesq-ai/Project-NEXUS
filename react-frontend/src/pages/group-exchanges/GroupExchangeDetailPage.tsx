@@ -51,7 +51,7 @@ import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -839,7 +839,7 @@ export function GroupExchangeDetailPage() {
             {searchResults.length > 0 && (
               <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
                 {searchResults.map((result) => {
-                  const displayName = result.name || [result.first_name, result.last_name].filter(Boolean).join(' ') || 'Unknown';
+                  const displayName = result.name || resolveUserDisplayName(result) || 'Unknown';
                   return (
                     <div
                       key={result.id}

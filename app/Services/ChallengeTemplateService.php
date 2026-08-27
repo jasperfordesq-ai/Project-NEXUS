@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\ChallengeTemplate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * ChallengeTemplateService — Eloquent-based service for reusable challenge templates.
@@ -47,7 +48,7 @@ class ChallengeTemplateService
      */
     public function getAll(): array
     {
-        $templates = ChallengeTemplate::with(['creator:id,first_name,last_name', 'category:id,name'])
+        $templates = ChallengeTemplate::with(['creator:id,first_name,last_name,profile_type,organization_name', 'category:id,name'])
             ->orderBy('title')
             ->get();
 
@@ -56,7 +57,7 @@ class ChallengeTemplateService
             $arr['creator'] = [
                 'id' => (int) $tpl->created_by,
                 'name' => $tpl->creator
-                    ? trim(($tpl->creator->first_name ?? '') . ' ' . ($tpl->creator->last_name ?? ''))
+                    ? UserDisplayName::resolve($tpl->creator)
                     : '',
             ];
             $arr['category_name'] = $tpl->category->name ?? null;
@@ -72,7 +73,7 @@ class ChallengeTemplateService
      */
     public function getById(int $id): ?array
     {
-        $tpl = ChallengeTemplate::with(['creator:id,first_name,last_name', 'category:id,name'])
+        $tpl = ChallengeTemplate::with(['creator:id,first_name,last_name,profile_type,organization_name', 'category:id,name'])
             ->find($id);
 
         if (!$tpl) {
@@ -83,7 +84,7 @@ class ChallengeTemplateService
         $arr['creator'] = [
             'id' => (int) $tpl->created_by,
             'name' => $tpl->creator
-                ? trim(($tpl->creator->first_name ?? '') . ' ' . ($tpl->creator->last_name ?? ''))
+                ? UserDisplayName::resolve($tpl->creator)
                 : '',
         ];
         $arr['category_name'] = $tpl->category->name ?? null;

@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * NexusScoreCacheService — Eloquent-based cache layer for Nexus Score calculations.
@@ -158,7 +159,7 @@ class NexusScoreCacheService
                 ->join('users', 'nexus_score_cache.user_id', '=', 'users.id')
                 ->select([
                     'nexus_score_cache.user_id',
-                    DB::raw("CONCAT(users.first_name, ' ', users.last_name) as name"),
+                    DB::raw(UserDisplayName::sql('users', 'name')),
                     'users.avatar_url',
                     'nexus_score_cache.total_score as score',
                     'nexus_score_cache.tier',
@@ -361,7 +362,7 @@ class NexusScoreCacheService
             $users = $this->user->newQuery()
                 ->where('tenant_id', $tenantId)
                 ->where('is_approved', true)
-                ->select(['id', 'first_name', 'last_name', 'avatar_url'])
+                ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url'])
                 ->limit(100)
                 ->get();
 
@@ -377,7 +378,7 @@ class NexusScoreCacheService
                     $scoreData = $this->scoreService->calculateNexusScore($user->id, $tenantId);
                     $userScores[] = [
                         'user_id'    => $user->id,
-                        'name'       => trim($user->first_name . ' ' . $user->last_name),
+                        'name'       => UserDisplayName::resolve($user),
                         'avatar_url' => $user->avatar_url,
                         'score'      => $scoreData['total_score'],
                         'tier'       => $scoreData['tier'],

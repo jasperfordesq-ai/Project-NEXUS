@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies all admins, brokers, and coordinators when a new volunteer opportunity is posted.
@@ -72,10 +73,10 @@ class NotifyAdminOfNewVolunteerOpportunity implements ShouldQueue
                     $poster = DB::table('users')
                         ->where('id', $opportunity->created_by)
                         ->where('tenant_id', $event->tenantId)
-                        ->select(['first_name', 'last_name', 'name'])
+                        ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                         ->first();
                     if ($poster) {
-                        $posterName = trim(($poster->first_name ?? '') . ' ' . ($poster->last_name ?? ''))
+                        $posterName = UserDisplayName::resolve($poster)
                             ?: ($poster->name ?? __('emails.common.fallback_member_name'));
                     }
                 }

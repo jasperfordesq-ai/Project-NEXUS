@@ -8,7 +8,7 @@
  * List, search, view, and delete polls with pagination.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useState, useCallback, useEffect } from 'react';import BarChart3 from 'lucide-react/icons/chart-column';
 import Eye from 'lucide-react/icons/eye';
 import Trash2 from 'lucide-react/icons/trash-2';
@@ -56,9 +56,7 @@ const statusColors: Record<string, 'success' | 'default'> = {
 };
 
 function normalizePoll(item: RawPoll): Poll {
-  const creatorName = item.user?.name
-    ?? [item.user?.first_name, item.user?.last_name].filter(Boolean).join(' ').trim()
-    ?? '';
+  const creatorName = resolveUserDisplayName(item.user);
   const isEnded = !!item.end_date && new Date(item.end_date).getTime() <= Date.now();
 
   return {

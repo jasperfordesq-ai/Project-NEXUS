@@ -10,6 +10,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * Suggests potential KISS-style "Tandem" pairings (supporter <-> recipient).
@@ -198,7 +199,7 @@ class CaringTandemMatchingService
 
         $out = [];
         foreach ($rows as $row) {
-            $name = trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? ''));
+            $name = UserDisplayName::resolve($row);
             if ($name === '') {
                 $name = (string) ($row->name ?? '');
             }

@@ -36,7 +36,7 @@ import {
   type ParticipationReviewRequest,
 } from '@/lib/event-safety-api';
 import { eventsApi, type EventMemberSearchResult } from '@/lib/events-api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const REVIEW_PAGE_SIZE = 25;
@@ -73,7 +73,7 @@ function mutationKey(prefix: string): string {
 
 function memberName(member: EventMemberSearchResult): string {
   return member.name?.trim()
-    || [member.first_name, member.last_name].filter(Boolean).join(' ').trim()
+    || resolveUserDisplayName(member)
     || `#${member.id}`;
 }
 

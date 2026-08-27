@@ -94,7 +94,7 @@ class MarketplacePaymentService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['id', 'first_name', 'last_name', 'email']);
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email']);
 
         if (!$user) {
             throw new \RuntimeException(__('api.marketplace_payment_user_not_found'));

@@ -68,7 +68,7 @@ class StreakService
             ->where('user_streaks.current_streak', '>', 0)
             ->select([
                 'user_streaks.*',
-                'users.first_name', 'users.last_name',
+                'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name',
                 'users.avatar_url', 'users.name',
             ])
             ->orderByDesc('user_streaks.current_streak')

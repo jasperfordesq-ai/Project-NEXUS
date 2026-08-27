@@ -60,7 +60,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import type { User as UserType, Listing, Review } from '@/types/api';
 
 type ConnectionStatus = 'none' | 'pending_sent' | 'pending_received' | 'connected';
@@ -906,7 +906,7 @@ export function ProfilePage() {
         <motion.div variants={itemVariants}>
           <StoryHighlights
             userId={profile.id}
-            userName={profile.name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim()}
+            userName={resolveUserDisplayName(profile)}
             userAvatar={profile.avatar_url ?? profile.avatar}
           />
         </motion.div>
@@ -1470,7 +1470,7 @@ function ReviewCard({ review }: ReviewCardProps) {
   const { t } = useTranslation('profile');
   const { tenantPath } = useTenant();
   const reviewerName = review.reviewer
-    ? `${review.reviewer.first_name} ${review.reviewer.last_name}`.trim()
+    ? resolveUserDisplayName(review.reviewer)
     : t('anonymous');
 
   const nameContent = (

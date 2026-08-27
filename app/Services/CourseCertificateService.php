@@ -12,6 +12,7 @@ use App\Models\CourseCertificate;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\UserDisplayName;
 
 /**
  * CourseCertificateService — issues and renders course completion certificates.
@@ -73,10 +74,10 @@ class CourseCertificateService
         $user = DB::table('users')
             ->where('id', $cert->user_id)
             ->where('tenant_id', $tenantId)
-            ->select('first_name', 'last_name', 'name')
+            ->select('first_name', 'last_name', 'profile_type', 'organization_name', 'name')
             ->first();
         $userName = $user
-            ? trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: ($user->name ?? '')
+            ? UserDisplayName::resolve($user) ?: ($user->name ?? '')
             : '';
 
         $e = static fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');

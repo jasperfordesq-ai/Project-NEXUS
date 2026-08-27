@@ -11,6 +11,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * InactiveMemberService — Detects and flags members who have been inactive
@@ -121,7 +122,7 @@ class InactiveMemberService
             ->join('users as u', 'f.user_id', '=', 'u.id')
             ->select(
                 'f.*',
-                'u.first_name', 'u.last_name', 'u.email', 'u.avatar_url',
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.avatar_url',
                 'u.created_at as member_since'
             )
             ->orderBy('f.last_activity_at')
@@ -132,7 +133,7 @@ class InactiveMemberService
         $members = $rows->map(function ($row) {
             return [
                 'id' => (int) $row->user_id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'email' => $row->email,
                 'profile_image_url' => $row->avatar_url,
                 'flag_type' => $row->flag_type,

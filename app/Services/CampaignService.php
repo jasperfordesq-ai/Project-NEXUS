@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\Campaign;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CampaignService — Eloquent-based service for campaigns that group multiple challenges.
@@ -56,7 +57,7 @@ class CampaignService
             ->select([
                 'c.*',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 DB::raw('(SELECT COUNT(*) FROM campaign_challenges cc WHERE cc.campaign_id = c.id) AS challenge_count'),
             ]);
 
@@ -93,7 +94,7 @@ class CampaignService
         foreach ($items as &$item) {
             $item['creator'] = [
                 'id' => (int) $item['created_by'],
-                'name' => trim(($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')),
+                'name' => UserDisplayName::resolve($item),
             ];
             $item['challenge_count'] = (int) ($item['challenge_count'] ?? 0);
             unset($item['first_name'], $item['last_name']);
@@ -117,7 +118,7 @@ class CampaignService
             ->leftJoin('users as u', 'c.created_by', '=', 'u.id')
             ->where('c.id', $id)
             ->where('c.tenant_id', $tenantId)
-            ->select(['c.*', 'u.first_name', 'u.last_name'])
+            ->select(['c.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name'])
             ->first();
 
         if (!$campaign) {
@@ -127,7 +128,7 @@ class CampaignService
         $result = (array) $campaign;
         $result['creator'] = [
             'id' => (int) $result['created_by'],
-            'name' => trim(($result['first_name'] ?? '') . ' ' . ($result['last_name'] ?? '')),
+            'name' => UserDisplayName::resolve($result),
         ];
         unset($result['first_name'], $result['last_name']);
 

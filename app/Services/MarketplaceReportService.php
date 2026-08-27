@@ -17,6 +17,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceReportService — DSA notice-and-action compliance (MKT6).
@@ -485,8 +486,8 @@ class MarketplaceReportService
     {
         $query = MarketplaceReport::with([
             'listing:id,title,user_id,status',
-            'reporter:id,first_name,last_name,avatar_url',
-            'handler:id,first_name,last_name',
+            'reporter:id,first_name,last_name,profile_type,organization_name,avatar_url',
+            'handler:id,first_name,last_name,profile_type,organization_name',
         ]);
 
         if ($status) {
@@ -521,8 +522,8 @@ class MarketplaceReportService
     public static function getReportsForListing(int $listingId): array
     {
         $reports = MarketplaceReport::with([
-            'reporter:id,first_name,last_name,avatar_url',
-            'handler:id,first_name,last_name',
+            'reporter:id,first_name,last_name,profile_type,organization_name,avatar_url',
+            'handler:id,first_name,last_name,profile_type,organization_name',
         ])
             ->where('marketplace_listing_id', $listingId)
             ->orderBy('created_at', 'desc')
@@ -1070,12 +1071,12 @@ class MarketplaceReportService
             ] : null,
             'reporter' => $report->reporter ? [
                 'id' => $report->reporter->id,
-                'name' => trim($report->reporter->first_name . ' ' . $report->reporter->last_name),
+                'name' => UserDisplayName::resolve($report->reporter),
                 'avatar_url' => $report->reporter->avatar_url,
             ] : null,
             'handler' => $report->handler ? [
                 'id' => $report->handler->id,
-                'name' => trim($report->handler->first_name . ' ' . $report->handler->last_name),
+                'name' => UserDisplayName::resolve($report->handler),
             ] : null,
             'created_at' => $report->created_at?->toISOString(),
             'updated_at' => $report->updated_at?->toISOString(),

@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Services\UserInsightsService;
+use App\Support\UserDisplayName;
 
 /**
  * AdminDashboardController -- Admin analytics dashboard endpoints.
@@ -254,7 +255,7 @@ class AdminDashboardController extends BaseApiController
             return [
                 'id' => (int) $row->id,
                 'user_id' => (int) ($row->user_id ?? 0),
-                'user_name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'user_name' => UserDisplayName::resolve($row),
                 'user_email' => $row->email ?? '',
                 'user_avatar' => $row->avatar_url ?? null,
                 'action' => $row->action ?? '',

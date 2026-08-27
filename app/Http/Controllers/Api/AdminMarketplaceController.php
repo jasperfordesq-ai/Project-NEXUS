@@ -15,6 +15,7 @@ use App\Services\MarketplaceReportService;
 use App\Services\TenantSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * AdminMarketplaceController — Admin endpoints for marketplace management.
@@ -120,7 +121,7 @@ class AdminMarketplaceController extends BaseApiController
         $search = $this->query('q');
 
         $query = MarketplaceListing::with([
-            'user:id,first_name,last_name,avatar_url',
+            'user:id,first_name,last_name,profile_type,organization_name,avatar_url',
             'category:id,name,slug',
             'images' => fn ($q) => $q->where('is_primary', true)->limit(1),
         ]);
@@ -159,7 +160,7 @@ class AdminMarketplaceController extends BaseApiController
             'category' => $l->category?->name,
             'user' => $l->user ? [
                 'id' => $l->user->id,
-                'name' => trim($l->user->first_name . ' ' . $l->user->last_name),
+                'name' => UserDisplayName::resolve($l->user),
             ] : null,
             'created_at' => $l->created_at?->toISOString(),
         ])->all();
@@ -274,7 +275,7 @@ class AdminMarketplaceController extends BaseApiController
         $sellerType = $this->query('seller_type');
         $verified = $this->query('verified');
 
-        $query = MarketplaceSellerProfile::with('user:id,first_name,last_name,avatar_url,email');
+        $query = MarketplaceSellerProfile::with('user:id,first_name,last_name,profile_type,organization_name,avatar_url,email');
 
         if ($sellerType) {
             $query->where('seller_type', $sellerType);
@@ -306,7 +307,7 @@ class AdminMarketplaceController extends BaseApiController
         $items = $sellers->map(fn ($s) => [
             'id' => $s->id,
             'user_id' => $s->user_id,
-            'display_name' => $s->display_name ?? trim(($s->user->first_name ?? '') . ' ' . ($s->user->last_name ?? '')),
+            'display_name' => $s->display_name ?? UserDisplayName::resolve($s->user),
             'seller_type' => $s->seller_type,
             'business_name' => $s->business_name,
             'business_verified' => $s->business_verified,
@@ -318,7 +319,7 @@ class AdminMarketplaceController extends BaseApiController
             'joined_marketplace_at' => $s->joined_marketplace_at?->toISOString(),
             'user' => $s->user ? [
                 'id' => $s->user->id,
-                'name' => trim($s->user->first_name . ' ' . $s->user->last_name),
+                'name' => UserDisplayName::resolve($s->user),
                 'email' => $s->user->email,
                 'avatar_url' => $s->user->avatar_url,
             ] : null,

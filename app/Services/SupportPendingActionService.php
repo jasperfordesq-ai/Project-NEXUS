@@ -15,6 +15,7 @@ use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
+use App\Support\UserDisplayName;
 
 /**
  * The co_decide confirm loop (guardian redesign, phase 3).
@@ -239,7 +240,7 @@ class SupportPendingActionService
     {
         /** @var SupportPendingAction|null */
         return $this->pendingAction->newQuery()
-            ->with(['supporterUser:id,first_name,last_name', 'supportedUser:id,first_name,last_name'])
+            ->with(['supporterUser:id,first_name,last_name,profile_type,organization_name', 'supportedUser:id,first_name,last_name,profile_type,organization_name'])
             ->where('token_hash', hash('sha256', $token))
             ->first();
     }
@@ -384,7 +385,7 @@ class SupportPendingActionService
         try {
             $supporter = User::find($action->supporter_user_id);
             $supported = User::find($action->supported_user_id);
-            $supporterName = $supporter ? trim($supporter->first_name . ' ' . $supporter->last_name) : '';
+            $supporterName = $supporter ? UserDisplayName::resolve($supporter) : '';
 
             LocaleContext::withLocale($supported, function () use ($action, $supporterName): void {
                 NotificationDispatcher::dispatch(
@@ -414,7 +415,7 @@ class SupportPendingActionService
         try {
             $supporter = User::find($action->supporter_user_id);
             $supported = User::find($action->supported_user_id);
-            $supporterName = $supporter ? trim($supporter->first_name . ' ' . $supporter->last_name) : '';
+            $supporterName = $supporter ? UserDisplayName::resolve($supporter) : '';
 
             LocaleContext::withLocale($supported, function () use ($action, $supporterName): void {
                 NotificationDispatcher::dispatch(
@@ -447,7 +448,7 @@ class SupportPendingActionService
     public function listForSupported(int $supportedUserId, bool $pendingOnly = true): array
     {
         $query = $this->pendingAction->newQuery()
-            ->with('supporterUser:id,first_name,last_name,avatar_url')
+            ->with('supporterUser:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('supported_user_id', $supportedUserId);
         if ($pendingOnly) {
             $query->where('status', SupportPendingAction::STATUS_PENDING)->where('expires_at', '>', now());
@@ -462,7 +463,7 @@ class SupportPendingActionService
     public function listForSupporter(int $supporterUserId): array
     {
         return $this->pendingAction->newQuery()
-            ->with('supportedUser:id,first_name,last_name,avatar_url')
+            ->with('supportedUser:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('supporter_user_id', $supporterUserId)
             ->orderByDesc('created_at')
             ->limit(50)
@@ -483,8 +484,8 @@ class SupportPendingActionService
     {
         return $this->pendingAction->newQuery()
             ->with([
-                'supporterUser:id,first_name,last_name',
-                'supportedUser:id,first_name,last_name',
+                'supporterUser:id,first_name,last_name,profile_type,organization_name',
+                'supportedUser:id,first_name,last_name,profile_type,organization_name',
             ])
             ->where('status', SupportPendingAction::STATUS_PENDING)
             ->where('expires_at', '>', now())
@@ -747,14 +748,14 @@ class SupportPendingActionService
             'payload_summary' => $this->summarisePayload($a),
             'supporter_user_id' => (int) $a->supporter_user_id,
             'supported_user_id' => (int) $a->supported_user_id,
-            'other_party_name' => $other ? trim($other->first_name . ' ' . $other->last_name) : null,
+            'other_party_name' => $other ? UserDisplayName::resolve($other) : null,
             'other_party_avatar_url' => $other->avatar_url ?? null,
             // Both names, for views (the broker panel) that show both sides.
             'supporter_name' => $a->relationLoaded('supporterUser') && $a->supporterUser
-                ? trim($a->supporterUser->first_name . ' ' . $a->supporterUser->last_name)
+                ? UserDisplayName::resolve($a->supporterUser)
                 : null,
             'supported_name' => $a->relationLoaded('supportedUser') && $a->supportedUser
-                ? trim($a->supportedUser->first_name . ' ' . $a->supportedUser->last_name)
+                ? UserDisplayName::resolve($a->supportedUser)
                 : null,
             'created_at' => $a->created_at?->toIso8601String(),
             'expires_at' => $a->expires_at?->toIso8601String(),
@@ -818,7 +819,7 @@ class SupportPendingActionService
         try {
             $supporter = User::find($action->supporter_user_id);
             $supported = User::find($action->supported_user_id);
-            $supporterName = $supporter ? trim($supporter->first_name . ' ' . $supporter->last_name) : '';
+            $supporterName = $supporter ? UserDisplayName::resolve($supporter) : '';
 
             LocaleContext::withLocale($supported, function () use ($action, $token, $supporterName): void {
                 NotificationDispatcher::dispatch(
@@ -857,7 +858,7 @@ class SupportPendingActionService
         try {
             $attester = $action->attested_by_user_id !== null ? User::find($action->attested_by_user_id) : null;
             $supported = User::find($action->supported_user_id);
-            $attesterName = $attester ? trim($attester->first_name . ' ' . $attester->last_name) : '';
+            $attesterName = $attester ? UserDisplayName::resolve($attester) : '';
 
             LocaleContext::withLocale($supported, function () use ($action, $attesterName): void {
                 NotificationDispatcher::dispatch(
@@ -893,7 +894,7 @@ class SupportPendingActionService
         try {
             $supported = User::find($action->supported_user_id);
             $supporter = User::find($action->supporter_user_id);
-            $supportedName = $supported ? trim($supported->first_name . ' ' . $supported->last_name) : '';
+            $supportedName = $supported ? UserDisplayName::resolve($supported) : '';
 
             $outcomeKey = match ($confirmed) {
                 true => 'confirmed',

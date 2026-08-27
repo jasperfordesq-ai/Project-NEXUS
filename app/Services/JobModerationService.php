@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * JobModerationService — Admin approval workflow for job vacancies.
@@ -56,7 +57,7 @@ class JobModerationService
     {
         $query = JobVacancy::where('tenant_id', $tenantId)
             ->where('moderation_status', 'pending_review')
-            ->with(['creator:id,first_name,last_name,avatar_url'])
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->orderByDesc('created_at');
 
         $total = $query->count();
@@ -76,7 +77,7 @@ class JobModerationService
                 'spam_flags' => $job->spam_flags,
                 'created_at' => $job->created_at?->toIso8601String(),
                 'poster_name' => $job->creator
-                    ? trim(($job->creator->first_name ?? '') . ' ' . ($job->creator->last_name ?? ''))
+                    ? UserDisplayName::resolve($job->creator)
                     : null,
                 'poster_avatar' => $job->creator?->avatar_url,
                 'user_id' => $job->user_id,

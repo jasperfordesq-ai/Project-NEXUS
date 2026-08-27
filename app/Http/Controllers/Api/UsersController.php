@@ -1504,6 +1504,12 @@ class UsersController extends BaseApiController
                                    ELSE CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))
                                END as name,
                                u.first_name, u.last_name,
+                               -- profile_type MUST be selected: the surname-privacy step
+                               -- below reads it to decide whether the name may be
+                               -- shortened to a first name. Without it the check read
+                               -- 'individual' for everyone and replaced an organisation's
+                               -- trading name with its contact person's first name.
+                               u.profile_type, u.organization_name,
                                u.avatar_url as avatar,
                                COALESCE(u.tagline, LEFT(u.bio, 120)) as tagline,
                                u.location, u.latitude, u.longitude,
@@ -1659,6 +1665,12 @@ class UsersController extends BaseApiController
                            ELSE CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))
                        END as name,
                        u.first_name, u.last_name,
+                       -- profile_type MUST be selected: the surname-privacy step
+                       -- below reads it to decide whether the name may be
+                       -- shortened to a first name. Without it the check read
+                       -- 'individual' for everyone and replaced an organisation's
+                       -- trading name with its contact person's first name.
+                       u.profile_type, u.organization_name,
                        u.avatar_url as avatar,
                        COALESCE(u.tagline, LEFT(u.bio, 120)) as tagline,
                        u.location, u.latitude, u.longitude,

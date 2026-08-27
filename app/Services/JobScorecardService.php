@@ -65,7 +65,7 @@ class JobScorecardService
         $tenantId = TenantContext::getId();
 
         try {
-            return JobScorecard::with(['reviewer:id,first_name,last_name,avatar_url'])
+            return JobScorecard::with(['reviewer:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                 ->where('tenant_id', $tenantId)
                 ->where('application_id', $applicationId)
                 ->orderByDesc('updated_at')

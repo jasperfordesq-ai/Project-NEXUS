@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * AuditLogService — Audit logging for organization wallet operations and admin actions.
@@ -119,7 +120,7 @@ class AuditLogService
             ->select([
                 'a.id', 'a.action', 'a.details', 'a.ip_address',
                 'a.created_at', 'a.user_id', 'a.target_user_id',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as actor_name"),
+                DB::raw(UserDisplayName::sql('u', 'actor_name')),
             ])
             ->orderByDesc('a.created_at')
             ->limit($limit);
@@ -371,11 +372,11 @@ class AuditLogService
             ->where('al.organization_id', $organizationId)
             ->select([
                 'al.*',
-                'u.first_name', 'u.last_name',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as user_name"),
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name',
+                DB::raw(UserDisplayName::sql('u', 'user_name')),
                 DB::raw("tu.first_name as target_first_name"),
                 DB::raw("tu.last_name as target_last_name"),
-                DB::raw("CONCAT(tu.first_name, ' ', tu.last_name) as target_user_name"),
+                DB::raw(UserDisplayName::sql('tu', 'target_user_name')),
             ]);
 
         if (!empty($filters['action'])) {

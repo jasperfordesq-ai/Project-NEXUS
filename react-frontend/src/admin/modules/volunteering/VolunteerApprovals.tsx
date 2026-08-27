@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Select, SelectItem, Button, Input, Avatar, Tabs, Tab, Checkbox } from '@/components/ui';
 
 /**
@@ -120,7 +120,7 @@ export function VolunteerApprovals() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(i =>
-        `${i.first_name} ${i.last_name}`.toLowerCase().includes(q) ||
+        resolveUserDisplayName(i).toLowerCase().includes(q) ||
         i.email?.toLowerCase().includes(q)
       );
     }
@@ -233,7 +233,7 @@ export function VolunteerApprovals() {
       t('volunteering.export_columns.applied'),
     ];
     const rows = filteredItems.map((item) => [
-      `${item.first_name} ${item.last_name}`,
+      resolveUserDisplayName(item),
       item.email,
       item.opportunity_title,
       t(`volunteering.status_${item.status}`, { defaultValue: t('volunteering.status_unknown') }),
@@ -260,7 +260,7 @@ export function VolunteerApprovals() {
       key: 'applicant', label: t('volunteering.col_applicant'), sortable: true,
       render: (item) => (
         <div className="flex items-center gap-3">
-          <Avatar name={`${item.first_name} ${item.last_name}`} size="sm" className="ring-2 ring-surface" />
+          <Avatar name={resolveUserDisplayName(item)} size="sm" className="ring-2 ring-surface" />
           <div>
             <p className="font-medium text-foreground">{item.first_name} {item.last_name}</p>
             <p className="text-xs text-muted">{item.email}</p>

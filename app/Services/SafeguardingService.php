@@ -13,6 +13,7 @@ use App\Models\SafeguardingAssignment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * SafeguardingService — Laravel DI-based service for safeguarding operations.
@@ -386,7 +387,7 @@ class SafeguardingService
                         \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_verified', ['training_name' => $trainingName]), '/dashboard');
 
                         if ($trainee && !empty($trainee->email)) {
-                            $traineeName  = trim(($trainee->first_name ?? '') . ' ' . ($trainee->last_name ?? '')) ?: ($trainee->name ?? '');
+                            $traineeName  = UserDisplayName::resolve($trainee) ?: ($trainee->name ?? '');
                             $safeTraining = htmlspecialchars($trainingName, ENT_QUOTES, 'UTF-8');
                             $emailBody = EmailTemplateBuilder::make()
                                 ->theme('success')
@@ -465,7 +466,7 @@ class SafeguardingService
                         \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_not_approved', ['training_name' => $trainingName]), '/help');
 
                         if ($trainee && !empty($trainee->email)) {
-                            $traineeName  = trim(($trainee->first_name ?? '') . ' ' . ($trainee->last_name ?? '')) ?: ($trainee->name ?? '');
+                            $traineeName  = UserDisplayName::resolve($trainee) ?: ($trainee->name ?? '');
                             $safeTraining = htmlspecialchars($trainingName, ENT_QUOTES, 'UTF-8');
                             $safeReason   = htmlspecialchars($reason, ENT_QUOTES, 'UTF-8');
                             $emailBody = EmailTemplateBuilder::make()
@@ -1032,7 +1033,7 @@ class SafeguardingService
                 if (!empty($dlpUser->email)) {
                     try {
                         $severityLabel = strtoupper($incident->severity ?? 'UNKNOWN');
-                        $dlpName = trim(($dlpUser->first_name ?? '') . ' ' . ($dlpUser->last_name ?? '')) ?: ($dlpUser->name ?? 'Team member');
+                        $dlpName = UserDisplayName::resolve($dlpUser) ?: ($dlpUser->name ?? 'Team member');
 
                         $safeDlpName = htmlspecialchars($dlpName, ENT_QUOTES, 'UTF-8');
                         $safeTitle = htmlspecialchars($incident->title ?? 'N/A', ENT_QUOTES, 'UTF-8');
@@ -1092,8 +1093,8 @@ class SafeguardingService
         try {
             $reporter = User::where('tenant_id', $tenantId)
                 ->where('id', $reporterId)
-                ->first(['first_name', 'last_name']);
-            $reporterName = $reporter ? trim(($reporter->first_name ?? '') . ' ' . ($reporter->last_name ?? '')) : __('emails_misc.safeguarding.reporter_fallback_name');
+                ->first(['first_name', 'last_name', 'profile_type', 'organization_name']);
+            $reporterName = $reporter ? UserDisplayName::resolve($reporter) : __('emails_misc.safeguarding.reporter_fallback_name');
 
             $staffUsers = DB::select(
                 "SELECT id, email, preferred_language FROM users WHERE tenant_id = ? AND role IN ('admin', 'tenant_admin', 'broker', 'super_admin') AND status = 'active'",

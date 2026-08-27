@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /**
  * Notify tenant administrators when a community event is published.
@@ -141,13 +142,13 @@ class NotifyAdminOfNewCommunityEvent implements ShouldQueue
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->select(['first_name', 'last_name', 'name'])
+            ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
             ->first();
         if ($creator === null) {
             return null;
         }
 
-        return trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? ''))
+        return UserDisplayName::resolve($creator)
             ?: ($creator->name ?? null);
     }
 

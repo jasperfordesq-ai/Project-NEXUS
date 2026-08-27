@@ -21,6 +21,7 @@ use App\Services\RealtimeService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * JobVacancyService — Laravel DI-based service for job vacancy operations.
@@ -387,7 +388,7 @@ class JobVacancyService
         $cursor = $filters['cursor'] ?? null;
 
         $query = $this->vacancy->newQuery()
-            ->with(['creator:id,first_name,last_name,avatar_url'])
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->leftJoin('organizations as o', 'job_vacancies.organization_id', '=', 'o.id')
             ->select('job_vacancies.*', 'o.name as organization_name', 'o.logo_url as organization_logo');
 
@@ -559,7 +560,7 @@ class JobVacancyService
             ->select(
                 'job_vacancies.*',
                 'u.first_name as creator_first_name',
-                'u.last_name as creator_last_name',
+                'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
                 'u.avatar_url as creator_avatar',
                 'o.name as organization_name',
                 'o.logo_url as organization_logo'
@@ -591,7 +592,7 @@ class JobVacancyService
             ->select(
                 'job_vacancies.*',
                 'u.first_name as creator_first_name',
-                'u.last_name as creator_last_name',
+                'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
                 'u.avatar_url as creator_avatar',
                 'o.name as organization_name',
                 'o.logo_url as organization_logo'
@@ -1303,7 +1304,7 @@ class JobVacancyService
 
         $isBlindHiring = (bool) ($vacancy->blind_hiring ?? false);
 
-        $applications = JobApplication::with(['applicant:id,first_name,last_name,avatar_url,email'])
+        $applications = JobApplication::with(['applicant:id,first_name,last_name,profile_type,organization_name,avatar_url,email'])
             ->where('tenant_id', TenantContext::getId())
             ->where('vacancy_id', $jobId)
             ->orderByDesc('created_at')
@@ -1327,7 +1328,7 @@ class JobVacancyService
                 } else {
                     $data['applicant'] = [
                         'id' => (int) $app->user_id,
-                        'name' => $app->applicant ? trim(($app->applicant->first_name ?? '') . ' ' . ($app->applicant->last_name ?? '')) : null,
+                        'name' => $app->applicant ? UserDisplayName::resolve($app->applicant) : null,
                         'avatar_url' => $app->applicant->avatar_url ?? null,
                         'email' => $app->applicant->email ?? null,
                     ];
@@ -1571,7 +1572,7 @@ class JobVacancyService
             ->select(
                 'jv.*',
                 'u.first_name as creator_first_name',
-                'u.last_name as creator_last_name',
+                'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
                 'u.avatar_url as creator_avatar',
                 'o.name as organization_name',
                 'o.logo_url as organization_logo',
@@ -1991,7 +1992,7 @@ class JobVacancyService
             return null;
         }
 
-        return JobApplicationHistory::with(['changer:id,first_name,last_name'])
+        return JobApplicationHistory::with(['changer:id,first_name,last_name,profile_type,organization_name'])
             ->where('application_id', $applicationId)
             ->orderBy('changed_at')
             ->get()
@@ -2000,7 +2001,7 @@ class JobVacancyService
                 $data['id'] = (int) $data['id'];
                 $data['application_id'] = (int) $data['application_id'];
                 $data['changed_by_name'] = $entry->changer
-                    ? trim(($entry->changer->first_name ?? '') . ' ' . ($entry->changer->last_name ?? ''))
+                    ? UserDisplayName::resolve($entry->changer)
                     : null;
                 if ($isApplicant) {
                     $data['notes'] = null;
@@ -2354,7 +2355,10 @@ class JobVacancyService
         // Format creator info
         $data['creator'] = [
             'id' => (int) ($data['user_id'] ?? 0),
-            'name' => trim(($data['creator_first_name'] ?? $data['creator']['first_name'] ?? '') . ' ' . ($data['creator_last_name'] ?? $data['creator']['last_name'] ?? '')),
+            // Two shapes reach here: flat `creator_*` join aliases, or a nested
+            // `creator` array. Resolve the prefixed form first and fall back.
+            'name' => UserDisplayName::resolvePrefixed($data, 'creator_')
+                ?: UserDisplayName::resolve($data['creator'] ?? null),
             'avatar_url' => $data['creator_avatar'] ?? $data['creator']['avatar_url'] ?? null,
         ];
 
@@ -2512,7 +2516,7 @@ class JobVacancyService
             return null;
         }
 
-        $apps = JobApplication::with(['applicant:id,first_name,last_name,email'])
+        $apps = JobApplication::with(['applicant:id,first_name,last_name,profile_type,organization_name,email'])
             ->where('tenant_id', $tenantId)
             ->where('vacancy_id', $jobId)
             ->orderBy('created_at')
@@ -2527,7 +2531,7 @@ class JobVacancyService
         foreach ($apps as $app) {
             $rows[] = array_map($sanitize, [
                 $app->id,
-                ($app->applicant->first_name ?? '') . ' ' . ($app->applicant->last_name ?? ''),
+                UserDisplayName::resolve($app->applicant),
                 $app->applicant->email ?? '',
                 $app->status,
                 $app->stage ?? $app->status,

@@ -16,6 +16,7 @@ use App\Models\MarketplaceSellerProfile;
 use App\Models\MarketplaceSellerRating;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceRatingService — Mutual ratings and dispute management.
@@ -129,7 +130,7 @@ class MarketplaceRatingService
      */
     public static function getOrderRatings(int $orderId): array
     {
-        $ratings = MarketplaceSellerRating::with('rater:id,first_name,last_name,avatar_url')
+        $ratings = MarketplaceSellerRating::with('rater:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('order_id', $orderId)
             ->get();
 
@@ -142,7 +143,7 @@ class MarketplaceRatingService
     public static function getSellerRatings(int $userId, int $limit = 20, ?string $cursor = null): array
     {
         $query = MarketplaceSellerRating::with([
-            'rater:id,first_name,last_name,avatar_url',
+            'rater:id,first_name,last_name,profile_type,organization_name,avatar_url',
             'order:id,order_number,marketplace_listing_id',
             'order.listing:id,title',
         ])
@@ -283,7 +284,7 @@ class MarketplaceRatingService
      */
     public static function getDispute(int $orderId): ?MarketplaceDispute
     {
-        return MarketplaceDispute::with('openedBy:id,first_name,last_name,avatar_url')
+        return MarketplaceDispute::with('openedBy:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('order_id', $orderId)
             ->first();
     }
@@ -372,7 +373,7 @@ class MarketplaceRatingService
             'created_at' => $rating->created_at?->toISOString(),
             'rater' => $rating->is_anonymous ? null : ($rater ? [
                 'id' => $rater->id,
-                'name' => trim($rater->first_name . ' ' . $rater->last_name),
+                'name' => UserDisplayName::resolve($rater),
                 'avatar_url' => $rater->avatar_url,
             ] : null),
             'order' => $order ? [

@@ -15,6 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use App\Core\TenantContext;
+use App\Support\UserDisplayName;
 
 class User extends Authenticatable
 {
@@ -54,7 +55,13 @@ class User extends Authenticatable
         'safeguarding_notes', 'safeguarding_reviewed_by', 'safeguarding_reviewed_at',
     ];
 
-    protected $appends = ['avatar', 'tagline'];
+    // `name` is appended as well as stored: a relation loaded with only
+    // `first_name`/`last_name` (there are well over a hundred such constrained
+    // eager loads) otherwise serialises with no `name` at all, and every front
+    // end then falls back to concatenating the contact person -- which is the
+    // wrong identity for an organisation account. Appending routes those rows
+    // through getNameAttribute() instead.
+    protected $appends = ['avatar', 'tagline', 'name'];
 
     protected $casts = [
         'latitude' => 'float',
@@ -79,6 +86,28 @@ class User extends Authenticatable
     public function getAvatarAttribute(): ?string
     {
         return $this->avatar_url;
+    }
+
+    /**
+     * Accessor: the account's DISPLAY name.
+     *
+     * An organisation account (`profile_type = 'organisation'`) must be
+     * identified everywhere by `organization_name`, never by the contact
+     * person held in `first_name`/`last_name`. Every writer of `users.name`
+     * now stores the resolved value, but this accessor is the defence-in-depth
+     * layer: it also repairs rows written before that sync existed, and rows
+     * whose organisation name changed without `name` being rewritten.
+     *
+     * 🔴 The precedence in UserDisplayName::fromParts() is load-order safe on
+     * purpose. Dozens of queries select `name` WITHOUT `profile_type` or
+     * `organization_name` (e.g. `->select(['email', 'first_name', 'name'])`),
+     * and just as many select the name parts without `name`. Preferring the
+     * stored value over a first-name-only reconstruction is what stops those
+     * partial selects regressing to half a name.
+     */
+    public function getNameAttribute(): string
+    {
+        return UserDisplayName::resolve($this);
     }
 
     /**
@@ -295,7 +324,14 @@ class User extends Authenticatable
             'tenant_id' => $tenantId,
             'first_name' => $firstName,
             'last_name' => $lastName,
-            'name' => trim($firstName . ' ' . $lastName),
+            // An organisation account must store its trading name here, not
+            // the contact person's -- `users.name` is what most display paths read.
+            'name' => UserDisplayName::forStorage(
+                $data['profile_type'] ?? null,
+                $data['organization_name'] ?? null,
+                $firstName,
+                $lastName,
+            ),
             'email' => $email,
             'password_hash' => $hash,
             'role' => $data['role'] ?? 'member',

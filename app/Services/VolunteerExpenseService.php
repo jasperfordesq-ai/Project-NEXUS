@@ -15,6 +15,7 @@ use App\Models\VolExpensePolicy;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * VolunteerExpenseService — manages volunteer expense submissions, reviews, and policies.
@@ -243,7 +244,7 @@ class VolunteerExpenseService
 
         // email must be in the constrained select — the admin expense screens
         // read user->email, and an unselected attribute silently resolves to ''.
-        $query = VolExpense::with(['user:id,first_name,last_name,email,avatar_url', 'organization']);
+        $query = VolExpense::with(['user:id,first_name,last_name,profile_type,organization_name,email,avatar_url', 'organization']);
 
         if (!empty($filters['user_id'])) {
             $query->where('user_id', (int) $filters['user_id']);
@@ -282,7 +283,7 @@ class VolunteerExpenseService
             $arr['last_name'] = $e->user->last_name ?? '';
             $arr['email'] = $e->user->email ?? '';
             $arr['organization_name'] = $e->organization->name ?? '';
-            $arr['volunteer_name'] = trim(($arr['first_name'] ?? '') . ' ' . ($arr['last_name'] ?? ''));
+            $arr['volunteer_name'] = UserDisplayName::resolve($arr);
             $arr['type'] = $arr['expense_type'] ?? '';
             $arr['has_receipt'] = !empty($arr['receipt_path']);
             return $arr;
@@ -344,7 +345,7 @@ class VolunteerExpenseService
      */
     public static function getExpense(int $id): ?array
     {
-        $expense = VolExpense::with(['user:id,first_name,last_name,email,avatar_url', 'organization'])
+        $expense = VolExpense::with(['user:id,first_name,last_name,profile_type,organization_name,email,avatar_url', 'organization'])
             ->where('tenant_id', TenantContext::getId())
             ->find($id);
 
@@ -518,7 +519,7 @@ class VolunteerExpenseService
             ->select([
                 'vol_expenses.id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.email',
                 'org.name as organization_name',
                 'vol_expenses.expense_type',

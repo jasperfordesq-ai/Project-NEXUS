@@ -28,6 +28,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { resolveUserDisplayName } from '@/lib/helpers';
 
 export function ContactPage() {
   const { t } = useTranslation('public');
@@ -63,7 +64,7 @@ export function ContactPage() {
   const [error, setError] = useState<string | null>(null);
   const [turnstileArmed, setTurnstileArmed] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || '',
+    name: resolveUserDisplayName(user),
     email: user?.email || '',
     subject: initialTopic,
     message: initialTopic ? t(`contact.form.prefill.${initialTopic}`) : '',

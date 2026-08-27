@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * SubAccountService — Laravel DI-based service for family/guardian accounts.
@@ -113,7 +114,7 @@ class SubAccountService
     public function getChildren(int $parentUserId): array
     {
         return $this->relationship->newQuery()
-            ->with('childUser:id,first_name,last_name,email,avatar_url')
+            ->with('childUser:id,first_name,last_name,profile_type,organization_name,email,avatar_url')
             ->where('parent_user_id', $parentUserId)
             ->where('status', 'active')
             // Staff-proposed guardian arrangements (phase 5) live in this
@@ -156,7 +157,7 @@ class SubAccountService
                 'account_relationships.created_at',
                 'u.id as user_id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
                 'u.email'
             )
@@ -209,7 +210,7 @@ class SubAccountService
                 'account_relationships.created_at',
                 'u.id as user_id',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
                 'u.email'
             )
@@ -361,7 +362,7 @@ class SubAccountService
         // immediately instead of waiting for a digest the member has not opted
         // into (the digest default is 'off').
         try {
-            $parentName = trim($parent->first_name . ' ' . $parent->last_name);
+            $parentName = UserDisplayName::resolve($parent);
             $child = User::find($childUserId);
 
             LocaleContext::withLocale($child, function () use ($childUserId, $parentUserId, $parentName, $type) {
@@ -460,7 +461,7 @@ class SubAccountService
             $child = User::find($childUserId);
             $parent = User::find($parentUserId);
             $childName = $child !== null
-                ? trim($child->first_name . ' ' . $child->last_name)
+                ? UserDisplayName::resolve($child)
                 : '';
 
             if ($parent !== null) {
@@ -543,7 +544,7 @@ class SubAccountService
             try {
                 $actor = User::find($userId);
                 $other = User::find($otherUserId);
-                $actorName = $actor !== null ? trim($actor->first_name . ' ' . $actor->last_name) : '';
+                $actorName = $actor !== null ? UserDisplayName::resolve($actor) : '';
 
                 LocaleContext::withLocale($other, function () use ($otherUserId, $actorName) {
                     NotificationDispatcher::dispatch(
@@ -756,7 +757,7 @@ class SubAccountService
             try {
                 $parent = User::find($parentUserId);
                 $child = User::find((int) $existing->child_user_id);
-                $parentName = $parent !== null ? trim($parent->first_name . ' ' . $parent->last_name) : '';
+                $parentName = $parent !== null ? UserDisplayName::resolve($parent) : '';
                 $expanded = SupportTiers::isExpansion($beforeTiers, $afterTiers);
 
                 LocaleContext::withLocale($child, function () use ($existing, $parentName, $expanded) {
@@ -1006,7 +1007,7 @@ class SubAccountService
             try {
                 $member = User::find($memberUserId);
                 $supporter = User::find((int) $row->parent_user_id);
-                $memberName = $member !== null ? trim($member->first_name . ' ' . $member->last_name) : '';
+                $memberName = $member !== null ? UserDisplayName::resolve($member) : '';
 
                 LocaleContext::withLocale($supporter, function () use ($row, $memberName) {
                     NotificationDispatcher::dispatch(
@@ -1404,7 +1405,7 @@ class SubAccountService
         try {
             $parent = User::find($parentUserId);
             $child = User::find($childUserId);
-            $parentName = $parent !== null ? trim($parent->first_name . ' ' . $parent->last_name) : '';
+            $parentName = $parent !== null ? UserDisplayName::resolve($parent) : '';
 
             LocaleContext::withLocale($child, function () use ($childUserId, $activityType, $bellKey, $link, $parentName) {
                 NotificationDispatcher::dispatch(

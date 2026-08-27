@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Services\CaringCommunity\CaringRegionalPointService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * Manages ongoing KISS-style support relationships between members.
@@ -53,9 +54,13 @@ class CaringSupportRelationshipService
                 supporter.name AS supporter_name,
                 supporter.first_name AS supporter_first_name,
                 supporter.last_name AS supporter_last_name,
+                supporter.profile_type AS supporter_profile_type,
+                supporter.organization_name AS supporter_organization_name,
                 recipient.name AS recipient_name,
                 recipient.first_name AS recipient_first_name,
                 recipient.last_name AS recipient_last_name,
+                recipient.profile_type AS recipient_profile_type,
+                recipient.organization_name AS recipient_organization_name,
                 coordinator.name AS coordinator_name,
                 org.name AS organization_name,
                 cat.name AS category_name
@@ -196,9 +201,13 @@ class CaringSupportRelationshipService
                 supporter.name AS supporter_name,
                 supporter.first_name AS supporter_first_name,
                 supporter.last_name AS supporter_last_name,
+                supporter.profile_type AS supporter_profile_type,
+                supporter.organization_name AS supporter_organization_name,
                 recipient.name AS recipient_name,
                 recipient.first_name AS recipient_first_name,
                 recipient.last_name AS recipient_last_name,
+                recipient.profile_type AS recipient_profile_type,
+                recipient.organization_name AS recipient_organization_name,
                 coordinator.name AS coordinator_name,
                 org.name AS organization_name,
                 cat.name AS category_name
@@ -579,7 +588,6 @@ class CaringSupportRelationshipService
 
     private function displayName(object $row, string $prefix): string
     {
-        $fullName = trim((string) ($row->{$prefix . '_first_name'} ?? '') . ' ' . (string) ($row->{$prefix . '_last_name'} ?? ''));
-        return $fullName !== '' ? $fullName : (string) ($row->{$prefix . '_name'} ?? '');
+        return UserDisplayName::resolvePrefixed($row, $prefix . '_');
     }
 }

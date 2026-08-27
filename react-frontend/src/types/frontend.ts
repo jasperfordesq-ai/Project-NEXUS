@@ -8,6 +8,7 @@
  * These types extend API types with computed properties for UI convenience
  */
 
+import { resolveUserDisplayName } from '@/lib/helpers';
 import type { User as ApiUser, Listing as ApiListing } from './api';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -25,7 +26,10 @@ export interface FrontendUser extends ApiUser {
 export function transformUser(user: ApiUser): FrontendUser {
   return {
     ...user,
-    name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown',
+    // Organisation accounts are identified by `organization_name`, never by the
+    // contact person in first_name/last_name -- resolveUserDisplayName() is the
+    // single place that precedence lives.
+    name: resolveUserDisplayName(user, 'Unknown'),
   };
 }
 

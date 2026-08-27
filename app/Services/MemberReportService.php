@@ -8,6 +8,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MemberReportService — Comprehensive member reporting for admin dashboards.
@@ -36,7 +37,7 @@ class MemberReportService
             ->where('u.tenant_id', $tenantId)
             ->where('u.status', 'active')
             ->where('u.last_login_at', '>=', $cutoff)
-            ->select(['u.id', 'u.first_name', 'u.last_name', 'u.email', 'u.last_login_at', 'u.created_at', 'u.avatar_url'])
+            ->select(['u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.last_login_at', 'u.created_at', 'u.avatar_url'])
             ->selectRaw(
                 "(SELECT COUNT(*) FROM transactions t WHERE (t.sender_id = u.id OR t.receiver_id = u.id) AND t.tenant_id = ? AND t.status = 'completed') as transaction_count,
                  (SELECT COALESCE(SUM(t.amount), 0) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed') as hours_given,
@@ -51,7 +52,7 @@ class MemberReportService
         $members = $rows->map(function ($row) {
             return [
                 'id' => (int) $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'email' => $row->email,
                 'last_login_at' => $row->last_login_at,
                 'created_at' => $row->created_at,
@@ -255,7 +256,7 @@ class MemberReportService
         $rows = DB::table('users as u')
             ->where('u.tenant_id', $tenantId)
             ->where('u.status', 'active')
-            ->select(['u.id', 'u.first_name', 'u.last_name', 'u.avatar_url'])
+            ->select(['u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url'])
             ->selectRaw(
                 "COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.created_at >= ?), 0) as hours_given,
                  COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.receiver_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.created_at >= ?), 0) as hours_received,
@@ -270,7 +271,7 @@ class MemberReportService
         return $rows->map(function ($row) {
             return [
                 'id' => (int) $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'profile_image_url' => $row->avatar_url,
                 'hours_given' => round((float) $row->hours_given, 1),
                 'hours_received' => round((float) $row->hours_received, 1),
@@ -305,7 +306,7 @@ class MemberReportService
                 $q->whereNull('u.last_login_at')
                   ->orWhere('u.last_login_at', '<', $cutoff);
             })
-            ->select('u.id', 'u.first_name', 'u.last_name', 'u.email', 'u.last_login_at', 'u.created_at')
+            ->select('u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.last_login_at', 'u.created_at')
             ->orderBy('u.last_login_at')
             ->orderBy('u.created_at')
             ->limit($limit)
@@ -315,7 +316,7 @@ class MemberReportService
         $members = $rows->map(function ($row) {
             return [
                 'id' => (int) $row->id,
-                'name' => trim($row->first_name . ' ' . $row->last_name),
+                'name' => UserDisplayName::resolve($row),
                 'email' => $row->email,
                 'last_login_at' => $row->last_login_at,
                 'created_at' => $row->created_at,

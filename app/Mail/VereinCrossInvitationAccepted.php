@@ -14,6 +14,7 @@ use App\I18n\LocaleContext;
 use App\Services\EmailDispatchService;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /**
  * AG55 — Verein cross-invitation accepted email (sent to inviter).
@@ -37,7 +38,7 @@ class VereinCrossInvitationAccepted
         LocaleContext::withLocale($recipient->preferred_language ?? null, function () use ($recipient, $accepterName, $targetName, $tenantId): void {
             try {
                 TenantContext::runForTenant($tenantId, function () use ($recipient, $accepterName, $targetName, $tenantId): void {
-                    $name = trim(($recipient->first_name ?? '') . ' ' . ($recipient->last_name ?? ''));
+                    $name = UserDisplayName::resolve($recipient);
                     $builder = EmailTemplateBuilder::make()
                         ->theme('success')
                         ->title(__('emails.verein_federation.invitation_accepted_title'))

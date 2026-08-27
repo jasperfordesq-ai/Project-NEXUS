@@ -18,6 +18,7 @@ use App\Models\Notification;
 use App\Support\StripeCurrency;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceOfferService — Offer/negotiation lifecycle for the marketplace module.
@@ -472,7 +473,7 @@ class MarketplaceOfferService
      */
     public static function getOffersForListing(int $listingId, int $sellerId): array
     {
-        $offers = MarketplaceOffer::with('buyer:id,first_name,last_name,avatar_url')
+        $offers = MarketplaceOffer::with('buyer:id,first_name,last_name,profile_type,organization_name,avatar_url')
             ->where('marketplace_listing_id', $listingId)
             ->where('seller_id', $sellerId)
             ->orderBy('id', 'desc')
@@ -489,7 +490,7 @@ class MarketplaceOfferService
         $query = MarketplaceOffer::with([
             'listing:id,title,price,price_currency,status,shipping_available,local_pickup,delivery_method',
             'listing.images' => fn ($q) => $q->where('is_primary', true)->limit(1),
-            'seller:id,first_name,last_name,avatar_url',
+            'seller:id,first_name,last_name,profile_type,organization_name,avatar_url',
         ])
             ->where('buyer_id', $buyerId)
             ->orderBy('id', 'desc');
@@ -519,7 +520,7 @@ class MarketplaceOfferService
         $query = MarketplaceOffer::with([
             'listing:id,title,price,price_currency,status,shipping_available,local_pickup,delivery_method',
             'listing.images' => fn ($q) => $q->where('is_primary', true)->limit(1),
-            'buyer:id,first_name,last_name,avatar_url',
+            'buyer:id,first_name,last_name,profile_type,organization_name,avatar_url',
         ])
             ->where('seller_id', $sellerId)
             ->orderBy('id', 'desc');
@@ -749,12 +750,12 @@ class MarketplaceOfferService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select(['first_name', 'last_name', 'name'])
+            ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
             ->first();
         if (!$user) {
             return '';
         }
-        $full = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $full = UserDisplayName::resolve($user);
         return $full ?: ($user->name ?? '');
     }
 
@@ -917,12 +918,12 @@ class MarketplaceOfferService
             ] : null,
             'buyer' => $offer->relationLoaded('buyer') && $offer->buyer ? [
                 'id' => $offer->buyer->id,
-                'name' => trim($offer->buyer->first_name . ' ' . $offer->buyer->last_name),
+                'name' => UserDisplayName::resolve($offer->buyer),
                 'avatar_url' => $offer->buyer->avatar_url,
             ] : null,
             'seller' => $offer->relationLoaded('seller') && $offer->seller ? [
                 'id' => $offer->seller->id,
-                'name' => trim($offer->seller->first_name . ' ' . $offer->seller->last_name),
+                'name' => UserDisplayName::resolve($offer->seller),
                 'avatar_url' => $offer->seller->avatar_url,
             ] : null,
         ];

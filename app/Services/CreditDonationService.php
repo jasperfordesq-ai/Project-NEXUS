@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CreditDonationService
@@ -123,7 +124,7 @@ class CreditDonationService
             // already-committed financial transaction.
             try {
                 $donorName = trim(
-                    trim(($donor->first_name ?? '') . ' ' . ($donor->last_name ?? ''))
+                    UserDisplayName::resolve($donor)
                         ?: (string) ($donor->name ?? '')
                 );
 
@@ -288,9 +289,9 @@ class CreditDonationService
                 'cd.amount',
                 'cd.message',
                 'cd.created_at',
-                DB::raw("CONCAT(donor.first_name, ' ', donor.last_name) as donor_name"),
+                DB::raw(UserDisplayName::sql('donor', 'donor_name')),
                 'donor.avatar_url as donor_avatar',
-                DB::raw("CONCAT(recipient.first_name, ' ', recipient.last_name) as recipient_name"),
+                DB::raw(UserDisplayName::sql('recipient', 'recipient_name')),
                 'recipient.avatar_url as recipient_avatar'
             )
             ->get();

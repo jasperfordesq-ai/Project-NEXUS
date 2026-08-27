@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies all admins, brokers, and coordinators when a new group is created.
@@ -75,10 +76,10 @@ class NotifyAdminOfNewGroup implements ShouldQueue
                 $creator = DB::table('users')
                     ->where('id', $group->owner_id)
                     ->where('tenant_id', $event->tenantId)
-                    ->select(['first_name', 'last_name', 'name'])
+                    ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
                     ->first();
                 if ($creator) {
-                    $creatorName = trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? ''))
+                    $creatorName = UserDisplayName::resolve($creator)
                         ?: ($creator->name ?? null);
                 }
             }

@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * CandidateSearchService — Search community members who have opted in
@@ -37,7 +38,7 @@ class CandidateSearchService
             ->select(
                 'id',
                 'first_name',
-                'last_name',
+                'last_name', 'profile_type', 'organization_name',
                 'avatar_url',
                 'resume_headline',
                 'skills',
@@ -97,7 +98,7 @@ class CandidateSearchService
                 'id' => (int) $row->id,
                 'first_name' => $row->first_name,
                 'last_name' => $row->last_name,
-                'name' => trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? '')),
+                'name' => UserDisplayName::resolve($row),
                 'avatar_url' => $row->avatar_url,
                 'headline' => $row->resume_headline,
                 'skills' => $skills,
@@ -129,7 +130,7 @@ class CandidateSearchService
             ->select(
                 'id',
                 'first_name',
-                'last_name',
+                'last_name', 'profile_type', 'organization_name',
                 'avatar_url',
                 'resume_headline',
                 'resume_summary',
@@ -154,7 +155,7 @@ class CandidateSearchService
             'id' => (int) $user->id,
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
-            'name' => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+            'name' => UserDisplayName::resolve($user),
             'avatar_url' => $user->avatar_url,
             'headline' => $user->resume_headline,
             'summary' => $user->resume_summary,

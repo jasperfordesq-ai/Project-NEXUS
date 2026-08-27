@@ -25,6 +25,7 @@ use App\Services\FederationPartnershipService;
 use App\Services\FederationSearchService;
 use App\Services\MessageService;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\UserDisplayName;
 
 /**
  * FederationV2Controller -- Federation v2: cross-tenant discovery, messaging, connections.
@@ -968,7 +969,7 @@ class FederationV2Controller extends BaseApiController
                     'max_attendees' => $e['max_attendees'] ? (int) $e['max_attendees'] : null,
                     'organizer' => [
                         'id' => (int) $e['user_id'],
-                        'name' => trim(($e['first_name'] ?? '') . ' ' . ($e['last_name'] ?? '')),
+                        'name' => UserDisplayName::resolve($e),
                         'avatar' => $e['avatar_url'] ?: null,
                     ],
                     'timebank' => [
@@ -1299,7 +1300,7 @@ class FederationV2Controller extends BaseApiController
                     'location' => $l['location'] ?? null,
                     'author' => [
                         'id' => (int) $l['user_id'],
-                        'name' => trim(($l['first_name'] ?? '') . ' ' . ($l['last_name'] ?? '')),
+                        'name' => UserDisplayName::resolve($l),
                         'avatar' => $l['avatar_url'] ?: null,
                     ],
                     'timebank' => [
@@ -1389,7 +1390,7 @@ class FederationV2Controller extends BaseApiController
                     'location' => $l['location'] ?? null,
                     'author' => [
                         'id' => (string) ($owner['id'] ?? ''),
-                        'name' => $owner['name'] ?? trim(($l['first_name'] ?? '') . ' ' . ($l['last_name'] ?? '')),
+                        'name' => $owner['name'] ?? UserDisplayName::resolve($l),
                         'avatar' => $avatar,
                     ],
                     'timebank' => [
@@ -1437,7 +1438,7 @@ class FederationV2Controller extends BaseApiController
                     'location' => $l['location'] ?? null,
                     'author' => [
                         'id' => (string) ($owner['id'] ?? ''),
-                        'name' => $owner['name'] ?? trim(($l['first_name'] ?? '') . ' ' . ($l['last_name'] ?? '')),
+                        'name' => $owner['name'] ?? UserDisplayName::resolve($l),
                         'avatar' => self::resolveExternalUrl($owner['avatar'] ?? null, $baseUrl),
                     ],
                     'timebank' => [
@@ -1604,7 +1605,7 @@ class FederationV2Controller extends BaseApiController
             $formatted = array_map(function ($m) {
                 return [
                     'id' => (int) $m['id'],
-                    'name' => trim(($m['first_name'] ?? '') . ' ' . ($m['last_name'] ?? '')),
+                    'name' => UserDisplayName::resolve($m),
                     'first_name' => $m['first_name'] ?? '',
                     'last_name' => $m['last_name'] ?? '',
                     'avatar' => $m['avatar_url'] ?: null,
@@ -1689,7 +1690,7 @@ class FederationV2Controller extends BaseApiController
             return array_map(function ($m) use ($externalPartnerId, $partnerName, $partnerBaseUrl) {
                 return [
                     'id' => 'ext-' . $externalPartnerId . '-' . ($m['id'] ?? 0),
-                    'name' => $m['name'] ?? trim(($m['first_name'] ?? '') . ' ' . ($m['last_name'] ?? '')),
+                    'name' => $m['name'] ?? UserDisplayName::resolve($m),
                     'first_name' => $m['first_name'] ?? '',
                     'last_name' => $m['last_name'] ?? '',
                     'avatar' => self::resolveExternalUrl($m['avatar'] ?? null, $partnerBaseUrl),
@@ -1733,7 +1734,7 @@ class FederationV2Controller extends BaseApiController
                 $baseUrl = $partnerId ? $this->getPartnerBaseUrl((int) $partnerId) : '';
                 return [
                     'id' => 'ext-' . $partnerId . '-' . ($m['id'] ?? 0),
-                    'name' => $m['name'] ?? trim(($m['first_name'] ?? '') . ' ' . ($m['last_name'] ?? '')),
+                    'name' => $m['name'] ?? UserDisplayName::resolve($m),
                     'first_name' => $m['first_name'] ?? '',
                     'last_name' => $m['last_name'] ?? '',
                     'avatar' => self::resolveExternalUrl($m['avatar'] ?? null, $baseUrl),
@@ -1822,7 +1823,7 @@ class FederationV2Controller extends BaseApiController
 
             $member = [
                 'id' => (int) $m['id'],
-                'name' => trim(($m['first_name'] ?? '') . ' ' . ($m['last_name'] ?? '')),
+                'name' => UserDisplayName::resolve($m),
                 'first_name' => $m['first_name'] ?? '',
                 'last_name' => $m['last_name'] ?? '',
                 'avatar' => $m['avatar_url'] ?: null,
@@ -1929,7 +1930,7 @@ class FederationV2Controller extends BaseApiController
 
             $partnerName = $partner['name'] ?? __('api.external_partner_fallback');
             $partnerBaseUrl = rtrim($partner['base_url'] ?? '', '/');
-            $name = $member['name'] ?? trim(($member['first_name'] ?? '') . ' ' . ($member['last_name'] ?? ''));
+            $name = $member['name'] ?? UserDisplayName::resolve($member);
 
             return $this->respondWithData([
                 'id' => 'ext-' . $externalPartnerId . '-' . ($member['id'] ?? $remoteId),
@@ -2025,7 +2026,7 @@ class FederationV2Controller extends BaseApiController
                 $formatted = array_map(function ($r) use ($partnerId, $partnerName, $partnerSlug, $baseUrl) {
                     $reviewer = is_array($r['reviewer'] ?? null) ? $r['reviewer'] : [];
                     $reviewerName = $reviewer['name']
-                        ?? trim((string) ($reviewer['first_name'] ?? '') . ' ' . (string) ($reviewer['last_name'] ?? ''));
+                        ?? UserDisplayName::resolve($reviewer);
                     $avatar = $reviewer['avatar'] ?? $reviewer['avatar_url'] ?? null;
                     if ($avatar && !str_starts_with((string) $avatar, 'http')) {
                         $avatar = $baseUrl . '/' . ltrim((string) $avatar, '/');
@@ -2126,9 +2127,7 @@ class FederationV2Controller extends BaseApiController
             $formatted = $rawRows->map(function (\App\Models\Review $r) use ($resolvePartner) {
                 $reviewer = $r->reviewer;
                 $isAnon = (bool) ($r->is_anonymous ?? false);
-                $reviewerName = ($reviewer && ($reviewer->profile_type ?? null) === 'organisation' && !empty($reviewer->organization_name))
-                    ? $reviewer->organization_name
-                    : trim(((string) ($reviewer->first_name ?? '')) . ' ' . ((string) ($reviewer->last_name ?? '')));
+                $reviewerName = UserDisplayName::resolve($reviewer);
                 $reviewerTenantId = (int) ($r->reviewer_tenant_id ?? 0) ?: null;
                 $partner = $resolvePartner($reviewerTenantId);
 
@@ -2179,9 +2178,13 @@ class FederationV2Controller extends BaseApiController
                     fm.external_partner_id, fm.external_receiver_name, fm.external_message_id,
                     COALESCE(su.first_name, '') as sender_first_name,
                     COALESCE(su.last_name, '') as sender_last_name,
+                    su.profile_type as sender_profile_type,
+                    su.organization_name as sender_organization_name,
                     su.avatar_url as sender_avatar, st.name as sender_tenant_name,
                     COALESCE(ru.first_name, '') as receiver_first_name,
                     COALESCE(ru.last_name, '') as receiver_last_name,
+                    ru.profile_type as receiver_profile_type,
+                    ru.organization_name as receiver_organization_name,
                     ru.avatar_url as receiver_avatar, rt.name as receiver_tenant_name,
                     ep.name as external_partner_name
                 FROM federation_messages fm
@@ -2218,7 +2221,7 @@ class FederationV2Controller extends BaseApiController
                     // Outbound to external: sender is local, receiver is external
                     $senderInfo = [
                         'id' => (int) $msg['sender_user_id'],
-                        'name' => trim($msg['sender_first_name'] . ' ' . $msg['sender_last_name']),
+                        'name' => UserDisplayName::resolvePrefixed($msg, 'sender_'),
                         'avatar' => $msg['sender_avatar'] ?: null,
                         'tenant_id' => (int) $msg['sender_tenant_id'],
                         'tenant_name' => $msg['sender_tenant_name'] ?? '',
@@ -2241,7 +2244,7 @@ class FederationV2Controller extends BaseApiController
                     ];
                     $receiverInfo = [
                         'id' => (int) $msg['receiver_user_id'],
-                        'name' => trim($msg['receiver_first_name'] . ' ' . $msg['receiver_last_name']),
+                        'name' => UserDisplayName::resolvePrefixed($msg, 'receiver_'),
                         'avatar' => $msg['receiver_avatar'] ?: null,
                         'tenant_id' => (int) $msg['receiver_tenant_id'],
                         'tenant_name' => $msg['receiver_tenant_name'] ?? '',
@@ -2250,14 +2253,14 @@ class FederationV2Controller extends BaseApiController
                     // Internal message
                     $senderInfo = [
                         'id' => (int) $msg['sender_user_id'],
-                        'name' => trim($msg['sender_first_name'] . ' ' . $msg['sender_last_name']),
+                        'name' => UserDisplayName::resolvePrefixed($msg, 'sender_'),
                         'avatar' => $msg['sender_avatar'] ?: null,
                         'tenant_id' => (int) $msg['sender_tenant_id'],
                         'tenant_name' => $msg['sender_tenant_name'] ?? '',
                     ];
                     $receiverInfo = [
                         'id' => (int) $msg['receiver_user_id'],
-                        'name' => trim($msg['receiver_first_name'] . ' ' . $msg['receiver_last_name']),
+                        'name' => UserDisplayName::resolvePrefixed($msg, 'receiver_'),
                         'avatar' => $msg['receiver_avatar'] ?: null,
                         'tenant_id' => (int) $msg['receiver_tenant_id'],
                         'tenant_name' => $msg['receiver_tenant_name'] ?? '',
@@ -2427,7 +2430,7 @@ class FederationV2Controller extends BaseApiController
             ", [$userId, $tenantId]);
             $sender = $senderRow ? (array)$senderRow : [];
 
-            $senderName = trim(($sender['first_name'] ?? '') . ' ' . ($sender['last_name'] ?? ''));
+            $senderName = UserDisplayName::resolve($sender);
 
             [$outboundId, $inboundId] = DB::transaction(function () use (
                 $tenantId,
@@ -2592,7 +2595,7 @@ class FederationV2Controller extends BaseApiController
                 ],
                 'receiver' => [
                     'id' => (int)$receiverId,
-                    'name' => trim($receiver['first_name'] . ' ' . $receiver['last_name']),
+                    'name' => UserDisplayName::resolve($receiver),
                     'avatar' => $receiver['avatar_url'] ?: null,
                     'tenant_id' => (int)$receiverTenantId,
                     'tenant_name' => $receiver['tenant_name'] ?? '',
@@ -2643,7 +2646,7 @@ class FederationV2Controller extends BaseApiController
             [$userId, $tenantId]
         );
         $sender = $senderRow ? (array) $senderRow : [];
-        $senderName = trim(($sender['first_name'] ?? '') . ' ' . ($sender['last_name'] ?? ''));
+        $senderName = UserDisplayName::resolve($sender);
 
         // Send via external API
         try {

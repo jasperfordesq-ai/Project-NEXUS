@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /**
  * SafeguardingService — formal safeguarding-concern escalation workflow.
@@ -724,7 +725,7 @@ class SafeguardingService
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $reviewerIds->all())
             ->where('status', 'active')
-            ->get(['id', 'email', 'first_name', 'last_name', 'preferred_language']);
+            ->get(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
 
         // Pull the report row + reporter name for the email payload.
         $report = DB::table('safeguarding_reports')
@@ -737,10 +738,10 @@ class SafeguardingService
             $reporter = DB::table('users')
                 ->where('tenant_id', $tenantId)
                 ->where('id', (int) $report->reporter_user_id)
-                ->first(['first_name', 'last_name']);
+                ->first(['first_name', 'last_name', 'profile_type', 'organization_name']);
         }
         $reporterName = $reporter
-            ? trim((string) ($reporter->first_name ?? '') . ' ' . (string) ($reporter->last_name ?? ''))
+            ? UserDisplayName::resolve($reporter)
             : '';
         if ($reporterName === '') {
             $reporterName = 'A community member';

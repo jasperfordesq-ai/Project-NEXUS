@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use App\Core\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * ConnectionSuggestionController — "People You May Know" suggestions.
@@ -177,9 +178,9 @@ class ConnectionSuggestionController extends BaseApiController
                 ->where('status', '!=', 'suspended')
                 ->orderByDesc('last_active_at')
                 ->limit($limit)
-                ->get(['id', 'name', 'first_name', 'last_name', 'avatar_url', 'bio', 'skills'])
+                ->get(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'bio', 'skills'])
                 ->map(function ($u) {
-                    $u->name = $u->name ?: trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? ''));
+                    $u->name = $u->name ?: UserDisplayName::resolve($u);
                     $u->mutual_connections_count = 0;
                     $u->shared_groups_count = 0;
                     return $u;

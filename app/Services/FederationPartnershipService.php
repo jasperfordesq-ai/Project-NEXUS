@@ -807,7 +807,7 @@ class FederationPartnershipService
                 ->select(
                     'p.*',
                     't.name as partner_name', 't.domain as partner_domain',
-                    'u.first_name as proposer_first_name', 'u.last_name as proposer_last_name'
+                    'u.first_name as proposer_first_name', 'u.last_name as proposer_last_name', 'u.profile_type as proposer_profile_type', 'u.organization_name as proposer_organization_name'
                 )
                 ->where('p.tenant_id', $tenantId)
                 ->where('p.status', 'pending')

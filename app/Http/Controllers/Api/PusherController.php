@@ -13,6 +13,7 @@ use App\Core\TenantContext;
 use App\Services\PusherService;
 use App\Services\RealtimeService;
 use App\Services\FederationRealtimeService;
+use App\Support\UserDisplayName;
 
 /**
  * PusherController — Eloquent-powered Pusher realtime auth and config.
@@ -178,7 +179,7 @@ class PusherController extends BaseApiController
     private function getUserInfo(int $userId): array
     {
         $user = DB::table('users')
-            ->select('id', 'first_name', 'last_name', 'avatar_url')
+            ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url')
             ->where('id', $userId)
             ->where('tenant_id', TenantContext::getId())
             ->first();
@@ -187,7 +188,7 @@ class PusherController extends BaseApiController
             return ['id' => $userId];
         }
 
-        $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $name = UserDisplayName::resolve($user);
 
         return [
             'id' => $user->id,

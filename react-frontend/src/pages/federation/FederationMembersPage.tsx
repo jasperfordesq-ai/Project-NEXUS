@@ -43,7 +43,7 @@ import { FederatedTrustBadge } from '@/components/federation';
 import { FederationOptInNotice } from '@/components/federation/FederationOptInNotice';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import type { FederatedMember, FederationPartner } from '@/types/api';
@@ -338,7 +338,7 @@ export function FederationMembersPage() {
   }, [navigate, tenantPath, toast, t]);
 
   const handleSendMessage = useCallback((member: FederatedMember) => {
-    const memberName = member.name?.trim() || `${member.first_name || ''} ${member.last_name || ''}`.trim();
+    const memberName = resolveUserDisplayName(member);
     const nameParam = memberName ? `&name=${encodeURIComponent(memberName)}` : '';
     navigate(
       tenantPath(`/federation/messages?compose=true&to_user=${member.id}&to_tenant=${member.timebank.id}${nameParam}`)
@@ -591,8 +591,7 @@ const FederatedMemberCard = memo(function FederatedMemberCard({
 }: FederatedMemberCardProps) {
   const { t } = useTranslation('federation');
   const displayName =
-    member.name?.trim() ||
-    `${member.first_name || ''} ${member.last_name || ''}`.trim() ||
+    resolveUserDisplayName(member) ||
     t('members.member_fallback');
 
   const skills = member.skills ?? [];

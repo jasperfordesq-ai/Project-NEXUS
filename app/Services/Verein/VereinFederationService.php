@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Support\UserDisplayName;
 
 /**
  * AG55 — Verein-to-Verein federation service.
@@ -527,7 +528,7 @@ class VereinFederationService
                 'i.id', 'i.status', 'i.message', 'i.sent_at', 'i.responded_at', 'i.expires_at',
                 'i.source_organization_id', 'i.target_organization_id',
                 'src.name as source_name', 'tgt.name as target_name',
-                'u.first_name as inviter_first_name', 'u.last_name as inviter_last_name',
+                'u.first_name as inviter_first_name', 'u.last_name as inviter_last_name', 'u.profile_type as inviter_profile_type', 'u.organization_name as inviter_organization_name',
             ])
             ->get()
             ->map(fn ($r) => [
@@ -541,7 +542,7 @@ class VereinFederationService
                 'target_organization_id' => (int) $r->target_organization_id,
                 'source_name' => $r->source_name,
                 'target_name' => $r->target_name,
-                'inviter_name' => trim(($r->inviter_first_name ?? '') . ' ' . ($r->inviter_last_name ?? '')) ?: null,
+                'inviter_name' => UserDisplayName::resolvePrefixed($r, 'inviter_') ?: null,
             ])
             ->values()
             ->all();
@@ -712,7 +713,7 @@ class VereinFederationService
             ->where('id', $accepterUserId)
             ->where('tenant_id', $tenantId)
             ->first();
-        $accepterName = $accepter ? trim(($accepter->first_name ?? '') . ' ' . ($accepter->last_name ?? '')) : '';
+        $accepterName = $accepter ? UserDisplayName::resolve($accepter) : '';
         $targetName = (string) (DB::table('vol_organizations')
             ->where('id', $targetOrgId)
             ->where('tenant_id', $tenantId)

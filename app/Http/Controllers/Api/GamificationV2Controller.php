@@ -20,6 +20,7 @@ use App\Services\GamificationService;
 use App\Services\LeaderboardSeasonService;
 use App\Services\NexusScoreCacheService;
 use App\Services\XPShopService;
+use App\Support\UserDisplayName;
 
 /**
  * GamificationV2Controller -- Gamification v2: profile, badges, leaderboard,
@@ -88,7 +89,7 @@ class GamificationV2Controller extends BaseApiController
         $profile = [
             'user' => [
                 'id' => $user['id'],
-                'name' => trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')),
+                'name' => UserDisplayName::resolve($user),
                 'avatar_url' => $user['avatar_url'],
             ],
             'xp' => $xp,

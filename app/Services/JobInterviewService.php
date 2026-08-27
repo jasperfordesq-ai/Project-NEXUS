@@ -337,7 +337,7 @@ class JobInterviewService
         $tenantId = TenantContext::getId();
 
         try {
-            return JobInterview::with(['application.applicant:id,first_name,last_name,avatar_url'])
+            return JobInterview::with(['application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                 ->where('tenant_id', $tenantId)
                 ->where('vacancy_id', $vacancyId)
                 ->orderByDesc('scheduled_at')

@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Support\SafeguardingInteractionDecision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * GroupExchangeService — Native Laravel implementation for group time exchanges.
@@ -131,7 +132,7 @@ class GroupExchangeService
                 'p.notes',
                 'p.created_at',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
                 'u.email',
             ])
@@ -140,7 +141,7 @@ class GroupExchangeService
         // The React detail page reads user_name / user_avatar / user_email. Keep the
         // legacy name / avatar_url keys too so any other consumer is unaffected.
         $participantList = $participants->map(function ($p) {
-            $fullName = trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? ''));
+            $fullName = UserDisplayName::resolve($p);
 
             return [
                 'id'                => (int) $p->participant_id,
@@ -164,11 +165,11 @@ class GroupExchangeService
         $organizer = DB::table('users')
             ->where('id', $exchange->organizer_id)
             ->where('tenant_id', $tenantId)
-            ->select(['first_name', 'last_name', 'avatar_url'])
+            ->select(['first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url'])
             ->first();
 
         $organizerName = $organizer
-            ? trim(($organizer->first_name ?? '') . ' ' . ($organizer->last_name ?? ''))
+            ? UserDisplayName::resolve($organizer)
             : '';
 
         return [
@@ -231,7 +232,7 @@ class GroupExchangeService
                 'e.updated_at',
                 'e.completed_at',
                 'org.first_name as organizer_first_name',
-                'org.last_name as organizer_last_name',
+                'org.last_name as organizer_last_name', 'org.profile_type as organizer_profile_type', 'org.organization_name as organizer_organization_name',
                 'org.avatar_url as organizer_avatar',
                 DB::raw('(SELECT COUNT(*) FROM group_exchange_participants gp WHERE gp.group_exchange_id = e.id) as participant_count'),
             ]);
@@ -254,7 +255,7 @@ class GroupExchangeService
             'title'             => $e->title,
             'description'       => $e->description,
             'organizer_id'      => (int) $e->organizer_id,
-            'organizer_name'    => trim(($e->organizer_first_name ?? '') . ' ' . ($e->organizer_last_name ?? '')),
+            'organizer_name'    => UserDisplayName::resolvePrefixed($e, 'organizer_'),
             'organizer_avatar'  => $e->organizer_avatar,
             'status'            => $e->status,
             'split_type'        => $e->split_type,

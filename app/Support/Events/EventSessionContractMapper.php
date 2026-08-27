@@ -16,6 +16,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
+use App\Support\UserDisplayName;
 
 /** Privacy-safe serializer for the independent Events agenda v1 contract. */
 final class EventSessionContractMapper
@@ -290,7 +291,7 @@ final class EventSessionContractMapper
         }
 
         return self::publicText(trim(
-            (string) ($user['first_name'] ?? '') . ' ' . (string) ($user['last_name'] ?? ''),
+            UserDisplayName::resolve($user),
         ));
     }
 

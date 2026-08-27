@@ -19,6 +19,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * Notifies all admin and broker users when a member self-identifies
@@ -78,7 +79,7 @@ class NotifySafeguardingStaff implements ShouldQueue
             // Load the flagged member's name
             $flaggedUser = User::find($flaggedUserId);
             $memberName  = $flaggedUser
-                ? trim(($flaggedUser->first_name ?? '') . ' ' . ($flaggedUser->last_name ?? '')) ?: ($flaggedUser->name ?? 'Unknown member')
+                ? UserDisplayName::resolve($flaggedUser) ?: ($flaggedUser->name ?? 'Unknown member')
                 : 'Unknown member';
 
             // Build a summary of what was selected

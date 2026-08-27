@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Meilisearch\Client as MeilisearchClient;
+use App\Support\UserDisplayName;
 
 /**
  * SearchService — unified search across users, listings, events, and groups.
@@ -398,7 +399,7 @@ class SearchService
             'category_id'   => $listing->category_id,
             'category_name' => ($listing->relationLoaded('category') ? $listing->getRelation('category')?->name : null) ?? '',
             'author_name'   => $listing->user
-                ? trim($listing->user->first_name . ' ' . $listing->user->last_name)
+                ? UserDisplayName::resolve($listing->user)
                 : '',
             'skill_tags'    => $listing->skillTags->pluck('tag')->all(),
             'created_at'    => $listing->created_at?->timestamp ?? 0,
@@ -520,7 +521,7 @@ class SearchService
             'is_recurring_template' => false,
             'is_online'      => (bool) ($event->allow_remote_attendance ?? false),
             'organizer_name' => $event->user
-                ? trim($event->user->first_name . ' ' . $event->user->last_name)
+                ? UserDisplayName::resolve($event->user)
                 : '',
             'start_time'     => $event->start_time?->timestamp ?? $event->start_date?->timestamp ?? 0,
             'created_at'     => $event->created_at?->timestamp ?? 0,
@@ -876,7 +877,7 @@ class SearchService
             $results['users'] = array_map(function (array $h) {
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                     ? $h['organization_name']
-                    : trim(($h['first_name'] ?? '') . ' ' . ($h['last_name'] ?? ''));
+                    : UserDisplayName::resolve($h);
                 return [...$h, 'result_type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
             }, $hits);
         }
@@ -904,7 +905,7 @@ class SearchService
                 // can be stale after an outage or delayed asynchronous delete.
                 $eventIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
                 $eventQuery = $this->event->newQueryWithoutScopes()
-                    ->with(['user:id,first_name,last_name,avatar_url'])
+                    ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                     ->whereIn('events.id', $eventIds)
                     ->where('events.start_time', '>=', now());
                 $events = EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId)
@@ -977,7 +978,7 @@ class SearchService
                     'result_type' => 'user',
                     'name' => ($u->profile_type === 'organisation' && $u->organization_name)
                         ? $u->organization_name
-                        : trim($u->first_name . ' ' . $u->last_name),
+                        : UserDisplayName::resolve($u),
                     'avatar'  => $u->avatar_url,
                     'tagline' => $u->bio,
                 ])
@@ -986,7 +987,7 @@ class SearchService
 
         if ($type === null || $type === 'listings') {
             $results['listings'] = $this->listing->newQuery()
-                ->with(['user:id,first_name,last_name,avatar_url', 'category:id,name,color'])
+                ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'category:id,name,color'])
                 ->where(function (Builder $q) use ($like) {
                     $q->where('title', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like);
@@ -1010,7 +1011,7 @@ class SearchService
 
         if ($type === null || $type === 'events') {
             $eventQuery = $this->event->newQueryWithoutScopes()
-                ->with(['user:id,first_name,last_name,avatar_url'])
+                ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                 ->where(function (Builder $q) use ($like) {
                     $q->where('title', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like)
@@ -1131,7 +1132,7 @@ class SearchService
             foreach ($hits as $h) {
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                     ? $h['organization_name']
-                    : trim(($h['first_name'] ?? '') . ' ' . ($h['last_name'] ?? ''));
+                    : UserDisplayName::resolve($h);
                 $allItems[] = [...$h, 'type' => 'user', 'name' => $name, 'avatar' => $h['avatar_url'] ?? null, 'tagline' => $h['bio'] ?? null];
             }
         }
@@ -1148,7 +1149,7 @@ class SearchService
             if (!empty($hits)) {
                 $eventIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
                 $eventQuery = $this->event->newQueryWithoutScopes()
-                    ->with(['user:id,first_name,last_name,avatar_url'])
+                    ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                     ->whereIn('events.id', $eventIds)
                     ->where('events.start_time', '>=', now());
                 $events = EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId)
@@ -1210,7 +1211,7 @@ class SearchService
 
         if ($type === 'all' || $type === 'listings') {
             $lq = $this->listing->newQuery()
-                ->with(['user:id,first_name,last_name,avatar_url', 'category:id,name,color'])
+                ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'category:id,name,color'])
                 ->where(function (Builder $q) use ($like) {
                     $q->where('title', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like);
@@ -1258,7 +1259,7 @@ class SearchService
             foreach ($uq->limit($limit)->get() as $u) {
                 $name = ($u->profile_type === 'organisation' && $u->organization_name)
                     ? $u->organization_name
-                    : trim($u->first_name . ' ' . $u->last_name);
+                    : UserDisplayName::resolve($u);
                 $allItems[] = [
                     ...$u->toArray(),
                     'type'    => 'user',
@@ -1271,7 +1272,7 @@ class SearchService
 
         if ($type === 'all' || $type === 'events') {
             $eq = $this->event->newQueryWithoutScopes()
-                ->with(['user:id,first_name,last_name,avatar_url'])
+                ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                 ->where(function (Builder $q) use ($like) {
                     $q->where('title', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like)
@@ -1454,7 +1455,7 @@ class SearchService
         $users = array_map(function (array $h) {
             $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                 ? $h['organization_name']
-                : trim(($h['first_name'] ?? '') . ' ' . ($h['last_name'] ?? ''));
+                : UserDisplayName::resolve($h);
             return [...$h, 'name' => $name];
         }, $userHits);
 
@@ -1518,7 +1519,7 @@ class SearchService
             ->map(function (User $u) {
                 $name = ($u->profile_type === 'organisation' && $u->organization_name)
                     ? $u->organization_name
-                    : trim($u->first_name . ' ' . $u->last_name);
+                    : UserDisplayName::resolve($u);
                 return [...$u->toArray(), 'name' => $name];
             })
             ->all();

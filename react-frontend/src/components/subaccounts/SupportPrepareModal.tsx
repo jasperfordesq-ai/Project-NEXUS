@@ -52,7 +52,7 @@ import {
 import { ListingForm, type ListingSubmitPayload, type ListingSubmitResult } from '@/components/listings/ListingForm';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { useToast } from '@/contexts';
 
 export type PrepareActionType = 'listing_create' | 'credit_transfer';
@@ -329,11 +329,11 @@ export function SupportPrepareModal({
                         <Avatar
                           aria-hidden="true"
                           src={resolveAvatarUrl(recipient.avatar_url)}
-                          name={`${recipient.first_name} ${recipient.last_name}`.trim()}
+                          name={resolveUserDisplayName(recipient)}
                           size="sm"
                         />
                         <span className="text-sm font-medium text-theme-primary">
-                          {`${recipient.first_name} ${recipient.last_name}`.trim()}
+                          {resolveUserDisplayName(recipient)}
                         </span>
                       </span>
                       <Button size="sm" variant="tertiary" onPress={() => setRecipient(null)}>
@@ -367,10 +367,10 @@ export function SupportPrepareModal({
                                   <Avatar
                                     aria-hidden="true"
                                     src={resolveAvatarUrl(user.avatar_url)}
-                                    name={`${user.first_name} ${user.last_name}`.trim()}
+                                    name={resolveUserDisplayName(user)}
                                     size="sm"
                                   />
-                                  {`${user.first_name} ${user.last_name}`.trim()}
+                                  {resolveUserDisplayName(user)}
                                 </span>
                               </Button>
                             </li>

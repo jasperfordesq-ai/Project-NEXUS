@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\UserDisplayName;
 
 /**
  * AdminSafeguardingController -- Admin safeguarding module endpoints.
@@ -448,8 +449,8 @@ class AdminSafeguardingController extends BaseApiController
                         ]);
 
                         if (!empty($guardianUser->email)) {
-                            $guardianName = trim(($guardianUser->first_name ?? '') . ' ' . ($guardianUser->last_name ?? '')) ?: ($guardianUser->name ?? '');
-                            $wardName = trim(($wardUser->first_name ?? '') . ' ' . ($wardUser->last_name ?? '')) ?: ($wardUser->name ?? __('api_controllers_1.admin_safeguarding.a_member'));
+                            $guardianName = UserDisplayName::resolve($guardianUser) ?: ($guardianUser->name ?? '');
+                            $wardName = UserDisplayName::resolve($wardUser) ?: ($wardUser->name ?? __('api_controllers_1.admin_safeguarding.a_member'));
                             $safeGuardian = htmlspecialchars($guardianName, ENT_QUOTES, 'UTF-8');
                             $safeWard = htmlspecialchars($wardName, ENT_QUOTES, 'UTF-8');
                             $safeCommunity = htmlspecialchars($communityName, ENT_QUOTES, 'UTF-8');
@@ -483,8 +484,8 @@ class AdminSafeguardingController extends BaseApiController
                         ]);
 
                         if (!empty($wardUser->email)) {
-                            $wardName2 = trim(($wardUser->first_name ?? '') . ' ' . ($wardUser->last_name ?? '')) ?: ($wardUser->name ?? '');
-                            $guardianDisplay = trim(($guardianUser->first_name ?? '') . ' ' . ($guardianUser->last_name ?? '')) ?: ($guardianUser->name ?? __('api_controllers_1.admin_safeguarding.a_coordinator'));
+                            $wardName2 = UserDisplayName::resolve($wardUser) ?: ($wardUser->name ?? '');
+                            $guardianDisplay = UserDisplayName::resolve($guardianUser) ?: ($guardianUser->name ?? __('api_controllers_1.admin_safeguarding.a_coordinator'));
                             $safeWard2 = htmlspecialchars($wardName2, ENT_QUOTES, 'UTF-8');
                             $safeGuardian2 = htmlspecialchars($guardianDisplay, ENT_QUOTES, 'UTF-8');
                             $safeCommunity2 = htmlspecialchars($communityName, ENT_QUOTES, 'UTF-8');
@@ -570,8 +571,8 @@ class AdminSafeguardingController extends BaseApiController
                 $communityName  = TenantContext::getName() ?: __('emails.common.fallback_tenant_name');
                 $guardianUser   = \App\Models\User::where('id', $assignment->guardian_user_id)->where('tenant_id', $tenantId)->first();
                 $wardUser       = \App\Models\User::where('id', $assignment->ward_user_id)->where('tenant_id', $tenantId)->first();
-                $wardName       = $wardUser ? (trim(($wardUser->first_name ?? '') . ' ' . ($wardUser->last_name ?? '')) ?: ($wardUser->name ?? '')) : '';
-                $guardianName   = $guardianUser ? (trim(($guardianUser->first_name ?? '') . ' ' . ($guardianUser->last_name ?? '')) ?: ($guardianUser->name ?? '')) : '';
+                $wardName       = $wardUser ? (UserDisplayName::resolve($wardUser) ?: ($wardUser->name ?? '')) : '';
+                $guardianName   = $guardianUser ? (UserDisplayName::resolve($guardianUser) ?: ($guardianUser->name ?? '')) : '';
                 $safeCommunity  = htmlspecialchars($communityName, ENT_QUOTES, 'UTF-8');
 
                 // Bell + email — guardian (rendered in guardian's locale)
@@ -773,7 +774,7 @@ class AdminSafeguardingController extends BaseApiController
         $member = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select(['id', 'first_name', 'last_name', 'name', 'avatar_url', 'email'])
+            ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'avatar_url', 'email'])
             ->first();
         if (!$member) {
             return $this->respondWithError('NOT_FOUND', __('api.member_not_found'), null, 404);
@@ -798,7 +799,7 @@ class AdminSafeguardingController extends BaseApiController
         return $this->respondWithData([
             'member' => [
                 'id' => (int) $member->id,
-                'name' => trim(($member->first_name ?? '') . ' ' . ($member->last_name ?? ''))
+                'name' => UserDisplayName::resolve($member)
                     ?: ($member->name ?? ''),
                 'avatar_url' => $member->avatar_url,
                 'email' => $member->email,
@@ -821,7 +822,7 @@ class AdminSafeguardingController extends BaseApiController
         $member = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select(['id', 'first_name', 'last_name', 'name'])
+            ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
             ->first();
         if (!$member) {
             return $this->respondWithError('NOT_FOUND', __('api.member_not_found'), null, 404);
@@ -841,7 +842,7 @@ class AdminSafeguardingController extends BaseApiController
             'created_at' => now(),
         ]);
 
-        $memberLabel = trim(($member->first_name ?? '') . ' ' . ($member->last_name ?? ''))
+        $memberLabel = UserDisplayName::resolve($member)
             ?: ($member->name ?? "member-{$userId}");
         $slug = preg_replace('/[^a-z0-9_-]+/i', '-', strtolower($memberLabel));
         $filename = "safeguarding-activity-{$slug}-" . now()->format('Y-m-d') . '.csv';

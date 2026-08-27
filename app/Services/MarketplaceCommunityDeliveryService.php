@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\UserDisplayName;
 
 /**
  * MarketplaceCommunityDeliveryService — Community-powered delivery for marketplace.
@@ -420,7 +421,7 @@ class MarketplaceCommunityDeliveryService
             ->select(
                 'mdo.*',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
                 'u.is_verified'
             )
@@ -465,7 +466,7 @@ class MarketplaceCommunityDeliveryService
             'created_at' => $offer->created_at,
             'deliverer' => [
                 'id' => $offer->deliverer_id,
-                'name' => trim(($offer->first_name ?? '') . ' ' . ($offer->last_name ?? '')),
+                'name' => UserDisplayName::resolve($offer),
                 'avatar_url' => $offer->avatar_url ?? null,
                 'is_verified' => (bool) ($offer->is_verified ?? false),
             ],

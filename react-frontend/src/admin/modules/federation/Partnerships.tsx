@@ -9,7 +9,7 @@
  * Features: Counter-proposals, detail drawer, permissions matrix, audit timeline, * incoming requests tab, partnership statistics.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
@@ -955,7 +955,7 @@ export function Partnerships() {
                                     </p>
                                     <p className="text-xs text-muted">
                                       {entry.first_name && entry.last_name
-                                        ? `${entry.first_name} ${entry.last_name}`
+                                        ? resolveUserDisplayName(entry)
                                         : t('federation.system')
                                       }
                                       {' — '}

@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
+use App\Support\UserDisplayName;
 
 /**
  * MemberVerificationBadgeService — Verification badge system.
@@ -76,7 +77,7 @@ class MemberVerificationBadgeService
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->select('id', 'first_name', 'last_name', 'preferred_language')
+            ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language')
             ->first();
 
         if (!$user) {
@@ -182,7 +183,7 @@ class MemberVerificationBadgeService
             })
             ->select(
                 'mvb.badge_type', 'mvb.granted_at', 'mvb.expires_at',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as verified_by_name")
+                DB::raw(UserDisplayName::sql('u', 'verified_by_name'))
             )
             ->get();
 
@@ -246,7 +247,7 @@ class MemberVerificationBadgeService
             ->leftJoin('users as u', 'mvb.verified_by', '=', 'u.id')
             ->where('mvb.user_id', $userId)
             ->where('mvb.tenant_id', $tenantId)
-            ->select('mvb.*', DB::raw("CONCAT(u.first_name, ' ', u.last_name) as verified_by_name"))
+            ->select('mvb.*', DB::raw(UserDisplayName::sql('u', 'verified_by_name')))
             ->orderByDesc('mvb.granted_at')
             ->get();
 

@@ -17,6 +17,7 @@ use App\Services\GoalProgressService;
 use App\Services\GoalTemplateService;
 use App\Services\GoalReminderService;
 use Illuminate\Http\JsonResponse;
+use App\Support\UserDisplayName;
 
 /**
  * GoalsController — Eloquent-powered CRUD and progress tracking for member goals.
@@ -46,7 +47,7 @@ class GoalsController extends BaseApiController
         // Flatten user relation
         $user = $goal['user'] ?? null;
         $goal['user_name'] = $user
-            ? trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))
+            ? UserDisplayName::resolve($user)
             : null;
         $goal['user_avatar'] = $user['avatar_url'] ?? null;
 
@@ -54,7 +55,7 @@ class GoalsController extends BaseApiController
         $mentor = $goal['mentor'] ?? null;
         $goal['buddy_id'] = $goal['mentor_id'] ?? null;
         $goal['buddy_name'] = $mentor
-            ? trim(($mentor['first_name'] ?? '') . ' ' . ($mentor['last_name'] ?? ''))
+            ? UserDisplayName::resolve($mentor)
             : null;
         $goal['buddy_avatar'] = $mentor['avatar_url'] ?? null;
 
@@ -157,7 +158,7 @@ class GoalsController extends BaseApiController
         }
 
         $goal = $this->goalService->create($userId, $data);
-        $result = $this->enrichGoal($goal->load(['user:id,first_name,last_name,avatar_url', 'mentor:id,first_name,last_name,avatar_url'])->toArray());
+        $result = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $result['is_owner'] = true;
 
         // Record feed activity (only for public goals)
@@ -196,7 +197,7 @@ class GoalsController extends BaseApiController
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.goal_not_found_or_not_owned'), null, 404);
         }
 
-        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,avatar_url', 'mentor:id,first_name,last_name,avatar_url'])->toArray());
+        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $data['is_owner'] = true;
 
         return $this->respondWithData($data);
@@ -290,7 +291,7 @@ class GoalsController extends BaseApiController
             \Log::warning('Goal auto-completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
         }
 
-        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,avatar_url', 'mentor:id,first_name,last_name,avatar_url'])->toArray());
+        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $data['is_owner'] = true;
 
         return $this->respondWithData($data);
@@ -353,7 +354,7 @@ class GoalsController extends BaseApiController
             \Log::warning('Goal buddy completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
         }
 
-        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,avatar_url', 'mentor:id,first_name,last_name,avatar_url'])->toArray());
+        $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $data['is_owner'] = true;
 
         return $this->respondWithData($data);

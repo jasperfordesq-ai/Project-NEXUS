@@ -10,6 +10,7 @@ namespace App\Services\CaringCommunity;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\UserDisplayName;
 
 /**
  * AG43 — Citizen residency verification for geographically bounded KISS cooperatives.
@@ -106,7 +107,7 @@ class ResidencyVerificationService
             ->select([
                 'rv.*',
                 'u.first_name',
-                'u.last_name',
+                'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.email',
             ])
             ->orderByRaw("FIELD(rv.status, 'pending', 'approved', 'rejected')")
@@ -122,7 +123,7 @@ class ResidencyVerificationService
                 $formatted = $this->formatRow($row);
                 $formatted['member'] = [
                     'id' => (int) $row->user_id,
-                    'name' => trim((string) ($row->first_name ?? '') . ' ' . (string) ($row->last_name ?? '')),
+                    'name' => UserDisplayName::resolve($row),
                     'email' => $row->email,
                 ];
 
