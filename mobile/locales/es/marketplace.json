@@ -221,7 +221,7 @@
     "oversold_protected": "Rechazar pedidos que podrían sobrevender",
     "soldOut": "Agotado",
     "low": "Stock bajo: {{count}}",
-    "count": "Stock: {{count}}"
+    "count": "Existencias: {{count}}"
   },
   "myListings": {
     "eyebrow": "Panel de vendedor",

@@ -1,8 +1,29 @@
 {
   "global": {
-    "common.json:appName": "Registered product name"
+    "common.json:appName": "Registered product name",
+    "exchanges.json:radiusKm": "International kilometre unit"
   },
   "byLocale": {
+    "de": {
+      "eventOfflineCheckin.json:device.version": "Version is the same word in German",
+      "event_communications.json:version": "Version is the same word in German",
+      "event_recurrence_blueprints.json:history_version": "Version is the same word in German",
+      "event_templates.json:templates.mobile.optionalDatePlaceholder": "Literal machine-readable date-time format"
+    },
+    "fr": {
+      "eventOfflineCheckin.json:device.version": "Version is the same word in French",
+      "event_communications.json:version": "Version is the same word in French",
+      "event_recurrence_blueprints.json:history_version": "Version is the same word in French",
+      "exchanges.json:groupExchanges.participants": "Participant is the same word in French",
+      "exchanges.json:groupExchanges.participants_one": "Participant is the same word in French",
+      "exchanges.json:groupExchanges.participants_other": "Participants is the same word in French",
+      "marketplace.json:forms.photosCount": "Photos is the same word in French",
+      "marketplace.json:orders.deliveryEstimate": "Minutes is the same word in French",
+      "marketplace.json:orders.deliveryEstimate_one": "Minute is the same word in French"
+    },
+    "it": {
+      "resources.json:downloads_one": "Download is established Italian product terminology"
+    },
     "ga": {
       "exchanges.json:radiusKm": "International kilometre unit",
       "gamification.json:xp": "Product XP unit",

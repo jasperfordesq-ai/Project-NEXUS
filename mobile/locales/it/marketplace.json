@@ -557,7 +557,7 @@
     "redeemInStore": "Riscatta in negozio",
     "generatingQr": "Generazione QR",
     "showQr": "Mostra codice QR",
-    "qrAlt": "Coupon QR code",
+    "qrAlt": "Codice QR del coupon",
     "scanAtCheckout": "Chiedi al venditore di scansionare questo codice QR al momento del pagamento.",
     "qrExpires": "Scade alle {{time}}",
     "qrFailed": "Impossibile generare il codice QR del coupon. Riprova.",

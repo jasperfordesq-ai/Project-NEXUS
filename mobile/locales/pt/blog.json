@@ -11,7 +11,7 @@
   "emptyFiltered": "Nenhum artigo correspondente",
   "emptyFilteredHint": "Tente uma pesquisa diferente.",
   "loadMore": "Carregar mais",
-  "postsCount": "{{count}} post",
+  "postsCount": "{{count}} publicação",
   "postsCount_one": "{{count}} publicação",
   "postsCount_other": "{{count}} publicações",
   "publishedOn": "{{date}}",

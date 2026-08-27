@@ -267,7 +267,7 @@
     "invalidCredits": "Veuillez saisir un nombre de fois valide. crédits.",
     "creditsRange": "Entrez entre 0,5 et 100 crédits."
   },
-  "typeLabel": "{{type}} type",
+  "typeLabel": "Type : {{type}}",
   "categoryLabel": "{{name}} catégorie",
   "createError": "Échec de la création échange.",
   "detail": {
