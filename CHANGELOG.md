@@ -285,7 +285,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   later switches) to an organisation in profile settings stores the trading name
   separately from the person's first and last name. The person's name was leaking
   through into the members directory, group creators, the explore lists, the feed
-  sidebar and the AI assistant's memory. There were three underlying causes, all
+  sidebar, shared and quoted feed posts, the gamification profile card, the
+  leaderboard and the AI assistant's memory. There were three underlying causes, all
   fixed: the stored display-name column was written from the person's name when an
   account was created, was never written at all by self-registration, and was never
   recalculated when a member switched their profile to an organisation. A migration

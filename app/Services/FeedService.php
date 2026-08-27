@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Core\TenantContext;
 use App\Support\Events\EventSearchVisibility;
 use App\Support\FeedItemTables;
+use App\Support\UserDisplayName;
 
 /**
  * FeedService — Laravel DI-based service for social feed operations.
@@ -756,7 +757,7 @@ class FeedService
                 $sharerInfo = DB::table('users')
                     ->whereIn('id', array_keys($sharerIdsToResolve))
                     ->where('tenant_id', $tenantId)
-                    ->select('id', 'first_name', 'last_name', 'avatar_url')
+                    ->select('id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url')
                     ->get()
                     ->keyBy('id');
                 foreach ($items as &$item) {
@@ -779,7 +780,7 @@ class FeedService
                     if (!$info) {
                         continue;
                     }
-                    $name = trim(($info->first_name ?? '') . ' ' . ($info->last_name ?? ''));
+                    $name = UserDisplayName::resolve($info);
                     $item['shared_by'] = [
                         'id'         => (int) $info->id,
                         'name'       => $name !== '' ? $name : 'Unknown',
@@ -1463,7 +1464,7 @@ class FeedService
                 'created_at' => (string) $qp->created_at,
                 'author' => [
                     'id' => (int) $qp->user_id,
-                    'name' => $qp->user ? ($qp->user->name ?? ($qp->user->first_name . ' ' . $qp->user->last_name)) : 'Unknown',
+                    'name' => $qp->user ? UserDisplayName::resolve($qp->user, 'Unknown') : 'Unknown',
                     'avatar_url' => $qp->user?->avatar_url ?? '/assets/img/defaults/default_avatar.png',
                 ],
                 'media' => [],

@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\BadgeDefinitionService;
 use App\Services\GamificationRealtimeService;
+use App\Support\UserDisplayName;
 
 /**
  * GamificationService — Eloquent-based service for gamification.
@@ -193,7 +194,7 @@ class GamificationService
         return [
             'user' => [
                 'id'         => $user->id,
-                'name'       => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'name'       => UserDisplayName::resolve($user),
                 'avatar_url' => $user->avatar_url,
             ],
             'xp'               => $xp,
@@ -248,7 +249,7 @@ class GamificationService
         $tenantId = $tenantId ?? \App\Core\TenantContext::getId();
 
         $query = User::query()
-            ->select(['id', 'first_name', 'last_name', 'avatar_url', 'xp', 'level', 'points'])
+            ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'xp', 'level', 'points'])
             ->where('tenant_id', $tenantId)
             ->where('is_approved', true);
 
@@ -260,7 +261,7 @@ class GamificationService
                 'position'        => $i + 1,
                 'user'            => [
                     'id'         => $u->id,
-                    'name'       => trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')),
+                    'name'       => UserDisplayName::resolve($u),
                     'avatar_url' => $u->avatar_url,
                 ],
                 'xp'              => (int) ($u->xp ?? $u->points ?? 0),

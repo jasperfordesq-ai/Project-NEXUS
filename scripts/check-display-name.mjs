@@ -62,7 +62,7 @@ const ROOT = process.cwd();
  * this number for any other reason: if a genuinely person-specific surface ever
  * needs the parts joined by hand, say which site and why, here.
  */
-const BASELINE = Number(process.env.DISPLAY_NAME_BASELINE ?? '4');
+const BASELINE = Number(process.env.DISPLAY_NAME_BASELINE ?? '0');
 
 /** Directories never scanned. */
 const SKIP_DIRS = new Set([
