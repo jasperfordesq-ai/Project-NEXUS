@@ -43,9 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and removed one more informational chip exposed as a tiny button; the login and
   community-picker layouts are also capped to a readable width on landscape tablets.
   Coherent authentication, endorsements, Explore, notification-group, saved-search,
-  messaging attachment/voice, home activity/poll, gamification and goals translation
-  batches reduce the guarded English-identical baseline by 1,015 entries, from 4,531 to
-  3,516. Protected TalkBack
+  messaging attachment/voice, home activity/poll, gamification, goals and group-exchange
+  translation batches reduce the guarded English-identical baseline by 1,153 entries,
+  from 4,531 to 3,378. Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
 
