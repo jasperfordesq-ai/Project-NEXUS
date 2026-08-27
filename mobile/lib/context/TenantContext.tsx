@@ -189,16 +189,36 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
   const setTenantSlug = useCallback(
     async (slug: string) => {
+      const previousSlug = tenantSlug ?? DEFAULT_TENANT;
+      const previousTenant = tenant;
+      const previouslySelected = hasSelectedTenant === true;
+
       setSlug(slug);
       // Clear stale cache when switching tenants — force fresh fetch
       await storage.remove(TENANT_CONFIG_CACHE_PREFIX);
       await storage.remove(tenantConfigCacheKey(slug));
       const result = await loadTenantConfig(slug, true);
-      if (result !== 'missing' && isMountedRef.current) {
+      if (result === 'loaded' && isMountedRef.current) {
         setHasSelectedTenant(true);
+        return;
       }
+
+      // A failed selection must not strand the installation on a slug whose
+      // config could not be loaded. Restore the last working community (or the
+      // neutral, unremembered default on first install) before surfacing failure.
+      if (previouslySelected) {
+        await storage.set(STORAGE_KEYS.TENANT_SLUG, previousSlug);
+      } else {
+        await storage.remove(STORAGE_KEYS.TENANT_SLUG);
+      }
+      if (isMountedRef.current) {
+        setSlug(previousSlug);
+        setTenant(previousTenant);
+        setHasSelectedTenant(previouslySelected);
+      }
+      throw new Error('Unable to load community');
     },
-    [loadTenantConfig],
+    [hasSelectedTenant, loadTenantConfig, tenant, tenantSlug],
   );
 
   const hasFeature = useCallback(

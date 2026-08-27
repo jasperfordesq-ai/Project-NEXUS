@@ -11,6 +11,7 @@ const mockReplace = jest.fn();
 const mockSetTenantSlug = jest.fn().mockResolvedValue(undefined);
 const mockRefresh = jest.fn();
 const mockLogout = jest.fn().mockResolvedValue(undefined);
+const mockShowToast = jest.fn();
 /** Order matters in one of the cases below, so record the sequence, not just the calls. */
 const callOrder: string[] = [];
 let mockIsAuthenticated = false;
@@ -57,6 +58,10 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 
 jest.mock('@/lib/api/tenant', () => ({
   listTenants: jest.fn(),
+}));
+
+jest.mock('@/components/ui/AppToast', () => ({
+  useAppToast: () => ({ show: mockShowToast, hide: jest.fn(), isToastVisible: false }),
 }));
 
 /*
@@ -150,6 +155,18 @@ describe('SelectTenantScreen', () => {
     expect(mockReplace).toHaveBeenCalledWith('/login');
   });
 
+  it('stays on the picker and explains when a community cannot be selected', async () => {
+    mockSetTenantSlug.mockRejectedValueOnce(new Error('offline'));
+    const { getByLabelText } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: 'danger' }),
+    ));
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   /**
    * 🔴 This case used to assert the OPPOSITE — that a signed-in member who picks another
    * community is sent to home with the new community set — and that is precisely the dead
@@ -196,6 +213,22 @@ describe('SelectTenantScreen', () => {
       session behind on the server.
     */
     expect(callOrder).toEqual(['logout', 'setTenantSlug']);
+  });
+
+  it('keeps the chosen community unchanged and explains when sign-out fails', async () => {
+    mockIsAuthenticated = true;
+    mockLogout.mockRejectedValueOnce(new Error('offline'));
+    const { getByLabelText, getByTestId } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+    await waitFor(() => expect(getByTestId('tenant-switch-confirm')).toBeTruthy());
+    fireEvent.press(getByTestId('tenant-switch-confirm'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: 'danger' }),
+    ));
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('leaves everything alone if they decide not to switch', async () => {

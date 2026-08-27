@@ -104,6 +104,76 @@ describe('usePaginatedApi', () => {
     expect(fetchFn).toHaveBeenLastCalledWith(null);
   });
 
+  it('does not let an older initial response overwrite a completed refresh', async () => {
+    let resolveInitial!: (value: FakeResponse) => void;
+    let resolveRefresh!: (value: FakeResponse) => void;
+    const initialRequest = new Promise<FakeResponse>((resolve) => {
+      resolveInitial = resolve;
+    });
+    const refreshRequest = new Promise<FakeResponse>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const fetchFn = jest.fn()
+      .mockReturnValueOnce(initialRequest)
+      .mockReturnValueOnce(refreshRequest);
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      result.current.refresh();
+    });
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveRefresh(makeResponse(['fresh'], null, false));
+      await refreshRequest;
+    });
+    await waitFor(() => expect(result.current.items).toEqual(['fresh']));
+
+    await act(async () => {
+      resolveInitial(makeResponse(['stale'], null, false));
+      await initialRequest;
+    });
+
+    expect(result.current.items).toEqual(['fresh']);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('starts the new dependency request while the previous request is still in flight', async () => {
+    let resolveOld!: (value: FakeResponse) => void;
+    let resolveNew!: (value: FakeResponse) => void;
+    const oldRequest = new Promise<FakeResponse>((resolve) => {
+      resolveOld = resolve;
+    });
+    const newRequest = new Promise<FakeResponse>((resolve) => {
+      resolveNew = resolve;
+    });
+    const fetchFn = jest.fn()
+      .mockReturnValueOnce(oldRequest)
+      .mockReturnValueOnce(newRequest);
+    let filter = 'all';
+
+    const { result, rerender } = renderHook(() => usePaginatedApi(fetchFn, extractor, [filter]));
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+
+    filter = 'saved';
+    rerender({});
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveNew(makeResponse(['saved'], null, false));
+      await newRequest;
+    });
+    await act(async () => {
+      resolveOld(makeResponse(['all'], null, false));
+      await oldRequest;
+    });
+
+    expect(result.current.items).toEqual(['saved']);
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it('sets ApiResponseError message on API failure', async () => {
     const fetchFn = jest.fn().mockRejectedValue(new ApiResponseError(422, 'Server error'));
     const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));

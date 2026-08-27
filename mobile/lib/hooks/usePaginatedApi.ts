@@ -96,6 +96,11 @@ export function usePaginatedApi<TItem, TResponse>(
   // Holds the retry timer so it can be cancelled on unmount.
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Every user-initiated fetch gets a generation. A refresh is allowed to supersede an
+  // in-flight initial request, so the older response must not be able to replace the newer
+  // page merely because it arrived last.
+  const requestVersionRef = useRef(0);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -105,9 +110,10 @@ export function usePaginatedApi<TItem, TResponse>(
 
   /** Internal fetch helper. `isInitial` replaces items; otherwise appends. */
   const fetchPage = useCallback(
-    async (cursor: string | null, isInitial: boolean) => {
+    async (cursor: string | null, isInitial: boolean, existingVersion?: number) => {
       if (isFetchingRef.current) return;
       isFetchingRef.current = true;
+      const requestVersion = existingVersion ?? ++requestVersionRef.current;
       let retryScheduled = false;
 
       if (isInitial) {
@@ -120,7 +126,7 @@ export function usePaginatedApi<TItem, TResponse>(
       try {
         const response = await fetchFn(cursor);
 
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current || requestVersion !== requestVersionRef.current) return;
 
         const { items: newItems, cursor: nextCursor, hasMore: more } = extractor(response);
 
@@ -135,7 +141,7 @@ export function usePaginatedApi<TItem, TResponse>(
         setHasMore(more);
         setError(null);
       } catch (err) {
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current || requestVersion !== requestVersionRef.current) return;
 
         // On transient errors during initial load, retry once after a delay
         if (isInitial && retryCountRef.current < 1) {
@@ -149,7 +155,7 @@ export function usePaginatedApi<TItem, TResponse>(
             isFetchingRef.current = false; // allow the retry fetch to proceed
             retryTimerRef.current = setTimeout(() => {
               if (isMountedRef.current) {
-                void fetchPage(cursor, true);
+                void fetchPage(cursor, true, requestVersion);
               }
             }, RETRY_DELAY_MS);
             return;
@@ -162,14 +168,15 @@ export function usePaginatedApi<TItem, TResponse>(
           setError('An unexpected error occurred.');
         }
       } finally {
-        if (isMountedRef.current && !retryScheduled) {
+        const isCurrentRequest = requestVersion === requestVersionRef.current;
+        if (isMountedRef.current && isCurrentRequest && !retryScheduled) {
           if (isInitial) {
             setIsLoading(false);
           } else {
             setIsLoadingMore(false);
           }
         }
-        if (!retryScheduled) {
+        if (isCurrentRequest && !retryScheduled) {
           isFetchingRef.current = false;
         }
       }
@@ -179,8 +186,12 @@ export function usePaginatedApi<TItem, TResponse>(
 
   // Initial load on mount, and reset + re-fetch when deps change.
   useEffect(() => {
+    // Invalidate any response from the previous dependency set before starting over.
+    requestVersionRef.current += 1;
     cursorRef.current = null;
     retryCountRef.current = 0;
+    isFetchingRef.current = false;
+    setIsLoadingMore(false);
 
     if (!enabled) {
       if (retryTimerRef.current) {

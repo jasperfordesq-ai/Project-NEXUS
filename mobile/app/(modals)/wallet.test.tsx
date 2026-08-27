@@ -557,4 +557,26 @@ describe('WalletModal', () => {
     expect(source).toContain("enabled: filter === 'pending'");
     expect(source).toContain("if (filter === 'pending') return pendingTransactions;");
   });
+
+  it('refreshes pending transactions with the rest of the wallet', () => {
+    const walletState = { data: { data: { balance: 23, pending_in: 7, pending_out: 0 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const fundState = { data: { data: { balance: 3 } }, isLoading: false, error: null, refresh: jest.fn() };
+    const pendingState = { data: { data: [mockPendingTransaction] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockReset().mockImplementation(() => {
+      const states = [walletState, transactionsState, fundState, pendingState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const { getByLabelText } = render(<WalletModal />);
+    fireEvent.press(getByLabelText('Refresh wallet'));
+
+    expect(walletState.refresh).toHaveBeenCalledTimes(1);
+    expect(transactionsState.refresh).toHaveBeenCalledTimes(1);
+    expect(fundState.refresh).toHaveBeenCalledTimes(1);
+    expect(pendingState.refresh).toHaveBeenCalledTimes(1);
+  });
 });

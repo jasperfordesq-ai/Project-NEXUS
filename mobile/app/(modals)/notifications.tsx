@@ -403,7 +403,7 @@ export default function NotificationsScreen() {
           renderItem={renderItem}
           ListHeaderComponent={renderHeader}
           refreshControl={
-            <RefreshControl refreshing={isLoading && notifications.length > 0} onRefresh={refresh} />
+            <RefreshControl refreshing={isLoading && notifications.length > 0} onRefresh={refreshAll} />
           }
           ListEmptyComponent={
             isLoading ? (

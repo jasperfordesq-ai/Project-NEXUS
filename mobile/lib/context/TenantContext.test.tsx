@@ -194,4 +194,23 @@ describe('TenantContext', () => {
     expect(result.current.hasSelectedTenant).toBe(true);
     expect(mockGetTenantConfig).toHaveBeenCalledTimes(2);
   });
+
+  it('keeps the current community when a new community cannot be loaded', async () => {
+    mockStorageGet.mockResolvedValue('hour-timebank');
+    mockGetTenantConfig
+      .mockResolvedValueOnce({ data: mockTenant })
+      .mockRejectedValueOnce(new Error('Network unavailable'));
+
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await expect(act(async () => {
+      await result.current.setTenantSlug('unreachable-bank');
+    })).rejects.toThrow('Unable to load community');
+
+    expect(result.current.tenantSlug).toBe('hour-timebank');
+    expect(result.current.tenant).toEqual(mockTenant);
+    expect(result.current.hasSelectedTenant).toBe(true);
+    expect(mockStorageSet).toHaveBeenLastCalledWith('tenant_slug', 'hour-timebank');
+  });
 });

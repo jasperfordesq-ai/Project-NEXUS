@@ -204,6 +204,7 @@ function WalletModalInner() {
     balanceQuery.refresh();
     transactionsQuery.refresh();
     fundQuery.refresh();
+    pendingQuery.refresh();
     setTimeout(() => setIsRefreshing(false), 650);
   }
 

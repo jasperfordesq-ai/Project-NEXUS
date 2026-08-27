@@ -21,10 +21,13 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import NativePressable from '@/components/ui/NativePressable';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 export default function SelectTenantScreen() {
   const { t } = useTranslation(['auth', 'common']);
   const router = useRouter();
+  const { show: showToast } = useAppToast();
   const { isAuthenticated, logout } = useAuthContext();
   const { setTenantSlug, tenantSlug, hasSelectedTenant } = useTenant();
   const primary = usePrimaryColor();
@@ -71,9 +74,19 @@ export default function SelectTenantScreen() {
       return;
     }
 
-    // Same community, or nobody signed in: nothing can break, so no interruption.
-    await setTenantSlug(tenant.slug);
-    router.replace(isAuthenticated ? '/home' : '/login');
+    // Same community, or nobody signed in: no sign-out confirmation is needed.
+    // Loading the selected community can still fail, so remain on the picker and
+    // explain it instead of navigating to a login with unusable tenant context.
+    try {
+      await setTenantSlug(tenant.slug);
+      router.replace(isAuthenticated ? '/home' : '/login');
+    } catch (error) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, t('common:errors.generic')),
+        variant: 'danger',
+      });
+    }
   }
 
   const confirmSwitch = useCallback(async () => {
@@ -81,11 +94,17 @@ export default function SelectTenantScreen() {
     setIsSwitching(true);
     try {
       await applySwitch(pendingSwitch);
+    } catch (error) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, t('common:errors.generic')),
+        variant: 'danger',
+      });
     } finally {
       setIsSwitching(false);
       setPendingSwitch(null);
     }
-  }, [pendingSwitch, applySwitch]);
+  }, [pendingSwitch, applySwitch, showToast, t]);
 
   const ItemSeparator = useCallback(() => <View className="h-3" />, []);
 

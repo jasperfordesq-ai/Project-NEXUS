@@ -121,6 +121,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native mobile refreshes and first-install community selection now fail safely.** Older
+  paginated responses can no longer overwrite a newer refresh or block a newer filter request
+  across feed, listings and messages; a community that cannot load is no longer remembered;
+  signed-in and signed-out picker failures now remain visible with an explanation; and wallet
+  pending transactions plus the authoritative notification unread total refresh with their
+  respective screens. Each regression was reproduced by a failing test before repair.
+
 - **Mobile organisation deposits now reconcile both sides of the movement.**
   Funding a volunteering organisation writes the organisation ledger and the
   member-facing wallet transaction in the same database transaction, with

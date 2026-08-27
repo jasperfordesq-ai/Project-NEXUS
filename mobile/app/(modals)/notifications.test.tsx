@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -254,6 +255,24 @@ describe('NotificationsScreen', () => {
     const { getByText } = render(<NotificationsScreen />);
 
     expect(getByText('1 unread')).toBeTruthy();
+  });
+
+  it('refreshes both the notification list and the server unread total on pull', () => {
+    const listRefresh = jest.fn();
+    const countRefresh = jest.fn();
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      return call % 2 === 1
+        ? { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: listRefresh }
+        : { data: { data: { total: 26 } }, isLoading: false, error: null, refresh: countRefresh };
+    });
+
+    const { UNSAFE_getByType } = render(<NotificationsScreen />);
+    fireEvent(UNSAFE_getByType(RefreshControl), 'refresh');
+
+    expect(listRefresh).toHaveBeenCalledTimes(1);
+    expect(countRefresh).toHaveBeenCalledTimes(1);
   });
 
   it('marks a single notification as read from the card action', async () => {
