@@ -78,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dashboards, approval, application and hours-review journeys bring the total reduction to
   3,805 entries. Organisation wallet/settings and shift-swap journeys complete the
   `volunteering` namespace in all seven shipped locales, bringing the total reduction to
-  3,939 entries and the baseline to 592.
+  3,939 entries. Job-owner analytics bring the total reduction to 4,089 entries and the
+  baseline to 442.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
