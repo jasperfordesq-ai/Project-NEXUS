@@ -56,8 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Coherent authentication, endorsements, Explore, notification-group, saved-search,
   messaging attachment/voice, home activity/poll, gamification, goals, group-exchange,
   ideation, nearby-marketplace, federation, event, quick-create, residual terminology,
-  group collaboration, group-wiki and group-task translation batches reduce the guarded
-  English-identical baseline by 1,842 entries, from 4,531 to 2,689.
+  group collaboration, group-wiki, group-task and group-analytics translation batches reduce
+  the guarded English-identical baseline by 1,986 entries, from 4,531 to 2,545.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
