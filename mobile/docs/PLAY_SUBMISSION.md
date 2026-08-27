@@ -133,8 +133,9 @@ on 2026-08-26 as app version `1.2.0`, version code `5`; `jarsigner` verified the
 `Timebank-Global-1.2.0-build-5.aab` and its signing certificate matches the EAS default.
 
 Enable Play App Signing in the Console when prompted. Google then protects the permanent
-app-signing key; the existing EAS keystore is the credential used to sign uploads. Download
-an offline backup before relying on it for future updates. A debug-signed local APK may need
+app-signing key; the existing EAS keystore is the credential used to sign uploads. Keep the
+verified offline and encrypted backups described below before relying on it for future
+updates. A debug-signed local APK may need
 to be uninstalled before installing the differently signed Play-distributed build.
 
 Two ways to hold the key, and the choice matters more than the commands:
@@ -152,9 +153,12 @@ it is not the permanent app-signing key held by Google.
 
 **Verified local state (2026-08-27).** The downloaded JKS is present at
 `C:\platforms\htdocs\staging\mobile\@timebank-global__nexus-mobile.jks` and `*.jks` is
-ignored by Git. No second copy exists elsewhere in this checkout. This proves a usable local
-download, not disaster recovery: copy it to encrypted offline storage, keep its passwords in
-a separate password manager, and test that the copy can be read before deleting nothing.
+ignored by Git. Disaster-recovery copies were completed and verified on 2026-08-27: an
+unencrypted offline JKS/credentials pair and matching password-protected, header-encrypted
+archives on offline and cloud storage. Raw copies byte-match the ignored source, the two
+encrypted archives byte-match each other, a passworded integrity test succeeds, and archive
+headers cannot be listed without the password. Each location includes a password-free
+recovery README. Keep the archive password in a separate password manager and delete nothing.
 Never attach the JKS or its passwords to an issue, commit, chat or public repository.
 
 **B. Generate it locally and upload it.**
@@ -453,10 +457,10 @@ risk acceptance, not a claim that `npm audit` is clean.
 ## First-submission history and the next-release handoff
 
 1. ~~Wait for Play to finish developer-identity verification~~ — **done 2026-08-26**.
-2. ~~Create and download the Play upload keystore~~ — **done 2026-08-26**. EAS default
+2. ~~Create, download and back up the Play upload keystore~~ — **done 2026-08-27**. EAS default
    `ElecXcPY2S` and its local ignored credential backup match. The local JKS was re-verified
-   at the ignored path above on 2026-08-27. Copy it to encrypted offline storage; do not
-   create another key.
+   at the ignored path above on 2026-08-27, then copied to verified unencrypted offline and
+   encrypted offline/cloud recovery locations. Do not create another key.
 3. ~~Decide the identity-payment question~~ — **done 2026-08-25**: hidden in the app.
 4. ~~Sentry project and build credentials~~ — **done 2026-08-25**, verified end to end.
 5. ~~Build a real signed bundle~~ — **done 2026-08-26**: version `1.2.0`, version code `5`,
@@ -476,8 +480,9 @@ risk acceptance, not a claim that `npm audit` is clean.
   the neutral first-install community picker. The next artefact must prove clean install,
   remembered-community upgrade, signed-in return, push, one exchange and disposable account
   deletion before rollout.
-- **An encrypted/offline copy of the local EAS credential backup.** The ignored local copy
-  is complete and verified; it still needs copying outside the working checkout.
+- ~~**An encrypted/offline copy of the local EAS credential backup.**~~ **Completed
+  2026-08-27**, including an unencrypted offline recovery copy, matching header-encrypted
+  offline/cloud archives, byte comparisons, a passworded integrity test and recovery notes.
 - **Correct the live full description before another release.** It currently says “No money
   changes hands and nothing is ever put behind a payment”, which contradicts optional
   purchases of physical marketplace goods. Use the truthful prepared paragraph above:

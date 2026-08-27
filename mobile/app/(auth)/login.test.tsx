@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
@@ -18,7 +17,6 @@ jest.mock('expo-router', () => {
   return {
     useRouter: () => ({ push: mockRouterPush, replace: jest.fn(), back: jest.fn() }),
     useSegments: () => ['(auth)'],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Link: ({ children, style }: { children: React.ReactNode; style?: any }) =>
       React.createElement(Text, { style }, children),
     router: { push: mockRouterPush, replace: jest.fn(), back: jest.fn() },

@@ -164,14 +164,15 @@ jest.mock('@/lib/haptics', () => ({
 // Mock react-native-safe-area-context so screens using useSafeAreaInsets
 // work without a SafeAreaProvider in the test tree.
 jest.mock('react-native-safe-area-context', () => {
-  const React = require('react');
   const { View } = require('react-native');
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
   return {
     useSafeAreaInsets: () => insets,
-    SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+    SafeAreaProvider: ({ children }: { children: import('react').ReactNode }) => children,
     SafeAreaView: View,
-    SafeAreaConsumer: ({ children }: { children: (value: typeof insets) => React.ReactNode }) =>
+    SafeAreaConsumer: ({ children }: {
+      children: (value: typeof insets) => import('react').ReactNode;
+    }) =>
       children(insets),
     initialWindowMetrics: { insets, frame: { x: 0, y: 0, width: 390, height: 844 } },
   };

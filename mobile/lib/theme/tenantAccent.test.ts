@@ -92,7 +92,7 @@ describe('the tenant accent palette', () => {
     const reference = signature(blocks[0]![2]!);
     expect(reference.split(',').length).toBeGreaterThan(30);
 
-    for (const [, name, body] of blocks) {
+    for (const [, , body] of blocks) {
       expect(signature(body!)).toBe(reference);
     }
   });

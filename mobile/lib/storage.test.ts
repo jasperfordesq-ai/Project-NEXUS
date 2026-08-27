@@ -65,7 +65,6 @@ function loadStorageFor(os: 'ios' | 'android' | 'web'): typeof StorageModule {
   let loaded: typeof StorageModule;
   jest.isolateModules(() => {
     jest.doMock('react-native', () => ({ Platform: { OS: os } }));
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     loaded = require('./storage').storage;
   });
   return loaded!;

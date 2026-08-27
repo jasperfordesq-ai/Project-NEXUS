@@ -4,13 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { act, render, waitFor } from '@testing-library/react-native';
 
 import BottomSheet from './BottomSheet';
 
-const contentProps: Array<Record<string, unknown>> = [];
-const rootProps: Array<Record<string, unknown>> = [];
+const contentProps: Record<string, unknown>[] = [];
+const rootProps: Record<string, unknown>[] = [];
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 24, left: 0 }),

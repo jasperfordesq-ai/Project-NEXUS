@@ -7,8 +7,6 @@
 
 'use strict';
 
-const React = require('react');
-
 module.exports = {
   useAnimationSettings: () => ({ isAllAnimationsDisabled: false }),
   AnimationSettingsProvider: ({ children }) => children,

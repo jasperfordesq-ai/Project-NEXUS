@@ -34,9 +34,7 @@ describe('reportSink', () => {
     // The property that makes it safe in both directions. Asserted on the source, since
     // no runtime behaviour can show it: an import added here would silently reintroduce
     // the coupling this module exists to remove.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('node:fs') as typeof import('node:fs');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('node:path') as typeof import('node:path');
 
     const source = fs.readFileSync(path.join(__dirname, 'reportSink.ts'), 'utf8');
@@ -100,14 +98,12 @@ describe('reportSink', () => {
       }));
       jest.doMock('@/lib/storage', () => ({ storage: { get: jest.fn().mockResolvedValue('t') } }));
 
-      /* eslint-disable @typescript-eslint/no-require-imports */
       const sink = require('./reportSink') as typeof import('./reportSink');
       expect(sink.hasReporter()).toBe(false);
 
       require('./report');
 
       expect(sink.hasReporter()).toBe(true);
-      /* eslint-enable @typescript-eslint/no-require-imports */
     });
   });
 });

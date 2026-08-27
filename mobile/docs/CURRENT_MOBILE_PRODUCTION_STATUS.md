@@ -110,9 +110,12 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    phrases across six non-English locales; TalkBack has not driven a complete journey; the
    target audit covers 24 of roughly 137 screens; and pixel assertions cover only a small
    stable subset.
-7. **Pay down engineering headroom.** Lint passes with 529 warnings and the Hermes startup
-   bundle has only 1.28 MB below its blocking ceiling. Treat both as ratchets, not reasons to
-   delay the two correctness items above.
+7. **Pay down engineering headroom.** The 529-warning lint backlog was cleared on
+   2026-08-27: Jest/CommonJS false positives are scoped to test and configuration files,
+   real warnings were fixed, and `eslint .` now passes with zero warnings. The Hermes startup
+   bundle still has only 1.28 MB below its blocking ceiling; a fresh bundle measurement is
+   deliberately deferred because this work must not invoke Expo while the Play release is in
+   review.
 
 ## The blockers, in the order they hurt
 

@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Google Play upload-key recovery is now independently backed up and tested.** The current
+  production JKS and credential metadata have a byte-verified unencrypted offline copy plus
+  matching password-protected, header-encrypted offline and cloud archives, each accompanied
+  by password-free recovery instructions. No secret or recovery artefact is committed. Mobile
+  lint now runs ESLint directly without invoking Expo, scopes Jest/CommonJS exceptions to
+  test and configuration files, and passes with zero warnings instead of 529.
+
 - **Google Play tablet artwork is now captured from genuine Android tablet
   emulators and checked automatically.** The mobile release tooling prepares a
   curated three-screen set for both 7-inch (1080x1920) and 10-inch

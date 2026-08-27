@@ -128,7 +128,6 @@ describe('pendingDocuments', () => {
   it('returns an empty list for a malformed payload rather than throwing', () => {
     expect(pendingDocuments(null)).toEqual([]);
     expect(pendingDocuments(undefined)).toEqual([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(pendingDocuments({ data: { has_pending: true, documents: 'nope' } } as any)).toEqual([]);
   });
 });

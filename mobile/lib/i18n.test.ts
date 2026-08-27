@@ -21,8 +21,8 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'en' }],
 }));
 
-import { changeLanguage, loadLanguage, restoreSavedLanguage, SUPPORTED_LANGUAGES } from './i18n';
-import i18n from './i18n';
+import i18n, { changeLanguage, loadLanguage, restoreSavedLanguage, SUPPORTED_LANGUAGES } from './i18n';
+
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 

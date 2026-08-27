@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
@@ -116,7 +115,6 @@ jest.mock('@/lib/api/messages', () => ({
   getConversations: jest.fn(),
   archiveConversation: jest.fn().mockResolvedValue(undefined),
   restoreConversation: jest.fn().mockResolvedValue({ data: { success: true } }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayName: (user: any, fallback = 'Unknown') => user?.name ?? fallback,
 }));
 

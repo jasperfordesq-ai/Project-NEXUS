@@ -3,9 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { getDefaultConfig } = require('expo/metro-config');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { withUniwindConfig } = require('uniwind/metro');
 
 const config = getDefaultConfig(__dirname);
@@ -63,7 +61,6 @@ config.transformer.getTransformOptions = async () => ({
 // so `Uniwind.setTheme()` can only reach themes named here. The names are derived from
 // config/tenant-palettes.json rather than written out, so this list and the generated
 // CSS cannot drift apart.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const palette = require('./config/tenant-palettes.json');
 const tenantThemes = Object.keys(palette.tenants ?? {})
   .sort()

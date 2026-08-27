@@ -56,10 +56,14 @@ The profile name describes the distribution channel, not the target device. The 
 | Android application identifier | `ie.project.nexus` |
 | EAS build credential | `b8UXpzut1O` |
 | Keystore type | EAS-managed JKS |
-| Keystore SHA1 | `ED:A9:48:A0:C2:69:42:9B:8A:84:80:35:35:13:03:74:57:49:AA:79` |
-| Keystore SHA256 | `02:F5:0F:55:6C:C4:1B:78:69:97:6C:D6:E5:5E:5A:CC:07:B7:07:53:C5:57:10:C8:A8:48:74:78:46:C8:94:C2` |
+| Keystore SHA1 | `29:86:3A:4E:69:B4:8E:D2:2B:41:E1:F0:69:F8:22:88:D3:16:48:13` |
+| Keystore SHA256 | `F5:0D:87:55:56:B8:01:76:3D:89:B2:54:47:E7:CD:96:58:06:FE:43:96:1C:0B:46:12:2D:42:4E:0B:40:D9:7B` |
 
-The EAS-managed keystore is shared by Android builds for `ie.project.nexus`. It is not specific to the `website` profile. Both the direct-download APK and the Google Play AAB use the same Android application identifier and signing identity.
+The table records the current production upload key, re-verified from the ignored local JKS
+and `credentials.json` on 2026-08-27. The previous `02:F5:0F:55...` certificate is not the
+current production upload credential. The EAS-managed keystore is shared by Android builds
+for `ie.project.nexus`; it is not specific to the `website` profile. Both the direct-download
+APK and the Google Play AAB use the same Android application identifier and signing identity.
 
 Configured EAS credentials:
 

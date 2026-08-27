@@ -211,7 +211,9 @@ this plan will not do.
 
 - Google Play production distribution, Play App Signing, a real upload keystore, listing,
   screenshots, Data Safety, content rating and public policy pages are live.
-- The remaining signing task is an encrypted offline copy of the verified upload-key backup.
+- The verified upload key now has a byte-checked unencrypted offline copy plus
+  password-protected, header-encrypted copies on offline and cloud storage. A recovery README
+  accompanies each copy; no key or password is committed.
 - The live description must distinguish money-free time-credit exchanges from optional
   physical marketplace purchases; its current absolute no-money claim is false.
 - The exact next Play-signed build needs a clean-install and upgrade walk on a physical
@@ -229,12 +231,12 @@ These are not engineering tasks and no phase depends on guessing them.
 
 | Decision | Why it needs you | Cost of deciding late |
 | --- | --- | --- |
-| **Write a post from the phone?** The website has a composer; the app has none | New feature, product scope | Members will ask for it the day the app ships |
-| **Translations: 3,232 phrases across five languages** | Machine translation is cheap and imperfect; a person is slower and better | Every new string added meanwhile widens the gap |
-| **Signing keystore backup location** | The upload key exists and is verified; only the owner can choose encrypted offline custody | A lost upload key is replaceable under Play App Signing, but recovery causes avoidable release delay |
+| ~~**Write a post from the phone?**~~ **Decided and built** | The focused text composer is certified in ledger row 2.9 | Images and polls remain separate future scope |
+| **Translations: 4,638 phrases across six languages** | Repository translation reuse found no safe exact matches; the public provider refused the continental-language batch, and Irish remains human-review only | The shrink-only ratchet prevents the gap growing, but professional/native review is still needed |
+| ~~**Signing keystore backup location**~~ **Completed 2026-08-27** | Unencrypted offline recovery plus matching encrypted offline/cloud archives were byte- and password-tested | Re-test recovery periodically and keep the archive password separately |
 | **Mobile Sentry real-crash acceptance** | Project, DSN and source maps are configured; deliberately crashing a public build needs a controlled test | Without it, native-crash and cold-start observability are configured but not proved end to end |
-| **iOS at all?** | Doubles the surface | Nothing in this plan assumes it |
-| **Review composer on mobile** | Currently a recorded "read-only on mobile" decision | Fine to leave; just don't rediscover it as a gap |
+| ~~**iOS at all?**~~ **Out of scope for this release** | No Apple account, build or walk is planned | Re-open only as a separate funded platform decision |
+| ~~**Review composer on mobile**~~ **Read-only by decision** | Existing reviews can be read on mobile | Re-open only as an explicit product feature |
 
 ## How to do the work
 

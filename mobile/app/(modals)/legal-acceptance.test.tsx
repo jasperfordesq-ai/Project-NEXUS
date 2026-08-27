@@ -111,7 +111,6 @@ jest.mock('@/components/OfflineBanner', () => () => null);
 
 import LegalAcceptanceScreen from './legal-acceptance';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { router } = require('expo-router') as {
   router: { push: jest.Mock; replace: jest.Mock; back: jest.Mock };
 };

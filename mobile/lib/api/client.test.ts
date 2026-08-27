@@ -345,13 +345,6 @@ describe('error responses', () => {
 
     await expect(api.post('/api/v2/users', {})).rejects.toThrow(ApiResponseError);
 
-    try {
-      await api.post('/api/v2/users', {});
-    } catch (err) {
-      // The first call already threw; this block won't run.
-      // Use the assertion above instead.
-    }
-
     // Re-test with a fresh fetch call for detailed assertions
     fetchMock.mockResolvedValueOnce(mockResponse(errorBody, { status: 422 }));
     try {

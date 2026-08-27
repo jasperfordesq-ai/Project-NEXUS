@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import * as Sentry from '@sentry/react-native';
-import { ApiResponseError } from '@/lib/api/client';
-import { api } from '@/lib/api/client';
+import { ApiResponseError , api } from '@/lib/api/client';
+
 import { eventAnalyticsSchema, getEventAnalytics } from './eventAnalytics';
 
 jest.mock('@/lib/api/client', () => {

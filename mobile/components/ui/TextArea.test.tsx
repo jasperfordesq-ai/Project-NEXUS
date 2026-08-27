@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import TextArea from './TextArea';

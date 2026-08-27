@@ -147,7 +147,7 @@ describe('Events v2 shared contract fixtures', () => {
 
   it('rejects agenda resource URLs that are not credential-free HTTPS', () => {
     const unsafeScheme = JSON.parse(JSON.stringify(eventAgendaFixture)) as {
-      sessions: Array<{ resources: Array<{ url: string | null }> }>;
+      sessions: { resources: { url: string | null }[] }[];
     };
     unsafeScheme.sessions[0]!.resources[0]!.url = 'http://events.example.test/slides';
     expect(eventAgendaSchema.safeParse(unsafeScheme).success).toBe(false);
@@ -184,7 +184,7 @@ describe('read-only Event agenda contract', () => {
 
   it('rejects unknown agenda fields without sending response values to drift telemetry', async () => {
     const agenda = eventAgendaFixture as Record<string, unknown>;
-    const sessions = agenda.sessions as Array<Record<string, unknown>>;
+    const sessions = agenda.sessions as Record<string, unknown>[];
     (api.get as jest.Mock).mockResolvedValue({
       data: {
         ...agenda,

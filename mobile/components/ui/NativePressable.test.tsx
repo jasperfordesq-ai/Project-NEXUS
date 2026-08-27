@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import NativePressable from './NativePressable';

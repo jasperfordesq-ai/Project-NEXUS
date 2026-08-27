@@ -8,8 +8,6 @@
 
 'use strict';
 
-const React = require('react');
-
 const NOOP_PROVIDER = ({ children }) => children;
 
 module.exports = {

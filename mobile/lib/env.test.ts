@@ -33,7 +33,6 @@ function runValidateEnv(env: Record<string, string | undefined>): {
   try {
     process.env = { ...originalEnv, ...env } as NodeJS.ProcessEnv;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('./env').validateEnv();
     });
   } finally {

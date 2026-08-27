@@ -19,10 +19,10 @@ const mockConfirm = jest.fn();
 const mockShowToast = jest.fn();
 const mockAwareOnBlur = jest.fn();
 const mockAwareOnFocus = jest.fn();
-const bottomSheetRootProps: Array<Record<string, unknown>> = [];
-const bottomSheetContentProps: Array<Record<string, unknown>> = [];
-const bottomSheetFlatListProps: Array<Record<string, unknown>> = [];
-const bottomSheetFooterProps: Array<Record<string, unknown>> = [];
+const bottomSheetRootProps: Record<string, unknown>[] = [];
+const bottomSheetContentProps: Record<string, unknown>[] = [];
+const bottomSheetFlatListProps: Record<string, unknown>[] = [];
+const bottomSheetFooterProps: Record<string, unknown>[] = [];
 
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = require('react');
@@ -129,7 +129,7 @@ jest.mock('@/components/ui/ActionSheet', () => {
     actions,
   }: {
     visible: boolean;
-    actions: Array<{ label: string; onPress: () => void; destructive?: boolean }>;
+    actions: { label: string; onPress: () => void; destructive?: boolean }[];
   }) {
     if (!visible) return null;
     return (

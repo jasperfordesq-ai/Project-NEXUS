@@ -60,9 +60,7 @@ import { presentMarketplacePayment as presentMarketplaceNative } from './marketp
  * which is how this was noticed. An explicit extension bypasses the platform
  * preference and loads the file actually named.
  */
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const identityDefault = require('./identityPayment.ts') as typeof import('./identityPayment');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const marketplaceDefault = require('./marketplacePayment.ts') as typeof import('./marketplacePayment');
 
 const identityOptions = {

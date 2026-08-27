@@ -6,7 +6,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-const tabScreens: Array<{ name: string; options?: Record<string, unknown>; listeners?: Record<string, (event: { preventDefault: () => void }) => void> }> = [];
+const tabScreens: { name: string; options?: Record<string, unknown>; listeners?: Record<string, (event: { preventDefault: () => void }) => void> }[] = [];
 const mockRouterPush = jest.fn();
 const mockResetUnread = jest.fn();
 

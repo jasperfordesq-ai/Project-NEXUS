@@ -82,7 +82,7 @@ const AA_NORMAL_TEXT = 4.5;
  * possible — asserting on combinations nobody renders would make the gate noisy
  * and get it switched off.
  */
-const RENDERED_PAIRS: Array<[foreground: keyof typeof LIGHT, background: keyof typeof LIGHT]> = [
+const RENDERED_PAIRS: [foreground: keyof typeof LIGHT, background: keyof typeof LIGHT][] = [
   ['text', 'bg'],
   ['text', 'surface'],
   ['textSecondary', 'bg'],

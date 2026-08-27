@@ -15,8 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import React from 'react';
-import { Text } from 'react-native';
-import { Linking } from 'react-native';
+import { Text , Linking } from 'react-native';
 import { act, render, screen, userEvent } from '@testing-library/react-native';
 
 import UpdateRequiredGate from './UpdateRequiredGate';

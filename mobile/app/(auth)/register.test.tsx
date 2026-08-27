@@ -10,7 +10,6 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 const mockApiRegister = jest.fn();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockExtractToken: jest.Mock<any, any> = jest.fn((r: { access_token?: string }) => r.access_token ?? '');
 const mockStorageSet = jest.fn().mockResolvedValue(undefined);
 const mockStorageSetJson = jest.fn().mockResolvedValue(undefined);
@@ -22,7 +21,6 @@ jest.mock('expo-router', () => {
   const router = { push: jest.fn(), replace: jest.fn(), back: jest.fn() };
   return {
     useRouter: () => router,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Link: ({ children, style }: { children: React.ReactNode; style?: any }) =>
       React.createElement(Text, { style }, children),
     router,
@@ -35,11 +33,8 @@ const mockRouter = jest.requireMock('expo-router').router as {
 };
 
 jest.mock('@/lib/api/auth', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: (...args: any[]) => mockApiRegister(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extractToken: (...args: any[]) => mockExtractToken(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRegistrationResult: (response: any) => ('data' in response ? response.data : response),
 }));
 

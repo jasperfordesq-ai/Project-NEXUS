@@ -193,7 +193,6 @@ jest.mock('@/lib/api/messages', () => ({
   toggleMessageReaction: (...args: unknown[]) => mockToggleMessageReaction(...args),
   updateMessage: (...args: unknown[]) => mockUpdateMessage(...args),
   deleteMessage: (...args: unknown[]) => mockDeleteMessage(...args),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayName: (user: any, fallback = 'Unknown') => user?.name ?? fallback,
 }));
 
@@ -233,7 +232,7 @@ jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/ActionSheet', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return ({ visible, title, actions }: { visible: boolean; title?: string; actions: Array<{ label: string; onPress: () => void }> }) => {
+  return ({ visible, title, actions }: { visible: boolean; title?: string; actions: { label: string; onPress: () => void }[] }) => {
     if (!visible) return null;
     return (
       <View accessibilityLabel={title}>

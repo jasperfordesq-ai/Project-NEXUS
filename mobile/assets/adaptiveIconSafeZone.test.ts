@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-
 /**
  * The Android launcher icon must fit inside the shape the launcher will cut it into.
  *
@@ -30,7 +29,6 @@ import path from 'node:path';
 
 // `pngjs` ships no types and the repo has no @types/pngjs; only two members are used here,
 // so a local shape is cheaper and clearer than adding a dependency for a test.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { PNG } = require('pngjs') as {
   PNG: { sync: { read: (buffer: Buffer) => { width: number; height: number; data: Buffer } } };
 };

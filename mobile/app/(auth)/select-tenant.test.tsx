@@ -16,7 +16,7 @@ const callOrder: string[] = [];
 let mockIsAuthenticated = false;
 let mockHasSelectedTenant = true;
 let mockApiState: {
-  data: { data: Array<{ id: number; slug: string; name: string; logo_url: string | null }> } | null;
+  data: { data: { id: number; slug: string; name: string; logo_url: string | null }[] } | null;
   isLoading: boolean;
   error: string | null;
 } = {

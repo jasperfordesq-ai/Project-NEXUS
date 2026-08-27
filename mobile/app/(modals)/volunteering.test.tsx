@@ -32,7 +32,7 @@ jest.mock('expo-router', () => ({
   // BottomSheet (used by the swap sheet) defers its own state on focus.
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = require('react');
-    React.useEffect(() => callback(), []);
+    React.useEffect(() => callback(), [callback]);
   },
 }));
 

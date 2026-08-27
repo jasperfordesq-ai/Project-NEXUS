@@ -48,7 +48,6 @@ function loadHapticsFor(os: 'ios' | 'android' | 'web'): HapticsModule {
   let loaded: HapticsModule;
   jest.isolateModules(() => {
     jest.doMock('react-native', () => ({ Platform: { OS: os } }));
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     loaded = require('./haptics');
   });
   return loaded!;

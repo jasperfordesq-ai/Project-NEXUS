@@ -12,5 +12,4 @@
 // explicitly requires a .cjs extension; in that case it delegates to the
 // canonical config.
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 module.exports = require('./metro.config.js');
