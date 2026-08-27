@@ -90,7 +90,11 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <View className="flex-1 justify-center px-5 py-10">
+        <View
+          testID="login-content"
+          className="flex-1 justify-center px-5 py-10"
+          style={{ width: '100%', maxWidth: 720, alignSelf: 'center' }}
+        >
           <HeroCard className="overflow-hidden">
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View

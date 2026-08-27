@@ -36,8 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accessibility-tree crawler force-stops between routes and adds Connections, Activity,
   Endorsements, Reviews and Skills; and the screenshot tour accepts its asynchronous
   tenant logo only after two consecutive login frames meet the existing pixel budget.
-  Irish catalogue integrity and the contract changes are locally verified, while the
-  widened TalkBack and pixel tours remain explicitly pending an attached device.
+  Irish catalogue integrity and the contract changes are locally verified. Phone,
+  7-inch portrait and 10-inch landscape emulator captures now reproduce with zero
+  changed pixels when repeated, and the capture tool requires an explicit device when
+  more than one emulator is attached. A live public-entry accessibility-tree pass found
+  and removed one more informational chip exposed as a tiny button; the login and
+  community-picker layouts are also capped to a readable width on landscape tablets.
+  A coherent authentication and endorsements translation batch reduces the guarded
+  English-identical baseline by 254 entries, from 4,531 to 4,277. Protected TalkBack
+  routes and the source fixes remain explicitly pending the next permitted build and
+  authenticated device session.
 
 - **Google Play upload-key recovery is now independently backed up and tested.** The current
   production JKS and credential metadata have a byte-verified unencrypted offline copy plus

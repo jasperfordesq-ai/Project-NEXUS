@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button as HeroButton, Card as HeroCard, Chip, Separator, Spinner } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Separator, Spinner } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 
 import { listTenants, type TenantListItem } from '@/lib/api/tenant';
@@ -21,6 +21,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import NativePressable from '@/components/ui/NativePressable';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
 
@@ -111,10 +112,17 @@ export default function SelectTenantScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <FlatList<TenantListItem>
+        testID="tenant-list"
         data={!isLoading && !error ? tenants : []}
         keyExtractor={(item) => String(item.id)}
         ItemSeparatorComponent={ItemSeparator}
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        contentContainerStyle={{
+          width: '100%',
+          maxWidth: 720,
+          alignSelf: 'center',
+          padding: 20,
+          paddingBottom: 40,
+        }}
         ListHeaderComponent={
           <View className="gap-4 mb-5">
             {hasSelectedTenant ? (

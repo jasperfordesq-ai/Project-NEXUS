@@ -17,7 +17,7 @@
  * real value. On the standard test emulator that is 420dpi, so 1dp = 2.625px, the WCAG 2.2
  * AA minimum of 24dp = 63px, and Android's own 48dp guidance = 126px.
  *
- * Usage (the app must be running and signed in, Metro up):
+ * Usage (the app must be installed; protected screens require a signed-in member):
  *   node scripts/audit-touch-targets.mjs
  *   node scripts/audit-touch-targets.mjs --serial emulator-5554 --json out.json
  *   node scripts/audit-touch-targets.mjs --screens home,members,wallet
@@ -38,7 +38,7 @@ const JSON_OUT = argValue('--json', null);
 const ADB = process.env.ADB_PATH
   ?? 'C:/Users/jaspe/AppData/Local/Android/Sdk/platform-tools/adb.exe';
 const PACKAGE = 'ie.project.nexus';
-const BASE_URL = 'https://app.project-nexus.ie';
+const BASE_URL = 'nexus://';
 
 /** WCAG 2.2 AA (2.5.8) minimum, and Android's own guidance. */
 const AA_MIN_DP = 24;
@@ -66,6 +66,8 @@ const DEFAULT_SCREENS = [
  * reported UNVERIFIED and left out of the totals, which is the honest failure mode.
  */
 const SCREEN_FINGERPRINT = {
+  login: /Welcome back|Sign in to your timebank/,
+  'select-tenant': /Select your timebank|Choose the community you belong to/,
   home: /Community Feed|Create post/,
   listings: /Offers|Requests|Browse exchanges/,
   events: /Upcoming|Past events|step-free/i,
@@ -119,7 +121,12 @@ function deviceDensity() {
 }
 
 function openScreen(route) {
-  adb(['shell', `am start -a android.intent.action.VIEW -d '${BASE_URL}/${route}' ${PACKAGE}`]);
+  adb([
+    'shell', 'am', 'start', '-W',
+    '-a', 'android.intent.action.VIEW',
+    '-d', `${BASE_URL}${route}`,
+    '-p', PACKAGE,
+  ]);
 }
 
 function forceStopApp() {

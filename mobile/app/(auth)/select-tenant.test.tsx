@@ -137,6 +137,14 @@ describe('SelectTenantScreen', () => {
     expect(getByText('Selected community')).toBeTruthy();
   });
 
+  it('caps the community list width on landscape tablets', () => {
+    const { getByTestId } = render(<SelectTenantScreen />);
+
+    expect(getByTestId('tenant-list').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ width: '100%', maxWidth: 720, alignSelf: 'center' }),
+    );
+  });
+
   it('does not present the fallback tenant as selected on a fresh installation', () => {
     mockHasSelectedTenant = false;
     const { queryByText } = render(<SelectTenantScreen />);

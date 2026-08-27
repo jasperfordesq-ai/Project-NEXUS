@@ -93,4 +93,11 @@ describe('screenshot comparison sensitivity', () => {
     // No second, inline configuration drifting away from the shared one.
     expect(source).not.toMatch(/pixelmatch\([^)]*\{\s*threshold:/s);
   });
+
+  it('pins every capture command to the explicitly requested emulator', () => {
+    const source = fs.readFileSync(SCRIPT, 'utf8');
+
+    expect(source).toContain("const requestedSerial = argValue('--serial', null);");
+    expect(source).toMatch(/activeSerial\s*\?\s*\['-s', activeSerial, \.\.\.adbArgs\]/);
+  });
 });

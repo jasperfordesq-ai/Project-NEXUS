@@ -13,10 +13,20 @@ describe('touch-target audit route isolation', () => {
     expect(source).toMatch(/for \(const route of screens\)[\s\S]*?forceStopApp\(\);\s*openScreen\(route\);/);
   });
 
+  it('opens the package-owned nexus scheme instead of handing an https link to Android', () => {
+    expect(source).toContain("const BASE_URL = 'nexus://';");
+    expect(source).toMatch(/'am', 'start', '-W',[\s\S]*?'-d', `\$\{BASE_URL\}\$\{route\}`,[\s\S]*?'-p', PACKAGE/);
+  });
+
   it('fingerprint-gates the widened member-facing screen set', () => {
     for (const route of ['connections', 'activity', 'endorsements', 'reviews', 'skills']) {
       expect(source).toContain(`'${route}'`);
       expect(source).toMatch(new RegExp(`\\b${route.replace('-', "['-]")}\\s*:`));
     }
+  });
+
+  it('can audit the public login and community-picker screens without a member session', () => {
+    expect(source).toMatch(/login:\s*\/Welcome back\|Sign in to your timebank\//);
+    expect(source).toMatch(/'select-tenant':\s*\/Select your timebank\|Choose the community you belong to\//);
   });
 });

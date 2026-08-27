@@ -166,7 +166,9 @@ const PIXELMATCH_OPTIONS = Object.freeze({ threshold: 0.02, includeAA: true });
 const args = process.argv.slice(2);
 const mode = args[0];
 const scheme = argValue('--scheme', 'light');
+const requestedSerial = argValue('--serial', null);
 const adbPath = resolveAdb();
+let activeSerial = null;
 
 function argValue(flag, fallback) {
   const i = args.indexOf(flag);
@@ -192,7 +194,8 @@ function resolveAdb() {
 }
 
 function adb(adbArgs, { binary = false } = {}) {
-  return execFileSync(adbPath, adbArgs, {
+  const scopedArgs = activeSerial ? ['-s', activeSerial, ...adbArgs] : adbArgs;
+  return execFileSync(adbPath, scopedArgs, {
     encoding: binary ? 'buffer' : 'utf8',
     maxBuffer: 128 * 1024 * 1024,
   });
@@ -223,7 +226,21 @@ function requireDevice() {
       'Then wait for boot:  adb wait-for-device shell getprop sys.boot_completed'
     );
   }
-  return devices[0].split(/\s+/)[0];
+  const serials = devices.map((device) => device.split(/\s+/)[0]);
+  if (requestedSerial && !serials.includes(requestedSerial)) {
+    fail(
+      `requested device ${requestedSerial} is not attached.`,
+      `Attached devices: ${serials.join(', ')}`,
+    );
+  }
+  if (!requestedSerial && serials.length > 1) {
+    fail(
+      'more than one emulator or device is attached.',
+      `Choose one with --serial: ${serials.join(', ')}`,
+    );
+  }
+  activeSerial = requestedSerial ?? serials[0];
+  return activeSerial;
 }
 
 function fail(...lines) {
@@ -678,7 +695,7 @@ switch (mode) {
     break;
   default:
     console.error(
-      'usage: node scripts/screenshots.mjs <tour|sweep|capture|compare|approve|restore-animations> [--scheme light|dark]'
+      'usage: node scripts/screenshots.mjs <tour|sweep|capture|compare|approve|restore-animations> [--scheme light|dark] [--serial emulator-5554]'
     );
     process.exit(2);
 }

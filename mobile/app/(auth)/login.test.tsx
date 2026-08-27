@@ -80,6 +80,16 @@ describe('LoginScreen', () => {
     expect(getByText('Create account')).toBeTruthy();
   });
 
+  it('keeps the sign-in form readable on landscape tablets', () => {
+    const { getByTestId } = render(<LoginScreen />);
+
+    expect(getByTestId('login-content')).toHaveStyle({
+      width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
+    });
+  });
+
   it('shows field error when email is invalid on submit', async () => {
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
 
