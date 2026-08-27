@@ -4,9 +4,9 @@
   "share": "Condividi partner",
   "subtitle": "Comunità connesse",
   "stats": {
-    "partners": "{{count}} partner",
-    "partners_one": "{{count}} partner",
-    "partners_other": "{{count}} partner",
+    "partners": "{{count}} partner collegato",
+    "partners_one": "{{count}} partner collegato",
+    "partners_other": "{{count}} partner collegato",
     "members": "{{count}} membro federato",
     "members_one": "{{count}} membro federato",
     "members_other": "{{count}} membri federati",

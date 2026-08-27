@@ -1,8 +1,9 @@
 {
-  "global": {},
+  "global": {
+    "common.json:appName": "Registered product name"
+  },
   "byLocale": {
     "ga": {
-      "common.json:appName": "Registered product name",
       "exchanges.json:radiusKm": "International kilometre unit",
       "gamification.json:xp": "Product XP unit",
       "gamification.json:challenges.xpReward": "Product XP unit",

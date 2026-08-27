@@ -16,7 +16,7 @@
   },
   "hub": {
     "eyebrow": "Communautés partenaires",
-    "heroTitle": "Federation Hub",
+    "heroTitle": "Espace de fédération",
     "heroDescription": "Connectez-vous avec des banques de temps fiables, découvrez des membres fédérés et partagez des échanges entre les communautés partenaires.",
     "statusActive": "Fédération active",
     "statusInactive": "Fédération inactive",
@@ -81,7 +81,7 @@
   "visitWebsite": "Visiter le site web",
   "empty": "Aucun partenaire fédéré pour le moment.",
   "reviews": {
-    "fromPartner": "via {{partner}}",
+    "fromPartner": "par l’intermédiaire de {{partner}}",
     "verified": "Vérifié"
   },
   "relative": {

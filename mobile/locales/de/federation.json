@@ -68,11 +68,11 @@
       },
       "setup": {
         "title": "Einrichtung",
-        "description": "Configure federation access"
+        "description": "Zugriff auf den Verbund einrichten"
       },
       "settings": {
         "title": "Einstellungen",
-        "description": "Manage federation visibility"
+        "description": "Sichtbarkeit im Verbund verwalten"
       }
     }
   },
@@ -88,7 +88,7 @@
     "today": "today",
     "daysAgo": "{{count}}vor einem Tag",
     "daysAgo_one": "vor {{count}} Tag",
-    "daysAgo_other": "{{count}} days ago",
+    "daysAgo_other": "vor {{count}} Tagen",
     "monthsAgo": "{{count}} vor einem Monat",
     "monthsAgo_one": "vor {{count}} Monat",
     "monthsAgo_other": "{{count}} vor einem Monat"
@@ -119,10 +119,10 @@
     "shareMessage": "{{name}} — {{url}}",
     "noDescription": "Dieser Partner hat noch keine öffentliche Beschreibung hinzugefügt.",
     "explorePartner": "Erkunden Sie dies partner",
-    "browseMembers": "Browse members",
+    "browseMembers": "Mitglieder durchsuchen",
     "browseListings": "Angebote durchsuchen",
-    "browseGroups": "Browse groups",
-    "browseEvents": "Browse events",
+    "browseGroups": "Gruppen durchsuchen",
+    "browseEvents": "Veranstaltungen durchsuchen",
     "openMessages": "Open Nachrichten",
     "federationSettings": "Föderationseinstellungen",
     "browseNetwork": "Zurück zur Föderation",
@@ -175,7 +175,7 @@
       "reach": {
         "all": "Alle erreichen",
         "local_only": "Nur lokal",
-        "remote_ok": "Remote ok",
+        "remote_ok": "Teilnahme aus der Ferne möglich",
         "travel_ok": "Kann reisen"
       }
     },
@@ -380,7 +380,7 @@
       "save": "Einstellungen speichern",
       "reach": {
         "local_only": "Nur lokal",
-        "remote_ok": "Remote ok",
+        "remote_ok": "Teilnahme aus der Ferne möglich",
         "travel_ok": "Kann Reisen"
       },
       "profile_visible_federated": {
