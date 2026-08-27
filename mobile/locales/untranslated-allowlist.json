@@ -19,7 +19,12 @@
       "exchanges.json:groupExchanges.participants_other": "Participants is the same word in French",
       "marketplace.json:forms.photosCount": "Photos is the same word in French",
       "marketplace.json:orders.deliveryEstimate": "Minutes is the same word in French",
-      "marketplace.json:orders.deliveryEstimate_one": "Minute is the same word in French"
+      "marketplace.json:orders.deliveryEstimate_one": "Minute is the same word in French",
+      "groups.json:detail.qa.votes_other": "Votes is the same word in French",
+      "groups.json:detail.analytics.participants": "Participant is the same word in French",
+      "groups.json:detail.analytics.participants_one": "Participant is the same word in French",
+      "groups.json:detail.analytics.participants_other": "Participants is the same word in French",
+      "groups.json:detail.analytics.breakdown.discussions": "Discussions is the same word in French"
     },
     "it": {
       "resources.json:downloads_one": "Download is established Italian product terminology"
