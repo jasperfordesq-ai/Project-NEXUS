@@ -7,13 +7,13 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Roadmap to Production
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-27
 
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **708 / 1000 local candidate on rubric M1** (629 remains the
-committed/CI-backed floor until this candidate is pushed and green) — see
+Current position: **708 / 1000 banked on rubric M1** (commit `4c38d229a`, all six workflows
+green on 2026-08-27) — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md). Session hand-off, including what this
 plan is missing: [`MOBILE_HANDOFF.md`](MOBILE_HANDOFF.md).

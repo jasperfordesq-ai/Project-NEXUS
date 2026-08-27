@@ -13,7 +13,7 @@ Status: **Maintained — the only document that states the mobile app's current 
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
 <!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=708/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=629 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=708 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,9 +22,9 @@ competing score anywhere.
 
 ## The headline
 
-**708 / 1000 local candidate on rubric M1; 629 remains the committed/CI-backed floor.** The
-candidate becomes banked only after this reconciliation and its underlying mobile changes
-are committed, pushed and green. The Android app is publicly installable from Google Play and
+**708 / 1000 banked on rubric M1.** Commit `4c38d229a` is pushed and all six workflows are
+green, including the 28-job CI pipeline, Android release gate, CodeQL and security scan. The
+Android app is publicly installable from Google Play and
 its core timebanking, messaging, volunteering and marketplace journeys have been walked on
 devices. The public listing, Data Safety panel, content rating, policy URLs, production
 signing, Sentry project and source-map path now exist. Genuine 7-inch and 10-inch emulator
@@ -50,7 +50,7 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every category wa
 against current evidence on 2026-08-26; journey credit remains formula-driven from the
 ledger, while non-journey increases below name the new evidence that earned them.
 The table keeps the rubric's historical `Banked` column name because the score checker reads
-that contract; its 708 total is a working-tree candidate until CI banks it, as stated above.
+that contract; its 708 total is now committed and CI-backed.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
@@ -62,7 +62,7 @@ that contract; its 708 total is a working-tree candidate until CI banks it, as s
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, but the current shrink-only gate reports **4,638** multi-word phrases still identical to English: ga 107, de 916, fr 911, it 915, pt 896 and es 893. Arabic and right-to-left are excluded from the native app by owner decision; the remaining six-locale gap is in scope and holds this category at 25 |
 | Automated test depth | 100 | 74 | 100 | `npm test -- --runInBand` passed **332 suites / 2,372 tests** on 2026-08-27, with type checking, 28 coverage floors, source guards and nine device flows. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
-| Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the next source state is uncommitted and the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
+| Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
 | **Total** | **1000** | **708** | **1000** | — |
 
@@ -76,10 +76,11 @@ requested independently. Tablet evidence is the genuine emulator output under
 106 typed getters and found no required field missing from a response it could inspect. The
 same day's submitted-artefact accessibility pass found additional informational chips in
 Goals, Organisations and Settings; their source fixes are tested but cannot become device
-evidence until the next build. No uncommitted evidence is described as banked CI.
+evidence until the next build. Commit `4c38d229a` and all six workflows were green on
+2026-08-27, so the source/test evidence above is banked; it is still not device evidence for
+a build that does not yet exist.
 
-🔴 **The banked floor remains 629 until this candidate is committed and green.** Once 708 is
-banked, the floor ratchets to 708 and a published total may never fall. If scope is
+🔴 **The banked floor ratcheted to 708 on 2026-08-27.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower a
 banked headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
@@ -94,9 +95,9 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    the organisation ledger inside the same database transaction; the 19-test service suite
    (107 assertions) checks wallet visibility and idempotent replay. A device walk of the next
    artefact remains part of release acceptance below, not a reason to leave the defect.
-3. **Bank the current release candidate.** Commit and push the community-picker, tablet
-   captures, asset validator and this reconciliation; require green CI before changing a
-   version code or producing another signed artefact.
+3. ~~**Bank the current release candidate.**~~ **Done 2026-08-27.** Commit `4c38d229a` is
+   pushed and all six workflows are green. No version code was changed and no artefact was
+   built.
 4. **Walk the exact next Play artefact on a physical phone.** Prove clean install → neutral
    picker → community login, upgrade from the public build → remembered community, signed-in
    return → home, messaging, one exchange, push arrival and disposable account deletion.

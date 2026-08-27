@@ -482,8 +482,8 @@ risk acceptance, not a claim that `npm audit` is clean.
   changes hands and nothing is ever put behind a payment”, which contradicts optional
   purchases of physical marketplace goods. Use the truthful prepared paragraph above:
   time-credit exchanges involve no money; physical-goods payments may use Stripe.
-- **Bank the current working tree and confirm CI.** The community-picker, tablet captures,
-  validator and reconciliation are local changes, not yet evidence from a committed build.
+- ~~**Bank the current working tree and confirm CI.**~~ Done 2026-08-27 as `4c38d229a`;
+  all six workflows are green. This banks source/test evidence, not a new Play artefact.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
   the nightly sweep are all in place and verified.
 - iOS: entirely out of scope. No Apple developer account, no build, no walk.

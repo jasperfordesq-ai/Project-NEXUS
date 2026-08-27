@@ -47,7 +47,8 @@ Follow the ordered backlog in the status document. The first four release gates 
    use no money, while optional physical marketplace purchases may use Stripe.
 2. ~~Close the organisation-deposit money-integrity gap.~~ Fixed 2026-08-27: both ledgers
    now commit atomically and the service regression suite checks wallet visibility and replay.
-3. Commit and push the current candidate and require green CI before changing version code.
+3. ~~Commit and push the current candidate.~~ Done as `4c38d229a`; all six workflows are
+   green. No version code was changed.
 4. Walk the exact next Play-distributed artefact on a physical phone as both a clean install
    and an upgrade, including push, one exchange and disposable account deletion.
 
