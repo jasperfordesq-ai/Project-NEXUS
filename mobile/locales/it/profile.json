@@ -156,7 +156,7 @@
   "marketplaceSavedSearches": "Ricerche salvate",
   "marketplaceTools": "Strumenti del venditore",
   "marketplacePayments": "Pagamenti del venditore",
-  "aiChat": "AI Assistant",
+  "aiChat": "Assistente IA",
   "achievements": "Obiettivi",
   "myGoals": "I miei obiettivi",
   "volunteering": "Volunteering",
@@ -240,44 +240,44 @@
         "section3Body": "Apri la versione Web per leggere tutte le condizioni aggiornate, comprese le note legali, l’attribuzione, la responsabilità e le informazioni sulla licenza."
       },
       "privacy": {
-        "title": "Privacy summary",
+        "title": "Sintesi sulla privacy",
         "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Data you provide",
-        "section1Body": "Profile details, messages, listings, events, applications, transactions, and settings are used to operate the features you choose to use.",
+        "section1Title": "Dati forniti dall’utente",
+        "section1Body": "I dati del profilo, i messaggi, gli annunci, gli eventi, le candidature, le transazioni e le impostazioni servono a fornire le funzionalità che scegli di usare.",
         "section2Title": "Controls",
-        "section2Body": "Mobile settings include privacy, notification, blocked-user, translation, and data export workflows where supported by the account and tenant.",
-        "section3Title": "Full policy",
-        "section3Body": "Open the web privacy policy for the complete legal basis, retention, processor, rights, and contact information."
+        "section2Body": "A seconda dell’account e della comunità, le impostazioni mobili includono percorsi per privacy, notifiche, utenti bloccati, traduzione ed esportazione dei dati.",
+        "section3Title": "Informativa completa",
+        "section3Body": "Apri l’informativa sulla privacy sul Web per consultare tutte le basi giuridiche, i periodi di conservazione, i responsabili del trattamento, i diritti e i contatti."
       },
       "cookies": {
-        "title": "Cookies and storage summary",
-        "summary": "The mobile app uses local device storage and secure tokens rather than browser cookies for most signed-in workflows.",
-        "section1Title": "App storage",
-        "section1Body": "The app may store authentication state, preferences, cached API data, theme choices, and language settings on the device.",
-        "section2Title": "Web pages",
-        "section2Body": "When you open canonical web pages, browser cookies and similar technologies may apply according to the web cookie policy.",
-        "section3Title": "Your choices",
-        "section3Body": "You can sign out, adjust settings, clear app storage through your device, or open the web cookie policy for the full current text."
+        "title": "Sintesi su cookie e memoria",
+        "summary": "Per la maggior parte dei percorsi autenticati, l’app mobile usa la memoria locale del dispositivo e token sicuri anziché cookie del browser.",
+        "section1Title": "Memoria dell’app",
+        "section1Body": "L’app può memorizzare sul dispositivo lo stato di autenticazione, le preferenze, dati API nella cache, il tema scelto e le impostazioni della lingua.",
+        "section2Title": "Pagine Web",
+        "section2Body": "Quando apri le pagine Web di riferimento, possono essere usati cookie del browser e tecnologie simili secondo l’informativa sui cookie del sito.",
+        "section3Title": "Le tue scelte",
+        "section3Body": "Puoi uscire, modificare le impostazioni, cancellare la memoria dell’app dal dispositivo o aprire sul Web l’informativa completa e aggiornata sui cookie."
       },
       "accessibility": {
-        "title": "Accessibility summary",
-        "summary": "The platform aims to support accessible member workflows across web and mobile experiences.",
-        "section1Title": "Native app support",
-        "section1Body": "Mobile screens use translated labels, accessible buttons, visible loading/error states, safe areas, and platform assistive technologies where practical.",
-        "section2Title": "Alternative frontend",
-        "section2Body": "An accessible HTML-first frontend exists for users who benefit from a simpler, highly structured web experience.",
+        "title": "Sintesi sull’accessibilità",
+        "summary": "La piattaforma mira a offrire percorsi accessibili ai membri sul Web e nell’esperienza mobile.",
+        "section1Title": "Supporto nell’app nativa",
+        "section1Body": "Ove possibile, le schermate mobili usano etichette tradotte, pulsanti accessibili, stati di caricamento ed errore visibili, aree sicure e tecnologie assistive della piattaforma.",
+        "section2Title": "Interfaccia alternativa",
+        "section2Body": "È disponibile un’interfaccia accessibile basata su HTML per chi beneficia di un’esperienza Web più semplice e molto strutturata.",
         "section3Title": "Feedback",
-        "section3Body": "Report barriers through the contact route so accessibility issues can be triaged and fixed with enough device and workflow detail."
+        "section3Body": "Segnala gli ostacoli tramite il canale di contatto, fornendo dettagli sufficienti sul dispositivo e sul percorso affinché i problemi di accessibilità possano essere valutati e risolti."
       },
       "trust": {
-        "title": "Trust and safety summary",
-        "summary": "Trust and safety workflows help protect members while keeping community exchange practical and respectful.",
-        "section1Title": "Member protection",
-        "section1Body": "Profiles, reviews, reports, blocks, identity checks, and moderation workflows support safer exchanges and communication.",
+        "title": "Sintesi su fiducia e sicurezza",
+        "summary": "I percorsi di fiducia e sicurezza aiutano a proteggere i membri mantenendo gli scambi della comunità pratici e rispettosi.",
+        "section1Title": "Protezione dei membri",
+        "section1Body": "Profili, recensioni, segnalazioni, blocchi, controlli dell’identità e moderazione favoriscono scambi e comunicazioni più sicuri.",
         "section2Title": "Reporting",
-        "section2Body": "Use report, block, or contact routes when content, messages, listings, events, or member behaviour appear unsafe or inappropriate.",
+        "section2Body": "Usa le funzioni di segnalazione, blocco o contatto quando contenuti, messaggi, annunci, eventi o il comportamento di un membro sembrano pericolosi o inappropriati.",
         "section3Title": "Limits",
-        "section3Body": "Platform tools do not replace emergency services, legal advice, or safeguarding authorities when immediate or statutory action is needed."
+        "section3Body": "Gli strumenti della piattaforma non sostituiscono i servizi di emergenza, la consulenza legale o le autorità di tutela quando sono necessarie azioni immediate o previste dalla legge."
       }
     }
   },

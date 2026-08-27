@@ -73,7 +73,7 @@
     "commentPlaceholder": "Partilhe o que correu bem…",
     "emptyReceivedTitle": "Ainda não recebeu avaliações",
     "emptyGivenTitle": "Ainda não fez avaliações",
-    "emptyPendingTitle": "No pending reviews",
+    "emptyPendingTitle": "Não há avaliações pendentes",
     "emptySubtitle": "As avaliações aparecerão aqui após trocas concluídas.",
     "errorTitle": "Não foi possível carregar as avaliações",
     "anonymous": "Membro anónimo",
@@ -156,7 +156,7 @@
   "marketplaceSavedSearches": "Pesquisas guardadas",
   "marketplaceTools": "Ferramentas do vendedor",
   "marketplacePayments": "Pagamentos do vendedor",
-  "aiChat": "AI Assistant",
+  "aiChat": "Assistente de IA",
   "achievements": "Conquistas",
   "myGoals": "Os Meus Objetivos",
   "volunteering": "Volunteering",
@@ -240,44 +240,44 @@
         "section3Body": "Abra a versão Web para consultar os termos atuais completos, incluindo avisos legais, atribuição, responsabilidade e informações sobre a licença."
       },
       "privacy": {
-        "title": "Privacy summary",
+        "title": "Resumo da privacidade",
         "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Data you provide",
-        "section1Body": "Profile details, messages, listings, events, applications, transactions, and settings are used to operate the features you choose to use.",
+        "section1Title": "Dados que fornece",
+        "section1Body": "Os detalhes do perfil, mensagens, anúncios, eventos, candidaturas, transações e definições são utilizados para disponibilizar as funcionalidades que escolhe usar.",
         "section2Title": "Controls",
-        "section2Body": "Mobile settings include privacy, notification, blocked-user, translation, and data export workflows where supported by the account and tenant.",
-        "section3Title": "Full policy",
-        "section3Body": "Open the web privacy policy for the complete legal basis, retention, processor, rights, and contact information."
+        "section2Body": "Consoante a conta e a comunidade, as definições móveis incluem percursos de privacidade, notificações, utilizadores bloqueados, tradução e exportação de dados.",
+        "section3Title": "Política completa",
+        "section3Body": "Abra a política de privacidade na Web para consultar todas as bases jurídicas, prazos de conservação, subcontratantes, direitos e informações de contacto."
       },
       "cookies": {
-        "title": "Cookies and storage summary",
-        "summary": "The mobile app uses local device storage and secure tokens rather than browser cookies for most signed-in workflows.",
-        "section1Title": "App storage",
-        "section1Body": "The app may store authentication state, preferences, cached API data, theme choices, and language settings on the device.",
-        "section2Title": "Web pages",
-        "section2Body": "When you open canonical web pages, browser cookies and similar technologies may apply according to the web cookie policy.",
-        "section3Title": "Your choices",
-        "section3Body": "You can sign out, adjust settings, clear app storage through your device, or open the web cookie policy for the full current text."
+        "title": "Resumo de cookies e armazenamento",
+        "summary": "Na maioria dos percursos com sessão iniciada, a aplicação móvel utiliza armazenamento local do dispositivo e tokens seguros em vez de cookies do navegador.",
+        "section1Title": "Armazenamento da aplicação",
+        "section1Body": "A aplicação pode guardar no dispositivo o estado de autenticação, preferências, dados da API em cache, opções de tema e definições de idioma.",
+        "section2Title": "Páginas Web",
+        "section2Body": "Ao abrir as páginas Web de referência, podem aplicar-se cookies do navegador e tecnologias semelhantes de acordo com a política de cookies do site.",
+        "section3Title": "As suas escolhas",
+        "section3Body": "Pode terminar a sessão, ajustar as definições, limpar o armazenamento da aplicação no dispositivo ou abrir na Web a política de cookies completa e atual."
       },
       "accessibility": {
-        "title": "Accessibility summary",
-        "summary": "The platform aims to support accessible member workflows across web and mobile experiences.",
-        "section1Title": "Native app support",
-        "section1Body": "Mobile screens use translated labels, accessible buttons, visible loading/error states, safe areas, and platform assistive technologies where practical.",
-        "section2Title": "Alternative frontend",
-        "section2Body": "An accessible HTML-first frontend exists for users who benefit from a simpler, highly structured web experience.",
+        "title": "Resumo da acessibilidade",
+        "summary": "A plataforma procura disponibilizar percursos acessíveis aos membros na Web e na aplicação móvel.",
+        "section1Title": "Apoio na aplicação nativa",
+        "section1Body": "Sempre que possível, os ecrãs móveis utilizam etiquetas traduzidas, botões acessíveis, estados visíveis de carregamento e erro, áreas seguras e tecnologias de apoio da plataforma.",
+        "section2Title": "Interface alternativa",
+        "section2Body": "Existe uma interface acessível baseada em HTML para quem beneficia de uma experiência Web mais simples e muito estruturada.",
         "section3Title": "Feedback",
-        "section3Body": "Report barriers through the contact route so accessibility issues can be triaged and fixed with enough device and workflow detail."
+        "section3Body": "Comunique barreiras através do canal de contacto, incluindo detalhes suficientes sobre o dispositivo e o percurso para que os problemas de acessibilidade possam ser avaliados e corrigidos."
       },
       "trust": {
-        "title": "Trust and safety summary",
-        "summary": "Trust and safety workflows help protect members while keeping community exchange practical and respectful.",
-        "section1Title": "Member protection",
-        "section1Body": "Profiles, reviews, reports, blocks, identity checks, and moderation workflows support safer exchanges and communication.",
+        "title": "Resumo de confiança e segurança",
+        "summary": "Os percursos de confiança e segurança ajudam a proteger os membros, mantendo as trocas comunitárias práticas e respeitadoras.",
+        "section1Title": "Proteção dos membros",
+        "section1Body": "Perfis, avaliações, denúncias, bloqueios, verificações de identidade e moderação contribuem para trocas e comunicações mais seguras.",
         "section2Title": "Reporting",
-        "section2Body": "Use report, block, or contact routes when content, messages, listings, events, or member behaviour appear unsafe or inappropriate.",
+        "section2Body": "Utilize as opções de denúncia, bloqueio ou contacto quando conteúdos, mensagens, anúncios, eventos ou o comportamento de um membro parecerem inseguros ou inadequados.",
         "section3Title": "Limits",
-        "section3Body": "Platform tools do not replace emergency services, legal advice, or safeguarding authorities when immediate or statutory action is needed."
+        "section3Body": "As ferramentas da plataforma não substituem serviços de emergência, aconselhamento jurídico ou autoridades de proteção quando é necessária uma ação imediata ou prevista na lei."
       }
     }
   },
