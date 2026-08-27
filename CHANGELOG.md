@@ -29,6 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mobile quality gates now cover more real failure modes without creating a build.**
+  The Irish catalogue's remaining 107 English-identical phrases are translated or
+  narrowly allowlisted as product/unit invariants; the API response-contract audit
+  supplies a discovered real listing target to both comment endpoint families; the
+  accessibility-tree crawler force-stops between routes and adds Connections, Activity,
+  Endorsements, Reviews and Skills; and the screenshot tour accepts its asynchronous
+  tenant logo only after two consecutive login frames meet the existing pixel budget.
+  Irish catalogue integrity and the contract changes are locally verified, while the
+  widened TalkBack and pixel tours remain explicitly pending an attached device.
+
 - **Google Play upload-key recovery is now independently backed up and tested.** The current
   production JKS and credential metadata have a byte-verified unencrypted offline copy plus
   matching password-protected, header-encrypted offline and cloud archives, each accompanied

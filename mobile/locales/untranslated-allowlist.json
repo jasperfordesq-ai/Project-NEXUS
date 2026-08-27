@@ -1,4 +1,14 @@
 {
   "global": {},
-  "byLocale": {}
+  "byLocale": {
+    "ga": {
+      "common.json:appName": "Registered product name",
+      "exchanges.json:radiusKm": "International kilometre unit",
+      "gamification.json:xp": "Product XP unit",
+      "gamification.json:challenges.xpReward": "Product XP unit",
+      "gamification.json:journeys.xpReward": "Product XP unit",
+      "gamification.json:shop.xpCost": "Product XP unit",
+      "marketplace.json:map.radiusOption": "International kilometre unit"
+    }
+  }
 }

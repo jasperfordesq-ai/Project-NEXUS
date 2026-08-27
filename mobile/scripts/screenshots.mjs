@@ -40,6 +40,10 @@ import url from 'node:url';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 
+import stabilityHelpers from './screenshot-stability.cjs';
+
+const { waitForStableFrame } = stabilityHelpers;
+
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const MOBILE_ROOT = path.resolve(HERE, '..');
 const SHOT_ROOT = path.join(MOBILE_ROOT, 'screenshots');
@@ -100,9 +104,9 @@ const VOLATILE_SCREENS = new Set([
     all came in at 0.010–0.013%. So the gate's first screen could fail on a run where nothing
     had changed, which is the failure mode that teaches people to ignore a gate.
     The cause is the tenant logo: it is fetched, so in one run it is painted and in the next
-    the placeholder is still there. Fixing it needs the capture to wait for that image
-    specifically — real work, not pretended here. Meanwhile it is captured for eyeballing
-    and excluded from the comparison, stated in the output.
+    the placeholder is still there. The tour now takes bounded candidates and accepts a frame
+    only after two consecutive images meet the pixel budget. It remains excluded until repeat
+    device tours prove that this removes the volatility rather than merely moving it.
   */
   '01-login.png',
 ]);
@@ -323,6 +327,21 @@ function readPng(file) {
   return PNG.sync.read(fs.readFileSync(file));
 }
 
+function differenceRatioForBuffers(leftBuffer, rightBuffer) {
+  const left = cropTransientRegions(PNG.sync.read(leftBuffer));
+  const right = cropTransientRegions(PNG.sync.read(rightBuffer));
+  if (left.width !== right.width || left.height !== right.height) return 1;
+  const changed = pixelmatch(
+    left.data,
+    right.data,
+    null,
+    left.width,
+    left.height,
+    PIXELMATCH_OPTIONS,
+  );
+  return changed / (left.width * left.height);
+}
+
 function ensureDir(d) {
   fs.mkdirSync(d, { recursive: true });
 }
@@ -381,7 +400,7 @@ function doCapture() {
  * copies the newest run's images across. It refuses to proceed if the tour
  * produced nothing, rather than silently comparing an empty set and reporting OK.
  */
-function doTour() {
+async function doTour() {
   requireDevice();
 
   const flow = path.join(MOBILE_ROOT, '.maestro', 'screens', 'capture-screens.yaml');
@@ -415,7 +434,7 @@ function doTour() {
     }
   );
 
-  const collected = collectMaestroScreenshots();
+  const collected = await collectMaestroScreenshots();
   if (collected === 0) {
     fail(
       'the tour produced no screenshots.',
@@ -440,7 +459,7 @@ function doTour() {
  * directory Maestro writes under — passing the wrong one silently finds nothing and
  * reads as "the flow produced no screenshots".
  */
-function collectMaestroScreenshots(flowName = 'capture-screens', destRoot = 'current') {
+async function collectMaestroScreenshots(flowName = 'capture-screens', destRoot = 'current') {
   const testsRoot = path.join(os.homedir(), '.maestro', 'tests');
   if (!fs.existsSync(testsRoot)) return 0;
 
@@ -456,7 +475,23 @@ function collectMaestroScreenshots(flowName = 'capture-screens', destRoot = 'cur
   const dest = path.join(SHOT_ROOT, destRoot, scheme);
   ensureDir(dest);
   let n = 0;
-  for (const f of fs.readdirSync(shotDir).filter((x) => x.endsWith('.png'))) {
+  const files = fs.readdirSync(shotDir).filter((x) => x.endsWith('.png'));
+  const loginCandidates = files
+    .filter((name) => /^01-login-candidate-\d+\.png$/.test(name))
+    .sort();
+  if (loginCandidates.length > 0) {
+    const queue = loginCandidates.map((name) => fs.readFileSync(path.join(shotDir, name)));
+    const stableLogin = await waitForStableFrame({
+      captureFrame: async () => queue.shift(),
+      differenceRatio: differenceRatioForBuffers,
+      sleep: async () => undefined,
+      maxAttempts: loginCandidates.length,
+      threshold: MAX_DIFF_RATIO,
+    });
+    fs.writeFileSync(path.join(dest, '01-login.png'), stableLogin);
+    n += 1;
+  }
+  for (const f of files.filter((name) => !/^01-login-candidate-\d+\.png$/.test(name))) {
     fs.copyFileSync(path.join(shotDir, f), path.join(dest, f));
     n += 1;
   }
@@ -477,7 +512,7 @@ function collectMaestroScreenshots(flowName = 'capture-screens', destRoot = 'cur
  * There is no pass/fail here and no exit code beyond "did it run". A screen the
  * sweep could not reach shows up as a missing image, which is itself the finding.
  */
-function doSweep() {
+async function doSweep() {
   requireDevice();
 
   const flow = path.join(MOBILE_ROOT, '.maestro', 'screens', 'sweep-screens.yaml');
@@ -507,7 +542,7 @@ function doSweep() {
     }
   );
 
-  const collected = collectMaestroScreenshots('sweep-screens', 'sweep');
+  const collected = await collectMaestroScreenshots('sweep-screens', 'sweep');
   console.log('');
   if (collected === 0) {
     fail(
@@ -630,10 +665,10 @@ switch (mode) {
     doApprove();
     break;
   case 'tour':
-    doTour();
+    await doTour();
     break;
   case 'sweep':
-    doSweep();
+    await doSweep();
     break;
   case 'restore-animations':
     // Exposed so a Maestro run can guarantee normal timing without capturing.

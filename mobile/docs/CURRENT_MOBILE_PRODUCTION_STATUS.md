@@ -93,8 +93,8 @@ that contract; its 708 total is now committed and CI-backed.
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
-| Accessibility | 60 | 38 | 60 | Contrast is gated. TalkBack and the live accessibility tree have been audited across five core screens, and the automated touch-target tool was widened to 24 screens; every measured target below the WCAG 2.2 AA 24dp minimum was fixed. Still short of full: no journey has been operated end to end using TalkBack gestures, most screens remain unaudited, and 88 measured targets remain above WCAG AA but below Android's 48dp guidance |
-| Internationalisation | 70 | 25 | 70 | Seven locales ship, but the current shrink-only gate reports **4,638** multi-word phrases still identical to English: ga 107, de 916, fr 911, it 915, pt 896 and es 893. Arabic and right-to-left are excluded from the native app by owner decision; the remaining six-locale gap is in scope and holds this category at 25 |
+| Accessibility | 60 | 38 | 60 | Contrast is gated. TalkBack and the live accessibility tree have been audited across five core screens, and the automated touch-target tool now defines 29 fingerprint-gated routes and force-stops before each probe; every previously measured target below the WCAG 2.2 AA 24dp minimum was fixed. The five new routes still need a live attached-device run. Still short of full: no journey has been operated end to end using TalkBack gestures, most screens remain unaudited, and 88 previously measured targets remain above WCAG AA but below Android's 48dp guidance |
+| Internationalisation | 70 | 25 | 70 | Seven locales ship, and the current shrink-only gate reports **4,531** multi-word phrases still identical to English: ga 0, de 916, fr 911, it 915, pt 896 and es 893. Irish has automated catalogue integrity and an AI semantic pass, not native-speaker certification. Arabic and right-to-left are excluded from the native app by owner decision; the remaining five-locale gap is in scope and holds this category at 25 |
 | Automated test depth | 100 | 74 | 100 | `npm test -- --runInBand` passed **332 suites / 2,384 tests** on 2026-08-27 for the isolated Android candidate, with type checking, 28 coverage floors, source guards and nine device flows. The concurrent Apple worktree contains additional tests and is not included in this banked number. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
@@ -109,7 +109,7 @@ budget, asset validation, network policy and the live TLS certificate chain. The
 listing was inspected directly while signed in and the five public policy/support routes were
 requested independently. Tablet evidence is the genuine emulator output under
 `store-listing/screenshots/tablet-{7,10}/`. A 2026-08-27 fixture-dependent API probe checked
-106 typed getters and found no required field missing from a response it could inspect. The
+107 typed getters and found no required field missing from a response it could inspect. The
 same day's submitted-artefact accessibility pass found additional informational chips in
 Goals, Organisations and Settings; their source fixes are tested but cannot become device
 evidence until the next build. Commit `4c38d229a` and all six workflows were green on
@@ -147,12 +147,15 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
 5. **Increase response-contract evidence.** Re-run the field-coverage instrument against
    current fixtures, then prioritise money, authentication, messaging and exchange responses;
    the last banked measurement covered 115 of 494 typed getters. The 2026-08-27 rerun checked
-   106 with today's fixtures, found no inspected missing required field, and is not treated as
-   a regression because empty collections and addressable fixture ids change the denominator.
-6. **Reduce member-facing quality debt.** The guarded translation baseline is 4,638 English
-   phrases across six non-English locales; TalkBack has not driven a complete journey; the
-   target audit covers 24 of roughly 137 screens; and pixel assertions cover only a small
-   stable subset.
+   107 with today's fixtures, found no inspected missing required field, and now supplies a
+   discovered real listing target to both comment getter families. Empty collections and
+   addressable fixture ids still change the denominator.
+6. **Reduce member-facing quality debt.** The guarded translation baseline is 4,531 English
+   phrases across five continental locales; Irish is at zero English-identical phrases but
+   still needs native-speaker certification. TalkBack has not driven a complete journey; the
+   target audit defines 29 of roughly 137 screens but the five new routes await a device run;
+   and pixel assertions cover only a small stable subset. The login tour now requires two
+   consecutive frames within budget, but remains excluded until repeated device runs prove it.
 7. **Pay down engineering headroom.** The 529-warning lint backlog was cleared on
    2026-08-27: Jest/CommonJS false positives are scoped to test and configuration files,
    real warnings were fixed, and `eslint .` now passes with zero warnings. The Hermes startup

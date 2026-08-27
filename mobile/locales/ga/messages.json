@@ -61,31 +61,31 @@
     "deletedMessage": "Scriosadh an teachtaireacht seo.",
     "reactWith": "Imoibrigh le {{emoji}}",
     "toggleReaction": "Scoránaigh {{emoji}} imoibriú",
-    "attachmentName": "Attachment {{index}}",
+    "attachmentName": "Ceangaltán {{index}}",
     "attachments": {
       "add": "Cuir ceangaltán leis",
       "title": "Cuir ceangaltán leis",
-      "photoLibrary": "Photo library",
+      "photoLibrary": "Leabharlann grianghraf",
       "remove": "Bain {{name}}",
-      "removeLabel": "Remove",
+      "removeLabel": "Bain",
       "open": "Oscail {{name}}",
-      "file": "Attachment",
-      "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "file": "Ceangaltán",
+      "permissionTitle": "Tá rochtain ar ghrianghraif de dhíth",
+      "permissionMessage": "Ceadaigh rochtain ar ghrianghraif chun íomhánna a cheangal."
     },
     "voice": {
       "record": "Taifead teachtaireacht ghutha",
-      "recording": "Recording voice message",
-      "ready": "Voice message ready",
+      "recording": "Teachtaireacht ghutha á taifeadadh",
+      "ready": "Tá an teachtaireacht ghutha réidh",
       "stop": "Stop",
-      "cancel": "Cancel voice message",
-      "send": "Send voice message",
-      "permissionTitle": "Microphone access needed",
-      "permissionMessage": "Allow microphone access to record voice messages.",
-      "failedTitle": "Voice message failed",
-      "startFailed": "Could not start recording. Please try again.",
-      "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "cancel": "Cealaigh an teachtaireacht ghutha",
+      "send": "Seol an teachtaireacht ghutha",
+      "permissionTitle": "Tá rochtain ar an micreafón de dhíth",
+      "permissionMessage": "Ceadaigh rochtain ar an micreafón chun teachtaireachtaí gutha a thaifeadadh.",
+      "failedTitle": "Theip ar an teachtaireacht ghutha",
+      "startFailed": "Níorbh fhéidir an taifeadadh a thosú. Bain triail eile as.",
+      "stopFailed": "Níorbh fhéidir an taifeadadh seo a shábháil. Bain triail eile as.",
+      "sendFailed": "Níorbh fhéidir an teachtaireacht ghutha a sheoladh. Bain triail eile as."
     }
   },
   "context": {

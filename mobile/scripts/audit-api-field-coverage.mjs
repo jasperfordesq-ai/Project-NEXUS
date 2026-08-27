@@ -49,6 +49,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import coverageHelpers from './audit-api-field-coverage-helpers.cjs';
+
+const { requiredQueryForGetter } = coverageHelpers;
+
 const API = process.env.API ?? 'http://127.0.0.1:8090/api/v2';
 const LOGIN = process.env.LOGIN ?? 'http://127.0.0.1:8090/api/auth/login';
 const TENANT = process.env.TENANT ?? 'hour-timebank';
@@ -249,7 +253,7 @@ async function discover(endpoint, param) {
   return value;
 }
 
-async function resolve(endpoint) {
+async function resolve(endpoint, getterName) {
   const params = [...endpoint.matchAll(/\$\{(\w+)\}/g)].map((m) => m[1]);
   let url = endpoint;
   const how = [];
@@ -274,21 +278,31 @@ async function resolve(endpoint) {
   if (query) {
     url += (url.includes('?') ? '&' : '?') + new URLSearchParams(query[1]).toString();
   }
+
+  const needsListing = requiredQueryForGetter(getterName, true);
+  if (needsListing) {
+    const listingId = await discover('/listings/${listingId}', 'listingId');
+    const getterQuery = requiredQueryForGetter(getterName, listingId);
+    if (!getterQuery) return { unresolved: 'listingId', how };
+    url += (url.includes('?') ? '&' : '?') + new URLSearchParams(getterQuery).toString();
+    how.push(`target_id=${listingId} (discovered listing)`);
+  }
   return { url, how };
 }
 
 /** Try each enum value and prefer one that answers with actual items. */
-async function fetchBest(endpoint) {
+async function fetchBest(getter) {
+  const { endpoint } = getter;
   const enumName = Object.keys(ENUMS).find((name) => endpoint.includes('${' + name + '}'));
   if (!enumName) {
-    const resolved = await resolve(endpoint);
+    const resolved = await resolve(endpoint, getter.fn);
     if (resolved.unresolved) return { code: `no ${resolved.unresolved}`, how: resolved.how };
     return { ...(await get(resolved.url)), how: resolved.how };
   }
 
   let fallback = { code: 'param?' };
   for (const value of ENUMS[enumName]) {
-    const resolved = await resolve(endpoint.replace('${' + enumName + '}', value));
+    const resolved = await resolve(endpoint.replace('${' + enumName + '}', value), getter.fn);
     if (resolved.unresolved) continue;
     const attempt = { ...(await get(resolved.url)), how: [...resolved.how, `${enumName}=${value}`] };
     if (attempt.code !== '200') continue;
@@ -325,7 +339,7 @@ for (const name of modules) {
       mapped.push(getter.fn);
       continue;
     }
-    const { code, body, how } = await fetchBest(getter.endpoint);
+    const { code, body, how } = await fetchBest(getter);
     if (verbose && how?.length) console.log(`  · ${getter.fn}: ${how.join(', ')}`);
     if (typeof code === 'string' && code.startsWith('no ')) {
       unresolved.push(`${getter.fn}(${code})`);

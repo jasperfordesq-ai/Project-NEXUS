@@ -53,6 +53,7 @@ const DEFAULT_SCREENS = [
   'volunteering', 'jobs', 'marketplace', 'notifications', 'profile',
   'resources', 'polls', 'goals', 'matches', 'organisations', 'blog',
   'group-exchanges', 'achievements', 'leaderboard', 'search', 'settings', 'support',
+  'connections', 'activity', 'endorsements', 'reviews', 'skills',
 ];
 
 /**
@@ -89,6 +90,11 @@ const SCREEN_FINGERPRINT = {
   search: /Search|Find/i,
   settings: /Settings|Preferences|Appearance/i,
   support: /Support|Help|Contact/i,
+  connections: /Connections|Connection requests|Browse members/i,
+  activity: /Activity|Recent activity|Hours given/i,
+  endorsements: /Endorsements|My skills|Discover/i,
+  reviews: /Reviews|Received|Pending/i,
+  skills: /Skills|Endorsements|Add skill/i,
 };
 
 const screens = argValue('--screens', null)?.split(',').map((s) => s.trim()).filter(Boolean)
@@ -114,6 +120,10 @@ function deviceDensity() {
 
 function openScreen(route) {
   adb(['shell', `am start -a android.intent.action.VIEW -d '${BASE_URL}/${route}' ${PACKAGE}`]);
+}
+
+function forceStopApp() {
+  adb(['shell', 'am', 'force-stop', PACKAGE]);
 }
 
 function dumpTree() {
@@ -201,6 +211,7 @@ async function main() {
 
   let previousSignature = null;
   for (const route of screens) {
+    forceStopApp();
     openScreen(route);
     const { xml, signature, settled } = await settledTree(previousSignature);
     if (!xml) {

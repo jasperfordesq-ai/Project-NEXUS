@@ -44,7 +44,18 @@ appId: ie.project.nexus
 # new member sees, and the only screen reachable with no account.
 - waitForAnimationToEnd:
     timeout: 8000
-- takeScreenshot: 01-login
+# The tenant logo is fetched after the login shell paints. Capture bounded candidates;
+# screenshots.mjs accepts one only after two consecutive images meet the pixel budget.
+- takeScreenshot: 01-login-candidate-1
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 01-login-candidate-2
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 01-login-candidate-3
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 01-login-candidate-4
 
 - tapOn:
     id: "email-input"
