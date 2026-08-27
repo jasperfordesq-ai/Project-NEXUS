@@ -61,31 +61,31 @@
     "deletedMessage": "Este mensaje fue eliminado.",
     "reactWith": "Reaccionar con {{emoji}}",
     "toggleReaction": "Alternar {{emoji}} reacción",
-    "attachmentName": "Attachment {{index}}",
+    "attachmentName": "Archivo adjunto {{index}}",
     "attachments": {
       "add": "Agregar adjunto",
       "title": "Agregar adjunto",
-      "photoLibrary": "Photo library",
-      "remove": "Remove {{name}}",
+      "photoLibrary": "Biblioteca de fotos",
+      "remove": "Eliminar {{name}}",
       "removeLabel": "Remove",
       "open": "Abrir {{name}}",
       "file": "Attachment",
-      "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "permissionTitle": "Se necesita acceso a las fotos",
+      "permissionMessage": "Permite el acceso a las fotos para adjuntar imágenes."
     },
     "voice": {
       "record": "Grabar mensaje de voz",
-      "recording": "Recording voice message",
-      "ready": "Voice message ready",
+      "recording": "Grabando mensaje de voz",
+      "ready": "Mensaje de voz listo",
       "stop": "Stop",
-      "cancel": "Cancel voice message",
-      "send": "Send voice message",
-      "permissionTitle": "Microphone access needed",
-      "permissionMessage": "Allow microphone access to record voice messages.",
-      "failedTitle": "Voice message failed",
-      "startFailed": "Could not start recording. Please try again.",
-      "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "cancel": "Cancelar mensaje de voz",
+      "send": "Enviar mensaje de voz",
+      "permissionTitle": "Se necesita acceso al micrófono",
+      "permissionMessage": "Permite el acceso al micrófono para grabar mensajes de voz.",
+      "failedTitle": "Error en el mensaje de voz",
+      "startFailed": "No se pudo iniciar la grabación. Inténtalo de nuevo.",
+      "stopFailed": "No se pudo guardar esta grabación. Inténtalo de nuevo.",
+      "sendFailed": "No se pudo enviar el mensaje de voz. Inténtalo de nuevo."
     }
   },
   "context": {

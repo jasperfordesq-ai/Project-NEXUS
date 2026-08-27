@@ -61,31 +61,31 @@
     "deletedMessage": "Questo messaggio e stato eliminato.",
     "reactWith": "Reagisci con {{emoji}}",
     "toggleReaction": "Attiva/disattiva {{emoji}} reazione",
-    "attachmentName": "Attachment {{index}}",
+    "attachmentName": "Allegato {{index}}",
     "attachments": {
       "add": "Aggiungi allegato",
       "title": "Aggiungi allegato",
-      "photoLibrary": "Photo library",
+      "photoLibrary": "Libreria foto",
       "remove": "Rimuovi {{name}}",
       "removeLabel": "Remove",
       "open": "Apri {{name}}",
       "file": "Attachment",
-      "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "permissionTitle": "È necessario l’accesso alle foto",
+      "permissionMessage": "Consenti l’accesso alle foto per allegare immagini."
     },
     "voice": {
       "record": "Registra messaggio vocale",
-      "recording": "Recording voice message",
-      "ready": "Voice message ready",
+      "recording": "Registrazione del messaggio vocale",
+      "ready": "Messaggio vocale pronto",
       "stop": "Stop",
-      "cancel": "Cancel voice message",
-      "send": "Send voice message",
-      "permissionTitle": "Microphone access needed",
-      "permissionMessage": "Allow microphone access to record voice messages.",
-      "failedTitle": "Voice message failed",
-      "startFailed": "Could not start recording. Please try again.",
-      "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "cancel": "Annulla messaggio vocale",
+      "send": "Invia messaggio vocale",
+      "permissionTitle": "È necessario l’accesso al microfono",
+      "permissionMessage": "Consenti l’accesso al microfono per registrare messaggi vocali.",
+      "failedTitle": "Invio del messaggio vocale non riuscito",
+      "startFailed": "Impossibile avviare la registrazione. Riprova.",
+      "stopFailed": "Impossibile salvare questa registrazione. Riprova.",
+      "sendFailed": "Impossibile inviare il messaggio vocale. Riprova."
     }
   },
   "context": {

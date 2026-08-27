@@ -61,31 +61,31 @@
     "deletedMessage": "Esta mensagem foi eliminada.",
     "reactWith": "Reagir com {{emoji}}",
     "toggleReaction": "Alternar reação {{emoji}}",
-    "attachmentName": "Attachment {{index}}",
+    "attachmentName": "Anexo {{index}}",
     "attachments": {
       "add": "Adicionar anexo",
       "title": "Adicionar anexo",
-      "photoLibrary": "Photo library",
+      "photoLibrary": "Biblioteca de fotografias",
       "remove": "Remover {{name}}",
       "removeLabel": "Remove",
       "open": "Abra {{name}}",
       "file": "Attachment",
-      "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "permissionTitle": "É necessário acesso às fotografias",
+      "permissionMessage": "Permita o acesso às fotografias para anexar imagens."
     },
     "voice": {
       "record": "Gravar mensagem de voz",
-      "recording": "Recording voice message",
-      "ready": "Voice message ready",
+      "recording": "A gravar mensagem de voz",
+      "ready": "Mensagem de voz pronta",
       "stop": "Stop",
-      "cancel": "Cancel voice message",
-      "send": "Send voice message",
-      "permissionTitle": "Microphone access needed",
-      "permissionMessage": "Allow microphone access to record voice messages.",
-      "failedTitle": "Voice message failed",
-      "startFailed": "Could not start recording. Please try again.",
-      "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "cancel": "Cancelar mensagem de voz",
+      "send": "Enviar mensagem de voz",
+      "permissionTitle": "É necessário acesso ao microfone",
+      "permissionMessage": "Permita o acesso ao microfone para gravar mensagens de voz.",
+      "failedTitle": "Falha na mensagem de voz",
+      "startFailed": "Não foi possível iniciar a gravação. Tente novamente.",
+      "stopFailed": "Não foi possível guardar esta gravação. Tente novamente.",
+      "sendFailed": "Não foi possível enviar a mensagem de voz. Tente novamente."
     }
   },
   "context": {

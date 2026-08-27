@@ -61,31 +61,31 @@
     "deletedMessage": "Diese Nachricht wurde geloescht.",
     "reactWith": "Mit {{emoji}} reagieren",
     "toggleReaction": "{{emoji}}-Reaktion umschalten",
-    "attachmentName": "Attachment {{index}}",
+    "attachmentName": "Anhang {{index}}",
     "attachments": {
       "add": "Anhang hinzufügen",
       "title": "Anhang hinzufügen",
-      "photoLibrary": "Photo library",
-      "remove": "Remove {{name}}",
+      "photoLibrary": "Fotomediathek",
+      "remove": "{{name}} entfernen",
       "removeLabel": "Remove",
       "open": "Öffnen Sie {{name}}",
       "file": "Attachment",
-      "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "permissionTitle": "Zugriff auf Fotos erforderlich",
+      "permissionMessage": "Erlaube den Zugriff auf Fotos, um Bilder anzuhängen."
     },
     "voice": {
       "record": "Sprachnachricht aufnehmen",
-      "recording": "Recording voice message",
-      "ready": "Voice message ready",
+      "recording": "Sprachnachricht wird aufgenommen",
+      "ready": "Sprachnachricht ist bereit",
       "stop": "Stop",
-      "cancel": "Cancel voice message",
-      "send": "Send voice message",
-      "permissionTitle": "Microphone access needed",
-      "permissionMessage": "Allow microphone access to record voice messages.",
-      "failedTitle": "Voice message failed",
-      "startFailed": "Could not start recording. Please try again.",
-      "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "cancel": "Sprachnachricht verwerfen",
+      "send": "Sprachnachricht senden",
+      "permissionTitle": "Mikrofonzugriff erforderlich",
+      "permissionMessage": "Erlaube den Mikrofonzugriff, um Sprachnachrichten aufzunehmen.",
+      "failedTitle": "Sprachnachricht fehlgeschlagen",
+      "startFailed": "Die Aufnahme konnte nicht gestartet werden. Versuche es erneut.",
+      "stopFailed": "Diese Aufnahme konnte nicht gespeichert werden. Versuche es erneut.",
+      "sendFailed": "Die Sprachnachricht konnte nicht gesendet werden. Versuche es erneut."
     }
   },
   "context": {
