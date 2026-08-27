@@ -251,27 +251,27 @@
     "editFailedDescription": "Não foi possível atualizar a oportunidade. Por favor, tente novamente."
   },
   "org": {
-    "title": "Organisation dashboard",
-    "dashboardEyebrow": "Organiser tools",
+    "title": "Painel da organização",
+    "dashboardEyebrow": "Ferramentas de organização",
     "invalid": "Organização não encontrada.",
-    "loadError": "Could not load this organisation dashboard.",
-    "statsUnavailable": "Organisation stats are unavailable.",
-    "emptyTitle": "No managed organisations yet",
-    "emptyDescription": "Register or join an approved organisation before using organiser tools.",
-    "register": "Browse organisations",
-    "pendingHeading": "Pending approval",
-    "pendingDescription": "This organisation is waiting for approval.",
-    "walletBalance": "{{count}}h available",
-    "managerTools": "Manager tools",
-    "openDashboardLabel": "Open dashboard for {{name}}",
+    "loadError": "Não foi possível carregar o painel desta organização.",
+    "statsUnavailable": "As estatísticas da organização não estão disponíveis.",
+    "emptyTitle": "Ainda não há organizações geridas",
+    "emptyDescription": "Registe uma organização aprovada ou adira a uma antes de utilizar as ferramentas de organização.",
+    "register": "Explorar organizações",
+    "pendingHeading": "A aguardar aprovação",
+    "pendingDescription": "Esta organização está a aguardar aprovação.",
+    "walletBalance": "{{count}} h disponíveis",
+    "managerTools": "Ferramentas de gestão",
+    "openDashboardLabel": "Abrir o painel de {{name}}",
     "manage": "Manage",
     "reviewApplications": "Revisar aplicações",
-    "reviewHours": "Review hours",
-    "postOpportunity": "Post opportunity",
+    "reviewHours": "Rever horas",
+    "postOpportunity": "Publicar oportunidade",
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
-      "hours": "Hours review",
+      "hours": "Revisão de horas",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
       "settings": "Settings"
@@ -279,7 +279,7 @@
     "stats": {
       "volunteers": "Volunteers",
       "pendingApplications": "Applications",
-      "pendingHours": "Hours to review",
+      "pendingHours": "Horas por rever",
       "walletBalance": "Wallet",
       "approvedHours": "Horário aprovado",
       "activeOpportunities": "Oportunidades ativas"
@@ -297,21 +297,21 @@
       "volunteer": "Volunteer"
     },
     "applications": {
-      "empty": "No applications to review.",
-      "applied": "Applied {{date}}",
-      "actionError": "Could not update this application."
+      "empty": "Não há candidaturas para rever.",
+      "applied": "Candidatura em {{date}}",
+      "actionError": "Não foi possível atualizar esta candidatura."
     },
     "hours": {
-      "empty": "No hours are waiting for review.",
-      "approve": "Approve hours",
+      "empty": "Não há horas a aguardar revisão.",
+      "approve": "Aprovar horas",
       "decline": "Decline",
-      "actionError": "Could not update this hours entry."
+      "actionError": "Não foi possível atualizar este registo de horas."
     },
     "volunteers": {
       "empty": "Nenhum voluntário aprovado ainda.",
-      "summary": "{{hours}}h across {{count}} applications",
-      "summary_one": "{{hours}}h across {{count}} application",
-      "openProfile": "Open profile for {{name}}"
+      "summary": "{{hours}} h em {{count}} candidaturas",
+      "summary_one": "{{hours}} h em {{count}} candidatura",
+      "openProfile": "Abrir o perfil de {{name}}"
     },
     "wallet": {
       "balance": "Wallet balance",

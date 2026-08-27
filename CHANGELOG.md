@@ -74,7 +74,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   total reduction to 3,391 entries. Identity verification status, fee, secure-payment and
   failure states complete the `settings` namespace in all seven shipped locales, bringing
   the total reduction to 3,502 entries. Volunteer shift, certificate, expense and campaign-
-  donation journeys bring the total reduction to 3,682 entries and the baseline to 849.
+  donation journeys bring the total reduction to 3,682 entries. Volunteer organisation
+  dashboards, approval, application and hours-review journeys bring the total reduction to
+  3,805 entries and the baseline to 726.
   Protected TalkBack
   routes and the source fixes remain explicitly pending the next permitted build and
   authenticated device session.
