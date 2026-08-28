@@ -3852,7 +3852,9 @@ Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\CoreControl
 Route::get('/notifications/poll', [\App\Http\Controllers\Api\NotificationsController::class, 'poll']);
 Route::post('/notifications/read', [\App\Http\Controllers\Api\NotificationsController::class, 'markRead']);
 Route::post('/notifications/delete', [\App\Http\Controllers\Api\NotificationsController::class, 'delete']);
-Route::post('/listings/delete', [\App\Http\Controllers\Api\ListingsController::class, 'delete']);
+// Legacy POST /listings/delete removed — ListingsController::delete never existed after the
+// Laravel migration (the real method is destroy), so the route fataled on every request.
+// ApiDeprecation already points callers at DELETE /api/v2/listings/{id}.
 
 }); // End Route::middleware('auth:sanctum') — Misc/legacy routes
 

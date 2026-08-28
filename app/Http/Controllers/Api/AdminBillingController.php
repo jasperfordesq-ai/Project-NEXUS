@@ -217,9 +217,9 @@ class AdminBillingController extends BaseApiController
     {
         $this->requireAdmin();
         $tenantId = TenantContext::getId();
-        $user     = $this->getAuthUser();
+        $user     = $this->resolveUser();
 
-        $message  = $this->getInput('message', '');
+        $message  = (string) $this->input('message', '');
 
         // Fetch tenant name
         $tenant = DB::table('tenants')->where('id', $tenantId)->value('name') ?? 'Unknown';

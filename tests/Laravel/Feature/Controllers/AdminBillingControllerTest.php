@@ -63,4 +63,37 @@ class AdminBillingControllerTest extends TestCase
         $response = $this->apiGet('/v2/billing/plans');
         $this->assertLessThan(500, $response->status());
     }
+
+    public function test_upgrade_request_requires_auth(): void
+    {
+        $this->apiPost('/v2/admin/billing/upgrade-request', [])->assertStatus(401);
+    }
+
+    public function test_upgrade_request_rejects_non_admin(): void
+    {
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create());
+        $this->apiPost('/v2/admin/billing/upgrade-request', [])->assertStatus(403);
+    }
+
+    /**
+     * Regression: this endpoint fataled on EVERY request because requestUpgrade()
+     * called $this->getAuthUser() and $this->getInput(), neither of which exists
+     * on BaseApiController (found 2026-08-28; same class of bug as getJsonInput()).
+     *
+     * The audit-log row is written AFTER the formerly-fatal lines, so asserting it
+     * proves the handler executed past them — deliberately independent of whether
+     * the notification email sends in this environment (an email failure is its
+     * own, distinct 500 with code EMAIL_SEND_FAILED).
+     */
+    public function test_upgrade_request_executes_past_the_formerly_fatal_helper_calls(): void
+    {
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+
+        $this->apiPost('/v2/admin/billing/upgrade-request', ['message' => 'More seats please']);
+
+        $this->assertDatabaseHas('billing_audit_log', [
+            'tenant_id' => $this->testTenantId,
+            'action'    => 'upgrade_requested',
+        ]);
+    }
 }
