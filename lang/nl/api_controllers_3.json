@@ -84,7 +84,7 @@
     "grant_received": "U heeft {{amount}} {{unit}} ontvangen van uw tijdbank-coördinator",
     "balance_adjusted_added": "Uw saldo is aangepast: +{{amount}} {{unit}} toegevoegd door coördinator",
     "balance_adjusted_removed": "Uw saldo is aangepast: -{{amount}} {{unit}} verwijderd door coördinator",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} uur|[2,*] uur"
   },
   "comments": {
     "reaction": "{{name}} reageerde op uw commentaar"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "Uw berichtenbeperkingen zijn opgeheven.",
     "account_suspended": "Uw account is geschorst. Neem contact op met de ondersteuning als u denkt dat dit een fout is.",
     "account_banned": "Uw account is verbannen. Neem contact op met de ondersteuning als u denkt dat dit een fout is.",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "Uw account is opnieuw geactiveerd. Welkom terug bij {{community}}!",
     "super_admin_granted": "U heeft Tenant Super Admin-rechten gekregen.",
     "super_admin_revoked": "Uw Tenant Super Admin-rechten zijn verwijderd."
   }

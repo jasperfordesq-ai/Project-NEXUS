@@ -84,7 +84,7 @@
     "grant_received": "タイムバンクコーディネーターから {{amount}} {{unit}} を受け取りました",
     "balance_adjusted_added": "残高が調整されました：コーディネーターにより +{{amount}} {{unit}} 追加",
     "balance_adjusted_removed": "残高が調整されました：コーディネーターにより -{{amount}} {{unit}} 削除",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} 時間|[2,*] 時間"
   },
   "comments": {
     "reaction": "{{name}} さんがあなたのコメントにリアクションしました"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "メッセージの制限が解除されました。",
     "account_suspended": "アカウントが停止されました。エラーだと思う場合はサポートにお問い合わせください。",
     "account_banned": "アカウントが禁止されました。エラーだと思う場合はサポートにお問い合わせください。",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "アカウントが再有効化されました。{{community}}へおかえりなさい！",
     "super_admin_granted": "テナントスーパー管理者権限が付与されました。",
     "super_admin_revoked": "テナントスーパー管理者権限が削除されました。"
   }

@@ -84,7 +84,7 @@
     "grant_received": "تلقيت {{amount}} {{unit}} من منسق بنك وقتك",
     "balance_adjusted_added": "تم تعديل رصيدك: تمت إضافة +{{amount}} {{unit}} بواسطة المنسق",
     "balance_adjusted_removed": "تم تعديل رصيدك: تمت إزالة -{{amount}} {{unit}} بواسطة المنسق",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} ساعة|{2} ساعتان|[3,10] ساعات|[11,*] ساعة"
   },
   "comments": {
     "reaction": "تفاعل {{name}} مع تعليقك"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "تم رفع القيود المفروضة على رسائلك.",
     "account_suspended": "تم تعليق حسابك. تواصل مع الدعم إذا كنت تعتقد أن هذا خطأ.",
     "account_banned": "تم حظر حسابك. تواصل مع الدعم إذا كنت تعتقد أن هذا خطأ.",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "تمت إعادة تفعيل حسابك. مرحبًا بعودتك إلى {{community}}!",
     "super_admin_granted": "تم منحك صلاحيات مدير المستأجر العليا.",
     "super_admin_revoked": "تم سحب صلاحيات مدير المستأجر العليا منك."
   }

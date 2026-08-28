@@ -84,7 +84,7 @@
     "grant_received": "Sie haben {{amount}} {{unit}} von Ihrem Zeitbank-Koordinator erhalten",
     "balance_adjusted_added": "Ihr Guthaben wurde angepasst: +{{amount}} {{unit}} vom Koordinator hinzugefügt",
     "balance_adjusted_removed": "Ihr Guthaben wurde angepasst: -{{amount}} {{unit}} vom Koordinator abgezogen",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} Stunde|[2,*] Stunden"
   },
   "comments": {
     "reaction": "{{name}} hat auf Ihren Kommentar reagiert"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "Ihre Nachrichteneinschränkungen wurden aufgehoben.",
     "account_suspended": "Ihr Konto wurde gesperrt. Kontaktieren Sie den Support, wenn Sie glauben, dass dies ein Fehler ist.",
     "account_banned": "Ihr Konto wurde gesperrt. Kontaktieren Sie den Support, wenn Sie glauben, dass dies ein Fehler ist.",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "Ihr Konto wurde reaktiviert. Willkommen zurück bei {{community}}!",
     "super_admin_granted": "Ihnen wurden Mandanten-Superadministrator-Berechtigungen erteilt.",
     "super_admin_revoked": "Ihre Mandanten-Superadministrator-Berechtigungen wurden entfernt."
   }

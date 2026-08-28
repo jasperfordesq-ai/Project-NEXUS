@@ -1,6 +1,6 @@
 {
-  "vetting_status_updated": "Your community safeguarding vetting confirmation has been updated.",
-  "vetting_review_requested": "A member has requested a safeguarding vetting review.",
+  "vetting_status_updated": "コミュニティのセーフガーディング審査確認が更新されました。",
+  "vetting_review_requested": "メンバーがセーフガーディング審査の再確認を依頼しました。",
   "badge_collection": {
     "collection_complete": "コレクション完了！「{{name}}」を達成し、ボーナスXP {{xp}} を獲得しました！{{icon}}"
   },
@@ -162,7 +162,7 @@
     "payout_sent_bell": "注文 #{{order}} のあなたへの支払い {{amount}} がリリースされました。"
   },
   "shift_waitlist": {
-    "spot_available": "A spot opened up on a shift you're waitlisted for — claim it before it expires"
+    "spot_available": "キャンセル待ち中の活動に空きが出ました — 期限までに参加枠を確保してください"
   },
   "podcast": {
     "new_episode": "{{show}} の新しいエピソード: {{title}}"

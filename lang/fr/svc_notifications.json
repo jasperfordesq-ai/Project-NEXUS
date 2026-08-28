@@ -1,6 +1,6 @@
 {
-  "vetting_status_updated": "Your community safeguarding vetting confirmation has been updated.",
-  "vetting_review_requested": "A member has requested a safeguarding vetting review.",
+  "vetting_status_updated": "La confirmation de votre contrôle de protection communautaire a été mise à jour.",
+  "vetting_review_requested": "Un membre a demandé la révision d’un contrôle de protection.",
   "badge_collection": {
     "collection_complete": "Collection terminée ! Vous avez terminé '{{name}}' et gagné {{xp}} XP bonus ! {{icon}}"
   },
@@ -162,7 +162,7 @@
     "payout_sent_bell": "Votre versement de {{amount}} pour la commande #{{order}} a été débloqué."
   },
   "shift_waitlist": {
-    "spot_available": "A spot opened up on a shift you're waitlisted for — claim it before it expires"
+    "spot_available": "Une place s’est libérée pour une mission sur laquelle vous êtes en liste d’attente — réservez-la avant son expiration"
   },
   "podcast": {
     "new_episode": "Nouvel épisode de {{show}} : {{title}}"

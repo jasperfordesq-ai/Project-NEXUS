@@ -84,7 +84,7 @@
     "grant_received": "Ha recibido {{amount}} {{unit}} de su coordinador del banco de tiempo",
     "balance_adjusted_added": "Su saldo ha sido ajustado: +{{amount}} {{unit}} añadidos por el coordinador",
     "balance_adjusted_removed": "Su saldo ha sido ajustado: -{{amount}} {{unit}} eliminados por el coordinador",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} hora|[2,*] horas"
   },
   "comments": {
     "reaction": "{{name}} reaccionó a su comentario"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "Sus restricciones de mensajería han sido levantadas.",
     "account_suspended": "Su cuenta ha sido suspendida. Contacte con el soporte si cree que se trata de un error.",
     "account_banned": "Su cuenta ha sido bloqueada. Contacte con el soporte si cree que se trata de un error.",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "Su cuenta se ha reactivado. ¡Le damos de nuevo la bienvenida a {{community}}!",
     "super_admin_granted": "Se le han concedido privilegios de Super Administrador del Inquilino.",
     "super_admin_revoked": "Sus privilegios de Super Administrador del Inquilino han sido eliminados."
   }
