@@ -75,19 +75,13 @@ const PAGES = [
 // SHRINK-ONLY: an entry may be removed only when its cause is fixed, never added to
 // silence a new red (a new difference is a finding). Without this list the instrument
 // fails on every run for reasons already understood, which trains people to ignore it.
-const KNOWN_DIFFERENCES = [
-  {
-    page: '/',
-    verdict: 'CONTENT_DIFFERS',
-    reason:
-      'FIXTURE ASYMMETRY, diagnosed 2026-08-20: the "Choose a community" list comes from '
-      + 'GET /api/v2/tenants, and BOTH backends implement the same Laravel rule — the '
-      + 'master tenant (id 1) is excluded unless include_master=1 '
-      + '(TenantBootstrapController::list, :205-207). The disposable Laravel fixture has '
-      + 'ONLY the master tenant, so it lists 0; the ASP.NET dev seed has 4 non-master '
-      + 'tenants. Remove this entry when the fixtures seed the same non-master tenants.',
-  },
-];
+// The single historical entry ('/' CONTENT_DIFFERS — the disposable Laravel
+// fixture held only the master tenant, so its community list was empty) was
+// removed 2026-08-28: its cause was fixed on 2026-08-21 when
+// parity-fixture.sql:128-180 started seeding two non-master tenants
+// (950001 Globex Neighbourhood Network, 950002 Riverside Timebank), which is
+// exactly the removal condition the entry itself recorded.
+const KNOWN_DIFFERENCES = [];
 
 // GOV.UK-style failure markers. A 200 whose body says "sorry" is a failure that
 // status-code comparison alone would wave through.

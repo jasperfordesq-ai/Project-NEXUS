@@ -715,6 +715,32 @@ Passed: N` with N > 0.** There is no Mark-of-the-Web on the file, so
 `Unblock-File` does not help; it is a system policy. Until it is resolved, local
 ASP.NET test execution is unavailable on that machine and CI is the only gate.
 
+🔴 **The mechanism, pinned down 2026-08-28: the block is per-file-hash cloud
+reputation (Smart App Control), so it is INTERMITTENT and rebuild-triggered.**
+Confirmed from the CodeIntegrity event log (events 3077/3033, policy
+`VerifiedAndReputableDesktop` `{0283ac0f-…}`): a freshly built assembly is
+refused until Microsoft's reputation service has judged its new hash, then the
+SAME machine loads it fine — a filtered run passed 3/3 at 18:20 on assemblies
+that had been blocked at 17:51, and the next FULL run (which rebuilt, producing
+new hashes) recorded 200 fresh blocks of `Nexus.Api.dll` and aborted. Facts
+that follow:
+
+- **Every rebuild restarts the treadmill.** New DLL hash → blocked again for an
+  unpredictable window. `--artifacts-path` does NOT evade it (tested — blocked
+  identically). `NEXUS_TEST_POSTGRES` is unrelated (database, not policy).
+- **`scripts/test-backend-full.ps1` is the required runner** (since
+  2026-08-28): it exits 3 with an explicit message when the App Control
+  signature appears or when zero tests executed (it parses BOTH VSTest summary
+  formats — the aggregate `Passed! - Failed: N, Passed: N` line and the
+  single-project `Total tests: N` / `Passed: N` block), takes `-Filter`, and
+  was proven red with an impossible filter. A bare `dotnet test` still exits 0
+  having run nothing.
+- **A retry minutes later is a legitimate strategy** for a one-off run; it is
+  not a strategy for a workstream. The durable fix is turning Smart App
+  Control off (owner-approved 2026-08-28; one-way switch, owner performs it in
+  Windows Security → App & browser control) or Authenticode-signing local
+  builds, which this repo has no infrastructure for.
+
 ### The ASP.NET suite is not in `ci.yml`, and a sibling's push can skip it
 
 The ASP.NET jobs live in **`platform-contracts.yml`**, not `ci.yml` — a green

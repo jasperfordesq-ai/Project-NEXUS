@@ -90,12 +90,14 @@
  *   LARAVEL_ONLY_FAIL failed on Laravel, passed on ASP.NET — control broken / fixture asymmetry
  *   NOT_COMPARABLE    one or both arms SKIPPED — the pair measured nothing
  *
- * 🔴 FIXTURE ASYMMETRY the control arm inherits from the web-uk instrument's diagnosis
- * (2026-08-20): the login "community" list comes from GET /api/v2/tenants, which
- * excludes the master tenant unless include_master=1 — and the disposable Laravel
- * fixture has ONLY the master tenant, so its login select can be EMPTY. Credentials
- * also differ per side by design (each side signs in with its OWN fixture's member,
- * mirroring smoke-webuk-against-aspnet.mjs). Per-side overrides:
+ * FIXTURE NOTE: the 2026-08-20 asymmetry (disposable Laravel fixture held ONLY the
+ * master tenant, so the login select could be EMPTY — GET /api/v2/tenants excludes
+ * the master unless include_master=1) was FIXED 2026-08-21: parity-fixture.sql
+ * seeds two non-master tenants (950001/950002), so Laravel's login now offers three
+ * communities and register offers two. An empty select today is a REAL failure, not
+ * the known fixture gap. Credentials still differ per side by design (each side
+ * signs in with its OWN fixture's member, mirroring smoke-webuk-against-aspnet.mjs).
+ * Per-side overrides:
  *   SMOKE_EMAIL_ASPNET / SMOKE_PASSWORD_ASPNET / SMOKE_COMMUNITY_ASPNET
  *     (defaults: member@acme.test / NexusV2!Demo#2026 / "ACME Community Timebank")
  *   SMOKE_EMAIL_LARAVEL / SMOKE_PASSWORD_LARAVEL / SMOKE_COMMUNITY_LARAVEL
@@ -485,10 +487,10 @@ async function runArm(arm) {
     const opts = (await page.locator('select option').allTextContents()).map((o) => o.trim()).filter(Boolean);
     console.log(`    communities offered: ${JSON.stringify(opts)}`);
     if (!opts.length) {
-      // On the Laravel control this is the diagnosed master-tenant fixture asymmetry
-      // (see the header) — a control/fixture fact, but it still fails the arm because
-      // every signed-in step downstream is now unmeasurable.
-      throw new Error('login select offered NO communities (GET /api/v2/tenants returned none — fixture gap)');
+      // Since 2026-08-21 the disposable Laravel fixture seeds two non-master
+      // tenants (parity-fixture.sql), so an empty list is a REAL failure on
+      // either arm — not the historical fixture gap (see the header note).
+      throw new Error('login select offered NO communities (GET /api/v2/tenants returned none)');
     }
     if (arm.communityLabel && opts.includes(arm.communityLabel)) {
       await page.selectOption('select', { label: arm.communityLabel });
@@ -534,7 +536,7 @@ async function runArm(arm) {
     await p.waitForTimeout(1200);
     await dismissConsent(p);
     const opts = (await p.locator('select option').allTextContents()).map((o) => o.trim()).filter(Boolean);
-    if (!opts.length) return { ok: false, reason: 'login select offered NO communities (fixture gap, not a backend verdict)' };
+    if (!opts.length) return { ok: false, reason: 'login select offered NO communities (real failure since the 2026-08-21 fixture fix)' };
     await p.selectOption('select', { label: communityLabel && opts.includes(communityLabel) ? communityLabel : opts[0] });
     await p.waitForTimeout(500);
     await p.fill('input[name="username"]', email);
