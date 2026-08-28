@@ -121,7 +121,18 @@ jobs:
             if (result.user?.tenant_id !== 5 || result.user?.role !== 'admin') {
               throw new Error('Protected demo login returned the wrong tenant or role');
             }
-            console.log('Protected Partner Demo admin login verified.');
+            const profileResponse = await fetch(
+              'https://api.project-nexus.ie/api/v2/users/me',
+              { headers: { ...headers, Authorization: `Bearer ${token}` } },
+            );
+            if (!profileResponse.ok) {
+              throw new Error(`Protected demo token validation failed with HTTP ${profileResponse.status}`);
+            }
+            const profile = await profileResponse.json();
+            if (profile.data?.tenant_id !== 5) {
+              throw new Error('Protected demo token resolved to the wrong tenant');
+            }
+            console.log('Protected Partner Demo admin login and bearer token verified.');
           } finally {
             if (token) {
               await fetch('https://api.project-nexus.ie/api/auth/logout', {
@@ -294,7 +305,7 @@ jobs:
             "$RUNNER_TEMP/failure-evidence/final-screen.png" || true
           xcrun simctl spawn "${{ steps.simulator.outputs.udid }}" log show \
             --last 10m --style compact \
-            --predicate 'process == "Timebank Global" OR process == "nexus-mobile"' \
+            --predicate 'process == "TimebankGlobal" OR process == "Timebank Global" OR process == "nexus-mobile"' \
             > "$RUNNER_TEMP/failure-evidence/simulator.log" || true
 
       - name: Redact credentials from diagnostic text

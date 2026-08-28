@@ -32,6 +32,13 @@ appId: ie.project.nexus
 - pasteText
 - tapOn:
     id: "login-submit"
+- waitForAnimationToEnd:
+    timeout: 10000
+# AuthContext persists the complete session before navigating. Relaunching here
+# verifies that stored session and avoids depending on the transient login-to-root
+# navigation race observed on iOS 26.2 automation.
+- launchApp:
+    clearState: false
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
