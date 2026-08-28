@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\DB;
  *
  * Every state transition in the registration/verification flow is recorded
  * for auditability, compliance, and debugging.
+ *
+ * 🔴 Reads MUST use DB::select() / DB::selectOne(), never DB::statement().
+ * DB::statement() returns a bool, not a PDOStatement, so calling ->fetchAll()
+ * or ->fetchColumn() on it is a fatal "Call to a member function on bool".
+ * Every read method here carried that bug from the day the file was written:
+ * GET /api/v2/admin/identity/audit-log 500'd for every admin, on every tenant,
+ * for the whole life of the endpoint. DB::statement() is correct for the
+ * INSERT in log(), which is why the write path was never affected.
  */
 class IdentityVerificationEventService
 {
@@ -94,13 +102,13 @@ class IdentityVerificationEventService
      */
     public static function getForUser(int $tenantId, int $userId, int $limit = 50): array
     {
-        return DB::statement(
+        return DB::select(
             "SELECT * FROM identity_verification_events
              WHERE tenant_id = ? AND user_id = ?
              ORDER BY created_at DESC
              LIMIT ?",
             [$tenantId, $userId, $limit]
-        )->fetchAll();
+        );
     }
 
     /**
@@ -111,12 +119,12 @@ class IdentityVerificationEventService
      */
     public static function getForSession(int $sessionId): array
     {
-        return DB::statement(
+        return DB::select(
             "SELECT * FROM identity_verification_events
              WHERE session_id = ?
              ORDER BY created_at ASC",
             [$sessionId]
-        )->fetchAll();
+        );
     }
 
     /**
@@ -137,14 +145,14 @@ class IdentityVerificationEventService
             $params[] = $eventType;
         }
 
-        $total = (int) DB::statement(
-            "SELECT COUNT(*) FROM identity_verification_events WHERE tenant_id = ?" . $whereExtra,
+        $total = (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM identity_verification_events WHERE tenant_id = ?" . $whereExtra,
             $params
-        )->fetchColumn();
+        )->cnt;
 
         $params[] = $limit;
         $params[] = $offset;
-        $events = DB::statement(
+        $events = DB::select(
             "SELECT e.*, u.first_name, u.last_name, u.email as user_email
              FROM identity_verification_events e
              LEFT JOIN users u ON u.id = e.user_id
@@ -152,7 +160,7 @@ class IdentityVerificationEventService
              ORDER BY e.created_at DESC
              LIMIT ? OFFSET ?",
             $params
-        )->fetchAll();
+        );
 
         return ['events' => $events, 'total' => $total];
     }
