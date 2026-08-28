@@ -60,19 +60,8 @@ try {
         $ErrorActionPreference = $previousEap
     }
 
-    # Guard 1: the App Control signature — DLLs refused, zero tests run.
-    $blocked = $outputLines | Where-Object { $_ -match '0x800711C7|Application Control policy has blocked' }
-    if ($blocked) {
-        Write-Host ("ERROR: App Control blocked the test assemblies - NO tests ran. " +
-            "This is a machine policy (Smart App Control), not a code result. " +
-            "First blocked line: " + ($blocked | Select-Object -First 1))
-        exit 3
-    }
-
-    # Guard 2: require an executed-test summary with Passed > 0 (or real
-    # failures, which are a legitimate red). "No test matches" and silent
-    # zero-test runs exit 0 from dotnet — they must not exit 0 from here.
-    # VSTest prints one of TWO summary formats depending on run shape:
+    # Parse the executed-test summary first. VSTest prints one of TWO formats
+    # depending on run shape:
     #   "Passed!  - Failed:     0, Passed:  3915, Skipped: ..." (aggregate)
     #   "Test Run Successful." + "Total tests: 3" + "     Passed: 3" (single)
     $totalPassed = 0
@@ -87,8 +76,29 @@ try {
             $totalFailed += [int]$Matches[1]
         }
     }
+    $totalExecuted = $totalPassed + $totalFailed
 
-    if (($totalPassed + $totalFailed) -eq 0) {
+    # Guard 1: the App Control signature (Smart App Control refusing a freshly
+    # built DLL — a machine policy, not a code result). Distinguish the two
+    # honest outcomes: zero tests ran (nothing proven), or SOME project ran
+    # while another was blocked (PARTIAL — must not read as a full green).
+    $blocked = $outputLines | Where-Object { $_ -match '0x800711C7|Application Control policy has blocked' }
+    if ($blocked) {
+        if ($totalExecuted -eq 0) {
+            Write-Host ("ERROR: App Control blocked the test assemblies - NO tests ran. " +
+                "First blocked line: " + ($blocked | Select-Object -First 1))
+        } else {
+            Write-Host ("ERROR: PARTIAL RUN - App Control blocked at least one test project " +
+                "while others executed (Passed: $totalPassed, Failed: $totalFailed). A partial " +
+                "run must not read as a full green. First blocked line: " +
+                ($blocked | Select-Object -First 1))
+        }
+        exit 3
+    }
+
+    # Guard 2: zero-test runs exit 0 from dotnet ("No test matches", silent
+    # skips) — they must not exit 0 from here.
+    if ($totalExecuted -eq 0) {
         Write-Host ("ERROR: No tests were executed (no summary line found). " +
             "A run that executes zero tests proves nothing and must not read as green.")
         exit 3
