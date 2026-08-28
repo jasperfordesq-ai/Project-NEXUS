@@ -1,45 +1,45 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "Ceci est une livraison webhook de test de Project NEXUS."
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "Média supprimé"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "Préférences mises à jour"
   },
   "group_qa": {
-    "answer_accepted": "Answer accepted",
-    "vote_recorded": "Vote recorded",
-    "failed_accept_answer": "Failed to accept answer",
-    "failed_record_vote": "Failed to record vote",
-    "title_required": "Title is required",
-    "body_required": "Body is required",
-    "failed_create_question": "Failed to create question",
-    "question_not_found": "Question not found",
-    "failed_post_answer": "Failed to post answer",
-    "type_must_be_question_or_answer": "Type must be \"question\" or \"answer\"",
-    "valid_target_id_required": "A valid target_id is required",
-    "vote_must_be_up_down": "Vote must be \"up\"/\"down\" or 1/-1"
+    "answer_accepted": "Réponse acceptée",
+    "vote_recorded": "Vote enregistré",
+    "failed_accept_answer": "Impossible d'accepter la réponse",
+    "failed_record_vote": "Impossible d'enregistrer le vote",
+    "title_required": "Le titre est obligatoire",
+    "body_required": "Le contenu est obligatoire",
+    "failed_create_question": "Impossible de créer la question",
+    "question_not_found": "Question introuvable",
+    "failed_post_answer": "Impossible de poster la réponse",
+    "type_must_be_question_or_answer": "Le type doit être \"question\" ou \"réponse\"",
+    "valid_target_id_required": "Un target_id valide est requis",
+    "vote_must_be_up_down": "Le vote doit être \"haut\"/\"bas\" ou 1/-1"
   },
   "group_scheduled_post": {
-    "cancelled": "Cancelled",
-    "not_found_or_published": "Not found or already published"
+    "cancelled": "Annulé",
+    "not_found_or_published": "Introuvable ou déjà publié"
   },
   "group_webhook": {
-    "webhook_deleted": "Webhook deleted",
-    "webhook_not_found": "Webhook not found"
+    "webhook_deleted": "Webhook supprimé",
+    "webhook_not_found": "Webhook introuvable"
   },
   "group_wiki": {
-    "wiki_page_deleted": "Wiki page deleted"
+    "wiki_page_deleted": "Page Wiki supprimée"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name saved your listing \":title\""
+    "listing_saved_notification": ":saver_name a enregistré votre annonce \":title\""
   },
   "goals": {
-    "progress_mentor": "{{name}} made progress on their goal: \"{{title}}\"",
-    "completed_mentor": "{{name}} completed their goal: \"{{title}}\"",
-    "completed_self": "Congratulations! You completed your goal: \"{{title}}\"",
+    "progress_mentor": "{{name}} a progressé vers son objectif : \"{{title}}\"",
+    "completed_mentor": "{{name}} a atteint son objectif : \"{{title}}\"",
+    "completed_self": "Félicitations ! Vous avez atteint votre objectif : \"{{title}}\"",
     "buddy_joined_owner": "{{name}} est devenu un copain pour votre objectif : \"{{title}}\"",
     "checkin_mentor": "{{name}} a enregistré son objectif : \"{{title}}\"",
     "history_created": "Objectif créé",
@@ -67,38 +67,38 @@
     "buddy_action_owner": "{{name}} {{action}} votre objectif : \"{{title}}\""
   },
   "feed": {
-    "post_shared": "{{name}} shared your post"
+    "post_shared": "{{name}} a partagé votre publication"
   },
   "polls": {
-    "vote_received": "{{name}} voted on your poll: \"{{title}}\"",
-    "ranking_received": "{{name}} submitted a ranking on your poll: \"{{title}}\""
+    "vote_received": "{{name}} a voté sur votre sondage : \"{{title}}\"",
+    "ranking_received": "{{name}} a soumis un classement sur votre sondage : \"{{title}}\""
   },
   "deliverable": {
-    "assigned": "You've been assigned a deliverable: \"{{title}}\"",
-    "reassigned": "You've been assigned to deliverable: \"{{title}}\""
+    "assigned": "Un livrable vous a été assigné : \"{{title}}\"",
+    "reassigned": "Vous avez été assigné(e) au livrable : \"{{title}}\""
   },
   "deliverable_comment": {
-    "posted": "{{name}} commented on your deliverable \"{{title}}\""
+    "posted": "{{name}} a commenté votre livrable \"{{title}}\""
   },
   "wallet_admin": {
-    "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
-    "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
-    "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "grant_received": "Vous avez reçu {{amount}} {{unit}} de votre coordinateur de banque de temps",
+    "balance_adjusted_added": "Votre solde a été ajusté : +{{amount}} {{unit}} ajoutés par le coordinateur",
+    "balance_adjusted_removed": "Votre solde a été ajusté : -{{amount}} {{unit}} retirés par le coordinateur",
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
-    "reaction": "{{name}} reacted to your comment"
+    "reaction": "{{name}} a réagi à votre commentaire"
   },
   "federation": {
-    "review_received": "{{name}} left you a {{rating}}-star review"
+    "review_received": "{{name}} vous a laissé un avis de {{rating}} étoiles"
   },
   "federation_credit": {
-    "action_taken": "{{tenant}} has {{action}} your federation credit agreement."
+    "action_taken": "{{tenant}} a {{action}} votre accord de crédit de fédération."
   },
   "volunteer": {
-    "shift_signup_confirmed": "You're signed up for a volunteer shift on {{date}}",
-    "shift_signup_cancelled": "Your volunteer shift signup has been cancelled",
-    "opportunity_cancelled": "Volunteer opportunity \"{{title}}\" has been cancelled"
+    "shift_signup_confirmed": "Vous êtes inscrit(e) pour un service de bénévolat le {{date}}",
+    "shift_signup_cancelled": "Votre inscription au service de bénévolat a été annulée",
+    "opportunity_cancelled": "L'opportunité de bénévolat \"{{title}}\" a été annulée"
   },
   "marketplace_offer": {
     "received": "{{buyer}} a proposé {{amount}} pour votre annonce « {{title}} ».",
@@ -109,49 +109,49 @@
     "withdrawn": "{{buyer}} a retiré son offre pour votre annonce « {{title}} »."
   },
   "marketplace_order": {
-    "confirmed_buyer": "Order #{{order_number}} confirmed — \"{{title}}\"",
-    "confirmed_seller": "You have a new order #{{order_number}} for \"{{title}}\"",
+    "confirmed_buyer": "Commande #{{order_number}} confirmée — \"{{title}}\"",
+    "confirmed_seller": "Vous avez une nouvelle commande #{{order_number}} pour \"{{title}}\"",
     "paid_buyer": "Paiement reçu pour la commande #{{order_number}} : {{amount}}",
     "paid_seller": "La commande #{{order_number}} a été payée : {{amount}}",
-    "shipped": "Your order #{{order_number}} has been shipped!",
-    "delivered": "Order #{{order_number}} — buyer confirmed delivery",
-    "cancelled": "Order #{{order_number}} has been cancelled",
-    "completed": "Order #{{order_number}} has been completed!",
-    "refunded": "Refund of {{amount}} {{currency}} processed for order #{{order_number}}",
-    "partially_refunded": "Partial refund of {{amount}} {{currency}} processed for order #{{order_number}}"
+    "shipped": "Votre commande #{{order_number}} a été expédiée !",
+    "delivered": "Commande #{{order_number}} — l'acheteur a confirmé la livraison",
+    "cancelled": "La commande #{{order_number}} a été annulée",
+    "completed": "La commande #{{order_number}} a été complétée !",
+    "refunded": "Remboursement de {{amount}} {{currency}} traité pour la commande #{{order_number}}",
+    "partially_refunded": "Remboursement partiel de {{amount}} {{currency}} traité pour la commande #{{order_number}}"
   },
   "marketplace_payment": {
     "local_order_not_found": "Aucune commande locale n'a été trouvée pour ce paiement.",
     "only_buyer_confirm": "Seul l'acheteur peut confirmer le paiement."
   },
   "admin_bells": {
-    "comment_hidden": "Your comment has been hidden by a moderator.",
-    "comment_removed": "Your comment has been removed by a moderator.",
-    "post_hidden": "Your post has been hidden by a moderator.",
-    "post_removed": "Your post has been removed by a moderator.",
-    "review_hidden": "Your review has been hidden by a moderator.",
-    "review_removed": "Your review has been removed by a moderator.",
+    "comment_hidden": "Votre commentaire a été masqué par un modérateur.",
+    "comment_removed": "Votre commentaire a été supprimé par un modérateur.",
+    "post_hidden": "Votre publication a été masquée par un modérateur.",
+    "post_removed": "Votre publication a été supprimée par un modérateur.",
+    "review_hidden": "Votre avis a été masqué par un modérateur.",
+    "review_removed": "Votre avis a été supprimé par un modérateur.",
     "event_approved": "Votre événement a été approuvé !",
-    "group_member_approved": "You've been approved to join {{group}}",
-    "group_member_rejected": "Your request to join {{group}} was declined",
-    "group_approved": "Your group has been approved!",
-    "group_member_removed": "You have been removed from {{group}}",
-    "insurance_verified": "Your insurance certificate has been verified!",
-    "insurance_rejected": "Your insurance certificate was not approved. Please contact support for details.",
-    "report_resolved": "Your report has been reviewed and resolved.",
-    "report_reviewed": "Your report has been reviewed.",
-    "vetting_approved": "Your verification has been approved!",
-    "vetting_rejected": "Your verification could not be completed. Please contact support.",
-    "vetting_removed": "Your verification record has been removed.",
-    "volunteer_approved": "Your volunteer application has been approved!",
-    "volunteer_declined": "Your volunteer application was not accepted.",
-    "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
-    "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
-    "monitoring_lifted": "Your messaging restrictions have been lifted.",
-    "account_suspended": "Your account has been suspended. Contact support if you believe this is an error.",
-    "account_banned": "Your account has been banned. Contact support if you believe this is an error.",
+    "group_member_approved": "Vous avez été approuvé(e) pour rejoindre {{group}}",
+    "group_member_rejected": "Votre demande pour rejoindre {{group}} a été refusée",
+    "group_approved": "Votre groupe a été approuvé !",
+    "group_member_removed": "Vous avez été retiré(e) de {{group}}",
+    "insurance_verified": "Votre certificat d'assurance a été vérifié !",
+    "insurance_rejected": "Votre certificat d'assurance n'a pas été approuvé. Veuillez contacter le support pour plus de détails.",
+    "report_resolved": "Votre signalement a été examiné et résolu.",
+    "report_reviewed": "Votre signalement a été examiné.",
+    "vetting_approved": "Votre vérification a été approuvée !",
+    "vetting_rejected": "Votre vérification n'a pas pu être complétée. Veuillez contacter le support.",
+    "vetting_removed": "Votre dossier de vérification a été supprimé.",
+    "volunteer_approved": "Votre candidature de bénévolat a été approuvée !",
+    "volunteer_declined": "Votre candidature de bénévolat n'a pas été acceptée.",
+    "monitoring_restricted": "Votre coordinateur de banque de temps a temporairement restreint votre messagerie.",
+    "monitoring_under_review": "Votre compte a été mis sous examen par votre coordinateur de banque de temps.",
+    "monitoring_lifted": "Vos restrictions de messagerie ont été levées.",
+    "account_suspended": "Votre compte a été suspendu. Contactez le support si vous pensez qu'il s'agit d'une erreur.",
+    "account_banned": "Votre compte a été banni. Contactez le support si vous pensez qu'il s'agit d'une erreur.",
     "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
-    "super_admin_granted": "You have been granted Tenant Super Admin privileges.",
-    "super_admin_revoked": "Your Tenant Super Admin privileges have been removed."
+    "super_admin_granted": "Les privilèges de Super Administrateur du Tenant vous ont été accordés.",
+    "super_admin_revoked": "Vos privilèges de Super Administrateur du Tenant ont été supprimés."
   }
 }

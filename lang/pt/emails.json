@@ -20,7 +20,7 @@
     "preview_text": "Marketplace, doações, verificação de identidade, federação, 11 idiomas e muito mais.",
     "heading": "O que há de novo em {{community}}",
     "intro": "Olá {{name}}, a plataforma cresceu muito nas últimas semanas. Aqui está um rápido resumo do que pode fazer hoje.",
-    "section_marketplace_title": "Marketplace",
+    "section_marketplace_title": "Mercado",
     "section_marketplace_body": "Um novo marketplace independente para anúncios classificados, com pagamentos Stripe Connect e sugestões de resposta com tecnologia de IA.",
     "section_donations_title": "Doações",
     "section_donations_body": "Doações únicas e recorrentes via Stripe, com dashboards completos e recibos para organizações.",

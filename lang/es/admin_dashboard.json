@@ -1,7 +1,7 @@
 {
   "title": "Centro de Control",
   "subtitle": "Vista general y centro de mando en tiempo real de la plataforma",
-  "tour_btn": "Tour",
+  "tour_btn": "Recorrido",
   "refresh": "Actualizar",
   "view_all_activity": "Ver Toda la Actividad",
   "tour": {
@@ -10,7 +10,7 @@
     "back": "Atrás",
     "next": "Siguiente"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "No se pudieron cargar los datos del panel",
   "stats": {
     "users_online": "Usuarios en Línea",
     "active_sessions": "Sesiones Activas",
@@ -19,19 +19,19 @@
     "transactions": "Transacciones",
     "hours_exchanged": "Horas Intercambiadas",
     "hours": "Horas",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Nuevos usuarios este mes",
+    "active_users": "Usuarios activos",
+    "total_listings": "Listados totales",
+    "new_listings_this_month": "Nuevos listados este mes"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Tendencias de transacciones",
+    "hours_suffix": "horas",
+    "no_data": "No hay datos de tendencias disponibles"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Miembros en espera de aprobación",
+    "pending_listings": "Anuncios en espera de moderación",
     "users_pending_one": "{{count}} Usuario Pendiente",
     "users_pending_other": "{{count}} Usuarios Pendientes",
     "users_pending_text": "Nuevos registros de miembros requieren tu revisión",
@@ -67,7 +67,7 @@
     "feed_algorithm_desc": "Configuración de EdgeRank",
     "algorithm_settings": "Ajustes de Algoritmo",
     "algorithm_settings_desc": "MatchRank y CommunityRank",
-    "timebanking": "Timebanking",
+    "timebanking": "banco de tiempo",
     "timebanking_desc": "Analíticas y billeteras de organizaciones",
     "seo": "Gestor SEO",
     "seo_desc": "Optimización de búsqueda",
@@ -96,8 +96,8 @@
     "new_blog_post": "Nueva Entrada de Blog",
     "gamification": "Gamificación",
     "settings": "Configuración",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Empresa",
+    "advanced_controls": "Controles avanzados"
   },
   "enterprise": {
     "card_title": "Suite Empresarial",
@@ -116,8 +116,8 @@
     "api": "API de Email"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "El paso de protección está desactivado en su asistente de incorporación",
+    "body": "Los miembros no pueden declarar vulnerabilidad o necesidades de investigación cuando se unen. Las alertas de administrador no se activan. Habilite el paso de protección y aplique un país preestablecido para que su comunidad esté protegida.",
+    "cta": "Habilitar protección"
   }
 }

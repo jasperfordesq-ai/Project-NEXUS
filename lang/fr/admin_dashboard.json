@@ -1,5 +1,5 @@
 {
-  "title": "Mission Control",
+  "title": "Contrôle de mission",
   "subtitle": "Vue d'ensemble en temps réel et centre de commande de la plateforme",
   "tour_btn": "Visite guidée",
   "refresh": "Actualiser",
@@ -10,28 +10,28 @@
     "back": "Retour",
     "next": "Suivant"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "Échec du chargement des données du tableau de bord",
   "stats": {
     "users_online": "Utilisateurs en ligne",
     "active_sessions": "Sessions actives",
     "total_members": "Total des membres",
     "active_listings": "Annonces actives",
-    "transactions": "Transactions",
+    "transactions": "Opérations",
     "hours_exchanged": "Heures échangées",
     "hours": "Heures",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Nouveaux utilisateurs ce mois-ci",
+    "active_users": "Utilisateurs actifs",
+    "total_listings": "Total des annonces",
+    "new_listings_this_month": "Nouvelles inscriptions ce mois-ci"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Tendances des transactions",
+    "hours_suffix": "heures",
+    "no_data": "Aucune donnée de tendance disponible"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Membres en attente d'approbation",
+    "pending_listings": "Annonces en attente de modération",
     "users_pending_one": "{{count}} utilisateur en attente",
     "users_pending_other": "{{count}} utilisateurs en attente",
     "users_pending_text": "De nouvelles inscriptions de membres nécessitent votre examen",
@@ -51,7 +51,7 @@
     "attributes_desc": "Étiquettes et filtres de services",
     "pages": "Pages",
     "pages_desc": "Pages de contenu statique",
-    "blog": "Blog",
+    "blog": "Blogue",
     "blog_desc": "Actualités et annonces",
     "volunteering": "Bénévolat",
     "volunteering_desc": "Opportunités et affectations",
@@ -59,21 +59,21 @@
     "group_locations_desc": "Délimitations géographiques",
     "group_ranking": "Classement des groupes",
     "group_ranking_desc": "Groupes mis en avant de manière intelligente",
-    "ai_assistant": "AI Assistant",
+    "ai_assistant": "Assistant IA",
     "ai_assistant_desc": "Configurer les fournisseurs d'IA",
     "smart_matching": "Correspondance intelligente",
     "smart_matching_desc": "Recommandations propulsées par l'IA",
     "feed_algorithm": "Algorithme du fil d'actualité",
     "feed_algorithm_desc": "Configuration EdgeRank",
     "algorithm_settings": "Paramètres d'algorithme",
-    "algorithm_settings_desc": "MatchRank & CommunityRank",
-    "timebanking": "Timebanking",
+    "algorithm_settings_desc": "MatchRank et CommunityRank",
+    "timebanking": "Banque de temps",
     "timebanking_desc": "Analytiques et portefeuilles d'organisations",
-    "seo": "SEO Manager",
+    "seo": "Gestionnaire de référencement",
     "seo_desc": "Optimisation pour les moteurs de recherche",
     "error_tracking": "Suivi des erreurs 404",
     "error_tracking_desc": "Surveiller les liens brisés",
-    "cron_jobs": "Cron Jobs",
+    "cron_jobs": "Emplois Cron",
     "cron_jobs_desc": "Tâches planifiées"
   },
   "activity": {
@@ -96,8 +96,8 @@
     "new_blog_post": "Nouvel article de Blog",
     "gamification": "Gamification",
     "settings": "Paramètres",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Entreprise",
+    "advanced_controls": "Contrôles avancés"
   },
   "enterprise": {
     "card_title": "Suite Enterprise",
@@ -112,12 +112,12 @@
     "details": "Détails",
     "database": "Base de données",
     "cache": "Cache",
-    "queue": "Cron Jobs",
+    "queue": "Emplois Cron",
     "api": "API e-mail"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "L'étape de sauvegarde est désactivée dans votre assistant d'intégration",
+    "body": "Les membres ne peuvent pas déclarer de vulnérabilité ou de besoins de vérification lors de leur adhésion. Les alertes d'administrateur ne se déclenchent pas. Activez l'étape de sauvegarde et appliquez un pays prédéfini pour que votre communauté soit protégée.",
+    "cta": "Activer la sauvegarde"
   }
 }

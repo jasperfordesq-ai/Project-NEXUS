@@ -31,6 +31,7 @@
  *
  * Usage:
  *   node scripts/translate-php-lang-json-gaps.mjs --list
+ *   node scripts/translate-php-lang-json-gaps.mjs --harvest            # reuse approved React translations
  *   node scripts/translate-php-lang-json-gaps.mjs --google --namespace admin.json
  *   node scripts/translate-php-lang-json-gaps.mjs --google --namespace admin.json --locale de
  *   node scripts/translate-php-lang-json-gaps.mjs --google --namespace admin.json --limit 50 --dry-run
@@ -62,6 +63,7 @@ function argValue(flag) {
 const USE_GOOGLE = args.includes('--google');
 const LIST_ONLY = args.includes('--list');
 const DRY_RUN = args.includes('--dry-run');
+const HARVEST_MODE = args.includes('--harvest');
 const EXPORT_MODE = args.includes('--export');
 const IMPORT_MODE = args.includes('--import');
 const NAMESPACE = argValue('--namespace');
@@ -313,6 +315,79 @@ function pendingItemsFor(locale, namespace, allowlistRef) {
   return { file, localizedTree, items };
 }
 
+// ── Harvest: reuse translations the platform has already approved ───────────
+//
+// react-frontend/public/locales is the SAME product's translation catalogue and
+// is in good health (2.2% English-identical vs this catalogue's 63.6%). Many
+// namespaces exist in both trees with identical key paths AND identical English
+// source strings — admin_nav, admin_dashboard, emails_misc, svc_notifications_2,
+// api_controllers_3, civic_digest. Where the key matches, the English matches
+// byte for byte, and the React locale holds a real translation, that translation
+// is strictly better than anything a machine translator would produce: it is the
+// reviewed string members and admins already see.
+//
+// Conditions are deliberately strict — same namespace filename, same dotted key
+// path, byte-identical English on both sides, a React value that is neither
+// empty nor still English, and a placeholder multiset that matches. Anything
+// short of that is left pending for a real translator.
+
+const REACT_LOCALES_DIR = path.join(ROOT, 'react-frontend', 'public', 'locales');
+
+if (HARVEST_MODE) {
+  const localesToDo = LOCALE ? [LOCALE] : [...TARGET_LOCALES, 'ga'];
+  const namespacesToDo = NAMESPACE ? [NAMESPACE] : namespaces;
+
+  let written = 0;
+  let skippedPlaceholder = 0;
+  const perFile = [];
+
+  for (const locale of localesToDo) {
+    for (const ns of namespacesToDo) {
+      const langFile = path.join(LANG_DIR, locale, ns);
+      const reactEnFile = path.join(REACT_LOCALES_DIR, SOURCE_LOCALE, ns);
+      const reactLocFile = path.join(REACT_LOCALES_DIR, locale, ns);
+      if (!fs.existsSync(langFile) || !fs.existsSync(reactEnFile) || !fs.existsSync(reactLocFile)) continue;
+
+      const englishTree = readJson(path.join(LANG_DIR, SOURCE_LOCALE, ns));
+      const localizedTree = readJson(langFile);
+      const reactEn = readJson(reactEnFile);
+      const reactLoc = readJson(reactLocFile);
+
+      const intended = [];
+      for (const [pathParts, english] of collectLeaves(englishTree)) {
+        if (!isTranslatableText(english)) continue;
+        if (getByPath(localizedTree, pathParts) !== english) continue;
+        if (isAllowlisted(allowlist, locale, english)) continue;
+
+        // The React side must describe the SAME string: same key path, same
+        // English source.
+        if (getByPath(reactEn, pathParts) !== english) continue;
+        const candidate = getByPath(reactLoc, pathParts);
+        if (typeof candidate !== 'string') continue;
+        if (candidate.trim() === '' || candidate === english) continue;
+        if (!isTranslatableText(candidate)) continue;
+        if (!placeholdersMatch(english, candidate)) { skippedPlaceholder++; continue; }
+
+        setByPath(localizedTree, pathParts, candidate);
+        intended.push([pathParts, candidate]);
+      }
+
+      if (intended.length === 0) continue;
+      if (!DRY_RUN) writeAndVerify(langFile, localizedTree, intended);
+      written += intended.length;
+      perFile.push(`${locale}/${ns}: ${intended.length}`);
+    }
+  }
+
+  for (const line of perFile.sort()) console.log('  ' + line);
+  console.log(`${DRY_RUN ? 'DRY RUN — would harvest' : 'Harvested'} ${written} approved translation(s) from react-frontend locales.`);
+  if (skippedPlaceholder > 0) {
+    console.log(`${skippedPlaceholder} candidate(s) skipped: placeholder multiset did not match.`);
+  }
+  console.log('Now run: node scripts/check-php-lang-json-untranslated.mjs && node scripts/check-i18n-json-integrity.mjs');
+  process.exit(0);
+}
+
 if (EXPORT_MODE) {
   if (!NAMESPACE || !LOCALE) {
     console.error('--export requires --namespace <file.json> and --locale <code>.');
@@ -422,7 +497,7 @@ if (IMPORT_MODE) {
 }
 
 if (!USE_GOOGLE) {
-  console.error('Nothing to do. Modes: --list | --export | --import | --google (rate-limited, small batches only).');
+  console.error('Nothing to do. Modes: --list | --harvest | --export | --import | --google (rate-limited, small batches only).');
   process.exit(1);
 }
 if (!NAMESPACE) {

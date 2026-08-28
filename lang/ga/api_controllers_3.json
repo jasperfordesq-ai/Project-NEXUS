@@ -1,45 +1,45 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "Is seachadadh webhook tástála é seo ó Project NEXUS."
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "Meáin scriosta"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "Roghanna nuashonraithe"
   },
   "group_qa": {
-    "answer_accepted": "Answer accepted",
-    "vote_recorded": "Vote recorded",
-    "failed_accept_answer": "Failed to accept answer",
-    "failed_record_vote": "Failed to record vote",
-    "title_required": "Title is required",
-    "body_required": "Body is required",
-    "failed_create_question": "Failed to create question",
-    "question_not_found": "Question not found",
-    "failed_post_answer": "Failed to post answer",
-    "type_must_be_question_or_answer": "Type must be \"question\" or \"answer\"",
-    "valid_target_id_required": "A valid target_id is required",
-    "vote_must_be_up_down": "Vote must be \"up\"/\"down\" or 1/-1"
+    "answer_accepted": "Freagra glactha",
+    "vote_recorded": "Vóta taifeadta",
+    "failed_accept_answer": "Theip ar ghlacadh leis an bhfreagra",
+    "failed_record_vote": "Theip ar thaifeadadh na vótála",
+    "title_required": "Teideal ag teastáil",
+    "body_required": "Corp téacs ag teastáil",
+    "failed_create_question": "Theip ar chruthú na ceiste",
+    "question_not_found": "Ceist gan aimsiú",
+    "failed_post_answer": "Theip ar phostáil an fhreagra",
+    "type_must_be_question_or_answer": "Caithfidh an cineál a bheith ina \"cheist\" nó ina \"fhreagra\"",
+    "valid_target_id_required": "Tá target_id bailí ag teastáil",
+    "vote_must_be_up_down": "Caithfidh an vóta a bheith \"suas\"/\"síos\" nó 1/-1"
   },
   "group_scheduled_post": {
-    "cancelled": "Cancelled",
-    "not_found_or_published": "Not found or already published"
+    "cancelled": "Cealaithe",
+    "not_found_or_published": "Gan aimsiú nó foilsithe cheana féin"
   },
   "group_webhook": {
-    "webhook_deleted": "Webhook deleted",
-    "webhook_not_found": "Webhook not found"
+    "webhook_deleted": "Webhook scriosta",
+    "webhook_not_found": "Webhook gan aimsiú"
   },
   "group_wiki": {
-    "wiki_page_deleted": "Wiki page deleted"
+    "wiki_page_deleted": "Leathanach Wiki scriosta"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name saved your listing \":title\""
+    "listing_saved_notification": "Shábháil :saver_name do liostú \":title\""
   },
   "goals": {
-    "progress_mentor": "{{name}} made progress on their goal: \"{{title}}\"",
-    "completed_mentor": "{{name}} completed their goal: \"{{title}}\"",
-    "completed_self": "Congratulations! You completed your goal: \"{{title}}\"",
+    "progress_mentor": "Rinne {{name}} dul chun cinn ar a gcuspóir: \"{{title}}\"",
+    "completed_mentor": "Chríochnaigh {{name}} a gcuspóir: \"{{title}}\"",
+    "completed_self": "Comhghairdeas! Chríochnaigh tú do chuspóir: \"{{title}}\"",
     "buddy_joined_owner": "Tá {{name}} ina chara do do sprioc: \"{{title}}\"",
     "checkin_mentor": "Sheiceáil {{name}} a sprioc: \"{{title}}\"",
     "history_created": "Sprioc cruthaithe",
@@ -67,38 +67,38 @@
     "buddy_action_owner": "{{name}} {{action}} do sprioc: \"{{title}}\""
   },
   "feed": {
-    "post_shared": "{{name}} shared your post"
+    "post_shared": "Roinne {{name}} do phost"
   },
   "polls": {
-    "vote_received": "{{name}} voted on your poll: \"{{title}}\"",
-    "ranking_received": "{{name}} submitted a ranking on your poll: \"{{title}}\""
+    "vote_received": "Vótáil {{name}} ar do vótaíocht: \"{{title}}\"",
+    "ranking_received": "Chuir {{name}} isteach rangú ar do vótaíocht: \"{{title}}\""
   },
   "deliverable": {
-    "assigned": "You've been assigned a deliverable: \"{{title}}\"",
-    "reassigned": "You've been assigned to deliverable: \"{{title}}\""
+    "assigned": "Sannaíodh insoláthartha duit: \"{{title}}\"",
+    "reassigned": "Sannaíodh duit an t-insoláthartha: \"{{title}}\""
   },
   "deliverable_comment": {
-    "posted": "{{name}} commented on your deliverable \"{{title}}\""
+    "posted": "Thrácht {{name}} ar d'insoláthartha \"{{title}}\""
   },
   "wallet_admin": {
-    "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
-    "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
-    "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "grant_received": "Fuair tú {{amount}} {{unit}} ó chomhordaitheoir do bhanc ama",
+    "balance_adjusted_added": "Coigeartaíodh d'iarmhéid: +{{amount}} {{unit}} curtha leis ag comhordaitheoir",
+    "balance_adjusted_removed": "Coigeartaíodh d'iarmhéid: -{{amount}} {{unit}} bainte ag comhordaitheoir",
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
-    "reaction": "{{name}} reacted to your comment"
+    "reaction": "D'fhreagair {{name}} do thrácht"
   },
   "federation": {
-    "review_received": "{{name}} left you a {{rating}}-star review"
+    "review_received": "D'fhág {{name}} athbhreithniú {{rating}}-réalta agat"
   },
   "federation_credit": {
-    "action_taken": "{{tenant}} has {{action}} your federation credit agreement."
+    "action_taken": "Tá {{tenant}} tar éis {{action}} ar do chomhaontú creidmheasa cónaidhme."
   },
   "volunteer": {
-    "shift_signup_confirmed": "You're signed up for a volunteer shift on {{date}}",
-    "shift_signup_cancelled": "Your volunteer shift signup has been cancelled",
-    "opportunity_cancelled": "Volunteer opportunity \"{{title}}\" has been cancelled"
+    "shift_signup_confirmed": "Tá tú cláraithe do sheal deonaíochta ar {{date}}",
+    "shift_signup_cancelled": "Cuireadh do chlárú seal deonaíochta ar ceal",
+    "opportunity_cancelled": "Cuireadh deis deonaíochta \"{{title}}\" ar ceal"
   },
   "marketplace_offer": {
     "received": "Rinne {{buyer}} tairiscint {{amount}} ar do liostú “{{title}}”.",
@@ -109,49 +109,49 @@
     "withdrawn": "Tharraing {{buyer}} siar a thairiscint ar do liostú “{{title}}”."
   },
   "marketplace_order": {
-    "confirmed_buyer": "Order #{{order_number}} confirmed — \"{{title}}\"",
-    "confirmed_seller": "You have a new order #{{order_number}} for \"{{title}}\"",
+    "confirmed_buyer": "Deimhníodh Ordú #{{order_number}} — \"{{title}}\"",
+    "confirmed_seller": "Tá ordú nua #{{order_number}} agat do \"{{title}}\"",
     "paid_buyer": "Íocaíocht faighte le haghaidh ordú #{{order_number}}: {{amount}}",
     "paid_seller": "Tá ordú #{{order_number}} íoctha: {{amount}}",
-    "shipped": "Your order #{{order_number}} has been shipped!",
-    "delivered": "Order #{{order_number}} — buyer confirmed delivery",
-    "cancelled": "Order #{{order_number}} has been cancelled",
-    "completed": "Order #{{order_number}} has been completed!",
-    "refunded": "Refund of {{amount}} {{currency}} processed for order #{{order_number}}",
-    "partially_refunded": "Partial refund of {{amount}} {{currency}} processed for order #{{order_number}}"
+    "shipped": "Seolladh d'ordú #{{order_number}}!",
+    "delivered": "Ordú #{{order_number}} — dheimhnigh an ceannaitheoir seachadadh",
+    "cancelled": "Cuireadh Ordú #{{order_number}} ar ceal",
+    "completed": "Críochnaíodh Ordú #{{order_number}}!",
+    "refunded": "Próiseáladh aisíocaíocht de {{amount}} {{currency}} d'ordú #{{order_number}}",
+    "partially_refunded": "Próiseáladh aisíocaíocht pháirteach de {{amount}} {{currency}} d'ordú #{{order_number}}"
   },
   "marketplace_payment": {
     "local_order_not_found": "Níor aimsíodh aon ordú áitiúil don íocaíocht seo.",
     "only_buyer_confirm": "Ní féidir ach leis an gceannaitheoir íocaíocht a dhearbhú."
   },
   "admin_bells": {
-    "comment_hidden": "Your comment has been hidden by a moderator.",
-    "comment_removed": "Your comment has been removed by a moderator.",
-    "post_hidden": "Your post has been hidden by a moderator.",
-    "post_removed": "Your post has been removed by a moderator.",
-    "review_hidden": "Your review has been hidden by a moderator.",
-    "review_removed": "Your review has been removed by a moderator.",
+    "comment_hidden": "Chuir modaróir do thrácht i bhfolach.",
+    "comment_removed": "Bhain modaróir do thrácht.",
+    "post_hidden": "Chuir modaróir do phost i bhfolach.",
+    "post_removed": "Bhain modaróir do phost.",
+    "review_hidden": "Chuir modaróir d'athbhreithniú i bhfolach.",
+    "review_removed": "Bhain modaróir d'athbhreithniú.",
     "event_approved": "Faomhadh d’imeacht!",
-    "group_member_approved": "You've been approved to join {{group}}",
-    "group_member_rejected": "Your request to join {{group}} was declined",
-    "group_approved": "Your group has been approved!",
-    "group_member_removed": "You have been removed from {{group}}",
-    "insurance_verified": "Your insurance certificate has been verified!",
-    "insurance_rejected": "Your insurance certificate was not approved. Please contact support for details.",
-    "report_resolved": "Your report has been reviewed and resolved.",
-    "report_reviewed": "Your report has been reviewed.",
-    "vetting_approved": "Your verification has been approved!",
-    "vetting_rejected": "Your verification could not be completed. Please contact support.",
-    "vetting_removed": "Your verification record has been removed.",
-    "volunteer_approved": "Your volunteer application has been approved!",
-    "volunteer_declined": "Your volunteer application was not accepted.",
-    "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
-    "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
-    "monitoring_lifted": "Your messaging restrictions have been lifted.",
-    "account_suspended": "Your account has been suspended. Contact support if you believe this is an error.",
-    "account_banned": "Your account has been banned. Contact support if you believe this is an error.",
+    "group_member_approved": "Ceadaíodh duit dul isteach i {{group}}",
+    "group_member_rejected": "Diúltaíodh do iarratas ar {{group}}",
+    "group_approved": "Ceadaíodh do ghrúpa!",
+    "group_member_removed": "Baineadh as {{group}} tú",
+    "insurance_verified": "Fíoraíodh do theastas árachais!",
+    "insurance_rejected": "Níor ceadaíodh do theastas árachais. Déan teagmháil le tacaíocht le haghaidh sonraí.",
+    "report_resolved": "Athbhreithníodh agus réitíodh do thuarascáil.",
+    "report_reviewed": "Athbhreithníodh do thuarascáil.",
+    "vetting_approved": "Ceadaíodh d'fhíorú!",
+    "vetting_rejected": "Níorbh fhéidir d'fhíorú a chríochnú. Déan teagmháil le tacaíocht.",
+    "vetting_removed": "Baineadh do thaifead fíorúcháin.",
+    "volunteer_approved": "Ceadaíodh d'iarratas deonaíochta!",
+    "volunteer_declined": "Ní ghlacadh le d'iarratas deonaíochta.",
+    "monitoring_restricted": "Chuir comhordaitheoir do bhainc ama srianadh sealadach ar do chuid teachtaireachtaí.",
+    "monitoring_under_review": "Chuir comhordaitheoir do bhainc ama do chuntas faoi athbhreithniú.",
+    "monitoring_lifted": "Tógadh srianta do chuid teachtaireachtaí.",
+    "account_suspended": "Cuireadh do chuntas ar fionraí. Déan teagmháil le tacaíocht má cheapann tú gur earráid é seo.",
+    "account_banned": "Cosc curtha ar do chuntas. Déan teagmháil le tacaíocht má cheapann tú gur earráid é seo.",
     "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
-    "super_admin_granted": "You have been granted Tenant Super Admin privileges.",
-    "super_admin_revoked": "Your Tenant Super Admin privileges have been removed."
+    "super_admin_granted": "Tugadh pribhléidí Riarthóir Sárfheidearáil Tionóntachta duit.",
+    "super_admin_revoked": "Baineadh do phribhléidí Riarthóir Sárfheidearáil Tionóntachta."
   }
 }

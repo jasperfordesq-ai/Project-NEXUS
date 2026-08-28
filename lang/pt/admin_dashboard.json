@@ -10,7 +10,7 @@
     "back": "Voltar",
     "next": "Seguinte"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "Falha ao carregar dados do painel",
   "stats": {
     "users_online": "Utilizadores Online",
     "active_sessions": "Sessões Ativas",
@@ -19,19 +19,19 @@
     "transactions": "Transações",
     "hours_exchanged": "Horas Trocadas",
     "hours": "Horas",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Novos usuários este mês",
+    "active_users": "Usuários ativos",
+    "total_listings": "Listagens totais",
+    "new_listings_this_month": "Novas listagens este mês"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Tendências de transações",
+    "hours_suffix": "horas",
+    "no_data": "Não há dados de tendência disponíveis"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Membros aguardando aprovação",
+    "pending_listings": "Listagens aguardando moderação",
     "users_pending_one": "{{count}} Utilizador Pendente",
     "users_pending_other": "{{count}} Utilizadores Pendentes",
     "users_pending_text": "Novos registos de membros requerem a sua revisão",
@@ -67,7 +67,7 @@
     "feed_algorithm_desc": "Configuração EdgeRank",
     "algorithm_settings": "Definições de Algoritmo",
     "algorithm_settings_desc": "MatchRank e CommunityRank",
-    "timebanking": "Timebanking",
+    "timebanking": "Banco de tempo",
     "timebanking_desc": "Análises e carteiras de organizações",
     "seo": "Gestor SEO",
     "seo_desc": "Otimização para motores de busca",
@@ -96,8 +96,8 @@
     "new_blog_post": "Novo Artigo de Blogue",
     "gamification": "Gamificação",
     "settings": "Definições",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Empresa",
+    "advanced_controls": "Controles Avançados"
   },
   "enterprise": {
     "card_title": "Pacote Enterprise",
@@ -116,8 +116,8 @@
     "api": "API de Email"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "A etapa de proteção está DESATIVADA no assistente de integração",
+    "body": "Os membros não podem declarar vulnerabilidade ou necessidades de verificação quando ingressam. Os alertas do administrador não estão disparando. Ative a etapa de proteção e aplique uma predefinição de país para que sua comunidade fique protegida.",
+    "cta": "Ativar proteção"
   }
 }

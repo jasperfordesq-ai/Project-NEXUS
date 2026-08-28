@@ -327,7 +327,7 @@
   },
   "weekly_digest": {
     "title": "Community Pulse - Maandelijks overzicht",
-    "heading": "Community Pulse",
+    "heading": "Community-pols",
     "subheading": "Uw maandelijks overzicht",
     "preview_text": "Uw maandelijkse gemeenschapshoogtepunten - nieuwe aanbiedingen, verzoeken en aankomende evenementen",
     "greeting": "Hallo {{name}},",
@@ -391,7 +391,7 @@
     "manage_preferences": "Meldingsvoorkeuren beheren"
   },
   "events": {
-    "update_subject": "Update: {{title}}",
+    "update_subject": "Wijziging: {{title}}",
     "cancelled_subject": "Geannuleerd: \"{{title}}\"",
     "updated_subject": "Bijgewerkt: \"{{title}}\" ({{changes}})",
     "rsvp_subject": "{{name}} {{status_label}} uw evenement \"{{title}}\"",
@@ -436,7 +436,7 @@
     "subheading": "Een perfecte uitwisselingskans",
     "greeting": "Hallo {{name}},",
     "intro": "We hebben een <strong style=\"color: {{color}};\">wederzijdse uitwisselingskans</strong> gevonden met <strong>{{partner}}</strong>. U kunt elkaar helpen — dit is een win-win!",
-    "match_label": "Match",
+    "match_label": "Overeenkomst",
     "they_offer": "ZIJ BIEDEN",
     "you_offer": "U BIEDT",
     "can_help_you": "{{name}} kan u helpen met",

@@ -1,31 +1,31 @@
 {
   "email": {
-    "subject_daily": "Your daily civic digest — {{community}}",
+    "subject_daily": "D'achoimre sibhialta laethúil — {{community}}",
     "subject_monthly": "Do achoimre chathartha monthly — {{community}}",
-    "greeting": "Hi {{name}},",
-    "intro_daily": "Here's what's new in your community today — {{count}} update(s) selected for you based on your sub-region and interests.",
+    "greeting": "Dia duit {{name}},",
+    "intro_daily": "Seo a bhfuil nua i do phobal inniu — {{count}} nuashonrú roghnaithe duit bunaithe ar do fho-réigiún agus do chuid spéiseanna.",
     "intro_monthly": "Seo é do bhabhta suas monthly - nuashonraithe/na nuashonruithe {{count}} a roghnaíodh duit bunaithe ar do fho-réigiún agus do leasanna.",
-    "empty": "Nothing new in your community for now. We'll keep you posted.",
-    "cta_open": "Open",
-    "cta_manage_prefs": "Manage digest preferences",
-    "footer": "You're receiving this because you opted into the {{community}} civic digest. You can change cadence or opt out at any time.",
-    "match_score": "Match {{score}}",
-    "view_all": "View full digest",
+    "empty": "Níl aon rud nua i do phobal faoi láthair. Coinneoimid ar an eolas thú.",
+    "cta_open": "Oscail",
+    "cta_manage_prefs": "Bainistigh roghanna achoimre",
+    "footer": "Tá tú ag fáil seo mar gur roghnaigh tú isteach in achoimre sibhialta {{community}}. Is féidir leat an minicíocht a athrú nó díliostáil ag am ar bith.",
+    "match_score": "Meaitseáil {{score}}",
+    "view_all": "Féach ar an achoimre iomlán",
     "subject_weekly": "Your weekly civic digest — {{community}}",
     "intro_weekly": "Here's your weekly round-up — {{count}} update(s) selected for you based on your sub-region and interests."
   },
   "push": {
-    "title": "Your civic digest is ready",
-    "body_one": "{{count}} new update in your community",
-    "body_other": "{{count}} new updates in your community"
+    "title": "Tá d'achoimre sibhialta réidh",
+    "body_one": "{{count}} nuashonrú nua i do phobal",
+    "body_other": "{{count}} nuashonruithe nua i do phobal"
   },
-  "source_announcement": "Announcement",
-  "source_project": "Project update",
-  "source_event": "Event",
-  "source_vol_org": "Local organisation",
-  "source_care_provider": "Care service",
-  "source_marketplace": "Marketplace",
-  "source_safety_alert": "Safety alert",
-  "source_help_request": "Help needed",
-  "source_feed_post": "Community post"
+  "source_announcement": "Fógra",
+  "source_project": "Nuashonrú tionscadail",
+  "source_event": "Imeacht",
+  "source_vol_org": "Eagraíocht áitiúil",
+  "source_care_provider": "Seirbhís cúraim",
+  "source_marketplace": "Margadh",
+  "source_safety_alert": "Foláireamh sábháilteachta",
+  "source_help_request": "Cúnamh ag teastáil",
+  "source_feed_post": "Post pobail"
 }

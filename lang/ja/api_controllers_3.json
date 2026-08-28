@@ -1,45 +1,45 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "これはProject NEXUSからのテストWebhook配信です。"
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "メディアを削除しました"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "設定を更新しました"
   },
   "group_qa": {
-    "answer_accepted": "Answer accepted",
-    "vote_recorded": "Vote recorded",
-    "failed_accept_answer": "Failed to accept answer",
-    "failed_record_vote": "Failed to record vote",
-    "title_required": "Title is required",
-    "body_required": "Body is required",
-    "failed_create_question": "Failed to create question",
-    "question_not_found": "Question not found",
-    "failed_post_answer": "Failed to post answer",
-    "type_must_be_question_or_answer": "Type must be \"question\" or \"answer\"",
-    "valid_target_id_required": "A valid target_id is required",
-    "vote_must_be_up_down": "Vote must be \"up\"/\"down\" or 1/-1"
+    "answer_accepted": "回答が承認されました",
+    "vote_recorded": "投票が記録されました",
+    "failed_accept_answer": "回答を承認できませんでした",
+    "failed_record_vote": "投票を記録できませんでした",
+    "title_required": "タイトルが必要です",
+    "body_required": "本文が必要です",
+    "failed_create_question": "質問を作成できませんでした",
+    "question_not_found": "質問が見つかりません",
+    "failed_post_answer": "回答を投稿できませんでした",
+    "type_must_be_question_or_answer": "タイプは「質問」または「回答」でなければなりません",
+    "valid_target_id_required": "有効なtarget_idが必要です",
+    "vote_must_be_up_down": "投票は「賛成」/「反対」または1/-1でなければなりません"
   },
   "group_scheduled_post": {
-    "cancelled": "Cancelled",
-    "not_found_or_published": "Not found or already published"
+    "cancelled": "キャンセルしました",
+    "not_found_or_published": "見つからないか、すでに公開されています"
   },
   "group_webhook": {
-    "webhook_deleted": "Webhook deleted",
-    "webhook_not_found": "Webhook not found"
+    "webhook_deleted": "Webhookを削除しました",
+    "webhook_not_found": "Webhookが見つかりません"
   },
   "group_wiki": {
-    "wiki_page_deleted": "Wiki page deleted"
+    "wiki_page_deleted": "Wikiページを削除しました"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name saved your listing \":title\""
+    "listing_saved_notification": ":saver_name さんがあなたのリスト「:title」を保存しました"
   },
   "goals": {
-    "progress_mentor": "{{name}} made progress on their goal: \"{{title}}\"",
-    "completed_mentor": "{{name}} completed their goal: \"{{title}}\"",
-    "completed_self": "Congratulations! You completed your goal: \"{{title}}\"",
+    "progress_mentor": "{{name}} さんが目標「{{title}}」で進歩しました",
+    "completed_mentor": "{{name}} さんが目標「{{title}}」を達成しました",
+    "completed_self": "おめでとうございます！目標「{{title}}」を達成しました",
     "buddy_joined_owner": "{{name}} があなたの目標の相棒になりました:「{{title}}」",
     "checkin_mentor": "{{name}} は目標「{{title}}」をチェックインしました",
     "history_created": "作成された目標",
@@ -67,38 +67,38 @@
     "buddy_action_owner": "{{name}} {{action}} あなたの目標: 「{{title}}」"
   },
   "feed": {
-    "post_shared": "{{name}} shared your post"
+    "post_shared": "{{name}} さんがあなたの投稿を共有しました"
   },
   "polls": {
-    "vote_received": "{{name}} voted on your poll: \"{{title}}\"",
-    "ranking_received": "{{name}} submitted a ranking on your poll: \"{{title}}\""
+    "vote_received": "{{name}} さんがあなたの投票「{{title}}」に投票しました",
+    "ranking_received": "{{name}} さんがあなたの投票「{{title}}」にランキングを送信しました"
   },
   "deliverable": {
-    "assigned": "You've been assigned a deliverable: \"{{title}}\"",
-    "reassigned": "You've been assigned to deliverable: \"{{title}}\""
+    "assigned": "成果物が割り当てられました：「{{title}}」",
+    "reassigned": "成果物に割り当てられました：「{{title}}」"
   },
   "deliverable_comment": {
-    "posted": "{{name}} commented on your deliverable \"{{title}}\""
+    "posted": "{{name}} さんがあなたの成果物「{{title}}」にコメントしました"
   },
   "wallet_admin": {
-    "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
-    "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
-    "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "grant_received": "タイムバンクコーディネーターから {{amount}} {{unit}} を受け取りました",
+    "balance_adjusted_added": "残高が調整されました：コーディネーターにより +{{amount}} {{unit}} 追加",
+    "balance_adjusted_removed": "残高が調整されました：コーディネーターにより -{{amount}} {{unit}} 削除",
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
-    "reaction": "{{name}} reacted to your comment"
+    "reaction": "{{name}} さんがあなたのコメントにリアクションしました"
   },
   "federation": {
-    "review_received": "{{name}} left you a {{rating}}-star review"
+    "review_received": "{{name}} さんが {{rating}} つ星のレビューを残しました"
   },
   "federation_credit": {
-    "action_taken": "{{tenant}} has {{action}} your federation credit agreement."
+    "action_taken": "{{tenant}} があなたのフェデレーションクレジット契約を {{action}} しました。"
   },
   "volunteer": {
-    "shift_signup_confirmed": "You're signed up for a volunteer shift on {{date}}",
-    "shift_signup_cancelled": "Your volunteer shift signup has been cancelled",
-    "opportunity_cancelled": "Volunteer opportunity \"{{title}}\" has been cancelled"
+    "shift_signup_confirmed": "{{date}} のボランティアシフトに登録されました",
+    "shift_signup_cancelled": "ボランティアシフトへの登録がキャンセルされました",
+    "opportunity_cancelled": "ボランティアの機会「{{title}}」がキャンセルされました"
   },
   "marketplace_offer": {
     "received": "{{buyer}}さんが「{{title}}」に{{amount}}のオファーをしました。",
@@ -109,49 +109,49 @@
     "withdrawn": "{{buyer}}さんが「{{title}}」へのオファーを取り下げました。"
   },
   "marketplace_order": {
-    "confirmed_buyer": "Order #{{order_number}} confirmed — \"{{title}}\"",
-    "confirmed_seller": "You have a new order #{{order_number}} for \"{{title}}\"",
+    "confirmed_buyer": "注文 #{{order_number}} が確定しました — 「{{title}}」",
+    "confirmed_seller": "「{{title}}」の新しい注文 #{{order_number}} があります",
     "paid_buyer": "注文 #{{order_number}} に対する支払いを受け取りました: {{amount}}",
     "paid_seller": "注文 #{{order_number}} が支払われました: {{amount}}",
-    "shipped": "Your order #{{order_number}} has been shipped!",
-    "delivered": "Order #{{order_number}} — buyer confirmed delivery",
-    "cancelled": "Order #{{order_number}} has been cancelled",
-    "completed": "Order #{{order_number}} has been completed!",
-    "refunded": "Refund of {{amount}} {{currency}} processed for order #{{order_number}}",
-    "partially_refunded": "Partial refund of {{amount}} {{currency}} processed for order #{{order_number}}"
+    "shipped": "注文 #{{order_number}} が発送されました！",
+    "delivered": "注文 #{{order_number}} — 購入者が配送を確認しました",
+    "cancelled": "注文 #{{order_number}} がキャンセルされました",
+    "completed": "注文 #{{order_number}} が完了しました！",
+    "refunded": "注文 #{{order_number}} に対して {{amount}} {{currency}} の返金が処理されました",
+    "partially_refunded": "注文 #{{order_number}} に対して {{amount}} {{currency}} の一部返金が処理されました"
   },
   "marketplace_payment": {
     "local_order_not_found": "この支払いに対するローカル注文は見つかりませんでした。",
     "only_buyer_confirm": "購入者のみが支払いを確認できます。"
   },
   "admin_bells": {
-    "comment_hidden": "Your comment has been hidden by a moderator.",
-    "comment_removed": "Your comment has been removed by a moderator.",
-    "post_hidden": "Your post has been hidden by a moderator.",
-    "post_removed": "Your post has been removed by a moderator.",
-    "review_hidden": "Your review has been hidden by a moderator.",
-    "review_removed": "Your review has been removed by a moderator.",
+    "comment_hidden": "あなたのコメントがモデレーターによって非表示にされました。",
+    "comment_removed": "あなたのコメントがモデレーターによって削除されました。",
+    "post_hidden": "あなたの投稿がモデレーターによって非表示にされました。",
+    "post_removed": "あなたの投稿がモデレーターによって削除されました。",
+    "review_hidden": "あなたのレビューがモデレーターによって非表示にされました。",
+    "review_removed": "あなたのレビューがモデレーターによって削除されました。",
     "event_approved": "イベントが承認されました！",
-    "group_member_approved": "You've been approved to join {{group}}",
-    "group_member_rejected": "Your request to join {{group}} was declined",
-    "group_approved": "Your group has been approved!",
-    "group_member_removed": "You have been removed from {{group}}",
-    "insurance_verified": "Your insurance certificate has been verified!",
-    "insurance_rejected": "Your insurance certificate was not approved. Please contact support for details.",
-    "report_resolved": "Your report has been reviewed and resolved.",
-    "report_reviewed": "Your report has been reviewed.",
-    "vetting_approved": "Your verification has been approved!",
-    "vetting_rejected": "Your verification could not be completed. Please contact support.",
-    "vetting_removed": "Your verification record has been removed.",
-    "volunteer_approved": "Your volunteer application has been approved!",
-    "volunteer_declined": "Your volunteer application was not accepted.",
-    "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
-    "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
-    "monitoring_lifted": "Your messaging restrictions have been lifted.",
-    "account_suspended": "Your account has been suspended. Contact support if you believe this is an error.",
-    "account_banned": "Your account has been banned. Contact support if you believe this is an error.",
+    "group_member_approved": "{{group}} への参加が承認されました",
+    "group_member_rejected": "{{group}} への参加リクエストが却下されました",
+    "group_approved": "あなたのグループが承認されました！",
+    "group_member_removed": "{{group}} から削除されました",
+    "insurance_verified": "保険証書が確認されました！",
+    "insurance_rejected": "保険証書が承認されませんでした。詳細についてはサポートにお問い合わせください。",
+    "report_resolved": "あなたの報告が確認され、解決されました。",
+    "report_reviewed": "あなたの報告が確認されました。",
+    "vetting_approved": "あなたの確認が承認されました！",
+    "vetting_rejected": "あなたの確認を完了できませんでした。サポートにお問い合わせください。",
+    "vetting_removed": "あなたの確認記録が削除されました。",
+    "volunteer_approved": "ボランティア申請が承認されました！",
+    "volunteer_declined": "ボランティア申請は受け入れられませんでした。",
+    "monitoring_restricted": "タイムバンクコーディネーターにより、メッセージ送信が一時的に制限されました。",
+    "monitoring_under_review": "アカウントがタイムバンクコーディネーターによる審査対象になりました。",
+    "monitoring_lifted": "メッセージの制限が解除されました。",
+    "account_suspended": "アカウントが停止されました。エラーだと思う場合はサポートにお問い合わせください。",
+    "account_banned": "アカウントが禁止されました。エラーだと思う場合はサポートにお問い合わせください。",
     "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
-    "super_admin_granted": "You have been granted Tenant Super Admin privileges.",
-    "super_admin_revoked": "Your Tenant Super Admin privileges have been removed."
+    "super_admin_granted": "テナントスーパー管理者権限が付与されました。",
+    "super_admin_revoked": "テナントスーパー管理者権限が削除されました。"
   }
 }

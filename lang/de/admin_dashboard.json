@@ -1,7 +1,7 @@
 {
-  "title": "Mission Control",
+  "title": "Missionskontrolle",
   "subtitle": "Echtzeit-Plattformübersicht und Kommandozentrale",
-  "tour_btn": "Tour",
+  "tour_btn": "Rundgang",
   "refresh": "Aktualisieren",
   "view_all_activity": "Alle Aktivitäten anzeigen",
   "tour": {
@@ -10,7 +10,7 @@
     "back": "Zurück",
     "next": "Weiter"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "Das Laden der Dashboard-Daten ist fehlgeschlagen",
   "stats": {
     "users_online": "Benutzer online",
     "active_sessions": "Aktive Sitzungen",
@@ -19,19 +19,19 @@
     "transactions": "Transaktionen",
     "hours_exchanged": "Getauschte Stunden",
     "hours": "Stunden",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Neue Benutzer diesen Monat",
+    "active_users": "Aktive Benutzer",
+    "total_listings": "Gesamteinträge",
+    "new_listings_this_month": "Neue Angebote in diesem Monat"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Transaktionstrends",
+    "hours_suffix": "Std",
+    "no_data": "Keine Trenddaten verfügbar"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Mitglieder warten auf Genehmigung",
+    "pending_listings": "Einträge warten auf Moderation",
     "users_pending_one": "{{count}} Benutzer ausstehend",
     "users_pending_other": "{{count}} Benutzer ausstehend",
     "users_pending_text": "Neue Mitgliederregistrierungen erfordern Ihre Prüfung",
@@ -59,21 +59,21 @@
     "group_locations_desc": "Geografische Grenzen",
     "group_ranking": "Gruppenranking",
     "group_ranking_desc": "Intelligente hervorgehobene Gruppen",
-    "ai_assistant": "AI Assistant",
+    "ai_assistant": "KI-Assistent",
     "ai_assistant_desc": "KI-Anbieter konfigurieren",
-    "smart_matching": "Smart Matching",
+    "smart_matching": "Intelligentes Matching",
     "smart_matching_desc": "KI-gestützte Empfehlungen",
-    "feed_algorithm": "Feed Algorithm",
+    "feed_algorithm": "Feed-Algorithmus",
     "feed_algorithm_desc": "EdgeRank-Konfiguration",
-    "algorithm_settings": "Algorithm Settings",
-    "algorithm_settings_desc": "MatchRank & CommunityRank",
-    "timebanking": "Timebanking",
+    "algorithm_settings": "Algorithmuseinstellungen",
+    "algorithm_settings_desc": "MatchRank und CommunityRank",
+    "timebanking": "Zeitbanking",
     "timebanking_desc": "Analysen & Organisationskonten",
-    "seo": "SEO Manager",
+    "seo": "SEO-Manager",
     "seo_desc": "Suchmaschinenoptimierung",
     "error_tracking": "404-Fehlerverfolgung",
     "error_tracking_desc": "Fehlerhafte Links überwachen",
-    "cron_jobs": "Cron Jobs",
+    "cron_jobs": "Cron-Jobs",
     "cron_jobs_desc": "Geplante Aufgaben"
   },
   "activity": {
@@ -94,13 +94,13 @@
     "view_listings": "Inserate anzeigen",
     "send_newsletter": "Newsletter senden",
     "new_blog_post": "Neuer Blog-Beitrag",
-    "gamification": "Gamification",
+    "gamification": "Gamifizierung",
     "settings": "Einstellungen",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Unternehmen",
+    "advanced_controls": "Erweiterte Steuerelemente"
   },
   "enterprise": {
-    "card_title": "Enterprise Suite",
+    "card_title": "Enterprise-Suite",
     "card_subtitle": "Erweiterte Steuerung",
     "overview": "Übersicht",
     "gdpr": "GDPR-Konformität",
@@ -112,12 +112,12 @@
     "details": "Details",
     "database": "Datenbank",
     "cache": "Cache",
-    "queue": "Cron Jobs",
+    "queue": "Cron-Jobs",
     "api": "E-Mail-API"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "Der Schutzschritt ist in Ihrem Onboarding-Assistenten deaktiviert",
+    "body": "Mitglieder können bei ihrem Beitritt keine Gefährdungs- oder Überprüfungsbedürfnisse angeben. Administratorwarnungen werden nicht ausgelöst. Aktivieren Sie den Schutzschritt und wenden Sie eine Ländervoreinstellung an, damit Ihre Community geschützt ist.",
+    "cta": "Schutz aktivieren"
   }
 }

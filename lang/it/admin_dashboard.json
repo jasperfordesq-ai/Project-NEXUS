@@ -1,7 +1,7 @@
 {
-  "title": "Mission Control",
+  "title": "Controllo della missione",
   "subtitle": "Panoramica in tempo reale della piattaforma e centro di comando",
-  "tour_btn": "Tour",
+  "tour_btn": "Giro",
   "refresh": "Aggiorna",
   "view_all_activity": "Vedi Tutta l'Attività",
   "tour": {
@@ -10,7 +10,7 @@
     "back": "Indietro",
     "next": "Avanti"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "Impossibile caricare i dati del dashboard",
   "stats": {
     "users_online": "Utenti Online",
     "active_sessions": "Sessioni Attive",
@@ -19,19 +19,19 @@
     "transactions": "Transazioni",
     "hours_exchanged": "Ore Scambiate",
     "hours": "Ore",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Nuovi utenti questo mese",
+    "active_users": "Utenti attivi",
+    "total_listings": "Elenchi totali",
+    "new_listings_this_month": "Nuove inserzioni questo mese"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Tendenze delle transazioni",
+    "hours_suffix": "ore",
+    "no_data": "Nessun dato di tendenza disponibile"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Membri in attesa di approvazione",
+    "pending_listings": "Annunci in attesa di moderazione",
     "users_pending_one": "{{count}} Utente in Attesa",
     "users_pending_other": "{{count}} Utenti in Attesa",
     "users_pending_text": "Le nuove registrazioni dei membri richiedono la Sua revisione",
@@ -59,21 +59,21 @@
     "group_locations_desc": "Confini geografici",
     "group_ranking": "Classifica Gruppi",
     "group_ranking_desc": "Gruppi in evidenza intelligenti",
-    "ai_assistant": "AI Assistant",
+    "ai_assistant": "Assistente AI",
     "ai_assistant_desc": "Configura i provider AI",
-    "smart_matching": "Smart Matching",
+    "smart_matching": "Abbinamento intelligente",
     "smart_matching_desc": "Raccomandazioni basate sull'AI",
     "feed_algorithm": "Algoritmo del Feed",
     "feed_algorithm_desc": "Configurazione EdgeRank",
     "algorithm_settings": "Impostazioni Algoritmo",
-    "algorithm_settings_desc": "MatchRank & CommunityRank",
-    "timebanking": "Timebanking",
+    "algorithm_settings_desc": "Classifica partita e classifica comunità",
+    "timebanking": "Banca del tempo",
     "timebanking_desc": "Analisi e portafogli organizzativi",
-    "seo": "SEO Manager",
+    "seo": "Responsabile SEO",
     "seo_desc": "Ottimizzazione per i motori di ricerca",
     "error_tracking": "Monitoraggio Errori 404",
     "error_tracking_desc": "Monitora i link non funzionanti",
-    "cron_jobs": "Cron Jobs",
+    "cron_jobs": "Lavori Cron",
     "cron_jobs_desc": "Attività pianificate"
   },
   "activity": {
@@ -94,10 +94,10 @@
     "view_listings": "Vedi Annunci",
     "send_newsletter": "Invia Newsletter",
     "new_blog_post": "Nuovo Post sul Blog",
-    "gamification": "Gamification",
+    "gamification": "Ludicizzazione",
     "settings": "Impostazioni",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Impresa",
+    "advanced_controls": "Controlli avanzati"
   },
   "enterprise": {
     "card_title": "Suite Enterprise",
@@ -110,14 +110,14 @@
   "system_status": {
     "card_title": "Stato del Sistema",
     "details": "Dettagli",
-    "database": "Database",
+    "database": "Banca dati",
     "cache": "Cache",
-    "queue": "Cron Jobs",
+    "queue": "Lavori Cron",
     "api": "API Email"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "Il passaggio di salvaguardia è DISATTIVATO nella procedura guidata di onboarding",
+    "body": "I membri non possono dichiarare vulnerabilità o esigenze di verifica quando si iscrivono. Gli avvisi dell'amministratore non vengono attivati. Abilita la fase di protezione e applica un paese preimpostato in modo che la tua comunità sia protetta.",
+    "cta": "Abilita la salvaguardia"
   }
 }

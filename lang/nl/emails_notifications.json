@@ -33,10 +33,10 @@
     "body": "Goed nieuws! Een coördinator heeft een match voor u goedgekeurd:",
     "view_note": "Klik hieronder om de advertentie te bekijken en contact op te nemen met het lid.",
     "btn_view": "Match Bekijken",
-    "score_text": "({{score}}% match)"
+    "score_text": "({{score}}% overeenkomst)"
   },
   "match_rejected": {
-    "heading": "Match Update",
+    "heading": "Wedstrijdupdate",
     "body": "Helaas heeft een coördinator vastgesteld dat de volgende match op dit moment niet geschikt was:",
     "label_reason": "Reden:",
     "encouragement": "Geen zorgen — er zijn volop andere mogelijkheden in uw gemeenschap! Blader door meer matches om een goede match te vinden.",

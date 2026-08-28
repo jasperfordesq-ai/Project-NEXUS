@@ -1,45 +1,45 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "Dit is een test webhook levering van Project NEXUS."
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "Media verwijderd"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "Voorkeuren bijgewerkt"
   },
   "group_qa": {
-    "answer_accepted": "Answer accepted",
-    "vote_recorded": "Vote recorded",
-    "failed_accept_answer": "Failed to accept answer",
-    "failed_record_vote": "Failed to record vote",
-    "title_required": "Title is required",
-    "body_required": "Body is required",
-    "failed_create_question": "Failed to create question",
-    "question_not_found": "Question not found",
-    "failed_post_answer": "Failed to post answer",
-    "type_must_be_question_or_answer": "Type must be \"question\" or \"answer\"",
-    "valid_target_id_required": "A valid target_id is required",
-    "vote_must_be_up_down": "Vote must be \"up\"/\"down\" or 1/-1"
+    "answer_accepted": "Antwoord geaccepteerd",
+    "vote_recorded": "Stem geregistreerd",
+    "failed_accept_answer": "Antwoord kon niet worden geaccepteerd",
+    "failed_record_vote": "Stem kon niet worden geregistreerd",
+    "title_required": "Titel is vereist",
+    "body_required": "Inhoud is vereist",
+    "failed_create_question": "Vraag kon niet worden aangemaakt",
+    "question_not_found": "Vraag niet gevonden",
+    "failed_post_answer": "Antwoord kon niet worden geplaatst",
+    "type_must_be_question_or_answer": "Type moet \"vraag\" of \"antwoord\" zijn",
+    "valid_target_id_required": "Een geldig target_id is vereist",
+    "vote_must_be_up_down": "Stem moet \"omhoog\"/\"omlaag\" of 1/-1 zijn"
   },
   "group_scheduled_post": {
-    "cancelled": "Cancelled",
-    "not_found_or_published": "Not found or already published"
+    "cancelled": "Geannuleerd",
+    "not_found_or_published": "Niet gevonden of al gepubliceerd"
   },
   "group_webhook": {
-    "webhook_deleted": "Webhook deleted",
-    "webhook_not_found": "Webhook not found"
+    "webhook_deleted": "Webhook verwijderd",
+    "webhook_not_found": "Webhook niet gevonden"
   },
   "group_wiki": {
-    "wiki_page_deleted": "Wiki page deleted"
+    "wiki_page_deleted": "Wiki-pagina verwijderd"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name saved your listing \":title\""
+    "listing_saved_notification": ":saver_name heeft uw advertentie \":title\" opgeslagen"
   },
   "goals": {
-    "progress_mentor": "{{name}} made progress on their goal: \"{{title}}\"",
-    "completed_mentor": "{{name}} completed their goal: \"{{title}}\"",
-    "completed_self": "Congratulations! You completed your goal: \"{{title}}\"",
+    "progress_mentor": "{{name}} heeft voortgang geboekt op zijn/haar doel: \"{{title}}\"",
+    "completed_mentor": "{{name}} heeft zijn/haar doel bereikt: \"{{title}}\"",
+    "completed_self": "Gefeliciteerd! U heeft uw doel bereikt: \"{{title}}\"",
     "buddy_joined_owner": "{{name}} is een maatje geworden voor jouw doel: \"{{title}}\"",
     "checkin_mentor": "{{name}} heeft ingecheckt op hun doel: \"{{title}}\"",
     "history_created": "Doel gemaakt",
@@ -67,38 +67,38 @@
     "buddy_action_owner": "{{name}} {{action}} jouw doel: \"{{title}}\""
   },
   "feed": {
-    "post_shared": "{{name}} shared your post"
+    "post_shared": "{{name}} heeft uw bericht gedeeld"
   },
   "polls": {
-    "vote_received": "{{name}} voted on your poll: \"{{title}}\"",
-    "ranking_received": "{{name}} submitted a ranking on your poll: \"{{title}}\""
+    "vote_received": "{{name}} heeft gestemd op uw peiling: \"{{title}}\"",
+    "ranking_received": "{{name}} heeft een rangschikking ingediend op uw peiling: \"{{title}}\""
   },
   "deliverable": {
-    "assigned": "You've been assigned a deliverable: \"{{title}}\"",
-    "reassigned": "You've been assigned to deliverable: \"{{title}}\""
+    "assigned": "U heeft een deliverable toegewezen gekregen: \"{{title}}\"",
+    "reassigned": "U bent toegewezen aan deliverable: \"{{title}}\""
   },
   "deliverable_comment": {
-    "posted": "{{name}} commented on your deliverable \"{{title}}\""
+    "posted": "{{name}} heeft commentaar gegeven op uw deliverable \"{{title}}\""
   },
   "wallet_admin": {
-    "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
-    "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
-    "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "grant_received": "U heeft {{amount}} {{unit}} ontvangen van uw tijdbank-coördinator",
+    "balance_adjusted_added": "Uw saldo is aangepast: +{{amount}} {{unit}} toegevoegd door coördinator",
+    "balance_adjusted_removed": "Uw saldo is aangepast: -{{amount}} {{unit}} verwijderd door coördinator",
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
-    "reaction": "{{name}} reacted to your comment"
+    "reaction": "{{name}} reageerde op uw commentaar"
   },
   "federation": {
-    "review_received": "{{name}} left you a {{rating}}-star review"
+    "review_received": "{{name}} heeft een {{rating}}-sterrenrecensie voor u achtergelaten"
   },
   "federation_credit": {
-    "action_taken": "{{tenant}} has {{action}} your federation credit agreement."
+    "action_taken": "{{tenant}} heeft {{action}} uw federatie-kredietovereenkomst."
   },
   "volunteer": {
-    "shift_signup_confirmed": "You're signed up for a volunteer shift on {{date}}",
-    "shift_signup_cancelled": "Your volunteer shift signup has been cancelled",
-    "opportunity_cancelled": "Volunteer opportunity \"{{title}}\" has been cancelled"
+    "shift_signup_confirmed": "U bent aangemeld voor een vrijwilligersdienst op {{date}}",
+    "shift_signup_cancelled": "Uw aanmelding voor de vrijwilligersdienst is geannuleerd",
+    "opportunity_cancelled": "Vrijwilligerskans \"{{title}}\" is geannuleerd"
   },
   "marketplace_offer": {
     "received": "{{buyer}} heeft {{amount}} geboden op je advertentie ‘{{title}}’.",
@@ -109,49 +109,49 @@
     "withdrawn": "{{buyer}} heeft het bod op je advertentie ‘{{title}}’ ingetrokken."
   },
   "marketplace_order": {
-    "confirmed_buyer": "Order #{{order_number}} confirmed — \"{{title}}\"",
-    "confirmed_seller": "You have a new order #{{order_number}} for \"{{title}}\"",
+    "confirmed_buyer": "Bestelling #{{order_number}} bevestigd — \"{{title}}\"",
+    "confirmed_seller": "U heeft een nieuwe bestelling #{{order_number}} voor \"{{title}}\"",
     "paid_buyer": "Betaling ontvangen voor bestelling #{{order_number}}: {{amount}}",
     "paid_seller": "Bestelling #{{order_number}} is betaald: {{amount}}",
-    "shipped": "Your order #{{order_number}} has been shipped!",
-    "delivered": "Order #{{order_number}} — buyer confirmed delivery",
-    "cancelled": "Order #{{order_number}} has been cancelled",
-    "completed": "Order #{{order_number}} has been completed!",
-    "refunded": "Refund of {{amount}} {{currency}} processed for order #{{order_number}}",
-    "partially_refunded": "Partial refund of {{amount}} {{currency}} processed for order #{{order_number}}"
+    "shipped": "Uw bestelling #{{order_number}} is verzonden!",
+    "delivered": "Bestelling #{{order_number}} — koper bevestigde levering",
+    "cancelled": "Bestelling #{{order_number}} is geannuleerd",
+    "completed": "Bestelling #{{order_number}} is voltooid!",
+    "refunded": "Terugbetaling van {{amount}} {{currency}} verwerkt voor bestelling #{{order_number}}",
+    "partially_refunded": "Gedeeltelijke terugbetaling van {{amount}} {{currency}} verwerkt voor bestelling #{{order_number}}"
   },
   "marketplace_payment": {
     "local_order_not_found": "Er is geen lokale bestelling gevonden voor deze betaling.",
     "only_buyer_confirm": "Alleen de koper kan de betaling bevestigen."
   },
   "admin_bells": {
-    "comment_hidden": "Your comment has been hidden by a moderator.",
-    "comment_removed": "Your comment has been removed by a moderator.",
-    "post_hidden": "Your post has been hidden by a moderator.",
-    "post_removed": "Your post has been removed by a moderator.",
-    "review_hidden": "Your review has been hidden by a moderator.",
-    "review_removed": "Your review has been removed by a moderator.",
+    "comment_hidden": "Uw commentaar is verborgen door een moderator.",
+    "comment_removed": "Uw commentaar is verwijderd door een moderator.",
+    "post_hidden": "Uw bericht is verborgen door een moderator.",
+    "post_removed": "Uw bericht is verwijderd door een moderator.",
+    "review_hidden": "Uw beoordeling is verborgen door een moderator.",
+    "review_removed": "Uw beoordeling is verwijderd door een moderator.",
     "event_approved": "Je evenement is goedgekeurd!",
-    "group_member_approved": "You've been approved to join {{group}}",
-    "group_member_rejected": "Your request to join {{group}} was declined",
-    "group_approved": "Your group has been approved!",
-    "group_member_removed": "You have been removed from {{group}}",
-    "insurance_verified": "Your insurance certificate has been verified!",
-    "insurance_rejected": "Your insurance certificate was not approved. Please contact support for details.",
-    "report_resolved": "Your report has been reviewed and resolved.",
-    "report_reviewed": "Your report has been reviewed.",
-    "vetting_approved": "Your verification has been approved!",
-    "vetting_rejected": "Your verification could not be completed. Please contact support.",
-    "vetting_removed": "Your verification record has been removed.",
-    "volunteer_approved": "Your volunteer application has been approved!",
-    "volunteer_declined": "Your volunteer application was not accepted.",
-    "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
-    "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
-    "monitoring_lifted": "Your messaging restrictions have been lifted.",
-    "account_suspended": "Your account has been suspended. Contact support if you believe this is an error.",
-    "account_banned": "Your account has been banned. Contact support if you believe this is an error.",
+    "group_member_approved": "U bent goedgekeurd om lid te worden van {{group}}",
+    "group_member_rejected": "Uw verzoek om lid te worden van {{group}} is afgewezen",
+    "group_approved": "Uw groep is goedgekeurd!",
+    "group_member_removed": "U bent verwijderd uit {{group}}",
+    "insurance_verified": "Uw verzekeringscertificaat is geverifieerd!",
+    "insurance_rejected": "Uw verzekeringscertificaat is niet goedgekeurd. Neem contact op met de ondersteuning voor details.",
+    "report_resolved": "Uw melding is beoordeeld en opgelost.",
+    "report_reviewed": "Uw melding is beoordeeld.",
+    "vetting_approved": "Uw verificatie is goedgekeurd!",
+    "vetting_rejected": "Uw verificatie kon niet worden voltooid. Neem contact op met de ondersteuning.",
+    "vetting_removed": "Uw verificatierecord is verwijderd.",
+    "volunteer_approved": "Uw vrijwilligersaanmelding is goedgekeurd!",
+    "volunteer_declined": "Uw vrijwilligersaanmelding is niet geaccepteerd.",
+    "monitoring_restricted": "Uw tijdbank-coördinator heeft uw berichtenverkeer tijdelijk beperkt.",
+    "monitoring_under_review": "Uw account is onder controle gesteld door uw tijdbank-coördinator.",
+    "monitoring_lifted": "Uw berichtenbeperkingen zijn opgeheven.",
+    "account_suspended": "Uw account is geschorst. Neem contact op met de ondersteuning als u denkt dat dit een fout is.",
+    "account_banned": "Uw account is verbannen. Neem contact op met de ondersteuning als u denkt dat dit een fout is.",
     "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
-    "super_admin_granted": "You have been granted Tenant Super Admin privileges.",
-    "super_admin_revoked": "Your Tenant Super Admin privileges have been removed."
+    "super_admin_granted": "U heeft Tenant Super Admin-rechten gekregen.",
+    "super_admin_revoked": "Uw Tenant Super Admin-rechten zijn verwijderd."
   }
 }

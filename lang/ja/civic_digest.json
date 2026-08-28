@@ -1,31 +1,31 @@
 {
   "email": {
-    "subject_daily": "Your daily civic digest — {{community}}",
+    "subject_daily": "本日の市民ダイジェスト — {{community}}",
     "subject_monthly": "monthly 市民ダイジェスト — {{community}}",
-    "greeting": "Hi {{name}},",
-    "intro_daily": "Here's what's new in your community today — {{count}} update(s) selected for you based on your sub-region and interests.",
+    "greeting": "こんにちは {{name}}、",
+    "intro_daily": "本日のコミュニティの新着情報 — あなたのサブ地域と興味に基づいて選ばれた{{count}}件の更新。",
     "intro_monthly": "monthly のまとめは次のとおりです。サブ地域と興味に基づいて選択された {{count}} アップデートです。",
-    "empty": "Nothing new in your community for now. We'll keep you posted.",
-    "cta_open": "Open",
-    "cta_manage_prefs": "Manage digest preferences",
-    "footer": "You're receiving this because you opted into the {{community}} civic digest. You can change cadence or opt out at any time.",
-    "match_score": "Match {{score}}",
-    "view_all": "View full digest",
+    "empty": "現在、あなたのコミュニティに新しい情報はありません。最新情報をお届けします。",
+    "cta_open": "開く",
+    "cta_manage_prefs": "ダイジェスト設定を管理",
+    "footer": "{{community}}の市民ダイジェストを登録したためこのメールが届いています。配信頻度の変更またはいつでも登録解除できます。",
+    "match_score": "一致度 {{score}}",
+    "view_all": "ダイジェスト全体を見る",
     "subject_weekly": "Your weekly civic digest — {{community}}",
     "intro_weekly": "Here's your weekly round-up — {{count}} update(s) selected for you based on your sub-region and interests."
   },
   "push": {
-    "title": "Your civic digest is ready",
-    "body_one": "{{count}} new update in your community",
-    "body_other": "{{count}} new updates in your community"
+    "title": "市民ダイジェストの準備ができました",
+    "body_one": "コミュニティに{{count}}件の新しい更新",
+    "body_other": "コミュニティに{{count}}件の新しい更新"
   },
-  "source_announcement": "Announcement",
-  "source_project": "Project update",
-  "source_event": "Event",
-  "source_vol_org": "Local organisation",
-  "source_care_provider": "Care service",
-  "source_marketplace": "Marketplace",
-  "source_safety_alert": "Safety alert",
-  "source_help_request": "Help needed",
-  "source_feed_post": "Community post"
+  "source_announcement": "お知らせ",
+  "source_project": "プロジェクト更新",
+  "source_event": "イベント",
+  "source_vol_org": "地域組織",
+  "source_care_provider": "ケアサービス",
+  "source_marketplace": "マーケットプレイス",
+  "source_safety_alert": "安全アラート",
+  "source_help_request": "ヘルプ募集",
+  "source_feed_post": "コミュニティ投稿"
 }

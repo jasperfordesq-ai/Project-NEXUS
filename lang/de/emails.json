@@ -165,7 +165,7 @@
   "job_alert": {
     "subject_single": "Neue Stelle passend zu Ihrer Benachrichtigung: {{title}}",
     "subject_digest": "Stellenbenachrichtigung — {{count}} neue {{plural}} Ihren Kriterien",
-    "remote": "Remote",
+    "remote": "Fernarbeit",
     "location_not_specified": "Kein Standort angegeben",
     "deadline_open": "Offen",
     "closes": "Schließt: {{date}}",
@@ -271,7 +271,7 @@
     "level_integrated": "Integriert"
   },
   "vetting": {
-    "subject": "{{heading}} - {{tenant}}",
+    "subject": "{{heading}} – {{tenant}}",
     "review_action": "Schutzbescheinigung pr?fen"
   },
   "group_digest": {
@@ -293,7 +293,7 @@
     "unsubscribe": "Abmelden",
     "manage_preferences": "Einstellungen verwalten",
     "manage_email_preferences": "E-Mail-Einstellungen verwalten",
-    "test_prefix": "[TEST]",
+    "test_prefix": "[PRÜFEN]",
     "no_subject": "Kein Betreff",
     "unsubscribed_subject": "Sie wurden abgemeldet - {{community}}",
     "unsubscribed_title": "Abgemeldet",
@@ -391,7 +391,7 @@
     "manage_preferences": "Benachrichtigungseinstellungen verwalten"
   },
   "events": {
-    "update_subject": "Update: {{title}}",
+    "update_subject": "Aktualisierung: {{title}}",
     "cancelled_subject": "Abgesagt: \"{{title}}\"",
     "updated_subject": "Aktualisiert: \"{{title}}\" ({{changes}})",
     "rsvp_subject": "{{name}} {{status_label}} Ihre Veranstaltung \"{{title}}\"",

@@ -20,7 +20,7 @@
     "preview_text": "Marketplace, dons, vérification d'identité, fédération, 11 langues, et bien plus encore.",
     "heading": "Quoi de neuf dans {{community}}",
     "intro": "Bonjour {{name}}, la plateforme a beaucoup évolué ces dernières semaines. Voici un aperçu rapide de ce que vous pouvez faire aujourd'hui.",
-    "section_marketplace_title": "Marketplace",
+    "section_marketplace_title": "Place de marché",
     "section_marketplace_body": "Une nouvelle marketplace indépendante pour les petites annonces, avec des versements Stripe Connect et des suggestions de réponses alimentées par l'IA.",
     "section_donations_title": "Dons",
     "section_donations_body": "Dons ponctuels et récurrents via Stripe, avec des tableaux de bord complets et des reçus pour les organisations.",
@@ -266,7 +266,7 @@
     "connection_accepted_body": ":name de :community a accepté votre demande de connexion. Vous êtes maintenant connectés !",
     "connection_accepted_cta": "Voir la connexion",
     "level_discovery": "Découverte",
-    "level_social": "Social",
+    "level_social": "Sociale",
     "level_economic": "Économique",
     "level_integrated": "Intégré"
   },

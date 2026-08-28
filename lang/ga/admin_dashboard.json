@@ -10,7 +10,7 @@
     "back": "Ar ais",
     "next": "Ar aghaidh"
   },
-  "load_error": "Failed to load dashboard data",
+  "load_error": "Theip ar lódáil sonraí an deais",
   "stats": {
     "users_online": "Úsáideoirí ar Líne",
     "active_sessions": "Seisiúin Ghníomhacha",
@@ -19,19 +19,19 @@
     "transactions": "Idirbhearta",
     "hours_exchanged": "Uaireanta Malartaithe",
     "hours": "Uaireanta",
-    "new_users_this_month": "New Users This Month",
-    "active_users": "Active Users",
-    "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_users_this_month": "Úsáideoirí Nua an Mhí seo",
+    "active_users": "Úsáideoirí Gníomhacha",
+    "total_listings": "Liostaí Iomlána",
+    "new_listings_this_month": "Liostaí Nua an Mhí seo"
   },
   "trends": {
-    "card_title": "Transaction Trends",
-    "hours_suffix": "hrs",
-    "no_data": "No trend data available"
+    "card_title": "Treochtaí Idirbheart",
+    "hours_suffix": "uair",
+    "no_data": "Níl aon sonraí treochtaí ar fáil"
   },
   "alerts": {
-    "pending_approvals": "Members awaiting approval",
-    "pending_listings": "Listings awaiting moderation",
+    "pending_approvals": "Comhaltaí ag fanacht le ceadú",
+    "pending_listings": "Liostaí ag feitheamh le measarthacht",
     "users_pending_one": "{{count}} Úsáideoir ar Feitheamh",
     "users_pending_other": "{{count}} Úsáideoir ar Feitheamh",
     "users_pending_text": "Teastaíonn d'athbhreithniú ar chlárúcháin chomhaltaí nua",
@@ -96,8 +96,8 @@
     "new_blog_post": "Postáil Bhlag Nua",
     "gamification": "Cluichíocht",
     "settings": "Socruithe",
-    "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "enterprise": "Fiontar",
+    "advanced_controls": "Ard-rialuithe"
   },
   "enterprise": {
     "card_title": "Sraith Fiontraíochta",
@@ -116,8 +116,8 @@
     "api": "API Ríomhphoist"
   },
   "safeguarding_banner": {
-    "title": "Safeguarding step is OFF in your onboarding wizard",
-    "body": "Members cannot declare vulnerability or vetting needs when they join. Admin alerts are not firing. Enable the safeguarding step and apply a country preset so your community is protected.",
-    "cta": "Enable safeguarding"
+    "title": "Tá an chéim shlándála MACHTA i do dhraoi bordála",
+    "body": "Ní féidir le feisirí leochaileacht ná riachtanais ghrinnfhiosrúcháin a dhearbhú nuair a thagann siad isteach. Níl foláirimh admin ar lasadh. Cumasaigh an chéim chosanta agus cuir réamhshocrú tíre i bhfeidhm ionas go mbeidh do phobal cosanta.",
+    "cta": "Cumasaigh cosaint"
   }
 }

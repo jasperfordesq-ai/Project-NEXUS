@@ -293,7 +293,7 @@
     "unsubscribe": "配信を停止する",
     "manage_preferences": "設定を管理する",
     "manage_email_preferences": "メール設定を管理する",
-    "test_prefix": "[TEST]",
+    "test_prefix": "[テスト]",
     "no_subject": "件名なし",
     "unsubscribed_subject": "配信停止しました - {{community}}",
     "unsubscribed_title": "配信停止",

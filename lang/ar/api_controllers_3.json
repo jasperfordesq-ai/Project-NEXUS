@@ -1,45 +1,45 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "هذا تسليم webhook تجريبي من Project NEXUS."
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "تم حذف الوسائط"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "تم تحديث التفضيلات"
   },
   "group_qa": {
-    "answer_accepted": "Answer accepted",
-    "vote_recorded": "Vote recorded",
-    "failed_accept_answer": "Failed to accept answer",
-    "failed_record_vote": "Failed to record vote",
-    "title_required": "Title is required",
-    "body_required": "Body is required",
-    "failed_create_question": "Failed to create question",
-    "question_not_found": "Question not found",
-    "failed_post_answer": "Failed to post answer",
-    "type_must_be_question_or_answer": "Type must be \"question\" or \"answer\"",
-    "valid_target_id_required": "A valid target_id is required",
-    "vote_must_be_up_down": "Vote must be \"up\"/\"down\" or 1/-1"
+    "answer_accepted": "تم قبول الإجابة",
+    "vote_recorded": "تم تسجيل التصويت",
+    "failed_accept_answer": "فشل قبول الإجابة",
+    "failed_record_vote": "فشل تسجيل التصويت",
+    "title_required": "العنوان مطلوب",
+    "body_required": "المحتوى مطلوب",
+    "failed_create_question": "فشل إنشاء السؤال",
+    "question_not_found": "السؤال غير موجود",
+    "failed_post_answer": "فشل نشر الإجابة",
+    "type_must_be_question_or_answer": "يجب أن يكون النوع \"سؤالاً\" أو \"إجابةً\"",
+    "valid_target_id_required": "يُشترط وجود target_id صالح",
+    "vote_must_be_up_down": "يجب أن يكون التصويت \"أعلى\"/\"أسفل\" أو 1/-1"
   },
   "group_scheduled_post": {
-    "cancelled": "Cancelled",
-    "not_found_or_published": "Not found or already published"
+    "cancelled": "تم الإلغاء",
+    "not_found_or_published": "غير موجود أو تم نشره مسبقاً"
   },
   "group_webhook": {
-    "webhook_deleted": "Webhook deleted",
-    "webhook_not_found": "Webhook not found"
+    "webhook_deleted": "تم حذف Webhook",
+    "webhook_not_found": "Webhook غير موجود"
   },
   "group_wiki": {
-    "wiki_page_deleted": "Wiki page deleted"
+    "wiki_page_deleted": "تم حذف صفحة الويكي"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name saved your listing \":title\""
+    "listing_saved_notification": "قام :saver_name بحفظ إعلانك \":title\""
   },
   "goals": {
-    "progress_mentor": "{{name}} made progress on their goal: \"{{title}}\"",
-    "completed_mentor": "{{name}} completed their goal: \"{{title}}\"",
-    "completed_self": "Congratulations! You completed your goal: \"{{title}}\"",
+    "progress_mentor": "أحرز {{name}} تقدماً نحو هدفه: \"{{title}}\"",
+    "completed_mentor": "أتم {{name}} هدفه: \"{{title}}\"",
+    "completed_self": "تهانينا! لقد أتممت هدفك: \"{{title}}\"",
     "buddy_joined_owner": "لقد أصبح {{name}} صديقًا لهدفك: \"{{title}}\"",
     "checkin_mentor": "قام {{name}} بتسجيل الدخول إلى هدفه: \"{{title}}\"",
     "history_created": "تم إنشاء الهدف",
@@ -67,38 +67,38 @@
     "buddy_action_owner": "{{name}} {{action}} هدفك: \"{{title}}\""
   },
   "feed": {
-    "post_shared": "{{name}} shared your post"
+    "post_shared": "قام {{name}} بمشاركة منشورك"
   },
   "polls": {
-    "vote_received": "{{name}} voted on your poll: \"{{title}}\"",
-    "ranking_received": "{{name}} submitted a ranking on your poll: \"{{title}}\""
+    "vote_received": "صوّت {{name}} في استطلاعك: \"{{title}}\"",
+    "ranking_received": "قدّم {{name}} ترتيباً في استطلاعك: \"{{title}}\""
   },
   "deliverable": {
-    "assigned": "You've been assigned a deliverable: \"{{title}}\"",
-    "reassigned": "You've been assigned to deliverable: \"{{title}}\""
+    "assigned": "تم تعيين مُسلَّم لك: \"{{title}}\"",
+    "reassigned": "تم تعيينك للمُسلَّم: \"{{title}}\""
   },
   "deliverable_comment": {
-    "posted": "{{name}} commented on your deliverable \"{{title}}\""
+    "posted": "علّق {{name}} على مُسلَّمك \"{{title}}\""
   },
   "wallet_admin": {
-    "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
-    "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
-    "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "grant_received": "تلقيت {{amount}} {{unit}} من منسق بنك وقتك",
+    "balance_adjusted_added": "تم تعديل رصيدك: تمت إضافة +{{amount}} {{unit}} بواسطة المنسق",
+    "balance_adjusted_removed": "تم تعديل رصيدك: تمت إزالة -{{amount}} {{unit}} بواسطة المنسق",
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
-    "reaction": "{{name}} reacted to your comment"
+    "reaction": "تفاعل {{name}} مع تعليقك"
   },
   "federation": {
-    "review_received": "{{name}} left you a {{rating}}-star review"
+    "review_received": "ترك لك {{name}} تقييماً بـ {{rating}} نجوم"
   },
   "federation_credit": {
-    "action_taken": "{{tenant}} has {{action}} your federation credit agreement."
+    "action_taken": "قامت {{tenant}} بـ {{action}} اتفاقية ائتمان الاتحاد الخاصة بك."
   },
   "volunteer": {
-    "shift_signup_confirmed": "You're signed up for a volunteer shift on {{date}}",
-    "shift_signup_cancelled": "Your volunteer shift signup has been cancelled",
-    "opportunity_cancelled": "Volunteer opportunity \"{{title}}\" has been cancelled"
+    "shift_signup_confirmed": "تم تسجيلك في وردية تطوعية بتاريخ {{date}}",
+    "shift_signup_cancelled": "تم إلغاء تسجيلك في وردية التطوع",
+    "opportunity_cancelled": "تم إلغاء فرصة التطوع \"{{title}}\""
   },
   "marketplace_offer": {
     "received": "قدّم {{buyer}} عرضًا بقيمة {{amount}} على إعلانك «{{title}}».",
@@ -109,49 +109,49 @@
     "withdrawn": "سحب {{buyer}} عرضه على إعلانك «{{title}}»."
   },
   "marketplace_order": {
-    "confirmed_buyer": "Order #{{order_number}} confirmed — \"{{title}}\"",
-    "confirmed_seller": "You have a new order #{{order_number}} for \"{{title}}\"",
+    "confirmed_buyer": "تم تأكيد الطلب #{{order_number}} — \"{{title}}\"",
+    "confirmed_seller": "لديك طلب جديد #{{order_number}} لـ \"{{title}}\"",
     "paid_buyer": "تم استلام الدفعة للطلب #{{order_number}}: {{amount}}",
     "paid_seller": "تم دفع الطلب #{{order_number}}: {{amount}}",
-    "shipped": "Your order #{{order_number}} has been shipped!",
-    "delivered": "Order #{{order_number}} — buyer confirmed delivery",
-    "cancelled": "Order #{{order_number}} has been cancelled",
-    "completed": "Order #{{order_number}} has been completed!",
-    "refunded": "Refund of {{amount}} {{currency}} processed for order #{{order_number}}",
-    "partially_refunded": "Partial refund of {{amount}} {{currency}} processed for order #{{order_number}}"
+    "shipped": "تم شحن طلبك #{{order_number}}!",
+    "delivered": "الطلب #{{order_number}} — أكّد المشتري استلام التوصيل",
+    "cancelled": "تم إلغاء الطلب #{{order_number}}",
+    "completed": "تم إتمام الطلب #{{order_number}}!",
+    "refunded": "تمت معالجة استرداد {{amount}} {{currency}} للطلب #{{order_number}}",
+    "partially_refunded": "تمت معالجة استرداد جزئي بقيمة {{amount}} {{currency}} للطلب #{{order_number}}"
   },
   "marketplace_payment": {
     "local_order_not_found": "لم يتم العثور على أمر محلي لهذه الدفعة.",
     "only_buyer_confirm": "يمكن للمشتري فقط تأكيد الدفع."
   },
   "admin_bells": {
-    "comment_hidden": "Your comment has been hidden by a moderator.",
-    "comment_removed": "Your comment has been removed by a moderator.",
-    "post_hidden": "Your post has been hidden by a moderator.",
-    "post_removed": "Your post has been removed by a moderator.",
-    "review_hidden": "Your review has been hidden by a moderator.",
-    "review_removed": "Your review has been removed by a moderator.",
+    "comment_hidden": "تم إخفاء تعليقك بواسطة مشرف.",
+    "comment_removed": "تم حذف تعليقك بواسطة مشرف.",
+    "post_hidden": "تم إخفاء منشورك بواسطة مشرف.",
+    "post_removed": "تم حذف منشورك بواسطة مشرف.",
+    "review_hidden": "تم إخفاء تقييمك بواسطة مشرف.",
+    "review_removed": "تم حذف تقييمك بواسطة مشرف.",
     "event_approved": "تمت الموافقة على فعاليتك!",
-    "group_member_approved": "You've been approved to join {{group}}",
-    "group_member_rejected": "Your request to join {{group}} was declined",
-    "group_approved": "Your group has been approved!",
-    "group_member_removed": "You have been removed from {{group}}",
-    "insurance_verified": "Your insurance certificate has been verified!",
-    "insurance_rejected": "Your insurance certificate was not approved. Please contact support for details.",
-    "report_resolved": "Your report has been reviewed and resolved.",
-    "report_reviewed": "Your report has been reviewed.",
-    "vetting_approved": "Your verification has been approved!",
-    "vetting_rejected": "Your verification could not be completed. Please contact support.",
-    "vetting_removed": "Your verification record has been removed.",
-    "volunteer_approved": "Your volunteer application has been approved!",
-    "volunteer_declined": "Your volunteer application was not accepted.",
-    "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
-    "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
-    "monitoring_lifted": "Your messaging restrictions have been lifted.",
-    "account_suspended": "Your account has been suspended. Contact support if you believe this is an error.",
-    "account_banned": "Your account has been banned. Contact support if you believe this is an error.",
+    "group_member_approved": "تمت الموافقة على انضمامك إلى {{group}}",
+    "group_member_rejected": "تم رفض طلبك للانضمام إلى {{group}}",
+    "group_approved": "تمت الموافقة على مجموعتك!",
+    "group_member_removed": "تمت إزالتك من {{group}}",
+    "insurance_verified": "تم التحقق من شهادة تأمينك!",
+    "insurance_rejected": "لم تتم الموافقة على شهادة تأمينك. يرجى التواصل مع الدعم للاطلاع على التفاصيل.",
+    "report_resolved": "تمت مراجعة بلاغك وحله.",
+    "report_reviewed": "تمت مراجعة بلاغك.",
+    "vetting_approved": "تمت الموافقة على توثيقك!",
+    "vetting_rejected": "تعذّر إتمام توثيقك. يرجى التواصل مع الدعم.",
+    "vetting_removed": "تم حذف سجل توثيقك.",
+    "volunteer_approved": "تمت الموافقة على طلب التطوع الخاص بك!",
+    "volunteer_declined": "لم يتم قبول طلب التطوع الخاص بك.",
+    "monitoring_restricted": "قام منسق بنك وقتك بتقييد رسائلك مؤقتاً.",
+    "monitoring_under_review": "تمت إخضاع حسابك للمراجعة من قِبل منسق بنك وقتك.",
+    "monitoring_lifted": "تم رفع القيود المفروضة على رسائلك.",
+    "account_suspended": "تم تعليق حسابك. تواصل مع الدعم إذا كنت تعتقد أن هذا خطأ.",
+    "account_banned": "تم حظر حسابك. تواصل مع الدعم إذا كنت تعتقد أن هذا خطأ.",
     "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
-    "super_admin_granted": "You have been granted Tenant Super Admin privileges.",
-    "super_admin_revoked": "Your Tenant Super Admin privileges have been removed."
+    "super_admin_granted": "تم منحك صلاحيات مدير المستأجر العليا.",
+    "super_admin_revoked": "تم سحب صلاحيات مدير المستأجر العليا منك."
   }
 }
