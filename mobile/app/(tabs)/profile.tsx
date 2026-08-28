@@ -192,7 +192,13 @@ export default function MoreScreen() {
                 <AccentIcon name="create-outline" size={17} />
                 <HeroButton.Label>{t('editProfile')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" variant="secondary" onPress={() => navigate('/(modals)/wallet')}>
+              <HeroButton
+                testID="profile-view-wallet"
+                accessibilityLabel={t('viewWallet')}
+                className="flex-1"
+                variant="secondary"
+                onPress={() => navigate('/(modals)/wallet')}
+              >
                 <Ionicons name="wallet-outline" size={17} color={primary} />
                 <HeroButton.Label>{t('viewWallet')}</HeroButton.Label>
               </HeroButton>

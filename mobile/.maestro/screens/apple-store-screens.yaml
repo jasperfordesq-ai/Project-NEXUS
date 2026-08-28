@@ -122,10 +122,16 @@ appId: ie.project.nexus
     point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
+- scrollUntilVisible:
+    element:
+      id: "profile-view-wallet"
+    direction: UP
+    timeout: 20000
 - tapOn:
-    point: "70%,24%"
-- waitForAnimationToEnd:
-    timeout: 12000
+    id: "profile-view-wallet"
+- extendedWaitUntil:
+    visible: "Time credit wallet"
+    timeout: 20000
 - takeScreenshot: 06-wallet
 
 - tapOn:
