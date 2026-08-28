@@ -233,12 +233,26 @@ class AchievementCampaignServiceTest extends TestCase
         TenantContext::setById($this->testTenantId);
         $this->service->activateCampaign((int) $id);
 
-        // The 'status' enum cannot hold 'active', so we assert the reliable
-        // side-effect: activated_at is stamped.
         $this->assertNotNull(
             DB::table('achievement_campaigns')->where('id', $id)->value('activated_at'),
             'activateCampaign must stamp activated_at'
         );
+
+        // 🔴 This assertion is the point of the test. It used to read "the
+        // 'status' enum cannot hold 'active', so we assert the reliable
+        // side-effect" — a test written AROUND the bug instead of catching it.
+        // Writing 'active' put the row outside its own enum, and the cron scans
+        // for 'running', so an activated campaign was never eligible and no
+        // member was ever awarded anything.
+        $this->assertSame(
+            'running',
+            DB::table('achievement_campaigns')->where('id', $id)->value('status'),
+            'activateCampaign must store the enum value the scheduler scans for'
+        );
+
+        // …while the admin UI still sees its own vocabulary.
+        TenantContext::setById($this->testTenantId);
+        $this->assertSame('active', $this->service->getCampaign((int) $id)['status']);
     }
 
     public function test_pauseCampaign_runs_and_row_survives(): void
@@ -251,8 +265,7 @@ class AchievementCampaignServiceTest extends TestCase
         $this->assertNotNull($id);
 
         TenantContext::setById($this->testTenantId);
-        // The 'status' enum has no 'paused' member; pauseCampaign() must still
-        // complete without throwing and must not delete the row.
+        $this->service->activateCampaign((int) $id);
         $this->service->pauseCampaign((int) $id);
 
         $this->assertSame(
@@ -260,6 +273,24 @@ class AchievementCampaignServiceTest extends TestCase
             (int) DB::table('achievement_campaigns')->where('id', $id)->count(),
             'pauseCampaign must update (not remove) the campaign row'
         );
+
+        // 'paused' became a real enum value on 2026-08-28; before that this
+        // write fell outside the enum and the comment here read "the 'status'
+        // enum has no 'paused' member".
+        $row = DB::table('achievement_campaigns')->where('id', $id)->first();
+        $this->assertSame('paused', $row->status);
+        $this->assertNotNull(
+            $row->activated_at,
+            'pausing must not erase the fact that the campaign was once activated'
+        );
+
+        // A paused campaign must not be picked up by the scheduler.
+        TenantContext::setById($this->testTenantId);
+        $ran = array_map(
+            static fn (array $r): int => (int) $r['campaign_id'],
+            $this->service->processRecurringCampaigns(),
+        );
+        $this->assertNotContains((int) $id, $ran, 'a paused campaign must never be delivered');
     }
 
     public function test_deleteCampaign_removes_record(): void
@@ -313,10 +344,19 @@ class AchievementCampaignServiceTest extends TestCase
         TenantContext::setById($this->testTenantId);
         $result = $this->service->processRecurringCampaigns();
 
-        // Return shape: an array of per-campaign results, each ['awarded' => 0].
+        // Return shape: one entry per campaign actually run, carrying which
+        // campaign it was and how many members it paid. `awarded` is 0 here
+        // because this fixture has xp_amount = 0 — a campaign that specifies no
+        // reward must pay nobody rather than silently award zero XP to everyone.
         $this->assertIsArray($result);
         $this->assertGreaterThanOrEqual(1, count($result), 'At least our eligible campaign is processed');
-        $this->assertSame(['awarded' => 0], $result[0]);
+
+        $ours = array_values(array_filter(
+            $result,
+            static fn (array $r): bool => (int) $r['campaign_id'] === (int) $id,
+        ));
+        $this->assertCount(1, $ours, 'our eligible campaign must appear in the results');
+        $this->assertSame(0, $ours[0]['awarded']);
 
         // The eligible campaign's last_run_at must now be stamped.
         $this->assertNotNull(
