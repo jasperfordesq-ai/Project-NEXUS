@@ -534,9 +534,11 @@ describe('EventDetailScreen', () => {
     });
 
     const { getByText, queryByText } = render(<EventDetailScreen />);
-    expect(getByText(/August 10, 2026.*August 11, 2026/)).toBeTruthy();
+    // Day-first: formatEventSchedule now defaults to the app's own locale
+    // rather than taking a caller-supplied tag that could be a bare 'en'.
+    expect(getByText(/10 August 2026.*11 August 2026/)).toBeTruthy();
     expect(getByText('All day')).toBeTruthy();
-    expect(queryByText(/August 12, 2026/)).toBeNull();
+    expect(queryByText(/12 August 2026/)).toBeNull();
   });
 
   it('renders the canonical postponed lifecycle state', () => {
@@ -871,8 +873,11 @@ describe('EventDetailScreen', () => {
     expect(screen.getByText('Repair skills workshop')).toBeTruthy();
     expect(screen.getByText('Workshop')).toBeTruthy();
     expect(screen.getByText('Registered attendees')).toBeTruthy();
-    expect(screen.getByText(/Aug 10.*10:30/)).toBeTruthy();
-    expect(screen.getByText(/Aug 10.*11:15/)).toBeTruthy();
+    // Day-first. This asserted /Aug 10/ while the agenda formatter took a
+    // threaded locale that could be a bare language code; it now reads
+    // dateLocale() directly, so the label matches what members actually see.
+    expect(screen.getByText(/10 Aug.*10:30/)).toBeTruthy();
+    expect(screen.getByText(/10 Aug.*11:15/)).toBeTruthy();
     expect(screen.getByText(/Practical skills/)).toBeTruthy();
     expect(screen.getByText(/Workshop room/)).toBeTruthy();
     expect(screen.getByText(/Alex Morgan — Facilitator/)).toBeTruthy();

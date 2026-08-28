@@ -40,6 +40,7 @@ import {
   type MobileEventBroadcastSegment,
   type MobileEventBroadcastVariant,
 } from '@/lib/api/eventCommunications';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 const SEGMENTS: MobileEventBroadcastSegment[] = [
   'registration_confirmed',
@@ -82,7 +83,7 @@ export default function EventCommunicationsScreen() {
 }
 
 function EventCommunicationsScreenInner() {
-  const { t, i18n } = useTranslation(['event_communications', 'common']);
+  const { t } = useTranslation(['event_communications', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const eventId = Number(id);
   const safeEventId = Number.isInteger(eventId) && eventId > 0 ? eventId : 0;
@@ -478,7 +479,7 @@ function EventCommunicationsScreenInner() {
     if (!value) return t('not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('not_recorded');
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(dateLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

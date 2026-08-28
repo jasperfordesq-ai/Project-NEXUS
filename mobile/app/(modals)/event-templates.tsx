@@ -33,6 +33,7 @@ import {
 } from '@/lib/api/eventTemplates';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 function defaultStart(): string {
   const date = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -56,7 +57,7 @@ export default function EventTemplatesScreen() {
 }
 
 function EventTemplatesScreenInner() {
-  const { t, i18n } = useTranslation(['event_templates', 'common']);
+  const { t } = useTranslation(['event_templates', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [templates, setTemplates] = useState<MobileEventTemplate[]>([]);
@@ -281,7 +282,7 @@ function EventTemplatesScreenInner() {
     if (!value) return t('templates.mobile.notRecorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('templates.mobile.notRecorded');
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(dateLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

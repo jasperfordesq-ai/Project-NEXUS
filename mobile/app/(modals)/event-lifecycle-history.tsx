@@ -19,6 +19,7 @@ import {
 } from '@/lib/api/eventLifecycleHistory';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 function appendUnique(
   current: MobileEventLifecycleHistoryEntry[],
@@ -37,7 +38,7 @@ export default function EventLifecycleHistoryScreen() {
 }
 
 function EventLifecycleHistoryScreenInner() {
-  const { t, i18n } = useTranslation(['events', 'common']);
+  const { t } = useTranslation(['events', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const parsedId = Number(id);
   const eventId = Number.isInteger(parsedId) && parsedId > 0 ? parsedId : 0;
@@ -104,7 +105,7 @@ function EventLifecycleHistoryScreenInner() {
     if (!value) return t('lifecycleHistory.timestampUnknown');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('lifecycleHistory.timestampUnknown');
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(dateLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

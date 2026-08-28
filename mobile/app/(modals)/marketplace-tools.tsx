@@ -557,7 +557,7 @@ function PromotionProductRow({
 
 function formatCurrencyAmount(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(dateLocale(), {
       style: 'currency',
       currency,
       currencyDisplay: 'code',
@@ -1075,7 +1075,7 @@ function CouponsPanel() {
               <HeroAlert.Description>
                 {t('tools.coupons.qrRedeemedDetail', {
                   coupon: lastQrRedemption.coupon_id,
-                  date: lastQrRedemption.redeemed_at ? new Date(lastQrRedemption.redeemed_at).toLocaleString() : t('tools.coupons.dateUnknown'),
+                  date: lastQrRedemption.redeemed_at ? new Date(lastQrRedemption.redeemed_at).toLocaleString(dateLocale()) : t('tools.coupons.dateUnknown'),
                 })}
               </HeroAlert.Description>
             </HeroAlert.Content>
@@ -1143,7 +1143,7 @@ function RedemptionRow({
   const { t } = useTranslation('marketplace');
   const theme = useTheme();
   const primary = usePrimaryColor();
-  const redeemedAt = redemption.redeemed_at ? new Date(redemption.redeemed_at).toLocaleString() : t('tools.coupons.dateUnknown');
+  const redeemedAt = redemption.redeemed_at ? new Date(redemption.redeemed_at).toLocaleString(dateLocale()) : t('tools.coupons.dateUnknown');
 
   return (
     <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3">
@@ -1470,7 +1470,7 @@ function ScanButton({ label, primary, onPress }: { label: string; primary: strin
 
 function formatDateTime(value: string): string {
   if (!value) return '';
-  return new Date(value).toLocaleString(undefined, {
+  return new Date(value).toLocaleString(dateLocale(), {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',

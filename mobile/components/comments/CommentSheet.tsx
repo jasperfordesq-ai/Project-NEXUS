@@ -34,6 +34,7 @@ import { withAlpha } from '@/lib/utils/color';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 const MAX_COMMENT_LENGTH = 10000;
 const COUNTER_VISIBLE_FROM = 9000;
@@ -434,7 +435,7 @@ function CommentComposer({
       {showCounter ? (
         <View className="flex-row justify-end px-4 pt-1">
           <Text className="text-[11px] text-muted-foreground" testID="comment-composer-counter">
-            {`${draft.length.toLocaleString()} / ${MAX_COMMENT_LENGTH.toLocaleString()}`}
+            {`${draft.length.toLocaleString(dateLocale())} / ${MAX_COMMENT_LENGTH.toLocaleString(dateLocale())}`}
           </Text>
         </View>
       ) : null}

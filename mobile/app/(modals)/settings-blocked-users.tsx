@@ -21,17 +21,18 @@ import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import { getBlockedUsers, unblockUser, type BlockedUser } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 
-function formatBlockedDate(value: string | null, locale: string): string {
+function formatBlockedDate(value: string | null): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function SettingsBlockedUsersScreen() {
-  const { t, i18n } = useTranslation(['settings', 'common']);
+  const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -122,7 +123,7 @@ export default function SettingsBlockedUsersScreen() {
                     <View className="min-w-0 flex-1">
                       <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>{user.name}</Text>
                       <Text className="text-xs" style={{ color: theme.textSecondary }}>
-                        {t('blockedUsers.blockedOn', { date: formatBlockedDate(user.blocked_at, i18n.language) })}
+                        {t('blockedUsers.blockedOn', { date: formatBlockedDate(user.blocked_at) })}
                       </Text>
                     </View>
                   </View>

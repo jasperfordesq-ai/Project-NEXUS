@@ -7,8 +7,8 @@
 // initialises that module anyway, and importing it here would drag the full
 // i18next init into every unit test that renders a date (react-i18next is
 // mocked in tests, so the init crashes the suite).
-import * as Localization from 'expo-localization';
 import i18n from 'i18next';
+import { getRegion } from './regionStore';
 
 /**
  * Locale for Date/Intl formatting that follows the language the user picked
@@ -33,10 +33,14 @@ export function dateLocale(): string {
    * American dates — spotted in a listing card while capturing store screenshots, which is
    * the only way something this quiet gets noticed.
    *
-   * Taking the region from the DEVICE keeps the original intent of this helper intact: the
-   * language still follows what the member chose in Settings, so switching the app to Spanish
-   * still gives Spanish month names — now with the date order of wherever they actually are.
+   * 🔴 The region comes from the COMMUNITY, not the device (changed 2026-08-28). The first
+   * version of this fix read `Localization.getLocales()[0].regionCode`, which left a member
+   * whose phone is set to the United States still reading American dates — the same bug, for
+   * a smaller group, and invisible to anyone testing on an Irish handset. The community's
+   * region is the same source the web app uses, so both clients agree.
+   *
+   * The language still follows what the member chose in Settings, so switching the app to
+   * Spanish still gives Spanish month names — in their community's date order.
    */
-  const region = Localization.getLocales()[0]?.regionCode;
-  return region ? `${language}-${region}` : language;
+  return `${language}-${getRegion()}`;
 }

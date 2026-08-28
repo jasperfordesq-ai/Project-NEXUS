@@ -1986,6 +1986,16 @@ jobs:
           npm run check:untranslated
           node ../scripts/check-age-declaration.mjs
 
+      # A bare language code has no region, so Intl formats English as US
+      # English — 17 August 2026 renders 8/17/2026. Passing no locale at all
+      # follows the device instead of the language chosen in Settings. Both
+      # shipped. Every formatter must take dateLocale(); deliberate machine
+      # formats carry a locale-exempt comment saying why. Mirrors the web app's
+      # check-locale-formatting so both clients obey one rule.
+      - name: "BLOCKING: Mobile dates must use the app's own locale"
+        working-directory: mobile
+        run: node scripts/check-date-locale.mjs
+
       # The bundle a release embeds, measured with the same Expo export a release
       # build uses, against the ceiling in mobile/startup-budget.json. It needs no
       # Android toolchain, so it belongs on this runner — and it is the only place

@@ -9,6 +9,7 @@ import { getTenantConfig, type TenantConfig } from '@/lib/api/tenant';
 import { DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import { themeStore } from '@/lib/theme/themeStore';
+import { setRegion } from '@/lib/utils/regionStore';
 
 interface TenantContextValue {
   tenant: TenantConfig | null;
@@ -76,6 +77,17 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     themeStore.setTenant(tenant?.slug ?? null);
   }, [tenant?.slug]);
+
+  // Point date and number formatting at this community's region. Same reason
+  // as the theme above: `dateLocale()` is a plain function read from ~60
+  // modules outside any component tree, so it cannot use a hook.
+  //
+  // A null tenant (offline cold start, or a tenant that 404s) leaves the
+  // platform default in place rather than clearing it — setRegion ignores
+  // anything that is not a two-letter code.
+  useEffect(() => {
+    setRegion(tenant?.settings?.region);
+  }, [tenant?.settings?.region]);
   const [isLoading, setIsLoading] = useState(true);
   const isMountedRef = useRef(true);
 

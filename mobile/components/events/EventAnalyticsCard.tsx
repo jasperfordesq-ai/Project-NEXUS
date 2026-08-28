@@ -9,6 +9,7 @@ import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from '
 
 import type { EventAnalyticsSummary } from '@/lib/api/eventAnalytics';
 import type { Theme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -17,7 +18,6 @@ export function EventAnalyticsCard({
   isLoading,
   error,
   onRefresh,
-  locale,
   primary,
   theme,
   t,
@@ -26,11 +26,13 @@ export function EventAnalyticsCard({
   isLoading: boolean;
   error: string | null;
   onRefresh: () => void;
-  locale: string;
   primary: string;
   theme: Theme;
   t: Translate;
 }) {
+  // Read here rather than threaded in as a prop: a prop can be handed a bare
+  // language code, which formats as US English.
+  const locale = dateLocale();
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   const percent = (value: number | null, suppressed = false) => {
     if (suppressed) return t('analytics.suppressed');

@@ -17,10 +17,12 @@ describe('formatEventSchedule', () => {
       end_at: '2026-08-10T00:30:00Z',
       timezone: 'Pacific/Auckland',
       all_day: false,
-    }, 'en');
+    }, 'en-IE');
 
     expect(result.dayLabel).toBe('10');
-    expect(result.dateLabel).toContain('August 10, 2026');
+    // Day-first. A bare 'en' renders "August 10, 2026" — see dateLocale.test.ts
+    // for why that is the wrong output for this platform's members.
+    expect(result.dateLabel).toContain('10 August 2026');
     expect(result.timeLabel).toContain('11:30');
   });
 
@@ -30,11 +32,11 @@ describe('formatEventSchedule', () => {
       end_at: '2026-11-02T05:00:00Z',
       timezone: 'America/New_York',
       all_day: true,
-    }, 'en');
+    }, 'en-IE');
 
-    expect(result.startDateLabel).toContain('October 31, 2026');
-    expect(result.endDateLabel).toContain('November 1, 2026');
-    expect(result.dateLabel).not.toContain('November 2, 2026');
+    expect(result.startDateLabel).toContain('31 October 2026');
+    expect(result.endDateLabel).toContain('1 November 2026');
+    expect(result.dateLabel).not.toContain('2 November 2026');
     expect(result.timeLabel).toBeNull();
   });
 

@@ -519,7 +519,9 @@ describe('VolunteeringDetailScreen', () => {
 
     // …and the message names the shift they would lose, not the one they are joining.
     const options = mockConfirm.mock.calls[0][0] as { message: string; onConfirm: () => Promise<void> };
-    expect(options.message).toContain('Aug 24');
+    // Day-first: this asserted 'Aug 24' back when dateLocale() could return a
+    // bare 'en', which Intl renders as US English.
+    expect(options.message).toContain('24 Aug');
 
     await act(async () => {
       await options.onConfirm();

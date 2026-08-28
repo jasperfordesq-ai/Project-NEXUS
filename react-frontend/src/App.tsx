@@ -19,6 +19,9 @@
 import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
+import { I18nProvider } from '@heroui/react';
+import { getFormattingLocale } from '@/lib/helpers';
 
 // Contexts (app-wide only — tenant-scoped contexts are inside TenantShell)
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -31,12 +34,29 @@ import { ScrollToTop } from '@/components/routing/ScrollToTop';
 import { TenantShell } from '@/components/routing/TenantShell';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+/**
+ * Give date-entry widgets the same locale the rest of the app formats with.
+ *
+ * DatePicker, DateField and Calendar get their segment order (DD/MM vs MM/DD)
+ * and first day of week from React Aria, which defaults to the BROWSER's
+ * language when no I18nProvider is present. Without this the same screen could
+ * show a British date and an American date entry field side by side.
+ *
+ * Subscribes to i18n so the tree re-renders on a language change; the region
+ * half comes from the community via getFormattingLocale().
+ */
+function LocalizedInputs({ children }: { children: React.ReactNode }) {
+  useTranslation();
+  return <I18nProvider locale={getFormattingLocale()}>{children}</I18nProvider>;
+}
+
 function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop />
+          <LocalizedInputs>
           <CookieConsentProvider>
             <ToastProvider>
               <ErrorBoundary>
@@ -57,6 +77,7 @@ function App() {
               </ErrorBoundary>
             </ToastProvider>
           </CookieConsentProvider>
+          </LocalizedInputs>
         </BrowserRouter>
       </ThemeProvider>
     </HelmetProvider>

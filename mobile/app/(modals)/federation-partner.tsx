@@ -336,7 +336,7 @@ export default function FederationPartnerScreen() {
               <StatTile
                 icon="people-outline"
                 label={t('detail.memberTotal')}
-                value={(partner.member_count ?? 0).toLocaleString()}
+                value={(partner.member_count ?? 0).toLocaleString(dateLocale())}
                 tone={primary}
                 theme={theme}
               />

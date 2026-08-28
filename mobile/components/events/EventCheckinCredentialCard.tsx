@@ -23,6 +23,7 @@ import {
 } from '@/lib/api/eventOfflineCheckin';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 type Credential = NonNullable<MobileEventCheckinCredentialResponse['credential']>;
 
@@ -32,7 +33,7 @@ function mutationKey(prefix: string): string {
 
 /** Confirmed-attendee, one-shot display boundary for a PII-free signed QR credential. */
 export default function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation(['eventOfflineCheckin', 'common']);
+  const { t } = useTranslation(['eventOfflineCheckin', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
@@ -254,7 +255,7 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
                 {credential.expires_at ? (
                   <Text className="text-xs" style={{ color: theme.textSecondary }}>
                     {t('eventOfflineCheckin:credential.expires', {
-                      date: new Intl.DateTimeFormat(i18n.language, {
+                      date: new Intl.DateTimeFormat(dateLocale(), {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       }).format(new Date(credential.expires_at)),

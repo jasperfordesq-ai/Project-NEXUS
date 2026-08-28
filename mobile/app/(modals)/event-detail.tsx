@@ -713,7 +713,6 @@ function EventDetailScreenInner() {
         {event.permissions.edit ? (
           <EventAnalyticsSummaryCard
             eventId={event.id}
-            locale={dateLocale()}
             primary={primary}
             theme={theme}
             t={t}
@@ -913,8 +912,8 @@ function EventAgendaCard({
         <View className="gap-3">
           {agenda.sessions.map((serverSession) => {
             const session = sessionOverrides[serverSession.id] ?? serverSession;
-            const startLabel = formatAgendaDateTime(session.start_at, agenda.timezone, locale);
-            const endLabel = formatAgendaDateTime(session.end_at, agenda.timezone, locale);
+            const startLabel = formatAgendaDateTime(session.start_at, agenda.timezone);
+            const endLabel = formatAgendaDateTime(session.end_at, agenda.timezone);
             const typeLabel = t(`agenda.type.${session.type}`);
             const visibilityLabel = t(`agenda.visibility.${session.visibility}`);
             const speakerLabels = session.speakers.map((speaker) => {
@@ -1023,7 +1022,8 @@ function EventAgendaCard({
   );
 }
 
-function formatAgendaDateTime(value: string, timeZone: string, locale: string): string {
+function formatAgendaDateTime(value: string, timeZone: string): string {
+  const locale = dateLocale();
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 

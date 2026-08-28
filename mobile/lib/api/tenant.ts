@@ -27,6 +27,14 @@ export interface TenantConfig {
     time_unit_plural: string;
     footer_text: string | null;
   };
+  /**
+   * Public `general.*` tenant settings. `region` (ISO 3166-1 alpha-2) drives
+   * date and number formatting — see lib/utils/regionStore. Absent when the
+   * community has not set one, in which case the platform default applies.
+   */
+  settings?: {
+    region?: string | null;
+  } & Record<string, unknown>;
   supported_languages: string[];
   default_language: string;
 }

@@ -252,7 +252,7 @@ export default function JobDetailScreen() {
       job.salary_type
     ) {
       const currency = job.salary_currency ?? '€';
-      const fmt = (n: number) => `${currency}${n.toLocaleString()}`;
+      const fmt = (n: number) => `${currency}${n.toLocaleString(dateLocale())}`;
       const typeLabel =
         job.salary_type === 'annual'
           ? t('detail.salaryAnnual')

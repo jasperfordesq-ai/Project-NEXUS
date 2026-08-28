@@ -53,6 +53,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   listen/completion analytics use the existing Laravel contract, and all text comes from
   the maintained seven-language catalogue.
 
+- **The phone app now follows the community's date format, not the handset's.** The
+  previous fix took the region from the device, so a member whose phone was set to the
+  United States still read American dates — the same bug for a smaller group, and
+  invisible to anyone testing on an Irish handset. The region now comes from the
+  community, the same source the website uses, so both agree. A further 32 places were
+  still bypassing the shared helper — event screens, goals, blocked users, data export,
+  marketplace prices and pickup times, chat and thread timestamps, job salaries, the
+  comment character counter and the federation member count — some following the phone,
+  some passing a bare language code. All now go through it, and a new blocking check
+  keeps them there.
+
+- **Date entry fields now match the dates shown around them.** Date pickers took their
+  field order and first day of the week from the browser rather than the app, so a member
+  could see a British date in a listing and an American date-entry field on the same
+  screen. The app now supplies the same locale to both. Verified by a test that reads the
+  rendered field order, with a control proving the test can actually fail.
+
 - **Each community can now choose its own date and number format.** A new "Date and
   number format" setting in Admin → Settings takes a country (Ireland, the UK,
   Switzerland and others) and applies that country's conventions — field order, month

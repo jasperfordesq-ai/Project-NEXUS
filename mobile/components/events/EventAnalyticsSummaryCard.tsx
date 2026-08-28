@@ -13,14 +13,12 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export function EventAnalyticsSummaryCard({
   eventId,
-  locale,
   primary,
   theme,
   t,
   refreshSignal = 0,
 }: {
   eventId: number;
-  locale: string;
   primary: string;
   theme: Theme;
   t: Translate;
@@ -44,7 +42,6 @@ export function EventAnalyticsSummaryCard({
       isLoading={analytics.isLoading}
       error={analytics.error}
       onRefresh={analytics.refresh}
-      locale={locale}
       primary={primary}
       theme={theme}
       t={t}

@@ -440,7 +440,7 @@ function getApplicationStatusKey(stage: string) {
 }
 
 function formatNumber(value: number) {
-  return Number(value).toLocaleString();
+  return Number(value).toLocaleString(dateLocale());
 }
 
 function formatShortDate(value: string) {

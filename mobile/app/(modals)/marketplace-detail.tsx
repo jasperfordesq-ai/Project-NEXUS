@@ -50,6 +50,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
@@ -1010,7 +1011,7 @@ function formatPickupSlot(slot: MarketplacePickupSlotOption, fallback: string) {
   try {
     if (!slot.slot_start) return fallback;
     const remaining = Number.isFinite(Number(slot.remaining)) ? ` (${slot.remaining})` : '';
-    return `${new Date(slot.slot_start).toLocaleString()}${remaining}`;
+    return `${new Date(slot.slot_start).toLocaleString(dateLocale())}${remaining}`;
   } catch {
     return fallback;
   }
@@ -1022,7 +1023,7 @@ function formatShippingOption(option: MarketplaceShippingOption): string {
     return `${option.courier_name} · ${option.currency} ${String(option.price)}`;
   }
   try {
-    const formattedAmount = new Intl.NumberFormat(undefined, {
+    const formattedAmount = new Intl.NumberFormat(dateLocale(), {
       style: 'currency',
       currency: option.currency,
       currencyDisplay: 'code',

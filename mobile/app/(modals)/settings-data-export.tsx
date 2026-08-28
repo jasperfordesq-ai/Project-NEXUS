@@ -20,6 +20,7 @@ import { getDataExportHistory, requestDataExport, type DataExportFormat, type Da
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 
 function formatBytes(bytes: number | null): string {
@@ -34,15 +35,15 @@ function formatBytes(bytes: number | null): string {
   return `${value.toFixed(value < 10 && unit > 0 ? 1 : 0)} ${units[unit]}`;
 }
 
-function formatDate(value: string | null, locale: string): string {
+function formatDate(value: string | null): string {
   if (!value) return '-';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
+  return date.toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export default function SettingsDataExportScreen() {
-  const { t, i18n } = useTranslation(['settings', 'common']);
+  const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
@@ -161,7 +162,7 @@ export default function SettingsDataExportScreen() {
                       <View className="flex-row items-center justify-between gap-3">
                         <View className="min-w-0 flex-1">
                           <Text className="text-sm font-semibold uppercase" style={{ color: theme.text }}>{row.format}</Text>
-                          <Text className="text-xs" style={{ color: theme.textSecondary }}>{formatDate(row.requested_at, i18n.language)}</Text>
+                          <Text className="text-xs" style={{ color: theme.textSecondary }}>{formatDate(row.requested_at)}</Text>
                         </View>
                         <Text className="text-xs font-semibold" style={{ color: theme.textMuted }}>{formatBytes(row.file_size_bytes)}</Text>
                       </View>

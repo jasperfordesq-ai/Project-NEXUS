@@ -42,6 +42,7 @@ import {
 } from '@/lib/events/recurrenceBlueprints';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 const SECTION_KEYS: readonly EventRecurrenceDefinitionSection[] = [
   'agenda',
@@ -93,7 +94,7 @@ export default function EventRecurrenceBlueprintsScreen() {
 }
 
 function EventRecurrenceBlueprintsScreenInner() {
-  const { t, i18n } = useTranslation(['event_recurrence_blueprints', 'common']);
+  const { t } = useTranslation(['event_recurrence_blueprints', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const parsedId = Number(id);
   const eventId = Number.isInteger(parsedId) && parsedId > 0 ? parsedId : 0;
@@ -310,7 +311,7 @@ function EventRecurrenceBlueprintsScreenInner() {
   function dateLabel(value: string): string {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('time_unknown');
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(dateLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

@@ -36,6 +36,7 @@ import {
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -62,11 +63,11 @@ function goalPercent(goal: Goal) {
   return target > 0 ? Math.max(0, Math.min(100, Math.round((goalProgress(goal) / target) * 100))) : 0;
 }
 
-function formatDate(value: string | null | undefined, locale: string) {
+function formatDate(value: string | null | undefined) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function ProgressBar({ percent, color }: { percent: number; color: string }) {
@@ -106,7 +107,7 @@ function InsightTile({
 export default function GoalDetailScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const goalId = Number(Array.isArray(params.id) ? params.id[0] : params.id);
-  const { t, i18n } = useTranslation(['goals', 'common']);
+  const { t } = useTranslation(['goals', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
@@ -156,7 +157,7 @@ export default function GoalDetailScreen() {
   const percent = goal ? goalPercent(goal) : 0;
   const target = goal ? goalTarget(goal) : 0;
   const current = goal ? goalProgress(goal) : 0;
-  const dueDate = goal ? formatDate(goal.due_date ?? goal.deadline, i18n.language) : null;
+  const dueDate = goal ? formatDate(goal.due_date ?? goal.deadline) : null;
   const reminderEnabled = Boolean(reminder && reminder.enabled !== false && reminder.enabled !== 0);
   const milestones = insights?.milestones ?? [];
   const completedMilestones = milestones.filter((milestone) => milestone.completed_at).length;
@@ -337,7 +338,7 @@ export default function GoalDetailScreen() {
                 ))}
               </View>
               {reminder?.next_reminder_at ? (
-                <Text className="text-xs text-muted-foreground">{t('detail.nextReminder', { date: formatDate(reminder.next_reminder_at, i18n.language) ?? '' })}</Text>
+                <Text className="text-xs text-muted-foreground">{t('detail.nextReminder', { date: formatDate(reminder.next_reminder_at) ?? '' })}</Text>
               ) : null}
             </HeroCard.Body>
           </HeroCard>
@@ -355,7 +356,7 @@ export default function GoalDetailScreen() {
                       <Text className="text-sm font-semibold text-foreground">{milestone.title}</Text>
                       <Text className="text-xs text-muted-foreground">
                         {milestone.completed_at
-                          ? t('detail.completedOn', { date: formatDate(milestone.completed_at, i18n.language) ?? '' })
+                          ? t('detail.completedOn', { date: formatDate(milestone.completed_at) ?? '' })
                           : t('detail.pendingMilestone')}
                       </Text>
                     </View>
@@ -378,7 +379,7 @@ export default function GoalDetailScreen() {
                     </View>
                     <View className="min-w-0 flex-1">
                       <Text className="text-sm font-semibold text-foreground">{entry.description}</Text>
-                      <Text className="text-xs text-muted-foreground">{formatDate(entry.created_at, i18n.language)}</Text>
+                      <Text className="text-xs text-muted-foreground">{formatDate(entry.created_at)}</Text>
                     </View>
                   </View>
                 </Surface>

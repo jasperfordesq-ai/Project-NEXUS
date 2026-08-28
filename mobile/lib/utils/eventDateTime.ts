@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { dateLocale } from './dateLocale';
+
 export interface EventScheduleIdentity {
   start_at: string | null;
   end_at: string | null;
@@ -31,6 +33,10 @@ interface ZonedDateTimeParts {
 }
 
 function zonedParts(date: Date, timeZone: string): ZonedDateTimeParts {
+  // locale-exempt: machine format, never displayed. 'en-CA' is chosen because
+  // it yields zero-padded YYYY-MM-DD parts, which are read structurally below
+  // for timezone arithmetic. A member-facing locale here would break
+  // eventIsoToLocalInput / eventLocalInputToIso.
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,
     year: 'numeric',
@@ -155,6 +161,7 @@ function validDate(value: string | null): Date | null {
 
 function safeTimeZone(timeZone: string): string {
   try {
+    // locale-exempt: validity probe for the IANA zone; output is discarded.
     new Intl.DateTimeFormat('en', { timeZone }).format(0);
     return timeZone;
   } catch {
@@ -164,7 +171,11 @@ function safeTimeZone(timeZone: string): string {
 
 export function formatEventSchedule(
   schedule: EventScheduleIdentity,
-  locale: string,
+  // Defaults to the app's own locale so a caller cannot accidentally supply a
+  // bare language code, which would format as US English. Production callers
+  // pass nothing; tests pass an explicit tag to keep timezone assertions
+  // deterministic.
+  locale: string = dateLocale(),
 ): FormattedEventSchedule {
   const start = validDate(schedule.start_at);
   const end = validDate(schedule.end_at);
@@ -182,6 +193,8 @@ export function formatEventSchedule(
     };
   }
 
+  // locale-exempt: `locale` is the parameter above, which defaults to
+  // dateLocale(). The three formatters in this function all read it.
   const dateFormatter = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     year: 'numeric',
@@ -190,6 +203,7 @@ export function formatEventSchedule(
     timeZone,
   });
   const startDateLabel = dateFormatter.format(start);
+  // locale-exempt: see the dateFormatter above.
   const calendarParts = new Intl.DateTimeFormat(locale, {
     month: 'short',
     day: 'numeric',
@@ -222,6 +236,7 @@ export function formatEventSchedule(
     };
   }
 
+  // locale-exempt: see the dateFormatter above.
   const timeLabel = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',

@@ -20,6 +20,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 export default function MarketplacePickupsRoute() {
   return (
@@ -178,7 +179,7 @@ function formatDateTime(value?: string | null): string {
   if (!value) return '-';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  return date.toLocaleString(dateLocale());
 }
 
 function pickupStatusTone(status: string, theme: ReturnType<typeof useTheme>, primary: string): string {
