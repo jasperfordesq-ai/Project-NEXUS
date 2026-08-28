@@ -176,7 +176,12 @@ export function BlogPostForm() {
         setMetaDescription(postData.meta_description || '');
         setNoindex(postData.noindex || false);
       } else {
-        setLoadError(t('blog.failed_to_load_blog_posts'));
+        // Surface the server's own reason (already translated) rather than a
+        // generic message, so an admin is told WHY the post would not load —
+        // "Not found", "Forbidden", a validation reason — instead of a blanket
+        // failure they cannot act on. Matches the many other admin call sites
+        // that use `res.error || t(fallback)`.
+        setLoadError(res.error || t('blog.failed_to_load_blog_posts'));
       }
     } catch {
       setLoadError(t('blog.an_unexpected_error_occurred'));

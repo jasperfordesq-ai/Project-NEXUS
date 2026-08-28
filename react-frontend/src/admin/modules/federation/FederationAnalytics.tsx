@@ -90,7 +90,9 @@ export function FederationAnalytics() {
         setData(res.data);
       } else {
         setData(null);
-        toast.error(t('federation.failed_to_load_analytics'));
+        // Show the server's own reason (federation disabled, no partner, a
+        // permission refusal) rather than a blanket load failure.
+        toast.error(res.error || t('federation.failed_to_load_analytics'));
       }
     } catch {
       if (!abortRef.current?.signal.aborted) {

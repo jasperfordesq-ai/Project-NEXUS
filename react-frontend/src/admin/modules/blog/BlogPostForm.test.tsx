@@ -277,11 +277,24 @@ describe('BlogPostForm — edit mode', () => {
     expect(spinner).toBeDefined();
   });
 
-  it('shows error state when post load fails', async () => {
+  // The old assertion allowed either the server reason OR the literal string
+  // 'failed_to_load_blog_posts'. That second half was the raw i18n KEY, which no
+  // test can ever see — the setup loads the real English resources, so the
+  // fallback renders as "Failed to load blog posts". The two cases are now pinned
+  // separately, which is what makes the first one meaningful.
+  it('shows the server reason when the post load is refused', async () => {
     mockAdminBlog.get.mockResolvedValueOnce({ success: false, error: 'Not found' });
     renderEdit();
     await waitFor(() => {
-      expect(screen.getByText(/not found|failed_to_load_blog_posts/i)).toBeInTheDocument();
+      expect(screen.getByText('Not found')).toBeInTheDocument();
+    });
+  });
+
+  it('falls back to the generic load error when the server gives no reason', async () => {
+    mockAdminBlog.get.mockResolvedValueOnce({ success: false });
+    renderEdit();
+    await waitFor(() => {
+      expect(screen.getByText(/failed to load blog posts/i)).toBeInTheDocument();
     });
   });
 

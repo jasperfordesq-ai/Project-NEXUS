@@ -104,14 +104,21 @@ describe('AgentRunsPage', () => {
     });
   });
 
+  // The agent type and trigger columns are TRANSLATED, not raw slugs:
+  // t('agents.agent_type.<slug>') and t('agents.triggered_by.<slug>'). The raw
+  // 'listing-enrichment' / 'admin' this suite used to look for can never be on
+  // screen, so both queries matched nothing and read as missing rows. Assert the
+  // labels an admin actually sees — showing an admin a raw slug would be the bug.
   it('renders agent run rows after successful load', async () => {
     mockSuccessfulLoad();
     render(<AgentRunsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('listing-enrichment')).toBeInTheDocument();
+      expect(screen.getByText('Listing enrichment')).toBeInTheDocument();
     });
-    expect(screen.getByText('admin')).toBeInTheDocument();
+    expect(screen.getByText('Administrator')).toBeInTheDocument();
+    // The untranslated slug must never leak into the table.
+    expect(screen.queryByText('listing-enrichment')).not.toBeInTheDocument();
   });
 
   it('shows empty state when no runs exist', async () => {
@@ -119,8 +126,9 @@ describe('AgentRunsPage', () => {
     render(<AgentRunsPage />);
 
     await waitFor(() => {
-      // No table rows for runs
-      expect(screen.queryByText('listing-enrichment')).not.toBeInTheDocument();
+      // No table rows for runs. Must query the RENDERED label — the raw slug is
+      // absent either way, which made this assertion vacuous while it read one.
+      expect(screen.queryByText('Listing enrichment')).not.toBeInTheDocument();
     });
   });
 
@@ -138,8 +146,18 @@ describe('AgentRunsPage', () => {
     render(<AgentRunsPage />);
 
     await waitFor(() => {
-      // cost_cents = 25 → (25/100).toFixed(4) = "0.2500" → "$0.2500"
-      expect(screen.getByText('$0.2500')).toBeInTheDocument();
+      // cost_cents = 25 → 0.25 USD, rendered by Intl.NumberFormat with
+      // minimumFractionDigits: 4 so sub-cent LLM costs stay visible.
+      //
+      // The currency SYMBOL is locale-dependent and must not be pinned: the
+      // formatting locale is `en-<community region>`, which renders USD as
+      // 'US$0.2500' for an Irish or UK community and '$0.2500' only for en-US.
+      // The old literal '$0.2500' could therefore never match here. Assert the
+      // two things that are actually the component's behaviour — four decimal
+      // places, and marked as dollars.
+      const cost = screen.getByText(/0\.2500$/);
+      expect(cost).toBeInTheDocument();
+      expect(cost.textContent).toMatch(/\$/);
     });
   });
 
@@ -173,7 +191,7 @@ describe('AgentRunsPage', () => {
     render(<AgentRunsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('listing-enrichment')).toBeInTheDocument();
+      expect(screen.getByText('Listing enrichment')).toBeInTheDocument();
     });
 
     const callsBefore = vi.mocked(api.get).mock.calls.length;

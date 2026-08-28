@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -66,6 +67,16 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+
+// SavedSearches calls useConfirm, which THROWS outside a <ConfirmDialogProvider>;
+// test-utils' render() does not install one, so every test here collapsed on the
+// first render. Stub the hook rather than the component, so SavedSearches itself
+// stays under test. Same shape as PartnerVenuesAdminPage.test.tsx.
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => vi.fn(async () => true),
+  ConfirmDialogProvider: ({ children }: { children: ReactNode }) => children,
+}));
+
 
 import { SavedSearches } from '../SavedSearches';
 

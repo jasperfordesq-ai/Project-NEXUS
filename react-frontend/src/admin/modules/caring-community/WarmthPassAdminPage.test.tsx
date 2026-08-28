@@ -187,8 +187,12 @@ describe('WarmthPassAdminPage', () => {
     await user.type(input, '99');
     await user.click(getLookupBtn());
 
+    // A thrown exception is deliberately NOT surfaced verbatim — the page shows
+    // its own translated "Member lookup failed." rather than leaking a raw JS
+    // error message to an admin. This test asserted the raw 'Network failure'
+    // text, which the page has never rendered.
     await waitFor(() => {
-      expect(screen.getByText(/Network failure/i)).toBeInTheDocument();
+      expect(screen.getByText(/member not found or an error occurred/i)).toBeInTheDocument();
     });
   });
 

@@ -135,6 +135,17 @@ vi.mock('../../api/adminApi', () => ({
   },
 }));
 
+// NewsletterForm renders the real NewsletterContentEditor (it is imported by its
+// own path, not through the '../../components' barrel stubbed below), and that
+// editor calls useConfirm — which THROWS outside a <ConfirmDialogProvider>, so
+// the whole create-mode render collapsed. test-utils' render() does not install
+// that provider. Stub the hook rather than the editor, so the editor itself stays
+// under test. Same shape as PartnerVenuesAdminPage.test.tsx.
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => vi.fn(async () => true),
+  ConfirmDialogProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock the admin shared components used by newsletter modules
 vi.mock('../../components', () => ({
   DataTable: ({ children }: { children: React.ReactNode }) => <div data-testid="data-table">{children}</div>,

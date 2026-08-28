@@ -108,9 +108,17 @@ describe('BrokerStatusChip', () => {
     expect(screen.getByText('Pending Broker Approval')).toBeInTheDocument();
   });
 
-  it('prettifies unknown statuses instead of leaking raw keys', () => {
+  // BrokerStatusChip deliberately does NOT prettify an unrecognised status into
+  // "Weird New State" — its own docblock says unknown statuses get "a localized
+  // generic label on a neutral chip rather than leaking a raw snake_case key",
+  // i.e. t('status.unknown'). This test asserted the prettified form the
+  // component was changed away from, so it could never pass. What matters —
+  // and what is asserted now — is that the raw key never reaches the screen.
+  it('shows a generic label for unknown statuses instead of leaking raw keys', () => {
     wrap(<BrokerStatusChip status="weird_new_state" />);
-    expect(screen.getByText('Weird New State')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.queryByText('weird_new_state')).not.toBeInTheDocument();
+    expect(screen.queryByText('Weird New State')).not.toBeInTheDocument();
   });
 
   it('maps semantics consistently', () => {

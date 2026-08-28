@@ -144,7 +144,13 @@ const makeExpense = (overrides = {}): Record<string, unknown> => ({
   volunteer_name: 'Alice Volunteer',
   organization_name: 'Green Community',
   amount: 25.5,
-  currency: '€',
+  // 🔴 An ISO 4217 code, not a symbol. VolunteerExpenseService always writes
+  // strtoupper(TenantContext::getCurrency()), and getCurrency() is guarded to
+  // exactly three letters (defaulting to 'eur'), so the API never sends '€'.
+  // The page calls formatCurrency(amount, currency.toUpperCase()) — Intl throws
+  // on a symbol, dropping it into the "<amount> <CODE>" fallback, so the symbol
+  // these fixtures invented could not produce the output they asserted.
+  currency: 'EUR',
   type: 'travel',
   status: 'pending',
   submitted_at: '2026-06-01T10:00:00Z',
@@ -253,14 +259,14 @@ describe('VolunteerExpenses', () => {
     // No hardcoded '€' fallback — the amount renders bare
     // (25.50 can also appear in the org-breakdown totals, so use getAllByText)
     expect(screen.getAllByText('25.50').length).toBeGreaterThan(0);
-    expect(screen.queryByText('€25.50')).not.toBeInTheDocument();
+    expect(screen.queryByText(/€|EUR/)).not.toBeInTheDocument();
   });
 
   it('renders the provided currency prefix when currency is present', async () => {
     mockAdminVolunteering.getExpenses.mockResolvedValue({
       success: true,
       data: {
-        items: [makeExpense({ currency: '£', amount: 12 })],
+        items: [makeExpense({ currency: 'GBP', amount: 12 })],
         stats: makeStats(),
       },
     });
@@ -271,7 +277,12 @@ describe('VolunteerExpenses', () => {
       expect(screen.getByText('Alice Volunteer')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('£12.00')).toBeInTheDocument();
+    // Locale-aware currency formatting: the symbol's position and spacing are
+    // the locale's business, so assert both parts rather than one fixed layout.
+    // (12.00 also appears in the org-breakdown totals, so match all of them.)
+    const amountEls = screen.getAllByText(/12\.00/);
+    expect(amountEls.length).toBeGreaterThan(0);
+    expect(amountEls.some((el) => /£|GBP/.test(el.textContent ?? ''))).toBe(true);
   });
 
   it('renders Export CSV and Refresh buttons', async () => {

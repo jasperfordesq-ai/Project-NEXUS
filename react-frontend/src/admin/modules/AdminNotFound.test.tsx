@@ -39,16 +39,28 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── Stub admin layout components (heavy sidebar etc.) ───────────────────────
+// 🔴 AdminNotFound.tsx imports PageHeader from '../components/PageHeader' — the
+// component's OWN path, not the '@/admin/components' barrel. Vitest keys its mock
+// registry per resolved module, so the barrel override alone installed nothing:
+// the real PageHeader rendered, without the data-testid this suite asserts, and
+// the header test read as a missing header. Mock the direct path too.
+const PageHeaderStub = ({ title, description }: { title?: string; description?: string }) => (
+  <div data-testid="page-header">
+    {title && <h1>{title}</h1>}
+    {description && <p>{description}</p>}
+  </div>
+);
+
+vi.mock('@/admin/components/PageHeader', () => ({
+  PageHeader: PageHeaderStub,
+  default: PageHeaderStub,
+}));
+
 vi.mock('@/admin/components', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/admin/components')>();
   return {
     ...orig,
-    PageHeader: ({ title, description }: { title?: string; description?: string }) => (
-      <div data-testid="page-header">
-        {title && <h1>{title}</h1>}
-        {description && <p>{description}</p>}
-      </div>
-    ),
+    PageHeader: PageHeaderStub,
   };
 });
 

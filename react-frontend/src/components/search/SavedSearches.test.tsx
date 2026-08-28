@@ -41,6 +41,16 @@ vi.mock('@/contexts/ToastContext', async (importOriginal) => {
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+// SavedSearches calls useConfirm, which THROWS outside a <ConfirmDialogProvider>;
+// test-utils' render() does not install one, so every test here collapsed on the
+// first render. Stub the hook rather than the component, so SavedSearches itself
+// stays under test. Same shape as PartnerVenuesAdminPage.test.tsx.
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => vi.fn(async () => true),
+  ConfirmDialogProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+
 // ─── Stub Tooltip (avoids floating-ui layout issues in jsdom) ────────────────
 vi.mock('@/components/ui', async (importOriginal) => {
   const { uiMock } = await import('@/test/uiMock');

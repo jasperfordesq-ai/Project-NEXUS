@@ -97,11 +97,15 @@ describe('CourseGradingPage', () => {
   it('renders empty state when no pending attempts', async () => {
     mockGradingQueue.mockResolvedValue({ success: true, data: [] });
     render(<CourseGradingPage />);
-    // Wait for the loading div (aria-busy=true) to disappear — the toast
-    // status container stays in the DOM so we cannot use queryByRole('status').
+    // 🔴 queryAllByRole, not getAllByRole. This waited for the loading div to
+    // disappear on the belief that a ToastProvider status container always
+    // remains, so the list could never be empty. It does not — and getAllByRole
+    // THROWS on zero matches, so the wait blew up on the query itself the moment
+    // loading actually finished, which is exactly the state being waited for.
     await waitFor(() => {
-      const statusEls = screen.getAllByRole('status');
-      const loadingEl = statusEls.find((el) => el.getAttribute('aria-busy') === 'true');
+      const loadingEl = screen
+        .queryAllByRole('status')
+        .find((el) => el.getAttribute('aria-busy') === 'true');
       expect(loadingEl).toBeUndefined();
     });
     // With no attempts there should be no user name cards rendered
@@ -200,10 +204,11 @@ describe('CourseGradingPage', () => {
   it('renders back link to instructor dashboard', async () => {
     mockGradingQueue.mockResolvedValue({ success: true, data: [] });
     render(<CourseGradingPage />);
-    // Wait for loading to finish (aria-busy div to disappear)
+    // Wait for loading to finish (see the queryAllByRole note above).
     await waitFor(() => {
-      const statusEls = screen.getAllByRole('status');
-      const loadingEl = statusEls.find((el) => el.getAttribute('aria-busy') === 'true');
+      const loadingEl = screen
+        .queryAllByRole('status')
+        .find((el) => el.getAttribute('aria-busy') === 'true');
       expect(loadingEl).toBeUndefined();
     });
     // Button as={Link} renders as an <a> tag; look for it by role="link"

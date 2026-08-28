@@ -99,13 +99,19 @@ describe('AgentProposalsPage', () => {
     await waitFor(() => expect(screen.getByTestId('empty-state')).toBeInTheDocument());
   });
 
+  // The proposal-type chip is TRANSLATED — t(`agents.proposal_type.${type}`) — so
+  // the raw 'match_suggestion' every test in this file waited for was never on
+  // screen. Nine of the thirteen tests used it as their "rows have loaded" gate,
+  // so all nine timed out on the gate and never reached what they were testing.
   it('renders proposals with type and confidence chips', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({
       success: true,
       data: { items: [mockProposal] },
     });
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
+    // The raw proposal-type slug must never reach an admin's screen.
+    expect(screen.queryByText('match_suggestion')).not.toBeInTheDocument();
     // Reasoning text is shown
     expect(screen.getByText('High compatibility based on skill overlap')).toBeInTheDocument();
   });
@@ -116,7 +122,7 @@ describe('AgentProposalsPage', () => {
       data: { items: [mockProposal] },
     });
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     // pending_review status shows action buttons — use queryAll to handle multiple matches
     const allButtons = screen.getAllByRole('button');
     const approveBtn = allButtons.find((b) => /approve/i.test(b.textContent ?? ''));
@@ -135,7 +141,7 @@ describe('AgentProposalsPage', () => {
       data: { items: [mockApprovedProposal] },
     });
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     // status !== 'pending_review' so no action buttons rendered
     expect(screen.queryByRole('button', { name: /approve/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /reject/i })).not.toBeInTheDocument();
@@ -155,7 +161,7 @@ describe('AgentProposalsPage', () => {
 
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const btn = findBtn(/^approve/i);
     expect(btn).toBeDefined();
     await user.click(btn!);
@@ -177,7 +183,7 @@ describe('AgentProposalsPage', () => {
 
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const btn = findBtn(/^approve/i);
     await user.click(btn!);
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
@@ -195,7 +201,7 @@ describe('AgentProposalsPage', () => {
 
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const btn = findBtn(/^approve/i);
     await user.click(btn!);
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
@@ -208,7 +214,7 @@ describe('AgentProposalsPage', () => {
     });
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const btn = findBtn(/^reject/i);
     expect(btn).toBeDefined();
     await user.click(btn!);
@@ -227,7 +233,7 @@ describe('AgentProposalsPage', () => {
 
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const rejectBtn = findBtn(/^reject/i);
     await user.click(rejectBtn!);
 
@@ -263,7 +269,7 @@ describe('AgentProposalsPage', () => {
     });
     const user = userEvent.setup();
     render(<AgentProposalsPage />);
-    await waitFor(() => expect(screen.getByText('match_suggestion')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Match suggestion')).toBeInTheDocument());
     const editBtn = findBtn(/edit/i);
     expect(editBtn).toBeDefined();
     await user.click(editBtn!);

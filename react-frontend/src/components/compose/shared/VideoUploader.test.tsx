@@ -51,6 +51,22 @@ const defaultProps = {
   selectedVideo: null as File | null,
 };
 
+/**
+ * The component's own validation message: `<div role="alert">` with the error text.
+ *
+ * 🔴 Must use queryAllByRole, not getAllByRole. Every assertion here used to call
+ * getAllByRole('alert') on the belief that the ToastProvider always renders a
+ * persistent empty role="alert" container, so the list could never be empty. It
+ * no longer does — and getAllByRole THROWS on zero matches, so the three tests
+ * asserting that NO error is shown blew up on the query itself before reaching
+ * their assertion. queryAllByRole returns [] instead, which is what "may be
+ * absent" needs.
+ */
+const findErrorAlert = () =>
+  screen
+    .queryAllByRole('alert')
+    .find((el) => el.textContent && el.textContent.trim().length > 0);
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('VideoUploader', () => {
   beforeEach(() => {
@@ -138,10 +154,7 @@ describe('VideoUploader', () => {
     const badFile = new File(['x'], 'movie.avi', { type: 'video/avi' });
     fireEvent.change(input, { target: { files: [badFile] } });
 
-    // Find the component's own alert (non-empty, not the ToastProvider's persistent role=alert)
-    const alerts = screen.getAllByRole('alert');
-    const errorAlert = alerts.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(errorAlert).toBeDefined();
+    expect(findErrorAlert()).toBeDefined();
   });
 
   it('does not call onVideoSelect when file is too large (>100 MB)', async () => {
@@ -164,9 +177,7 @@ describe('VideoUploader', () => {
     const bigFile = makeVideoFile('huge.mp4', 'video/mp4', 101 * 1024 * 1024);
     fireEvent.change(input, { target: { files: [bigFile] } });
 
-    const alerts = screen.getAllByRole('alert');
-    const errorAlert = alerts.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(errorAlert).toBeDefined();
+    expect(findErrorAlert()).toBeDefined();
   });
 
   it('calls onVideoRemove when the remove button is clicked', async () => {
@@ -190,18 +201,14 @@ describe('VideoUploader', () => {
 
     // First: trigger an error with a bad file
     fireEvent.change(input, { target: { files: [new File(['x'], 'bad.avi', { type: 'video/avi' })] } });
-    const alerts = screen.getAllByRole('alert');
-    const errorAlert = alerts.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(errorAlert).toBeDefined();
+    expect(findErrorAlert()).toBeDefined();
 
     // Then: pick a valid file
     const goodFile = makeVideoFile('good.mp4', 'video/mp4');
     fireEvent.change(input, { target: { files: [goodFile] } });
 
-    // Error message text should be gone (only the empty ToastProvider alert remains)
-    const alertsAfter = screen.getAllByRole('alert');
-    const remainingError = alertsAfter.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(remainingError).toBeUndefined();
+    // Error message text should be gone.
+    expect(findErrorAlert()).toBeUndefined();
   });
 
   it('accepts video/webm files as valid', async () => {
@@ -214,10 +221,8 @@ describe('VideoUploader', () => {
     fireEvent.change(input, { target: { files: [webmFile] } });
 
     expect(onVideoSelect).toHaveBeenCalledWith(webmFile);
-    // No error message text — only the empty ToastProvider role=alert may exist
-    const alerts = screen.getAllByRole('alert');
-    const errorAlert = alerts.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(errorAlert).toBeUndefined();
+    // No error message text.
+    expect(findErrorAlert()).toBeUndefined();
   });
 
   it('accepts video/quicktime files as valid', async () => {
@@ -236,9 +241,7 @@ describe('VideoUploader', () => {
     const { VideoUploader } = await import('./VideoUploader');
     render(<VideoUploader {...defaultProps} />);
 
-    // No error text rendered — only the empty ToastProvider role=alert may exist
-    const alerts = screen.getAllByRole('alert');
-    const errorAlert = alerts.find((el) => el.textContent && el.textContent.trim().length > 0);
-    expect(errorAlert).toBeUndefined();
+    // No error text rendered.
+    expect(findErrorAlert()).toBeUndefined();
   });
 });

@@ -144,7 +144,11 @@ describe('KnowledgeBasePage', () => {
   it('renders the search input', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<KnowledgeBasePage />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    // SearchField renders <input type="search">, whose implicit role is
+    // `searchbox` — a `textbox` query can never match it. (The '@/components/ui'
+    // barrel mock in this file does not cover it either: the page imports
+    // SearchField from '@/components/ui/SearchField', its own path.)
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
   });
 
   it('shows empty state when no articles exist', async () => {

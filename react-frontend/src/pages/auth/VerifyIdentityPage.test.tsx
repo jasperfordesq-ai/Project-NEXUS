@@ -167,11 +167,16 @@ describe('VerifyIdentityPage', () => {
     const { VerifyIdentityPage } = await import('./VerifyIdentityPage');
     render(<VerifyIdentityPage />);
     await waitFor(() => {
-      // Active state has a "Go to Dashboard" button
-      const dashBtn = screen.getAllByRole('button').find(
-        (b) => b.textContent?.toLowerCase().includes('dashboard')
+      // The "Go to Dashboard" control is `<Button as={Link}>`, so it renders an
+      // <a href> with the implicit role `link` — the right element for something
+      // that navigates. The old role="button" query matched nothing and read as a
+      // missing control. Assert the destination too: a named link that goes
+      // nowhere is the failure worth catching.
+      const dashLink = screen.getAllByRole('link').find(
+        (a) => a.textContent?.toLowerCase().includes('dashboard')
       );
-      expect(dashBtn).toBeDefined();
+      expect(dashLink).toBeDefined();
+      expect(dashLink?.getAttribute('href')).toContain('/dashboard');
     });
   });
 

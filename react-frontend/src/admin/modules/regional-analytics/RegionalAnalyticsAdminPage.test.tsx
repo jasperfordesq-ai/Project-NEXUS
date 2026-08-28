@@ -103,7 +103,11 @@ describe('RegionalAnalyticsAdminPage', () => {
     const { default: Page } = await import('./RegionalAnalyticsAdminPage');
     render(<Page />);
     await waitFor(() => {
-      expect(screen.getByText(/299\.00.*CHF/)).toBeInTheDocument();
+      // formatCurrency uses Intl, which places the currency BEFORE the amount
+      // for CHF in these locales ("CHF 299.00"). The old regex demanded the
+      // opposite order and could never match. Accept either, because symbol
+      // placement is the locale's business, not this page's.
+      expect(screen.getByText(/CHF\s?299\.00|299\.00\s?CHF/)).toBeInTheDocument();
     });
   });
 

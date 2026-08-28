@@ -137,51 +137,54 @@ vi.mock('@/components/ui', async (importOriginal) => {
 import ListChecks from 'lucide-react/icons/list-checks';
 import Users from 'lucide-react/icons/users';
 
+// 🔴 These fixtures must use REAL registry option keys and REAL category slugs.
+//
+// ModuleConfigModal resolves every label itself, from admin_config.json:
+// t(`config.option_${optionToken(option.key)}_label`) for the control and
+// t(`config.option_category_${category}`) for the group. ConfigOption carries no
+// `label`/`description` fields at all any more (nor ModuleDefinition a `name`),
+// so the invented copy these fixtures used to declare — 'Auto-complete (days)',
+// 'Require Review', category 'Workflow' — was simply discarded, and no
+// translation exists for keys the registry has never contained. The modal
+// therefore rendered raw missing-key strings, and every assertion that waited on
+// a label matched nothing and read as a modal that had not loaded.
 const makeBrokerModule = (): ModuleDefinition => ({
   id: 'exchange_workflow',
-  name: 'Exchange Workflow',
-  description: 'Manages exchange workflow',
   icon: ListChecks,
   type: 'feature',
   configSource: 'broker_config',
   configOptions: [
     {
-      key: 'exchange_auto_complete_days',
-      label: 'Auto-complete (days)',
-      description: 'Days after which exchange auto-completes',
+      key: 'broker_copy_threshold_hours',
       type: 'number',
-      defaultValue: 7,
-      category: 'Workflow',
+      defaultValue: 5,
+      category: 'messaging',
       min: 1,
-      max: 90,
+      max: 100,
     },
     {
-      key: 'exchange_require_review',
-      label: 'Require Review',
-      description: 'Members must leave a review',
+      key: 'broker_messaging_enabled',
       type: 'boolean',
       defaultValue: true,
-      category: 'Workflow',
+      category: 'messaging',
     },
   ],
 });
 
 const makeGroupModule = (): ModuleDefinition => ({
   id: 'groups',
-  name: 'Groups',
-  description: 'Community groups',
   icon: Users,
   type: 'feature',
   configSource: 'group_config',
   detailPageUrl: '/admin/groups',
   configOptions: [
     {
-      key: 'groups.allow_private',
-      label: 'Allow Private Groups',
-      description: 'Members can create private groups',
+      // Real key: 'allow_private_groups' (not 'groups.allow_private'), which is
+      // what option_allow_private_groups_label = "Allow Private Groups" keys off.
+      key: 'allow_private_groups',
       type: 'boolean',
       defaultValue: true,
-      category: 'Policies',
+      category: 'creation_membership',
     },
   ],
 });
@@ -237,8 +240,8 @@ const makeOnboardingModule = (): ModuleDefinition => ({
 });
 
 const makeBrokerConfig = () => ({
-  exchange_auto_complete_days: 7,
-  exchange_require_review: true,
+  broker_copy_threshold_hours: 5,
+  broker_messaging_enabled: true,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -252,7 +255,7 @@ describe('ModuleConfigModal', () => {
     mockAdminBroker.saveConfiguration.mockResolvedValue({ success: true });
     mockAdminConfig.getGroupConfig.mockResolvedValue({
       success: true,
-      data: { config: { 'groups.allow_private': true } },
+      data: { config: { allow_private_groups: true } },
     });
     mockAdminConfig.updateGroupConfigBulk.mockResolvedValue({ success: true });
     mockAdminConfig.getAuthenticationConfig.mockResolvedValue({
@@ -324,8 +327,8 @@ describe('ModuleConfigModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Auto-complete (days)')).toBeInTheDocument();
-      expect(screen.getByText('Require Review')).toBeInTheDocument();
+      expect(screen.getByText('Copy Threshold (Hours)')).toBeInTheDocument();
+      expect(screen.getByText('Broker Messaging')).toBeInTheDocument();
     });
   });
 
@@ -358,9 +361,9 @@ describe('ModuleConfigModal', () => {
       />
     );
 
-    await waitFor(() => screen.getByText('Require Review'));
+    await waitFor(() => screen.getByText('Broker Messaging'));
 
-    const switchEl = screen.getByRole('checkbox', { name: /require review/i });
+    const switchEl = screen.getByRole('checkbox', { name: /broker messaging/i });
     fireEvent.click(switchEl);
 
     await waitFor(() => {
@@ -382,10 +385,10 @@ describe('ModuleConfigModal', () => {
       />
     );
 
-    await waitFor(() => screen.getByText('Require Review'));
+    await waitFor(() => screen.getByText('Broker Messaging'));
 
     // Toggle to enable change
-    const switchEl = screen.getByRole('checkbox', { name: /require review/i });
+    const switchEl = screen.getByRole('checkbox', { name: /broker messaging/i });
     fireEvent.click(switchEl);
 
     await waitFor(() => {

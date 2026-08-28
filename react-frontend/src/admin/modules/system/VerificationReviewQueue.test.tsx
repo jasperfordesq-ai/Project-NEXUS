@@ -36,7 +36,11 @@ const PENDING_SESSION = {
   id: 1,
   tenant_id: 2,
   user_id: 42,
-  provider_slug: 'manual_review',
+  // 🔴 A real PROVIDER slug. 'manual_review' is a verification LEVEL, not a
+  // provider — the providers are stripe_identity / veriff / jumio / onfido /
+  // idenfy / mock — so t('verification.provider_manual_review') missed and the
+  // cell fell back to "Unknown provider".
+  provider_slug: 'stripe_identity',
   verification_level: 'basic',
   status: 'created',
   created_at: '2026-01-01T12:00:00Z',
@@ -104,7 +108,7 @@ describe('VerificationReviewQueue — populated state', () => {
   it('shows formatted provider slug', async () => {
     render(<VerificationReviewQueue />);
     await waitFor(() => {
-      expect(screen.getByText('Manual Review')).toBeInTheDocument();
+      expect(screen.getByText('Stripe Identity')).toBeInTheDocument();
     });
   });
 

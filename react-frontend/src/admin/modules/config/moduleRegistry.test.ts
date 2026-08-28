@@ -53,10 +53,21 @@ describe('module registry podcast module', () => {
     const support = getFeatureModules().find(module => module.id === 'member_premium');
 
     expect(support).toBeDefined();
-    expect(support?.name).toBe('Donations & Support');
-    expect(support?.description).toBe('One-off and recurring donations with recognition, not paid features.');
     expect(support?.detailPageUrl).toBe('/admin/member-premium');
     expect(support?.configOptions).toEqual([]);
+  });
+
+  // Display copy lives in admin_config.json, not on ModuleDefinition — the
+  // registry carries no name/description fields. Assert the translated copy at
+  // its real source, and that it still frames this module as donations rather
+  // than paid features (the distinction the module was renamed to make).
+  it('describes the donations support module as donations, not paid features', () => {
+    const config = adminLocale.config;
+
+    expect(config.module_name_member_premium).toBe('Donations & Support');
+    expect(config.module_desc_member_premium).toBeTypeOf('string');
+    expect(config.module_desc_member_premium).toMatch(/donations/i);
+    expect(config.module_desc_member_premium).toMatch(/not paid features/i);
   });
 
   it('has admin translations for every podcast configuration control', () => {

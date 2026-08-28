@@ -44,7 +44,12 @@ const makeProvider = (overrides: Partial<{
   slug: 'provider-one',
   name: 'Provider One',
   available: true,
-  supported_levels: ['basic_id', 'enhanced_id'],
+  // 🔴 Real verification levels. The providers in app/Services/Identity/ return
+  // only document_only / document_selfie / reusable_digital_id / manual_review;
+  // 'basic_id' and 'enhanced_id' were invented, have no
+  // system.verification_level_* translation, and so rendered as the "Unknown
+  // verification level" fallback — the chips this suite asserts were never there.
+  supported_levels: ['document_only', 'document_selfie'],
   latency_ms: 120,
   avg_completion_seconds: 45,
   stats: {
@@ -152,9 +157,9 @@ describe('ProviderHealthDashboard', () => {
     render(<ProviderHealthDashboard />);
 
     await waitFor(() => {
-      // basic_id -> "Basic Id", enhanced_id -> "Enhanced Id"
-      expect(screen.getByText('Basic Id')).toBeInTheDocument();
-      expect(screen.getByText('Enhanced Id')).toBeInTheDocument();
+      // Levels are translated: system.verification_level_<level>.
+      expect(screen.getByText('Document only')).toBeInTheDocument();
+      expect(screen.getByText('Document and selfie')).toBeInTheDocument();
     });
   });
 

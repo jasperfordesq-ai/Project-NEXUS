@@ -79,7 +79,11 @@ export function WarmthPassAdminPage() {
       if (res.success && res.data) {
         setResult(res.data);
       } else {
-        setErrorMsg(t('admin.warmth_pass.errors.no_data'));
+        // Show the server's own reason ("Member not found", a permission
+        // refusal, …) instead of a blanket "No data available for this member",
+        // which tells the admin nothing about why the lookup failed. Same
+        // `res.error || t(fallback)` pattern as the other admin call sites.
+        setErrorMsg(res.error || t('admin.warmth_pass.errors.no_data'));
       }
     } catch {
       setErrorMsg(t('admin.warmth_pass.errors.lookup_failed'));

@@ -51,7 +51,19 @@ vi.mock('@/contexts', () => ({
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+
+// 🔴 The page imports every UI primitive by its DIRECT path
+// ('@/components/ui/GlassCard', '/Button', '/Chip', '/Spinner') — it never touches
+// the '@/components/ui' barrel. Vitest keys its mock registry per specifier, so the
+// barrel mock this file used to carry installed nothing at all: the real GlassCard
+// rendered, and the uiMock's `data-testid="glass-card"` (which only its GlassCard
+// stub adds) was never on screen, so the no-versions assertion below matched
+// nothing and read as a missing card. Stub the path the page actually imports.
+vi.mock('@/components/ui/GlassCard', () => ({
+  GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="glass-card" className={className}>{children}</div>
+  ),
+}));
 
 vi.mock('dompurify', () => ({
   default: { addHook: vi.fn(), sanitize: (html: string) => html },

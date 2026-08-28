@@ -97,15 +97,35 @@ describe('VerificationBadgeIcon', () => {
     expect(div.className).toContain('w-10 h-10');
   });
 
-  it('renders for unknown badge type with fallback', () => {
+  // 🔴 VerificationBadgeIcon renders NOTHING for a badge type outside
+  // PUBLIC_VERIFICATION_BADGE_TYPES — an allow-list, so a new or non-public badge
+  // type can never leak onto a public profile. This suite asserted a generic
+  // fallback icon for 'custom_check', which is not on that list, so the component
+  // returned null and the query matched nothing.
+  //
+  // The fallback branch is real, but it belongs to a type that IS public and has
+  // no icon config of its own — 'organization_vouched'. Both cases are pinned.
+  it('renders the fallback icon for a public badge type with no icon config', () => {
+    const vouchedBadge: VerificationBadgeData = {
+      type: 'organization_vouched',
+      label: 'Vouched by Green Community',
+      description: 'Vouched for by an organisation',
+      verified: true,
+    };
+    render(<VerificationBadgeIcon badge={vouchedBadge} />);
+    expect(screen.getByRole('img', { name: 'Vouched by Green Community' })).toBeInTheDocument();
+  });
+
+  it('renders nothing for a badge type that is not publicly displayable', () => {
     const unknownBadge: VerificationBadgeData = {
       type: 'custom_check',
       label: 'Custom Check',
       description: 'A custom check',
       verified: true,
     };
-    render(<VerificationBadgeIcon badge={unknownBadge} />);
-    expect(screen.getByRole('img', { name: 'Custom Check' })).toBeInTheDocument();
+    const { container } = render(<VerificationBadgeIcon badge={unknownBadge} />);
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 });
 

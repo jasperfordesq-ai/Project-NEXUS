@@ -51,7 +51,14 @@ const makeReport = (overrides = {}) => ({
   subject_user_id: 20,
   subject_user_name: 'Bob Subject',
   subject_organisation_id: null,
-  category: 'Bullying',
+  // 🔴 A REAL category slug. This fixture used to say 'Bullying', which the API
+  // has never sent — SafeguardingService::CATEGORIES is a closed list of slugs
+  // (inappropriate_behavior, financial_concern, exploitation, neglect,
+  // medical_concern, other). The page renders
+  // tAdmin(`caring_workflow.safeguarding.categories.${category}`), so an invented
+  // value resolved to the "Unknown category" fallback and 'Bullying' was never on
+  // screen — the row assertion below matched nothing and read as missing rows.
+  category: 'inappropriate_behavior',
   severity: 'high' as const,
   description: 'Incident description',
   evidence_url: null,
@@ -121,7 +128,8 @@ describe('SafeguardingReportsAdminPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Alice Reporter')).toBeInTheDocument();
       expect(screen.getByText('Bob Subject')).toBeInTheDocument();
-      expect(screen.getByText('Bullying')).toBeInTheDocument();
+      // Categories are translated, so assert the label an admin sees.
+      expect(screen.getByText('Inappropriate behaviour')).toBeInTheDocument();
     });
   });
 

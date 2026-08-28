@@ -116,8 +116,10 @@ describe('ResourcesAdmin', () => {
     resolveItems([PUBLISHED_RESOURCE, DRAFT_RESOURCE]);
     render(<ResourcesAdmin />);
     await waitFor(() => {
-      expect(screen.getByText('published')).toBeInTheDocument();
-      expect(screen.getByText('draft')).toBeInTheDocument();
+      // Status chips are TRANSLATED — t(`resources.status_${status}`) — so the
+      // raw API values 'published'/'draft' are never on screen.
+      expect(screen.getByText('Published')).toBeInTheDocument();
+      expect(screen.getByText('Draft')).toBeInTheDocument();
     });
   });
 

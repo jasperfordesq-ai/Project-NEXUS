@@ -67,7 +67,9 @@ describe('AdminRoute', () => {
     });
 
     renderWithRouter();
-    expect(screen.getByText('Checking Permissions')).toBeInTheDocument();
+    // Copy is sentence case — "Checking permissions" — not title case. The old
+    // exact-match on 'Checking Permissions' could never match.
+    expect(screen.getByText(/checking permissions/i)).toBeInTheDocument();
   });
 
   it('redirects to login when not authenticated', () => {

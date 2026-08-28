@@ -39,7 +39,11 @@ describe('FederatedTrustBadge', () => {
 
   it('renders primary tier for score 3.5 <= score < 4.5', () => {
     const { container } = render(<FederatedTrustBadge score={4.0} reviewCount={5} />);
-    expect(container.querySelector('[class*="indigo"]')).not.toBeNull();
+    // The primary tier is painted with the theme's `accent` token, not a raw
+    // indigo palette class — that is the project's styling rule, and the badge
+    // was moved onto the token. The old [class*="indigo"] selector matched
+    // nothing and read as a missing badge.
+    expect(container.querySelector('[class*="accent"]')).not.toBeNull();
   });
 
   it('renders warning tier for score 2.5 <= score < 3.5', () => {

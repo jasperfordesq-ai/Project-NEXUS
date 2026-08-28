@@ -46,6 +46,13 @@ vi.mock('@/lib/compress-image', () => ({
 }));
 
 vi.mock('@/hooks', () => ({
+  // 🔴 The barrel mock must carry useMediaQuery too. PostTab imports it from
+  // '@/hooks/useMediaQuery' (mocked separately below), but GifPicker — which
+  // PostTab renders — imports it from the '@/hooks' BARREL. A total factory
+  // replaces the whole module, so the missing export made Vitest throw
+  // "No 'useMediaQuery' export is defined on the '@/hooks' mock" at import time,
+  // collapsing all 11 tests in this file before any of them ran.
+  useMediaQuery: vi.fn(() => false),
   useDraftPersistence: vi.fn((_key: string, fallbackValue: unknown) => {
     const state = { ...(fallbackValue as Record<string, unknown>) };
     const setState = vi.fn((updater: ((s: typeof state) => typeof state) | typeof state) => {

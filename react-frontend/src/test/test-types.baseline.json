@@ -292,16 +292,13 @@
       "TS2353": 3
     },
     "src/admin/modules/config/ModuleConfigModal.test.tsx": {
-      "TS2353": 6
+      "TS2353": 3
     },
     "src/admin/modules/config/ModuleConfiguration.test.tsx": {
       "TS2345": 1
     },
     "src/admin/modules/config/TranslationConfig.test.tsx": {
       "TS2345": 4
-    },
-    "src/admin/modules/config/moduleRegistry.test.ts": {
-      "TS2339": 2
     },
     "src/admin/modules/content/AttributesAdmin.test.tsx": {
       "TS2345": 2,
@@ -467,9 +464,6 @@
       "TS2322": 5,
       "TS2345": 1
     },
-    "src/admin/modules/matching/MatchDetail.test.tsx": {
-      "TS2307": 12
-    },
     "src/admin/modules/moderation/CommentsModeration.test.tsx": {
       "TS2345": 5,
       "TS2739": 1
@@ -534,9 +528,6 @@
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
       "TS2339": 1
-    },
-    "src/admin/modules/super/BulkOperations.test.tsx": {
-      "TS2532": 3
     },
     "src/admin/modules/super/FederationAuditLog.test.tsx": {
       "TS2353": 3
@@ -667,7 +658,6 @@
       "TS2345": 1
     },
     "src/broker/pages/OnboardingPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 2,
       "TS2739": 2,
       "TS2741": 2
@@ -1980,7 +1970,7 @@
     }
   },
   "totals": {
-    "fileCount": 583,
-    "errorCount": 1808
+    "fileCount": 580,
+    "errorCount": 1787
   }
 }

@@ -99,7 +99,10 @@ export function UserCreate() {
         toast.success(t('users.create_success'));
         navigate(tenantPath('/admin/users'));
       } else {
-        toast.error(t('users.create_failed'));
+        // Show the server's own reason — "Email already taken", a validation
+        // message — so the admin knows what to change. A blanket "Failed to
+        // create user" leaves them retrying the same form.
+        toast.error(res.error || t('users.create_failed'));
       }
     } catch {
       toast.error(t('users.error_occurred'));

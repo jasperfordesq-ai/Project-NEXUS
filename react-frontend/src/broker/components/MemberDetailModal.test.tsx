@@ -67,7 +67,13 @@ vi.mock('@/lib/serverTime', () => ({
 // can assert on button presence without depending on loaded translations.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key,
+    // 🔴 Echo the KEY, never the defaultValue. Preferring defaultValue made every
+    // key look missing, so a code with a real translation
+    // (vetting.attestation_dbs_enhanced) rendered as the generic "other"
+    // fallback — the suite asserted that fallback and so proved the opposite of
+    // the lookup it meant to check. Every other assertion in this file already
+    // expects a raw key, which is the i18n-independent thing to assert.
+    t: (key: string) => key,
   }),
   initReactI18next: { type: '3rdParty', init: () => {} },
 }));
@@ -190,8 +196,10 @@ describe('MemberDetailModal', () => {
     await waitFor(() => {
       expect(screen.getByText('member_detail.contact_attestations_title')).toBeInTheDocument();
     });
-    expect(screen.getByText('vetting.attestation_other')).toBeInTheDocument();
-    expect(screen.getByText('Confirmed')).toBeInTheDocument();
+    // The attestation's own code is looked up (not the generic fallback), and the
+    // decision reaches the status chip.
+    expect(screen.getByText('vetting.attestation_dbs_enhanced')).toBeInTheDocument();
+    expect(screen.getByText('status.confirmed')).toBeInTheDocument();
     expect(screen.getByText('member_detail.consents_title')).toBeInTheDocument();
   });
 

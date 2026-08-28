@@ -84,7 +84,30 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // SearchField renders <input type="search"> (role `searchbox`, not `textbox`). No page
 // changed. This matters beyond the count: these three cover the hashtag feed, hashtag
 // discovery and the single-post page, which had no shard coverage at all while listed.
-const BASELINE = 46;
+// Lowered 46 -> 0 on 2026-08-28. THE LIST IS EMPTY: 45 of the 46 remaining suites
+// were fixed, and the 46th was an ORPHAN that could not be fixed —
+// src/admin/modules/matching/MatchDetail.test.tsx imported './MatchDetail', a
+// component deliberately DELETED on 2026-07-02 in f6b79419a (owner-approved
+// removal of the admin match-approvals duplicates; the broker panel is their sole
+// home). That commit removed MatchApprovals.test.tsx but missed its sibling, which
+// had been unable to resolve its own import ever since — unnoticed precisely
+// because it sat on this list. The file has now been deleted too. So the sharded
+// full-suite job runs EVERY suite in the repository and a green pipeline finally
+// means every suite passed.
+//
+// The full cause breakdown is in the baseline file's _README; the short version is
+// stale assertions on now-translated text, fixtures inventing values the API never
+// sends, wrong ARIA roles, getAllByRole used for absence checks, barrel mocks that
+// never installed because the component imports by its own path, and Intl
+// formatting drift. Five real product bugs surfaced on the way out — every one the
+// same defect: the server's error message discarded in favour of a generic string,
+// so an admin was never told why an action failed.
+//
+// 🔴 At zero this gate can only be broken, never satisfied more loosely. Do NOT
+// raise this number to make a red shard green — that is precisely the trade this
+// script exists to prevent, and there is no longer any list to hide a suite in.
+// Fix the suite, or rely on the runner's --retry=1 for genuine flakiness.
+const BASELINE = 0;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

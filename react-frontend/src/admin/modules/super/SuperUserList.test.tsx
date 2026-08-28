@@ -107,7 +107,10 @@ describe('SuperUserList', () => {
     await waitFor(() => {
       expect(screen.getByText('Alice Admin')).toBeInTheDocument();
     });
-    expect(screen.getByText(/tenant.?sa/i)).toBeInTheDocument();
+    // The chip is t('super.tenant_sa') = "Tenant super admin". The old
+    // /tenant.?sa/i could never match that — it allows only ONE character
+    // between "tenant" and "sa".
+    expect(screen.getByText(/tenant super admin/i)).toBeInTheDocument();
   });
 
   it('renders Create User button', async () => {

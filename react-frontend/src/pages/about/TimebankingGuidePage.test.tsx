@@ -120,31 +120,31 @@ describe('TimebankingGuidePage', () => {
     expect(screen.getByText('Social Networks')).toBeInTheDocument();
   });
 
-  // The CTA renders `Button as={Link} to=...`; the shared uiMock renders these as
-  // buttons that expose the router destination via an href attribute.
+  // 🔴 These CTAs are LINKS, not buttons. The page renders `<Button as={Link}>`,
+  // which produces an <a href> whose implicit ARIA role is `link` — the right
+  // element for something that navigates. The old queries asked for role
+  // "button", so they matched nothing and read as missing CTAs.
+  //
+  // (They were written for the '@/components/ui' uiMock, whose Button stub does
+  // render a <button href=…>. That mock never installed: the page imports Button
+  // from '@/components/ui/Button', its own path, so the real Button loads.)
+  const ctaLinksTo = (path: string) =>
+    screen.getAllByRole('link').filter(a => a.getAttribute('href')?.includes(path));
+
   it('shows register CTA when user is not authenticated', () => {
     render(<TimebankingGuidePage />);
-    const registerCtas = screen.getAllByRole('button').filter(b =>
-      b.getAttribute('href')?.includes('/register')
-    );
-    expect(registerCtas.length).toBeGreaterThan(0);
+    expect(ctaLinksTo('/register').length).toBeGreaterThan(0);
   });
 
   it('shows listings CTA when user is authenticated', () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
     render(<TimebankingGuidePage />);
-    const listingsCtas = screen.getAllByRole('button').filter(b =>
-      b.getAttribute('href')?.includes('/listings')
-    );
-    expect(listingsCtas.length).toBeGreaterThan(0);
+    expect(ctaLinksTo('/listings').length).toBeGreaterThan(0);
   });
 
   it('renders the partner CTA', () => {
     render(<TimebankingGuidePage />);
-    const partnerCtas = screen.getAllByRole('button').filter(b =>
-      b.getAttribute('href')?.includes('/partner')
-    );
-    expect(partnerCtas.length).toBeGreaterThan(0);
+    expect(ctaLinksTo('/partner').length).toBeGreaterThan(0);
   });
 
   it('renders the related pages section', () => {

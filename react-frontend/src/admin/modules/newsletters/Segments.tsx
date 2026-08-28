@@ -81,7 +81,10 @@ export function Segments() {
         onDeleteClose();
         setDeleteTarget(null);
       } else {
-        showError(t('common.an_unexpected_error'));
+        // A refused delete has a reason (segment in use by a scheduled send,
+        // permissions, …). "An unexpected error occurred" is both wrong — the
+        // server answered — and useless to the admin.
+        showError(res.error || t('common.an_unexpected_error'));
       }
     } catch {
       showError(t('common.an_unexpected_error'));

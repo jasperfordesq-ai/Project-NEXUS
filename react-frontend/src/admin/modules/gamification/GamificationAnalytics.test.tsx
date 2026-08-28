@@ -59,6 +59,12 @@ const listBadgesMock = vi.mocked(adminGamification.listBadges);
 describe('GamificationAnalytics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 🔴 mockReset, not only clearAllMocks: clearAllMocks wipes recorded calls but
+    // NOT queued one-shot implementations, so an unconsumed `...Once` would leak
+    // into the next test. See the note on the per-test fixtures below for why
+    // this file no longer uses `...Once` for payloads at all.
+    getStatsMock.mockReset();
+    listBadgesMock.mockReset();
     getStatsMock.mockResolvedValue({ success: true, data: MOCK_STATS } as never);
     listBadgesMock.mockResolvedValue({ success: true, data: MOCK_BADGES } as never);
   });
@@ -132,7 +138,7 @@ describe('GamificationAnalytics', () => {
   });
 
   it('shows empty state for badge distribution when no badges awarded', async () => {
-    getStatsMock.mockResolvedValueOnce({
+    getStatsMock.mockResolvedValue({
       success: true,
       data: { ...MOCK_STATS, badge_distribution: [] },
     } as never);
@@ -145,7 +151,7 @@ describe('GamificationAnalytics', () => {
   });
 
   it('shows empty state for badge catalogue when no badges defined', async () => {
-    listBadgesMock.mockResolvedValueOnce({ success: true, data: [] } as never);
+    listBadgesMock.mockResolvedValue({ success: true, data: [] } as never);
 
     render(<GamificationAnalytics />);
 
@@ -157,8 +163,8 @@ describe('GamificationAnalytics', () => {
   });
 
   it('shows error toast when stats fail to load', async () => {
-    getStatsMock.mockResolvedValueOnce({ success: false } as never);
-    listBadgesMock.mockResolvedValueOnce({ success: true, data: MOCK_BADGES } as never);
+    getStatsMock.mockResolvedValue({ success: false } as never);
+    listBadgesMock.mockResolvedValue({ success: true, data: MOCK_BADGES } as never);
 
     // The toast is provided by ToastProvider in test-utils; the component
     // calls toast.error — we verify no crash and the component renders.
@@ -199,7 +205,14 @@ describe('GamificationAnalytics', () => {
       type: 'built_in' as const,
       awarded_count: i,
     }));
-    listBadgesMock.mockResolvedValueOnce({ success: true, data: manyBadges } as never);
+    // 🔴 mockResolvedValue, NOT mockResolvedValueOnce. The page's effect runs
+    // twice under React's development double-invoke, so listBadges is called
+    // TWICE; a one-shot mock answers the first call with these 25 badges and the
+    // second with the two-badge default, and whichever setBadges lands last wins.
+    // That is a coin toss — this test genuinely rendered 20 badges + "And more"
+    // on some runs and 2 badges on others. Answering both calls with the same
+    // payload makes the outcome deterministic.
+    listBadgesMock.mockResolvedValue({ success: true, data: manyBadges } as never);
 
     render(<GamificationAnalytics />);
 

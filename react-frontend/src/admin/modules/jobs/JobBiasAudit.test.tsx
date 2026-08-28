@@ -174,9 +174,13 @@ describe('JobBiasAudit — populated report', () => {
 
   it('renders skills match percentages', async () => {
     render(<JobBiasAudit />);
-    // accepted_avg 0.85 → 85.0%, rejected_avg 0.42 → 42.0%
-    expect(await screen.findByText('85.0%')).toBeInTheDocument();
-    expect(await screen.findByText('42.0%')).toBeInTheDocument();
+    // Rendered by formatPercentRatio, i.e. Intl percent formatting with
+    // maximumFractionDigits: 1 — so a whole number has NO trailing '.0'.
+    // accepted_avg 0.85 → '85%', rejected_avg 0.42 → '42%'. The old '85.0%' /
+    // '42.0%' were written against a hand-rolled toFixed(1) the page no longer
+    // uses and could never match.
+    expect(await screen.findByText('85%')).toBeInTheDocument();
+    expect(await screen.findByText('42%')).toBeInTheDocument();
   });
 
   it('renders funnel bar for accepted stage', async () => {
@@ -187,9 +191,10 @@ describe('JobBiasAudit — populated report', () => {
 
   it('renders rejection rate percentage chips', async () => {
     render(<JobBiasAudit />);
-    // 33.3% and 50.0% from rejection_rates
+    // From rejection_rates. 33.3 keeps its fraction (it exercises the
+    // formatter's maximumFractionDigits: 1); 50 is whole, so Intl emits '50%'.
     expect(await screen.findByText('33.3%')).toBeInTheDocument();
-    expect(await screen.findByText('50.0%')).toBeInTheDocument();
+    expect(await screen.findByText('50%')).toBeInTheDocument();
   });
 
   it('renders avg time in stage values', async () => {

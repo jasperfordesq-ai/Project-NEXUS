@@ -151,7 +151,11 @@ export function GroupList() {
         setDeleteConfirmation('');
         await loadItems();
       } else {
-        toast.error(t('groups.failed_to_delete_group'));
+        // Surface the server's own reason (already translated) so an admin is
+        // told WHY the delete was refused, instead of a blanket failure they
+        // cannot act on. `res.error || t(fallback)` is the pattern the other
+        // admin call sites use.
+        toast.error(res?.error || t('groups.failed_to_delete_group'));
       }
     } catch {
       toast.error(t('common.unexpected_error'));
@@ -168,7 +172,9 @@ export function GroupList() {
         toast.success(t('groups.group_status_changed'));
         await loadItems();
       } else {
-        toast.error(t('groups.failed_to_update_group_status'));
+        // A refused transition always has a reason — the group is in a state
+        // that does not allow it, a policy blocks it, permissions. Show it.
+        toast.error(res?.error || t('groups.failed_to_update_group_status'));
       }
     } catch {
       toast.error(t('groups.failed_to_update_group_status'));
@@ -190,7 +196,7 @@ export function GroupList() {
         setSelectedIds(new Set());
         loadItems();
       } else {
-        toast.error(t('groups.failed_to_archive_groups'));
+        toast.error(res?.error || t('groups.failed_to_archive_groups'));
       }
     } catch { toast.error(t('groups.failed_to_archive_groups')); }
   };
@@ -201,11 +207,15 @@ export function GroupList() {
     setBulkDeleteLoading(true);
     // Delete one by one (no bulk delete endpoint)
     const failedIds = new Set<number>();
+    // Keep the first server reason so a partially failed bulk delete can say why
+    // the survivors survived, rather than only that "some" failed.
+    let firstFailureReason: string | null = null;
     for (const id of selectedIds) {
       try {
         const res = await adminGroups.delete(id);
         if (!res?.success) {
           failedIds.add(id);
+          if (!firstFailureReason && res?.error) firstFailureReason = res.error;
         }
       } catch {
         failedIds.add(id);
@@ -214,7 +224,7 @@ export function GroupList() {
     if (failedIds.size === 0) {
       toast.success(t('groups.groups_deleted'));
     } else {
-      toast.error(t('groups.failed_to_delete_group'));
+      toast.error(firstFailureReason || t('groups.failed_to_delete_group'));
     }
     // Keep failed ids selected so nothing is silently lost
     setSelectedIds(failedIds);

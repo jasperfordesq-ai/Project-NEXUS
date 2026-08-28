@@ -59,6 +59,29 @@ const wrap = <T,>(data: T) => ({ data });
 
 import FederationAggregatesPage from './FederationAggregatesPage';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Open the signing-key rotation confirmation and confirm it.
+ *
+ * 🔴 Two faults lived here. (1) The trigger was hunted with
+ * `.find(b => text.includes('rotate') || text.includes('secret'))`, but the
+ * button's copy is t('federation_aggregates.actions.rotate_secret') = "Replace
+ * signing key" — neither word appears in it, so the search returned undefined.
+ * (2) The click was then wrapped in `if (rotateBtn)`, which turned that miss into
+ * a silent no-op: the confirmation never opened, and the failure surfaced one
+ * line later as a missing "Replace key" button. Query the trigger by its real
+ * accessible name and let a miss throw.
+ *
+ * The confirmation button is looked up by ConfirmModal's stable data-testid, not
+ * by its label — callers override `confirmLabel`, so the label is not the
+ * modal's own and text lookups on it rot.
+ */
+async function clickRotateAndConfirm(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole('button', { name: /replace signing key/i }));
+  await user.click(await screen.findByTestId('confirm-modal-confirm'));
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('FederationAggregatesPage', () => {
@@ -178,19 +201,7 @@ describe('FederationAggregatesPage', () => {
       expect(screen.queryAllByRole('switch').length).toBeGreaterThan(0);
     });
 
-    // "Rotate secret" button — t('federation_aggregates.actions.rotate_secret')
-    const rotateBtn = screen
-      .getAllByRole('button')
-      .find((b) =>
-        b.textContent?.toLowerCase().includes('rotate') ||
-        b.textContent?.toLowerCase().includes('secret')
-      );
-    if (rotateBtn) await user.click(rotateBtn);
-
-    // Rotation is gated behind a confirmation dialog (2026-07-02) —
-    // confirm with the "Replace key" button before the API fires.
-    const confirmBtn = await screen.findByRole('button', { name: /replace key/i });
-    await user.click(confirmBtn);
+    await clickRotateAndConfirm(user);
 
     await waitFor(() => {
       expect(mockAdminFederation.rotateAggregateSecret).toHaveBeenCalled();
@@ -209,16 +220,7 @@ describe('FederationAggregatesPage', () => {
       expect(screen.queryAllByRole('switch').length).toBeGreaterThan(0);
     });
 
-    const rotateBtn = screen
-      .getAllByRole('button')
-      .find((b) =>
-        b.textContent?.toLowerCase().includes('rotate') ||
-        b.textContent?.toLowerCase().includes('secret')
-      );
-    if (rotateBtn) await user.click(rotateBtn);
-
-    const confirmBtn = await screen.findByRole('button', { name: /replace key/i });
-    await user.click(confirmBtn);
+    await clickRotateAndConfirm(user);
 
     await waitFor(() => {
       expect(mockToast.success).toHaveBeenCalled();
@@ -279,16 +281,7 @@ describe('FederationAggregatesPage', () => {
       expect(screen.queryAllByRole('switch').length).toBeGreaterThan(0);
     });
 
-    const rotateBtn = screen
-      .getAllByRole('button')
-      .find((b) =>
-        b.textContent?.toLowerCase().includes('rotate') ||
-        b.textContent?.toLowerCase().includes('secret')
-      );
-    if (rotateBtn) await user.click(rotateBtn);
-
-    const confirmBtn = await screen.findByRole('button', { name: /replace key/i });
-    await user.click(confirmBtn);
+    await clickRotateAndConfirm(user);
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();

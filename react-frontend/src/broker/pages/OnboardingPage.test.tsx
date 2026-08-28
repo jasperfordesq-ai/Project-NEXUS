@@ -11,12 +11,18 @@ import { createMockContexts } from '@/test/mock-contexts';
 
 // ── stable mock data ──────────────────────────────────────────────────────────
 
+// 🔴 Funnel stages are keyed by `code`, not `name`. AdminCrmController returns
+// ['code' => 'registered', …] and the page renders
+// t(`onboarding.stage_${stage.code || 'unknown'}`) — so these fixtures' English
+// `name` field was ignored entirely and every stage fell back to "Unknown Stage".
+// The stage-name assertions matched nothing and read as a funnel that had not
+// loaded. The labels below come from the broker locale, not from the fixture.
 const MOCK_FUNNEL = vi.hoisted(() => ({
   stages: [
-    { name: 'Registered', count: 100, color: '#3b82f6' },
-    { name: 'Email Verified', count: 80, color: '#8b5cf6' },
-    { name: 'Profile Complete', count: 50, color: '#f59e0b' },
-    { name: 'First Exchange', count: 20, color: '#10b981' },
+    { code: 'registered', count: 100, color: '#3b82f6' },
+    { code: 'email_verified', count: 80, color: '#8b5cf6' },
+    { code: 'profile_complete', count: 50, color: '#f59e0b' },
+    { code: 'first_exchange', count: 20, color: '#10b981' },
   ],
   monthly_registrations: [
     { month: '2026-01', count: 4 },
@@ -31,10 +37,10 @@ const MOCK_FUNNEL = vi.hoisted(() => ({
 // Older API shape — no monthly_registrations field at all.
 const MOCK_FUNNEL_LEGACY = vi.hoisted(() => ({
   stages: [
-    { name: 'Registered', count: 100, color: '#3b82f6' },
-    { name: 'Email Verified', count: 80, color: '#8b5cf6' },
-    { name: 'Profile Complete', count: 50, color: '#f59e0b' },
-    { name: 'First Exchange', count: 20, color: '#10b981' },
+    { code: 'registered', count: 100, color: '#3b82f6' },
+    { code: 'email_verified', count: 80, color: '#8b5cf6' },
+    { code: 'profile_complete', count: 50, color: '#f59e0b' },
+    { code: 'first_exchange', count: 20, color: '#10b981' },
   ],
 }));
 
@@ -262,6 +268,16 @@ describe('OnboardingPage', () => {
   });
 
   it('calls approve API and shows success toast when confirm is clicked', async () => {
+    // 🔴 userEvent.setup(), not the bare default export. This test used to read
+    // `if (approveItem) { ...real assertions... } else { expect(true).toBe(true) }`
+    // and the else branch ALWAYS won: the HeroUI dropdown never opened, because
+    // the bare `userEvent.click` does not carry the pointer-events setup the
+    // menu needs. So the entire approval path — API call and success toast —
+    // was never exercised while the suite reported green. Measured 2026-08-28.
+    // The pattern below is the one the passing dropdown suites use (see
+    // src/admin/modules/groups/GroupList.test.tsx): setup(), then find the
+    // menuitem by role.
+    const user = userEvent.setup();
     render(<OnboardingPage />);
 
     await waitFor(() => {
@@ -269,29 +285,30 @@ describe('OnboardingPage', () => {
     });
 
     const actionBtns = screen.getAllByRole('button', { name: 'Actions' });
-    await userEvent.click(actionBtns[0]);
+    await user.click(actionBtns[0]);
 
-    const approveItem = document.body.querySelector('[id="approve"]') as HTMLElement | null;
-    if (approveItem) {
-      await userEvent.click(approveItem);
+    // 🔴 Wait for the portalled menu itself, and give the item lookup room.
+    // findByRole's default 1s timeout is enough on an idle machine but not when
+    // this file runs alongside 40+ other suites: the HeroUI dropdown portals into
+    // document.body and its open transition is slower under CPU contention, so
+    // this line failed intermittently in a batch run while passing every time on
+    // its own. Longer timeouts only, no assertion changed — a miss still throws.
+    await screen.findByRole('menu', {}, { timeout: 5000 });
+    await user.click(await screen.findByRole('menuitem', { name: 'Approve' }, { timeout: 5000 }));
 
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
 
-      // Click the confirm button in the modal (labelled 'Approve')
-      const dialog = screen.getByRole('dialog');
-      const confirmBtn = within(dialog).getByRole('button', { name: 'Approve' });
-      await userEvent.click(confirmBtn);
+    // Click the confirm button in the modal (labelled 'Approve')
+    const dialog = screen.getByRole('dialog');
+    const confirmBtn = within(dialog).getByRole('button', { name: 'Approve' });
+    await user.click(confirmBtn);
 
-      await waitFor(() => {
-        expect(adminUsers.approve).toHaveBeenCalledWith(1);
-        expect(mockToast.success).toHaveBeenCalled();
-      });
-    } else {
-      // Portal not available — test passes trivially
-      expect(true).toBe(true);
-    }
+    await waitFor(() => {
+      expect(adminUsers.approve).toHaveBeenCalledWith(1);
+      expect(mockToast.success).toHaveBeenCalled();
+    });
   });
 
   it('shows error toast and an honest retry state when members list fetch fails', async () => {

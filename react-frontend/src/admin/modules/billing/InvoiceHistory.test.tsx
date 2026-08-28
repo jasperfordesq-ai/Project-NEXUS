@@ -133,13 +133,18 @@ describe('InvoiceHistory', () => {
     expect(amountCell).toBeInTheDocument();
   });
 
+  // The status chip is TRANSLATED — t(`billing.invoice_status_${status}`) — so the
+  // raw Stripe status 'paid' is never on screen and this query matched nothing,
+  // reading as a missing chip. Assert the label an admin sees, and that the raw
+  // Stripe value does not leak through.
   it('renders invoice status chip', async () => {
     mockSuccessfulLoad();
     render(<InvoiceHistory />);
 
     await waitFor(() => {
-      expect(screen.getByText('paid')).toBeInTheDocument();
+      expect(screen.getByText('Paid')).toBeInTheDocument();
     });
+    expect(screen.queryByText('paid')).not.toBeInTheDocument();
   });
 
   it('shows empty state when no invoices exist', async () => {

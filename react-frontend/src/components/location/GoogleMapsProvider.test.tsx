@@ -120,8 +120,11 @@ describe('GoogleMapsProvider', () => {
       </GoogleMapsProvider>
     );
     expect(screen.queryByTestId('child')).not.toBeInTheDocument();
-    // Container has minimal content while loading
-    expect(container.firstChild).not.toBeNull();
+    // `fallback` defaults to null, so the provider renders literally nothing
+    // while the config request is in flight — which is what this test's own name
+    // says. The assertion here was `not.toBeNull()`, the exact opposite of both
+    // the title and the component's contract, so it could never pass.
+    expect(container.firstChild).toBeNull();
   });
 
   it('renders children inside APIProvider when Google Maps is enabled', async () => {

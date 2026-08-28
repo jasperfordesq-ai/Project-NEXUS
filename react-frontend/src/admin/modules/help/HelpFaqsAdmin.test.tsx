@@ -44,22 +44,15 @@ vi.mock('../../AdminMetaContext', () => ({ useAdminPageMeta: vi.fn() }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-// Stub ConfirmModal so we can trigger confirm directly
-vi.mock('../../components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../components')>();
-  return {
-    ...actual,
-    ConfirmModal: ({ isOpen, onConfirm, onClose, title }: {
-      isOpen: boolean; onConfirm: () => void; onClose: () => void; title: string;
-    }) =>
-      isOpen ? (
-        <div role="dialog" aria-label={title}>
-          <button onClick={onConfirm}>confirm-delete</button>
-          <button onClick={onClose}>cancel-delete</button>
-        </div>
-      ) : null,
-  };
-});
+// 🔴 There is no ConfirmModal stub any more, and there must not be one keyed to
+// the '../../components' barrel: HelpFaqsAdmin.tsx:48 imports ConfirmModal from
+// '../../components/ConfirmModal', its own path, so the barrel override never
+// installed. The real modal rendered, the stub's 'confirm-delete' button did not
+// exist, and the delete test read as a missing control.
+//
+// The real ConfirmModal is used plainly here (no typed confirmation), so it is
+// driven directly — via its stable data-testid, never via its label, because
+// callers override confirmLabel and a text lookup on it rots.
 
 import { HelpFaqsAdmin } from './HelpFaqsAdmin';
 
@@ -227,12 +220,7 @@ describe('HelpFaqsAdmin', () => {
     const deleteItem = await screen.findByText(/delete/i);
     await user.click(deleteItem);
 
-    // ConfirmModal is stubbed — click "confirm-delete"
-    await waitFor(() => {
-      const confirmBtn = screen.getByRole('button', { name: 'confirm-delete' });
-      return confirmBtn;
-    });
-    await user.click(screen.getByRole('button', { name: 'confirm-delete' }));
+    await user.click(await screen.findByTestId('confirm-modal-confirm'));
 
     await waitFor(() => {
       expect(mockDelete).toHaveBeenCalledWith(1);

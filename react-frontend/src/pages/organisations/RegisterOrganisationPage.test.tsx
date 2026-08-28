@@ -49,6 +49,24 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+// 🔴 The barrel mock below is not enough on its own. Breadcrumbs — rendered by
+// this page — imports useTenant from '@/contexts/TenantContext', the context's
+// OWN path, and Vitest keys its mock registry per specifier. So the real hook
+// loaded, threw "useTenant must be used within a TenantProvider", and took down
+// all eight tests before any assertion ran. A total factory (rather than
+// spreading importOriginal) on purpose: the real module imports '@/i18n', which
+// re-inits i18next with an HTTP backend at module scope and would clobber the
+// English resources src/test/setup.ts loads synchronously.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantSlug: 'test',
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
+}));
+
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Test', name: 'Test User', role: 'member' },

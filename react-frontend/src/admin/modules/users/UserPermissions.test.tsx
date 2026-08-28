@@ -138,10 +138,12 @@ describe('UserPermissions', () => {
     renderWithId('7');
 
     await waitFor(() => {
-      // Both the role chip and the is_admin chip render "admin" text,
-      // so getAllByText is correct here.
-      const adminEls = screen.getAllByText('admin');
+      // Role chips are TRANSLATED — roleLabels maps 'admin' to
+      // t('users.role_admin') = "Admin" — so the raw slug is never rendered.
+      // Both the role chip and the is_admin chip carry that same label.
+      const adminEls = screen.getAllByText('Admin');
       expect(adminEls.length).toBeGreaterThanOrEqual(1);
+      expect(screen.queryByText('admin')).not.toBeInTheDocument();
     });
   });
 
@@ -168,7 +170,8 @@ describe('UserPermissions', () => {
     renderWithId('7');
 
     await waitFor(() => {
-      expect(screen.getByText('tenant_super_admin')).toBeInTheDocument();
+      // t('users.role_tenant_super_admin') = "Tenant Super Admin".
+      expect(screen.getByText('Tenant Super Admin')).toBeInTheDocument();
     });
   });
 

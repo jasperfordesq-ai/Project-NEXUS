@@ -1,11 +1,6 @@
 {
   "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet of dead barrel-mock overrides (a vi.mock on @/components/ui or @/contexts whose override the module under test bypasses by importing the symbol from its direct path). Regenerate with: npm run audit:dead-mocks -- --baseline. Enforced by src/components/ui/BarrelMock.contract.test.ts (runs in the blocking test:ui-contracts CI step) and npm run audit:dead-mocks.",
   "offenders": {
-    "src/admin/modules/AdminNotFound.test.tsx": {
-      "@/admin/components": [
-        "PageHeader"
-      ]
-    },
     "src/admin/modules/__tests__/NewsletterModules.test.tsx": {
       "@/admin/components": [
         "ConfirmModal",
@@ -212,11 +207,6 @@
       ]
     },
     "src/admin/modules/groups/GroupOrganization.test.tsx": {
-      "@/admin/components": [
-        "ConfirmModal"
-      ]
-    },
-    "src/admin/modules/help/HelpFaqsAdmin.test.tsx": {
       "@/admin/components": [
         "ConfirmModal"
       ]
@@ -584,7 +574,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 89,
-    "rowCount": 271
+    "offenderFileCount": 87,
+    "rowCount": 269
   }
 }

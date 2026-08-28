@@ -78,6 +78,33 @@ const USERS_RESPONSE = { success: true, data: USERS };
 
 import { BulkOperations } from './BulkOperations';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Select a bulk action by clicking its card (a plain div with onClick).
+ * Throws if the card is missing — the old inline `if (…)` guards turned a missing
+ * card into a silent no-op, so the failure surfaced several steps later as an
+ * unclickable Apply button.
+ */
+function clickActionCard(label: string) {
+  const text = screen.getAllByText(new RegExp(`^${label}$`))[0];
+  const card = text?.closest('[class*="cursor-pointer"]');
+  if (!card) throw new Error(`No selectable "${label}" action card found`);
+  fireEvent.click(card);
+}
+
+/** The Apply button, once selecting tenants + an action has enabled it. */
+async function findEnabledApplyButton(): Promise<HTMLElement> {
+  return waitFor(() => {
+    const btn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('apply') && !b.hasAttribute('disabled'),
+    );
+    if (!btn) throw new Error('Apply button is absent or still disabled');
+    return btn;
+  }, { timeout: 3000 });
+}
+
+
 describe('BulkOperations — initial load', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -250,50 +277,15 @@ describe('BulkOperations — bulk update tenants action', () => {
     await user.click(selectAllBtn!);
 
     // Click the "Activate" action card — uses onClick (not onPress)
-    // The outer div with onClick fires on fireEvent.click
-    const activateText = screen.queryAllByText(/^Activate$/);
-    if (activateText.length > 0) {
-      const activateCard = activateText[0].closest('[class*="cursor-pointer"]');
-      if (activateCard) fireEvent.click(activateCard as Element);
-    }
+    clickActionCard('Activate');
 
-    // Now find the Apply button that should be enabled
+    await user.click(await findEnabledApplyButton());
+    await user.click(await screen.findByTestId('confirm-modal-confirm'));
+
     await waitFor(() => {
-      const applyBtn = screen.getAllByRole('button').find((btn) =>
-        btn.textContent?.toLowerCase().includes('apply') &&
-        !btn.hasAttribute('disabled')
-      );
-      if (applyBtn) expect(applyBtn).not.toBeDisabled();
-    }, { timeout: 3000 }).catch(() => {
-      // If Apply isn't enabled (action card click didn't work), try clicking Deactivate
-      const deactivateText = screen.queryAllByText(/^Deactivate$/);
-      if (deactivateText.length > 0) {
-        const card = deactivateText[0].closest('[class*="cursor-pointer"]');
-        if (card) fireEvent.click(card as Element);
-      }
-    });
-
-    const applyBtn = screen.getAllByRole('button').find((btn) =>
-      btn.textContent?.toLowerCase().includes('apply')
-    );
-    if (applyBtn && !applyBtn.hasAttribute('disabled')) {
-      await user.click(applyBtn);
-      // ConfirmModal appears — click Confirm
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).toBeInTheDocument();
-      });
-      const confirmBtn = screen.getByRole('button', { name: /confirm/i });
-      await user.click(confirmBtn);
-
-      await waitFor(() => {
-        expect(mockAdminSuper.bulkUpdateTenants).toHaveBeenCalled();
-        expect(mockToast.success).toHaveBeenCalled();
-      });
-    } else {
-      // Directly call the API mock to verify the flow works
-      await mockAdminSuper.bulkUpdateTenants({ tenant_ids: [2, 3], action: 'activate' });
       expect(mockAdminSuper.bulkUpdateTenants).toHaveBeenCalled();
-    }
+      expect(mockToast.success).toHaveBeenCalled();
+    });
   });
 });
 
@@ -328,34 +320,13 @@ describe('BulkOperations — error handling', () => {
     );
     await user.click(selectAllBtn!);
 
-    // Click Activate action card
-    const activateText = screen.queryAllByText(/^Activate$/);
-    if (activateText.length > 0) {
-      const activateCard = activateText[0].closest('[class*="cursor-pointer"]');
-      if (activateCard) fireEvent.click(activateCard as Element);
-    }
+    clickActionCard('Activate');
 
-    const applyBtn = screen.getAllByRole('button').find((btn) =>
-      btn.textContent?.toLowerCase().includes('apply') && !btn.hasAttribute('disabled')
-    );
+    await user.click(await findEnabledApplyButton());
+    await user.click(await screen.findByTestId('confirm-modal-confirm'));
 
-    if (applyBtn) {
-      await user.click(applyBtn);
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).toBeInTheDocument();
-      });
-      const confirmBtn = screen.getByRole('button', { name: /confirm/i });
-      await user.click(confirmBtn);
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalled();
-      });
-    } else {
-      // Directly invoke to verify the error toast path
-      const handleResult = mockAdminSuper.bulkUpdateTenants({ tenant_ids: [2], action: 'activate' });
-      await handleResult;
-      // Simulate the component's error handler path
-      mockToast.error('Server error');
+    await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
-    }
+    });
   });
 });
