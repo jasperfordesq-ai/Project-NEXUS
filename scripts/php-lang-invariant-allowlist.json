@@ -117,12 +117,14 @@
       "Conversations",
       "Cookies",
       "Coupons",
+      "Date",
       "Distance",
       "Document",
       "Encouragement",
       "Expert",
       "Flexible",
       "Image",
+      "Incident",
       "Impact",
       "Latitude",
       "Longitude",
@@ -147,6 +149,7 @@
       "discussion",
       "option #:id",
       "page.",
+      "rectification",
       "version :version, :date"
     ],
     "it": [
