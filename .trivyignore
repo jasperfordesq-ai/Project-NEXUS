@@ -4,33 +4,80 @@
 # CVEs listed here are suppressed from Trivy vulnerability scans.
 # Each entry must be justified. Review quarterly.
 #
-# Last reviewed: 2026-02-23
+# Last reviewed: 2026-08-28   (previous review: 2026-02-23)
+#
+# ── How this review was done — repeat these steps next quarter ───────────────
+# 1. Read .github/workflows/security-scan.yml and confirm what Trivy actually
+#    scans. As of 2026-08-28 there are two scans, both BLOCKING:
+#      (a) `fs` scan of the whole checkout, severity CRITICAL,HIGH. It runs
+#          AFTER `composer install` — so vendor/ IS scanned — but BEFORE
+#          `npm ci`, so npm findings come from the COMMITTED LOCKFILES, not
+#          from an installed node_modules tree.
+#      (b) image scan of the Dockerfile build, CRITICAL,HIGH, push-only, with
+#          `ignore-unfixed: true` — so a CVE Debian has not fixed cannot fire
+#          at all, whatever this file says.
+# 2. For each entry, resolve CVE -> package + first patched version from the
+#    GitHub Advisory Database (also Trivy's source for npm and pip advisories):
+#      gh api "/advisories?cve_id=CVE-2026-XXXXX"
+#      gh api advisories/GHSA-xxxx-xxxx-xxxx      (no leading slash on Windows)
+# 3. Compare that fixed version against what is COMMITTED in every manifest the
+#    fs scan can see: composer.lock, package-lock.json, react-frontend/,
+#    web-uk/, mobile/, e2e/ and aspnet-backend/e2e/package-lock.json. Check
+#    `git status` on those files first — an uncommitted lockfile is not the
+#    thing CI scans.
+# 4. Delete every entry whose package is gone, or is at/above the fixed
+#    version. Keep only what is still reachable AND still unfixed, and say why.
+#
+# 2026-08-28 outcome: 22 of 67 entries deleted as provably stale — every one of
+# them was a package that had since been upgraded past its fix (xmldom, yaml,
+# picomatch, brace-expansion, node-forge, undici, ws, vite). 19 entries kept
+# with re-verified justifications. 26 linux-libc-dev kernel entries kept but
+# UNRESOLVED — see the note in that block; they need one experiment to settle.
 # =============================================================================
 
 # ── linux-libc-dev kernel CVEs (NOT exploitable in Docker containers) ───────
-# These are all Linux kernel vulnerabilities found in the Debian 13 base image
-# (php:8.2-apache). Docker containers share the HOST kernel — the linux-libc-dev
-# package only provides kernel header files for compilation, NOT the running
-# kernel. These CVEs require:
+# These are all Linux kernel vulnerabilities found in the Debian base image
+# (php:8.2.30-apache). Docker containers share the HOST kernel — the
+# linux-libc-dev package only provides kernel header files for compilation, NOT
+# the running kernel. These CVEs require:
 #   - Direct access to host kernel (not available in containers)
 #   - Specific hardware (GPU, NIC, PCI devices) not present in containers
 #   - Ability to mount arbitrary filesystems (blocked in containers)
 #   - Kernel module loading privileges (blocked in containers)
+# The container runs as an unprivileged Apache process with no kernel access.
+# Only the container scan can ever raise these; the fs scan does not read OS
+# packages. That scan also sets `ignore-unfixed: true`.
 #
-# These will be resolved when the Debian base image is updated. The container
-# runs as an unprivileged Apache process with no kernel access.
+# 🔴 2026-08-28 review — the version facts below were out of date and are now
+# corrected, but the entries could NOT be resolved either way from this machine.
+# The old note read "Fix available: linux-libc-dev 6.12.69-1 (installed:
+# 6.12.63-1)". Measured today inside nexus-php-app (built from this repo's
+# Dockerfile, image built 2026-08-04):
+#     dpkg-query -W linux-libc-dev  ->  6.12.100-1
+# i.e. the installed headers are already far past the 6.12.69-1 that the 26
+# entries below were suppressed for, because the Dockerfile runs `apt-get -y
+# upgrade` on every build. That strongly suggests those 26 are now dead weight.
+# It is NOT proof: confirming it needs Debian's security tracker per CVE, which
+# was not reachable during this review, and a wrong deletion turns the blocking
+# container gate red on the next push to main.
 #
-# Fix available: linux-libc-dev 6.12.69-1 (installed: 6.12.63-1)
-# Will auto-resolve when php:8.2-apache rebuilds with updated Debian packages.
+# To settle it: delete the 26 "fix in 6.12.69-1" entries below in their own
+# commit, push, and watch the `Container Security Scan` job (it runs on push).
+# If it stays green they were stale; if it reds, restore exactly the CVEs it
+# names. The five "ancient" entries above them are separate — Debian never
+# fixed those, so `ignore-unfixed: true` already skips them and they are
+# harmless either way.
 
-# Ancient disputed CVEs (no fix, won't-fix)
+# Ancient disputed CVEs (no fix, won't-fix) — kept 2026-08-28.
+# Already covered by `ignore-unfixed: true`; retained as belt-and-braces.
 CVE-2013-7445
 CVE-2019-19449
 CVE-2019-19814
 CVE-2021-3847
 CVE-2021-3864
 
-# Kernel CVEs with fix in 6.12.69-1 — all require host kernel access
+# Kernel CVEs stated as fixed in 6.12.69-1 — all require host kernel access.
+# UNRESOLVED at the 2026-08-28 review; installed is now 6.12.100-1. See above.
 CVE-2025-38248
 CVE-2025-40170
 CVE-2025-68800
@@ -67,6 +114,19 @@ CVE-2026-23209
 #   - Has zero exploitability in our context (wrong language, wrong environment)
 # These are false positives for our threat model. The mockery/mockery package
 # is a dev-only dependency used only in PHPUnit tests.
+#
+# 2026-08-28 review — ALL STILL VALID, and re-verified rather than assumed:
+#   - composer.lock has mockery/mockery 1.6.12 in `packages-dev` only, never in
+#     `packages`, so it is genuinely test-only.
+#   - The file really does reach vendor/ in CI: mockery's .gitattributes at tag
+#     1.6.12 does not export-ignore /docs, so the composer dist zipball carries
+#     docs/requirements.txt. This is not a phantom suppression.
+#   - Every pinned version in that file is still inside its vulnerable range:
+#     setuptools==69.2.0, urllib3==2.2.1, requests==2.31.0, wheel==0.43.0,
+#     Pygments==2.17.2. Nothing here has aged out; removing any entry would
+#     red the blocking fs scan.
+# The only way to retire this block is a mockery release that drops or repins
+# docs/requirements.txt. Re-check the pinned versions above next quarter.
 CVE-2024-6345
 CVE-2024-37891
 CVE-2025-47273
@@ -79,75 +139,14 @@ CVE-2026-21441
 CVE-2026-24049
 CVE-2026-25645
 
-# ── @xmldom/xmldom CVE-2026-41672/3/4/5 ─────────────────────────────────────
-# Sibling vulnerabilities in xmldom (XML serialization DoS, DocType injection,
-# processing-instruction injection, comment injection). All fixed in 0.8.13/0.9.10.
-# Tracked via Dependabot PR #55. Not exploitable via our API surface — xmldom is
-# used for internal XML parsing only.
-CVE-2026-41672
-CVE-2026-41673
-CVE-2026-41674
-CVE-2026-41675
-
-# ── mobile/package-lock.json ────────────────────────────────────────────────
-# These CVEs are in the Capacitor mobile app's npm dependencies (mobile/).
-# The mobile app is a SEPARATE build artifact compiled into APK/IPA binaries —
-# it is NOT deployed to our web server or PHP/React production containers.
-# These are tracked for remediation but do not affect production web security.
-# Tracked: update mobile/ deps via `npm update` in the mobile/ directory.
-# Dependabot PR #55 addresses @xmldom/xmldom in the web frontend separately.
-CVE-2026-33532
-CVE-2026-33671
-CVE-2026-33672
-CVE-2026-33750
-CVE-2026-33891
-CVE-2026-33894
-CVE-2026-33895
-CVE-2026-33896
-CVE-2026-34601
-# undici WebSocket DoS (fix: 6.24.0/7.24.0) — mobile APK only, not on web server
-CVE-2026-1526
-CVE-2026-1528
-CVE-2026-2229
-# undici DoS via WebSocket memory growth (CVE-2026-12151, fix 6.27.0) and ws DoS
-# (CVE-2026-48779, fix 6.2.4/7.5.11). Both arrive only through the Expo/Metro/
-# React-Native DEV bundler toolchain (metro, @expo/metro, @react-native/dev-
-# middleware, react-devtools-core) — none of which ship in the compiled APK/IPA
-# or run on any server. The DoS is reachable only on the localhost dev server
-# during development. Bumping is deferred to a mobile-only change that can build
-# and validate the Expo tree. (added 2026-06-24)
-CVE-2026-12151
-CVE-2026-48779
-
 # ── urllib3 CVE-2026-44431 (HIGH) — vendor/mockery/mockery/docs/requirements.txt ──
 # Newly-disclosed urllib3 CVE in the same Python requirements.txt inside the
 # Mockery PHP test-library's docs/ that the block above already covers. No Python
 # in our stack, never installed, vendor/ not deployed. Same false-positive class.
 # (added 2026-06-06)
+# 2026-08-28: STILL VALID — vulnerable range is urllib3 >= 1.23, < 2.7.0 and the
+# file pins urllib3==2.2.1.
 CVE-2026-44431
-
-# ── react-frontend dev-tooling (HIGH) — NOT in the production bundle ─────────
-# vite and ws are devDependencies in react-frontend (confirmed: not in any
-# production dependency tree). vite is the local dev server; ws arrives via
-# Lighthouse (performance tooling). Neither runs in the deployed app — the
-# production frontend is static built assets served by Apache, with no Vite or
-# Lighthouse process. The production npm tree audits clean (--omit=dev). Full
-# triage in SECURITY-POSTURE.md. Review quarterly. (added 2026-06-17)
-GHSA-v6wh-96g9-6wx3
-GHSA-fx2h-pf6j-xcff
-GHSA-96hv-2xvq-fx4p
-
-# ── brace-expansion 1.x/2.x DoS (HIGH) — no fixed release exists in-range ────
-# CVE-2026-14257 is fixed only in brace-expansion 5.0.8. All 5.x instances in
-# root, react-frontend, and mobile lockfiles are bumped to 5.0.8; the remaining
-# 1.1.16 / 2.1.2 copies are pinned ^1/^2 by upstream dev tooling (eslint,
-# rimraf, minimatch consumers) and 1.1.16 / 2.1.2 ARE the latest of those
-# lines — npm publishes no backport as of 2026-07-25. The vulnerable code path
-# is glob/brace expansion in build-time tooling; it never receives untrusted
-# input at runtime and none of it ships in production bundles. Remove this
-# entry when upstream releases a 1.x/2.x backport or the tooling moves to 5.x.
-# (added 2026-07-25)
-CVE-2026-14257
 
 # ── image-size 1.2.1 DoS (HIGH ×2) — no fixed release exists at all ──────────
 # CVE-2025-71329 (crafted image buffer with zero-valued size) and CVE-2025-71330
@@ -161,10 +160,40 @@ CVE-2026-14257
 # @react-native/community-cli-plugin). metro reads image dimensions while
 # building the JS bundle on a developer machine or a CI runner; it does not ship
 # in the compiled APK/IPA and does not run on any server. The images it reads
-# are the repo's own committed assets, not untrusted input. Same class as the
-# undici/ws dev-bundler block above.
+# are the repo's own committed assets, not untrusted input.
 #
 # Remove this entry when upstream publishes a fixed image-size that metro picks
 # up. (added 2026-08-08)
+# 2026-08-28: STILL VALID and still the ONLY genuinely unfixable npm entry left.
+# GitHub Advisory Database still records the affected range as <= 2.0.2 with
+# first_patched_version NONE for both CVEs, and mobile/package-lock.json still
+# resolves image-size to 1.2.1 (single instance, node_modules/image-size).
 CVE-2025-71329
 CVE-2025-71330
+
+# =============================================================================
+# DELETED at the 2026-08-28 review — kept here as a short record so a future
+# reader does not "rediscover" these and re-add them. Each was removed because
+# the package had been upgraded past its fix; none was removed on judgement.
+#
+#   @xmldom/xmldom  CVE-2026-41672/41673/41674/41675 (fix 0.8.13 / 0.9.10) and
+#                   CVE-2026-34601 (fix 0.8.12 / 0.9.9)
+#                   -> root lockfile 0.9.10; mobile 0.8.13 + nested plist 0.9.10.
+#   yaml            CVE-2026-33532 (fix 2.8.3)  -> mobile + react-frontend 2.9.0.
+#   picomatch       CVE-2026-33671, CVE-2026-33672 (fix 2.3.2 / 3.0.2 / 4.0.4)
+#                   -> every instance is 2.3.2, 4.0.4 or 4.0.5.
+#   brace-expansion CVE-2026-33750 (fix 1.1.13 / 2.0.3 / 5.0.5) and CVE-2026-14257
+#                   (fix 1.1.17 / 2.1.3 / 5.0.8 — the 1.x/2.x backports the old
+#                   comment said did not exist have since been published)
+#                   -> every instance is 1.1.18, 2.1.4 or 5.0.9.
+#   node-forge      CVE-2026-33891/33894/33895/33896 (fix 1.4.0) -> mobile 1.4.0.
+#   undici          CVE-2026-1526, CVE-2026-1528, CVE-2026-2229 (fix 6.24.0) and
+#                   CVE-2026-12151 (fix 6.27.0) -> mobile 6.28.0.
+#   ws              CVE-2026-48779 / GHSA-96hv-2xvq-fx4p — the SAME advisory,
+#                   listed twice in this file (fix 5.2.5 / 6.2.4 / 7.5.11 /
+#                   8.21.0) -> instances are 6.2.4, 7.5.11, 7.5.13, 8.21.0.
+#   vite            GHSA-fx2h-pf6j-xcff (CVE-2026-53571, server.fs.deny bypass)
+#                   and GHSA-v6wh-96g9-6wx3 (CVE-2026-53632, launch-editor NTLM)
+#                   — both fixed in vite 7.3.5; root and react-frontend are on
+#                   7.3.6, and launch-editor / vite-plus are in no lockfile.
+# =============================================================================

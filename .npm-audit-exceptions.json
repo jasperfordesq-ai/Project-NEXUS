@@ -2,14 +2,6 @@
   "$comment": "npm-audit equivalent of .trivyignore, consumed by scripts/npm-audit-gate.mjs (the blocking Security Scan step). Every entry needs an advisory id, the tree it applies to (scope = npm prefix, or '*'), a reason, an added date, and an expires date. 🔴 expires is ENFORCED as of 2026-08-28: past its date the entry stops suppressing and the advisory blocks again, because a review cadence written only in prose is how a suppression list becomes permanent. Expiring does not mean the advisory is fixed — it means a human undertook to look again by then. Re-justify with a new date, or remove the entry.",
   "exceptions": [
     {
-      "id": "GHSA-mh99-v99m-4gvg",
-      "scope": "mobile",
-      "package": "brace-expansion",
-      "reason": "brace-expansion DoS (CVE-2026-14257) is fixed only in 5.0.8; the mobile tree receives 1.1.16/2.1.2 via minimatch inside @expo/cli, npm publishes no 1.x/2.x backport as of 2026-07-25, and a forced override to 5.x is API-incompatible (v5 exports named {expand}, v1/v2 consumers require a bare function — verified to break at runtime). The only npm-offered fix is the breaking expo@57 major; the mobile app is on hold pending that migration. Glob expansion here processes repo file paths at build time, never untrusted input.",
-      "added": "2026-07-25",
-      "expires": "2026-11-26"
-    },
-    {
       "id": "GHSA-w3rx-r6r6-pgpr",
       "scope": "mobile",
       "package": "image-size",

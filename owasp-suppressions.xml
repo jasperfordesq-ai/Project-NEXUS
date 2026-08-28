@@ -359,13 +359,32 @@
       - tar         → pulled in by heroui-cli (scaffolding CLI).
     Review quarterly; remove an entry if the package becomes a runtime dep.
   -->
+  <!--
+    🔴 BOTH vite entries below are ALREADY FIXED in the installed version, and
+    are retained only as false-positive insurance (reviewed 2026-08-28).
+
+    Measured: GHSA-v6wh-96g9-6wx3 and GHSA-fx2h-pf6j-xcff are both first patched
+    in vite 7.3.5, and `react-frontend/package-lock.json` and the root
+    `package-lock.json` both resolve vite 7.3.6. The equivalent entries in
+    .trivyignore were DELETED on the same evidence.
+
+    They are NOT deleted here because this scan runs with a failOnCVSS
+    threshold of 7, so a suppression removed in error reds the build, and OWASP
+    Dependency-Check matches npm packages by NVD CPE rather than by advisory
+    range, which is fuzzy enough that 7.3.6 may still be reported. Tightening
+    the regex carries exactly the same risk as deleting.
+
+    To settle it: delete these two blocks in their own commit, push, and watch
+    the `security-scan` workflow. Green means they were dead weight; red names
+    the CPE that still matches and this comment explains why they are back.
+  -->
   <suppress>
-    <notes><![CDATA[ DEV-TOOLING: vite dev server (react-frontend devDependency). Not in the production bundle. GHSA-v6wh-96g9-6wx3 (launch-editor NTLMv2 on Windows dev server). ]]></notes>
+    <notes><![CDATA[ DEV-TOOLING: vite dev server (react-frontend devDependency). Not in the production bundle. GHSA-v6wh-96g9-6wx3 (launch-editor NTLMv2 on Windows dev server). FIXED in 7.3.5; installed 7.3.6 — retained as CPE false-positive insurance only, see comment above. ]]></notes>
     <packageUrl regex="true">^pkg:npm/vite@7\.[0-3]\..*$</packageUrl>
     <vulnerabilityName>GHSA-v6wh-96g9-6wx3</vulnerabilityName>
   </suppress>
   <suppress>
-    <notes><![CDATA[ DEV-TOOLING: vite dev server (react-frontend devDependency). Not in the production bundle. GHSA-fx2h-pf6j-xcff (server.fs.deny bypass on Windows dev server). ]]></notes>
+    <notes><![CDATA[ DEV-TOOLING: vite dev server (react-frontend devDependency). Not in the production bundle. GHSA-fx2h-pf6j-xcff (server.fs.deny bypass on Windows dev server). FIXED in 7.3.5; installed 7.3.6 — retained as CPE false-positive insurance only, see comment above. ]]></notes>
     <packageUrl regex="true">^pkg:npm/vite@7\.[0-3]\..*$</packageUrl>
     <vulnerabilityName>GHSA-fx2h-pf6j-xcff</vulnerabilityName>
   </suppress>
