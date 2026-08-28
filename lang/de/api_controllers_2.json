@@ -228,10 +228,10 @@
   "podcasts.support_show": "Diese Show unterstützen",
   "podcasts.report_reason_required": "Wählen Sie einen Grund für diese Meldung.",
   "podcasts.invalid_report_status": "Ungültiger Meldungsstatus.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Ein Gutscheincode ist erforderlich.",
+  "merchant_coupon.code_in_use": "Der Gutscheincode wird bereits für diesen Mandanten verwendet.",
+  "push.device_unregistered": "Gerät abgemeldet",
+  "push.device_not_found": "Gerät nicht gefunden",
   "merchant_coupon": {
     "not_found": "Gutschein nicht gefunden."
   },

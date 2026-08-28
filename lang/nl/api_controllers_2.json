@@ -228,10 +228,10 @@
   "podcasts.support_show": "Steun deze show",
   "podcasts.report_reason_required": "Kies een reden voor deze melding.",
   "podcasts.invalid_report_status": "Ongeldige meldingsstatus.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Couponcode is verplicht.",
+  "merchant_coupon.code_in_use": "De couponcode is al in gebruik voor deze tenant.",
+  "push.device_unregistered": "Apparaat afgemeld",
+  "push.device_not_found": "Apparaat niet gevonden",
   "merchant_coupon": {
     "not_found": "Coupon niet gevonden."
   },

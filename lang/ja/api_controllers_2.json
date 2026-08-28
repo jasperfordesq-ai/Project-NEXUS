@@ -228,10 +228,10 @@
   "podcasts.support_show": "この番組を支援する",
   "podcasts.report_reason_required": "この報告の理由を選択してください。",
   "podcasts.invalid_report_status": "無効な報告ステータスです。",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "クーポンコードは必須です。",
+  "merchant_coupon.code_in_use": "このテナントではクーポンコードがすでに使用されています。",
+  "push.device_unregistered": "端末の登録を解除しました",
+  "push.device_not_found": "端末が見つかりません",
   "merchant_coupon": {
     "not_found": "クーポンが見つかりません。"
   },

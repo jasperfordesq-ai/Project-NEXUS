@@ -228,10 +228,10 @@
   "podcasts.support_show": "ادعم هذا البرنامج",
   "podcasts.report_reason_required": "اختر سببًا لهذا البلاغ.",
   "podcasts.invalid_report_status": "حالة البلاغ غير صالحة.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "رمز القسيمة مطلوب.",
+  "merchant_coupon.code_in_use": "رمز القسيمة مستخدم بالفعل لهذا المستأجر.",
+  "push.device_unregistered": "تم إلغاء تسجيل الجهاز",
+  "push.device_not_found": "لم يُعثر على الجهاز",
   "merchant_coupon": {
     "not_found": "لم يتم العثور على القسيمة."
   },

@@ -228,10 +228,10 @@
   "podcasts.support_show": "Apoiar este programa",
   "podcasts.report_reason_required": "Escolha um motivo para esta denúncia.",
   "podcasts.invalid_report_status": "Estado de denúncia inválido.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "O código do cupão é obrigatório.",
+  "merchant_coupon.code_in_use": "O código do cupão já está a ser utilizado nesta instância.",
+  "push.device_unregistered": "Registo do dispositivo anulado",
+  "push.device_not_found": "Dispositivo não encontrado",
   "merchant_coupon": {
     "not_found": "Cupão não encontrado."
   },

@@ -228,10 +228,10 @@
   "podcasts.support_show": "Soutenir cette émission",
   "podcasts.report_reason_required": "Choisissez un motif pour ce signalement.",
   "podcasts.invalid_report_status": "Statut de signalement non valide.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Le code promotionnel est obligatoire.",
+  "merchant_coupon.code_in_use": "Le code promotionnel est déjà utilisé pour ce locataire.",
+  "push.device_unregistered": "Appareil désinscrit",
+  "push.device_not_found": "Appareil introuvable",
   "merchant_coupon": {
     "not_found": "Coupon introuvable."
   },

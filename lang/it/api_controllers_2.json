@@ -228,10 +228,10 @@
   "podcasts.support_show": "Sostieni questo programma",
   "podcasts.report_reason_required": "Scegli un motivo per questa segnalazione.",
   "podcasts.invalid_report_status": "Stato della segnalazione non valido.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Il codice del buono è obbligatorio.",
+  "merchant_coupon.code_in_use": "Il codice del buono è già in uso per questo tenant.",
+  "push.device_unregistered": "Dispositivo non registrato",
+  "push.device_not_found": "Dispositivo non trovato",
   "merchant_coupon": {
     "not_found": "Coupon non trovato."
   },

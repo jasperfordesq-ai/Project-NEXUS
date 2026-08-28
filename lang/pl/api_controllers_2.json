@@ -228,10 +228,10 @@
   "podcasts.support_show": "Wesprzyj ten program",
   "podcasts.report_reason_required": "Wybierz powód tego zgłoszenia.",
   "podcasts.invalid_report_status": "Nieprawidłowy status zgłoszenia.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Kod kuponu jest wymagany.",
+  "merchant_coupon.code_in_use": "Kod kuponu jest już używany dla tego tenanta.",
+  "push.device_unregistered": "Wyrejestrowano urządzenie",
+  "push.device_not_found": "Nie znaleziono urządzenia",
   "merchant_coupon": {
     "not_found": "Kupon nie został znaleziony."
   },
