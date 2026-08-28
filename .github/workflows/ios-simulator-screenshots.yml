@@ -286,6 +286,12 @@ jobs:
         working-directory: mobile
         run: |
           mkdir -p "$RUNNER_TEMP/maestro-output"
+          mkdir -p "$RUNNER_TEMP/failure-evidence"
+          xcrun simctl terminate "$SIMULATOR_UDID" ie.project.nexus || true
+          xcrun simctl launch --console "$SIMULATOR_UDID" ie.project.nexus \
+            > "$RUNNER_TEMP/failure-evidence/app-console.log" 2>&1 &
+          app_console_pid=$!
+          trap 'kill "$app_console_pid" 2>/dev/null || true' EXIT
           password_hex=$(printf '%s' "$TEST_PASSWORD" | od -An -tx1 | tr -d ' \n')
           maestro --device "$SIMULATOR_UDID" test \
             --env TEST_EMAIL="$TEST_EMAIL" \
