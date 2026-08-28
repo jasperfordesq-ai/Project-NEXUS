@@ -42,15 +42,15 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
@@ -122,7 +122,12 @@ jobs:
 
       - name: Compile and install the unsigned iOS Release build
         working-directory: mobile
-        run: npx expo run:ios --configuration Release --device "$SIMULATOR_UDID" --no-bundler
+        run: |
+          # Expo CLI records whether Apple's devicectl exists. A fresh hosted
+          # runner has no ~/.expo directory yet, so create its state directory
+          # before device discovery rather than failing after CocoaPods finishes.
+          mkdir -p "$HOME/.expo"
+          npx expo run:ios --configuration Release --device "$SIMULATOR_UDID" --no-bundler
 
       - name: Verify the installed application identity
         run: |
