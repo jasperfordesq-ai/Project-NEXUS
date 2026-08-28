@@ -7,7 +7,6 @@
  * Helper utilities for the NEXUS React frontend
  */
 
-import type { User } from '@/types/api';
 import { logError } from './logger';
 import i18n from '../i18n';
 import { getRegion } from './regionStore';

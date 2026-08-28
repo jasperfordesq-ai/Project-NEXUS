@@ -15,7 +15,7 @@ import { useToast, useTenant, useAuth } from '@/contexts';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { PageHeader } from '../../components/PageHeader';
 import { adminSettings } from '../../api/adminApi';
-import { getFormattingLocale, resolveAssetUrl } from '@/lib/helpers';
+import { resolveAssetUrl } from '@/lib/helpers';
 import type { AdminSettingsResponse } from '../../api/types';
 import SystemConfig from '../enterprise/SystemConfig';
 // Copyright © 2024–2026 Jasper Ford
@@ -168,8 +168,10 @@ export function AdminSettings() {
     // locale-exempt: previews the region currently SELECTED in the form, which
     // is not yet saved. getFormattingLocale() deliberately reports the region
     // already in force, so using it here would show the old setting and make
-    // the control appear broken. Language still comes from the app.
-    const previewLocale = `${getFormattingLocale().split('-')[0]}-${form.region || 'IE'}`;
+    // the control appear broken. Language still comes from the app — read
+    // directly off i18n so the dependency below is real and the preview
+    // recomputes when the member switches language.
+    const previewLocale = `${(i18n.language || 'en').split('-')[0]}-${form.region || 'IE'}`;
     const options: Intl.DateTimeFormatOptions = { timeZone: 'UTC' };
     try {
       // locale-exempt: previewing the unsaved region, as explained above.

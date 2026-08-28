@@ -43,8 +43,10 @@ export default tseslint.config(
   {
     // Admin UI is end-user output too. Keep JSX literals as a blocking error;
     // true protocol/code/command samples require a narrow documented inline
-    // suppression at the exact rendered technical literal.
-    files: ['src/admin/**/*.{ts,tsx}'],
+    // suppression at the exact rendered technical literal. The broker app is
+    // staff-facing end-user output by the same argument, so it gets the same
+    // blocking severity (it was violation-free when promoted, 2026-08-28).
+    files: ['src/admin/**/*.{ts,tsx}', 'src/broker/**/*.{ts,tsx}'],
     rules: {
       'i18next/no-literal-string': ['error', { markupOnly: true }],
     },

@@ -43,8 +43,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalHeading,
-  Select,
-  SelectItem,
   Spinner,
   TextArea,
   Avatar,

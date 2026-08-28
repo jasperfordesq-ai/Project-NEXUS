@@ -46,7 +46,7 @@
     "prerender": "node scripts/prerender.mjs",
     "build:check": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src --max-warnings 10 && cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" tsc --noEmit",
+    "lint": "eslint src --max-warnings 0 && cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" tsc --noEmit",
     "test": "cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" vitest",
     "test:groups": "cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" NEXUS_FAIL_ON_UNEXPECTED_CONSOLE=1 vitest run --pool=forks --poolOptions.forks.singleFork=true src/pages/groups src/components/ideation src/admin/modules/groups",
     "test:a11y": "cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" NEXUS_FAIL_ON_UNEXPECTED_CONSOLE=1 vitest run src/pages/caring-community/__tests__/caring-community.a11y.test.tsx src/test/accessibility.test.tsx",

@@ -65,7 +65,9 @@ const TESTS_DIR = join(PROJECT_ROOT, 'tests');
 // go, and are tracked separately rather than stripped mechanically.
 // Right direction is still DOWN: lower this as dead guards are stripped or the
 // schema dump is refreshed. Do not raise it further without a matching reason.
-const BASELINE = 140;
+// Lowered 140 -> 128 on 2026-08-28: the real count had already fallen to 128, and
+// the script itself flagged the 12 skips of unclaimed headroom.
+const BASELINE = 128;
 const BUDGET = Number.parseInt(process.env.TEST_SKIP_BUDGET ?? '', 10) || BASELINE;
 
 const REPORT_ONLY = process.argv.includes('--report');

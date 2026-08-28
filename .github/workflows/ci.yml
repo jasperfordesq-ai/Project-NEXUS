@@ -533,7 +533,9 @@ jobs:
       # cap was 1000 and eslint ran in no CI step at all, so warnings were ungated.
       - name: ESLint (BLOCKING)
         working-directory: react-frontend
-        run: npx eslint src --max-warnings 30
+        # Zero, not a buffer: the warning count reached 0 on 2026-08-28, and a
+        # non-zero cap is headroom for silent regressions, not tolerance.
+        run: npx eslint src --max-warnings 0
 
       - name: Component Accessibility Gate (BLOCKING)
         working-directory: react-frontend
@@ -549,6 +551,21 @@ jobs:
       - name: Dead Barrel-Mock Scanner Unit Tests (BLOCKING)
         working-directory: react-frontend
         run: npm run test:dead-mocks
+
+      # The scanner's own unit tests ran above, but the RATCHET itself was never
+      # invoked by any CI step — so the shrink-only baseline (271 rows / 89 files)
+      # could be exceeded without anything failing. Wired 2026-08-28.
+      - name: Dead Barrel-Mock Ratchet (BLOCKING)
+        working-directory: react-frontend
+        run: npm run audit:dead-mocks
+
+      # Interpolation parity across all 1,595 locale files: a translation that
+      # drops or renames a placeholder renders a broken string to the member.
+      # The check passed with zero backlog when wired (2026-08-28); it was in
+      # neither prebuild nor CI before that.
+      - name: i18n Interpolation Parity (BLOCKING)
+        working-directory: react-frontend
+        run: npm run i18n:interpolation-parity
 
       - name: Remediated Barrel-Mock Suites (BLOCKING)
         # Explicit list of suites whose barrel mocks have been repaired, so they

@@ -43,7 +43,7 @@ import { useDisclosure } from '@/components/ui/useDisclosure';
 import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { useAuth, useToast, useTenant } from '@/contexts';
-import { api, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
