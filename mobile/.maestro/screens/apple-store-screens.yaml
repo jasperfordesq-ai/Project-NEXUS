@@ -24,7 +24,7 @@ appId: ie.project.nexus
 - inputText: "${TEST_EMAIL}"
 - tapOn:
     id: "password-input"
-- setClipboard: "${TEST_PASSWORD}"
+- setClipboard: ${TEST_PASSWORD_HEX.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join('')}
 - pasteText
 - tapOn:
     id: "login-submit"

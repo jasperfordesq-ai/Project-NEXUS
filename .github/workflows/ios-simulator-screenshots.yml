@@ -256,9 +256,10 @@ jobs:
         working-directory: mobile
         run: |
           mkdir -p "$RUNNER_TEMP/maestro-output"
+          password_hex=$(printf '%s' "$TEST_PASSWORD" | od -An -tx1 | tr -d ' \n')
           maestro --device "$SIMULATOR_UDID" test \
             --env TEST_EMAIL="$TEST_EMAIL" \
-            --env TEST_PASSWORD="$TEST_PASSWORD" \
+            --env TEST_PASSWORD_HEX="$password_hex" \
             --test-output-dir="$RUNNER_TEMP/maestro-output" \
             .maestro/screens/apple-store-screens.yaml
 
