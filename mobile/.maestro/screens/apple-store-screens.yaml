@@ -41,9 +41,6 @@ appId: ie.project.nexus
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 60000
-- extendedWaitUntil:
-    visible: "Read more"
-    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 01-feed
