@@ -69,7 +69,7 @@ jobs:
 
       - name: Restore the unsigned iOS Simulator app cache
         id: simulator-app-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: mobile/.ios-simulator-cache/TimebankGlobal.app
           key: ios-simulator-app-${{ runner.os }}-${{ runner.arch }}-${{ steps.app-source.outputs.hash }}
@@ -215,6 +215,13 @@ jobs:
           test -d "$app_path"
           mkdir -p .ios-simulator-cache
           ditto "$app_path" .ios-simulator-cache/TimebankGlobal.app
+
+      - name: Save the unsigned iOS Simulator app cache
+        if: steps.simulator-app-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: mobile/.ios-simulator-cache/TimebankGlobal.app
+          key: ios-simulator-app-${{ runner.os }}-${{ runner.arch }}-${{ steps.app-source.outputs.hash }}
 
       - name: Install and launch the unsigned iOS Release build
         working-directory: mobile
