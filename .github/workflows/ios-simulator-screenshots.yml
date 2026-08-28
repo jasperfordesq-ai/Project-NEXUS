@@ -55,6 +55,25 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Fingerprint the iOS app source independently of the screenshot tour
+        id: app-source
+        shell: bash
+        run: |
+          source_hash=$(
+            git ls-files -s mobile \
+              | grep -Ev '^100[0-9]{3} [0-9a-f]+ [0-9]+[[:space:]]+mobile/(\.maestro|docs|store-listing)/' \
+              | shasum -a 256 \
+              | cut -d ' ' -f 1
+          )
+          echo "hash=$source_hash" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the unsigned iOS Simulator app cache
+        id: simulator-app-cache
+        uses: actions/cache@v4
+        with:
+          path: mobile/.ios-simulator-cache/TimebankGlobal.app
+          key: ios-simulator-app-${{ runner.os }}-${{ runner.arch }}-${{ steps.app-source.outputs.hash }}
+
       - name: Confirm the protected demo credentials are configured
         env:
           TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
@@ -165,6 +184,7 @@ jobs:
           echo "IOS_SIMULATOR_RUNTIME=$runtime_id" >> "$GITHUB_ENV"
 
       - name: Generate the native iOS project and install CocoaPods
+        if: steps.simulator-app-cache.outputs.cache-hit != 'true'
         working-directory: mobile
         run: |
           mkdir -p "$HOME/.expo"
@@ -172,7 +192,8 @@ jobs:
           cd ios
           pod install
 
-      - name: Compile and install the unsigned iOS Release build
+      - name: Compile the unsigned iOS Release build
+        if: steps.simulator-app-cache.outputs.cache-hit != 'true'
         working-directory: mobile
         run: |
           # Build specifically for the Simulator SDK. Expo CLI's device resolver
@@ -191,6 +212,14 @@ jobs:
             build
 
           app_path='ios/build/Build/Products/Release-iphonesimulator/TimebankGlobal.app'
+          test -d "$app_path"
+          mkdir -p .ios-simulator-cache
+          ditto "$app_path" .ios-simulator-cache/TimebankGlobal.app
+
+      - name: Install and launch the unsigned iOS Release build
+        working-directory: mobile
+        run: |
+          app_path='.ios-simulator-cache/TimebankGlobal.app'
           test -d "$app_path"
           xcrun simctl install "$SIMULATOR_UDID" "$app_path"
           xcrun simctl launch "$SIMULATOR_UDID" ie.project.nexus

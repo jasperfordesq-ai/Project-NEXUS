@@ -25,7 +25,6 @@ appId: ie.project.nexus
 - tapOn:
     id: "password-input"
 - inputText: "${TEST_PASSWORD}"
-- hideKeyboard
 - tapOn:
     id: "login-submit"
 - extendedWaitUntil:
