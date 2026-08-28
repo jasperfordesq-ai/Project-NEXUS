@@ -19,7 +19,9 @@ class GroupSSOServiceTest extends TestCase
     public function test_has_public_methods(): void
     {
         $ref = new \ReflectionClass(GroupSSOService::class);
-        foreach (['getSSOConfig', 'setSSOConfig', 'mapSAMLAttributes', 'findOrCreateSSOUser', 'getGroupMappings', 'assignSSOGroups'] as $m) {
+        // findOrCreateSSOUser was removed on 2026-08-28: it had no callers and
+        // its INSERT named users.auth_provider, a column that does not exist.
+        foreach (['getSSOConfig', 'setSSOConfig', 'mapSAMLAttributes', 'getGroupMappings', 'assignSSOGroups'] as $m) {
             $this->assertTrue($ref->hasMethod($m), "Method {$m} should exist");
             $this->assertTrue($ref->getMethod($m)->isPublic(), "Method {$m} should be public");
             $this->assertTrue($ref->getMethod($m)->isStatic(), "Method {$m} should be static");

@@ -93,33 +93,4 @@ class AuthServiceTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_refreshToken_returns_null_when_token_invalid(): void
-    {
-        DB::shouldReceive('table')->with('api_tokens')->andReturnSelf();
-        DB::shouldReceive('join')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('select')->andReturnSelf();
-        DB::shouldReceive('first')->andReturnNull();
-
-        $result = $this->service->refreshToken('bad-token');
-        $this->assertNull($result);
-    }
-
-    public function test_refreshToken_returns_new_token_on_success(): void
-    {
-        $record = (object) ['user_id' => 1];
-
-        DB::shouldReceive('table')->with('api_tokens')->andReturnSelf();
-        DB::shouldReceive('join')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('select')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn($record);
-        DB::shouldReceive('update')->once();
-
-        $result = $this->service->refreshToken('valid-token');
-
-        $this->assertNotNull($result);
-        $this->assertArrayHasKey('token', $result);
-        $this->assertArrayHasKey('expires_at', $result);
-    }
 }

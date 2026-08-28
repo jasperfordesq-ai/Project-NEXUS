@@ -297,40 +297,6 @@ class ExchangeService
     }
 
     /**
-     * Decline an exchange request.
-     */
-    public function decline(int $exchangeId, int $providerId, ?string $reason = null): bool
-    {
-        $updated = DB::table('exchange_requests')
-            ->where('tenant_id', TenantContext::getId())
-            ->where('id', $exchangeId)
-            ->where('provider_id', $providerId)
-            ->where('status', self::STATUS_PENDING)
-            ->update([
-                'status'         => self::STATUS_DECLINED,
-                'provider_notes' => $reason,
-                'updated_at'     => now(),
-            ]) > 0;
-
-        if ($updated) {
-            try {
-                $exchange = DB::table('exchange_requests')->where('tenant_id', TenantContext::getId())->where('id', $exchangeId)->first();
-                if ($exchange) {
-                    NotificationDispatcher::send(
-                        (int) $exchange->requester_id,
-                        'exchange_request_declined',
-                        ['exchange_id' => $exchangeId, 'reason' => $reason ?? '']
-                    );
-                }
-            } catch (\Throwable $e) {
-                Log::warning('[ExchangeService] decline notification failed: ' . $e->getMessage());
-            }
-        }
-
-        return $updated;
-    }
-
-    /**
      * Complete an exchange.
      */
     public function complete(int $exchangeId, int $userId): bool

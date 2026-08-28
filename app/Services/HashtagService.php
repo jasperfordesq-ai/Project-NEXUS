@@ -27,28 +27,6 @@ class HashtagService
     }
 
     /**
-     * Legacy syncTags — sync hashtags for a post.
-     */
-    public static function syncTags(int $tenantId, int $postId, array $tags): void
-    {
-        try {
-            \Illuminate\Support\Facades\DB::table('post_hashtags')
-                ->where('post_id', $postId)
-                ->delete();
-
-            foreach ($tags as $tag) {
-                \Illuminate\Support\Facades\DB::table('post_hashtags')->insert([
-                    'post_id'    => $postId,
-                    'tag'        => strtolower(trim($tag)),
-                    'created_at' => now(),
-                ]);
-            }
-        } catch (\Throwable $e) {
-            // Table may not exist
-        }
-    }
-
-    /**
      * Extract hashtags from text content.
      *
      * Returns unique, lowercase tags (without the # prefix).

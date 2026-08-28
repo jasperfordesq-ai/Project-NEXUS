@@ -7,7 +7,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * CronJobService — Laravel DI-based service for cron job monitoring.
@@ -31,52 +30,10 @@ class CronJobService
         return $jobs;
     }
 
-    /**
-     * Record a cron job execution.
-     */
-    public function run(string $jobName, int $tenantId, callable $task): array
-    {
-        $startedAt = now();
-        $success = false;
-        $errorMsg = null;
-
-        try {
-            $task();
-            $success = true;
-        } catch (\Throwable $e) {
-            $errorMsg = $e->getMessage();
-            Log::error("CronJobService: {$jobName} failed", ['error' => $errorMsg]);
-        }
-
-        // Carbon v3 `diffInSeconds` is signed: measure $startedAt -> now (older ->
-        // newer) so the run duration is a non-negative whole number of seconds.
-        // `now()->diffInSeconds($startedAt)` would return a negative float here.
-        $duration = max(0, (int) round($startedAt->diffInSeconds(now())));
-
-        DB::table('cron_job_runs')->insert([
-            'job_name'   => $jobName,
-            'tenant_id'  => $tenantId,
-            'started_at' => $startedAt,
-            'duration_s' => $duration,
-            'success'    => $success,
-            'error'      => $errorMsg,
-            'created_at' => now(),
-        ]);
-
-        return ['job' => $jobName, 'success' => $success, 'duration_s' => $duration, 'error' => $errorMsg];
-    }
-
-    /**
-     * Get recent run history for a specific cron job.
-     */
-    public function getHistory(string $jobName, int $limit = 20): array
-    {
-        return DB::table('cron_job_runs')
-            ->where('job_name', $jobName)
-            ->orderByDesc('created_at')
-            ->limit(min($limit, 100))
-            ->get()
-            ->map(fn ($r) => (array) $r)
-            ->all();
-    }
+    // run() and getHistory() — REMOVED 2026-08-28
+    //
+    // Both wrote to or read a `cron_job_runs` table that exists in no
+    // migration, no schema dump and no live database. Nothing called either
+    // method; the class is referenced only by its container registration. Cron
+    // monitoring actually in use is App\Services\CronJobRunner.
 }

@@ -54,24 +54,6 @@ class LeaderboardSeasonServiceTest extends TestCase
         $this->assertSame(1, $result['id']);
     }
 
-    public function test_endSeason_returns_false_when_not_found(): void
-    {
-        DB::shouldReceive('table')->with('leaderboard_seasons')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn(null);
-
-        $this->assertFalse($this->service->endSeason(2, 999));
-    }
-
-    public function test_endSeason_returns_false_when_not_active(): void
-    {
-        DB::shouldReceive('table')->with('leaderboard_seasons')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn((object) ['id' => 1, 'status' => 'completed', 'rewards' => '{}']);
-
-        $this->assertFalse($this->service->endSeason(2, 1));
-    }
-
     public function test_getAllSeasons_returns_array(): void
     {
         DB::shouldReceive('table')->with('leaderboard_seasons')->andReturnSelf();

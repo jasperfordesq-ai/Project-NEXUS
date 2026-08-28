@@ -49,24 +49,6 @@ class DeliverableService
     }
 
     /**
-     * Create a new deliverable.
-     */
-    public function create(int $tenantId, array $data): ?int
-    {
-        return DB::table('deliverables')->insertGetId([
-            'tenant_id'   => $tenantId,
-            'project_id'  => $data['project_id'] ?? null,
-            'title'       => $data['title'],
-            'description' => $data['description'] ?? null,
-            'status'      => $data['status'] ?? 'draft',
-            'due_date'    => $data['due_date'] ?? null,
-            'assigned_to' => $data['assigned_to'] ?? null,
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
-    }
-
-    /**
      * Update an existing deliverable.
      */
     public function update(int $id, int $tenantId, array $data): bool
@@ -79,18 +61,5 @@ class DeliverableService
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
             ->update($update) > 0;
-    }
-
-    /**
-     * Add a comment to a deliverable.
-     */
-    public function addComment(int $deliverableId, int $userId, string $body): ?int
-    {
-        return DB::table('deliverable_comments')->insertGetId([
-            'deliverable_id' => $deliverableId,
-            'user_id'        => $userId,
-            'body'           => $body,
-            'created_at'     => now(),
-        ]);
     }
 }

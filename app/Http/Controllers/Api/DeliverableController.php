@@ -6,7 +6,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\I18n\LocaleContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -116,56 +115,5 @@ class DeliverableController extends BaseApiController
         }
 
         return $this->respondWithData(['id' => $id, 'updated' => true]);
-    }
-
-    /** POST /api/v2/deliverables/{id}/comments */
-    public function addComment(int $id): JsonResponse
-    {
-        $userId = $this->requireAuth();
-        $tenantId = $this->getTenantId();
-
-        $deliverable = DB::selectOne(
-            'SELECT id FROM deliverables WHERE id = ? AND tenant_id = ?',
-            [$id, $tenantId]
-        );
-
-        if ($deliverable === null) {
-            return $this->respondWithError('NOT_FOUND', __('api.deliverable_not_found'), null, 404);
-        }
-
-        $content = $this->requireInput('content');
-
-        DB::insert(
-            'INSERT INTO deliverable_comments (tenant_id, deliverable_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [$tenantId, $id, $userId, $content]
-        );
-
-        $commentId = (int) DB::getPdo()->lastInsertId();
-
-        // Notify deliverable owner of new comment
-        try {
-            $owner = DB::selectOne(
-                'SELECT user_id, title FROM deliverables WHERE id = ? AND tenant_id = ?',
-                [$id, $tenantId]
-            );
-            if ($owner && (int) $owner->user_id !== $userId) {
-                $commenter = \App\Models\User::find($userId);
-                $ownerUser = \App\Models\User::find((int) $owner->user_id);
-                LocaleContext::withLocale($ownerUser, function () use ($commenter, $owner, $id) {
-                    $commenterName = $commenter->first_name ?? $commenter->name ?? __('emails.common.fallback_someone');
-                    \App\Models\Notification::createNotification(
-                        (int) $owner->user_id,
-                        __('api_controllers_3.deliverable_comment.posted', ['name' => $commenterName, 'title' => $owner->title]),
-                        "/deliverables/{$id}",
-                        'comment'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($owner->user_id), 'comment', __('api_controllers_3.deliverable_comment.posted', ['name' => $commenterName, 'title' => $owner->title]), "/deliverables/{$id}");
-                });
-            }
-        } catch (\Throwable $e) {
-            \Log::warning('Deliverable comment notification failed', ['deliverable_id' => $id, 'error' => $e->getMessage()]);
-        }
-
-        return $this->respondWithData(['id' => $commentId, 'deliverable_id' => $id], null, 201);
     }
 }

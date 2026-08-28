@@ -1,7 +1,0 @@
-// AG48 — Merchant Onboarding Wizard
-// All routes require auth:sanctum middleware (add within your auth group)
-Route::get('/v2/merchant-onboarding/status', [\App\Http\Controllers\Api\MerchantOnboardingController::class, 'status']);
-Route::post('/v2/merchant-onboarding/step-1', [\App\Http\Controllers\Api\MerchantOnboardingController::class, 'saveStep1']);
-Route::post('/v2/merchant-onboarding/step-2', [\App\Http\Controllers\Api\MerchantOnboardingController::class, 'saveStep2']);
-Route::post('/v2/merchant-onboarding/step-3', [\App\Http\Controllers\Api\MerchantOnboardingController::class, 'saveStep3']);
-Route::post('/v2/merchant-onboarding/complete', [\App\Http\Controllers\Api\MerchantOnboardingController::class, 'complete']);

@@ -396,6 +396,24 @@ class ContentModerationService
 
     /**
      * Apply moderation decision to the actual content.
+     *
+     * 🔴 Comments hide via `deleted_at`, NOT `is_hidden` (fixed 2026-08-28).
+     * `feed_posts` has both columns; `comments` has only `deleted_at`, so both
+     * comment branches wrote a column that does not exist. Every write threw,
+     * the catch below swallowed it, and the queue row was still marked
+     * reviewed — so an admin rejecting a reported comment was told it was
+     * actioned while the comment stayed visible to every member. Found by the
+     * db-column reference gate on 2026-08-28; it had been mis-triaged as
+     * unreachable because `applyDecision` is `private static` and is called as
+     * `self::applyDecision(`, which an `->applyDecision(` grep cannot find.
+     *
+     * `deleted_at IS NULL` is the established "this comment is not visible"
+     * test on every read path (CommentService, FeedService, FeedItemTables,
+     * PostAnalyticsController), so setting it is what actually removes the
+     * comment from the platform. It does conflate "the member deleted it" with
+     * "a moderator removed it"; the queue row records which, and a dedicated
+     * moderation column would need a migration. Do not "restore" is_hidden here
+     * without adding that column first.
      */
     private static function applyDecision(ContentModerationQueue $item, string $decision): void
     {
@@ -408,14 +426,14 @@ class ContentModerationService
                 match ($contentType) {
                     'post' => DB::table('feed_posts')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['is_hidden' => 0]),
                     'listing' => DB::table('listings')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['status' => 'active']),
-                    'comment' => DB::table('comments')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['is_hidden' => 0]),
+                    'comment' => DB::table('comments')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['deleted_at' => null]),
                     default => null,
                 };
             } elseif ($decision === self::STATUS_REJECTED) {
                 match ($contentType) {
                     'post' => DB::table('feed_posts')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['is_hidden' => 1]),
                     'listing' => DB::table('listings')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['status' => 'rejected']),
-                    'comment' => DB::table('comments')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['is_hidden' => 1]),
+                    'comment' => DB::table('comments')->where('id', $contentId)->where('tenant_id', $tenantId)->update(['deleted_at' => now()]),
                     default => null,
                 };
             }

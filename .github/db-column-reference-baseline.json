@@ -2,100 +2,20 @@
   "_README": "Pre-existing DB column/table references that do not resolve against database/schema/mysql-schema.sql. Read by scripts/check-db-column-references.mjs. SHRINK-ONLY: removing an entry is what a fix looks like; the gate FAILS if a listed entry no longer occurs, so a fix cannot land without updating this file. Adding an entry needs a reason in the commit message. Seeded 2026-07-30 when the gate was written.",
   "_WHY": "A documentation audit found docs citing a `group_bans` table that never existed. Chasing it down found the same defect three more times in the same service as a COLUMN mismatch on a table that does exist (writes to updated_at / moderated_at / action_taken on group_content_flags, whose real columns are resolved_at and moderation_action). Every write threw, and it went unnoticed for four months because each method wrapped its body in catch (\\Throwable) and returned a plausible value. Provenance: commit de2e48396 (2026-03-20, 'add missing service methods') wrote 15 services against an imagined schema.",
   "_FIXED_2026_07_30": "All three `live-defect` entries are gone, fixed rather than re-baselined, and every one resolved as 'the code is wrong, the schema is right'. consent_types.tenant_id: the table is a PLATFORM-GLOBAL catalogue keyed by slug and FK'd from tenant_consent_overrides + consent_version_history, with per-tenant customisation done through the override table — so the admin CRUD dropped tenant_id and its three mutations now require a PLATFORM super admin, because a shared catalogue means every write is cross-tenant. challenge_claims: never created; the real claim ledger is user_challenge_progress.reward_claimed, so ChallengeService::claim was reimplemented on it to match GamificationV2Controller (the old version also never awarded anything, so creating the table would have made a visible failure silent). match_preference_categories: never created, and the canonical match_preferences.categories JSON column already persists the choices, so the vestigial side-table blocks were deleted. Two `verified` entries went with them (match_history.score / .distance) when the dead MatchingService::recordInteraction duplicate was removed. Regression cover: tests/Laravel/Feature/SchemaWriteRegressionTest.php FIX 7-9.",
+  "_FIXED_2026_08_28": "Fifteen entries removed by DELETING the dead code rather than repairing it, because in every case a working implementation of the same job already exists elsewhere and the phantom one had no route and no caller. Deleted: HashtagService::syncTags (post_hashtags.tag — its unscoped ->delete() would have wiped a post's hashtag links before the insert threw); DeliverableService::create + ::addComment and DeliverableController::addComment (deliverables.project_id, deliverable_comments.body/.content — the service and the controller wrote DIFFERENT phantom column names for the same field, which is proof neither ever ran; the live path is AdminDeliverabilityController, which correctly writes deliverable_comments.comment_text); AdminListingsService::approve + ::reject (listings.approved_by/.approved_at — the live path is ListingModerationService); ExchangeService::decline (exchange_requests.provider_notes); GroupSSOService::findOrCreateSSOUser (users.auth_provider); LeaderboardSeasonService::endSeason (season_rankings.season_xp/.final_rank); SkillTaxonomyService::addSkill (user_skills.skill_id/.updated_at — the routed path is addUserSkill); AdminContentController::reports + ::approveContent + ::rejectContent (content_reports); AdminSettingsController::features + ::toggleFeature (tenant_features — real toggling is TenantFeatureConfig + tenants.features); CronJobService::run + ::getHistory (cron_job_runs — real monitoring is CronJobRunner); AuthService::refreshToken (api_tokens — real tokens are TokenService JWTs; the api_tokens entry below SURVIVES because AuthService::login/logout/validateToken/createApiToken still name that table).",
+  "_FIXED_2026_08_28_LIVE": "comments.is_hidden was the LAST live-defect and is now FIXED, not deleted and not re-baselined. ContentModerationService::applyDecision() wrote comments.is_hidden in both the approve and reject branches; feed_posts has that column, comments does not — its only soft-hide column is deleted_at. Every comment decision therefore threw, the catch (\\Throwable) swallowed it, and the queue row was still marked reviewed, so an admin rejecting a reported comment was told it was actioned while the comment stayed visible to every member. Reject now sets deleted_at = now() and approve clears it, which is the same test (`deleted_at IS NULL`) every read path already applies — CommentService, FeedService, FeedItemTables and PostAnalyticsController. It does conflate a member's own delete with a moderator's removal; the queue row records which, and separating them would need a migration. Regression cover: tests/Laravel/Feature/Moderation/CommentModerationAppliesDecisionTest.php, which reads the row back rather than mocking the database — the pre-existing unit tests mocked DB wholesale, which is why they never noticed.",
   "_STATUS_MEANINGS": {
     "live-defect": "Reachable in production and the write throws. Fix these.",
     "verified": "Real mismatch, but the code path has no callers — dead. Delete or repair as a cleanup, not an incident.",
     "unreachable": "Real mismatch; triaged 2026-07-30 and confirmed to have no callers or no route, so nothing hits it today. Still wrong, still worth removing."
   },
-  "columns": {
-    "post_hashtags.tag": {
-      "status": "verified",
-      "where": "app/Services/HashtagService.php:40 (syncTags)",
-      "real": "hashtag_id",
-      "note": "Dead code — syncTags has no callers. The ->delete() above the insert DOES succeed and is not tenant-scoped, so a future caller would clear a post's hashtag links and then fail to write the replacements."
-    },
-    "deliverable_comments.content": {
-      "status": "unreachable",
-      "where": "app/Http/Controllers/Api/DeliverableController.php:139 (addComment)",
-      "note": "Not routed and no internal caller. The whole deliverables feature appears unwired."
-    },
-    "listings.approved_by": {
-      "status": "unreachable",
-      "where": "app/Services/AdminListingsService.php:61 (approve), :146 (reject)",
-      "note": "AdminListingsService is referenced only by AppServiceProvider (DI registration, not a call). AdminListingsController injects ListingModerationService — a different class."
-    },
-    "listings.approved_at": {
-      "status": "unreachable",
-      "where": "app/Services/AdminListingsService.php:61 (approve)",
-      "note": "Same as listings.approved_by."
-    },
-    "comments.is_hidden": {
-      "status": "unreachable",
-      "where": "app/Services/ContentModerationService.php:410 and :417 (applyDecision)",
-      "note": "No ->applyDecision( call site anywhere in app/ outside the declaring file."
-    },
-    "deliverables.project_id": {
-      "status": "unreachable",
-      "where": "app/Services/DeliverableService.php:56 (create)",
-      "note": "Class referenced only by AppServiceProvider. Every ->create( hit in app/ resolves to a different service."
-    },
-    "deliverable_comments.body": {
-      "status": "unreachable",
-      "where": "app/Services/DeliverableService.php:89 (addComment)",
-      "note": "Same as deliverables.project_id. Note this file writes `body` while DeliverableController writes `content` — neither column exists."
-    },
-    "exchange_requests.provider_notes": {
-      "status": "unreachable",
-      "where": "app/Services/ExchangeService.php:304 (decline)",
-      "note": "The only ->decline( call site is $this->hourGiftService->decline(...) — CaringHourGiftService, a different class."
-    },
-    "users.auth_provider": {
-      "status": "unreachable",
-      "where": "app/Services/GroupSSOService.php:188 (findOrCreateSSOUser)",
-      "note": "No callers."
-    },
-    "season_rankings.season_xp": {
-      "status": "unreachable",
-      "where": "app/Services/LeaderboardSeasonService.php:126 (endSeason)",
-      "note": "No callers."
-    },
-    "season_rankings.final_rank": {
-      "status": "unreachable",
-      "where": "app/Services/LeaderboardSeasonService.php:126 (endSeason)",
-      "note": "No callers."
-    },
-    "user_skills.skill_id": {
-      "status": "unreachable",
-      "where": "app/Services/SkillTaxonomyService.php:342 (addSkill)",
-      "note": "No callers. The real column is skill_name; user_skills has no skill_id and no updated_at."
-    },
-    "user_skills.updated_at": {
-      "status": "unreachable",
-      "where": "app/Services/SkillTaxonomyService.php:342 (addSkill)",
-      "note": "Same as user_skills.skill_id."
-    }
-  },
+  "columns": {},
   "absentTables": {
-    "content_reports": {
-      "status": "unreachable",
-      "where": "app/Http/Controllers/Api/AdminContentController.php:65 (approveContent)",
-      "note": "Not routed, no internal caller."
-    },
-    "tenant_features": {
-      "status": "unreachable",
-      "where": "app/Http/Controllers/Api/AdminSettingsController.php:203 (toggleFeature)",
-      "note": "Not routed, no internal caller. Real feature toggling goes through TenantFeatureConfig and tenants.features."
-    },
     "api_tokens": {
       "status": "unreachable",
-      "where": "app/Services/AuthService.php:142 (refreshToken)",
-      "note": "No callers — the only ->refreshToken( site is AuthController::refreshToken(). Real tokens are TokenService JWTs."
-    },
-    "cron_job_runs": {
-      "status": "unreachable",
-      "where": "app/Services/CronJobService.php:56 (run)",
-      "note": "Class referenced only by AppServiceProvider. Cron monitoring in use is CronJobRunner."
+      "where": "app/Services/AuthService.php:75 (logout), :97 (validateToken), :123 (createApiToken, reached from login)",
+      "note": "The whole of App\\Services\\AuthService is dead: it is referenced only by its AppServiceProvider registration and its own tests, and real authentication is TokenService JWTs via AuthController. ::refreshToken was deleted on 2026-08-28; the remaining four references keep this entry alive. Retiring the class (and its container registration) is a separate decision, flagged for the owner."
     }
   },
-  "_TRIAGE": "All entries triaged 2026-07-30 against the LIVE dev database via information_schema, not just the committed dump: every one is ABSENT live as well, so there is ZERO dump drift here and every entry is a code defect. Positive controls (users.email, group_content_flags.resolved_at, match_history.match_score, post_hashtags.hashtag_id, user_skills.skill_name) all returned present, so the query discriminates. The live DB has 727 tables against the dump's 723, so minor drift exists — just not in any of these. Reachability was then established per entry; a first pass using bare method names was discarded because generic names like create() and run() matched hundreds of unrelated call sites."
+  "_TRIAGE": "Entries triaged 2026-07-30 against the LIVE dev database via information_schema, not just the committed dump: every one is ABSENT live as well, so there is ZERO dump drift here and every entry is a code defect. Positive controls (users.email, group_content_flags.resolved_at, match_history.match_score, post_hashtags.hashtag_id, user_skills.skill_name) all returned present, so the query discriminates. The live DB has 727 tables against the dump's 723, so minor drift exists — just not in any of these. Reachability was then established per entry; a first pass using bare method names was discarded because generic names like create() and run() matched hundreds of unrelated call sites. 🔴 LESSON FROM 2026-08-28: that second pass over-corrected. Searching for `->method(` misses a `private static` method called as `self::method(` and a static called as `Class::method(`, which is exactly how comments.is_hidden was mislabelled `unreachable` for four weeks while it was live. Search for the bare method name and READ the hits; do not trust an arrow-prefixed grep to prove a negative."
 }

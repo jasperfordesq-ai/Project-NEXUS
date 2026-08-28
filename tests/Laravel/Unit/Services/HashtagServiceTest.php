@@ -62,28 +62,6 @@ class HashtagServiceTest extends TestCase
         $this->assertContains('world', $result);
     }
 
-    // ─── syncTags ────────────────────────────────────────────────
-
-    public function test_syncTags_deletes_old_and_inserts_new(): void
-    {
-        DB::shouldReceive('table')->with('post_hashtags')->andReturnSelf();
-        DB::shouldReceive('where')->with('post_id', 1)->andReturnSelf();
-        DB::shouldReceive('delete')->once()->andReturn(1);
-        DB::shouldReceive('insert')->twice();
-
-        HashtagService::syncTags(2, 1, ['tag1', 'tag2']);
-        // No exception = pass (void method)
-        $this->assertTrue(true);
-    }
-
-    public function test_syncTags_handles_missing_table_gracefully(): void
-    {
-        DB::shouldReceive('table')->andThrow(new \Exception('Table not found'));
-
-        HashtagService::syncTags(2, 1, ['tag1']);
-        $this->assertTrue(true);
-    }
-
     // ─── getTrending ─────────────────────────────────────────────
 
     public function test_getTrending_returns_array_of_tag_counts(): void

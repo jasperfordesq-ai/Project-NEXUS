@@ -145,55 +145,6 @@ class GroupSSOService
     }
 
     // =========================================================================
-    // User Provisioning
-    // =========================================================================
-
-    /**
-     * Find an existing user by email in the current tenant, or create a new one.
-     *
-     * Returns the user ID on success, or null if the email is empty/invalid.
-     *
-     * @param  array $attributes Mapped user attributes (from mapSAMLAttributes)
-     * @return int|null User ID
-     */
-    public static function findOrCreateSSOUser(array $attributes): ?int
-    {
-        $tenantId = TenantContext::getId();
-        $email = trim($attributes['email'] ?? '');
-
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return null;
-        }
-
-        // Look for existing user in this tenant
-        $existing = DB::selectOne(
-            "SELECT id FROM users WHERE tenant_id = ? AND email = ? LIMIT 1",
-            [$tenantId, $email]
-        );
-
-        if ($existing) {
-            return (int) $existing->id;
-        }
-
-        // Parse name into first/last
-        $name = trim($attributes['name'] ?? '');
-        $nameParts = preg_split('/\s+/', $name, 2);
-        $firstName = $nameParts[0] ?? '';
-        $lastName = $nameParts[1] ?? '';
-
-        // Create new user with SSO-provisioned status
-        $now = now()->format('Y-m-d H:i:s');
-
-        DB::insert(
-            "INSERT INTO users (tenant_id, email, first_name, last_name, status, auth_provider, created_at, updated_at)
-             VALUES (?, ?, ?, ?, 'active', 'saml', ?, ?)",
-            [$tenantId, $email, $firstName, $lastName, $now, $now]
-        );
-
-        return (int) DB::getPdo()->lastInsertId();
-    }
-
-    // =========================================================================
     // Group Mappings
     // =========================================================================
 

@@ -6,17 +6,19 @@
 
 namespace App\Services;
 
-use App\Core\EmailTemplateBuilder;
-use App\Core\Mailer;
-use App\Core\TenantContext;
-use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * AdminListingsService — Laravel DI-based service for admin listing management.
  *
- * Handles listing approval, rejection, and moderation statistics.
+ * Read-only listing queries for admin dashboards.
+ *
+ * NOTE: this class is not reached from any route. The live listing moderation
+ * path is App\Services\ListingModerationService, which AdminListingsController
+ * injects. `approve()` and `reject()` used to live here and wrote
+ * `listings.approved_by` / `listings.approved_at`, neither of which exists —
+ * every write threw and was swallowed. They were deleted on 2026-08-28 rather
+ * than repaired, because ListingModerationService already does the job.
  */
 class AdminListingsService
 {
@@ -40,183 +42,6 @@ class AdminListingsService
             ->all();
 
         return ['items' => $items, 'total' => $total];
-    }
-
-    /**
-     * Approve a pending listing.
-     */
-    public function approve(int $listingId, int $tenantId, int $adminId): bool
-    {
-        // Fetch listing data before update for notification
-        $listing = DB::table('listings')
-            ->where('id', $listingId)
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'pending')
-            ->first();
-
-        if (!$listing) {
-            return false;
-        }
-
-        $affected = DB::table('listings')
-            ->where('id', $listingId)
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'pending')
-            ->update([
-                'status'      => 'active',
-                'approved_by' => $adminId,
-                'approved_at' => now(),
-                'updated_at'  => now(),
-            ]);
-
-        if ($affected > 0) {
-            $safeTitle = htmlspecialchars($listing->title ?? '', ENT_QUOTES, 'UTF-8');
-
-            // Look up the recipient (listing author) once so we can render bell + email in their locale.
-            $user = DB::table('users')
-                ->where('id', $listing->user_id)
-                ->where('tenant_id', $tenantId)
-                ->select(['email', 'first_name', 'name', 'preferred_language'])
-                ->first();
-
-            LocaleContext::withLocale($user, function () use ($listing, $listingId, $tenantId, $safeTitle, $user) {
-                // Bell notification
-                try {
-                    \App\Models\Notification::createNotification(
-                        (int) $listing->user_id,
-                        __('emails_listings.listings.approved.notification_short', ['title' => $safeTitle]),
-                        "/listings/{$listingId}",
-                        'listing_approved',
-                        true,
-                        $tenantId
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($listing->user_id), 'listing_approved', __('emails_listings.listings.approved.notification_short', ['title' => $safeTitle]), "/listings/{$listingId}");
-                } catch (\Throwable $e) {
-                    Log::warning("AdminListingsService::approve bell notification failed for listing #{$listingId}: " . $e->getMessage());
-                }
-
-                // Email notification
-                $previousTenantId = TenantContext::currentId();
-                try {
-                    TenantContext::setById($tenantId);
-                    if ($user && !empty($user->email)) {
-                        $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
-                        $fullUrl   = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . "/listings/{$listingId}";
-                        $html = EmailTemplateBuilder::make()
-                            ->title(__('emails_misc.listing_moderation.approved_title'))
-                            ->greeting($firstName)
-                            ->paragraph(__('emails_misc.listing_moderation.approved_body', ['title' => $safeTitle]))
-                            ->button(__('emails_misc.listing_moderation.approved_cta'), $fullUrl)
-                            ->render();
-                        if (!\App\Services\EmailDispatchService::sendRaw($user->email, __('emails_misc.listing_moderation.approved_subject', ['title' => $safeTitle]), $html, null, null, null, 'listing_moderation', ['tenant_id' => $tenantId])) {
-                            Log::warning("AdminListingsService::approve email failed for listing #{$listingId}");
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning("AdminListingsService::approve email failed for listing #{$listingId}: " . $e->getMessage());
-                } finally {
-                    if ($previousTenantId !== null) {
-                        TenantContext::setById((int) $previousTenantId);
-                    } else {
-                        TenantContext::reset();
-                    }
-                }
-            });
-        }
-
-        return $affected > 0;
-    }
-
-    /**
-     * Reject a pending listing.
-     */
-    public function reject(int $listingId, int $tenantId, int $adminId, ?string $reason = null): bool
-    {
-        // Fetch listing data before update for notification
-        $listing = DB::table('listings')
-            ->where('id', $listingId)
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'pending')
-            ->first();
-
-        if (!$listing) {
-            return false;
-        }
-
-        $affected = DB::table('listings')
-            ->where('id', $listingId)
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'pending')
-            ->update([
-                'status'          => 'rejected',
-                'rejection_reason' => $reason,
-                'approved_by'     => $adminId,
-                'updated_at'      => now(),
-            ]);
-
-        if ($affected > 0) {
-            $safeTitle = htmlspecialchars($listing->title ?? '', ENT_QUOTES, 'UTF-8');
-
-            // Look up recipient (listing author) once so bell + email render in their locale.
-            $user = DB::table('users')
-                ->where('id', $listing->user_id)
-                ->where('tenant_id', $tenantId)
-                ->select(['email', 'first_name', 'name', 'preferred_language'])
-                ->first();
-
-            LocaleContext::withLocale($user, function () use ($listing, $listingId, $tenantId, $safeTitle, $reason, $user) {
-                // Bell notification
-                try {
-                    if (!empty($reason)) {
-                        $bellMsg = __('emails_listings.listings.rejected.notification', ['title' => $safeTitle, 'reason' => htmlspecialchars($reason, ENT_QUOTES, 'UTF-8')]);
-                    } else {
-                        $bellMsg = __('emails_listings.listings.rejected.notification_no_reason', ['title' => $safeTitle]);
-                    }
-                    \App\Models\Notification::createNotification(
-                        (int) $listing->user_id,
-                        $bellMsg,
-                        "/listings/{$listingId}",
-                        'listing_rejected',
-                        true,
-                        $tenantId
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($listing->user_id), 'listing_rejected', $bellMsg, "/listings/{$listingId}");
-                } catch (\Throwable $e) {
-                    Log::warning("AdminListingsService::reject bell notification failed for listing #{$listingId}: " . $e->getMessage());
-                }
-
-                // Email notification
-                $previousTenantId = TenantContext::currentId();
-                try {
-                    TenantContext::setById($tenantId);
-                    if ($user && !empty($user->email)) {
-                        $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
-                        $fullUrl   = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . "/listings";
-                        $builder   = EmailTemplateBuilder::make()
-                            ->title(__('emails_misc.listing_moderation.rejected_title'))
-                            ->greeting($firstName)
-                            ->paragraph(__('emails_misc.listing_moderation.rejected_body', ['title' => $safeTitle]));
-                        if (!empty($reason)) {
-                            $builder->paragraph('<strong>' . __('emails_misc.listing_moderation.rejected_reason_label') . ':</strong> ' . htmlspecialchars($reason, ENT_QUOTES, 'UTF-8'));
-                        }
-                        $html = $builder->button(__('emails_misc.listing_moderation.rejected_cta'), $fullUrl)->render();
-                        if (!\App\Services\EmailDispatchService::sendRaw($user->email, __('emails_misc.listing_moderation.rejected_subject', ['title' => $safeTitle]), $html, null, null, null, 'listing_moderation', ['tenant_id' => $tenantId])) {
-                            Log::warning("AdminListingsService::reject email failed for listing #{$listingId}");
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning("AdminListingsService::reject email failed for listing #{$listingId}: " . $e->getMessage());
-                } finally {
-                    if ($previousTenantId !== null) {
-                        TenantContext::setById((int) $previousTenantId);
-                    } else {
-                        TenantContext::reset();
-                    }
-                }
-            });
-        }
-
-        return $affected > 0;
     }
 
     /**

@@ -113,49 +113,6 @@ class AuthService
     }
 
     /**
-     * Refresh an existing token, extending its expiry.
-     *
-     * @return array{token: string, expires_at: string}|null
-     */
-    public function refreshToken(string $currentToken): ?array
-    {
-        $tenantId = TenantContext::getId();
-        $hashed = hash('sha256', $currentToken);
-
-        $record = DB::table('api_tokens')
-            ->join('users', 'api_tokens.user_id', '=', 'users.id')
-            ->where('api_tokens.token', $hashed)
-            ->where('api_tokens.expires_at', '>', now())
-            ->where('users.tenant_id', $tenantId)
-            ->where('users.status', 'active')
-            ->where('users.is_approved', true)
-            ->select('api_tokens.*')
-            ->first();
-
-        if (! $record) {
-            return null;
-        }
-
-        $newToken = Str::random(64);
-        $expiresAt = now()->addDays(30);
-
-        $updated = DB::table('api_tokens')
-            ->where('token', $hashed)
-            ->where('user_id', $record->user_id)
-            ->update([
-                'token'      => hash('sha256', $newToken),
-                'expires_at' => $expiresAt,
-                'updated_at' => now(),
-            ]);
-
-        if ($updated === 0) {
-            return null;
-        }
-
-        return ['token' => $newToken, 'expires_at' => $expiresAt->toIso8601String()];
-    }
-
-    /**
      * Create a new API token for a user.
      */
     private function createApiToken(int $userId, ?string $deviceType = null): string

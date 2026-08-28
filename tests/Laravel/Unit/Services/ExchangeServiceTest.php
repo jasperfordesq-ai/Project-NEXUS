@@ -120,17 +120,6 @@ class ExchangeServiceTest extends TestCase
     }
 
     // =========================================================================
-    // decline()
-    // =========================================================================
-
-    public function test_decline_returns_true_on_success(): void
-    {
-        DB::shouldReceive('table->where->where->where->where->update')->andReturn(1);
-
-        $this->assertTrue($this->service->decline(1, 10, 'Not available'));
-    }
-
-    // =========================================================================
     // complete()
     // =========================================================================
 

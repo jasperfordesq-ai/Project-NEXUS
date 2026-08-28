@@ -182,33 +182,4 @@ class DeliverableControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [404]);
     }
 
-    // ================================================================
-    // ADD COMMENT — Not found
-    // ================================================================
-
-    public function test_add_comment_returns_404_for_nonexistent_deliverable(): void
-    {
-        $this->authenticatedUser();
-
-        $response = $this->apiPost('/v2/deliverables/999999/comments', [
-            'content' => 'A comment',
-        ]);
-
-        $this->assertContains($response->getStatusCode(), [404]);
-    }
-
-    // ================================================================
-    // ADD COMMENT — Validation
-    // ================================================================
-
-    public function test_add_comment_returns_400_when_content_missing(): void
-    {
-        $user = $this->authenticatedUser();
-        $id = $this->createDeliverable(['user_id' => $user->id]);
-
-        $response = $this->apiPost("/v2/deliverables/{$id}/comments", []);
-
-        // 400 validation error if route is registered, 404 if route not wired
-        $this->assertContains($response->getStatusCode(), [400, 404]);
-    }
 }

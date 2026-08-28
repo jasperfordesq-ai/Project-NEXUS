@@ -324,32 +324,6 @@ class SkillTaxonomyService
     }
 
     /**
-     * Add a skill to a user's profile (simple version).
-     *
-     * @return int|null Skill assignment ID or null if already assigned.
-     */
-    public function addSkill(int $userId, string $skillName, ?int $skillId = null, string $proficiency = 'intermediate'): ?int
-    {
-        $exists = DB::table('user_skills')
-            ->where('user_id', $userId)
-            ->where('skill_name', $skillName)
-            ->exists();
-
-        if ($exists) {
-            return null;
-        }
-
-        return DB::table('user_skills')->insertGetId([
-            'user_id'     => $userId,
-            'skill_id'    => $skillId,
-            'skill_name'  => trim($skillName),
-            'proficiency' => $proficiency,
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
-    }
-
-    /**
      * Add a skill to a user (full version with validation).
      */
     public function addUserSkill(int $userId, array $data): ?int

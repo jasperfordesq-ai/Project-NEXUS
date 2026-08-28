@@ -1,9 +1,0 @@
-// AG71 — Pilot Region Inquiry & Qualification Funnel
-Route::post('/v2/pilot-inquiry', [\App\Http\Controllers\Api\PilotInquiryController::class, 'submitInquiry']);
-Route::get('/v2/admin/pilot-inquiries', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminList']);
-Route::get('/v2/admin/pilot-inquiries/stats', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminPipelineStats']);
-Route::get('/v2/admin/pilot-inquiries/export', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminExportCsv']);
-Route::get('/v2/admin/pilot-inquiries/{id}', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminGet']);
-Route::post('/v2/admin/pilot-inquiries/{id}/stage', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminUpdateStage']);
-Route::post('/v2/admin/pilot-inquiries/{id}/assign', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminAssign']);
-Route::post('/v2/admin/pilot-inquiries/{id}/notes', [\App\Http\Controllers\Api\PilotInquiryController::class, 'adminUpdateNotes']);

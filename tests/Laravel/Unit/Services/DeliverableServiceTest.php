@@ -98,18 +98,6 @@ class DeliverableServiceTest extends TestCase
     }
 
     // =========================================================================
-    // create()
-    // =========================================================================
-
-    public function test_create_inserts_and_returns_id(): void
-    {
-        DB::shouldReceive('table->insertGetId')->andReturn(42);
-
-        $result = $this->service->create(2, ['title' => 'New Deliverable']);
-        $this->assertEquals(42, $result);
-    }
-
-    // =========================================================================
     // update()
     // =========================================================================
 
@@ -139,17 +127,5 @@ class DeliverableServiceTest extends TestCase
 
         $result = $this->service->update(1, 2, ['title' => 'OK', 'evil_field' => 'bad']);
         $this->assertTrue($result);
-    }
-
-    // =========================================================================
-    // addComment()
-    // =========================================================================
-
-    public function test_addComment_returns_comment_id(): void
-    {
-        DB::shouldReceive('table->insertGetId')->andReturn(7);
-
-        $result = $this->service->addComment(1, 5, 'Great work!');
-        $this->assertEquals(7, $result);
     }
 }

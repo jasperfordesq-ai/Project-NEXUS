@@ -6,7 +6,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Services\TenantFeatureConfig;
 use App\Services\TenantSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -187,57 +186,13 @@ class AdminSettingsController extends BaseApiController
         return $this->respondWithData($response);
     }
 
-    /** GET /api/v2/admin/settings/features */
-    public function features(): JsonResponse
-    {
-        $this->requireAdmin();
-        $tenantId = $this->getTenantId();
-
-        $features = DB::select(
-            'SELECT feature_key, is_enabled FROM tenant_features WHERE tenant_id = ?',
-            [$tenantId]
-        );
-
-        $result = [];
-        foreach ($features as $f) {
-            $result[$f->feature_key] = (bool) $f->is_enabled;
-        }
-
-        return $this->respondWithData($result);
-    }
-
-    /** POST /api/v2/admin/settings/features/toggle */
-    public function toggleFeature(): JsonResponse
-    {
-        $adminId = $this->requireAdmin();
-        $tenantId = $this->getTenantId();
-
-        $feature = $this->requireInput('feature');
-        $enabled = $this->inputBool('enabled', true);
-
-        // Validate feature key against known features
-        if (!array_key_exists($feature, TenantFeatureConfig::FEATURE_DEFAULTS)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.unknown_feature_with_valid', ['feature' => $feature, 'valid' => implode(', ', array_keys(TenantFeatureConfig::FEATURE_DEFAULTS))]),
-                'feature',
-                422
-            );
-        }
-
-        DB::statement(
-            'INSERT INTO tenant_features (tenant_id, feature_key, is_enabled) VALUES (?, ?, ?)
-             ON DUPLICATE KEY UPDATE is_enabled = VALUES(is_enabled)',
-            [$tenantId, $feature, $enabled ? 1 : 0]
-        );
-
-        Log::info('Feature toggled', [
-            'admin_id' => $adminId,
-            'tenant_id' => $tenantId,
-            'feature' => $feature,
-            'enabled' => $enabled,
-        ]);
-
-        return $this->respondWithData(['feature' => $feature, 'enabled' => $enabled]);
-    }
+    // Feature toggles — REMOVED 2026-08-28
+    //
+    // features() and toggleFeature() read and wrote a `tenant_features` table
+    // that exists in no migration, no schema dump and no live database. Neither
+    // was routed and nothing called them internally, so the feature never ran.
+    // Real feature toggling goes through App\Services\TenantFeatureConfig and
+    // the tenants.features JSON column.
 
     /**
      * Validate specific setting values for safety bounds.

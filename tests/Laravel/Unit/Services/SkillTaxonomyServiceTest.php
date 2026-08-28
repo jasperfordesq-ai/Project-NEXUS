@@ -82,16 +82,6 @@ class SkillTaxonomyServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    // ── addSkill ──
-
-    public function test_addSkill_returns_null_if_already_exists(): void
-    {
-        DB::shouldReceive('table->where->where->exists')->andReturn(true);
-
-        $result = $this->service->addSkill(1, 'PHP');
-        $this->assertNull($result);
-    }
-
     // ── addUserSkill ──
 
     public function test_addUserSkill_rejects_empty_name(): void

@@ -1,4 +1,0 @@
-// AG66 — KPI Baseline
-Route::get('/v2/admin/caring-community/kpi-baselines', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'listKpiBaselines']);
-Route::post('/v2/admin/caring-community/kpi-baselines', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'captureKpiBaseline']);
-Route::get('/v2/admin/caring-community/kpi-baselines/{id}/compare', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'compareKpiBaseline']);
