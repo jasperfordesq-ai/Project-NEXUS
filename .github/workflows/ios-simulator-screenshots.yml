@@ -65,6 +65,50 @@ jobs:
             exit 1
           fi
 
+      - name: Verify the protected demo login before starting the Mac build
+        env:
+          TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
+        run: |
+          node <<'NODE'
+          const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-Nexus-Mobile': '1',
+            'X-Tenant-Slug': 'partner-demo',
+          };
+          const response = await fetch(
+            'https://api.project-nexus.ie/api/auth/login',
+            {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                email: process.env.TEST_EMAIL,
+                password: process.env.TEST_PASSWORD,
+                platform: 'mobile',
+              }),
+            },
+          );
+          if (!response.ok) {
+            throw new Error(`Protected demo login failed with HTTP ${response.status}`);
+          }
+          const result = await response.json();
+          const token = result.access_token;
+          try {
+            if (result.user?.tenant_id !== 5 || result.user?.role !== 'admin') {
+              throw new Error('Protected demo login returned the wrong tenant or role');
+            }
+            console.log('Protected Partner Demo admin login verified.');
+          } finally {
+            if (token) {
+              await fetch('https://api.project-nexus.ie/api/auth/logout', {
+                method: 'POST',
+                headers: { ...headers, Authorization: `Bearer ${token}` },
+              });
+            }
+          }
+          NODE
+
       - name: Install mobile dependencies
         working-directory: mobile
         run: npm ci
