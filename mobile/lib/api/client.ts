@@ -94,6 +94,12 @@ function extractErrorMessage(data: unknown, fallback: string): string {
 /** Called when the API returns 401 and refresh has failed — registered by AuthContext */
 let onUnauthorizedCallback: (() => void) | null = null;
 
+// Keep the token returned by login/refresh immediately available to this API
+// process. Encrypted persistence remains authoritative across launches, but an
+// iOS Keychain failure or visibility delay must not make the very next request
+// anonymous after the server has already issued a valid session.
+let inProcessAccessToken: string | null = null;
+
 async function recordIosScreenshotResponse(
   method: RequestMethod,
   endpoint: string,
@@ -215,6 +221,7 @@ export function __resetRefreshStateForTests(): void {
   if (_refreshGraceTimer) clearTimeout(_refreshGraceTimer);
   _refreshGraceTimer = null;
   _refreshPromise = null;
+  inProcessAccessToken = null;
 }
 
 export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
@@ -264,6 +271,8 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
       const saves: Promise<void>[] = [storage.set(STORAGE_KEYS.AUTH_TOKEN, newToken)];
       if (data.refresh_token) saves.push(storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token));
       await Promise.all(saves);
+
+      inProcessAccessToken = newToken;
 
       return { status: 'refreshed', token: newToken };
     } catch {
@@ -354,10 +363,11 @@ async function request<T>(
   }
 
   // Gather auth token and active tenant
-  const [token, tenantSlug] = await Promise.all([
+  const [storedToken, tenantSlug] = await Promise.all([
     storage.get(STORAGE_KEYS.AUTH_TOKEN),
     storage.get(STORAGE_KEYS.TENANT_SLUG),
   ]);
+  const token = inProcessAccessToken ?? storedToken;
 
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
@@ -490,6 +500,7 @@ async function request<T>(
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
     ]);
+    inProcessAccessToken = null;
     onUnauthorizedCallback?.();
     throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
   }
@@ -539,6 +550,18 @@ async function request<T>(
       errBody?.errors,
       code,
     );
+  }
+
+  if (endpoint === '/api/auth/login') {
+    const authData = data as { access_token?: unknown; token?: unknown } | null;
+    const issuedToken = typeof authData?.access_token === 'string'
+      ? authData.access_token
+      : typeof authData?.token === 'string'
+        ? authData.token
+        : null;
+    if (issuedToken) inProcessAccessToken = issuedToken;
+  } else if (endpoint === '/api/auth/logout') {
+    inProcessAccessToken = null;
   }
 
   return data as T;

@@ -238,6 +238,39 @@ describe('api.post', () => {
     expect(options.headers['Content-Type']).toBe('application/json');
     expect(result).toEqual({ id: 1 });
   });
+
+  it('uses a freshly issued login token before encrypted storage can read it', async () => {
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_tenant_slug' ? 'partner-demo' : null
+    );
+    fetchMock
+      .mockResolvedValueOnce(mockResponse({ access_token: 'fresh-login-token' }))
+      .mockResolvedValueOnce(mockResponse({ data: [] }));
+
+    await api.post('/api/auth/login', { email: 'member@example.test', password: 'secret' });
+    await api.get('/api/v2/feed');
+
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined();
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer fresh-login-token');
+    expect(fetchMock.mock.calls[1][1].headers['X-Tenant-Slug']).toBe('partner-demo');
+  });
+
+  it('clears the in-process token after a successful logout', async () => {
+    mockStorage.get.mockImplementation(async (key: string) =>
+      key === 'nexus_tenant_slug' ? 'partner-demo' : null
+    );
+    fetchMock
+      .mockResolvedValueOnce(mockResponse({ token: 'fresh-login-token' }))
+      .mockResolvedValueOnce(mockResponse({ success: true }))
+      .mockResolvedValueOnce(mockResponse({ data: [] }));
+
+    await api.post('/api/auth/login', {});
+    await api.post('/api/auth/logout');
+    await api.get('/api/v2/feed');
+
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer fresh-login-token');
+    expect(fetchMock.mock.calls[2][1].headers.Authorization).toBeUndefined();
+  });
 });
 
 describe('api.upload', () => {
