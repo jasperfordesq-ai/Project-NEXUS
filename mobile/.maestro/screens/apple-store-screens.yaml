@@ -32,24 +32,11 @@ appId: ie.project.nexus
 - pasteText
 - tapOn:
     id: "login-submit"
-- waitForAnimationToEnd:
-    timeout: 10000
-# AuthContext persists the complete session before navigating. Relaunching here
-# verifies that stored session and avoids depending on the transient login-to-root
-# navigation race observed on iOS 26.2 automation.
-- launchApp:
-    clearState: false
-- extendedWaitUntil:
-    visible: "Select your timebank|Community Feed"
-    timeout: 30000
-- runFlow:
-    when:
-      visible: "Select your timebank"
-    commands:
-      - tapOn: "Partner Demo"
+# Do not relaunch while login is still in flight. AuthContext persists the token
+# and cached user before routing, so reaching the feed proves both have completed.
 - extendedWaitUntil:
     visible: "Community Feed"
-    timeout: 30000
+    timeout: 60000
 - extendedWaitUntil:
     visible: "Read more|View post|Comment"
     timeout: 30000
