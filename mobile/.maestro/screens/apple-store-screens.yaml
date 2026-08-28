@@ -75,7 +75,9 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 03-members
 
-- back
+- tapOn:
+    point: "15%,12%"
+    retryTapIfNoChange: true
 - tapOn:
     point: "10%,95%"
 - extendedWaitUntil:
@@ -122,7 +124,9 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 06-wallet
 
-- back
+- tapOn:
+    point: "15%,12%"
+    retryTapIfNoChange: true
 - tapOn:
     point: "10%,95%"
 - extendedWaitUntil:
@@ -141,7 +145,9 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 07-volunteering
 
-- back
+- tapOn:
+    point: "15%,12%"
+    retryTapIfNoChange: true
 - tapOn:
     point: "10%,95%"
 - extendedWaitUntil:
