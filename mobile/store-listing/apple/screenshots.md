@@ -1,10 +1,20 @@
 # Apple screenshot capture plan
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-28
 
-The first release is iPhone-only. Capture these images from the signed iOS build installed
-through TestFlight on a real iPhone. Android screenshots, browser mock-ups and resized
-artwork are not runtime evidence and must not be presented as though they came from iOS.
+The first release is iPhone-only. The manually dispatched
+[`iOS Simulator Screenshots`](../../../.github/workflows/ios-simulator-screenshots.yml)
+workflow first compiles the exact Git commit in unsigned iOS Release mode on a standard
+GitHub-hosted Mac, boots an iPhone 16 Pro Max Simulator and captures the eight-screen set.
+It uploads native-resolution, opaque PNGs and a checksum manifest as a private workflow
+artifact; generated screenshots are not committed automatically.
+
+That set is genuine iOS Simulator runtime evidence and is suitable for layout review and
+draft App Store artwork. It is not a signed-build or physical-device result. Once Apple
+enrollment is active, repeat the critical journeys from the signed build installed through
+TestFlight on a real iPhone and replace any draft screenshot whose signed runtime differs.
+Android screenshots and browser mock-ups must never be presented as though they came from
+iOS.
 
 ## Accepted source set
 
@@ -63,3 +73,24 @@ For each final image record the TestFlight build number, iPhone model, iOS versi
 time, route, demo fixture and SHA-256 checksum. Verify pixel dimensions, RGB/RGBA handling
 and absence of transparency before upload. Store screenshots only after checking that they
 contain no secrets or real-member personal data.
+
+The Simulator workflow creates the first version of this record automatically. Its manifest
+labels the unsigned evidence boundary explicitly so it cannot be mistaken for TestFlight.
+
+## When the owner does not have an iPhone
+
+Do not make the public release the first device test. Use this release ladder:
+
+1. Run and visually inspect the eight Simulator captures and diagnostic evidence.
+2. After enrollment, build and submit the signed candidate to TestFlight from Windows with
+   EAS. Simulator success does not replace this signing gate.
+3. Invite at least one trusted external TestFlight volunteer who owns a supported iPhone.
+   They need only the TestFlight invitation and an Apple Account; they do not need repository,
+   Expo or App Store Connect administration access. Give them the critical-journey checklist
+   and require model, iOS version, screenshots and pass/fail notes.
+4. Keep App Store release manual until that evidence is reviewed. If no trusted tester can be
+   found, record the missing physical-device evidence as an explicit release risk rather than
+   describing the app as device-certified.
+
+Paid device farms or a rented Mac remain optional fallbacks, not prerequisites for this
+pipeline.

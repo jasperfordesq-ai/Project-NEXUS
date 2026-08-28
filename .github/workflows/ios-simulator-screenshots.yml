@@ -1,0 +1,206 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Draft App Store screenshots from Apple's real iOS Simulator on a standard
+# GitHub-hosted macOS runner. This is deliberately manual: it uses the live
+# Partner Demo tenant and repository secrets, and each run should be reviewed.
+#
+# Expo documents `npx expo run:ios --configuration Release` as the local way to
+# exercise production-mode code without creating an App Store-signed archive:
+# https://docs.expo.dev/more/expo-cli/#compiling-ios
+#
+# These artifacts are strong preflight evidence, not TestFlight/device evidence.
+
+name: iOS Simulator Screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-simulator-screenshots
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  MAESTRO_VERSION: "2.9.0"
+  IOS_DEVICE_NAME: "NEXUS iPhone 16 Pro Max"
+  IOS_DEVICE_TYPE: "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max"
+  EXPO_PUBLIC_API_URL: "https://api.project-nexus.ie"
+  EXPO_PUBLIC_DEFAULT_TENANT: "hour-timebank"
+  SENTRY_DISABLE_AUTO_UPLOAD: "true"
+  EXPO_NO_TELEMETRY: "1"
+  MAESTRO_CLI_NO_ANALYTICS: "1"
+  MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true"
+
+jobs:
+  capture:
+    name: Capture on iPhone 16 Pro Max Simulator
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Confirm the protected demo credentials are configured
+        env:
+          TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
+        run: |
+          if [[ -z "$TEST_EMAIL" || -z "$TEST_PASSWORD" ]]; then
+            echo "::error::Set IOS_SCREENSHOT_TEST_EMAIL and IOS_SCREENSHOT_TEST_PASSWORD as repository secrets."
+            exit 1
+          fi
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Install the pinned Maestro CLI
+        run: |
+          export MAESTRO_VERSION="${{ env.MAESTRO_VERSION }}"
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Create and boot the 6.9-inch iPhone Simulator
+        id: simulator
+        run: |
+          if ! xcrun simctl list devicetypes | grep -q "${IOS_DEVICE_TYPE}"; then
+            echo "::error::The macOS runner does not contain the required iPhone 16 Pro Max simulator device type."
+            xcrun simctl list devicetypes
+            exit 1
+          fi
+
+          runtime_id=$(python3 - <<'PY'
+          import json
+          import subprocess
+
+          payload = json.loads(subprocess.check_output(
+              ["xcrun", "simctl", "list", "runtimes", "--json"],
+              text=True,
+          ))
+          runtimes = [
+              runtime for runtime in payload["runtimes"]
+              if runtime.get("isAvailable")
+              and runtime.get("identifier", "").startswith(
+                  "com.apple.CoreSimulator.SimRuntime.iOS-"
+              )
+          ]
+          if not runtimes:
+              raise SystemExit("No available iOS Simulator runtime is installed")
+          runtimes.sort(
+              key=lambda runtime: tuple(int(part) for part in runtime["version"].split(".")),
+              reverse=True,
+          )
+          print(runtimes[0]["identifier"])
+          PY
+          )
+
+          simulator_udid=$(xcrun simctl create "$IOS_DEVICE_NAME" "$IOS_DEVICE_TYPE" "$runtime_id")
+          xcrun simctl boot "$simulator_udid"
+          xcrun simctl bootstatus "$simulator_udid" -b
+
+          echo "udid=$simulator_udid" >> "$GITHUB_OUTPUT"
+          echo "runtime=$runtime_id" >> "$GITHUB_OUTPUT"
+          echo "SIMULATOR_UDID=$simulator_udid" >> "$GITHUB_ENV"
+          echo "IOS_SIMULATOR_MODEL=iPhone 16 Pro Max" >> "$GITHUB_ENV"
+          echo "IOS_SIMULATOR_RUNTIME=$runtime_id" >> "$GITHUB_ENV"
+
+      - name: Compile and install the unsigned iOS Release build
+        working-directory: mobile
+        run: npx expo run:ios --configuration Release --device "$SIMULATOR_UDID" --no-bundler
+
+      - name: Verify the installed application identity
+        run: |
+          app_path=$(xcrun simctl get_app_container "$SIMULATOR_UDID" ie.project.nexus app)
+          test -d "$app_path"
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
+          test "$bundle_id" = 'ie.project.nexus'
+          echo "Installed $bundle_id from commit $GITHUB_SHA"
+
+      - name: Prepare a clean, reproducible capture state
+        run: |
+          xcrun simctl ui "$SIMULATOR_UDID" appearance light
+          xcrun simctl status_bar "$SIMULATOR_UDID" override \
+            --time '9:41' \
+            --batteryState charged \
+            --batteryLevel 100 \
+            --wifiBars 3 \
+            --cellularBars 4 || echo "::warning::status-bar override was unavailable"
+
+      - name: Run the eight-screen App Store tour
+        env:
+          TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
+        working-directory: mobile
+        run: |
+          mkdir -p "$RUNNER_TEMP/maestro-output"
+          maestro --device "$SIMULATOR_UDID" test \
+            --env TEST_EMAIL="$TEST_EMAIL" \
+            --env TEST_PASSWORD="$TEST_PASSWORD" \
+            --test-output-dir="$RUNNER_TEMP/maestro-output" \
+            .maestro/screens/apple-store-screens.yaml
+
+      - name: Prepare opaque App Store PNGs and evidence manifest
+        working-directory: mobile
+        run: |
+          node scripts/prepare-apple-simulator-screenshots.cjs \
+            --source "$RUNNER_TEMP/maestro-output" \
+            --destination "$RUNNER_TEMP/apple-screenshots"
+
+      - name: Add the capture summary
+        run: |
+          {
+            echo '## iOS Simulator screenshot preflight'
+            echo
+            echo "- Source commit: \`$GITHUB_SHA\`"
+            echo "- Device: $IOS_SIMULATOR_MODEL"
+            echo "- Runtime: \`$IOS_SIMULATOR_RUNTIME\`"
+            echo '- Result: eight opaque, native-resolution PNGs prepared'
+            echo '- Evidence boundary: unsigned Simulator build; not TestFlight or physical-device proof'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture the final Simulator screen on failure
+        if: failure() && steps.simulator.outputs.udid != ''
+        run: |
+          mkdir -p "$RUNNER_TEMP/failure-evidence"
+          xcrun simctl io "${{ steps.simulator.outputs.udid }}" screenshot \
+            "$RUNNER_TEMP/failure-evidence/final-screen.png" || true
+          xcrun simctl spawn "${{ steps.simulator.outputs.udid }}" log show \
+            --last 10m --style compact \
+            --predicate 'process == "Timebank Global" OR process == "nexus-mobile"' \
+            > "$RUNNER_TEMP/failure-evidence/simulator.log" || true
+
+      - name: Upload prepared screenshots
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app-store-screenshots-${{ github.run_number }}
+          path: ${{ runner.temp }}/apple-screenshots/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload diagnostic evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshot-diagnostics-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/maestro-output/
+            ${{ runner.temp }}/failure-evidence/
+          if-no-files-found: warn
+          retention-days: 14

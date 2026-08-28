@@ -51,6 +51,14 @@ An unsigned EAS Simulator build can compile before Apple enrollment completes an
 not require an Apple Developer account. It is compile evidence only: the resulting `.app`
 cannot run on this Windows PC or replace a signed real-iPhone/TestFlight walk.
 
+The manual `iOS Simulator Screenshots` GitHub Actions workflow closes part of that runtime
+gap without a Mac rental: a standard hosted macOS runner compiles the selected Git commit in
+unsigned Expo Release mode, boots Apple's iPhone 16 Pro Max Simulator, runs the protected
+Partner Demo Maestro tour and uploads eight draft screenshots plus checksums. It deliberately
+does not run on pushes or pull requests, never receives credentials as workflow inputs and
+does not claim signing, APNs, TestFlight or physical-device proof. See
+[`store-listing/apple/screenshots.md`](../store-listing/apple/screenshots.md).
+
 That compile has now succeeded. The checked evidence, artifact hash, native metadata and
 remaining limitations are recorded in
 [`store-listing/apple/build-evidence.md`](../store-listing/apple/build-evidence.md).

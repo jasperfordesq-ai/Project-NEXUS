@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added a manually dispatched, free GitHub-hosted iOS Simulator release-mode screenshot pipeline with an eight-screen Maestro App Store tour, opaque native-resolution asset validation and checksum evidence, while preserving TestFlight and real-device testing as separate release gates.
+
 ### Fixed
 
 - **The admin identity audit log now opens instead of failing.** Every attempt to

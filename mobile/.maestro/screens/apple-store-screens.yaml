@@ -1,0 +1,148 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Draft Apple App Store capture tour. It runs only on an iPhone Simulator in the
+# manually-dispatched GitHub Actions workflow. Each screen starts from a known
+# state so one navigation failure cannot silently corrupt the rest of the set.
+
+appId: ie.project.nexus
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - tapOn: "hour-timebank"
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    id: "password-input"
+- inputText: "${TEST_PASSWORD}"
+- hideKeyboard
+- tapOn:
+    id: "login-submit"
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Read more|View post|Comment"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 01-feed
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "Listings"
+- extendedWaitUntil:
+    visible: "Listings|Browse|Search"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 02-listings
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- waitForAnimationToEnd:
+    timeout: 6000
+- scrollUntilVisible:
+    element: "Browse Members"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Browse Members"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 03-members
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "Messages"
+- extendedWaitUntil:
+    visible: "Messages|Conversations|No messages"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 04-messages
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- waitForAnimationToEnd:
+    timeout: 6000
+- scrollUntilVisible:
+    element: "Events"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Events"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 05-events
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- waitForAnimationToEnd:
+    timeout: 6000
+- tapOn: "View wallet"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 06-wallet
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- waitForAnimationToEnd:
+    timeout: 6000
+- scrollUntilVisible:
+    element: "Volunteering"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Volunteering"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 07-volunteering
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- waitForAnimationToEnd:
+    timeout: 6000
+- scrollUntilVisible:
+    element: "Settings"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Settings"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 08-settings
