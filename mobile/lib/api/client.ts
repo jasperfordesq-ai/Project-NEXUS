@@ -5,6 +5,7 @@
 
 import { API_BASE_URL, APP_VERSION, DEFAULT_TENANT, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
 import i18n from 'i18next';
+import * as FileSystem from 'expo-file-system/legacy';
 import { storage } from '@/lib/storage';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
@@ -92,6 +93,23 @@ function extractErrorMessage(data: unknown, fallback: string): string {
 
 /** Called when the API returns 401 and refresh has failed — registered by AuthContext */
 let onUnauthorizedCallback: (() => void) | null = null;
+
+async function recordIosScreenshotResponse(method: RequestMethod, endpoint: string, status: number): Promise<void> {
+  if (process.env.EXPO_PUBLIC_IOS_SCREENSHOT_DIAGNOSTICS !== '1' || !FileSystem.documentDirectory) {
+    return;
+  }
+
+  try {
+    const directory = `${FileSystem.documentDirectory}ios-screenshot-network`;
+    await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+    const filename = `${Date.now()}-${Math.random().toString(16).slice(2)}.log`;
+    await FileSystem.writeAsStringAsync(`${directory}/${filename}`, `${method} ${endpoint} -> ${status}\n`, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+  } catch {
+    // Capture diagnostics must never alter application behaviour.
+  }
+}
 
 export function registerUnauthorizedCallback(cb: () => void): void {
   onUnauthorizedCallback = cb;
@@ -388,10 +406,9 @@ async function request<T>(
   // Capture-only network trace: the unsigned iOS screenshot build enables this
   // flag so CI diagnostics can identify a failing route without recording request
   // bodies, headers, tokens or response data. Normal development and release
-  // builds leave it disabled.
-  if (process.env.EXPO_PUBLIC_IOS_SCREENSHOT_DIAGNOSTICS === '1') {
-    console.warn(`[iOS screenshot network] ${method} ${endpoint} -> ${response.status}`);
-  }
+  // builds leave it disabled. A file is used because Release React Native builds
+  // do not forward JavaScript console output to `simctl launch --console`.
+  await recordIosScreenshotResponse(method, endpoint, response.status);
 
   // Handle 401: try silent token refresh, then retry once
   if (response.status === 401 && endpoint !== '/api/auth/login') {

@@ -322,6 +322,11 @@ jobs:
         if: failure() && steps.simulator.outputs.udid != ''
         run: |
           mkdir -p "$RUNNER_TEMP/failure-evidence"
+          data_path=$(xcrun simctl get_app_container "${{ steps.simulator.outputs.udid }}" ie.project.nexus data || true)
+          if [ -n "$data_path" ] && [ -d "$data_path/Documents/ios-screenshot-network" ]; then
+            cp -R "$data_path/Documents/ios-screenshot-network" \
+              "$RUNNER_TEMP/failure-evidence/ios-screenshot-network"
+          fi
           xcrun simctl io "${{ steps.simulator.outputs.udid }}" screenshot \
             "$RUNNER_TEMP/failure-evidence/final-screen.png" || true
           xcrun simctl spawn "${{ steps.simulator.outputs.udid }}" log show \
