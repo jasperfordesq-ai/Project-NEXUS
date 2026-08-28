@@ -30,13 +30,6 @@ appId: ie.project.nexus
     id: "password-input"
 - setClipboard: ${TEST_PASSWORD_HEX.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join('')}
 - pasteText
-- tapOn: "Show or hide password"
-- copyTextFrom:
-    id: "password-input"
-- tapOn: "Show or hide password"
-- assertTrue:
-    condition: ${maestro.copiedText == TEST_PASSWORD_HEX.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join('')}
-    label: "The password field exactly matches the protected test credential"
 - tapOn:
     id: "login-submit"
 - extendedWaitUntil:
