@@ -36,7 +36,7 @@ import {
   type EventStaffCapability,
   type EventStaffRole,
 } from '@/lib/events-api';
-import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const ALL_STAFF_ROLES = [
@@ -98,7 +98,7 @@ export function EventStaffWorkspace({
   onRetry,
   onChanged,
 }: EventStaffWorkspaceProps) {
-  const { t, i18n } = useTranslation('events');
+  const { t } = useTranslation('events');
   const toast = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const allowedRoles = useMemo<readonly EventStaffRole[]>(
@@ -178,7 +178,7 @@ export function EventStaffWorkspace({
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
 
-    return new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

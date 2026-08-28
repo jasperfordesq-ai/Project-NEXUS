@@ -506,7 +506,7 @@ class StripeDonationService
                         $basePath      = TenantContext::getSlugPrefix();
                         $accountUrl    = $baseUrl . $basePath . '/settings';
                         $amountDisplay = number_format((float) $donation->amount, 2) . ' ' . strtoupper($donation->currency ?? 'EUR');
-                        $dateDisplay   = \Carbon\Carbon::now()->locale((string) app()->getLocale())->isoFormat('LL');
+                        $dateDisplay   = \Carbon\Carbon::now()->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('LL');
                         $firstName     = explode(' ', trim($donorName ?: __('emails.common.fallback_name')))[0];
 
                         $infoCard = [

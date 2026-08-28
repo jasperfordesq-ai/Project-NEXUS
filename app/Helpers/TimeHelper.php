@@ -74,11 +74,17 @@ class TimeHelper
     /**
      * Format a datetime for display
      *
+     * Renders English month names regardless of locale (PHP's date() always
+     * does). The default order is day-first, because month-first is American
+     * and this platform's communities are in Ireland and the UK. For text that
+     * must follow the recipient's own language, use Carbon's isoFormat with
+     * App\I18n\FormattingLocale instead of this helper.
+     *
      * @param string|int $datetime DateTime string or Unix timestamp
-     * @param string $format PHP date format (default: 'M j, Y')
+     * @param string $format PHP date format (default: 'j M Y')
      * @return string Formatted date
      */
-    public static function format($datetime, string $format = 'M j, Y'): string
+    public static function format($datetime, string $format = 'j M Y'): string
     {
         if (is_numeric($datetime)) {
             $timestamp = (int) $datetime;
@@ -111,6 +117,6 @@ class TimeHelper
             return 'Unknown';
         }
 
-        return date('M j, Y', $timestamp) . ' at ' . date('g:i A', $timestamp);
+        return date('j M Y', $timestamp) . ' at ' . date('H:i', $timestamp);
     }
 }

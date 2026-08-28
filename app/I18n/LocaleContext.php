@@ -6,6 +6,7 @@
 
 namespace App\I18n;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 
 /**
@@ -56,19 +57,30 @@ final class LocaleContext
 
         $previous = App::getLocale();
         $previousJsonLocale = Translator::getLocale();
+        $previousDateLocale = Carbon::getLocale();
+        $dateLocale = FormattingLocale::carbon($resolved);
 
         // No-op fast path: already in the target locale.
-        if ($resolved === $previous && $resolved === $previousJsonLocale) {
+        if (
+            $resolved === $previous
+            && $resolved === $previousJsonLocale
+            && $dateLocale === $previousDateLocale
+        ) {
             return $fn();
         }
 
         App::setLocale($resolved);
         Translator::setLocale($resolved);
+        // Dates must follow the recipient too. Carbon's own locale is what
+        // `isoFormat()`/`translatedFormat()` read, and a bare language code
+        // resolves to American formatting — see FormattingLocale.
+        Carbon::setLocale($dateLocale);
         try {
             return $fn();
         } finally {
             App::setLocale($previous);
             Translator::setLocale($previousJsonLocale);
+            Carbon::setLocale($previousDateLocale);
         }
     }
 

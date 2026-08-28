@@ -27,6 +27,7 @@ import {
   type EventRecurrenceDefinitionSection,
   type EventRecurrenceDefinitionSections,
 } from '@/lib/events-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const SECTION_KEYS: readonly EventRecurrenceDefinitionSection[] = [
@@ -91,7 +92,7 @@ export function EventRecurrenceDefinitionBlueprintManager({
   allowedSections,
   onUnavailable,
 }: EventRecurrenceDefinitionBlueprintManagerProps) {
-  const { t, i18n } = useTranslation('event_recurrence_blueprints');
+  const { t } = useTranslation('event_recurrence_blueprints');
   const initialAbortRef = useRef<AbortController | null>(null);
   const moreAbortRef = useRef<AbortController | null>(null);
   const workflowAbortRef = useRef<AbortController | null>(null);
@@ -143,11 +144,11 @@ export function EventRecurrenceDefinitionBlueprintManager({
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return t('time_unknown');
 
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(parsed);
-  }, [i18n.language, t]);
+  }, [t]);
 
   const loadInitialHistory = useCallback(async (signal?: AbortSignal): Promise<void> => {
     const generation = ++requestGenerationRef.current;

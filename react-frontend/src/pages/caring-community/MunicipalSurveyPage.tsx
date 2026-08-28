@@ -10,7 +10,7 @@
  * All user-facing text is translated via t('municipality_survey.*').
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CheckCircle from 'lucide-react/icons/check-circle';
@@ -25,6 +25,7 @@ import { PageMeta } from '@/components/seo';
 import { useAuth } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 // ---------------------------------------------------------------------------
@@ -322,7 +323,7 @@ function SurveyForm({ survey, onBack, onSuccess, t }: SurveyFormProps) {
 // ---------------------------------------------------------------------------
 
 export default function MunicipalSurveyPage() {
-  const { t, i18n } = useTranslation('municipality_survey');
+  const { t } = useTranslation('municipality_survey');
   const { isAuthenticated } = useAuth();
   usePageTitle(t('meta.title'));
 
@@ -397,20 +398,14 @@ export default function MunicipalSurveyPage() {
     void fetchSurveys();
   };
 
-  const surveyDateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(i18n.language || 'en', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      }),
-    [i18n.language]
-  );
-
   const formatSurveyDate = (iso: string): string => {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return iso;
-    return surveyDateFormatter.format(date);
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
   };
 
   // ── Success state ──────────────────────────────────────────────────────────

@@ -32,6 +32,7 @@ import Users from 'lucide-react/icons/users';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PageMeta } from '@/components/seo';
@@ -81,7 +82,7 @@ const STATUS_COLOR: Record<CampaignStatus, 'default' | 'primary' | 'success' | '
   failed: 'danger',
 };
 
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+const dateTimeFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
@@ -90,7 +91,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 function formatDateTime(value: string): string {
-  return dateTimeFormatter.format(new Date(value));
+  return dateTimeFormatter().format(new Date(value));
 }
 
 const defaultForm: CreatePushCampaignForm = {

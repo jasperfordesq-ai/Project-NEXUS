@@ -16,6 +16,7 @@ import {
   eventLifecycleHistoryApi,
   type EventLifecycleHistoryEntry,
 } from '@/lib/event-lifecycle-history-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface EventLifecycleHistoryPanelProps {
@@ -31,7 +32,7 @@ function appendUnique(
 }
 
 export function EventLifecycleHistoryPanel({ eventId }: EventLifecycleHistoryPanelProps) {
-  const { t, i18n } = useTranslation('event_lifecycle_history');
+  const { t } = useTranslation('event_lifecycle_history');
   const generationRef = useRef(0);
   const initialAbortRef = useRef<AbortController | null>(null);
   const moreAbortRef = useRef<AbortController | null>(null);
@@ -122,7 +123,7 @@ export function EventLifecycleHistoryPanel({ eventId }: EventLifecycleHistoryPan
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return t('timestamp_unknown');
 
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(parsed);

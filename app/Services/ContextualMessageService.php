@@ -214,7 +214,9 @@ class ContextualMessageService
 
         $subtitle = 'Event';
         if (!empty($row->start_time)) {
-            $subtitle .= ' on ' . date('M j, Y', strtotime($row->start_time));
+            $subtitle .= ' on ' . \Carbon\Carbon::parse($row->start_time)
+                ->locale(\App\I18n\FormattingLocale::carbon())
+                ->isoFormat('ll');
         }
 
         return [

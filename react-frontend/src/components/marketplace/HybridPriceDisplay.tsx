@@ -20,6 +20,7 @@ import { useTenant } from '@/contexts';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Popover, PopoverTrigger, PopoverContent, PopoverHeading } from '@/components/ui/Popover';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface HybridPriceDisplayProps {
   /** Cash price amount */
@@ -39,7 +40,7 @@ interface HybridPriceDisplayProps {
  */
 function formatCurrency(price: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,

@@ -26,6 +26,12 @@ return [
     'timezone' => 'UTC',
     'locale' => 'en',
     'fallback_locale' => 'en',
+    // Platform default region for user-facing date/number formatting. A bare
+    // language code has no region, so Carbon and Intl fall back to the
+    // language's default one — the United States for English. Communities
+    // override this with the `general.region` tenant setting. See
+    // App\I18n\FormattingLocale.
+    'region' => env('APP_REGION', 'IE'),
     'key' => env('APP_KEY'),
     'jwt_secret' => env('JWT_SECRET'),
     'cipher' => 'AES-256-CBC',

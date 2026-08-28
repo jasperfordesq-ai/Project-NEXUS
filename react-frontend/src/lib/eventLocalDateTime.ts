@@ -13,6 +13,10 @@ interface ZonedDateTimeParts {
 }
 
 function zonedParts(date: Date, timeZone: string): ZonedDateTimeParts {
+  // locale-exempt: machine format, never displayed. 'en-CA' is chosen because it
+  // yields zero-padded YYYY-MM-DD parts for the arithmetic below; the parts are
+  // read structurally via formatToParts, so a member-facing locale here would
+  // break eventIsoToLocalInput/eventLocalInputToIso.
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,
     year: 'numeric',

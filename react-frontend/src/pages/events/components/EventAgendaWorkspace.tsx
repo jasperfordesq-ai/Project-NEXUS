@@ -48,6 +48,7 @@ import {
   type EventAgendaSpeakerInput,
   type EventAgendaResourceInput,
 } from '@/lib/events-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const SESSION_TYPES = [
@@ -177,7 +178,7 @@ function draftFromSession(session: EventAgendaSession): SessionDraft {
 }
 
 export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
-  const { t, i18n } = useTranslation(['events', 'event_agenda']);
+  const { t } = useTranslation(['events', 'event_agenda']);
   const toast = useToast();
   const confirm = useConfirm();
   const [agenda, setAgenda] = useState<EventAgenda | null>(null);
@@ -244,7 +245,7 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
 
-    return new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
       timeZone,

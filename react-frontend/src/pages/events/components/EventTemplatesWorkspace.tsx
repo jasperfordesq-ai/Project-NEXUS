@@ -29,6 +29,7 @@ import {
   type EventTemplateAudit,
   type EventTemplateCapturePreview,
 } from '@/lib/event-templates-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { EventTemplateMaterializationModal } from './EventTemplateMaterializationModal';
 
@@ -55,7 +56,7 @@ export function EventTemplatesWorkspace({
   sourceEventTitle,
   onDraftCreated,
 }: EventTemplatesWorkspaceProps) {
-  const { t, i18n } = useTranslation('event_templates');
+  const { t } = useTranslation('event_templates');
   const navigate = useNavigate();
   const toast = useToast();
   const loadGeneration = useRef(0);
@@ -273,7 +274,7 @@ export function EventTemplatesWorkspace({
     if (!value) return t('manage.templates.not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('manage.templates.not_recorded');
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

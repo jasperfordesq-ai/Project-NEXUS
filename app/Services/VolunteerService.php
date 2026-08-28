@@ -1635,7 +1635,7 @@ class VolunteerService
                         ->first();
                     LocaleContext::withLocale($recipient, function () use ($userId, $shiftStart) {
                         $shiftDate = $shiftStart
-                            ? \Carbon\Carbon::parse($shiftStart)->locale((string) app()->getLocale())->isoFormat('lll')
+                            ? \Carbon\Carbon::parse($shiftStart)->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('lll')
                             : '';
                         \App\Models\Notification::createNotification(
                             $userId,

@@ -1398,13 +1398,13 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             }
             $start = CarbonImmutable::parse((string) $event->start_time, 'UTC')
                 ->setTimezone($timezone)
-                ->locale((string) app()->getLocale());
+                ->locale(\App\I18n\FormattingLocale::carbon());
             $when = (bool) ($event->all_day ?? false)
                 ? $start->isoFormat('LL')
                 : $start->isoFormat('LLLL') . ' (' . $timezone . ')';
             $offset = CarbonInterval::minutes(max(1, (int) ($payload['offset_minutes'] ?? 1)))
                 ->cascade()
-                ->locale((string) app()->getLocale())
+                ->locale(\App\I18n\FormattingLocale::carbon())
                 ->forHumans();
             $subject = __('event_notifications.reminder.subject', ['title' => $title]);
             $message = __('event_notifications.reminder.message', [

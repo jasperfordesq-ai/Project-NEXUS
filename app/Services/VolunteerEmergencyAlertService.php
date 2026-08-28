@@ -576,7 +576,7 @@ class VolunteerEmergencyAlertService
                 $bellCreated = TenantContext::runForTenant($tenantId, function () use ($candidate, $priorityLabel, $message, $shiftStart, $tenantId): bool {
                     return (bool) LocaleContext::withLocale($candidate, function () use ($candidate, $priorityLabel, $message, $shiftStart, $tenantId) {
                         $shiftDate = $shiftStart
-                            ? \Carbon\Carbon::parse($shiftStart)->locale((string) app()->getLocale())->isoFormat('lll')
+                            ? \Carbon\Carbon::parse($shiftStart)->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('lll')
                             : __('api.vol_alert_shift_date_upcoming');
                         $pushBody = __('api.vol_alert_request_bell', [
                             'priority' => $priorityLabel,

@@ -751,7 +751,9 @@ class StripeSubscriptionService
                 }
 
                 $planName = $assignment->plan_name ?? '';
-                $dateFormatted = date('F j, Y', strtotime($assignment->stripe_current_period_end));
+                $dateFormatted = \Carbon\Carbon::parse($assignment->stripe_current_period_end)
+                    ->locale(\App\I18n\FormattingLocale::carbon())
+                    ->isoFormat('LL');
 
                 $sentEmail = static::sendTenantAdminEmail(
                     (int) $assignment->tenant_id,
@@ -805,7 +807,9 @@ class StripeSubscriptionService
                 $periodEnd    = strtotime($assignment->stripe_current_period_end);
                 $now          = time();
                 $daysUntilEnd = ($periodEnd - $now) / 86400;
-                $dateFormatted = date('F j, Y', $periodEnd);
+                $dateFormatted = \Carbon\Carbon::createFromTimestamp($periodEnd)
+                    ->locale(\App\I18n\FormattingLocale::carbon())
+                    ->isoFormat('LL');
                 $communityName = htmlspecialchars($assignment->community_name ?? '', ENT_QUOTES, 'UTF-8');
 
                 // 7-day window: between 6 and 8 days away

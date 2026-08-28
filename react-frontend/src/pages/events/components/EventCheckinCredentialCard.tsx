@@ -23,6 +23,7 @@ import {
   eventOfflineCheckinApi,
   type EventCheckinCredential,
 } from '@/lib/event-offline-checkin-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 function mutationKey(prefix: string): string {
@@ -30,7 +31,7 @@ function mutationKey(prefix: string): string {
 }
 
 export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation('event_offline_checkin');
+  const { t } = useTranslation('event_offline_checkin');
   const toast = useToast();
   const confirm = useConfirm();
   const [credential, setCredential] = useState<EventCheckinCredential | null>(null);
@@ -193,7 +194,7 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
               {credential.expires_at && (
                 <span className="text-xs text-theme-muted">
                   {t('credential.expires', {
-                    date: new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' })
+                    date: new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' })
                       .format(new Date(credential.expires_at)),
                   })}
                 </span>

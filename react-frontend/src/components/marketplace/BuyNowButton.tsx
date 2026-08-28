@@ -151,7 +151,7 @@ export function BuyNowButton({
 
   const priceFormatter = useMemo(
     () =>
-      new Intl.NumberFormat(undefined, {
+      new Intl.NumberFormat(getFormattingLocale(), {
         style: 'currency',
         currency: currency || 'EUR',
         minimumFractionDigits: 0,

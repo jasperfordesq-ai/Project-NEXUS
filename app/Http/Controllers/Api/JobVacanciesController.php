@@ -2560,7 +2560,9 @@ class JobVacanciesController extends BaseApiController
             '{{start_date}}'     => $data['start_date'] ?? '',
             '{{time_credits}}'   => $data['time_credits'] ?? '',
             '{{organization}}'   => $data['organization'] ?? '',
-            '{{date}}'           => date('F j, Y'),
+            '{{date}}'           => \Carbon\Carbon::now()
+                ->locale(\App\I18n\FormattingLocale::carbon())
+                ->isoFormat('LL'),
         ];
         $rendered = str_replace(array_keys($placeholders), array_values($placeholders), $body);
 
@@ -2903,7 +2905,9 @@ class JobVacanciesController extends BaseApiController
                     'status' => $iv->status,
                 ]),
                 'details' => $iv->scheduled_at ? __('api.job_audit_scheduled_at', [
-                    'date' => $iv->scheduled_at->format('M j, Y g:i A'),
+                    'date' => $iv->scheduled_at
+                        ->locale(\App\I18n\FormattingLocale::carbon())
+                        ->isoFormat('lll'),
                 ]) : null,
             ]);
         }

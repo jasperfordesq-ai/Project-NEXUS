@@ -1195,6 +1195,15 @@ jobs:
       - name: "BLOCKING: display names must not concatenate first_name + last_name"
         run: node scripts/check-display-name.mjs
 
+      # PHP's date() has no locale, so a literal month-first pattern reads
+      # American to every recipient — and ->locale(app()->getLocale()) passes a
+      # bare language code, which Carbon resolves to US English AND which
+      # overrides any ambient locale. Both shipped in live emails for months
+      # while the "translate the month names" fix looked like it had worked.
+      # Members are in Ireland and the UK. Ceiling is ZERO.
+      - name: "BLOCKING: no American date formats in PHP"
+        run: node scripts/check-american-date-formats.mjs
+
       # 🔴 A CEILING, not a clean bill of health. Both patterns make a browser test
       # report success without checking, which is how a real failure hides behind a
       # retry — it cost hours of diagnosis on 2026-08-11. The existing instances are

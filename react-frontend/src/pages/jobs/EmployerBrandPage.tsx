@@ -32,6 +32,7 @@ import { useTenant, useAuth } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface EmployerProfile {
@@ -124,11 +125,10 @@ function formatSalaryRange(
   min: number | null,
   max: number | null,
   currency: string | null,
-  locale: string,
   t: (key: string, options?: Record<string, unknown>) => string,
 ): string {
   const currencyCode = currency && /^[A-Z]{3}$/.test(currency) ? currency : t('salary.currency_eur');
-  const formatter = new Intl.NumberFormat(locale, {
+  const formatter = new Intl.NumberFormat(getFormattingLocale(), {
     style: 'currency',
     currency: currencyCode,
     maximumFractionDigits: 0,
@@ -150,7 +150,7 @@ function formatSalaryRange(
 }
 
 export function EmployerBrandPage() {
-  const { t, i18n } = useTranslation('jobs');
+  const { t } = useTranslation('jobs');
   const { userId } = useParams<{ userId: string }>();
   const { tenantPath } = useTenant();
   const { user, isAuthenticated } = useAuth();
@@ -164,7 +164,7 @@ export function EmployerBrandPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reviewDateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language), [i18n.language]);
+  const reviewDateFormatter = useMemo(() => new Intl.DateTimeFormat(getFormattingLocale()), []);
 
   // Reviews state
   const [reviews, setReviews] = useState<EmployerReview[]>([]);
@@ -395,7 +395,7 @@ export function EmployerBrandPage() {
                         </Chip>
                         {(job.salary_min || job.salary_max) && (
                           <span>
-                            {formatSalaryRange(job.salary_min, job.salary_max, job.salary_currency, i18n.language, t)}
+                            {formatSalaryRange(job.salary_min, job.salary_max, job.salary_currency, t)}
                           </span>
                         )}
                         {job.salary_negotiable && !job.salary_min && (

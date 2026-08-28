@@ -17,7 +17,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { CHART_TOKEN_COLORS } from '@/lib/chartColors';
 import { logError } from '@/lib/logger';
-import { formatPercentRatio } from '@/lib/helpers';
+import { formatPercentRatio, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 // Copyright © 2024–2026 Jasper Ford
@@ -109,14 +109,14 @@ function buildChartData(recent: NudgeRecent[]) {
   return Object.values(days);
 }
 
-const adminDateFormatter = new Intl.DateTimeFormat(undefined, {
+const adminDateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
 
 function formatAdminDate(value: string): string {
-  return adminDateFormatter.format(new Date(value));
+  return adminDateFormatter().format(new Date(value));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

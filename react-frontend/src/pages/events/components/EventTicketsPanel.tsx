@@ -31,6 +31,7 @@ import {
   type EventTicketTypePayload,
 } from '@/lib/event-tickets-api';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface TicketDraft {
@@ -86,7 +87,7 @@ export function EventTicketsPanel({
   eventStart: string;
   eventTimezone: string;
 }) {
-  const { t, i18n } = useTranslation('event_tickets');
+  const { t } = useTranslation('event_tickets');
   const toast = useToast();
   const [catalogue, setCatalogue] = useState<EventTicketCatalogue | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -379,7 +380,7 @@ export function EventTicketsPanel({
                   </div>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
                     <div><dt className="text-default-500">{t('tickets.kind_label')}</dt><dd className="font-medium">{t(`tickets.kind.${type.kind}`)}</dd></div>
-                    <div><dt className="text-default-500">{t('tickets.remaining')}</dt><dd className="font-medium tabular-nums">{new Intl.NumberFormat(i18n.language).format(type.availability.allocation_remaining)}</dd></div>
+                    <div><dt className="text-default-500">{t('tickets.remaining')}</dt><dd className="font-medium tabular-nums">{new Intl.NumberFormat(getFormattingLocale()).format(type.availability.allocation_remaining)}</dd></div>
                     <div><dt className="text-default-500">{t('tickets.per_member')}</dt><dd className="font-medium tabular-nums">{type.per_member_limit}</dd></div>
                     <div><dt className="text-default-500">{t('tickets.price')}</dt><dd className="font-medium tabular-nums">{type.kind === 'free' ? t('tickets.free') : t('tickets.credit_price', { value: type.unit_price_credits })}</dd></div>
                   </dl>

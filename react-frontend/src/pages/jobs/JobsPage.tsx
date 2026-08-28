@@ -979,7 +979,7 @@ const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
   const currency = vacancy.salary_currency || 'EUR';
   const currencyFormatter = useMemo(() => {
     try {
-      return new Intl.NumberFormat(undefined, {
+      return new Intl.NumberFormat(getFormattingLocale(), {
         style: 'currency',
         currency,
         minimumFractionDigits: 0,

@@ -145,7 +145,10 @@ class TimeHelperTest extends TestCase
         $timestamp = strtotime('2026-01-15 14:30:00');
         $result = TimeHelper::format($timestamp);
 
-        $this->assertEquals('Jan 15, 2026', $result);
+        // Day-first: month-first is American, and this platform's communities
+        // are in Ireland and the UK. An explicit format argument is still
+        // honoured verbatim — see testFormatWithVariousFormats below.
+        $this->assertEquals('15 Jan 2026', $result);
     }
 
     public function testFormatWithCustomFormat(): void
@@ -177,7 +180,10 @@ class TimeHelperTest extends TestCase
         $this->assertEquals('2026-01-15', TimeHelper::format($timestamp, 'Y-m-d'));
         $this->assertEquals('15/01/2026', TimeHelper::format($timestamp, 'd/m/Y'));
         $this->assertEquals('January 15, 2026', TimeHelper::format($timestamp, 'F j, Y'));
-        $this->assertEquals('Wed, Jan 15, 2026', TimeHelper::format($timestamp, 'D, M j, Y'));
+        // 15 January 2026 is a Thursday. This asserted 'Wed' and was failing
+        // before the date-format work began — an incorrect constant, unrelated
+        // to field order.
+        $this->assertEquals('Thu, Jan 15, 2026', TimeHelper::format($timestamp, 'D, M j, Y'));
     }
 
     // =========================================================================
@@ -189,7 +195,7 @@ class TimeHelperTest extends TestCase
         $timestamp = strtotime('2026-01-15 14:30:00');
         $result = TimeHelper::formatWithTime($timestamp);
 
-        $this->assertEquals('Jan 15, 2026 at 2:30 PM', $result);
+        $this->assertEquals('15 Jan 2026 at 14:30', $result);
     }
 
     public function testFormatWithTimeAM(): void
@@ -197,7 +203,7 @@ class TimeHelperTest extends TestCase
         $timestamp = strtotime('2026-01-15 09:15:00');
         $result = TimeHelper::formatWithTime($timestamp);
 
-        $this->assertEquals('Jan 15, 2026 at 9:15 AM', $result);
+        $this->assertEquals('15 Jan 2026 at 09:15', $result);
     }
 
     public function testFormatWithTimeNoon(): void
@@ -205,7 +211,7 @@ class TimeHelperTest extends TestCase
         $timestamp = strtotime('2026-01-15 12:00:00');
         $result = TimeHelper::formatWithTime($timestamp);
 
-        $this->assertEquals('Jan 15, 2026 at 12:00 PM', $result);
+        $this->assertEquals('15 Jan 2026 at 12:00', $result);
     }
 
     public function testFormatWithTimeMidnight(): void
@@ -213,14 +219,14 @@ class TimeHelperTest extends TestCase
         $timestamp = strtotime('2026-01-15 00:00:00');
         $result = TimeHelper::formatWithTime($timestamp);
 
-        $this->assertEquals('Jan 15, 2026 at 12:00 AM', $result);
+        $this->assertEquals('15 Jan 2026 at 00:00', $result);
     }
 
     public function testFormatWithTimeFromDateString(): void
     {
         $result = TimeHelper::formatWithTime('2026-01-15 14:30:00');
 
-        $this->assertEquals('Jan 15, 2026 at 2:30 PM', $result);
+        $this->assertEquals('15 Jan 2026 at 14:30', $result);
     }
 
     public function testFormatWithTimeInvalidDate(): void
@@ -248,7 +254,7 @@ class TimeHelperTest extends TestCase
         $result = TimeHelper::format(0);
 
         // Should format the epoch
-        $this->assertEquals('Jan 1, 1970', $result);
+        $this->assertEquals('1 Jan 1970', $result);
     }
 
     public function testTimeAgoSingularVsPluralForms(): void

@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { normalizeMarketplaceShippingOption } from '@/lib/marketplaceNumbers';
 import type { MarketplaceShippingOption } from '@/types/marketplace';
@@ -84,7 +85,7 @@ function createEmptyForm(currency: string): ShippingFormData {
 
 function formatCurrencyAmount(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
     }).format(amount);

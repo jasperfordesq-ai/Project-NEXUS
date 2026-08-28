@@ -36,7 +36,7 @@ import {
   type ParticipationReviewRequest,
 } from '@/lib/event-safety-api';
 import { eventsApi, type EventMemberSearchResult } from '@/lib/events-api';
-import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const REVIEW_PAGE_SIZE = 25;
@@ -106,7 +106,7 @@ function optionalInteger(value: string): number | null {
 }
 
 export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation('event_safety');
+  const { t } = useTranslation('event_safety');
   const toast = useToast();
   const confirm = useConfirm();
   const [safety, setSafety] = useState<EventSafety | null>(null);
@@ -708,8 +708,8 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
                   <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                     <div><dt className="text-theme-muted">{t('safety.reviews.reviewed_by')}</dt><dd className="text-theme-primary">{item.reviewer.display_name}</dd></div>
                     <div><dt className="text-theme-muted">{t('safety.reviews.version')}</dt><dd className="text-theme-primary">{item.denial.decision_version}</dd></div>
-                    <div><dt className="text-theme-muted">{t('safety.reviews.effective_from')}</dt><dd className="text-theme-primary">{new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.denial.effective_from))}</dd></div>
-                    {item.denial.effective_until && <div><dt className="text-theme-muted">{t('safety.reviews.effective_until')}</dt><dd className="text-theme-primary">{new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.denial.effective_until))}</dd></div>}
+                    <div><dt className="text-theme-muted">{t('safety.reviews.effective_from')}</dt><dd className="text-theme-primary">{new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.denial.effective_from))}</dd></div>
+                    {item.denial.effective_until && <div><dt className="text-theme-muted">{t('safety.reviews.effective_until')}</dt><dd className="text-theme-primary">{new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.denial.effective_until))}</dd></div>}
                   </dl>
                   <details className="mt-3 text-sm">
                     <summary className="cursor-pointer font-medium text-accent">{t('safety.reviews.audit_history', { count: item.history.length })}</summary>

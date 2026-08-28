@@ -6,10 +6,12 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use App\I18n\FormattingLocale;
 use App\I18n\Translator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,6 +34,10 @@ class SetLocale
 
         App::setLocale($locale);
         Translator::setLocale($locale);
+        // Dates rendered during this request follow the same locale, with the
+        // community's region supplied — a bare language code formats as US
+        // English. See App\I18n\FormattingLocale.
+        Carbon::setLocale(FormattingLocale::carbon($locale));
 
         /** @var Response $response */
         $response = $next($request);
@@ -75,6 +81,7 @@ class SetLocale
 
         App::setLocale($language);
         Translator::setLocale($language);
+        Carbon::setLocale(FormattingLocale::carbon($language));
     }
 
     private function resolveLocale(Request $request): string

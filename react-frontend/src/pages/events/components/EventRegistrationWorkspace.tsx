@@ -717,7 +717,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     if (!value) return t('common.not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('common.not_recorded');
-    return new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
   }
 
   if (isLoading) {

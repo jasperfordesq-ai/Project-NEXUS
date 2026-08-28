@@ -11,6 +11,7 @@ import X from 'lucide-react/icons/x';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { canManageCaring } from '@/caring/access';
 import { PageHeader } from '../../components/PageHeader';
@@ -75,14 +76,14 @@ const STATUS_COLOR: Record<TransferStatus, 'default' | 'primary' | 'success' | '
   rejected: 'danger',
 };
 
-const adminDateFormatter = new Intl.DateTimeFormat(undefined, {
+const adminDateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
 
 function formatAdminDate(value: string): string {
-  return adminDateFormatter.format(new Date(value));
+  return adminDateFormatter().format(new Date(value));
 }
 
 export default function HourTransferAdminPage() {

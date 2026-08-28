@@ -31,6 +31,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const StripePaymentForm = lazy(() =>
   import('@/components/donations/StripePaymentForm').then((module) => ({ default: module.StripePaymentForm }))
@@ -88,7 +89,7 @@ export function VerifyIdentityOptionalPage() {
 
   const feeFormatter = useMemo(
     () =>
-      new Intl.NumberFormat(undefined, {
+      new Intl.NumberFormat(getFormattingLocale(), {
         style: 'currency',
         currency: feeCurrency,
       }),

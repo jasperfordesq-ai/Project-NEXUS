@@ -505,7 +505,9 @@ class JobInterviewService
                     $tenantId = (int) $interview->tenant_id;
                     TenantContext::setById($tenantId);
 
-                    $scheduledAt = $interview->scheduled_at->format('M j, g:i A');
+                    $scheduledAt = $interview->scheduled_at
+                        ->locale(\App\I18n\FormattingLocale::carbon())
+                        ->isoFormat('lll');
                     $isOneHourWindow = $interview->scheduled_at->lessThanOrEqualTo($now->copy()->addHour());
                     $hoursUntil = max(1, (int) ceil($now->diffInMinutes($interview->scheduled_at) / 60));
                     $windowColumn = $isOneHourWindow ? 'reminder_1h_sent_at' : 'reminder_24h_sent_at';

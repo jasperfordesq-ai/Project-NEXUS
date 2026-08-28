@@ -84,6 +84,7 @@ CLAUDE.md
 !/scripts/check-status-color-tokens.mjs
 !/scripts/check-db-column-references.mjs
 !/scripts/check-display-name.mjs
+!/scripts/check-american-date-formats.mjs
 !/scripts/check-openapi-route-contract.mjs
 !/scripts/check-version-consistency.mjs
 !/scripts/check-doc-scores.mjs

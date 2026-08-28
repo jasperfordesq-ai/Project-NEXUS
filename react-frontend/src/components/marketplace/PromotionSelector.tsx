@@ -22,6 +22,7 @@ import Clock from 'lucide-react/icons/clock';
 import Check from 'lucide-react/icons/check';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import type { MarketplacePromotionProduct } from '@/types/marketplace';
 
@@ -49,7 +50,7 @@ const TYPE_COLORS: Record<string, 'primary' | 'warning' | 'secondary' | 'success
 
 function formatPromotionPrice(price: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
       currencyDisplay: 'code',

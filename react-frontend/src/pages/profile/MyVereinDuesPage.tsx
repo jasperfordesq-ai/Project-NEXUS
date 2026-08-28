@@ -68,7 +68,7 @@ function statusColor(status: string): 'success' | 'warning' | 'danger' | 'defaul
 }
 
 const formatAmount = (cents: number, currency: string) =>
-  new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'CHF' }).format(cents / 100);
+  new Intl.NumberFormat(getFormattingLocale(), { style: 'currency', currency: currency || 'CHF' }).format(cents / 100);
 
 export function MyVereinDuesPage() {
   const { t } = useTranslation('common');

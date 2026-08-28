@@ -23,6 +23,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { DataTable, type Column } from '../../components/DataTable';
 import { EmptyState } from '../../components/EmptyState';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { getFormattingLocale } from '@/lib/helpers';
 import {
   adminEventRewards,
   type AdminAttendanceClaim,
@@ -139,7 +140,7 @@ export default function EventRewardClaimsAdmin() {
       label: t('claims_col_created'),
       render: (item) => (
         <time className="text-sm text-muted" dateTime={item.created_at}>
-          {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.created_at))}
+          {new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.created_at))}
         </time>
       ),
     },

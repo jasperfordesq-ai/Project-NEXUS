@@ -14,6 +14,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const DonationCheckout = lazy(() =>
@@ -33,7 +34,7 @@ interface PremiumTier {
 }
 
 function formatPrice(cents: number, currency = 'EUR'): string {
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat(getFormattingLocale(), {
     style: 'currency',
     currency,
     minimumFractionDigits: cents % 100 === 0 ? 0 : 2,

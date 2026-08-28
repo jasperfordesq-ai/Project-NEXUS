@@ -41,6 +41,7 @@ import {
   synchronizeOfflineCheckin,
   type OfflineCheckinSession,
 } from '@/lib/event-offline-checkin-store';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { EventCheckInWorkspace } from './EventCheckInWorkspace';
 
@@ -62,15 +63,15 @@ function errorCode(error: unknown): string {
   return error instanceof Error ? error.message : 'generic';
 }
 
-function localDate(value: string, locale: string): string {
+function localDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    : new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
 export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation('event_offline_checkin');
+  const { t } = useTranslation('event_offline_checkin');
   const toast = useToast();
   const tRef = useRef(t);
   const toastRef = useRef(toast);
@@ -466,7 +467,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
                     <Chip size="sm" color={device.status === 'active' ? 'success' : 'default'}>{t(`device.status.${device.status}`)}</Chip>
                     {session?.deviceId === device.id && <Chip size="sm" color="primary">{t('device.this_device')}</Chip>}
                   </div>
-                  <p className="mt-1 text-xs text-theme-muted">{t('device.version', { version: device.version })} · {t('device.expires', { date: localDate(device.expires_at, i18n.language) })}</p>
+                  <p className="mt-1 text-xs text-theme-muted">{t('device.version', { version: device.version })} · {t('device.expires', { date: localDate(device.expires_at) })}</p>
                 </div>
                 {device.status === 'active' && (
                   <div className="flex flex-wrap gap-2">
@@ -488,7 +489,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
                 <div>
                   <h3 className="font-semibold text-theme-primary">{t('scan.title')}</h3>
                   <p className="text-sm text-theme-muted">{t('scan.description')}</p>
-                  <p className="mt-1 text-xs text-theme-muted">{t('workspace.manifest_expires', { date: localDate(session.manifest.expires_at, i18n.language) })} · {t('workspace.manifest_version', { version: session.manifest.manifest_version })}</p>
+                  <p className="mt-1 text-xs text-theme-muted">{t('workspace.manifest_expires', { date: localDate(session.manifest.expires_at) })} · {t('workspace.manifest_version', { version: session.manifest.manifest_version })}</p>
                 </div>
                 <Button size="sm" variant="outline" startContent={<Camera className="h-4 w-4" aria-hidden="true" />} onPress={() => setCameraActive((current) => !current)}>{cameraActive ? t('scan.stop_camera') : t('scan.start_camera')}</Button>
               </div>
@@ -524,7 +525,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
                     <li key={item.clientNonce} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <p className="font-medium text-theme-primary">{item.displayName}</p>
-                        <p className="text-xs text-theme-muted">{t(`scan.operations.${item.operation}`)} · {t('queue.observed', { date: localDate(item.observedAt, i18n.language) })}</p>
+                        <p className="text-xs text-theme-muted">{t(`scan.operations.${item.operation}`)} · {t('queue.observed', { date: localDate(item.observedAt) })}</p>
                         {item.code && <p className="text-xs text-theme-muted">{t('queue.code', { code: item.code })}</p>}
                       </div>
                       <Chip size="sm" color={item.state === 'synced' ? 'success' : item.state === 'conflict' ? 'warning' : item.state === 'rejected' ? 'danger' : 'default'}>{t(`queue.states.${item.state}`)}</Chip>
@@ -549,7 +550,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
                 <div>
                   <p className="font-medium text-theme-primary">{item.member.display_name}</p>
                   <p className="text-xs text-theme-muted">{t('conflicts.current_state', { state: item.current_attendance.state, version: item.current_attendance.version })}</p>
-                  <p className="text-xs text-theme-muted">{t('conflicts.device', { label: item.device.label ?? `#${item.device.id}` })} · {t('conflicts.observed', { date: localDate(item.observed_at, i18n.language) })}</p>
+                  <p className="text-xs text-theme-muted">{t('conflicts.device', { label: item.device.label ?? `#${item.device.id}` })} · {t('conflicts.observed', { date: localDate(item.observed_at) })}</p>
                 </div>
                 <Chip color="warning" size="sm">{t(`scan.operations.${item.operation}`)}</Chip>
               </div>

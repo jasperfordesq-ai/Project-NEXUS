@@ -1134,8 +1134,14 @@ class MemberPremiumService
                 $tierName = (string) ($row->tier_name ?? __('emails.common.fallback_tenant_name'));
                 $params = [
                     'tier' => $tierName,
+                    // Built outside the LocaleContext wrap below and reused by
+                    // the bell notification after it, so the recipient's
+                    // language is passed explicitly rather than read from the
+                    // ambient locale — which here is still the caller's.
                     'grace_until' => $row->grace_period_ends_at
-                        ? date('F j, Y', strtotime((string) $row->grace_period_ends_at))
+                        ? \Carbon\Carbon::parse((string) $row->grace_period_ends_at)
+                            ->locale(\App\I18n\FormattingLocale::carbon($row->preferred_language ?? null))
+                            ->isoFormat('LL')
                         : '',
                 ];
                 $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/premium/manage';

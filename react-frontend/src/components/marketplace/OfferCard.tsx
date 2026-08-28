@@ -21,7 +21,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { resolveAvatarUrl, resolveThumbnailUrl } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveThumbnailUrl } from '@/lib/helpers';
 import type { MarketplaceOffer, MarketplaceShippingOption } from '@/types/marketplace';
 import { BuyNowButton } from './BuyNowButton';
 import { ShippingSelector } from './ShippingSelector';
@@ -49,7 +49,7 @@ const STATUS_CONFIG: Record<string, { color: 'warning' | 'success' | 'danger' | 
 
 function formatCurrency(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,
@@ -60,14 +60,15 @@ function formatCurrency(amount: number, currency: string): string {
   }
 }
 
-const timestampFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
+const timestampFormatter = () =>
+  new Intl.DateTimeFormat(getFormattingLocale(), {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
 
 function formatTimestamp(dateStr: string): string {
   try {
-    return timestampFormatter.format(new Date(dateStr));
+    return timestampFormatter().format(new Date(dateStr));
   } catch {
     return dateStr;
   }

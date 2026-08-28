@@ -350,7 +350,7 @@ class VolunteerReminderService
                                     return LocaleContext::withLocale($user, function () use ($user, $shift, $opportunityTitle, $opportunityLocation, $userId, $tenantId): bool {
                                     $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
                                     $shiftTime = $shift->start_time
-                                        ? \Carbon\Carbon::parse($shift->start_time)->locale((string) app()->getLocale())->isoFormat('ddd, D MMM YYYY HH:mm')
+                                        ? \Carbon\Carbon::parse($shift->start_time)->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('ddd, D MMM YYYY HH:mm')
                                         : '';
                                     $shiftUrl = TenantContext::getFrontendUrl()
                                         . TenantContext::getSlugPrefix()
@@ -685,7 +685,7 @@ class VolunteerReminderService
                                         return LocaleContext::withLocale($user, function () use ($user, $shift, $opportunityTitle, $opportunityLocation, $tenantId, $userId): bool {
                                         $firstName    = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
                                         $shiftTime    = $shift->start_time
-                                            ? \Carbon\Carbon::parse($shift->start_time)->locale((string) app()->getLocale())->isoFormat('ddd, D MMM YYYY HH:mm')
+                                            ? \Carbon\Carbon::parse($shift->start_time)->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('ddd, D MMM YYYY HH:mm')
                                             : '';
                                         $shiftUrl     = TenantContext::getFrontendUrl()
                                             . TenantContext::getSlugPrefix()
@@ -1203,7 +1203,7 @@ class VolunteerReminderService
                             $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
                             $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $frontendPath;
                             $formattedExpiry = \Carbon\Carbon::parse($expiresAt)
-                                ->locale((string) app()->getLocale())
+                                ->locale(\App\I18n\FormattingLocale::carbon())
                                 ->isoFormat('LL');
 
                             $html = EmailTemplateBuilder::make()

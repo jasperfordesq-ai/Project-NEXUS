@@ -1873,7 +1873,9 @@ EOT;
         if ($eventCount > 0) {
             foreach ($data['upcoming_events'] as $event) {
                 $title = htmlspecialchars($event['title'] ?? 'Untitled');
-                $date = date('l, F j', strtotime($event['start_time'] ?? 'now'));
+                $date = \Carbon\Carbon::parse($event['start_time'] ?? 'now')
+                    ->locale(\App\I18n\FormattingLocale::carbon())
+                    ->isoFormat('dddd, LL');
                 $organizer = htmlspecialchars($event['organizer_name'] ?? 'Community');
                 $output .= "- \"{$title}\" on {$date}, hosted by {$organizer}\n";
             }

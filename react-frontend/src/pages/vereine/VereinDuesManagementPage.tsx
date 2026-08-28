@@ -12,7 +12,7 @@ import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveUserDisplayName } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -416,7 +416,7 @@ export function VereinDuesManagementPage() {
                       <div className="text-xs text-muted">{row.email}</div>
                     </TableCell>
                     <TableCell>
-                      {new Intl.NumberFormat(undefined, { style: 'currency', currency: row.currency || 'CHF' }).format(row.amount_cents / 100)}
+                      {new Intl.NumberFormat(getFormattingLocale(), { style: 'currency', currency: row.currency || 'CHF' }).format(row.amount_cents / 100)}
                     </TableCell>
                     <TableCell>
                       <Chip color={statusColor(row.status)} variant="flat" size="sm">

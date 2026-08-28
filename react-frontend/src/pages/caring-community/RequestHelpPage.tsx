@@ -23,6 +23,7 @@ import { useTenant } from '@/contexts';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 
 type ContactPreference = 'phone' | 'message' | 'either';
 type VoiceStatus = 'idle' | 'recording' | 'processing';
@@ -38,12 +39,12 @@ interface VoiceIntentResponse {
   raw_text: string;
 }
 
-function formatSuggestedWhen(iso: string | null, locale: string): string {
+function formatSuggestedWhen(iso: string | null): string {
   if (!iso) return '';
   try {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat(locale, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -197,7 +198,7 @@ export function RequestHelpPage() {
       // Pre-fill form fields with suggestions; member can edit before submit.
       if (!what.trim()) setWhat(data.transcript.slice(0, charLimit));
       if (!when.trim() && data.suggested_when) {
-        const formatted = formatSuggestedWhen(data.suggested_when, i18n.language || 'en');
+        const formatted = formatSuggestedWhen(data.suggested_when);
         if (formatted) setWhen(formatted);
       }
       if (data.suggested_contact_preference) {

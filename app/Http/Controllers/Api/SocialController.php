@@ -1185,7 +1185,9 @@ class SocialController extends BaseApiController
                 if (empty($l['avatar_url'])) {
                     $l['avatar_url'] = '/assets/img/defaults/default_avatar.png';
                 }
-                $l['liked_at_formatted'] = date('M j, Y', strtotime($l['liked_at']));
+                $l['liked_at_formatted'] = \Carbon\Carbon::parse($l['liked_at'])
+                    ->locale(\App\I18n\FormattingLocale::carbon())
+                    ->isoFormat('ll');
                 return $l;
             }, $likers);
 

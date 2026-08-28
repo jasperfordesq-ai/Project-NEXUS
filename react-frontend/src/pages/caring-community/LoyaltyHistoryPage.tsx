@@ -25,6 +25,7 @@ import { PageMeta } from '@/components/seo';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,14 +57,14 @@ function formatHoursShort(
   return t('hours_short', { count: hours.toFixed(2) });
 }
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
+const dateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
 
 function formatDate(value: string): string {
-  return dateFormatter.format(new Date(value));
+  return dateFormatter().format(new Date(value));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

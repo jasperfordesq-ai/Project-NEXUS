@@ -869,14 +869,21 @@ class EventNotificationService
      * PHP's date() always renders English weekday/month names; Carbon's
      * isoFormat honours the locale switched in by LocaleContext, so reminder,
      * cancellation, update, and created emails render dates in the
-     * recipient's preferred_language. Event timestamps are stored as UTC and
+     * recipient's preferred_language.
+     *
+     * The default pattern must stay a LOCALISED token ('llll', 'LL', …) rather
+     * than a literal field order like 'dddd, MMM D': a literal order is the same
+     * in every language, so it silently imposed American month-before-day on
+     * Irish and UK recipients no matter which locale was switched in.
+     *
+     * Event timestamps are stored as UTC and
      * converted to the event's validated IANA timezone; legacy or invalid
      * timezone values fail safe to UTC. The explicit zone label prevents an
      * ambiguous local time from being sent to attendees.
      */
     private function formatEventDateTime(
         string $dateTime,
-        string $isoFormat = 'dddd, MMM D, h:mm A',
+        string $isoFormat = 'llll',
         ?string $eventTimezone = null,
     ): string
     {
@@ -887,7 +894,7 @@ class EventNotificationService
 
         return \Carbon\Carbon::parse($dateTime, 'UTC')
             ->setTimezone($timezone)
-            ->locale((string) app()->getLocale())
+            ->locale(\App\I18n\FormattingLocale::carbon())
             ->isoFormat($isoFormat)
             . ' (' . $timezone . ')';
     }
@@ -1185,7 +1192,7 @@ HTML;
         if (!empty($event->start_time)) {
             $when = $this->formatEventDateTime(
                 $event->start_time,
-                'dddd, MMMM D, YYYY, h:mm A',
+                'LLLL',
                 $event->timezone ?? null,
             );
             $safeWhen = htmlspecialchars($when, ENT_QUOTES, 'UTF-8');

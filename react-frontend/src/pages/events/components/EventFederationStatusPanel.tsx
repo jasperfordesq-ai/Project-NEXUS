@@ -16,6 +16,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Spinner } from '@/components/ui/Spinner';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui/Table';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 type EventFederationHealth =
@@ -186,7 +187,7 @@ function isAbortError(error: unknown): boolean {
 }
 
 export function EventFederationStatusPanel({ eventId }: EventFederationStatusPanelProps) {
-  const { t, i18n } = useTranslation('event_federation');
+  const { t } = useTranslation('event_federation');
   const requestGeneration = useRef(0);
   const [status, setStatus] = useState<EventFederationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -234,7 +235,7 @@ export function EventFederationStatusPanel({ eventId }: EventFederationStatusPan
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return t('manage.federation.not_available');
 
-    return new Intl.DateTimeFormat(i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(parsed);

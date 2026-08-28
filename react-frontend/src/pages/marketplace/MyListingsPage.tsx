@@ -41,7 +41,7 @@ import type { MarketplaceListingItem } from '@/types/marketplace';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveThumbnailUrl } from '@/lib/helpers';
+import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
@@ -88,7 +88,7 @@ const TABS: { key: ListingTab; tKey: string; icon: typeof Package }[] = [
 
 function formatCurrency(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,

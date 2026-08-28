@@ -359,7 +359,12 @@ describe('MunicipalSurveyPage', () => {
     // through Intl.DateTimeFormat(…, { year, month: 'short', day }). The day can
     // shift by one depending on the runner's timezone, so match the shape and year
     // rather than pinning an exact day.
-    const closes = await screen.findByText(/^Closes: [A-Z][a-z]{2} \d{1,2}, 2025$/);
+    // The day/month ORDER also depends on the community's region ("Dec 31, 2025"
+    // for a US region, "31 Dec 2025" for an Irish/UK one), so accept either shape
+    // rather than pinning a locale.
+    const closes = await screen.findByText(
+      /^Closes: (?:[A-Z][a-z]{2,4} \d{1,2}, 2025|\d{1,2} [A-Z][a-z]{2,4} 2025)$/
+    );
     expect(closes.closest('.glass-card')).not.toBeNull();
     // Sanity: the surrounding card is the survey card, not some other card.
     expect(screen.getByText('Community Feedback Survey')).toBeInTheDocument();

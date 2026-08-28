@@ -16,6 +16,7 @@ import { adminConfig, type EventConfiguration, type EventConfigurationAuditEntry
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { getFormattingLocale } from '@/lib/helpers';
 import {
   Alert,
   Button,
@@ -378,7 +379,7 @@ export default function EventSettings() {
                   <li key={entry.id} className="space-y-1 py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-medium">{t(entry.action === 'events_configuration_defaults_restored' ? 'audit_restored' : 'audit_updated')}</p>
-                      <time className="text-xs text-muted" dateTime={entry.created_at}>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.created_at))}</time>
+                      <time className="text-xs text-muted" dateTime={entry.created_at}>{new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.created_at))}</time>
                     </div>
                     <p className="text-xs text-muted">{t('audit_actor_version', { actor: entry.actor_name ?? t('audit_unknown_actor'), version: entry.version })}</p>
                     {entry.reason ? <p className="text-sm">{entry.reason}</p> : null}

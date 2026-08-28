@@ -35,7 +35,7 @@ import {
   type EventPeoplePerson,
   type EventPeopleQueryParams,
 } from '@/lib/events-api';
-import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 const PAGE_SIZE = 25;
@@ -74,7 +74,7 @@ function isFullPerson(person: EventPeoplePerson): person is EventPeopleFullPerso
 }
 
 export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation('events');
+  const { t } = useTranslation('events');
   const toast = useToast();
   const [people, setPeople] = useState<EventPeoplePerson[]>([]);
   const [meta, setMeta] = useState<EventPeopleMeta | null>(null);
@@ -376,7 +376,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
     if (!value) return t('manage.people.not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+    return new Intl.DateTimeFormat(getFormattingLocale(), {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);

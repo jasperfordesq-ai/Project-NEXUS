@@ -26,6 +26,7 @@ import { EmptyState } from '@/components/feedback';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 /**
  * RegionalPointsPage — AG28 member-facing UI for the third currency.
@@ -79,14 +80,14 @@ interface HistoryResponse {
   items: PointTransaction[];
 }
 
-const activityDateFormatter = new Intl.DateTimeFormat(undefined, {
+const activityDateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
 
 function formatActivityDate(value: string): string {
-  return activityDateFormatter.format(new Date(value));
+  return activityDateFormatter().format(new Date(value));
 }
 
 /**

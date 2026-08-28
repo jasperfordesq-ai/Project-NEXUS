@@ -280,7 +280,7 @@ class CommunityDashboardService
             $milestones[] = [
                 'type' => 'first_badge',
                 'label' => "Earned \"{$firstBadge->name}\" {$firstBadge->icon}",
-                'date' => $firstBadge->awarded_at?->format('M d, Y'),
+                'date' => $firstBadge->awarded_at?->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('ll'),
             ];
         }
 
@@ -307,7 +307,7 @@ class CommunityDashboardService
             $milestones[] = [
                 'type' => 'first_listing',
                 'label' => 'First listing posted',
-                'date' => $firstListing->created_at?->format('M d, Y'),
+                'date' => $firstListing->created_at?->locale(\App\I18n\FormattingLocale::carbon())->isoFormat('ll'),
             ];
         }
 

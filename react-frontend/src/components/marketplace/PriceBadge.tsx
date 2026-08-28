@@ -5,6 +5,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { Chip } from '@/components/ui/Chip';
+import { getFormattingLocale } from '@/lib/helpers';
 
 interface PriceBadgeProps {
   price: number | null;
@@ -20,7 +21,7 @@ interface PriceBadgeProps {
  */
 function formatPrice(price: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getFormattingLocale(), {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,

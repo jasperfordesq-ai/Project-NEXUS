@@ -77,12 +77,12 @@ class EventReminderService
 
             return \Carbon\Carbon::parse($startTime, 'UTC')
                 ->setTimezone($timezone)
-                ->locale((string) app()->getLocale())
+                ->locale(\App\I18n\FormattingLocale::carbon())
                 ->isoFormat('LLLL')
                 . ' (' . $timezone . ')';
         } catch (\Throwable) {
             return \Carbon\Carbon::parse($startTime, 'UTC')
-                ->locale((string) app()->getLocale())
+                ->locale(\App\I18n\FormattingLocale::carbon())
                 ->isoFormat('LLLL')
                 . ' (UTC)';
         }

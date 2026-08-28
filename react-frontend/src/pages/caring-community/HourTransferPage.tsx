@@ -26,6 +26,7 @@ import {
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 type TransferStatus =
@@ -65,14 +66,14 @@ const STATUS_COLOR: Record<TransferStatus, 'default' | 'primary' | 'success' | '
   rejected: 'danger',
 };
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
+const dateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 });
 
 function formatDate(value: string): string {
-  return dateFormatter.format(new Date(value));
+  return dateFormatter().format(new Date(value));
 }
 
 export function HourTransferPage() {

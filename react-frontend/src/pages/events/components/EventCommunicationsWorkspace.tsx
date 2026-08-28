@@ -35,6 +35,7 @@ import {
   type EventBroadcastSegment,
   type EventBroadcastVariant,
 } from '@/lib/event-communications-api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
 interface EventCommunicationsWorkspaceProps {
@@ -65,7 +66,7 @@ function initialContent(): EventBroadcastContentInput {
 }
 
 export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommunicationsWorkspaceProps) {
-  const { t, i18n } = useTranslation('event_communications');
+  const { t } = useTranslation('event_communications');
   const toast = useToast();
   const generation = useRef(0);
   const auditGeneration = useRef(0);
@@ -397,7 +398,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
     if (!value) return t('not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('not_recorded');
-    return new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
   }
 
   return (

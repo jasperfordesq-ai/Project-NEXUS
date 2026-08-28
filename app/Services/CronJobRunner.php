@@ -1102,11 +1102,14 @@ class CronJobRunner
         $viewLabel = __('emails.digest.view_item');
         $listHtml = '';
         foreach ($items as $item) {
-            // translatedFormat renders month names in the recipient's locale
-            // (the caller wraps this in LocaleContext::withLocale).
+            // isoFormat's localised tokens render both the month name AND the
+            // field order in the recipient's locale (the caller wraps this in
+            // LocaleContext::withLocale). translatedFormat('M j, g:i a')
+            // translated the month name but kept the American order for every
+            // language.
             $date = \Illuminate\Support\Carbon::parse($item['created_at'])
-                ->locale(app()->getLocale())
-                ->translatedFormat('M j, g:i a');
+                ->locale(\App\I18n\FormattingLocale::carbon())
+                ->isoFormat('ll LT');
             $snippet = htmlspecialchars($item['content_snippet']);
             $link = $item['link'] ? TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $item['link'] : '#';
 

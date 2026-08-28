@@ -202,7 +202,11 @@ class ListingExpiryReminderService
         $daysText = $daysLeft === 1
             ? __('emails_listings.listings.expiry_reminder.days_one')
             : __('emails_listings.listings.expiry_reminder.days_other', ['count' => $daysLeft]);
-        $expiryFormatted = date('M j, Y', strtotime($expiresAt));
+        // isoFormat, not date(): this string is interpolated into a translated
+        // notification, so it must follow the recipient's language and region.
+        $expiryFormatted = \Carbon\Carbon::parse($expiresAt)
+            ->locale(\App\I18n\FormattingLocale::carbon())
+            ->isoFormat('ll');
 
         $message = __('emails_listings.listings.expiry_reminder.notification', ['title' => $title, 'days_text' => $daysText, 'expiry_date' => $expiryFormatted]);
         $link = "/listings/{$listingId}";

@@ -14,6 +14,7 @@ import { Card, CardBody } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/contexts/ToastContext';
+import { getFormattingLocale } from '@/lib/helpers';
 import {
   eventAnalyticsApi,
   type EventAnalyticsSummary,
@@ -25,16 +26,16 @@ interface MetricRow {
   value: string;
 }
 
-function percentage(basisPoints: number | null, locale: string): string {
+function percentage(basisPoints: number | null): string {
   if (basisPoints === null) return '—';
-  return new Intl.NumberFormat(locale, {
+  return new Intl.NumberFormat(getFormattingLocale(), {
     style: 'percent',
     maximumFractionDigits: 1,
   }).format(basisPoints / 10_000);
 }
 
 export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation('event_analytics');
+  const { t } = useTranslation('event_analytics');
   const toast = useToast();
   const [summary, setSummary] = useState<EventAnalyticsSummary | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -65,8 +66,8 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
   }, [load]);
 
   const number = useCallback(
-    (value: number) => new Intl.NumberFormat(i18n.language).format(value),
-    [i18n.language],
+    (value: number) => new Intl.NumberFormat(getFormattingLocale()).format(value),
+    [],
   );
   const privacyCount = useCallback(
     (value: { value: number | null; suppressed: boolean }) => (
@@ -93,13 +94,13 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
       { label: t('analytics.metrics.invitations_accepted'), value: number(summary.invitation.accepted) },
       {
         label: t('analytics.metrics.invitation_conversion'),
-        value: percentage(summary.invitation.conversion.basis_points, i18n.language),
+        value: percentage(summary.invitation.conversion.basis_points),
       },
       { label: t('analytics.metrics.waitlist_joined'), value: number(summary.waitlist.joined) },
       { label: t('analytics.metrics.waitlist_accepted'), value: number(summary.waitlist.accepted) },
       {
         label: t('analytics.metrics.waitlist_conversion'),
-        value: percentage(summary.waitlist.conversion.basis_points, i18n.language),
+        value: percentage(summary.waitlist.conversion.basis_points),
       },
     ];
     const attendance: MetricRow[] = [
@@ -108,7 +109,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
       { label: t('analytics.metrics.no_show'), value: number(summary.attendance.no_show) },
       {
         label: t('analytics.metrics.attendance_rate'),
-        value: percentage(summary.attendance.attendance_rate.basis_points, i18n.language),
+        value: percentage(summary.attendance.attendance_rate.basis_points),
       },
     ];
     const communications: MetricRow[] = [
@@ -118,7 +119,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
       { label: t('analytics.metrics.dead_lettered'), value: number(summary.communications.dead_lettered) },
       {
         label: t('analytics.metrics.delivery_rate'),
-        value: percentage(summary.communications.delivery_rate.basis_points, i18n.language),
+        value: percentage(summary.communications.delivery_rate.basis_points),
       },
     ];
     const funnel: MetricRow[] = [
@@ -131,10 +132,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
         label: t('analytics.metrics.start_conversion'),
         value: summary.optional_funnel.start_to_registration_conversion.suppressed
           ? t('analytics.suppressed')
-          : percentage(
-            summary.optional_funnel.start_to_registration_conversion.basis_points,
-            i18n.language,
-          ),
+          : percentage(summary.optional_funnel.start_to_registration_conversion.basis_points),
       },
       {
         label: t('analytics.metrics.guardian_consents'),
@@ -170,7 +168,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
       { key: 'funnel', title: t('analytics.sections.funnel'), rows: funnel },
       { key: 'finance', title: t('analytics.sections.finance'), rows: finance },
     ];
-  }, [i18n.language, number, privacyCount, summary, t]);
+  }, [number, privacyCount, summary, t]);
 
   const download = async () => {
     setIsExporting(true);
@@ -218,7 +216,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
           <p className="mt-1 text-sm text-default-600">{t('analytics.subtitle')}</p>
           <p className="mt-2 text-xs text-default-500">
             {t('analytics.generated_at', {
-              date: new Intl.DateTimeFormat(i18n.language, {
+              date: new Intl.DateTimeFormat(getFormattingLocale(), {
                 dateStyle: 'medium',
                 timeStyle: 'short',
               }).format(new Date(summary.generated_at)),

@@ -46,6 +46,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   because those single-letter abbreviations exist only in US English locale data — Irish
   and British English have no compact form at any `Intl` style.
 
+- **Podcasts now has a complete member-facing native path.** Members can search the
+  catalogue, open shows and episodes from web links, follow shows, play hosted or external
+  HTTPS audio in-app, see real playback progress, read transcripts and chapters, react,
+  and submit a safety, spam, rights or other report. Playback failures are visible,
+  listen/completion analytics use the existing Laravel contract, and all text comes from
+  the maintained seven-language catalogue.
+
+- **Emails and notifications no longer send American dates.** Two separate causes,
+  both live for months. Carbon's locale was never set, and every notification service
+  passed `app()->getLocale()` — a bare language code — explicitly at the call site, so
+  Carbon resolved it to US English *and* overrode any global setting; a 2026 audit that
+  converted these to `isoFormat` fixed month-name translation while silently locking
+  English readers into month-first order. Separately, sixteen services and endpoints
+  held hardcoded `'M j, Y'`-style patterns, which `date()` renders identically in every
+  language. Dates now resolve through the new `App\I18n\FormattingLocale`, which
+  combines the recipient's language with the community's region (`general.region`
+  setting, else the tenant's `country_code`, else the platform default `IE`) — so an
+  English recipient gets "17 August 2026" and an Irish-language recipient gets
+  "17 Lúnasa 2026". `LocaleContext::withLocale()` now switches and restores Carbon's
+  locale alongside the translation locale, including after an exception. The premium
+  grace-period date, which was computed outside its recipient-language block, now takes
+  the recipient's language explicitly. Three API endpoints that returned pre-formatted
+  American dates were fixed at source.
+
+- **The web app's `Intl` formatters no longer follow the visitor's browser.** The
+  build-time locale gate only understood method calls, so ~40 `new Intl.DateTimeFormat`
+  / `Intl.NumberFormat` constructions escaped it: some passed no locale at all (following
+  the browser or OS rather than the language chosen in the app), others passed a bare
+  `i18n.language`. All now use the app's formatting locale, and the gate covers `Intl`
+  constructors too, rejects a bare `i18n.language` as a locale, and accepts a local
+  `const` bound to the helper. Formatters built once at module load were converted to
+  per-call factories — at import time neither the member's language nor the community's
+  region is known yet. Deliberate machine formats declare themselves with a
+  `locale-exempt:` comment giving the reason. Marketplace, jobs, pricing and dues pages
+  therefore now show prices in the community's regional convention rather than the
+  visitor's.
+
+- **A new blocking CI check keeps American date formats out of PHP.** It rejects
+  month-first patterns and bare-locale Carbon calls across `app/`, with a
+  `date-format-exempt:` escape for genuine machine formats. Verified against a probe of
+  eight known-bad and two correct forms, because a guard that cannot catch the bug is
+  worse than none.
+
+- **A `TimeHelper` test asserted the wrong weekday.** It expected 15 January 2026 to be
+  a Wednesday; it is a Thursday. The test was already failing before this work and is
+  unrelated to date order.
+
 - **Courses now has complete member-facing native navigation without producing a new
   binary.** Android and iOS can browse and search courses, open My Learning, inspect a
   syllabus, enrol with visible success/failure feedback, follow web course links into the
