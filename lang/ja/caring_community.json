@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "使用するクレジットは0より大きい値にしてください。",
+      "invalid_order_total": "注文合計は0より大きい値にしてください。",
+      "credits_decimal_precision": "クレジットの小数点以下は2桁以内にしてください。",
+      "credits_exceed_max": "使用するクレジットが1回の交換上限を超えています。",
+      "self_redemption_forbidden": "自分の掲載情報ではクレジットを利用できません。",
+      "programme_unavailable": "このコミュニティではロイヤルティプログラムを利用できません。",
+      "merchant_disabled": "この加盟店ではタイムクレジットを受け付けていません。",
+      "merchant_misconfigured": "この加盟店のロイヤルティ設定が正しくありません。",
+      "exceeds_max_discount": "割引額がこの注文で許可される上限を超えています。",
+      "member_not_found": "メンバーアカウントが見つかりません。",
+      "zero_balance": "交換に使用できるタイムクレジットがありません。",
+      "insufficient_credits": "ウォレットのタイムクレジットが不足しています。",
+      "redemption_not_found": "交換が見つかりません。",
+      "redemption_not_reversible": "適用済みの交換のみ取り消せます。",
+      "reversal_reason_too_long": "取消理由は500文字以内にしてください。",
       "invalid_listing": "出品はこの業者のものではありません。",
       "listing_unavailable": "このリストはロイヤリティの引き換えには利用できません。",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "1時間あたりのCHFは0から9999の範囲にしてください。",
+      "invalid_max_discount_pct": "最大割引率は0から100の範囲にしてください。",
       "redemption_unavailable": "このロイヤルティ交換は利用できなくなりました。",
       "redemption_mismatch": "このロイヤルティ交換は選択したマーケットプレイス注文と一致しません。"
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "地域別の対応率",
+      "description": "地域ごとの依頼時間と対応済み時間を比較します。対応率が50%未満の場合は警告が表示されます。",
+      "coverage_ratio": "対応率",
+      "requested": "依頼済み",
+      "fulfilled": "対応済み",
+      "under_supplied": "供給不足"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "支援者の離脱",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "全体の離脱率",
+      "by_category": "カテゴリー別",
+      "lapsed": "活動休止中の支援者",
+      "prior_active": "以前は活動中"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "カテゴリー係数のずれ",
+      "description": "管理者が設定した基準値と、セッションあたりの平均実績時間を比較します。ずれが15%を超える場合は警告が表示されます。",
+      "baseline": "基準値",
+      "expected": "予測値",
+      "observed": "実績値",
+      "drift": "ずれ",
+      "flagged": "要確認"
     }
   },
   "nudges": {

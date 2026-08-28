@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "Het aantal te gebruiken tegoeden moet groter zijn dan 0.",
+      "invalid_order_total": "Het bestelbedrag moet groter zijn dan 0.",
+      "credits_decimal_precision": "Tegoeden mogen maximaal 2 decimalen hebben.",
+      "credits_exceed_max": "Het aantal te gebruiken tegoeden overschrijdt het maximum per inwisseling.",
+      "self_redemption_forbidden": "U kunt geen tegoeden inwisselen bij uw eigen aanbod.",
+      "programme_unavailable": "Het loyaliteitsprogramma is niet beschikbaar in deze gemeenschap.",
+      "merchant_disabled": "Deze handelaar accepteert geen tijdkredieten meer.",
+      "merchant_misconfigured": "De loyaliteitsinstellingen van deze handelaar zijn ongeldig.",
+      "exceeds_max_discount": "De korting overschrijdt het toegestane maximum voor deze bestelling.",
+      "member_not_found": "Ledenaccount niet gevonden.",
+      "zero_balance": "U hebt geen tijdkredieten om in te wisselen.",
+      "insufficient_credits": "Uw portemonnee bevat onvoldoende tijdkredieten.",
+      "redemption_not_found": "Inwisseling niet gevonden.",
+      "redemption_not_reversible": "Alleen toegepaste inwisselingen kunnen worden teruggedraaid.",
+      "reversal_reason_too_long": "De reden voor terugdraaiing mag maximaal 500 tekens bevatten.",
       "invalid_listing": "De vermelding is niet van deze verkoper.",
       "listing_unavailable": "Deze aanbieding is niet beschikbaar voor loyaliteitsinwisseling.",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "Het bedrag in CHF per uur moet tussen 0 en 9999 liggen.",
+      "invalid_max_discount_pct": "Het maximale kortingspercentage moet tussen 0 en 100 liggen.",
       "redemption_unavailable": "Deze loyaliteitsinwisseling is niet langer beschikbaar.",
       "redemption_mismatch": "Deze loyaliteitsinwisseling komt niet overeen met de geselecteerde marktplaatsbestelling."
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "Dekking per deelregio",
+      "description": "Gevraagde en vervulde uren per deelregio. Een dekking onder 50% wordt gemarkeerd.",
+      "coverage_ratio": "Dekkingsgraad",
+      "requested": "Gevraagd",
+      "fulfilled": "Vervuld",
+      "under_supplied": "Onvoldoende aanbod"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "Uitval van helpers",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "Totale uitvalgraad",
+      "by_category": "Per categorie",
+      "lapsed": "Inactieve helpers",
+      "prior_active": "Voorheen actief"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "Afwijking van categoriecoëfficiënten",
+      "description": "Het waargenomen gemiddelde aantal uren per sessie vergeleken met de door de beheerder ingestelde referentiewaarde. Afwijkingen boven 15% worden gemarkeerd.",
+      "baseline": "Referentiewaarde",
+      "expected": "Verwacht",
+      "observed": "Waargenomen",
+      "drift": "Afwijking",
+      "flagged": "Gemarkeerd"
     }
   },
   "nudges": {
