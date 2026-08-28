@@ -99,8 +99,10 @@ class TimeHelperTest extends TestCase
 
     public function test_format_with_default_format(): void
     {
+        // Day-first, not American: TimeHelper's default format is 'j M Y'
+        // because this platform's communities are in Ireland and the UK.
         $result = TimeHelper::format('2026-01-15 10:30:00');
-        $this->assertSame('Jan 15, 2026', $result);
+        $this->assertSame('15 Jan 2026', $result);
     }
 
     public function test_format_with_custom_format(): void
@@ -113,7 +115,7 @@ class TimeHelperTest extends TestCase
     {
         $ts = mktime(10, 30, 0, 1, 15, 2026);
         $result = TimeHelper::format($ts);
-        $this->assertSame('Jan 15, 2026', $result);
+        $this->assertSame('15 Jan 2026', $result);
     }
 
     public function test_format_with_invalid_datetime_returns_unknown(): void
@@ -128,18 +130,20 @@ class TimeHelperTest extends TestCase
 
     public function test_formatWithTime_returns_date_and_time(): void
     {
+        // Day-first date and a 24-hour clock, matching the helper's documented
+        // output ('15 Jan 2026 at 15:30') rather than the American form.
         $result = TimeHelper::formatWithTime('2026-01-15 15:30:00');
-        $this->assertStringContainsString('Jan 15, 2026', $result);
+        $this->assertStringContainsString('15 Jan 2026', $result);
         $this->assertStringContainsString('at', $result);
-        $this->assertStringContainsString('3:30 PM', $result);
+        $this->assertStringContainsString('15:30', $result);
     }
 
     public function test_formatWithTime_with_unix_timestamp(): void
     {
         $ts = mktime(9, 0, 0, 6, 1, 2026);
         $result = TimeHelper::formatWithTime($ts);
-        $this->assertStringContainsString('Jun 1, 2026', $result);
-        $this->assertStringContainsString('9:00 AM', $result);
+        $this->assertStringContainsString('1 Jun 2026', $result);
+        $this->assertStringContainsString('09:00', $result);
     }
 
     public function test_formatWithTime_with_invalid_datetime_returns_unknown(): void

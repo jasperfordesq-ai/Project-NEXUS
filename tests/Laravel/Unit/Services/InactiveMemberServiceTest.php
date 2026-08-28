@@ -126,9 +126,18 @@ class InactiveMemberServiceTest extends TestCase
             }
         });
 
-        DB::shouldReceive('table')->with('tenants')->once()->andReturnSelf();
-        DB::shouldReceive('where')->with('id', 2)->once()->andReturnSelf();
-        DB::shouldReceive('first')->once()->andReturn((object) [
+        // Tenant-context reads are deliberately NOT count-pinned. markNotified
+        // resolves the tenant once via TenantContext::setById() and then again
+        // through getSetting('site_name'), getFrontendUrl() and getSlugPrefix()
+        // to build the email — four reads today. Asserting an exact number here
+        // pinned an implementation detail: hoisting the community name and feed
+        // URL out of the per-recipient loop (correct, and fewer queries than
+        // doing it per recipient) reded this test without any behaviour changing.
+        // What the test is actually for is below: the recipient query, one flag
+        // update per member, and the returned count.
+        DB::shouldReceive('table')->with('tenants')->atLeast()->once()->andReturnSelf();
+        DB::shouldReceive('where')->with('id', 2)->atLeast()->once()->andReturnSelf();
+        DB::shouldReceive('first')->atLeast()->once()->andReturn((object) [
             'id' => 2,
             'name' => 'Test Tenant',
             'slug' => 'test-tenant',

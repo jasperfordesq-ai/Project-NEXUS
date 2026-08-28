@@ -246,7 +246,10 @@ class EventNotificationServiceTest extends TestCase
         );
 
         $this->assertStringContainsString(__('emails.events.change_label_end_time'), $html);
-        $this->assertStringContainsString('8:30 AM (America/New_York)', $html);
+        // 12:30 UTC in America/New_York (EDT, UTC-4) is 08:30, rendered on a
+        // 24-hour clock: formatEventDateTime uses Carbon's localised 'llll'
+        // token, not a literal American pattern. See its docblock.
+        $this->assertStringContainsString('08:30 (America/New_York)', $html);
         $this->assertSame(1, substr_count($html, '<li'));
     }
 
@@ -345,7 +348,13 @@ class EventNotificationServiceTest extends TestCase
 
     public function test_reminder_message_renders_date_in_recipient_locale(): void
     {
-        // 2026-07-15 is a Wednesday ("Mittwoch" in German, "Juli" for the month).
+        // 2026-07-15 is a Wednesday. The reminder renders via Carbon's localised
+        // 'llll' token, which abbreviates the weekday ("Mi." in German, "Wed" in
+        // English) — a literal 'dddd, MMM D' pattern is exactly what imposed
+        // American field order on Irish and UK recipients, so the abbreviation is
+        // the correct behaviour, not a regression. What matters here is unchanged:
+        // the weekday must be in the recipient's language, and the English name
+        // must not leak into a German reminder.
         $event = (object) [
             'id' => 1,
             'title' => 'Test Event',
@@ -356,11 +365,12 @@ class EventNotificationServiceTest extends TestCase
         ];
 
         $german = $this->buildReminderMessageIn('de', $event);
-        $this->assertStringContainsString('Mittwoch', $german, 'German recipients must get a German weekday name');
-        $this->assertStringNotContainsString('Wednesday', $german, 'English weekday name must not leak into German reminders');
+        $this->assertStringContainsString('Mi.', $german, 'German recipients must get a German weekday name');
+        $this->assertStringContainsString('Jul', $german, 'German reminders must carry the localised month');
+        $this->assertStringNotContainsString('Wed', $german, 'English weekday name must not leak into German reminders');
 
         $english = $this->buildReminderMessageIn('en', $event);
-        $this->assertStringContainsString('Wednesday', $english);
+        $this->assertStringContainsString('Wed', $english);
     }
 
     public function test_reminder_message_location_connectors_come_from_translations(): void

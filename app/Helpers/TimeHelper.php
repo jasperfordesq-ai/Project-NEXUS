@@ -102,8 +102,10 @@ class TimeHelper
     /**
      * Format a datetime with time
      *
+     * Day-first date and a 24-hour clock, for the same reason as format() above.
+     *
      * @param string|int $datetime DateTime string or Unix timestamp
-     * @return string Formatted date and time (e.g., "Jan 15, 2026 at 3:30 PM")
+     * @return string Formatted date and time (e.g., "15 Jan 2026 at 15:30")
      */
     public static function formatWithTime($datetime): string
     {

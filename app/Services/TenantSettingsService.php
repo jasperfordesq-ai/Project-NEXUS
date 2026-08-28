@@ -160,6 +160,12 @@ class TenantSettingsService
     public function clearCacheForTenant(int $tenantId): void
     {
         Cache::forget(self::CACHE_PREFIX . $tenantId);
+
+        // FormattingLocale memoises the resolved region per tenant in-process
+        // (general.region, else tenants.country_code). Clearing the settings
+        // cache without clearing that would leave a queue worker formatting
+        // dates with the region the admin just changed away from.
+        \App\I18n\FormattingLocale::forgetTenant($tenantId);
     }
 
     /**

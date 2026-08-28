@@ -46,6 +46,18 @@ final class FormattingLocale
     private static array $dayFirstByLocale = [];
 
     /**
+     * Memoised resolved region, keyed by tenant id.
+     *
+     * The tenant-settings half of the lookup is cached by TenantSettingsService,
+     * but the `tenants.country_code` fallback was an uncached query that ran on
+     * every request for any community with no explicit `general.region` — and
+     * region() is reached by every user-facing date and number. Measured on the
+     * groups wiki endpoint, that one query was the difference between 12 and 13
+     * queries per request. Memoised per process; flush() clears it.
+     */
+    private static array $regionByTenant = [];
+
+    /**
      * The BCP-47 tag for user-facing formatting, e.g. `en-IE`.
      *
      * @param string|null $language Defaults to the active application locale,
@@ -162,25 +174,53 @@ final class FormattingLocale
         $tenantId ??= self::currentTenantId();
 
         if ($tenantId !== null) {
-            $configured = self::normaliseRegion(self::tenantSetting($tenantId, 'general.region'));
-            if ($configured !== null) {
-                return $configured;
+            if (array_key_exists($tenantId, self::$regionByTenant)) {
+                return self::$regionByTenant[$tenantId];
             }
 
-            $country = self::normaliseRegion(self::tenantCountryCode($tenantId));
-            if ($country !== null) {
-                return $country;
+            $resolved = self::normaliseRegion(self::tenantSetting($tenantId, 'general.region'))
+                ?? self::normaliseRegion(self::tenantCountryCode($tenantId));
+
+            if ($resolved !== null) {
+                return self::$regionByTenant[$tenantId] = $resolved;
             }
+
+            // Memoise the miss too, or the uncached country_code query repeats
+            // for every date on the page.
+            return self::$regionByTenant[$tenantId] = self::platformRegion();
         }
 
+        return self::platformRegion();
+    }
+
+    /**
+     * Drop the memoised region for one tenant.
+     *
+     * Called by TenantSettingsService::clearCacheForTenant() so an admin saving
+     * a new "Date and number format" takes effect immediately, including in a
+     * long-running queue worker that would otherwise hold the old region for
+     * the life of the process.
+     */
+    public static function forgetTenant(int $tenantId): void
+    {
+        unset(self::$regionByTenant[$tenantId]);
+    }
+
+    /** The platform-wide default region, independent of any tenant. */
+    private static function platformRegion(): string
+    {
         return self::normaliseRegion(config('app.region')) ?? self::DEFAULT_REGION;
     }
 
-    /** Clear memoised state. Test seam. */
+    /**
+     * Clear memoised state. Test seam, and the hook an admin save needs: a
+     * tenant that changes its region mid-process must not keep the old one.
+     */
     public static function flush(): void
     {
         self::$availableCarbonLocales = null;
         self::$dayFirstByLocale = [];
+        self::$regionByTenant = [];
     }
 
     /** ISO 3166-1 alpha-2, upper-cased; null for anything else. */
