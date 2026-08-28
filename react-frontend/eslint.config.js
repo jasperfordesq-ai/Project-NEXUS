@@ -35,6 +35,14 @@ export default tseslint.config(
       // JS — warn only
       'no-empty': 'warn',
 
+      // console.error bypasses logError(), which is the only path that forwards
+      // an error to Sentry in production. 13 call sites in the admin, GDPR and
+      // WebAuthn screens were silently losing production errors until
+      // 2026-08-28; this rule stops that class of mistake coming back.
+      // Only `error` is restricted — warn/info/debug are dev-only in logger.ts
+      // anyway, and deliberate console use is exempted per-file below.
+      'no-console': ['error', { allow: ['warn', 'info', 'debug', 'log', 'table', 'group', 'groupCollapsed', 'groupEnd'] }],
+
       // i18n — catch hardcoded strings in JSX markup (between tags and in common attributes)
       // markupOnly: true limits scope to JSX text nodes — won't flag JS constants or config strings
       'i18next/no-literal-string': ['warn', { markupOnly: true }],
@@ -49,6 +57,27 @@ export default tseslint.config(
     files: ['src/admin/**/*.{ts,tsx}', 'src/broker/**/*.{ts,tsx}'],
     rules: {
       'i18next/no-literal-string': ['error', { markupOnly: true }],
+    },
+  },
+  {
+    // Files where console.error is the intended behaviour, not a lost error:
+    //  - logger.ts IS the dev console path that logError() delegates to.
+    //  - supportDiagnostics.ts deliberately intercepts and restores console.
+    //  - safeStorage.ts is a low-level primitive; importing the logger here
+    //    would create an import cycle (logger -> telemetryQueue -> storage).
+    //  - i18n.ts logs missing keys behind an interactive-dev guard.
+    //  - tenor.ts reports an unconfigured optional GIPHY key, which is a
+    //    configuration state rather than an error worth paging Sentry over.
+    files: [
+      'src/lib/logger.ts',
+      'src/lib/supportDiagnostics.ts',
+      'src/lib/safeStorage.ts',
+      'src/lib/tenor.ts',
+      'src/i18n.ts',
+      'src/main.tsx',
+    ],
+    rules: {
+      'no-console': 'off',
     },
   },
   {

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button, Chip, Spinner, Card, Tabs, Tab } from '@/components/ui';
+import { logError } from '@/lib/logger';
 
 interface PerformanceSummary {
   slowest_requests: Array<{
@@ -155,7 +156,7 @@ export default function PerformanceDashboard() {
         setStatus('load_failed');
       }
     } catch (error) {
-      console.error('Failed to load performance summary:', error);
+      logError('Failed to load performance summary', error);
       setSummary(null);
       setStatus('load_failed');
     } finally {

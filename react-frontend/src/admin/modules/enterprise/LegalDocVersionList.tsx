@@ -23,6 +23,7 @@ import type { LegalDocumentVersion } from '@/admin/api/types';
 import LegalDocVersionComparison from './LegalDocVersionComparison';
 import { sanitizeRichText } from '@/lib/sanitize';
 import { useAdminPageMeta } from '../../AdminMetaContext';
+import { logError } from '@/lib/logger';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -154,7 +155,7 @@ export default function LegalDocVersionList() {
         setPendingCount(response.data.count);
       }
     } catch {
-      console.error('Failed to fetch pending count', error);
+      logError('Failed to fetch pending count', error);
     }
 
     setShowNotifyModal(true);

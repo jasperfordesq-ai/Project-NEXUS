@@ -24,6 +24,7 @@ import type { Column } from '../../components/DataTable';
 import type { GdprRequest } from '../../api/types';
 
 import { useTranslation } from 'react-i18next';
+import { logError } from '@/lib/logger';
 const STATUS_OPTION_KEYS = ['all', 'pending', 'processing', 'completed', 'rejected'] as const;
 
 function SlaChip({ createdAt, t }: { createdAt: string; t: (key: string, opts?: Record<string, unknown>) => string }) {
@@ -111,7 +112,7 @@ export function GdprRequests() {
       }
     } catch (err) {
       toast.error(t('enterprise.gdpr_failed_update_request_status'));
-      console.error('GDPR request update error:', err);
+      logError('GDPR request update error', err);
     }
   };
 

@@ -30,6 +30,7 @@ import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
 import type { GdprDashboardStats, GdprStatistics, GdprTrendData } from '../../api/types';
 import { useTranslation } from 'react-i18next';
+import { logError } from '@/lib/logger';
 
 function ComplianceScoreRing({ score, size = 120, scoreLabel }: { score: number; size?: number; scoreLabel?: string }) {
   const radius = (size - 16) / 2;
@@ -99,7 +100,7 @@ export function GdprDashboard() {
         setTrends(trendsRes.data as unknown as GdprTrendData);
       }
     } catch (err) {
-      console.error('Failed to load GDPR dashboard data', err);
+      logError('Failed to load GDPR dashboard data', err);
     } finally {
       setLoading(false);
     }

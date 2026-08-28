@@ -28,6 +28,7 @@ import { useTenant } from '@/contexts';
 import { adminEnterprise } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { SystemHealth } from '../../api/types';
+import { logError } from '@/lib/logger';
 
 /**
  * Parse a memory string like "24 MB" or "256M" to bytes.
@@ -74,7 +75,7 @@ export function SystemMonitoring() {
         setHealth(res.data as unknown as SystemHealth);
       }
     } catch (err) {
-      console.error('Failed to load monitoring data', err);
+      logError('Failed to load monitoring data', err);
     } finally {
       setLoading(false);
     }

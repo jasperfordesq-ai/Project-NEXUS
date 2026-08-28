@@ -58,6 +58,7 @@ import Check from 'lucide-react/icons/check';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@/components/ui';
+import { logError } from '@/lib/logger';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -426,7 +427,7 @@ export function ComposeEditor(
         theme: composeEditorTheme,
         nodes: EDITOR_NODES,
         onError: (error: Error) => {
-          console.error('ComposeEditor error:', error);
+          logError('ComposeEditor error', error);
         },
         editable: !isDisabled,
       }),

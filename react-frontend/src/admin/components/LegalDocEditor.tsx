@@ -68,6 +68,7 @@ import {
   $isLegalNoticeNode,
 } from './LegalNoticeNode';
 import { Button, Tooltip } from '@/components/ui';
+import { logError } from '@/lib/logger';
 
 /* ───────────────────────── Theme ───────────────────────── */
 
@@ -595,7 +596,7 @@ export function LegalDocEditor({ value, onChange, disabled = false, errorMessage
     theme: editorTheme,
     nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, LegalNoticeNode],
     onError: (error: Error) => {
-      console.error('LegalDocEditor error:', error);
+      logError('LegalDocEditor error', error);
     },
     editable: !disabled,
   // disabled intentionally not in deps: initial editability only; DisabledPlugin handles changes

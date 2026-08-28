@@ -25,6 +25,7 @@ import {
   caringRolePresetName,
   type CaringRolePresetKey,
 } from './caringRolePresetTranslations';
+import { logError } from '@/lib/logger';
 
 function permissionToken(value: string): string {
   return value.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').toLowerCase();
@@ -152,7 +153,7 @@ export function RoleForm() {
       }
     } catch (err) {
       toast.error(isEdit ? t('enterprise.failed_to_update_role') : t('enterprise.failed_to_create_role'));
-      console.error('Role save error:', err);
+      logError('Role save error', err);
     } finally {
       setSaving(false);
     }

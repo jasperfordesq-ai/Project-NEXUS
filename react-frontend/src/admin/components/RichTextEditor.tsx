@@ -52,6 +52,7 @@ import FileDown from 'lucide-react/icons/file-down';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 import { Button, Tooltip } from '@/components/ui';
+import { logError } from '@/lib/logger';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -498,7 +499,7 @@ export function RichTextEditor({
     theme: editorTheme,
     nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode],
     onError: (error: Error) => {
-      console.error('Lexical editor error:', error);
+      logError('Lexical editor error', error);
     },
     editable: !isDisabled,
   };

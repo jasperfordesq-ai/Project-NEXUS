@@ -18,6 +18,7 @@ import { adminSettings } from '../../api/adminApi';
 import { resolveAssetUrl } from '@/lib/helpers';
 import type { AdminSettingsResponse } from '../../api/types';
 import SystemConfig from '../enterprise/SystemConfig';
+import { logError } from '@/lib/logger';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -334,7 +335,7 @@ export function AdminSettings() {
       }
     } catch (err) {
       toast.error(t('system.failed_to_save_settings'));
-      console.error('Settings save error:', err);
+      logError('Settings save error', err);
     } finally {
       setSaving(false);
     }

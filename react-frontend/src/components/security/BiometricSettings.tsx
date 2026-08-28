@@ -35,6 +35,7 @@ import {
   type WebAuthnCredential,
   type WebAuthnSecurityConfirmationInput,
 } from '@/lib/webauthn';
+import { logError } from '@/lib/logger';
 
 type Credential = WebAuthnCredential;
 type SecurityConfirmationMethod = 'password' | 'totp' | 'backup';
@@ -285,7 +286,7 @@ export function BiometricSettings() {
         result.errorCode === 'domain_not_allowed'
         || result.errorCode === 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED'
       ) {
-        console.error('[webauthn] RP ID rejected for this origin:', result.error);
+        logError('[webauthn] RP ID rejected for this origin', result.error);
         toast.error(t('passkey_error_domain'));
       } else if (result.errorCode === 'cancelled') {
         toast.error(t('passkey_cancelled'));
@@ -295,12 +296,12 @@ export function BiometricSettings() {
         toast.error(t('passkey_limit_reached', { count: maxCredentials ?? credentials.length }));
       } else {
         if (result.errorCode === 'unknown') {
-          console.error('[webauthn] registration failed:', result.error);
+          logError('[webauthn] registration failed', result.error);
         }
         toast.error(t('passkey_registration_failed'));
       }
     } catch (err) {
-      console.error('[webauthn] registration failed:', err);
+      logError('[webauthn] registration failed', err);
       toast.error(t('passkey_registration_failed'));
     } finally {
       setRegistering(false);
