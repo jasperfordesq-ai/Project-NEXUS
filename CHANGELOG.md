@@ -44,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   audience deliberately excludes brokers and coordinators, who are refused the
   approval endpoint, and is selected by admin flag as well as role so that
   flag-only admins are not skipped. All new member-facing copy is translated into
-  all eleven languages.
+  all eleven languages, and all five new email types are registered in the email
+  audit matrix so their delivery is tracked like every other transactional email.
 
 - **The native iOS release path now has an evidence-backed App Store submission pack.**
   Apple store copy, privacy and age-rating worksheets, reviewer notes, screenshot rules,
