@@ -223,6 +223,7 @@ return [
     'items_per_page_range' => 'يجب أن يتراوح عدد items_per_page بين 5 و100',
     'maintenance_mode_boolean' => 'يجب أن تكون قيمة Maintenance_mode قيمة منطقية',
     'registration_mode_invalid' => 'يجب أن يكون وضع التسجيل واحدًا من: مفتوح، مغلق، دعوة_فقط',
+    'region_invalid' => 'يجب أن تكون المنطقة رمز دولة مكوّنًا من حرفين، مثل IE أو GB',
     'registration_closed' => 'التسجيل مغلق لهذا المجتمع. تواصل مع مسؤول المجتمع إذا كنت بحاجة إلى حساب أو إذا تلقيت دعوة.',
     'default_currency_invalid' => 'يجب أن يكون default_currency رمز عملة مكونًا من 3 أحرف وفقًا لمعايير ISO 4217 (على سبيل المثال، اليورو، والدولار الأمريكي، والجنيه الإسترليني)',
     'map_provider_invalid' => 'يجب أن يكون map_provider واحدًا من: google، openstreetmap، ordnance_survey',

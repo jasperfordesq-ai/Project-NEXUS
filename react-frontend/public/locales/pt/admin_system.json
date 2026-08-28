@@ -1394,7 +1394,21 @@
     "platform_gcp": "GCP",
     "currency_eur": "EUR - Euro",
     "platform_docker": "Docker",
-    "powered_by_branding_section": "Marca 'Powered-by'"
+    "powered_by_branding_section": "Marca 'Powered-by'",
+    "label_region": "Formato de datas e números",
+    "desc_region": "Determina como as datas, as horas e os números são escritos nesta comunidade. Não altera o idioma.",
+    "region_sample": "Os membros verão: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irlanda",
+    "region_gb": "Reino Unido",
+    "region_ch": "Suíça",
+    "region_de": "Alemanha",
+    "region_fr": "França",
+    "region_es": "Espanha",
+    "region_it": "Itália",
+    "region_pt": "Portugal",
+    "region_nl": "Países Baixos",
+    "region_pl": "Polónia",
+    "region_us": "Estados Unidos"
   },
   "verification": {
     "approve": "Aprovar",

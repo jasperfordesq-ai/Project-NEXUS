@@ -42,6 +42,9 @@ final class FormattingLocale
     /** Memoised per request: Carbon's locale list is a directory scan. */
     private static ?array $availableCarbonLocales = null;
 
+    /** Memoised day-before-month probe results, keyed by Carbon locale. */
+    private static array $dayFirstByLocale = [];
+
     /**
      * The BCP-47 tag for user-facing formatting, e.g. `en-IE`.
      *
@@ -76,23 +79,81 @@ final class FormattingLocale
     {
         $tag = str_replace('-', '_', self::resolve($language, $tenantId));
         $available = self::availableCarbonLocales();
+        $parts = explode('_', $tag);
+        $base = $parts[0];
+        $region = $parts[1] ?? '';
 
-        if (in_array($tag, $available, true)) {
-            return $tag;
+        $resolved = in_array($tag, $available, true)
+            ? $tag
+            : self::firstAvailable(
+                // Prefer another region of the same language before dropping the
+                // region entirely — bare `en` is American, which is the bug this
+                // class exists to prevent.
+                [$base . '_GB', $base . '_IE', $base],
+                $available,
+            );
+
+        // Carbon ships several English regional locales whose date patterns
+        // inherit the American order — `en_DE` renders "August 17, 2026", as
+        // does bare `en`. Measured, not assumed. So an English-speaking
+        // community that picks a region with no English conventions of its own
+        // would still get American dates, which is precisely what this class
+        // exists to prevent. Fall back to a known day-first English locale.
+        //
+        // Deliberately English-only: the inheritance problem is English's, and
+        // "month before day" is a false alarm for languages that lead with the
+        // year, such as Japanese. An explicit US region is honoured — an
+        // American community should get American dates.
+        if ($base === 'en' && $region !== 'US' && !self::rendersDayBeforeMonth($resolved)) {
+            return self::firstAvailable(['en_GB', 'en_IE'], $available) ?? $resolved;
         }
 
-        $base = explode('_', $tag)[0];
+        return $resolved ?? 'en';
+    }
 
-        // Prefer another region of the same language before dropping the region
-        // entirely — bare `en` is American, which is the bug this class exists
-        // to prevent.
-        foreach ([$base . '_GB', $base . '_IE'] as $candidate) {
+    /** @param list<string> $candidates @param list<string> $available */
+    private static function firstAvailable(array $candidates, array $available): ?string
+    {
+        foreach ($candidates as $candidate) {
             if (in_array($candidate, $available, true)) {
                 return $candidate;
             }
         }
 
-        return in_array($base, $available, true) ? $base : 'en';
+        return null;
+    }
+
+    /**
+     * Does this locale put the day before the month? Probed once per locale
+     * rather than hardcoded, so it stays true if Carbon's data changes.
+     */
+    private static function rendersDayBeforeMonth(?string $locale): bool
+    {
+        if ($locale === null) {
+            return false;
+        }
+        if (isset(self::$dayFirstByLocale[$locale])) {
+            return self::$dayFirstByLocale[$locale];
+        }
+
+        try {
+            // "17 August 2026" vs "August 17, 2026": whichever of the day
+            // number and the first letter of the month name comes first.
+            // Both offsets are byte offsets, so they compare directly.
+            $rendered = (string) Carbon::create(2026, 8, 17, 12, 0, 0)->locale($locale)->isoFormat('LL');
+            $dayPosition = strpos($rendered, '17');
+            $monthPosition = preg_match('/\p{L}/u', $rendered, $match, PREG_OFFSET_CAPTURE) === 1
+                ? $match[0][1]
+                : null;
+
+            $dayFirst = $dayPosition !== false
+                && $monthPosition !== null
+                && $dayPosition < $monthPosition;
+        } catch (\Throwable) {
+            $dayFirst = false;
+        }
+
+        return self::$dayFirstByLocale[$locale] = $dayFirst;
     }
 
     /** Two-letter region for the given (or active) tenant. */
@@ -119,6 +180,7 @@ final class FormattingLocale
     public static function flush(): void
     {
         self::$availableCarbonLocales = null;
+        self::$dayFirstByLocale = [];
     }
 
     /** ISO 3166-1 alpha-2, upper-cased; null for anything else. */

@@ -1428,7 +1428,21 @@
     "platform_linux_vps": "Linux / VPS",
     "stat_passed": "Stait Pasáilte",
     "tooltip_api_latency": "API Luasghaoithe",
-    "powered_by_branding_section": "Brandaíochta a chumhachtar ag"
+    "powered_by_branding_section": "Brandaíochta a chumhachtar ag",
+    "label_region": "Formáid dátaí agus uimhreacha",
+    "desc_region": "Roghnaíonn sé seo an chaoi a scríobhtar dátaí, amanna agus uimhreacha don phobal seo. Ní athraíonn sé an teanga.",
+    "region_sample": "Feicfidh baill: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Éire",
+    "region_gb": "An Ríocht Aontaithe",
+    "region_ch": "An Eilvéis",
+    "region_de": "An Ghearmáin",
+    "region_fr": "An Fhrainc",
+    "region_es": "An Spáinn",
+    "region_it": "An Iodáil",
+    "region_pt": "An Phortaingéil",
+    "region_nl": "An Ísiltír",
+    "region_pl": "An Pholainn",
+    "region_us": "Stáit Aontaithe Mheiriceá"
   },
   "verification": {
     "approve": "Cheadaigh",

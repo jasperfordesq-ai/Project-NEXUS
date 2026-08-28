@@ -1377,7 +1377,21 @@
       "unknown": "Unknown status",
       "draft": "draft",
       "published": "published"
-    }
+    },
+    "label_region": "Date and number format",
+    "desc_region": "Selects how dates, times and numbers are written for this community. It does not change the language.",
+    "region_sample": "Members will see: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Ireland",
+    "region_gb": "United Kingdom",
+    "region_ch": "Switzerland",
+    "region_de": "Germany",
+    "region_fr": "France",
+    "region_es": "Spain",
+    "region_it": "Italy",
+    "region_pt": "Portugal",
+    "region_nl": "Netherlands",
+    "region_pl": "Poland",
+    "region_us": "United States"
   },
   "verification": {
     "approve": "Approve",

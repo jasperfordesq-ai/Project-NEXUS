@@ -1377,7 +1377,21 @@
     "placeholder_project_n_e_x_u_s": "プロジェクト NEXUS...",
     "platform_gcp": "GCP",
     "platform_linux_vps": "Linux / VPS",
-    "powered_by_branding_section": "Powered-by ブランド"
+    "powered_by_branding_section": "Powered-by ブランド",
+    "label_region": "日付と数値の形式",
+    "desc_region": "このコミュニティで日付・時刻・数値をどのように表記するかを選びます。言語は変わりません。",
+    "region_sample": "メンバーには次のように表示されます: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "アイルランド",
+    "region_gb": "イギリス",
+    "region_ch": "スイス",
+    "region_de": "ドイツ",
+    "region_fr": "フランス",
+    "region_es": "スペイン",
+    "region_it": "イタリア",
+    "region_pt": "ポルトガル",
+    "region_nl": "オランダ",
+    "region_pl": "ポーランド",
+    "region_us": "アメリカ合衆国"
   },
   "verification": {
     "approve": "承認する",

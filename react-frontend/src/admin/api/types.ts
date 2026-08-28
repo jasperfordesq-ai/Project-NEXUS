@@ -2134,6 +2134,8 @@ export interface AdminSettingsResponse {
     powered_by_image_dark: string | null;
     powered_by_url: string | null;
     default_currency: string | null;
+    /** ISO 3166-1 alpha-2. Drives date/number formatting; absent = inherit. */
+    region?: string | null;
     map_provider: string | null;
     geocoding_provider: string | null;
     /** Masked on read ("AIza••••••••YJ4"). Empty string on write clears the override. */

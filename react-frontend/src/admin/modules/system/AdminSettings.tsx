@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader, Input, Button, Textarea, Spinner, Chip, Select, SelectItem, Switch, Tooltip } from '@/components/ui';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import Settings from 'lucide-react/icons/settings';
 import Save from 'lucide-react/icons/save';
@@ -15,7 +15,7 @@ import { useToast, useTenant, useAuth } from '@/contexts';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { PageHeader } from '../../components/PageHeader';
 import { adminSettings } from '../../api/adminApi';
-import { resolveAssetUrl } from '@/lib/helpers';
+import { getFormattingLocale, resolveAssetUrl } from '@/lib/helpers';
 import type { AdminSettingsResponse } from '../../api/types';
 import SystemConfig from '../enterprise/SystemConfig';
 // Copyright © 2024–2026 Jasper Ford
@@ -62,10 +62,35 @@ interface SettingsForm {
   powered_by_image_dark: string;  // general.powered_by_image_dark
   powered_by_url: string;         // general.powered_by_url
   default_currency: string;       // general.default_currency (ISO 4217 lowercase, e.g. 'eur', 'usd')
+  region: string;                 // general.region (ISO 3166-1 alpha-2, drives date/number formatting)
   inactivity_timeout_minutes: string; // general.inactivity_timeout_minutes ('0' = disabled, 5–480)
   header_bg_color: string;        // tenants.configuration.header_bg_color (accessible header background; '' = default black)
   header_accent_color: string;    // tenants.configuration.header_accent_color (accessible header accent line; '' = match background / GOV.UK blue)
 }
+
+/**
+ * Regions offered for date and number formatting. The value is ISO 3166-1
+ * alpha-2 and selects a whole set of conventions (field order, month names,
+ * 24-hour clock, number grouping) in whichever language the reader has chosen —
+ * it does not change the language itself.
+ *
+ * Ordered with the platform's own communities first. The label is the country's
+ * English name, which is translated; the sample date beside the control is what
+ * an admin should actually judge the choice by.
+ */
+const REGION_OPTIONS: Array<{ code: string; labelKey: string }> = [
+  { code: 'IE', labelKey: 'system.region_ie' },
+  { code: 'GB', labelKey: 'system.region_gb' },
+  { code: 'CH', labelKey: 'system.region_ch' },
+  { code: 'DE', labelKey: 'system.region_de' },
+  { code: 'FR', labelKey: 'system.region_fr' },
+  { code: 'ES', labelKey: 'system.region_es' },
+  { code: 'IT', labelKey: 'system.region_it' },
+  { code: 'PT', labelKey: 'system.region_pt' },
+  { code: 'NL', labelKey: 'system.region_nl' },
+  { code: 'PL', labelKey: 'system.region_pl' },
+  { code: 'US', labelKey: 'system.region_us' },
+];
 
 const CURRENCY_OPTIONS: Array<{ code: string; labelKey: string }> = [
   { code: 'eur', labelKey: 'system.currency_eur' },
@@ -94,6 +119,7 @@ const DEFAULT_SETTINGS: SettingsForm = {
   powered_by_image_dark: '',
   powered_by_url: '',
   default_currency: 'eur',
+  region: 'IE',
   inactivity_timeout_minutes: '0',
   header_bg_color: '',
   header_accent_color: '',
@@ -119,7 +145,7 @@ function readableHeaderText(hex: string): string {
 
 export function AdminSettings() {
   const { t: tNav } = useTranslation('admin_nav');
-  const { t } = useTranslation('admin_system');
+  const { t, i18n } = useTranslation('admin_system');
   useAdminPageMeta({ title: tNav('system') });
   const toast = useToast();
   const { tenant, tenantPath, refreshTenant, branding } = useTenant();
@@ -132,6 +158,39 @@ export function AdminSettings() {
   const isPlatformGod = userRecord?.is_god === true;
 
   const [form, setForm] = useState<SettingsForm>(DEFAULT_SETTINGS);
+  // Shows the selected region's conventions in the admin's own language,
+  // before saving. A country name alone does not tell an admin whether they are
+  // about to get 17/08/2026 or 8/17/2026, which is the whole point of the
+  // control. Formats the picked region directly rather than through
+  // getFormattingLocale(), which still holds the SAVED region.
+  const regionSample = useMemo(() => {
+    const sampleDate = new Date(Date.UTC(2026, 7, 17, 15, 4));
+    // locale-exempt: previews the region currently SELECTED in the form, which
+    // is not yet saved. getFormattingLocale() deliberately reports the region
+    // already in force, so using it here would show the old setting and make
+    // the control appear broken. Language still comes from the app.
+    const previewLocale = `${getFormattingLocale().split('-')[0]}-${form.region || 'IE'}`;
+    const options: Intl.DateTimeFormatOptions = { timeZone: 'UTC' };
+    try {
+      // locale-exempt: previewing the unsaved region, as explained above.
+      return {
+        longDate: sampleDate.toLocaleDateString(previewLocale, {
+          ...options,
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+        shortDate: sampleDate.toLocaleDateString(previewLocale, options),
+        time: sampleDate.toLocaleTimeString(previewLocale, {
+          ...options,
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
+    } catch {
+      return { longDate: '', shortDate: '', time: '' };
+    }
+  }, [form.region, i18n.language]);
   const [originalForm, setOriginalForm] = useState<SettingsForm>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -174,6 +233,7 @@ export function AdminSettings() {
           powered_by_image_dark: (settings.powered_by_image_dark as string) ?? '',
           powered_by_url: (settings.powered_by_url as string) ?? '',
           default_currency: (settings.default_currency as string)?.toLowerCase() || 'eur',
+          region: ((settings.region as string) || '').toUpperCase() || 'IE',
           inactivity_timeout_minutes: String(settings.inactivity_timeout_minutes ?? '0'),
           header_bg_color: (settings.header_bg_color as string) ?? '',
           header_accent_color: (settings.header_accent_color as string) ?? '',
@@ -219,6 +279,7 @@ export function AdminSettings() {
       if (isPlatformGod && form.powered_by_image_light !== originalForm.powered_by_image_light) changes.powered_by_image_light = form.powered_by_image_light;
       if (isPlatformGod && form.powered_by_image_dark !== originalForm.powered_by_image_dark) changes.powered_by_image_dark = form.powered_by_image_dark;
       if (form.default_currency !== originalForm.default_currency) changes.default_currency = form.default_currency;
+      if (form.region !== originalForm.region) changes.region = form.region;
       if (form.inactivity_timeout_minutes !== originalForm.inactivity_timeout_minutes) {
         changes.inactivity_timeout_minutes = String(parseInt(form.inactivity_timeout_minutes, 10) || 0);
       }
@@ -452,6 +513,29 @@ export function AdminSettings() {
                 <SelectItem key={opt.code} id={opt.code}>{t(opt.labelKey)}</SelectItem>
               ))}
             </Select>
+            <Select
+              label={t('system.label_region')}
+              description={t('system.desc_region')}
+              variant="secondary"
+              selectedKeys={[form.region]}
+              onSelectionChange={(keys) => {
+                const val = Array.from(keys)[0] as string | undefined;
+                if (val) setForm(prev => ({ ...prev, region: val }));
+              }}
+            >
+              {REGION_OPTIONS.map(opt => (
+                <SelectItem key={opt.code} id={opt.code}>{t(opt.labelKey)}</SelectItem>
+              ))}
+            </Select>
+            {/* The label names a country; this shows what members will actually
+                read, which is the thing being chosen. */}
+            <p className="text-sm text-[var(--color-text-muted)]">
+              {t('system.region_sample', {
+                shortDate: regionSample.shortDate,
+                longDate: regionSample.longDate,
+                time: regionSample.time,
+              })}
+            </p>
           </CardBody>
         </Card>
 

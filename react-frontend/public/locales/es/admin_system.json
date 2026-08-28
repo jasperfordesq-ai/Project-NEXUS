@@ -1394,7 +1394,21 @@
       "streak_updater": {
         "name": "Actualizador de racha de inicio de sesión"
       }
-    }
+    },
+    "label_region": "Formato de fechas y números",
+    "desc_region": "Determina cómo se escriben las fechas, las horas y los números en esta comunidad. No cambia el idioma.",
+    "region_sample": "Los miembros verán: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irlanda",
+    "region_gb": "Reino Unido",
+    "region_ch": "Suiza",
+    "region_de": "Alemania",
+    "region_fr": "Francia",
+    "region_es": "España",
+    "region_it": "Italia",
+    "region_pt": "Portugal",
+    "region_nl": "Países Bajos",
+    "region_pl": "Polonia",
+    "region_us": "Estados Unidos"
   },
   "verification": {
     "approve": "Aprobar",

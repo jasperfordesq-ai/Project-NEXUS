@@ -284,7 +284,8 @@ function inspectFile(filePath) {
 
       if (
         (!isApprovedLocaleArgument(localeArgument) || !canUseFormattingLocaleHelper) &&
-        !INTENTIONAL_BROWSER_LOCALE_ALLOWLIST.has(allowlistKey)
+        !INTENTIONAL_BROWSER_LOCALE_ALLOWLIST.has(allowlistKey) &&
+        !hasExemptionMarker(source, sourceFile, node)
       ) {
         const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
         violations.push({

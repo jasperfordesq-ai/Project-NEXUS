@@ -582,7 +582,10 @@ class TenantBootstrapController extends BaseApiController
      * email_verification, max_upload_size_mb, etc.) are deliberately excluded.
      */
     private const PUBLIC_GENERAL_SETTINGS = [
-        'timezone', 'default_currency', 'date_format', 'time_format',
+        // `region` drives date and number formatting in every client. Its
+        // fallbacks (the tenant's country_code, then the platform default) are
+        // applied client-side, so absence here is normal, not an error.
+        'timezone', 'default_currency', 'region',
         'items_per_page', 'welcome_credits', 'footer_text', 'welcome_message',
         'seo_google_verification', 'seo_bing_verification',
         'map_provider', 'geocoding_provider',

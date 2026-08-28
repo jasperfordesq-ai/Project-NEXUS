@@ -1377,7 +1377,21 @@
     "job_category_matching": "Abgleich",
     "job_category_master": "Meister",
     "job_category_gamification": "Gamifizierung",
-    "powered_by_branding_section": "Mit Powered-by-Branding"
+    "powered_by_branding_section": "Mit Powered-by-Branding",
+    "label_region": "Datums- und Zahlenformat",
+    "desc_region": "Legt fest, wie Datum, Uhrzeit und Zahlen für diese Gemeinschaft geschrieben werden. Die Sprache ändert sich dadurch nicht.",
+    "region_sample": "Mitglieder sehen: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irland",
+    "region_gb": "Vereinigtes Königreich",
+    "region_ch": "Schweiz",
+    "region_de": "Deutschland",
+    "region_fr": "Frankreich",
+    "region_es": "Spanien",
+    "region_it": "Italien",
+    "region_pt": "Portugal",
+    "region_nl": "Niederlande",
+    "region_pl": "Polen",
+    "region_us": "Vereinigte Staaten"
   },
   "verification": {
     "approve": "Genehmigen",

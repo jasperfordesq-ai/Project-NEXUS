@@ -463,11 +463,14 @@ class TenantProvisioningService
 
         // Tenant settings — minimum viable set
         if (Schema::hasTable('tenant_settings')) {
+            // `general.region` replaces the former date_format/time_format
+            // pair, which nothing ever read. A region selects the whole set of
+            // conventions (field order, month names, 24-hour clock, number
+            // grouping) per language, which a raw pattern cannot do.
             $settings = [
                 'general.timezone'         => 'Europe/Zurich',
                 'general.default_currency' => 'CHF',
-                'general.date_format'      => 'd.m.Y',
-                'general.time_format'      => 'H:i',
+                'general.region'           => 'CH',
                 'general.welcome_credits'  => '5',
                 'onboarding.enabled'       => '1',
                 'onboarding.mandatory'     => '0',

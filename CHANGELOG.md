@@ -53,6 +53,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   listen/completion analytics use the existing Laravel contract, and all text comes from
   the maintained seven-language catalogue.
 
+- **Each community can now choose its own date and number format.** A new "Date and
+  number format" setting in Admin → Settings takes a country (Ireland, the UK,
+  Switzerland and others) and applies that country's conventions — field order, month
+  names, 24-hour clock, number grouping — in whichever language each member is reading.
+  It does not change the language. The control shows a live sample of what members will
+  actually see, because a country name alone does not tell an admin whether they are
+  about to get 17/08/2026 or 8/17/2026. Communities that set nothing inherit their
+  registered country, then the platform default of Ireland, so nothing needs configuring
+  for the setting to be correct today. Saving now also clears the settings cache, which
+  previously held old values for up to five minutes and made a save look like it had not
+  worked. This replaces `general.date_format` / `general.time_format`, which were
+  writable and seeded at provisioning but read by nothing, in any language, ever.
+
+- **Guarded against a trap in the date library's own data.** Carbon's `en_DE` locale
+  renders "August 17, 2026" — several of its English regional locales inherit American
+  patterns — so an English-speaking community choosing Germany would still have received
+  American dates from a correctly configured setting. English locales are now checked to
+  confirm they really put the day first, falling back to a known-good one if not. A
+  community that explicitly chooses the United States still gets American dates: the rule
+  is "never American by accident", not "never American". Pinned by a test that also fails
+  if the library's data is fixed upstream, so the guard can be removed when it is.
+
 - **Emails and notifications no longer send American dates.** Two separate causes,
   both live for months. Carbon's locale was never set, and every notification service
   passed `app()->getLocale()` — a bare language code — explicitly at the call site, so

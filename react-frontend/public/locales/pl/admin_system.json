@@ -1411,7 +1411,21 @@
     "label_powered_by_url": "Adres URL linku",
     "platform_gcp": "GCP",
     "currency_eur": "EUR - Euro",
-    "powered_by_branding_section": "Branding \"Powered-by\""
+    "powered_by_branding_section": "Branding \"Powered-by\"",
+    "label_region": "Format daty i liczb",
+    "desc_region": "Określa sposób zapisu dat, godzin i liczb w tej społeczności. Nie zmienia języka.",
+    "region_sample": "Członkowie zobaczą: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irlandia",
+    "region_gb": "Wielka Brytania",
+    "region_ch": "Szwajcaria",
+    "region_de": "Niemcy",
+    "region_fr": "Francja",
+    "region_es": "Hiszpania",
+    "region_it": "Włochy",
+    "region_pt": "Portugalia",
+    "region_nl": "Holandia",
+    "region_pl": "Polska",
+    "region_us": "Stany Zjednoczone"
   },
   "verification": {
     "approve": "Zatwierdź",

@@ -1377,7 +1377,21 @@
     "currency_eur": "EUR - Euro",
     "filter_section_header": "Filters",
     "job_category_gamification": "Gamificatie",
-    "powered_by_branding_section": "Aangedreven door branding"
+    "powered_by_branding_section": "Aangedreven door branding",
+    "label_region": "Datum- en getalnotatie",
+    "desc_region": "Bepaalt hoe datums, tijden en getallen voor deze gemeenschap worden geschreven. Dit verandert de taal niet.",
+    "region_sample": "Leden zien: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Ierland",
+    "region_gb": "Verenigd Koninkrijk",
+    "region_ch": "Zwitserland",
+    "region_de": "Duitsland",
+    "region_fr": "Frankrijk",
+    "region_es": "Spanje",
+    "region_it": "Italië",
+    "region_pt": "Portugal",
+    "region_nl": "Nederland",
+    "region_pl": "Polen",
+    "region_us": "Verenigde Staten"
   },
   "verification": {
     "approve": "Goedkeuren",

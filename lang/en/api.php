@@ -364,6 +364,7 @@ return [
     'items_per_page_range'                 => 'items_per_page must be between 5 and 100',
     'maintenance_mode_boolean'             => 'maintenance_mode must be a boolean value',
     'registration_mode_invalid'            => 'registration_mode must be one of: open, closed, invite_only',
+    'region_invalid' => 'Region must be a two-letter country code, for example IE or GB',
     'registration_closed'                  => 'Registration is closed for this community. Contact a community administrator if you need an account or were given an invitation.',
     'default_currency_invalid'             => 'default_currency must be a 3-letter ISO 4217 currency code (e.g. eur, usd, gbp)',
     'map_provider_invalid'                 => 'map_provider must be one of: google, openstreetmap, ordnance_survey',

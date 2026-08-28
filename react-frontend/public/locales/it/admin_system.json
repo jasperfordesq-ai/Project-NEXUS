@@ -1394,7 +1394,21 @@
     "platform_docker": "Docker",
     "label_timeout": "Timeout",
     "job_category_gamification": "Gamification",
-    "powered_by_branding_section": "Branding fornito da"
+    "powered_by_branding_section": "Branding fornito da",
+    "label_region": "Formato di date e numeri",
+    "desc_region": "Determina come vengono scritti date, orari e numeri per questa comunità. Non cambia la lingua.",
+    "region_sample": "I membri vedranno: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irlanda",
+    "region_gb": "Regno Unito",
+    "region_ch": "Svizzera",
+    "region_de": "Germania",
+    "region_fr": "Francia",
+    "region_es": "Spagna",
+    "region_it": "Italia",
+    "region_pt": "Portogallo",
+    "region_nl": "Paesi Bassi",
+    "region_pl": "Polonia",
+    "region_us": "Stati Uniti"
   },
   "verification": {
     "approve": "Approvare",

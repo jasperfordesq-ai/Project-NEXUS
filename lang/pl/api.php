@@ -223,6 +223,7 @@ return [
     'items_per_page_range' => 'items_per_page musi wynosić od 5 do 100',
     'maintenance_mode_boolean' => 'tryb_konserwacji musi być wartością logiczną',
     'registration_mode_invalid' => 'tryb_rejestracji musi być jednym z: otwarty, zamknięty, tylko dla zaproszonych',
+    'region_invalid' => 'Region musi być dwuliterowym kodem kraju, na przykład IE lub GB',
     'registration_closed' => 'Rejestracja w tej społeczności jest zamknięta. Skontaktuj się z administratorem społeczności, jeśli potrzebujesz konta lub otrzymałeś zaproszenie.',
     'default_currency_invalid' => 'default_currency musi być trzyliterowym kodem waluty zgodnym z ISO 4217 (np. eur, usd, gbp)',
     'map_provider_invalid' => 'map_provider musi być jednym z: google, openstreetmap, ordnance_survey',

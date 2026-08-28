@@ -1445,7 +1445,21 @@
     "placeholder_project_nexus": "مشروع NEXUS...",
     "placeholder_project_n_e_x_u_s": "مشروع NEXUS...",
     "webp_converter_title": "WebP المحول",
-    "powered_by_branding_section": "مدعوم بواسطة العلامة التجارية"
+    "powered_by_branding_section": "مدعوم بواسطة العلامة التجارية",
+    "label_region": "تنسيق التاريخ والأرقام",
+    "desc_region": "يحدد كيفية كتابة التواريخ والأوقات والأرقام لهذا المجتمع. ولا يغيّر اللغة.",
+    "region_sample": "سيرى الأعضاء: {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "أيرلندا",
+    "region_gb": "المملكة المتحدة",
+    "region_ch": "سويسرا",
+    "region_de": "ألمانيا",
+    "region_fr": "فرنسا",
+    "region_es": "إسبانيا",
+    "region_it": "إيطاليا",
+    "region_pt": "البرتغال",
+    "region_nl": "هولندا",
+    "region_pl": "بولندا",
+    "region_us": "الولايات المتحدة"
   },
   "verification": {
     "approve": "يعتمد",

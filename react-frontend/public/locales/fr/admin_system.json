@@ -1394,7 +1394,21 @@
         "name": "Mise à jour de série de connexions"
       }
     },
-    "job_category_maintenance": "Maintenance"
+    "job_category_maintenance": "Maintenance",
+    "label_region": "Format des dates et des nombres",
+    "desc_region": "Détermine comment les dates, les heures et les nombres sont écrits pour cette communauté. Cela ne change pas la langue.",
+    "region_sample": "Les membres verront : {{shortDate}} · {{longDate}} · {{time}}",
+    "region_ie": "Irlande",
+    "region_gb": "Royaume-Uni",
+    "region_ch": "Suisse",
+    "region_de": "Allemagne",
+    "region_fr": "France",
+    "region_es": "Espagne",
+    "region_it": "Italie",
+    "region_pt": "Portugal",
+    "region_nl": "Pays-Bas",
+    "region_pl": "Pologne",
+    "region_us": "États-Unis"
   },
   "verification": {
     "approve": "Approuver",

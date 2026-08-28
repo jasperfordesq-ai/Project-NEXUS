@@ -124,6 +124,52 @@ class FormattingLocaleTest extends TestCase
         $this->assertSame($before, Carbon::getLocale());
     }
 
+    /**
+     * Carbon's own en_DE data renders "August 17, 2026" — its English regional
+     * locales inherit the American pattern. An English-speaking community in
+     * Germany would therefore still get American dates from a region that looks
+     * correctly configured. Measured against Carbon, not assumed.
+     */
+    public function testAnEnglishRegionWhoseCarbonDataIsAmericanIsRejected(): void
+    {
+        $this->assertSame(
+            'August 17, 2026',
+            Carbon::parse(self::AUGUST_17)->locale('en_DE')->isoFormat('LL'),
+            'Carbon en_DE is no longer American — this guard may be removable.',
+        );
+
+        config(['app.region' => 'DE']);
+        FormattingLocale::flush();
+
+        $rendered = Carbon::parse(self::AUGUST_17)
+            ->locale(FormattingLocale::carbon('en'))
+            ->isoFormat('LL');
+
+        $this->assertSame('17 August 2026', $rendered);
+    }
+
+    public function testAnExplicitlyAmericanCommunityStillGetsAmericanDates(): void
+    {
+        // The rule is "never American by accident", not "never American".
+        config(['app.region' => 'US']);
+        FormattingLocale::flush();
+
+        $this->assertSame(
+            'August 17, 2026',
+            Carbon::parse(self::AUGUST_17)->locale(FormattingLocale::carbon('en'))->isoFormat('LL'),
+        );
+    }
+
+    public function testANonEnglishLanguageThatLeadsWithTheYearIsNotMisread(): void
+    {
+        // Japanese renders 2026年8月17日 — the month precedes the day, which
+        // must not trip the English-only day-first guard.
+        config(['app.region' => 'IE']);
+        FormattingLocale::flush();
+
+        $this->assertStringStartsWith('ja', FormattingLocale::carbon('ja'));
+    }
+
     public function testAMalformedRegionSettingFallsBackRatherThanCorrupting(): void
     {
         config(['app.region' => 'not-a-region']);

@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Services\TenantFeatureConfig;
+use App\Services\TenantSettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,8 +33,16 @@ class AdminSettingsController extends BaseApiController
         'general.timezone',
         'general.welcome_message',
         'general.default_currency',
-        'general.date_format',
-        'general.time_format',
+        // ISO 3166-1 alpha-2. Drives date and number formatting across the web,
+        // mobile and accessible clients via App\I18n\FormattingLocale.
+        //
+        // This replaces `general.date_format` / `general.time_format`, which
+        // were writable here and seeded at provisioning but READ BY NOTHING —
+        // no PHP, no client — for their whole existence. A region beats a raw
+        // pattern anyway: `d.m.Y` cannot produce translated month names and
+        // cannot vary with the recipient's own language, which a community
+        // sending mail in English and Irish needs.
+        'general.region',
         'general.items_per_page',
         'general.welcome_credits',
         'general.footer_text',
@@ -142,6 +151,21 @@ class AdminSettingsController extends BaseApiController
                 [$tenantId, $key, $stringValue]
             );
             $updated++;
+        }
+
+        // These writes go straight to the table, so the service's 5-minute
+        // Redis cache would keep serving the old values — long enough for an
+        // admin to conclude a setting had not saved. Formatting settings such
+        // as general.region are read through that cache on every render.
+        if ($updated > 0) {
+            try {
+                app(TenantSettingsService::class)->clearCacheForTenant($tenantId);
+            } catch (\Throwable $e) {
+                Log::warning('Tenant settings cache clear failed after admin update', [
+                    'tenant_id' => $tenantId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // Audit log
@@ -253,6 +277,16 @@ class AdminSettingsController extends BaseApiController
             'general.registration_mode' => (function () use ($value) {
                 if (!in_array($value, ['open', 'closed', 'invite_only'], true)) {
                     return __('api.registration_mode_invalid');
+                }
+                return null;
+            })(),
+            'general.region' => (function () use ($value) {
+                // ISO 3166-1 alpha-2. Deliberately a shape check rather than a
+                // closed country list: this only selects formatting
+                // conventions, and an unknown pair degrades to the base
+                // language rather than failing (see FormattingLocale::carbon).
+                if (!is_string($value) || preg_match('/^[A-Za-z]{2}$/', trim($value)) !== 1) {
+                    return __('api.region_invalid');
                 }
                 return null;
             })(),

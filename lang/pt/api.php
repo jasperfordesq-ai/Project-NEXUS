@@ -223,6 +223,7 @@ return [
     'items_per_page_range' => 'items_per_page deve estar entre 5 e 100',
     'maintenance_mode_boolean' => 'Maintenance_mode deve ser um valor booleano',
     'registration_mode_invalid' => 'O modo_de_registro deve ser um dos seguintes: aberto, fechado, apenas por convite',
+    'region_invalid' => 'A região tem de ser um código de país de duas letras, por exemplo IE ou GB',
     'registration_closed' => 'As inscrições estão fechadas para esta comunidade. Entre em contato com um administrador da comunidade se precisar de uma conta ou se recebeu um convite.',
     'no_recognized_settings' => 'Nenhuma configuração reconhecida fornecida. Chaves desconhecidas: :keys',
     'no_recognized_ai_settings' => 'Nenhuma configuração de IA reconhecida foi fornecida',
