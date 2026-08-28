@@ -8,7 +8,7 @@
  * Used in both QuotePostModal (preview) and FeedCard (display).
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Clock from 'lucide-react/icons/clock';
@@ -17,6 +17,7 @@ import { useTenant } from '@/contexts';
 import { resolveAvatarUrl, resolveThumbnailUrl, formatRelativeTime } from '@/lib/helpers';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { htmlToPlainText } from '@/lib/sanitize';
 
 export interface QuotedPostData {
   id: number;
@@ -50,8 +51,21 @@ export function QuotedPostEmbed({ post, isPreview = false }: QuotedPostEmbedProp
   const [expanded, setExpanded] = useState(false);
 
   const MAX_CHARS = 280;
-  const shouldTruncate = post.content_truncated || post.content.length > MAX_CHARS;
-  const displayContent = expanded ? post.content : post.content.slice(0, MAX_CHARS);
+
+  /*
+   * 🔴 This card rendered `post.content` as text until 2026-08-28, and a quoted post is a
+   * FEED post — written in the web composer, so stored as HTML. Quoting anything written on
+   * the website therefore showed the markup: `<p class="mb-1 leading-relaxed …"><span>`.
+   * It is the same fault a member reported on the phone on 2026-08-24, in the one place on
+   * the website that renders post content as plain text instead of through
+   * `FeedContentRenderer`. A quote card is a compact preview, so plain text is right here —
+   * it just has to be plain text a reader recognises.
+   */
+  const plainContent = useMemo(() => htmlToPlainText(post.content), [post.content]);
+
+  // Measure what the reader sees. The raw string is longer than the words in it.
+  const shouldTruncate = post.content_truncated || plainContent.length > MAX_CHARS;
+  const displayContent = expanded ? plainContent : plainContent.slice(0, MAX_CHARS);
 
   const firstMedia = post.media && post.media.length > 0 ? post.media[0] : null;
   const thumbnailUrl = firstMedia

@@ -272,6 +272,45 @@ describe('FeedItem', () => {
     expect(getByText(long.trim()).props.numberOfLines).toBe(4);
   });
 
+  /**
+   * 🔴 The stray "..." sitting on a line of its own under a card — photographed by the owner
+   * on 2026-08-28 and, reasonably, taken for more left-over markup. It is not.
+   *
+   * The card clips to four lines. A blank line between two paragraphs spends one of them on
+   * nothing, and React Native then draws its own "there is more" ellipsis onto that empty
+   * line. So the reader sees three lines of post, a gap, and three dots — which looks exactly
+   * like a fragment the server failed to clean up.
+   *
+   * The preview closes the gaps so its four lines carry words. The detail view keeps them,
+   * because there is no line budget there and they are what makes a long post readable.
+   */
+  const TWO_PARAGRAPHS =
+    '<p>First paragraph, long enough to wrap across more than one line on a phone.</p>'
+    + '<p>Second paragraph, which the reader should reach before the card runs out of lines.</p>';
+
+  it('does not spend a preview line on the gap between paragraphs', () => {
+    const { getByText } = render(
+      <FeedItem item={postAs({ content: TWO_PARAGRAPHS, content_truncated: true })} />,
+    );
+
+    const shown = getByText(/First paragraph/).props.children as string;
+
+    // A blank line is what the ellipsis was landing on.
+    expect(shown).not.toMatch(/\n\s*\n/);
+    // The words that gap was displacing are now inside the four-line budget.
+    expect(shown).toContain('Second paragraph');
+  });
+
+  it("keeps the paragraph breaks on the post's own page", () => {
+    const { getByText } = render(
+      <FeedItem item={postAs({ content: TWO_PARAGRAPHS })} disableDetailNavigation />,
+    );
+
+    const shown = getByText(/First paragraph/).props.children as string;
+
+    expect(shown).toContain('\n\n');
+  });
+
   it('falls back to the default visual config for feed item types not known by the mobile client', () => {
     const item = {
       id: 501,

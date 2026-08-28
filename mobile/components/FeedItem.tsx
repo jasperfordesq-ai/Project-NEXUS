@@ -605,6 +605,20 @@ function FeedItemInner({
   */
   const isDetailView = disableDetailNavigation;
   const postBody = toPlainText(item.content);
+
+  /*
+   * 🔴 The stray "..." floating on a line of its own under a card (photographed 2026-08-28).
+   *
+   * It is NOT left-over markup, which is what it looks like and what it was first taken for.
+   * The card clips to four or five lines; a blank line between two paragraphs spends one of
+   * them on nothing, and React Native then draws its own "there is more" ellipsis onto that
+   * empty line. So the reader sees three lines of the post, a gap, and three dots.
+   *
+   * The detail screen keeps the paragraph breaks — there is no line budget there and they are
+   * what makes a long post readable. The preview closes the gaps so its four lines are spent
+   * on the member's words.
+   */
+  const previewBody = isDetailView ? postBody : postBody.replace(/\n{2,}/g, '\n');
   const isCommentable = COMMENTABLE_TYPES.has(item.type);
   const canBookmark = BOOKMARKABLE_TYPES.has(item.type);
   const commentsCount = commentsCountOverride ?? localCommentsCount;
@@ -816,7 +830,7 @@ function FeedItemInner({
                   style={{ color: theme.textSecondary }}
                   numberOfLines={isDetailView ? undefined : (item.content_truncated ? 4 : 5)}
                 >
-                  {postBody}
+                  {previewBody}
                 </Text>
                 {!isDetailView && (postBody.length > 150 || item.content_truncated) ? (
                   <HeroButton

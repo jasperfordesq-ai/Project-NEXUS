@@ -1143,18 +1143,158 @@ class FeedService
     }
 
     /**
-     * Truncate text content and return a truncated flag.
+     * Elements that never wrap content, so they are never left open by a cut.
+     *
+     * @var list<string>
+     */
+    private const VOID_ELEMENTS = [
+        'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+        'link', 'meta', 'param', 'source', 'track', 'wbr',
+    ];
+
+    /**
+     * Trim a post preview to a length a READER would recognise, and say whether it was cut.
+     *
+     * 🔴 This counted raw characters until 2026-08-28, and posts written in the web composer
+     * are stored as HTML — `<p class="mb-1 leading-relaxed text-[var(--text-primary)]">` is
+     * 52 characters before the member's first word. Two things followed, both reported:
+     *
+     *   - A SHORT post was flagged `content_truncated` and given a "Read more" it did not
+     *     need, because the markup had eaten the budget.
+     *   - The cut landed wherever 500 characters happened to fall — routinely inside a tag,
+     *     leaving `<p class="mb-1 lead` in the payload. A half-written tag has no closing
+     *     `>`, so a tag-stripper cannot match it and the fragment reaches the screen. It also
+     *     put the appended "..." AFTER a `</p>`, which is why it appeared on a line of its own.
+     *
+     * So: measure the visible text, and when a cut is genuinely needed, make it on a word
+     * boundary, never inside markup, and close whatever tags are still open.
+     *
+     * Entities (`&amp;`) are counted by their source length rather than as one character.
+     * That errs towards a slightly shorter preview and keeps this measurement identical to
+     * the one the cut itself uses, which matters more here than exactness.
+     *
+     * @return array{text: string, truncated: bool}
      */
     private function truncateWithFlag(string $text, int $maxLength): array
     {
-        if (mb_strlen($text) <= $maxLength) {
+        if ($text === '') {
+            return ['text' => '', 'truncated' => false];
+        }
+
+        if (mb_strlen(strip_tags($text)) <= $maxLength) {
             return ['text' => $text, 'truncated' => false];
         }
 
         return [
-            'text' => mb_substr($text, 0, $maxLength) . '...',
+            'text' => $this->truncateMarkupOnWordBoundary($text, $maxLength),
             'truncated' => true,
         ];
+    }
+
+    /**
+     * Cut markup to `$maxLength` VISIBLE characters, then repair what the cut left open.
+     *
+     * Plain text (no tags at all) travels through this unchanged in shape: one text run,
+     * cut on a word boundary, with the ellipsis appended — which is what the old code did.
+     */
+    private function truncateMarkupOnWordBoundary(string $text, int $maxLength): string
+    {
+        // Keep the delimiters: the tags are content here, not separators to be discarded.
+        $tokens = preg_split('/(<[^>]*>)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        if ($tokens === false) {
+            return mb_substr($text, 0, $maxLength) . '...';
+        }
+
+        /** @var list<string> $openTags */
+        $openTags = [];
+        $out = '';
+        $used = 0;
+
+        foreach ($tokens as $token) {
+            if (str_starts_with($token, '<') && str_ends_with($token, '>')) {
+                $out .= $token;
+                $this->trackOpenTag($token, $openTags);
+                continue;
+            }
+
+            $remaining = $maxLength - $used;
+            if (mb_strlen($token) <= $remaining) {
+                $out .= $token;
+                $used += mb_strlen($token);
+                continue;
+            }
+
+            $out .= $this->cutTextRun($token, $remaining);
+            break;
+        }
+
+        // The ellipsis belongs INSIDE the last open element, so a tag-stripper reads it as
+        // part of the final paragraph rather than as a paragraph of its own.
+        $out .= '...';
+
+        foreach (array_reverse($openTags) as $name) {
+            $out .= '</' . $name . '>';
+        }
+
+        return $out;
+    }
+
+    /**
+     * Record what a tag did to the open-element stack, so the cut can close it again.
+     *
+     * @param list<string> $openTags
+     */
+    private function trackOpenTag(string $tag, array &$openTags): void
+    {
+        if (preg_match('/^<\/\s*([a-z0-9]+)/i', $tag, $matches) === 1) {
+            $name = strtolower($matches[1]);
+            // Close the most recent match; unbalanced markup must not pop the wrong element.
+            for ($i = count($openTags) - 1; $i >= 0; $i--) {
+                if ($openTags[$i] === $name) {
+                    array_splice($openTags, $i, 1);
+                    return;
+                }
+            }
+            return;
+        }
+
+        if (str_ends_with($tag, '/>')) {
+            return;
+        }
+
+        if (preg_match('/^<\s*([a-z0-9]+)/i', $tag, $matches) !== 1) {
+            return;
+        }
+
+        $name = strtolower($matches[1]);
+        if (!in_array($name, self::VOID_ELEMENTS, true)) {
+            $openTags[] = $name;
+        }
+    }
+
+    /**
+     * Take up to `$limit` characters of one text run, preferring the last word boundary.
+     *
+     * The boundary is only honoured when it is not too far back, so a run without spaces
+     * (a URL, a long identifier) still contributes its share instead of vanishing.
+     */
+    private function cutTextRun(string $run, int $limit): string
+    {
+        if ($limit <= 0) {
+            return '';
+        }
+
+        $slice = mb_substr($run, 0, $limit);
+
+        $lastSpace = mb_strrpos($slice, ' ');
+        if ($lastSpace !== false && $lastSpace >= (int) ($limit * 0.6)) {
+            $slice = mb_substr($slice, 0, $lastSpace);
+        }
+
+        // Never end on half an entity: `&amp` without its semicolon renders literally.
+        $slice = (string) preg_replace('/&[a-z0-9#]*$/i', '', $slice);
+
+        return rtrim($slice);
     }
 
     /**

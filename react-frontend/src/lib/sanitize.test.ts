@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { __testing, sanitizeCustomPageHtml, sanitizeInline, sanitizeRichText, stripHtmlToText } from './sanitize';
+import { __testing, htmlToPlainText, sanitizeCustomPageHtml, sanitizeInline, sanitizeRichText, stripHtmlToText } from './sanitize';
 
 const { isSafeUrl } = __testing;
 
@@ -308,5 +308,62 @@ describe('isSafeUrl', () => {
   it('rejects control-character obfuscated schemes', () => {
     expect(isSafeUrl('java\tscript:alert(1)')).toBe(false);
     expect(isSafeUrl('java\nscript:alert(1)')).toBe(false);
+  });
+});
+
+describe('htmlToPlainText', () => {
+  /**
+   * 🔴 The composer's own output, verbatim from the post a member reported on 2026-08-24.
+   * Anything that shows post content as text has to survive this exact string.
+   */
+  const COMPOSER_HTML =
+    '<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>So I had a meeting ' +
+    'booked in this morning.</span></p><p class="mb-1 leading-relaxed">Then a second ' +
+    'paragraph.</p>';
+
+  it('returns an empty string for nullish input', () => {
+    expect(htmlToPlainText(null)).toBe('');
+    expect(htmlToPlainText(undefined)).toBe('');
+    expect(htmlToPlainText('')).toBe('');
+  });
+
+  it('shows the words, never the markup', () => {
+    const out = htmlToPlainText(COMPOSER_HTML);
+    expect(out).not.toContain('<');
+    expect(out).not.toContain('class=');
+    expect(out).not.toContain('leading-relaxed');
+    expect(out).toContain('So I had a meeting booked in this morning.');
+    expect(out).toContain('Then a second paragraph.');
+  });
+
+  it('keeps paragraphs apart instead of running the sentences together', () => {
+    // This is what stripHtmlToText alone gets wrong.
+    expect(stripHtmlToText('<p>One</p><p>Two</p>')).toBe('OneTwo');
+    expect(htmlToPlainText('<p>One</p><p>Two</p>')).toBe('One\n\nTwo');
+  });
+
+  it('keeps line breaks', () => {
+    expect(htmlToPlainText('a<br>b')).toBe('a\nb');
+    expect(htmlToPlainText('a<br />b')).toBe('a\nb');
+  });
+
+  it('marks list items so they still read as a list', () => {
+    expect(htmlToPlainText('<ul><li>one</li><li>two</li></ul>')).toContain('• one');
+  });
+
+  it('decodes the entities the stripper leaves encoded', () => {
+    expect(htmlToPlainText('<p>Fish &amp; chips</p>')).toBe('Fish & chips');
+    expect(htmlToPlainText('<p>a&nbsp;b</p>')).toContain('a');
+    expect(htmlToPlainText('<p>&quot;quoted&quot;</p>')).toBe('"quoted"');
+  });
+
+  it('drops script content rather than showing it as text', () => {
+    const out = htmlToPlainText('<p>keep</p><script>alert(1)</script>');
+    expect(out).toContain('keep');
+    expect(out).not.toContain('alert(1)');
+  });
+
+  it('leaves plain text alone', () => {
+    expect(htmlToPlainText('just words')).toBe('just words');
   });
 });

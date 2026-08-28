@@ -161,3 +161,83 @@ describe('QuotedPostEmbed', () => {
     expect(screen.getByRole('button', { name: /read more/i })).toBeInTheDocument();
   });
 });
+
+/**
+ * 🔴 Quoting a post written on the website showed its markup, not its words.
+ *
+ * A quoted post IS a feed post, so its content is whatever the web composer stored — HTML.
+ * This card dropped that string into a `<p>` as text, so the reader saw
+ * `<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>…`. It is the same fault
+ * a member reported on the phone on 2026-08-24; the phone was fixed that day and the website
+ * was not, because the main feed renders through `FeedContentRenderer` and this card does not.
+ *
+ * Found 2026-08-28 while answering "do we have the same problem on desktop?".
+ *
+ * 🔴 Every assertion here was checked against the OLD code first. Four earlier drafts of this
+ * block passed with the fix reverted — `getByText(/substring/)` still matches when the whole
+ * raw tag soup is on screen, and a fixture whose markup does not actually cross 280 cannot
+ * show the counting bug. A test that cannot fail is not evidence.
+ */
+describe('QuotedPostEmbed — content written in the web composer', () => {
+  const OPEN = '<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>';
+  const CLOSE = '</span></p>';
+
+  const SENTENCE = 'So I had a meeting booked in this morning for 10am.';
+
+  const HTML_POST: QuotedPostData = {
+    id: 5,
+    content: `${OPEN}${SENTENCE}${CLOSE}`,
+    created_at: '2026-01-01T00:00:00Z',
+    author: { id: 14, name: 'Alan', avatar_url: null },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the sentence as the whole of the paragraph, not buried in tag soup', () => {
+    render(<QuotedPostEmbed post={HTML_POST} />);
+
+    // An exact-text lookup is the point: a substring regex matches even when the markup is
+    // still on screen around it, which is how this fault survived unnoticed.
+    expect(screen.getByText(SENTENCE)).toBeInTheDocument();
+  });
+
+  it('never puts a tag or a class name on screen', () => {
+    const { container } = render(<QuotedPostEmbed post={HTML_POST} />);
+    const shown = container.textContent ?? '';
+
+    expect(shown).not.toContain('<p');
+    expect(shown).not.toContain('<span');
+    expect(shown).not.toContain('class=');
+    expect(shown).not.toContain('leading-relaxed');
+    expect(shown).not.toContain('--text-primary');
+  });
+
+  it('measures the words, not the markup, when deciding to truncate', () => {
+    // Three composer paragraphs: ~75 characters of markup each, so the RAW string clears 280
+    // while the words a reader sees are nowhere near it. This is the "Read more" on a short
+    // post that started the whole investigation.
+    const content =
+      `${OPEN}Short enough to read at a glance.${CLOSE}` +
+      `${OPEN}And a second short line.${CLOSE}` +
+      `${OPEN}And a third.${CLOSE}`;
+
+    expect(content.length).toBeGreaterThan(280); // the raw string is over the limit…
+    expect(content.replace(/<[^>]*>/g, '').length).toBeLessThan(280); // …the words are not
+
+    render(<QuotedPostEmbed post={{ ...HTML_POST, id: 6, content }} />);
+
+    expect(screen.queryByRole('button', { name: /read more/i })).not.toBeInTheDocument();
+  });
+
+  it('still truncates when the VISIBLE text is genuinely long', () => {
+    // Guards the other direction: the fix must not make long posts un-truncatable.
+    const content = `<p>${'word '.repeat(100)}</p>`;
+    expect(content.replace(/<[^>]*>/g, '').length).toBeGreaterThan(280);
+
+    render(<QuotedPostEmbed post={{ ...HTML_POST, id: 7, content }} />);
+
+    expect(screen.getByRole('button', { name: /read more/i })).toBeInTheDocument();
+  });
+});

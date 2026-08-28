@@ -1038,4 +1038,138 @@ class FeedServiceTest extends TestCase
 
         $this->assertCount(1, $result['items']);
     }
+
+    /**
+     * The composer's opening markup, verbatim. 64 characters before the member's first word.
+     */
+    private const COMPOSER_OPEN = '<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>';
+
+    private const COMPOSER_CLOSE = '</span></p>';
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
+    private function composerPostRow(string $content): object
+    {
+        return (object) [
+            'id' => 100,
+            'content' => $content,
+            'image_url' => null,
+            'created_at' => '2026-03-01 12:00:00',
+            'likes_count' => 0,
+            'user_id' => 10,
+            'type' => 'post',
+            'author_name' => 'Test User',
+            'author_avatar' => null,
+            'comments_count' => 0,
+        ];
+    }
+
+    /**
+     * 🔴 A SHORT post must not be given a "Read more".
+     *
+     * The preview budget counted raw characters until 2026-08-28. A post written in the web
+     * composer is stored as HTML, so six short paragraphs carry ~450 characters of tag before
+     * a single word is counted — enough to cross the 500 limit on its own. The member saw a
+     * "Read more" on a post that was three sentences long.
+     */
+    public function test_getItem_does_not_truncate_a_short_post_wrapped_in_composer_markup(): void
+    {
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+
+        $content = str_repeat(
+            self::COMPOSER_OPEN . 'A short line a reader takes in at a glance.' . self::COMPOSER_CLOSE,
+            6
+        );
+
+        // The premise of the test, asserted rather than assumed.
+        $this->assertGreaterThan(500, mb_strlen($content), 'fixture must cross the raw limit');
+        $this->assertLessThan(500, mb_strlen(strip_tags($content)), 'its words must not');
+
+        $this->stubFeedItemTablesPermissive();
+        DB::shouldReceive('select')->once()->andReturn([$this->composerPostRow($content)]);
+        DB::shouldReceive('selectOne')->once()->andReturn(null);
+
+        $result = $service->getItem('post', 100, 10, false);
+
+        $this->assertFalse($result['content_truncated']);
+        $this->assertSame($content, $result['content']);
+    }
+
+    /**
+     * 🔴 When a cut IS needed it must not land inside a tag.
+     *
+     * The old cut was a blind `mb_substr`, so it routinely sliced markup in half and left
+     * `<p class="mb-1 lead` in the payload. A half-written tag has no closing `>`, so a
+     * tag-stripper cannot match it and the fragment reaches the member's screen — which is
+     * exactly what the phone showed.
+     */
+    public function test_getItem_never_leaves_a_half_written_tag_in_a_truncated_preview(): void
+    {
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+
+        // Positioned deliberately: `<p>` is 3 characters, then 490 of text, so the 500th RAW
+        // character lands INSIDE the `<span class="highlight">` that follows. A fixture whose
+        // 500th character happens to fall in open text cannot show this fault at all.
+        $content = '<p>' . str_repeat('x', 490) . '<span class="highlight">more words here</span></p>';
+
+        $this->stubFeedItemTablesPermissive();
+        DB::shouldReceive('select')->once()->andReturn([$this->composerPostRow($content)]);
+        DB::shouldReceive('selectOne')->once()->andReturn(null);
+
+        $result = $service->getItem('post', 100, 10, false);
+        $preview = $result['content'];
+
+        $this->assertTrue($result['content_truncated']);
+        $this->assertSame(0, preg_match('/<[^>]*$/', $preview), 'preview ends mid-tag');
+        $this->assertStringNotContainsString('class=', strip_tags($preview));
+    }
+
+    /**
+     * The cut closes what it opened, so the preview is still whole markup.
+     *
+     * The ellipsis belongs INSIDE the last element: appended after `</p>` it becomes a
+     * paragraph of its own, which is why a stray "..." appeared on its own line in the app.
+     */
+    public function test_getItem_closes_open_tags_and_keeps_the_ellipsis_inside_the_paragraph(): void
+    {
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+
+        $content = self::COMPOSER_OPEN . str_repeat('word ', 300) . self::COMPOSER_CLOSE;
+
+        $this->stubFeedItemTablesPermissive();
+        DB::shouldReceive('select')->once()->andReturn([$this->composerPostRow($content)]);
+        DB::shouldReceive('selectOne')->once()->andReturn(null);
+
+        $preview = $service->getItem('post', 100, 10, false)['content'];
+
+        $this->assertStringEndsWith('...' . self::COMPOSER_CLOSE, $preview);
+        $this->assertSame(
+            substr_count($preview, '<span'),
+            substr_count($preview, '</span>'),
+            'every opened span is closed again'
+        );
+    }
+
+    /**
+     * The preview is trimmed on a word boundary, so the last word is whole.
+     */
+    public function test_getItem_cuts_a_preview_on_a_word_boundary(): void
+    {
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+
+        // 21 characters per repeat, so the 500th character falls 17 letters into a word. A
+        // blind cut ends on 'supercalifragili'; a word-boundary cut ends on a whole word.
+        $content = str_repeat('supercalifragilistic ', 40);
+
+        $this->stubFeedItemTablesPermissive();
+        DB::shouldReceive('select')->once()->andReturn([$this->composerPostRow($content)]);
+        DB::shouldReceive('selectOne')->once()->andReturn(null);
+
+        $preview = $service->getItem('post', 100, 10, false)['content'];
+        $words = preg_split('/\s+/', trim(str_replace('...', '', $preview)));
+        $lastWord = is_array($words) ? (string) end($words) : '';
+
+        $this->assertSame('supercalifragilistic', $lastWord, 'preview ends on half a word');
+    }
 }

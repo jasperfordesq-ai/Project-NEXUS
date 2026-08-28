@@ -252,5 +252,35 @@ export function stripHtmlToText(html: string | null | undefined): string {
   return DOMPurify.sanitize(html, { ALLOWED_TAGS: [], KEEP_CONTENT: true });
 }
 
+/**
+ * Turn stored rich text into readable plain text, keeping the breaks a reader notices.
+ *
+ * `stripHtmlToText` concatenates the text nodes, so `<p>One</p><p>Two</p>` comes back as
+ * "OneTwo" — right for a one-line bio, wrong for anything quoting a post written in the web
+ * composer, where it would run two sentences together. This inserts the paragraph and line
+ * breaks first, then strips, then decodes the entities the stripper leaves encoded (`&amp;`
+ * would otherwise be shown to the reader exactly like that).
+ *
+ * Use it wherever stored content must appear as TEXT. Where it should appear as formatting,
+ * render it through `sanitizeRichText` instead — see `FeedContentRenderer`.
+ */
+export function htmlToPlainText(html: string | null | undefined): string {
+  if (!html) return '';
+
+  const withBreaks = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|tr|blockquote)>/gi, '\n\n')
+    .replace(/<li\b[^>]*>/gi, '• ');
+
+  const stripped = stripHtmlToText(withBreaks);
+
+  // Every tag is gone by this point, so there is nothing left for a parser to execute; the
+  // textarea is only being used as the browser's own entity decoder.
+  const decoder = document.createElement('textarea');
+  decoder.innerHTML = stripped;
+
+  return decoder.value.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 /** Exposed for tests / advanced callers that need to share the URL guard. */
 export const __testing = { isSafeUrl };
