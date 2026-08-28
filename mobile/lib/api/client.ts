@@ -94,7 +94,13 @@ function extractErrorMessage(data: unknown, fallback: string): string {
 /** Called when the API returns 401 and refresh has failed — registered by AuthContext */
 let onUnauthorizedCallback: (() => void) | null = null;
 
-async function recordIosScreenshotResponse(method: RequestMethod, endpoint: string, status: number): Promise<void> {
+async function recordIosScreenshotResponse(
+  method: RequestMethod,
+  endpoint: string,
+  status: number,
+  authPresent: boolean,
+  tenantSlug: string,
+): Promise<void> {
   if (process.env.EXPO_PUBLIC_IOS_SCREENSHOT_DIAGNOSTICS !== '1' || !FileSystem.documentDirectory) {
     return;
   }
@@ -103,9 +109,13 @@ async function recordIosScreenshotResponse(method: RequestMethod, endpoint: stri
     const directory = `${FileSystem.documentDirectory}ios-screenshot-network`;
     await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
     const filename = `${Date.now()}-${Math.random().toString(16).slice(2)}.log`;
-    await FileSystem.writeAsStringAsync(`${directory}/${filename}`, `${method} ${endpoint} -> ${status}\n`, {
+    await FileSystem.writeAsStringAsync(
+      `${directory}/${filename}`,
+      `${method} ${endpoint} -> ${status}; auth=${authPresent ? 'present' : 'absent'}; tenant=${tenantSlug}\n`,
+      {
       encoding: FileSystem.EncodingType.UTF8,
-    });
+      },
+    );
   } catch {
     // Capture diagnostics must never alter application behaviour.
   }
@@ -408,7 +418,13 @@ async function request<T>(
   // bodies, headers, tokens or response data. Normal development and release
   // builds leave it disabled. A file is used because Release React Native builds
   // do not forward JavaScript console output to `simctl launch --console`.
-  await recordIosScreenshotResponse(method, endpoint, response.status);
+  await recordIosScreenshotResponse(
+    method,
+    endpoint,
+    response.status,
+    Boolean(token && !options.anonymous),
+    resolvedTenantSlug,
+  );
 
   // Handle 401: try silent token refresh, then retry once
   if (response.status === 401 && endpoint !== '/api/auth/login') {
