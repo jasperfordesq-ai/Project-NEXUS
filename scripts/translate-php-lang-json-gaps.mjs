@@ -62,9 +62,13 @@ function argValue(flag) {
 const USE_GOOGLE = args.includes('--google');
 const LIST_ONLY = args.includes('--list');
 const DRY_RUN = args.includes('--dry-run');
+const EXPORT_MODE = args.includes('--export');
+const IMPORT_MODE = args.includes('--import');
 const NAMESPACE = argValue('--namespace');
 const LOCALE = argValue('--locale');
 const LIMIT = argValue('--limit') ? Number(argValue('--limit')) : null;
+const OUT_PATH = argValue('--out');
+const IN_PATH = argValue('--in');
 const CONCURRENCY = Math.min(10, Math.max(1, Number(argValue('--concurrency') ?? 5)));
 
 // ── Placeholder protection (identical rules to the .php sibling) ─────────────
@@ -279,8 +283,146 @@ if (LIST_ONLY) {
   process.exit(0);
 }
 
+// ── Export / import: let a capable translator (a person, or an LLM agent)
+// supply the translations while THIS script keeps every safety rule.
+//
+// The Google leg below is rate-limited into uselessness at catalogue scale and
+// its quality is mediocre. The export/import pair is the supported path for
+// bulk work: `--export` hands out a batch as flat JSON, the translator fills in
+// `translation` for each item, `--import` validates and writes. Import
+// re-checks that each key STILL holds the exact English it was exported with,
+// so a stale or hand-edited batch can never clobber newer work.
+
+/** Pending items for one locale+namespace, as {key (dotted), en}. */
+function pendingItemsFor(locale, namespace, allowlistRef) {
+  const englishTree = readJson(path.join(LANG_DIR, SOURCE_LOCALE, namespace));
+  const file = path.join(LANG_DIR, locale, namespace);
+  if (!fs.existsSync(file)) return { file, localizedTree: null, items: [] };
+
+  const localizedTree = readJson(file);
+  const items = [];
+  for (const [pathParts, value] of collectLeaves(englishTree)) {
+    if (!isTranslatableText(value)) continue;
+    if (getByPath(localizedTree, pathParts) !== value) continue;
+    if (isAllowlisted(allowlistRef, locale, value)) continue;
+    // key is the literal path ARRAY: some real keys contain dots
+    // (admin_help.articles./caring.relatedPaths.1.label), so a dotted string
+    // cannot be split back unambiguously. display_key is for humans only.
+    items.push({ key: pathParts, display_key: pathParts.join('.'), en: value });
+  }
+  return { file, localizedTree, items };
+}
+
+if (EXPORT_MODE) {
+  if (!NAMESPACE || !LOCALE) {
+    console.error('--export requires --namespace <file.json> and --locale <code>.');
+    process.exit(1);
+  }
+  if (LOCALE === 'ga') {
+    console.error('ga is excluded: Irish uses the separately reviewed workflow.');
+    process.exit(1);
+  }
+  const { items } = pendingItemsFor(LOCALE, NAMESPACE, allowlist);
+  const batch = LIMIT ? items.slice(0, LIMIT) : items;
+  const payload = {
+    _instructions: [
+      'Fill in a "translation" field for every item. Do not add, remove or reorder items.',
+      'Do not change "key" or "en" — import verifies them and refuses mismatches.',
+      'Placeholders ({{name}} and :name) must appear in the translation exactly as in "en",',
+      'the same number of times. Import rejects any item where they do not match.',
+      'Leave "translation" empty (or omit it) for anything that should stay English;',
+      'those stay counted as untranslated rather than being silently accepted.',
+    ],
+    locale: LOCALE,
+    namespace: NAMESPACE,
+    exported_pending_total: items.length,
+    items: batch,
+  };
+  const out = OUT_PATH ?? path.join(ROOT, '.local-docs-archive', `lang-batch-${LOCALE}-${NAMESPACE}.json`);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+  console.log(`Exported ${batch.length} of ${items.length} pending item(s) to ${out}`);
+  process.exit(0);
+}
+
+if (IMPORT_MODE) {
+  if (!IN_PATH) {
+    console.error('--import requires --in <batch.json> (a file produced by --export, with translations filled in).');
+    process.exit(1);
+  }
+  const payload = readJson(IN_PATH);
+  const locale = payload.locale;
+  const namespace = payload.namespace;
+  if (!locale || !namespace) {
+    console.error('Batch file must carry "locale" and "namespace" (as exported).');
+    process.exit(1);
+  }
+  if (locale === 'ga') {
+    console.error('ga is excluded: Irish uses the separately reviewed workflow.');
+    process.exit(1);
+  }
+
+  const file = path.join(LANG_DIR, locale, namespace);
+  const localizedTree = readJson(file);
+  const englishTree = readJson(path.join(LANG_DIR, SOURCE_LOCALE, namespace));
+
+  const intended = [];
+  const rejected = [];
+  let skippedEmpty = 0;
+
+  for (const item of payload.items ?? []) {
+    const pathParts = Array.isArray(item.key) ? item.key.map(String) : null;
+    if (!pathParts) {
+      rejected.push({ key: item.display_key ?? 'unknown', why: 'key must be the exported path array' });
+      continue;
+    }
+    const translation = typeof item.translation === 'string' ? item.translation.trim() : '';
+    const english = item.en;
+
+    if (translation === '' || translation === english) {
+      skippedEmpty++;
+      continue;
+    }
+    // The exported English must still be the live English AND still be what
+    // the locale file holds — otherwise this batch is stale and writing it
+    // would silently revert someone else's work.
+    if (getByPath(englishTree, pathParts) !== english) {
+      rejected.push({ key: item.display_key ?? item.key, why: 'English source changed since export' });
+      continue;
+    }
+    if (getByPath(localizedTree, pathParts) !== english) {
+      rejected.push({ key: item.display_key ?? item.key, why: 'locale value already changed since export' });
+      continue;
+    }
+    if (!placeholdersMatch(english, translation)) {
+      rejected.push({ key: item.display_key ?? item.key, why: 'placeholder mismatch' });
+      continue;
+    }
+
+    setByPath(localizedTree, pathParts, translation);
+    intended.push([pathParts, translation]);
+  }
+
+  if (DRY_RUN) {
+    console.log(`DRY RUN ${locale}/${namespace}: would write ${intended.length}, skip ${skippedEmpty} empty, reject ${rejected.length}.`);
+  } else {
+    writeAndVerify(file, localizedTree, intended);
+    console.log(`${locale}/${namespace}: wrote ${intended.length} translation(s); ${skippedEmpty} left English; ${rejected.length} rejected.`);
+  }
+
+  for (const r of rejected.slice(0, 20)) {
+    console.error(`  REJECTED ${r.key}: ${r.why}`);
+  }
+  if (rejected.length > 20) console.error(`  ... and ${rejected.length - 20} more`);
+
+  console.log('Now run: node scripts/check-php-lang-json-untranslated.mjs && node scripts/check-i18n-json-integrity.mjs');
+  // Rejections are reported, not fatal: the accepted values are already
+  // verified on disk, and a rejected item simply stays untranslated.
+  process.exit(0);
+}
+
 if (!USE_GOOGLE) {
-  console.error('Nothing to do: pass --google to translate, or --list to see what is left.');
+  console.error('Nothing to do. Modes: --list | --export | --import | --google (rate-limited, small batches only).');
   process.exit(1);
 }
 if (!NAMESPACE) {

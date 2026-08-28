@@ -1,12 +1,12 @@
 {
   "federation_webhooks": {
-    "test_message": "This is a test webhook delivery from Project NEXUS."
+    "test_message": "Questa è una consegna webhook di prova da Project NEXUS."
   },
   "group_media": {
-    "media_deleted": "Media deleted"
+    "media_deleted": "Contenuto multimediale eliminato"
   },
   "group_notification_pref": {
-    "preferences_updated": "Preferences updated"
+    "preferences_updated": "Preferenze aggiornate"
   },
   "group_qa": {
     "answer_accepted": "Answer accepted",
@@ -84,7 +84,7 @@
     "grant_received": "You received {{amount}} {{unit}} from your timebank coordinator",
     "balance_adjusted_added": "Your balance was adjusted: +{{amount}} {{unit}} added by coordinator",
     "balance_adjusted_removed": "Your balance was adjusted: -{{amount}} {{unit}} removed by coordinator",
-        "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} hour|[2,*] hours"
   },
   "comments": {
     "reaction": "{{name}} reacted to your comment"
