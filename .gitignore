@@ -147,6 +147,8 @@ CLAUDE.md
 !/scripts/check-php-i18n-coverage.mjs
 !/scripts/check-php-lang-parity.mjs
 !/scripts/check-php-lang-untranslated.mjs
+!/scripts/check-php-lang-json-untranslated.mjs
+!/scripts/translate-php-lang-json-gaps.mjs
 !/scripts/php-lang-invariant-allowlist.json
 !/scripts/php/
 !/scripts/php/dump-lang.php

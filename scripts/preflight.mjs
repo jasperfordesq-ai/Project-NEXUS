@@ -296,6 +296,7 @@ if (areas.mobile.length) {
 if (areas.i18n.length) {
   sh('php-lang key parity', 'node scripts/check-php-lang-parity.mjs');
   sh('php-lang untranslated ratchet', 'node scripts/check-php-lang-untranslated.mjs');
+  sh('php-lang JSON untranslated ratchet', 'node scripts/check-php-lang-json-untranslated.mjs');
   sh('locale JSON integrity', 'node scripts/check-i18n-json-integrity.mjs');
 } else {
   record('i18n checks', 'SKIP', 'no lang/locale changes');

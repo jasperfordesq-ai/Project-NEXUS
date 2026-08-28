@@ -215,6 +215,7 @@ i18n:
   - 'scripts/check-php-i18n-coverage.mjs'
   - 'scripts/check-php-lang-parity.mjs'
   - 'scripts/check-php-lang-untranslated.mjs'
+  - 'scripts/check-php-lang-json-untranslated.mjs'
   - 'scripts/php-lang-invariant-allowlist.json'
   # The sign-up age declaration compares all three doors, so the two it reads
   # from outside this filter's usual reach are listed explicitly. The native

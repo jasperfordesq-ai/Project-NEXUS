@@ -1010,6 +1010,16 @@ jobs:
       - name: "BLOCKING: PHP lang/ untranslated value ratchet"
         run: node scripts/check-php-lang-untranslated.mjs
 
+      # Added 2026-08-28: the SAME blind spot again, in the catalogue that is
+      # actually live. __() reads lang/<locale>/<ns>.json BEFORE the .php
+      # loader, yet the ratchet above scans .php only — so 49,223 JSON values
+      # (63.6% of all non-English JSON values, 80% of them in admin.json) sat
+      # byte-identical to English with every gate green. Same rules, own
+      # baseline (.github/php-lang-json-untranslated-baseline.json), shared
+      # invariant allowlist.
+      - name: "BLOCKING: PHP lang/ JSON untranslated value ratchet"
+        run: node scripts/check-php-lang-json-untranslated.mjs
+
       # Added 2026-08-25, and the same blind spot one level up: every sign-up key
       # was present in every locale, so both parity gates were green while the
       # three sign-up forms disagreed about who the platform is for. The web app
