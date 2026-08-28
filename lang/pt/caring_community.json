@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "Os créditos a utilizar devem ser superiores a 0.",
+      "invalid_order_total": "O total da encomenda deve ser superior a 0.",
+      "credits_decimal_precision": "Os créditos podem ter no máximo 2 casas decimais.",
+      "credits_exceed_max": "Os créditos a utilizar excedem o máximo permitido por resgate.",
+      "self_redemption_forbidden": "Não pode resgatar créditos no seu próprio anúncio.",
+      "programme_unavailable": "O programa de fidelização não está disponível nesta comunidade.",
+      "merchant_disabled": "Este comerciante já não aceita créditos de tempo.",
+      "merchant_misconfigured": "A configuração de fidelização deste comerciante é inválida.",
+      "exceeds_max_discount": "O desconto excede o máximo permitido para esta encomenda.",
+      "member_not_found": "Conta de membro não encontrada.",
+      "zero_balance": "Não tem créditos de tempo para resgatar.",
+      "insufficient_credits": "A sua carteira não contém créditos de tempo suficientes.",
+      "redemption_not_found": "Resgate não encontrado.",
+      "redemption_not_reversible": "Apenas os resgates aplicados podem ser revertidos.",
+      "reversal_reason_too_long": "O motivo da reversão deve ter no máximo 500 caracteres.",
       "invalid_listing": "A listagem não pertence a este comerciante.",
       "listing_unavailable": "Esta listagem não está disponível para resgate de fidelidade.",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "O valor em CHF por hora deve estar entre 0 e 9999.",
+      "invalid_max_discount_pct": "A percentagem máxima de desconto deve estar entre 0 e 100.",
       "redemption_unavailable": "Este resgate do programa de fidelização já não está disponível.",
       "redemption_mismatch": "Este resgate do programa de fidelização não corresponde à encomenda do marketplace selecionada."
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "Cobertura por sub-região",
+      "description": "Horas solicitadas e realizadas por sub-região. Uma cobertura inferior a 50% é assinalada.",
+      "coverage_ratio": "Taxa de cobertura",
+      "requested": "Solicitadas",
+      "fulfilled": "Realizadas",
+      "under_supplied": "Oferta insuficiente"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "Abandono de pessoas ajudantes",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "Taxa global de abandono",
+      "by_category": "Por categoria",
+      "lapsed": "Pessoas ajudantes inativas",
+      "prior_active": "Anteriormente ativas"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "Desvio do coeficiente por categoria",
+      "description": "Média observada de horas por sessão comparada com o valor de referência definido pela administração. Desvios superiores a 15% são assinalados.",
+      "baseline": "Valor de referência",
+      "expected": "Esperado",
+      "observed": "Observado",
+      "drift": "Desvio",
+      "flagged": "Assinalado"
     }
   },
   "nudges": {
