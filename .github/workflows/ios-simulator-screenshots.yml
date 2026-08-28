@@ -132,7 +132,21 @@ jobs:
             if (profile.data?.tenant_id !== 5) {
               throw new Error('Protected demo token resolved to the wrong tenant');
             }
-            console.log('Protected Partner Demo admin login and bearer token verified.');
+            const startupPaths = [
+              '/api/v2/feed?page=1&per_page=20&mode=ranked&personalised=true&tz=Europe%2FDublin',
+              '/api/v2/notifications/counts',
+              '/api/pusher/config',
+            ];
+            for (const path of startupPaths) {
+              const startupResponse = await fetch(
+                `https://api.project-nexus.ie${path}`,
+                { headers: { ...headers, Authorization: `Bearer ${token}` } },
+              );
+              if (!startupResponse.ok) {
+                throw new Error(`Protected demo startup endpoint ${path} failed with HTTP ${startupResponse.status}`);
+              }
+            }
+            console.log('Protected Partner Demo login, bearer token and startup endpoints verified.');
           } finally {
             if (token) {
               await fetch('https://api.project-nexus.ie/api/auth/logout', {
