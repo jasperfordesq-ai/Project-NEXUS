@@ -24,6 +24,9 @@ appId: ie.project.nexus
       - tapOn:
           point: "85%,44%"
           retryTapIfNoChange: true
+      - tapOn:
+          point: "85%,44%"
+          retryTapIfNoChange: true
 
 - extendedWaitUntil:
     visible: "Welcome back"
