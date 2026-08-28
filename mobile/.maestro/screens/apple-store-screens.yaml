@@ -40,6 +40,14 @@ appId: ie.project.nexus
 - launchApp:
     clearState: false
 - extendedWaitUntil:
+    visible: "Select your timebank|Community Feed"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - tapOn: "Partner Demo"
+- extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
 - extendedWaitUntil:
