@@ -3,7 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-const { validatePlayAssets, validateScreenshotMeta } = require('./validate-play-assets.cjs');
+const {
+  validatePlayAssets,
+  validateScreenshotCount,
+  validateScreenshotMeta,
+} = require('./validate-play-assets.cjs');
 
 describe('Google Play image-asset validation', () => {
   it('accepts every committed store image', () => {
@@ -28,5 +32,10 @@ describe('Google Play image-asset validation', () => {
   it('rejects a tablet capture that has not been framed to Play\'s 9:16 ratio', () => {
     expect(validateScreenshotMeta({ width: 1200, height: 1920, bitDepth: 8, colorType: 2 }))
       .toContain('must use the 9:16 or 16:9 aspect ratio required by the Play listing editor');
+  });
+
+  it('rejects the old three-image tablet set', () => {
+    expect(validateScreenshotCount({ label: '7-inch tablet', minimumCount: 4 }, 3))
+      .toBe('has 3 PNGs; 7-inch tablet requires 4–8');
   });
 });

@@ -46,6 +46,11 @@ function validateScreenshotMeta(meta) {
   return problems;
 }
 
+function validateScreenshotCount(group, count) {
+  if (count >= group.minimumCount && count <= 8) return null;
+  return `has ${count} PNGs; ${group.label} requires ${group.minimumCount}–8`;
+}
+
 function validatePlayAssets(store = STORE) {
   const problems = [];
   const report = [];
@@ -75,10 +80,10 @@ function validatePlayAssets(store = STORE) {
   });
 
   const screenshotGroups = [
-    { directory: 'light', label: 'phone/light', minimumSide: 320 },
-    { directory: 'dark', label: 'phone/dark', minimumSide: 320 },
-    { directory: 'tablet-7', label: '7-inch tablet', minimumSide: 320 },
-    { directory: 'tablet-10', label: '10-inch tablet', minimumSide: 1080 },
+    { directory: 'light', label: 'phone/light', minimumSide: 320, minimumCount: 2 },
+    { directory: 'dark', label: 'phone/dark', minimumSide: 320, minimumCount: 2 },
+    { directory: 'tablet-7', label: '7-inch tablet', minimumSide: 1080, minimumCount: 4 },
+    { directory: 'tablet-10', label: '10-inch tablet', minimumSide: 1080, minimumCount: 4 },
   ];
 
   for (const group of screenshotGroups) {
@@ -88,9 +93,8 @@ function validatePlayAssets(store = STORE) {
       continue;
     }
     const files = fs.readdirSync(directory).filter((file) => file.toLowerCase().endsWith('.png')).sort();
-    if (files.length < 2 || files.length > 8) {
-      problems.push(`screenshots/${group.directory}: has ${files.length} PNGs; Play accepts 2–8 per device type`);
-    }
+    const countProblem = validateScreenshotCount(group, files.length);
+    if (countProblem) problems.push(`screenshots/${group.directory}: ${countProblem}`);
     for (const name of files) {
       const relative = path.join('screenshots', group.directory, name);
       const meta = inspectPng(path.join(store, relative));
@@ -118,4 +122,9 @@ if (require.main === module) {
   console.log('\nAll Google Play image assets meet the mandatory format and dimension rules.');
 }
 
-module.exports = { inspectPng, validateScreenshotMeta, validatePlayAssets };
+module.exports = {
+  inspectPng,
+  validateScreenshotCount,
+  validateScreenshotMeta,
+  validatePlayAssets,
+};

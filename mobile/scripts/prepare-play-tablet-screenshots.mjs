@@ -52,6 +52,7 @@ if (!source || !fs.existsSync(source)) {
 const expected = [
   '02-listings.png',
   '04-wallet.png',
+  '05-events.png',
   '08-volunteering.png',
 ];
 const missing = expected.filter((name) => !fs.existsSync(path.join(source, name)));
@@ -66,7 +67,7 @@ fs.mkdirSync(destination, { recursive: true });
 // Keep the generated upload folder exact. The feed is useful for verifying the
 // tour, but some screens deliberately expose extreme local stress-test copy.
 // Those are useful for QA, not public artwork, so this curated set keeps only
-// the three strongest product screens.
+// the four strongest product screens.
 for (const name of fs.readdirSync(destination)) {
   if (name.toLowerCase().endsWith('.png') && !expected.includes(name)) {
     fs.rmSync(path.join(destination, name));

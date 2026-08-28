@@ -198,10 +198,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Google Play tablet artwork is now captured from genuine Android tablet
   emulators and checked automatically.** The mobile release tooling prepares a
-  curated three-screen set for both 7-inch (1080x1920) and 10-inch
+  curated four-screen set for both 7-inch (1080x1920) and 10-inch
   (2560x1440) listings without cropping or stretching the app, and the Play
-  asset validator now checks phone and tablet counts, dimensions, colour mode
-  and the exact 9:16 or 16:9 listing ratio.
+  asset validator now enforces Google's current four-image tablet minimum and
+  checks phone and tablet counts, dimensions, colour mode and the exact 9:16 or
+  16:9 listing ratio.
 
 - **Google Play compliance pages have been added to the maintained React frontend.**
   Public, tenant-aware `/account-deletion` and `/child-safety` routes explain the

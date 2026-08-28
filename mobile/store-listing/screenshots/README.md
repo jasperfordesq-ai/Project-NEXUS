@@ -15,7 +15,8 @@ with it — a listing that mixes themes looks like two different apps.
 
 The `tablet-7/` and `tablet-10/` folders contain a separate curated set captured from genuine
 Nexus 7 and Pixel Tablet Android emulators on 2026-08-26. They show Listings, Wallet and
-Volunteering—the three strongest screens that contain no internal QA fixture wording. The
+Volunteering, plus an Events screen added from both genuine emulators on 2026-08-28 to meet
+Google's current four-image minimum for tablet listings. The
 complete native tablet frame is retained: 7-inch captures are proportionally contained in
 1080×1920, while the naturally landscape Pixel Tablet captures are contained in
 2560×1440. Nothing is cropped or stretched.
@@ -30,6 +31,9 @@ complete native tablet frame is retained: 7-inch captures are proportionally con
 | `06-events` | what's on |
 | `07-members` | the member directory |
 | `08-groups` | groups |
+
+The tablet folders use `05-events` for the fourth image; their numbering follows the
+capture tour rather than the phone story above.
 
 ## Why these are safe to publish
 
