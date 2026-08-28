@@ -93,6 +93,17 @@ describe('secure storage on a native platform', () => {
     expect(mockSetItemAsync).toHaveBeenCalledWith('auth_token', 'token-value');
   });
 
+  it('makes a successful secure write immediately visible to this app process', async () => {
+    mockSetItemAsync.mockResolvedValue(undefined);
+
+    await storage.set('auth_token', 'token-value');
+    await expect(storage.get('auth_token')).resolves.toBe('token-value');
+
+    // The first authenticated screen must not depend on an immediately
+    // consistent Keychain read after login has already persisted the token.
+    expect(mockGetItemAsync).not.toHaveBeenCalled();
+  });
+
   it('returns null instead of throwing when the store cannot be read', async () => {
     // A throwing read must not crash the app — but the caller then cannot tell
     // "no token" from "keychain unavailable", which is why set() reports and

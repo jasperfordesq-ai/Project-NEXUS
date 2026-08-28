@@ -51,7 +51,17 @@ export const storage = {
         return memoryStorage.get(key) ?? null;
       }
 
-      return await SecureStore.getItemAsync(key);
+      // Keep the current process off the Keychain hot path. More importantly,
+      // iOS Simulator can briefly return "missing" immediately after a successful
+      // SecItemAdd; the first authenticated screen must still see the token that
+      // login just persisted.
+      if (memoryStorage.has(key)) {
+        return memoryStorage.get(key) ?? null;
+      }
+
+      const value = await SecureStore.getItemAsync(key);
+      if (value !== null) memoryStorage.set(key, value);
+      return value;
     } catch {
       return null;
     }
@@ -70,6 +80,9 @@ export const storage = {
       }
 
       await SecureStore.setItemAsync(key, value);
+      // Only cache after the encrypted write succeeds. A failed Keychain write
+      // must not create a session that disappears on the next app launch.
+      memoryStorage.set(key, value);
     } catch (err) {
       // Diagnose "random logouts". Reported to BOTH Sentry and our own server —
       // Sentry alone has no DSN in any build profile, so this used to go nowhere.
@@ -89,6 +102,7 @@ export const storage = {
         return;
       }
 
+      memoryStorage.delete(key);
       await SecureStore.deleteItemAsync(key);
     } catch {
       // Already absent or unavailable — not an error

@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A newly signed-in iPhone session no longer reaches the home screen before its Keychain token is readable.** Secure values are still written to the encrypted iOS Keychain/Android Keystore first, then retained in process memory so the first feed, notification and realtime requests can authenticate immediately; failed secure writes are never cached.
+
 - **The admin "request plan upgrade" endpoint no longer crashes on every call.** `POST /v2/admin/billing/upgrade-request` invoked two helper methods that have never existed on the controller base class, so every request threw a fatal error — invisible to static analysis because Laravel's controller magic-call absorbs it. The endpoint now uses the real helpers, a test exercises the formerly fatal path, and the regression guard was inverted from a known-bad-names list into a sweep that resolves every controller helper call against the methods that actually exist, so the next such mistake fails CI without anyone having to predict its name. The legacy `POST /listings/delete` route, whose handler also never existed, was removed outright.
 
 - **A blocked ASP.NET test run can no longer read as a pass.** When Windows App Control blocked locally built assemblies, `dotnet test` executed zero tests and still exited 0; the runner now refuses success without a real test-count summary, reports a partially blocked run as PARTIAL with genuine counts, and diagnoses the App Control block instead of hiding it.
