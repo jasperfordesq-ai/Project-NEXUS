@@ -45,14 +45,9 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 01-feed
 
-- launchApp:
-    clearState: false
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
 - tapOn: "Listings"
 - extendedWaitUntil:
-    visible: "Listings|Browse|Search"
+    visible: "Listings"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 8000
@@ -60,8 +55,7 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 02-listings
 
-- launchApp:
-    clearState: false
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
@@ -77,21 +71,20 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 03-members
 
-- launchApp:
-    clearState: false
+- back
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
 - tapOn: "Messages"
 - extendedWaitUntil:
-    visible: "Messages|Conversations|No messages"
+    visible: "Messages"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 04-messages
 
-- launchApp:
-    clearState: false
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
@@ -107,8 +100,7 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 05-events
 
-- launchApp:
-    clearState: false
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
@@ -120,8 +112,8 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 06-wallet
 
-- launchApp:
-    clearState: false
+- back
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
@@ -137,8 +129,8 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 07-volunteering
 
-- launchApp:
-    clearState: false
+- back
+- tapOn: "Home"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
