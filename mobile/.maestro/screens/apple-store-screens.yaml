@@ -45,7 +45,8 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 01-feed
 
-- tapOn: "Listings"
+- tapOn:
+    point: "29%,95%"
 - extendedWaitUntil:
     visible: "Listings"
     timeout: 15000
@@ -55,11 +56,13 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 02-listings
 
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "More"
+- tapOn:
+    point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
 - scrollUntilVisible:
@@ -72,11 +75,13 @@ appId: ie.project.nexus
 - takeScreenshot: 03-members
 
 - back
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "Messages"
+- tapOn:
+    point: "70%,95%"
 - extendedWaitUntil:
     visible: "Messages"
     timeout: 15000
@@ -84,11 +89,13 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 04-messages
 
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "More"
+- tapOn:
+    point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
 - scrollUntilVisible:
@@ -100,11 +107,13 @@ appId: ie.project.nexus
     timeout: 12000
 - takeScreenshot: 05-events
 
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "More"
+- tapOn:
+    point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
 - tapOn: "View wallet"
@@ -113,11 +122,13 @@ appId: ie.project.nexus
 - takeScreenshot: 06-wallet
 
 - back
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "More"
+- tapOn:
+    point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
 - scrollUntilVisible:
@@ -130,11 +141,13 @@ appId: ie.project.nexus
 - takeScreenshot: 07-volunteering
 
 - back
-- tapOn: "Home"
+- tapOn:
+    point: "10%,95%"
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 30000
-- tapOn: "More"
+- tapOn:
+    point: "90%,95%"
 - waitForAnimationToEnd:
     timeout: 6000
 - scrollUntilVisible:
