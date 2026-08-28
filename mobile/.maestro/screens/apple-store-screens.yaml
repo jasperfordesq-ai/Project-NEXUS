@@ -14,7 +14,7 @@ appId: ie.project.nexus
     when:
       visible: "Select your timebank"
     commands:
-      - tapOn: "hour-timebank"
+      - tapOn: "Partner Demo"
 
 - extendedWaitUntil:
     visible: "Welcome back"
