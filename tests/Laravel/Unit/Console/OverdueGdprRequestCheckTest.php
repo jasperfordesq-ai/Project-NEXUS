@@ -266,4 +266,55 @@ class OverdueGdprRequestCheckTest extends TestCase
         $this->artisan('gdpr:check-overdue-requests', ['--days' => 25])
             ->assertExitCode(1);
     }
+
+    // -------------------------------------------------------------------------
+    // Alert-message invariance: the logged message is the Sentry grouping key
+    // -------------------------------------------------------------------------
+
+    /**
+     * The ERROR-log message must be byte-identical night after night for the
+     * SAME backlog. It used to embed each request's age in days, which
+     * increments daily — so the `sentry` log channel (which groups by raw
+     * message text; the explicit capture's fingerprint does not cover this
+     * leg) minted a brand-new Sentry issue every night. Sixteen duplicates
+     * accumulated between 2026-08-13 and 2026-08-28. Simulated here by running
+     * the command on two consecutive "nights" against the same request.
+     */
+    public function test_error_log_message_is_identical_across_consecutive_nights(): void
+    {
+        $this->seedGdprRequest(now()->subDays(40)->toDateTimeString(), 'pending', 'access');
+
+        $messages = [];
+        \Illuminate\Support\Facades\Log::spy();
+        \Illuminate\Support\Facades\Log::shouldReceive('error')
+            ->andReturnUsing(function (string $message, array $context = []) use (&$messages): void {
+                $messages[] = $message;
+                // The human-readable detail must not be lost — it moves into
+                // the context, which Sentry shows without grouping on it.
+                $this->assertArrayHasKey('message', $context);
+                $this->assertArrayHasKey('sample', $context);
+            });
+
+        $this->artisan('gdpr:check-overdue-requests', ['--days' => 25])->assertExitCode(1);
+
+        Carbon::setTestNow(now()->addDay());
+        try {
+            $this->artisan('gdpr:check-overdue-requests', ['--days' => 25])->assertExitCode(1);
+        } finally {
+            Carbon::setTestNow();
+        }
+
+        $this->assertCount(2, $messages, 'Expected exactly one ERROR log per nightly run.');
+        $this->assertSame(
+            $messages[0],
+            $messages[1],
+            'The alert log message changed between two nights with the same backlog — '
+            . 'the sentry log channel groups by message text, so this mints a new issue nightly.',
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/\d+d\b/',
+            $messages[0],
+            'The log message must not embed ages in days — that is the volatile part that goes in context.',
+        );
+    }
 }

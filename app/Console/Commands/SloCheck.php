@@ -137,8 +137,17 @@ class SloCheck extends Command
      */
     private function raiseAlert(string $message, array $context): void
     {
-        // 1. Always: ERROR log (operators + log aggregation).
-        Log::error($message, $context);
+        // 1. Always: ERROR log (operators + log aggregation) — STABLE message
+        // string. The `sentry` log channel in the production LOG_STACK groups
+        // by raw message text, and the fingerprint below covers only the
+        // explicit capture. $message carries percentages to three decimal
+        // places, so consecutive breaches would mint a new Sentry issue per
+        // run through this leg (the OverdueGdprRequestCheck defect). Volatile
+        // detail travels in the context.
+        Log::error(
+            'SLO BREACH: exchange-completion success rate below target',
+            $context + ['message' => $message],
+        );
 
         // 2. Explicit Sentry capture — visible regardless of LOG_STACK.
         try {

@@ -90,8 +90,16 @@ class StuckStripeWebhookCheck extends Command
      */
     private function raiseAlert(string $message, array $context): void
     {
-        // 1. Always: ERROR log.
-        Log::error($message, $context);
+        // 1. Always: ERROR log — STABLE message string. The `sentry` log
+        // channel in the production LOG_STACK groups by raw message text, and
+        // the fingerprint below covers only the explicit capture. A message
+        // embedding counts/samples mints a new Sentry issue whenever they
+        // change (the exact defect OverdueGdprRequestCheck produced nightly,
+        // sixteen times over). Volatile detail travels in the context.
+        Log::error(
+            'STRIPE WEBHOOK ALERT: webhook events stuck in failed status',
+            $context + ['message' => $message],
+        );
 
         // 2. Explicit Sentry capture — visible regardless of LOG_STACK.
         try {

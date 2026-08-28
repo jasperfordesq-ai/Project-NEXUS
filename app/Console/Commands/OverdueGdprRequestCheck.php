@@ -117,8 +117,19 @@ class OverdueGdprRequestCheck extends Command
      */
     private function raiseAlert(string $message, array $context): void
     {
-        // 1. Always: ERROR log.
-        Log::error($message, $context);
+        // 1. Always: ERROR log — with a STABLE message string. The production
+        // LOG_STACK includes the `sentry` channel, which groups by the raw
+        // message text; the fingerprint below covers only the explicit capture,
+        // NOT this leg. $message embeds each request's age in days, which
+        // increments nightly, so this line minted a brand-new Sentry issue
+        // every night — sixteen duplicates (140426477…143159289) accumulated
+        // between 2026-08-13 and 2026-08-28 while leg 2 was already fixed.
+        // The full human sentence travels in the context, where Sentry shows
+        // it without grouping on it.
+        Log::error(
+            'GDPR ALERT: data-subject requests pending past the response threshold',
+            $context + ['message' => $message],
+        );
 
         // 2. Explicit Sentry capture — visible regardless of LOG_STACK.
         try {

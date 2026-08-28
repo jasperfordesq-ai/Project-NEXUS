@@ -147,8 +147,16 @@ class BackupVerify extends Command
      */
     private function raiseAlert(string $message, array $context): void
     {
-        // 1. Always: ERROR log.
-        Log::error($message, $context);
+        // 1. Always: ERROR log — STABLE message string, mirroring the single
+        // fingerprint below (one issue for missing/zero-byte/stale alike).
+        // The `sentry` log channel groups by raw message text, and $message
+        // embeds filenames and ages that change per run — the defect that
+        // minted a new GDPR issue nightly. Volatile detail travels in the
+        // context.
+        Log::error(
+            'BACKUP ALERT: newest database backup is missing, empty, or stale',
+            $context + ['message' => $message],
+        );
 
         // 2. Explicit Sentry capture — visible regardless of LOG_STACK.
         try {
