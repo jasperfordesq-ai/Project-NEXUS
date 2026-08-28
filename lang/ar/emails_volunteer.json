@@ -25,28 +25,28 @@
     "cta": "تسجيل ساعاتك"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "نفتقد مشاركتك في العمل التطوعي",
+    "title": "هل أنت مستعد لنوبة تطوعية أخرى؟",
+    "preview": "هناك فرص تطوعية جديدة بانتظارك",
+    "body": "لقد مر بعض الوقت منذ آخر نوبة تطوعية مسجلة لك. إذا أصبحت متاحًا مجددًا، فسيسعد مجتمعك أن يتلقى مساعدتك.",
+    "cta": "تصفح الفرص"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "ستنتهي صلاحية اعتمادك التطوعي قريبًا",
+    "title": "ستنتهي صلاحية الاعتماد قريبًا",
+    "preview": "يقترب اعتماد تطوعي موثّق من تاريخ انتهاء صلاحيته",
+    "body": "يقترب أحد اعتماداتك التطوعية الموثّقة من تاريخ انتهاء صلاحيته. يرجى تحديثه حتى يتمكن المنظمون من مواصلة إسناد الفرص المناسبة إليك.",
+    "label_type": "الاعتماد",
+    "label_expires": "تنتهي الصلاحية",
+    "cta": "مراجعة الاعتمادات"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "ستنتهي صلاحية تدريبك التطوعي قريبًا",
+    "title": "ستنتهي صلاحية التدريب قريبًا",
+    "preview": "يقترب سجل تدريب تطوعي موثّق من تاريخ انتهاء صلاحيته",
+    "body": "يقترب أحد سجلات تدريبك التطوعي الموثّقة من تاريخ انتهاء صلاحيته. يرجى تحديثه حتى يتمكن المنظمون من مواصلة إسناد الفرص المناسبة إليك.",
+    "label_type": "التدريب",
+    "label_expires": "تنتهي الصلاحية",
+    "cta": "مراجعة التدريب"
   }
 }

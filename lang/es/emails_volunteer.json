@@ -25,28 +25,28 @@
     "cta": "Registrar Sus Horas"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "Echamos de menos verle participar como voluntario",
+    "title": "¿Listo para otro turno de voluntariado?",
+    "preview": "Hay nuevas oportunidades de voluntariado esperándole",
+    "body": "Ha pasado algún tiempo desde su último turno de voluntariado registrado. Si vuelve a estar disponible, su comunidad agradecerá contar con su ayuda.",
+    "cta": "Ver oportunidades"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "Su acreditación de voluntariado caduca pronto",
+    "title": "La acreditación caduca pronto",
+    "preview": "Una acreditación de voluntariado verificada se acerca a su fecha de caducidad",
+    "body": "Una de sus acreditaciones de voluntariado verificadas se acerca a su fecha de caducidad. Actualícela para que los organizadores puedan seguir asignándole oportunidades adecuadas.",
+    "label_type": "Acreditación",
+    "label_expires": "Caduca",
+    "cta": "Revisar acreditaciones"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "Su formación de voluntariado caduca pronto",
+    "title": "La formación caduca pronto",
+    "preview": "Un registro verificado de formación de voluntariado se acerca a su fecha de caducidad",
+    "body": "Uno de sus registros verificados de formación de voluntariado se acerca a su fecha de caducidad. Actualícelo para que los organizadores puedan seguir asignándole oportunidades adecuadas.",
+    "label_type": "Formación",
+    "label_expires": "Caduca",
+    "cta": "Revisar formación"
   }
 }

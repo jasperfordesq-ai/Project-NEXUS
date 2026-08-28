@@ -25,28 +25,28 @@
     "cta": "Zarejestruj Swoje Godziny"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "Brakuje nam Pana/Pani zaangażowania w wolontariat",
+    "title": "Czy jest Pan/Pani gotowy(-a) na kolejny dyżur wolontariacki?",
+    "preview": "Czekają na Pana/Panią nowe możliwości wolontariatu",
+    "body": "Minęło trochę czasu od ostatniego zarejestrowanego dyżuru wolontariackiego. Jeśli jest Pan/Pani ponownie dostępny(-a), społeczność z radością przyjmie Pana/Pani pomoc.",
+    "cta": "Przeglądaj możliwości"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "Pana/Pani uprawnienie wolontariackie wkrótce wygaśnie",
+    "title": "Uprawnienie wkrótce wygaśnie",
+    "preview": "Zbliża się data wygaśnięcia zweryfikowanego uprawnienia wolontariackiego",
+    "body": "Zbliża się data wygaśnięcia jednego z Pana/Pani zweryfikowanych uprawnień wolontariackich. Proszę je zaktualizować, aby organizatorzy mogli nadal przydzielać Panu/Pani odpowiednie możliwości.",
+    "label_type": "Uprawnienie",
+    "label_expires": "Wygasa",
+    "cta": "Sprawdź uprawnienia"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "Pana/Pani szkolenie wolontariackie wkrótce wygaśnie",
+    "title": "Szkolenie wkrótce wygaśnie",
+    "preview": "Zbliża się data wygaśnięcia zweryfikowanego zapisu szkolenia wolontariackiego",
+    "body": "Zbliża się data wygaśnięcia jednego z Pana/Pani zweryfikowanych zapisów szkoleń wolontariackich. Proszę go zaktualizować, aby organizatorzy mogli nadal przydzielać Panu/Pani odpowiednie możliwości.",
+    "label_type": "Szkolenie",
+    "label_expires": "Wygasa",
+    "cta": "Sprawdź szkolenie"
   }
 }

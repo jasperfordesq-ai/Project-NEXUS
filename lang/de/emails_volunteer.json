@@ -25,28 +25,28 @@
     "cta": "Stunden erfassen"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "Wir vermissen Ihr freiwilliges Engagement",
+    "title": "Bereit für einen weiteren Freiwilligeneinsatz?",
+    "preview": "Neue Möglichkeiten für freiwilliges Engagement warten auf Sie",
+    "body": "Seit Ihrem letzten erfassten Freiwilligeneinsatz ist einige Zeit vergangen. Wenn Sie wieder verfügbar sind, freut sich Ihre Gemeinschaft über Ihre Unterstützung.",
+    "cta": "Möglichkeiten ansehen"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "Ihr Nachweis für freiwilliges Engagement läuft bald ab",
+    "title": "Nachweis läuft bald ab",
+    "preview": "Ein verifizierter Nachweis für freiwilliges Engagement nähert sich seinem Ablaufdatum",
+    "body": "Einer Ihrer verifizierten Nachweise für freiwilliges Engagement nähert sich seinem Ablaufdatum. Bitte aktualisieren Sie ihn, damit Organisatoren Sie weiterhin geeigneten Einsatzmöglichkeiten zuweisen können.",
+    "label_type": "Nachweis",
+    "label_expires": "Läuft ab",
+    "cta": "Nachweise prüfen"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "Ihre Schulung für freiwilliges Engagement läuft bald ab",
+    "title": "Schulung läuft bald ab",
+    "preview": "Ein verifizierter Schulungsnachweis für freiwilliges Engagement nähert sich seinem Ablaufdatum",
+    "body": "Einer Ihrer verifizierten Schulungsnachweise für freiwilliges Engagement nähert sich seinem Ablaufdatum. Bitte aktualisieren Sie ihn, damit Organisatoren Sie weiterhin geeigneten Einsatzmöglichkeiten zuweisen können.",
+    "label_type": "Schulung",
+    "label_expires": "Läuft ab",
+    "cta": "Schulungen prüfen"
   }
 }

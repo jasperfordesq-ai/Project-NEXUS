@@ -25,28 +25,28 @@
     "cta": "時間を記録する"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "またボランティアとしてお会いできるのを楽しみにしています",
+    "title": "次のボランティア活動に参加しませんか？",
+    "preview": "新しいボランティアの機会があなたを待っています",
+    "body": "前回記録されたボランティア活動からしばらく経ちました。また参加できるようでしたら、コミュニティはあなたの協力を心待ちにしています。",
+    "cta": "活動機会を見る"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "ボランティア資格の有効期限が近づいています",
+    "title": "資格の有効期限が近づいています",
+    "preview": "確認済みのボランティア資格の有効期限が近づいています",
+    "body": "確認済みのボランティア資格のうち1件が有効期限に近づいています。主催者が引き続き適切な活動を割り当てられるよう、更新してください。",
+    "label_type": "資格",
+    "label_expires": "有効期限",
+    "cta": "資格を確認"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "ボランティア研修の有効期限が近づいています",
+    "title": "研修の有効期限が近づいています",
+    "preview": "確認済みのボランティア研修記録の有効期限が近づいています",
+    "body": "確認済みのボランティア研修記録のうち1件が有効期限に近づいています。主催者が引き続き適切な活動を割り当てられるよう、更新してください。",
+    "label_type": "研修",
+    "label_expires": "有効期限",
+    "cta": "研修を確認"
   }
 }

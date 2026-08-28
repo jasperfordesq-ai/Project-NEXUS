@@ -25,28 +25,28 @@
     "cta": "Uw Uren Registreren"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "We missen uw inzet als vrijwilliger",
+    "title": "Klaar voor een nieuwe vrijwilligersdienst?",
+    "preview": "Er wachten nieuwe vrijwilligersmogelijkheden op u",
+    "body": "Het is alweer een tijd geleden sinds uw laatste geregistreerde vrijwilligersdienst. Als u weer beschikbaar bent, stelt uw gemeenschap uw hulp zeer op prijs.",
+    "cta": "Bekijk mogelijkheden"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "Uw vrijwilligerscertificaat verloopt binnenkort",
+    "title": "Certificaat verloopt binnenkort",
+    "preview": "Een geverifieerd vrijwilligerscertificaat nadert de vervaldatum",
+    "body": "Een van uw geverifieerde vrijwilligerscertificaten nadert de vervaldatum. Werk het bij, zodat organisatoren u geschikte mogelijkheden kunnen blijven toewijzen.",
+    "label_type": "Certificaat",
+    "label_expires": "Verloopt",
+    "cta": "Certificaten controleren"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "Uw vrijwilligerstraining verloopt binnenkort",
+    "title": "Training verloopt binnenkort",
+    "preview": "Een geverifieerd trainingsbewijs voor vrijwilligers nadert de vervaldatum",
+    "body": "Een van uw geverifieerde trainingsbewijzen voor vrijwilligers nadert de vervaldatum. Werk het bij, zodat organisatoren u geschikte mogelijkheden kunnen blijven toewijzen.",
+    "label_type": "Opleiding",
+    "label_expires": "Verloopt",
+    "cta": "Training controleren"
   }
 }
