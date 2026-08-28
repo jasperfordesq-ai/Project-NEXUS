@@ -23,6 +23,7 @@ appId: ie.project.nexus
       # chevron rather than relying on Maestro to promote the text to its parent.
       - tapOn:
           point: "85%,44%"
+          retryTapIfNoChange: true
 
 - extendedWaitUntil:
     visible: "Welcome back"
