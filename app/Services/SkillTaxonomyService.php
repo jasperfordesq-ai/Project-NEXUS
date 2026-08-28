@@ -278,26 +278,16 @@ class SkillTaxonomyService
             ->all();
     }
 
-    /**
-     * Get skills assigned to a user (simple view).
-     */
-    public function getMySkills(int $userId): array
-    {
-        $tenantId = TenantContext::getId();
-
-        return DB::table('user_skills as us')
-            ->leftJoin('skill_categories as sc', 'us.skill_id', '=', 'sc.id')
-            ->where('us.user_id', $userId)
-            ->where('us.tenant_id', $tenantId)
-            ->select('us.id', 'us.user_id', 'us.tenant_id', 'us.category_id', 'us.skill_name',
-                'us.proficiency as proficiency_level',
-                'us.is_offering', 'us.is_requesting', 'us.created_at',
-                'sc.name as category_name', 'sc.icon')
-            ->orderByDesc('us.created_at')
-            ->get()
-            ->map(fn ($r) => (array) $r)
-            ->all();
-    }
+    // getMySkills() was deleted on 2026-08-28. It was an unreachable near-copy of
+    // getUserSkills() below — no caller anywhere, because the route
+    // GET /v2/users/me/skills goes to SkillTaxonomyController::getMySkills(),
+    // which calls getUserSkills(). The copy joined
+    // `skill_categories` on `us.skill_id`, a column `user_skills` does not have
+    // (it keys categories by `category_id`), so anyone who did wire it up would
+    // have got a 500 from an SQL error. The db-column gate could not see it:
+    // join()/where() are deliberately out of its scope because they can name a
+    // joined table's column. getUserSkills() joins on `us.category_id` and is
+    // correct — do not reintroduce a second version of this query.
 
     /**
      * Get skills for a user (full view with endorsement counts).
