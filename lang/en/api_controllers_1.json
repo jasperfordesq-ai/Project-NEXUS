@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Amount cannot be zero",
         "reason_required": "Reason is required",
         "status_must_be_active_or_suspended": "Status must be active or suspended",
+        "status_invalid": "Status must be active, approved, suspended or declined",
         "organization_not_found": "Organization not found",
         "org_status_update_failed": "Failed to update organization status"
     },

@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "لا يمكن أن يكون المبلغ صفراً",
         "reason_required": "السبب مطلوب",
         "status_must_be_active_or_suspended": "يجب أن تكون الحالة نشطة أو معلّقة",
+        "status_invalid": "يجب أن تكون الحالة نشطة أو معتمدة أو معلّقة أو مرفوضة",
         "organization_not_found": "المنظمة غير موجودة",
         "org_status_update_failed": "فشل تحديث حالة المنظمة"
     },

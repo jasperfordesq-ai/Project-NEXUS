@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Kwota nie może wynosić zero",
         "reason_required": "Powód jest wymagany",
         "status_must_be_active_or_suspended": "Status musi być aktywny lub zawieszony",
+        "status_invalid": "Status musi być aktywny, zatwierdzony, zawieszony lub odrzucony",
         "organization_not_found": "Organizacja nie znaleziona",
         "org_status_update_failed": "Aktualizacja statusu organizacji nie powiodła się"
     },

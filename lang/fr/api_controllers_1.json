@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Le montant ne peut pas être nul",
         "reason_required": "La raison est requise",
         "status_must_be_active_or_suspended": "Le statut doit être actif ou suspendu",
+        "status_invalid": "Le statut doit être actif, validé, suspendu ou refusé",
         "organization_not_found": "Organisation introuvable",
         "org_status_update_failed": "Échec de la mise à jour du statut de l'organisation"
     },

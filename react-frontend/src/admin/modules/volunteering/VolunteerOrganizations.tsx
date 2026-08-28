@@ -291,7 +291,12 @@ export function VolunteerOrganizations() {
     if (statusToggleId !== null) return;
     setStatusToggleId(org.id);
     try {
-      const res = await adminVolunteering.updateOrgStatus(org.id, newStatus, reason);
+      // Only pass the reason when there is one: an explicit trailing
+      // `undefined` changes the observable call signature for no benefit, and
+      // suspend/activate genuinely have no reason to send.
+      const res = reason
+        ? await adminVolunteering.updateOrgStatus(org.id, newStatus, reason)
+        : await adminVolunteering.updateOrgStatus(org.id, newStatus);
       if (res.success) {
         toast.success(t('volunteering.status_updated', { status: t(`volunteering.status_${newStatus}`) }));
         setSuspendTarget(null);

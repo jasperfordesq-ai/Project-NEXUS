@@ -43,6 +43,20 @@ class NotifyOwnerOfVolunteerOrganisationDecision implements ShouldQueue
     /** Statuses that mean "the community can see this organisation". */
     private const PUBLIC_STATUSES = ['approved', 'active'];
 
+    /**
+     * Email category per outcome, as LITERALS.
+     *
+     * Kept literal (rather than composed at the call site) so
+     * EmailTriggerAuditServiceTest can discover them and hold every one to the
+     * audit matrix in EmailTriggerAuditService.
+     */
+    private const CATEGORIES = [
+        'approved'   => 'volunteer_organisation_approved',
+        'declined'   => 'volunteer_organisation_declined',
+        'suspended'  => 'volunteer_organisation_suspended',
+        'reinstated' => 'volunteer_organisation_reinstated',
+    ];
+
     public function handle(VolunteerOrganisationStatusChanged $event): void
     {
         $orgId    = $event->organisationId;
@@ -152,14 +166,23 @@ class NotifyOwnerOfVolunteerOrganisationDecision implements ShouldQueue
                         ->button(__($key . '_cta'), $url)
                         ->render();
 
+                    // The subject is built BEFORE the call, and the category is a
+                    // LITERAL rather than 'volunteer_organisation_' . $outcome, for
+                    // one reason: EmailTriggerAuditServiceTest scans this file for
+                    // `'category', [` to prove every production email category is
+                    // represented in the audit matrix. A concatenated category is
+                    // invisible to that gate, and an inline __() call with an array
+                    // argument registers a phantom category of its own.
+                    $subject = __($key . '_subject', ['name' => $orgName]);
+
                     if (! EmailDispatchService::sendRaw(
                         (string) $owner->email,
-                        __($key . '_subject', ['name' => $orgName]),
+                        $subject,
                         $html,
                         null,
                         null,
                         null,
-                        'volunteer_organisation_' . $outcome,
+                        self::CATEGORIES[$outcome],
                         ['tenant_id' => $tenantId]
                     )) {
                         Log::warning('NotifyOwnerOfVolunteerOrganisationDecision: email send failed', [

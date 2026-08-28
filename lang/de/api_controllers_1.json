@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Betrag darf nicht null sein",
         "reason_required": "Grund ist erforderlich",
         "status_must_be_active_or_suspended": "Status muss aktiv oder gesperrt sein",
+        "status_invalid": "Der Status muss aktiv, freigegeben, gesperrt oder abgelehnt sein",
         "organization_not_found": "Organisation nicht gefunden",
         "org_status_update_failed": "Organisationsstatus konnte nicht aktualisiert werden"
     },

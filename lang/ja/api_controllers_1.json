@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "金額をゼロにすることはできません",
         "reason_required": "理由が必要です",
         "status_must_be_active_or_suspended": "ステータスはアクティブまたは停止中である必要があります",
+        "status_invalid": "ステータスは有効、承認済み、停止中、却下のいずれかである必要があります",
         "organization_not_found": "組織が見つかりません",
         "org_status_update_failed": "組織のステータスの更新に失敗しました"
     },

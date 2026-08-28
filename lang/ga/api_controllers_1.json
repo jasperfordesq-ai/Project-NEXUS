@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Ní féidir leis an méid a bheith nialas",
         "reason_required": "Tá cúis ag teastáil",
         "status_must_be_active_or_suspended": "Ní mór don stádas a bheith gníomhach nó ar fionraí",
+        "status_invalid": "Ní mór don stádas a bheith gníomhach, ceadaithe, ar fionraí nó diúltaithe",
         "organization_not_found": "Eagraíocht gan aimsiú",
         "org_status_update_failed": "Theip ar nuashonrú stádas eagraíochta"
     },

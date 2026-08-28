@@ -150,6 +150,7 @@
         "amount_cannot_be_zero": "Bedrag mag niet nul zijn",
         "reason_required": "Reden is vereist",
         "status_must_be_active_or_suspended": "Status moet actief of gesuspendeerd zijn",
+        "status_invalid": "De status moet actief, goedgekeurd, geschorst of afgewezen zijn",
         "organization_not_found": "Organisatie niet gevonden",
         "org_status_update_failed": "Organisatiestatus bijwerken mislukt"
     },
