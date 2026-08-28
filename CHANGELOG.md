@@ -27,6 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The admin identity audit log now opens instead of failing.** Every attempt to
+  view the identity verification audit log returned a server error, on every
+  tenant, for the whole life of the endpoint — the page could never have worked.
+  The three read methods in `IdentityVerificationEventService` called
+  `DB::statement(...)->fetchAll()` / `->fetchColumn()`, but `DB::statement()`
+  returns a bool rather than a statement object, so each read crashed with "Call
+  to a member function fetchColumn() on bool". Reads now use `DB::select()` /
+  `DB::selectOne()`. The write path (`log()`) was always correct and is
+  unchanged, which is why events were still being recorded while nobody could
+  read them back. Reported by Sentry as NEXUS-PHP-54 on
+  `GET /api/v2/admin/identity/audit-log`.
+
 ## [1.6.2] - 2026-08-28
 
 ### Added

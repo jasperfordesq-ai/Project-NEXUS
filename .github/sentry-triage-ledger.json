@@ -2,6 +2,15 @@
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
   "lastRunAt": "2026-08-28T02:09:48.501Z",
   "issues": {
+    "123575422": {
+      "title": "Support report submitted",
+      "culprit": "/admin/enterprise",
+      "decision": "wont-fix",
+      "note": "'Support report submitted' at level info on /admin/enterprise - this is the frontend's own instrumentation confirming a support report was sent, not a fault. It is the same 14:49 2026-08-27 incident as NEXUS-REACT-X (143264165) and NEXUS-PHP-55 (143264563). Working as designed; no code change.",
+      "sha": null,
+      "decidedAt": "2026-08-28T11:12:02.835Z",
+      "decidedAtRelease": "nexus-react@489c627e13b9"
+    },
     "130353163": {
       "title": "Geocoding exception",
       "culprit": null,
@@ -13,12 +22,21 @@
     },
     "134069538": {
       "title": "Safeguarding interaction policy unavailable",
-      "culprit": null,
+      "culprit": "http://api.project-nexus.ie/api/v2/matches/all",
       "decision": "needs-owner",
-      "note": "Configuration gap, not a code bug, and it is failing in the safe direction. app/Services/SafeguardingInteractionPolicy.php:299 refuses to send when a recipient's path requires vetted interaction but the tenant has no safeguarding jurisdiction configured (no scheme code, attestation code or policy version). Logged reason_code jurisdiction_unconfigured_or_unsupported, channel legacy_match_suggestion, recipient 623, tenant 2, from a scheduled CLI run. Effect: match-suggestion notifications are withheld from that member rather than sent unchecked. Suggested fix is an admin action — configure the tenant's safeguarding jurisdiction and attestation scheme. Sensitive area: no code touched.",
+      "note": "RECURRED since the 2026-08-23 needs-owner decision, and the surface has CHANGED - this is the part worth the owner's attention. The earlier decision recorded it firing from a scheduled CLI run on channel legacy_match_suggestion (recipient 623, tenant 2), where the effect was simply that a match-suggestion notification was withheld. The latest event (2026-08-27 11:41, release 489c627e13b9) comes from a live member request instead: GET /api/v2/matches/all?modules=listings&limit=4&min_score=40, from Chrome on Windows - a member loading their matches. Same underlying cause, still failing in the SAFE direction: app/Services/SafeguardingInteractionPolicy.php refuses vetted-interaction paths when the tenant has no safeguarding jurisdiction configured (no scheme code, attestation code or policy version). This is NOT evidence of a bad fix - no fix was ever applied; the 2026-08-23 decision was needs-owner, and it recurs because the required admin action has not been taken. Suggested fix unchanged and still an ADMIN action, not a code change: configure the tenant's safeguarding jurisdiction and attestation scheme. Open question for the owner: because it now fires on a member-facing page load, someone should confirm what the member actually sees on their matches page when the policy is unavailable. Sensitive area (safeguarding) - no code touched.",
       "sha": null,
-      "decidedAt": "2026-08-23T08:16:58.916Z",
-      "decidedAtRelease": "nexus-php@5afb43ff73da"
+      "decidedAt": "2026-08-28T11:13:34.875Z",
+      "decidedAtRelease": "nexus-php@489c627e13b9"
+    },
+    "138843429": {
+      "title": "Sentry\\Exception\\FatalErrorException: Error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legal_document_id' in 'SELECT' in /var/www/html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420",
+      "culprit": "/vendor/laravel/framework/src/Illuminate/Database/Connection.php in ?",
+      "decision": "wont-fix",
+      "note": "Not a product defect - a hand-run command-line query with a typo. The stack frame is 'Command line code(1)', i.e. php -r, not an HTTP request or scheduled job, and the failing SQL is 'select id, legal_document_id, version_number, content from legal_document_versions limit 20'. legal_document_versions has no legal_document_id column; the real foreign key is document_id (see database/schema/mysql-schema.sql). The string 'legal_document_id' appears nowhere in the repository - not in app/, not in any migration, not in web-uk - so no application code path can produce this. Someone (owner or agent) inspecting the legal documents tables by hand mistyped the column name; production PHP fatals are reported to Sentry regardless of whether they came from a request or a console one-liner. Flagged sensitive because it matched 'legal'. No code touched and none needed. If it recurs from a non-CLI frame, that WOULD be a real defect and should be re-opened.",
+      "sha": null,
+      "decidedAt": "2026-08-28T11:13:05.520Z",
+      "decidedAtRelease": "nexus-php@d0c34906ab49"
     },
     "140426477": {
       "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
@@ -235,6 +253,60 @@
       "sha": null,
       "decidedAt": "2026-08-25T09:19:28.126Z",
       "decidedAtRelease": "nexus-php@d0c34906ab49"
+    },
+    "142932453": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Duplicate grouping of the same nightly GDPR DSAR backlog alarm, 26 Aug instance. Same two findings as NEXUS-PHP-53 (143159289) and NEXUS-PHP-51 (142707378): the backlog is the owner's own admin test requests (standing decision from NEXUS-PHP-4A, nothing to action), and the alarm still spawns a fresh Sentry group nightly because the Log::error leg reaches Sentry without a fingerprint and its message text embeds ages that change daily. Root cause and suggested fix recorded in full against 142707378. Sensitive (gdpr) - no code touched.",
+      "sha": null,
+      "decidedAt": "2026-08-28T11:13:47.372Z",
+      "decidedAtRelease": "nexus-php@14a56e9eb9c2"
+    },
+    "143156434": {
+      "title": "reportMessage",
+      "culprit": null,
+      "decision": "watching",
+      "note": "Mobile app, level info, handled - deliberate instrumentation, not a crash. Message is '[DeepLink] Unhandled link' from release ie.project.nexus@1.2.0+2. The device is sdk_gphone64_x86_64 running a dev-keys userdebug build, i.e. the development emulator rather than a member's phone, so this is almost certainly the owner's own testing. Two events, both 2026-08-27 morning, none since. Not fixed because the event does not carry the offending URL, so there is nothing actionable to point at - and the instrumentation firing is the feature working. Watching: if this appears from a real device or a production build, the specific link should be captured and the deep-link handler taught to route it.",
+      "sha": null,
+      "decidedAt": "2026-08-28T11:13:56.100Z",
+      "decidedAtRelease": "ie.project.nexus@1.2.0+2"
+    },
+    "143159289": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "The nightly GDPR DSAR backlog alarm, 27 Aug instance. Two separate things, both already diagnosed. (1) The backlog itself: standing owner decision from NEXUS-PHP-4A (2026-08-13) - requests #6/#7/#8 (tenant 5) and #11 (tenant 11) are the owner's own admin test requests, so there is no Article 12(3) clock and nothing to action. (2) The nightly respawn: full root cause recorded against NEXUS-PHP-51 (142707378). In short, OverdueGdprRequestCheck::raiseAlert() has two Sentry paths and the setFingerprint fix in 9ed9a316a only covered one; the Log::error leg reaches Sentry through the 'sentry' log channel in LOG_STACK carrying no fingerprint, and the message text embeds each request's age in days, which increments nightly, so every night forms a new group. Suggested fix (NOT applied - sensitive, needs owner authorisation): keep the ages out of the logged message string and pass them only in $context, or send that leg to a log channel that excludes sentry. No code touched.",
+      "sha": null,
+      "decidedAt": "2026-08-28T11:13:45.823Z",
+      "decidedAtRelease": "nexus-php@489c627e13b9"
+    },
+    "143208420": {
+      "title": "Error: Call to a member function fetchColumn() on bool",
+      "culprit": "/app/Services/Identity/IdentityVerificationEventService.php in App\\Services\\Identity\\IdentityVerificationEventService::getForTenant",
+      "decision": "fixed",
+      "note": "GET /api/v2/admin/identity/audit-log returned 500 for every admin on every tenant, for the whole life of the endpoint. All three read methods in IdentityVerificationEventService called DB::statement(...)->fetchAll()/->fetchColumn(), but DB::statement() returns a bool, not a PDOStatement. Changed the reads to DB::select()/DB::selectOne() (the convention already used across app/Http/Controllers/Api/). The INSERT in log() was always correct and is unchanged, which is why events were recorded but never readable. New regression test tests/Laravel/Feature/Services/IdentityVerificationEventReadPathTest.php runs all three reads against a real database; verified failing with the exact production error before the change and passing after. The pre-existing unit test only covered log() and mocked DB::statement() to return true, so it could never have caught this.",
+      "sha": "8c65054fc",
+      "decidedAt": "2026-08-28T11:02:05.398Z",
+      "decidedAtRelease": "nexus-php@489c627e13b9"
+    },
+    "143264165": {
+      "title": "TypeError: Cannot read properties of null (reading 'toLowerCase')",
+      "culprit": "/admin/enterprise",
+      "decision": "fixed",
+      "note": "Enterprise admin page crashed for a real member (tenant 4 Timebank Global, user 655) with TypeError: Cannot read properties of null (reading toLowerCase). Cause: gdpr_audit_log.entity_type is nullable and GdprService::logAction() deliberately passes null when an account is deleted; both EnterpriseDashboard and GdprAuditLog kept a private token builder typed (value: string) that called .toLowerCase() immediately, so one deleted account took the whole admin page down to the error boundary while the API returned a clean 200. Fix was already committed to main on 2026-08-27 as 28948ed1f - a shared null-safe translationToken() in react-frontend/src/admin/modules/enterprise/gdprAuditTranslations.ts falling back to the existing 'unknown' key. NOT authored by this triage run. Verified tonight by running the covering suites (gdprAuditTranslations.test.ts + EnterpriseDashboard.test.tsx, 31 tests, all pass). Still awaiting deploy: live release is 489c627e13b9, built 2026-08-26, before the fix landed.",
+      "sha": "28948ed1f",
+      "decidedAt": "2026-08-28T11:11:51.453Z",
+      "decidedAtRelease": "nexus-react@489c627e13b9"
+    },
+    "143264563": {
+      "title": "Nexus support report NXR-260827-ND1UJA: The page crashed.",
+      "culprit": "http://api.project-nexus.ie/api/v2/support/reports",
+      "decision": "fixed",
+      "note": "Member-submitted support report NXR-260827-ND1UJA ('The page crashed.') filed at 14:49 on 2026-08-27 from /admin/enterprise. Not a separate defect: it is the human report of the same incident as NEXUS-REACT-X (143264165) - the same user, the same page, seconds apart in the same breadcrumb trail. Cause and fix recorded in full against 143264165: null entity_type from a deleted account hit a toLowerCase() during render, fixed on main in 28948ed1f, awaiting deploy. Nothing further to fix here.",
+      "sha": "28948ed1f",
+      "decidedAt": "2026-08-28T11:12:00.957Z",
+      "decidedAtRelease": "nexus-php@489c627e13b9"
     }
   }
 }
