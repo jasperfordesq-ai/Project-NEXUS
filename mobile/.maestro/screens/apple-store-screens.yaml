@@ -10,6 +10,10 @@ appId: ie.project.nexus
 - launchApp:
     clearState: true
 
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 60000
+
 - runFlow:
     when:
       visible: "Select your timebank"
