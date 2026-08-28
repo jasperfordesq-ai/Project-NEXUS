@@ -14,8 +14,34 @@ use Illuminate\Support\Facades\Log;
 /**
  * AchievementCampaignService — Eloquent-based service for achievement campaigns.
  *
- * Manages campaigns that award badges, XP, or trigger challenges for targeted user groups.
- * All queries are tenant-scoped via HasTenantScope trait on the model.
+ * Stores and schedules campaigns. All queries are tenant-scoped via
+ * HasTenantScope trait on the model.
+ *
+ * 🔴 THIS SERVICE AWARDS NOTHING. Read this before trusting the admin screens.
+ *
+ * The docblock here used to read "Manages campaigns that award badges, XP, or
+ * trigger challenges for targeted user groups", which is not true of any
+ * campaign type. Established 2026-08-28 by reading every method: there is no
+ * award path at all. `createCampaign`/`updateCampaign` persist rows,
+ * `activateCampaign` flips `status` to 'running', and
+ * `processRecurringCampaigns` bumps `last_run_at` and logs
+ * "(award logic stubbed)". No badge is granted, no XP is added, and
+ * `total_awards` is never incremented — for one-time, recurring OR triggered.
+ *
+ * What that means for a community: an admin can open
+ * /admin/gamification/campaigns, build a campaign, choose an audience, pick a
+ * daily/weekly/monthly schedule, activate it, and watch it sit at "running"
+ * indefinitely while no member ever receives anything. Nothing in the UI says
+ * so.
+ *
+ * Finishing it is a product decision, not a rename, and is deliberately NOT
+ * guessed at here. `achievement_campaigns` already models the WHAT
+ * (`badge_key`, `xp_amount`, `target_audience`, `audience_config`), so the open
+ * questions are behavioural: whether a missed run catches up or is skipped,
+ * whether a recurring bonus may award the same member twice, and how
+ * `total_awards` reconciles against the XP ledger. Awarding XP wrongly is hard
+ * to reverse once leaderboards have moved, which is why this stays stopped
+ * rather than half-wired.
  */
 class AchievementCampaignService
 {

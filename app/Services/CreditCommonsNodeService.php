@@ -198,6 +198,55 @@ class CreditCommonsNodeService
     }
 
     /**
+     * The fully-qualified Credit Commons account path for one of OUR members.
+     *
+     * "<node-slug>/<username>", falling back to "<node-slug>/user-<id>" when the
+     * member has no username — deliberately identical to the shape
+     * FederationCreditCommonsController produces when it answers an inbound CC
+     * request, so the same member does not end up with two different CC
+     * identities depending on the direction of travel.
+     *
+     * 🔴 Only ever call this for a LOCAL member. Qualifying a remote partner's
+     * member with our own node slug would assert that we hold their account,
+     * which is a routing error in a money path, not a cosmetic one.
+     *
+     * Returns null when the member cannot be confirmed to belong to $tenantId,
+     * so callers must decide what to do rather than receiving a wrong-but-
+     * plausible path.
+     */
+    public static function accountPathForUser(int $userId, ?int $tenantId = null): ?string
+    {
+        $tenantId = $tenantId ?? TenantContext::getId();
+
+        if ($userId <= 0 || !$tenantId) {
+            return null;
+        }
+
+        $username = DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->value('username');
+
+        // No row for this (user, tenant) pair — the member is not ours to name.
+        if ($username === null && !DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->exists()) {
+            return null;
+        }
+
+        $nodeSlug = self::getNodeConfig($tenantId)->node_slug;
+
+        if (!is_string($nodeSlug) || $nodeSlug === '') {
+            return null;
+        }
+
+        return $nodeSlug . '/' . ($username !== null && $username !== ''
+            ? $username
+            : "user-{$userId}");
+    }
+
+    /**
      * Check if a given account path belongs to this node.
      *
      * "my-node/alice" with node_slug "my-node" → true

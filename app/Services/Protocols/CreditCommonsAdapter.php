@@ -139,20 +139,70 @@ class CreditCommonsAdapter implements FederationProtocolAdapter
         $amount = (float) ($nexusTransaction['amount'] ?? 0);
 
         return [
-            'payer' => self::toAccountPath(
-                $nexusTransaction['sender_account_path']
-                    ?? $nexusTransaction['sender_identifier']
-                    ?? (string) ($nexusTransaction['sender_user_id'] ?? '')
-            ),
-            'payee' => self::toAccountPath(
-                $nexusTransaction['receiver_account_path']
-                    ?? $nexusTransaction['receiver_identifier']
-                    ?? (string) ($nexusTransaction['receiver_user_id'] ?? '')
-            ),
+            'payer' => self::resolveOutboundAccountPath($nexusTransaction, 'sender'),
+            'payee' => self::resolveOutboundAccountPath($nexusTransaction, 'receiver'),
             'quant' => $amount,
             'description' => $nexusTransaction['description'] ?? 'Federation transfer from Project NEXUS',
             'workflow' => $nexusTransaction['workflow'] ?? '0|PC-CE=',
         ];
+    }
+
+    /**
+     * Resolve one side of an outbound transaction to a CC account path.
+     *
+     * 🔴 What was wrong before 2026-08-28. Both sides went through
+     * `toAccountPath($identifier)` with NO node slug, and the real outbound
+     * payload (see App\Listeners\PushTransactionToFederatedPartner) carries
+     * `sender_user_id` / `receiver_user_id` and NOT `sender_account_path`. So
+     * every outbound transaction advertised a bare numeric id — `"123"` — as
+     * payer and payee. A CC account path is `<node>/<account>`; an unqualified
+     * value is not addressable, and a strict CC node is entitled to reject it.
+     *
+     * Resolution order, deliberately conservative:
+     *   1. An explicit `*_account_path` is trusted and returned untouched — the
+     *      caller knew the topology better than we do here.
+     *   2. Otherwise, if the side's tenant is one of OURS and the member is in
+     *      it, qualify with that tenant's node slug via CreditCommonsNodeService
+     *      (which is also what our inbound CC controller answers with, so a
+     *      member keeps ONE identity in both directions).
+     *   3. Otherwise fall back to the bare identifier, unchanged.
+     *
+     * 🔴 Step 3 is a KNOWN REMAINING GAP, left deliberately rather than guessed.
+     * On a genuine external transfer the counterparty lives on the PARTNER's
+     * node and is absent from our `users` table, so we cannot name them — and
+     * qualifying them with our own node slug would assert we hold their
+     * account, which is a routing error in a money path. Closing this properly
+     * needs the partner's node slug and their account identifier, verified
+     * against a real CC node. External partner federation is switched off in
+     * production with no partner connected, so nothing is currently affected.
+     * Do NOT "finish" this by prepending the local slug.
+     *
+     * @param array<string, mixed> $transaction
+     * @param 'sender'|'receiver' $side
+     */
+    private static function resolveOutboundAccountPath(array $transaction, string $side): string
+    {
+        $explicit = $transaction["{$side}_account_path"] ?? null;
+        if (is_string($explicit) && $explicit !== '') {
+            return self::toAccountPath($explicit);
+        }
+
+        $identifier = $transaction["{$side}_identifier"]
+            ?? (string) ($transaction["{$side}_user_id"] ?? '');
+        $identifier = (string) $identifier;
+
+        $userId = (int) ($transaction["{$side}_user_id"] ?? 0);
+        $tenantId = $transaction["{$side}_tenant_id"] ?? null;
+        $tenantId = is_numeric($tenantId) ? (int) $tenantId : null;
+
+        if ($userId > 0 && $tenantId !== null) {
+            $localPath = CreditCommonsNodeService::accountPathForUser($userId, $tenantId);
+            if ($localPath !== null) {
+                return $localPath;
+            }
+        }
+
+        return self::toAccountPath($identifier);
     }
 
     public function transformOutboundMessage(array $nexusMessage): array
@@ -541,11 +591,15 @@ class CreditCommonsAdapter implements FederationProtocolAdapter
             return "{$nodeSlug}/{$identifier}";
         }
 
-        // TODO: node slug is not available at this call site — the caller should
-        // pass it explicitly. Returning the bare identifier for now; this will
-        // produce unqualified payer/payee values that may be rejected by strict
-        // CC nodes. Use FederationCreditCommonsController::toAccountPath() for
-        // controller-level path building where $tenantId is available.
+        // No node slug supplied, so the identifier is returned unqualified. This
+        // is a formatting primitive, not an identity resolver: it cannot know
+        // which node an account belongs to. Callers that DO know must pass
+        // $nodeSlug, or use one of the resolvers that looks it up —
+        // CreditCommonsNodeService::accountPathForUser() for a local member, or
+        // FederationCreditCommonsController::toAccountPath() at the controller
+        // boundary. Transaction payer/payee resolution lives in
+        // self::resolveOutboundAccountPath(), which documents the one case that
+        // is still unresolved (naming a remote partner's member).
         return $identifier;
     }
 
@@ -590,8 +644,11 @@ class CreditCommonsAdapter implements FederationProtocolAdapter
     {
         return [
             [
-                'payer' => self::toAccountPath((string) ($nexusTransaction['sender_user_id'] ?? '')),
-                'payee' => self::toAccountPath((string) ($nexusTransaction['receiver_user_id'] ?? '')),
+                // Same resolution as transformOutboundTransaction() — these are
+                // the ledger entries for the very same movement of credit, so
+                // the two must never disagree about who paid whom.
+                'payer' => self::resolveOutboundAccountPath($nexusTransaction, 'sender'),
+                'payee' => self::resolveOutboundAccountPath($nexusTransaction, 'receiver'),
                 'quant' => (float) ($nexusTransaction['amount'] ?? 0),
                 'description' => $nexusTransaction['description'] ?? '',
                 'state' => self::mapNexusStateToCc($nexusTransaction['status'] ?? 'pending'),
