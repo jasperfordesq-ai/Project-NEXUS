@@ -10,17 +10,34 @@
 import type { User } from '@/types/api';
 import { logError } from './logger';
 import i18n from '../i18n';
+import { getRegion } from './regionStore';
 import { safeLocalStorageGetJSON, safeLocalStorageSetJSON, safeLocalStorageRemove } from './safeStorage';
 
 type DateValue = Date | number | string;
 
 /**
- * Return the language selected inside NEXUS for every user-facing Intl call.
+ * Return the locale used for every user-facing Intl call: the language selected
+ * inside NEXUS, combined with the community's region.
+ *
  * Do not rely on an omitted locale: that silently follows the browser/OS
  * language even when the user has selected a different application language.
+ *
+ * The region matters as much as the language. A bare language tag carries no
+ * region, so Intl falls back to the language's default one — for English that is
+ * the United States, which rendered 17 August 2026 as `8/17/2026` across a
+ * platform whose communities are in Ireland and the UK. Appending the region
+ * from `regionStore` (tenant setting, else the platform default) fixes every
+ * call site that funnels through this function.
+ *
+ * A language tag that already carries a region (`pt-BR`) is returned unchanged —
+ * the member's explicit choice wins over the community default.
  */
 export function getFormattingLocale(): string {
-  return i18n.language || 'en';
+  const language = i18n.language || 'en';
+  if (language.includes('-')) {
+    return language;
+  }
+  return `${language}-${getRegion()}`;
 }
 
 /**

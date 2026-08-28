@@ -28,6 +28,7 @@ import {
   isOrganisationAccount,
   ORGANISATION_PROFILE_TYPE,
 } from './helpers';
+import { resetRegion, setRegion } from './regionStore';
 
 describe('application-locale formatting', () => {
   afterEach(async () => {
@@ -48,13 +49,13 @@ describe('application-locale formatting', () => {
     const englishNumber = formatNumber(1234567.89);
 
     await i18n.changeLanguage('de');
-    expect(getFormattingLocale()).toBe('de');
+    expect(getFormattingLocale()).toBe('de-IE');
     expect(formatDateTime(date, options)).toBe(
-      new Intl.DateTimeFormat('de', options).format(date),
+      new Intl.DateTimeFormat('de-IE', options).format(date),
     );
     expect(formatDateTime(date, options)).not.toBe(englishDate);
     expect(formatNumber(1234567.89)).toBe(
-      new Intl.NumberFormat('de').format(1234567.89),
+      new Intl.NumberFormat('de-IE').format(1234567.89),
     );
     expect(formatNumber(1234567.89)).not.toBe(englishNumber);
   });
@@ -70,14 +71,70 @@ describe('application-locale formatting', () => {
     };
     const formattedDate = formatDateTime(date, dateOptions);
 
-    expect(getFormattingLocale()).toBe('ar');
-    expect(number).toBe(new Intl.NumberFormat('ar').format(1234567.89));
-    expect(formattedDate).toBe(new Intl.DateTimeFormat('ar', dateOptions).format(date));
+    expect(getFormattingLocale()).toBe('ar-IE');
+    expect(number).toBe(new Intl.NumberFormat('ar-IE').format(1234567.89));
+    expect(formattedDate).toBe(new Intl.DateTimeFormat('ar-IE', dateOptions).format(date));
     expect(formattedDate).toMatch(/\p{Script=Arabic}/u);
   });
 
   it('preserves the established fallback for invalid date values', () => {
     expect(formatDateValue('not-a-date')).toBe('—');
+  });
+});
+
+describe('day-first dates for Irish and UK communities', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('en');
+    resetRegion();
+  });
+
+  // A bare language tag has no region, so Intl falls back to the language's
+  // default one — the United States for English. That is what rendered
+  // 17 August 2026 as `8/17/2026` across an Ireland/UK platform. These
+  // assertions pin the outcome, not the tag, so they still catch a regression
+  // if the resolution strategy is rewritten.
+  it('renders a short English date day-first, never month-first', async () => {
+    await i18n.changeLanguage('en');
+    const august17 = new Date('2026-08-17T12:00:00Z');
+    const options: Intl.DateTimeFormatOptions = { timeZone: 'UTC' };
+
+    // The bare-numeric shape used by the majority of call sites across the app.
+    expect(august17.toLocaleDateString(getFormattingLocale(), options)).toBe('17/8/2026');
+    expect(august17.toLocaleDateString('en', options)).toBe('8/17/2026');
+  });
+
+  it('renders a long English date with the day before the month', async () => {
+    await i18n.changeLanguage('en');
+    const formatted = formatDate('2026-08-17T12:00:00Z', {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'UTC',
+      year: 'numeric',
+    });
+
+    expect(formatted).toBe('17 August 2026');
+  });
+
+  it('follows the community region when it is not the platform default', async () => {
+    await i18n.changeLanguage('en');
+    setRegion('GB');
+    const august17 = new Date('2026-08-17T12:00:00Z');
+
+    expect(getFormattingLocale()).toBe('en-GB');
+    expect(august17.toLocaleDateString(getFormattingLocale(), { timeZone: 'UTC' })).toBe(
+      '17/08/2026',
+    );
+  });
+
+  it('keeps a language tag that already carries its own region', async () => {
+    await i18n.changeLanguage('pt-BR');
+    expect(getFormattingLocale()).toBe('pt-BR');
+    await i18n.changeLanguage('en');
+  });
+
+  it('ignores a malformed region rather than falling back to the browser', () => {
+    setRegion('not-a-region');
+    expect(getFormattingLocale()).toBe('en-IE');
   });
 });
 
@@ -91,29 +148,33 @@ describe('formatRelativeTime', () => {
     vi.useRealTimers();
   });
 
+  // The single-letter abbreviations ("30s ago", "3d ago") exist only in US
+  // English CLDR data. Irish and British English both render "30 sec ago" and
+  // "3 days ago" at every Intl style, so these expectations changed when the
+  // formatting locale gained its region. Verified against en, en-IE and en-GB.
   it('returns "just now" for times less than a minute ago', () => {
     const date = new Date('2026-02-04T11:59:30Z').toISOString();
-    expect(formatRelativeTime(date)).toBe('30s ago');
+    expect(formatRelativeTime(date)).toBe('30 sec ago');
   });
 
   it('returns minutes ago for times less than an hour ago', () => {
     const date = new Date('2026-02-04T11:30:00Z').toISOString();
-    expect(formatRelativeTime(date)).toBe('30m ago');
+    expect(formatRelativeTime(date)).toBe('30 min ago');
   });
 
   it('returns hours ago for times less than a day ago', () => {
     const date = new Date('2026-02-04T06:00:00Z').toISOString();
-    expect(formatRelativeTime(date)).toBe('6h ago');
+    expect(formatRelativeTime(date)).toBe('6 hr ago');
   });
 
   it('returns days ago for times less than a week ago', () => {
     const date = new Date('2026-02-01T12:00:00Z').toISOString();
-    expect(formatRelativeTime(date)).toBe('3d ago');
+    expect(formatRelativeTime(date)).toBe('3 days ago');
   });
 
   it('returns weeks ago for times less than a month ago', () => {
     const date = new Date('2026-01-21T12:00:00Z').toISOString();
-    expect(formatRelativeTime(date)).toBe('2w ago');
+    expect(formatRelativeTime(date)).toBe('2 wk ago');
   });
 });
 

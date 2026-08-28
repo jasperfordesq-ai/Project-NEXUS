@@ -31,6 +31,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Dates in the web app are day-first everywhere instead of American.** Every
+  user-facing date and number funnels through `getFormattingLocale()`, which returned a
+  bare language code (`en`). A bare tag carries no region, so `Intl` falls back to the
+  language's default one — the United States for English — and 17 August 2026 rendered as
+  `8/17/2026` across a platform whose communities are in Ireland and the UK. The language
+  still comes from the member's own choice; the region now comes from the community
+  (`general.region` setting, else the tenant's contact country, else the platform default
+  `IE`) via a new provider-free `regionStore`, never from the browser or OS. A tag that
+  already carries its own region (`pt-BR`) is left alone. Regression tests assert the
+  rendered outcome (`17/8/2026`, `17 August 2026`), not the locale tag, so they still fail
+  if the resolution strategy is rewritten. Note one deliberate consequence: relative
+  timestamps now read `30 sec ago` / `3 days ago` rather than `30s ago` / `3d ago`,
+  because those single-letter abbreviations exist only in US English locale data — Irish
+  and British English have no compact form at any `Intl` style.
+
+- **Courses now has complete member-facing native navigation without producing a new
+  binary.** Android and iOS can browse and search courses, open My Learning, inspect a
+  syllabus, enrol with visible success/failure feedback, follow web course links into the
+  correct screen, read lesson content and save completion against the real Laravel
+  contract. The player only marks a lesson complete after the request succeeds, and all
+  course text is supplied by the maintained seven-language catalogue.
+
+- **The adults-only native-store boundary is now an enforced release invariant.** Current
+  Google Play and Apple primary rules are recorded alongside exact 18+ declarations;
+  guardian consent is an exceptional staffed web workflow rather than a native child-access
+  route, and all Care in Community routes are deliberately outside Android and iOS. A new
+  fail-closed checker protects the parity map, deep links, store worksheets and official
+  source references from drifting, while reviewer copy distinguishes service/skill matches
+  from dating or romantic matchmaking.
+
+- **The native client closes five member-facing parity gaps and strengthens local release
+  evidence without producing a build.** Match preferences can now be loaded, edited and
+  saved natively; review-request, job-application, volunteering-application,
+  volunteering-organisation and optional identity-status links reach their intended
+  screens. Signed-out recovery/community actions now look actionable. Touch-target sweeps
+  fail on locked devices and incomplete coverage instead of printing a misleading clean
+  result, and the Windows certificate-pin check now discovers Git's bundled OpenSSL and
+  verifies both configured pins against the live API chain. Direct tests now guard the
+  biometric cold-start lock, the reactors sheet's TalkBack labels and navigation, voice-message
+  download/playback failure states, and offline event check-in loading, conflicts and retry.
+
 - **The admin identity audit log now opens instead of failing.** Every attempt to
   view the identity verification audit log returned a server error, on every
   tenant, for the whole life of the endpoint — the page could never have worked.

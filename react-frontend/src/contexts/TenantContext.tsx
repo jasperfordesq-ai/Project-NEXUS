@@ -33,6 +33,7 @@ import { detectTenantFromUrl, tenantPath as buildTenantPath } from '@/lib/tenant
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { tenantBootstrapSchema } from '@/lib/api-schemas';
 import { queueSentryTenant } from '@/lib/telemetryQueue';
+import { setRegion } from '@/lib/regionStore';
 import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type { TenantConfig, TenantFeatures, TenantModules, TenantBranding, GroupTabConfig, ListingConfig, VolunteeringConfig, JobConfig, LandingPageConfig, AuthenticationConfig } from '@/types';
 
@@ -659,6 +660,16 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
     return typeof raw === 'string' && ALLOWED_GEOCODING_PROVIDERS.includes(raw as GeocodingProvider)
       ? (raw as GeocodingProvider)
       : 'google';
+  }, [state.tenant]);
+
+  // Feed the community's region to the formatting locale used by every date and
+  // number in the app. Explicit `general.region` setting wins; otherwise the
+  // tenant's contact country; otherwise the platform default already held by the
+  // store. Never the browser's region — see src/lib/regionStore.ts.
+  useEffect(() => {
+    if (!state.tenant) return;
+    const configured = state.tenant.settings?.region;
+    setRegion(typeof configured === 'string' ? configured : state.tenant.contact?.country_code);
   }, [state.tenant]);
 
   // After tenant data loads, apply tenant default language if user hasn't

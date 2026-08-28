@@ -24,8 +24,8 @@
  *   import { parseServerTimestamp, formatServerDate, formatServerDateTime }
  *     from '@/lib/serverTime';
  *
- *   formatServerDate(item.created_at)     // '4/26/2026' or '—'
- *   formatServerDateTime(item.reviewed_at) // '4/26/2026, 6:00:00 PM' or '—'
+ *   formatServerDate(item.created_at)     // '26/4/2026' or '—'
+ *   formatServerDateTime(item.reviewed_at) // '26/4/2026, 18:00:00' or '—'
  *
  * The dashed fallback is intentional — null timestamps render as a dash
  * rather than the JS default 'Invalid Date'.
