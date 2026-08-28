@@ -9,11 +9,11 @@
     "strings) belong in scripts/php-lang-invariant-allowlist.json, shared with",
     "the .php gate."
   ],
-  "generatedAt": "2026-08-28T22:34:30.104Z",
-  "totalUntranslated": 28069,
+  "generatedAt": "2026-08-28T22:36:42.512Z",
+  "totalUntranslated": 27877,
   "files": {
     "es/admin.json": 3881,
-    "fr/admin.json": 506,
+    "fr/admin.json": 314,
     "ga/admin.json": 3893,
     "ga/admin_nav.json": 3,
     "ga/api_controllers_2.json": 4,
