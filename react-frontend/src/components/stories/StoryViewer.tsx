@@ -1149,7 +1149,13 @@ export function StoryViewer({ storyUsers, initialUserIndex, onClose }: StoryView
 
       {/* Close menu on outside click */}
       {showMenu && (
+        // A transparent click-catching scrim, not a control. It carries no
+        // content and offers nothing a keyboard user could want to activate —
+        // the keyboard path for dismissing this menu is Escape, handled in the
+        // viewer's keydown switch. Marked aria-hidden so assistive tech does
+        // not announce an empty full-screen element. Added 2026-08-28.
         <div
+          aria-hidden="true"
           className="absolute inset-0 z-20"
           onClick={() => { setShowMenu(false); setIsPaused(false); }}
         />

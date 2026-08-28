@@ -128,8 +128,13 @@ export function ReactionPickerMenu({
                 }`}
               onClick={() => onSelectReaction(config.type)}
               aria-label={t(config.label)}
-              aria-pressed={userReaction === config.type}
-              role="menuitem"
+              // `aria-pressed` is not a valid attribute on role="menuitem", so
+              // assistive tech was told nothing about which reaction is
+              // currently active. Inside a role="menu" the correct single-select
+              // role is `menuitemradio`, whose state attribute is `aria-checked`
+              // (only one reaction can be active at a time). Fixed 2026-08-28.
+              aria-checked={userReaction === config.type}
+              role="menuitemradio"
               tabIndex={focusedIndex === index ? 0 : -1}
               type="button"
             >

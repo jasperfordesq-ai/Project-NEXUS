@@ -150,6 +150,11 @@ function SortableMediaItem({
 
       {/* Alt text input overlay */}
       {showAltInput && (
+        // This onClick is event containment, not a control: it stops a click
+        // inside the alt-text field from reaching the parent tile's own click
+        // handler. There is no action for a keyboard user to trigger here, and
+        // keyboard events do not bubble out of the Input the way clicks do.
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <div
           className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-sm p-2 z-20"
           onClick={(e) => e.stopPropagation()}

@@ -388,6 +388,10 @@ export function SkillSelector({
                     id={`${listboxId}-opt-${index}`}
                     role="option"
                     aria-selected={index === selectedIndex}
+                    // Focusable but not tabbable — the listbox pattern keeps
+                    // real focus on the search input and tracks the active
+                    // option with aria-activedescendant. Added 2026-08-28.
+                    tabIndex={-1}
                     onMouseEnter={() => setSelectedIndex(index)}
                     onMouseDown={(e) => {
                       e.preventDefault();

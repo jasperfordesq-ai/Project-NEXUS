@@ -275,6 +275,12 @@ export function DesktopNavPanel({
       <PopoverContent className="p-0 bg-[var(--surface-dropdown)] border border-[var(--border-default)] shadow-2xl rounded-xl max-h-[75vh] max-w-[calc(100vw-2rem)] overflow-hidden">
         <PopoverHeading className="sr-only">{ariaLabel}</PopoverHeading>
         <ScrollShadow className="max-h-[75vh]" size={56}>
+          {/* The keydown handler here is delegated keyboard navigation for the
+              links inside (arrow keys / Home / End across the panel), which is
+              the standard way to implement a roving-focus menu. The rule reads
+              <nav> as non-interactive and objects; the listener adds keyboard
+              support rather than removing it. */}
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <nav
             ref={menuRef}
             className={`desktop-nav-panel grid grid-cols-1 gap-0 p-2 w-full min-w-0 ${hasRightColumn ? 'sm:grid-cols-2 sm:min-w-[540px]' : 'sm:min-w-[300px]'}`}

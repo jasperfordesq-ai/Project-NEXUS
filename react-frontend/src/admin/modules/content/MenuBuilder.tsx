@@ -313,6 +313,13 @@ function SortableItem({ item, isSelected, onSelect, onDelete, t, depth = 0 }: So
   };
 
   return (
+    // The row's own onClick only widens the pointer hit area. The keyboard path
+    // to the same action already exists inside the row: the "Edit item" icon
+    // Button below calls the identical `onSelect`, and the drag handle Button
+    // handles reordering. Giving this wrapper role="button" + tabIndex would put
+    // a focusable control around two focusable controls, which is the nested-
+    // interactive pattern scripts/check-nested-interactive.mjs exists to stop.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       ref={setNodeRef}
       style={style}

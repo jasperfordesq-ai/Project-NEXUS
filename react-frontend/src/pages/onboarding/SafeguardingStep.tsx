@@ -483,6 +483,12 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
           const noneApplyOption = options.find(o => o.option_key === 'none_apply');
 
           const renderOption = (option: SafeguardingOption, isNoneApply = false) => (
+            // The card only widens the pointer hit area. The accessible control
+            // is the HeroUI Checkbox rendered inside it, which carries the same
+            // toggleOption handler and its own aria-label, so keyboard users
+            // reach and operate the option normally. A tabIndex here would add a
+            // tab stop competing with the checkbox it contains.
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             <div
               key={option.id}
               className={`

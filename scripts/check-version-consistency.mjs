@@ -36,6 +36,15 @@ function assertContains(relativePath, pattern, description) {
   }
 }
 
+function assertAbsent(relativePath, pattern, description) {
+  const text = read(relativePath);
+  const matches = pattern instanceof RegExp ? pattern.test(text) : text.includes(pattern);
+
+  if (matches) {
+    addIssue(`${relativePath}: ${description}`);
+  }
+}
+
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
 
@@ -90,7 +99,23 @@ assertContains('react-frontend/src/config/releaseStatus.ts', `Generally Availabl
 // These cover every remaining place the version is surfaced, including the
 // user-visible footer/changelog label (the one that has gone stale before).
 assertContains('README.md', `version-${version}-`, 'README version badge');
-assertContains('react-frontend/src/config/releaseStatus.test.ts', `v${version}`, 'releaseStatus test version assertion');
+// releaseStatus.test.ts must DERIVE the version from this file, not restate it.
+// It hardcoded `v1.6.2` until 2026-08-28, which meant the frontend suite could
+// not tell a correct label from a stale VERSION — the test and the source were
+// bumped together and only this script noticed. Now the test reads VERSION
+// itself, so the two checks are independent: the test catches the mismatch at
+// `npm test` time, and the pair of assertions below stops anyone quietly
+// reintroducing a literal and taking that coverage away again.
+assertContains(
+  'react-frontend/src/config/releaseStatus.test.ts',
+  "readFileSync(resolve(REPO_ROOT, 'VERSION'), 'utf8')",
+  'releaseStatus test must read the root VERSION file as its source of truth'
+);
+assertAbsent(
+  'react-frontend/src/config/releaseStatus.test.ts',
+  /toContain\(\s*['"`]v\d+\.\d+\.\d+/,
+  'releaseStatus test asserts a hardcoded version literal; assert against the root VERSION file instead'
+);
 assertContains('SECURITY.md', new RegExp(`v${versionEscaped}\\b`), 'SECURITY.md supported-version row');
 assertContains('docs/ARCHITECTURE.md', `Platform version: ${version}`, 'ARCHITECTURE platform version');
 assertContains('app/Services/Enterprise/LoggerService.php', `'${version}'`, 'LoggerService version fallback');

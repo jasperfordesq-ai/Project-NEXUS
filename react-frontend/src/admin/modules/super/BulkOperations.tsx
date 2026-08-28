@@ -259,6 +259,14 @@ export function BulkOperations() {
               <p className="text-sm font-medium mb-3">{t('super.select_action')}</p>
               <RadioGroup value={bulkAction} onValueChange={setBulkAction}>
                 <div className="grid grid-cols-2 gap-3">
+                  {/* Each card div below only widens the pointer hit area. The
+                      accessible control is the HeroUI Radio nested inside it:
+                      only the Radio's visual `wrapper` slot is hidden, the radio
+                      itself is still rendered, focusable, and driven by the
+                      RadioGroup — so keyboard users select with arrow keys as
+                      normal. Giving these wrappers a tabIndex would add a second
+                      tab stop competing with the radio it contains. */}
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <div
                     onClick={() => setBulkAction('activate')}
                     className={`cursor-pointer border-2 rounded-lg p-3 transition-all ${
@@ -274,6 +282,7 @@ export function BulkOperations() {
                       </div>
                     </Radio>
                   </div>
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <div
                     onClick={() => setBulkAction('deactivate')}
                     className={`cursor-pointer border-2 rounded-lg p-3 transition-all ${
@@ -289,6 +298,7 @@ export function BulkOperations() {
                       </div>
                     </Radio>
                   </div>
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <div
                     onClick={() => setBulkAction('enable_hub')}
                     className={`cursor-pointer border-2 rounded-lg p-3 transition-all ${
@@ -304,6 +314,7 @@ export function BulkOperations() {
                       </div>
                     </Radio>
                   </div>
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <div
                     onClick={() => setBulkAction('disable_hub')}
                     className={`cursor-pointer border-2 rounded-lg p-3 transition-all ${

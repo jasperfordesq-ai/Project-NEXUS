@@ -100,12 +100,20 @@ export function ImageCarousel({ media, className = '' }: ImageCarouselProps) {
 
   return (
     <>
+      {/* This is the WAI-ARIA APG carousel pattern verbatim: a role="region"
+          with aria-roledescription="carousel" that is itself focusable so the
+          arrow keys can move between slides. Both rules below read "region" as
+          a non-interactive landmark and object to the tabIndex and the keydown
+          listener — but removing either is exactly what would break keyboard
+          access to the slides. Suppressed deliberately, 2026-08-28. */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         ref={carouselRef}
         className={`relative overflow-hidden rounded-xl group ${className}`}
         role="region"
         aria-label={t('carousel.aria_label', { current: currentIndex + 1, total })}
         aria-roledescription={t('carousel.role_description')}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={0}
         onKeyDown={handleKeyDown}
       >

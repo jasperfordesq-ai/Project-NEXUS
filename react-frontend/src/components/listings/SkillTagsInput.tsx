@@ -198,6 +198,12 @@ export function SkillTagsInput({ tags, onChange, maxTags = 10 }: SkillTagsInputP
                   id={`${listboxId}-opt-${index}`}
                   role="option"
                   aria-selected={index === selectedIndex}
+                  // Focusable but not tabbable. The ARIA combobox pattern keeps
+                  // real focus on the text input and points at the active option
+                  // with aria-activedescendant, so an option must never be its
+                  // own tab stop — but it does have to be focusable for the
+                  // `option` role to be valid. Added 2026-08-28.
+                  tabIndex={-1}
                   className={`min-h-9 w-full cursor-pointer rounded-none px-3 py-2 text-left text-sm text-theme-primary transition-colors ${
                     index === selectedIndex ? 'bg-theme-hover' : 'hover:bg-theme-hover'
                   }`}

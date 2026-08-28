@@ -1094,6 +1094,14 @@ const migratedAdminMonolithGroups = [
 
 const allowedHeroUiRootImportFiles = new Set([
   'src/components/ui/useDisclosure.ts',
+  // App.tsx imports I18nProvider, which HeroUI v3 publishes ONLY from the root
+  // barrel — checked against @heroui/react's own exports map on 2026-08-28: 88
+  // subpaths, none for I18nProvider or the providers generally. So there is no
+  // focused import to prefer here. It is also the cheapest possible place for a
+  // root import: App.tsx is the app shell, already in the startup graph on every
+  // route, so unlike a lazy route chunk it pulls nothing extra in. Re-check when
+  // HeroUI adds a provider subpath.
+  'src/App.tsx',
 ]);
 
 async function sourceFilesIn(relativeDir) {

@@ -528,6 +528,15 @@ jobs:
         working-directory: react-frontend
         run: npm run check:quarantine-budget
 
+      # Shrink-only ceiling on a component being tested from BOTH Foo.test.tsx
+      # and __tests__/Foo.test.tsx in the same directory. All 103 existing pairs
+      # are genuinely different suites written independently, and SavedSearches
+      # was quarantined in both copies at once — a fix to one never reaches the
+      # other. This stops new ones; the backlog is merged down over time.
+      - name: Duplicate Test Locations (BLOCKING)
+        working-directory: react-frontend
+        run: npm run check:duplicate-tests
+
       # ESLint ratchet (BLOCKING). Cap tracks the current warning count (25) with
       # a small buffer; it must only ever be LOWERED, never raised. Previously the
       # cap was 1000 and eslint ran in no CI step at all, so warnings were ungated.
@@ -678,6 +687,14 @@ jobs:
         env:
           VITE_API_BASE: /api
           NEXUS_SKIP_PRERENDER: "1"
+
+      # The script existed but nothing ran it, so the chunk budgets and the
+      # "no HeroUI root-barrel imports" rule were advisory only. It needs dist/,
+      # which is why it belongs here rather than with the other static checks.
+      # Verified 2026-08-28 against a fresh build made with these same env vars.
+      - name: Bundle Budget (BLOCKING)
+        working-directory: react-frontend
+        run: npm run check:bundle-budget
 
       - name: Upload React Build Artifact
         uses: actions/upload-artifact@v4

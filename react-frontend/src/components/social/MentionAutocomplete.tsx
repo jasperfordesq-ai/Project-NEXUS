@@ -126,6 +126,9 @@ export function MentionAutocomplete(
                   role="option"
                   id={`mention-option-${user.id}`}
                   aria-selected={idx === selectedIndex}
+                  // Focusable but not tabbable, per the comment above: focus
+                  // stays on the combobox input. Added 2026-08-28.
+                  tabIndex={-1}
                   className={`w-full min-h-[40px] flex items-center gap-2.5 px-3 py-2 text-left transition-colors justify-start rounded-none cursor-pointer ${
                     idx === selectedIndex
                       ? 'bg-accent-soft dark:bg-accent-soft text-[var(--color-primary)]'

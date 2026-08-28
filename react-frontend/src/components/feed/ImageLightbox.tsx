@@ -181,6 +181,10 @@ export function ImageLightbox({ media, initialIndex = 0, onClose }: ImageLightbo
       )}
 
       {/* Image container */}
+      {/* Event containment, not a control: it stops a click on the image from
+          reaching the backdrop's close handler. Keyboard users close the
+          lightbox with Escape, which this element does not intercept. */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
         className="relative w-full h-full flex items-center justify-center px-16 py-16"
         onClick={(e) => e.stopPropagation()}
