@@ -15,7 +15,14 @@ appId: ie.project.nexus
     when:
       visible: "Select your timebank"
     commands:
-      - tapOn: "Partner Demo"
+      - extendedWaitUntil:
+          visible: "Partner Demo"
+          timeout: 15000
+      # The visible label is nested inside the card and is not itself tappable on
+      # iOS. This tour always uses the fixed 6.9-inch simulator, so tap the card's
+      # chevron rather than relying on Maestro to promote the text to its parent.
+      - tapOn:
+          point: "85%,44%"
 
 - extendedWaitUntil:
     visible: "Welcome back"
