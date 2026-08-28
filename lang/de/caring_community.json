@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "Die einzulösenden Guthaben müssen größer als 0 sein.",
+      "invalid_order_total": "Der Gesamtbestellwert muss größer als 0 sein.",
+      "credits_decimal_precision": "Guthaben dürfen höchstens 2 Dezimalstellen haben.",
+      "credits_exceed_max": "Die einzulösenden Guthaben überschreiten den Höchstbetrag pro Einlösung.",
+      "self_redemption_forbidden": "Sie können bei Ihrem eigenen Angebot keine Guthaben einlösen.",
+      "programme_unavailable": "Das Treueprogramm ist in dieser Gemeinschaft nicht verfügbar.",
+      "merchant_disabled": "Dieser Händler akzeptiert keine Zeitguthaben mehr.",
+      "merchant_misconfigured": "Die Treueprogrammeinstellungen dieses Händlers sind ungültig.",
+      "exceeds_max_discount": "Der Rabatt überschreitet den für diese Bestellung zulässigen Höchstbetrag.",
+      "member_not_found": "Mitgliedskonto nicht gefunden.",
+      "zero_balance": "Sie haben keine Zeitguthaben zum Einlösen.",
+      "insufficient_credits": "Ihr Guthabenkonto enthält nicht genügend Zeitguthaben.",
+      "redemption_not_found": "Einlösung nicht gefunden.",
+      "redemption_not_reversible": "Nur angewendete Einlösungen können rückgängig gemacht werden.",
+      "reversal_reason_too_long": "Der Grund für die Rückbuchung darf höchstens 500 Zeichen lang sein.",
       "invalid_listing": "Der Eintrag gehört nicht diesem Händler.",
       "listing_unavailable": "Dieses Angebot ist nicht für die Einlösung von Treueprogrammen verfügbar.",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "Der CHF-Betrag pro Stunde muss zwischen 0 und 9999 liegen.",
+      "invalid_max_discount_pct": "Der maximale Rabattprozentsatz muss zwischen 0 und 100 liegen.",
       "redemption_unavailable": "Diese Einlösung im Treueprogramm ist nicht mehr verfügbar.",
       "redemption_mismatch": "Diese Einlösung im Treueprogramm stimmt nicht mit der ausgewählten Marketplace-Bestellung überein."
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "Abdeckung nach Teilregion",
+      "description": "Angeforderte und erfüllte Stunden je Teilregion. Eine Abdeckung unter 50 % wird markiert.",
+      "coverage_ratio": "Abdeckungsquote",
+      "requested": "Angefordert",
+      "fulfilled": "Erfüllt",
+      "under_supplied": "Unterversorgt"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "Abwanderung von Helfern",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "Gesamtabwanderungsquote",
+      "by_category": "Nach Kategorie",
+      "lapsed": "Inaktive Helfer",
+      "prior_active": "Zuvor aktiv"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "Abweichung der Kategoriekoeffizienten",
+      "description": "Beobachtete durchschnittliche Stunden pro Sitzung im Vergleich zum von der Verwaltung festgelegten Ausgangswert. Abweichungen über 15 % werden markiert.",
+      "baseline": "Ausgangswert",
+      "expected": "Erwartet",
+      "observed": "Beobachtet",
+      "drift": "Abweichung",
+      "flagged": "Markiert"
     }
   },
   "nudges": {
