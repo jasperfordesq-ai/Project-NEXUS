@@ -80,12 +80,32 @@ function ghsaOf(via) {
   return m ? m[1] : String(via.source ?? '');
 }
 
+/**
+ * An exception past its `expires` date stops suppressing.
+ *
+ * The list said "review quarterly" in prose from the day it was created, and
+ * nothing enforced it — which is exactly how a suppression list becomes
+ * permanent. The date is the commitment; this makes the commitment real, and
+ * the failure is loud and specific rather than a silently-ignored CVE.
+ *
+ * Expiring is deliberately NOT the same as "the advisory is unfixed": it means
+ * a human said they would look again by this date. Re-justify and push the date
+ * out, or remove the entry — but do it knowingly.
+ */
+function isExpired(exception, today) {
+  if (!exception.expires) return false;
+  return exception.expires < today;
+}
+
 const exceptions = loadExceptions();
 const report = runAudit();
 const vulns = report.vulnerabilities ?? {};
 
+const today = new Date().toISOString().slice(0, 10);
+
 const blockers = [];
 const excepted = [];
+const undated = [];
 for (const [pkg, info] of Object.entries(vulns)) {
   for (const via of info.via ?? []) {
     if (typeof via !== 'object') continue; // transitive chain entry, not an advisory
@@ -93,8 +113,14 @@ for (const [pkg, info] of Object.entries(vulns)) {
     const id = ghsaOf(via);
     const exception = exceptions.find((e) => e.id === id);
     const line = `${pkg} ${info.range ?? ''} — ${via.severity.toUpperCase()} ${id}: ${via.title}`;
-    if (exception) {
-      excepted.push(`${line}\n    excepted (${exception.added}): ${exception.reason}`);
+    if (exception && isExpired(exception, today)) {
+      blockers.push(
+        `${line}\n    EXCEPTION EXPIRED on ${exception.expires} (added ${exception.added}).`
+        + ' Re-justify with a new expires date, or remove the entry and fix the dependency.',
+      );
+    } else if (exception) {
+      if (!exception.expires) undated.push(`${id} (${pkg}) — added ${exception.added}`);
+      excepted.push(`${line}\n    excepted (${exception.added}, expires ${exception.expires ?? 'NEVER — set one'}): ${exception.reason}`);
     } else {
       blockers.push(line);
     }
@@ -106,10 +132,14 @@ if (excepted.length) {
   console.log(`npm-audit-gate [${label}]: ${excepted.length} excepted advisor${excepted.length === 1 ? 'y' : 'ies'} (review quarterly):`);
   for (const e of excepted) console.log(`  ${e}`);
 }
+if (undated.length) {
+  console.log(`npm-audit-gate [${label}]: ${undated.length} exception(s) with NO expires date — add one so the review cannot slip:`);
+  for (const u of undated) console.log(`  ${u}`);
+}
 if (blockers.length) {
-  console.error(`npm-audit-gate [${label}]: BLOCKING — ${blockers.length} unexcepted high/critical advisor${blockers.length === 1 ? 'y' : 'ies'}:`);
+  console.error(`npm-audit-gate [${label}]: BLOCKING — ${blockers.length} unexcepted or expired high/critical advisor${blockers.length === 1 ? 'y' : 'ies'}:`);
   for (const b of blockers) console.error(`  ${b}`);
-  console.error('Fix the dependency, or add a justified entry to .npm-audit-exceptions.json (reason + added date, scoped to this tree).');
+  console.error('Fix the dependency, or add a justified entry to .npm-audit-exceptions.json (reason + added date + expires date, scoped to this tree).');
   process.exit(1);
 }
 console.log(`npm-audit-gate [${label}]: OK (no unexcepted high/critical production advisories)`);
